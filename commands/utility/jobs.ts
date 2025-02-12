@@ -1,0 +1,227 @@
+﻿import {
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonStyle,
+	ChatInputCommandInteraction,
+	Colors,
+	ComponentType,
+	Locale,
+	MessageComponentInteraction,
+	SlashCommandBuilder,
+	StringSelectMenuBuilder,
+	StringSelectMenuOptionBuilder,
+} from "discord.js";
+import { checkUser, removeEmbedComponents, replyInteraction } from "../../utils/logic";
+import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
+import { EmoteString } from "../../utils/emotes";
+import { formatMoney, showTime } from "../../utils/ui";
+import { getJobList, JobId, JobList } from "../../models/Job";
+import { getItemList, ItemList } from "../../models/Item";
+import { Language } from "../../models/Language";
+import { CrColors } from "../../utils/colors";
+
+module.exports = {
+	vip: true,
+	data: new SlashCommandBuilder()
+		.setName("jobs")
+		.setDescription("Open the job list to work")
+		.setNameLocalization(Locale.PortugueseBR, "trabalhos")
+		.setDescriptionLocalization(Locale.PortugueseBR, "Abra a lista de trabalhos para ter um emprego"),
+
+	async execute(interaction: ChatInputCommandInteraction) {
+		const user = await checkUser(interaction.user.id, interaction);
+
+		if (!user) {
+			return;
+		}
+
+		const s = Strings[user.Language];
+
+		let workingText = "";
+		if (user.IsWorking()) {
+			workingText = `\n## ${s.workingOn(user.Job.Id!, user.Job.EndsIn, user.Language)}`;
+		}
+
+		const embed = new CustomEmbedBuilder()
+			.setTitle(`${EmoteString.Jobs} ${s.title}`)
+			.setDescription(`${s.description}${workingText}`)
+			.setThumbnail("https://media.discordapp.net/attachments/1233604589064818808/1337166947250602047/Trabalhos2.png")
+			.setColor(CrColors.Jobs)
+			.setDefaultFooter(interaction, formatMoney(user.Money, user.Language))
+			.setTimestamp();
+
+		const select = new StringSelectMenuBuilder()
+			.setCustomId("select")
+			.setPlaceholder(s.placeholderSelect);
+
+		const jobList = getJobList().filter(jobs => !jobs.Special);
+
+		for (const job of jobList) {
+			const weaponsNeeded = getItemList().filter(item => job.NeedItem?.includes(item.Id));
+
+			const textSalary = `${s.salary}: ${formatMoney(job.Salary, user.Language)}`;
+			const textDuration = `${s.duration}: ${job.Duration}h`;
+			const textNeeded = weaponsNeeded.length ? `\n-# ${s.necessary}: ${weaponsNeeded.map(weapon => weapon.Skin.Default.Emote.String).join("")}` : "";
+
+			if (!user.IsWorking()) {
+				embed.addFields({
+					name: job.Description[user.Language],
+					value: `${textSalary}\n${textDuration}${textNeeded}`,
+					inline: true,
+				});
+			}
+
+			select.addOptions(
+				new StringSelectMenuOptionBuilder()
+					.setLabel(job.Description[user.Language])
+					.setValue(String(job.Id))
+					.setDescription(`${s.salary}: ${formatMoney(job.Salary, user.Language)} • ${s.duration}: ${job.Duration}h`),
+			);
+		}
+
+		const rowSelect = new ActionRowBuilder<StringSelectMenuBuilder>()
+			.setComponents(select);
+
+		const buttonStop = new ButtonBuilder()
+			.setCustomId("stop")
+			.setLabel(s.stop)
+			.setStyle(ButtonStyle.Danger);
+
+		const rowButton = new ActionRowBuilder<ButtonBuilder>()
+			.setComponents(buttonStop);
+
+		const components = rowSelect.components[0].options.length > 0 ? [rowSelect] : [];
+
+		const response = await replyInteraction(interaction, {
+			embeds: [embed],
+			components: user.IsWorking() ? [rowButton] : components,
+		});
+
+		const collectorSelect = response?.createMessageComponentCollector({
+			filter: (i: MessageComponentInteraction) => i.user.id === interaction.user.id,
+			componentType: ComponentType.StringSelect,
+			time: 60_000,
+		});
+
+		collectorSelect?.on("collect", async select => {
+			embed.setFields([]);
+
+			await user.GetInfo();
+
+			const job = JobList[Number(select.values[0])];
+
+			const userItems = await user.GetItems();
+			const hasAllItems = job.NeedItem?.every(neededItem => userItems.some(userItem => userItem.Id === neededItem));
+
+			if (user.IsWorking()) {
+				return await removeEmbedComponents(interaction, [
+					embed.setDescription(s.workingOn(user.Job.Id!, user.Job.EndsIn, user.Language)),
+				]);
+			}
+			if (user.IsEscaping()){
+				return await removeEmbedComponents(interaction, [
+					embed.setDescription(s.workingOn(, user.Language)),
+				]);
+			}
+			if (user.IsInPrison()){
+				return await removeEmbedComponents(interaction, [
+					embed.setDescription(s.workingOn(, user.Language)),
+				]);
+			}
+
+			if (job.NeedItem && !hasAllItems) {
+				const neededItems = job.NeedItem
+					.filter(neededItem => !userItems.some(userItem => userItem.Id === neededItem))
+					.map(neededItem => `${ItemList[neededItem].Skin.Default.Emote.String} ${ItemList[neededItem].Description[user.Language]}`)
+					.join(", ");
+				return await removeEmbedComponents(interaction, [
+					embed.setDescription(s.withoutItems(neededItems)),
+				]);
+			}
+
+			await user.StartJob(job.Id);
+
+			return await removeEmbedComponents(interaction, [
+				embed
+					.setDescription(s.jobStarted(job.Description[user.Language], user.Job.EndsIn))
+					.setDefaultFooter(interaction, `${s.salary}: ${formatMoney(job.Salary, user.Language)} • ${s.duration}: ${job.Duration}h`),
+			]);
+		});
+
+		collectorSelect?.on("end", async () => {
+			await removeEmbedComponents(interaction);
+		});
+
+		const collectorButton = response?.createMessageComponentCollector({
+			filter: (i: MessageComponentInteraction) => i.user.id === interaction.user.id,
+			componentType: ComponentType.Button,
+			time: 60_000,
+		});
+
+		collectorButton?.on("collect", async btn => {
+			embed.setFields([]);
+			if (btn.customId === "stop") {
+				await user.GetInfo();
+				if (user.Job.Id === null) {
+					return await removeEmbedComponents(interaction, [
+						embed.setDescription(s.cannotStop),
+					]);
+				}
+				const job = JobList[user.Job.Id];
+				await user.CancelJob();
+				await removeEmbedComponents(interaction, [
+					embed.setDescription(`${s.stopped} ${job.Description[user.Language]}`),
+				]);
+			}
+		});
+
+		collectorButton?.on("end", async () => {
+			await removeEmbedComponents(interaction);
+		});
+	},
+};
+
+const Strings = {
+	[Language.English]: {
+		title: "Jobs",
+		description: "You cannot bet, steal or search while working!",
+		workingOn: (jobId: JobId, jobTime: Date, language: Language) => `${EmoteString.Working} You are working as ${JobList[jobId].Description[language]} and will finish ${showTime(jobTime.getTime(), true)}.`,
+		placeholderSelect: "Select a job",
+		stop: "Stop job",
+		cannotStop: "You can't stop what you didn't start.",
+		stopped: "You stopped your job of",
+		salary: "Salary",
+		duration: "Duration",
+		necessary: "Necessary",
+		withoutItems: (neededItems: string) => `You don't have the necessary items to start this job.\n-# You need ${neededItems}.`,
+		jobStarted: (jobDescription: string, jobTime: Date) => `${EmoteString.Working} You started working as ${jobDescription}. Will finish ${showTime(jobTime.getTime(), true)}`,
+	},
+	[Language.Portuguese]: {
+		title: "Trabalhos",
+		description: `Você não pode apostar, roubar nem vasculhar enquanto trabalha!`,
+		workingOn: (jobId: JobId, jobTime: Date, language: Language) => `${EmoteString.Working} Você está trabalhando como ${JobList[jobId].Description[language]} e terminará ${showTime(jobTime.getTime(), true)}.`,
+		placeholderSelect: "Selecione um trabalho",
+		stop: "Parar trabalho",
+		cannotStop: "Você não pode parar o que não começou.",
+		stopped: "Você parou seu trabalho de",
+		salary: "Salário",
+		duration: "Duração",
+		necessary: "Necessário",
+		withoutItems: (neededItems: string) => `Você não tem os itens necessários para começar este trabalho.\n-# Você precisa de ${neededItems}.`,
+		jobStarted: (jobDescription: string, jobTime: Date) => `${EmoteString.Working} Você começou a trabalhar como ${jobDescription}. Terminará ${showTime(jobTime.getTime(), true)}`,
+	},
+	[Language.Spanish]: {
+		title: "Trabajos",
+		description: "Tu no puedes apostar, robar o buscar mientras trabajas!",
+		workingOn: (jobId: JobId, jobTime: Date, language: Language) => `${EmoteString.Working} Usted está trabajando como ${JobList[jobId].Description[language]} y terminará ${showTime(jobTime.getTime(), true)}`,
+		placeholderSelect: "Seleccione un trabajo",
+		stop: "Detener trabajo",
+		cannotStop: "Usted no puede detener lo que no comenzó.",
+		stopped: "Usted detuvo su trabajo de",
+		salary: "Salario",
+		duration: "Duración",
+		necessary: "Necesario",
+		withoutItems: (neededItems: string) => `Usted no tiene los elementos necesarios para comenzar este trabajo.\n-# Usted necesita ${neededItems}.`,
+		jobStarted: (jobDescription: string, jobTime: Date) => `${EmoteString.Working} Usted comenzó a trabajar como ${jobDescription}. Terminará ${showTime(jobTime.getTime(), true)}.`,
+	},
+} as const;

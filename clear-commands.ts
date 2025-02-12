@@ -1,0 +1,32 @@
+﻿import { REST, Routes } from "discord.js";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const token = process.env.NODE_ENV === "DEV" ? process.env.TOKEN_DEV : process.env.TOKEN;
+const clientId = process.env.NODE_ENV === "DEV" ? process.env.CLIENT_ID_DEV : process.env.CLIENT_ID;
+
+const rest = new REST().setToken(token);
+
+(async () => {
+	try {
+		console.log(`Started clearing application (/) commands.`);
+
+		await rest.put(
+			Routes.applicationCommands(clientId),
+			{ body: [] }
+		);
+		
+		await rest.put(
+			Routes.applicationGuildCommands(clientId, process.env.GUILD_ID),
+			{ body: [] },
+		);
+
+		console.log(`Successfully cleared application (/) commands admin commands).`);
+	}
+	catch (error) {
+		console.error(`${error}`);
+	}
+})();
+
+export {};

@@ -1,0 +1,49 @@
+{
+  "name": "cross-roads-reborn",
+  "version": "1.0.0",
+  "description": "The return of Cross Road's Battle Roosters!",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "clean": "tsc --build --clean",
+    "clear-commands": "tsc && node build/clear-commands.js",
+    "prestart": "tsc",
+    "start": "pm2 start build/index.js",
+    "stop": "pm2 stop index",
+    "predeploy": "tsc",
+    "deploy": "node build/deploy-commands.js",
+    "prestart-dev": "tsc",
+    "start-dev": "set NODE_ENV=DEV&& node build/index.js",
+    "predeploy-dev": "tsc",
+    "deploy-dev": "set NODE_ENV=DEV&& node build/deploy-commands.js",
+    "lint": "eslint . --ext .ts",
+    "lint-fix": "eslint . --ext .ts --fix"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/edujacobi/cross-roads-reborn.git"
+  },
+  "author": "Jacobi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/edujacobi/cross-roads-reborn/issues"
+  },
+  "homepage": "https://github.com/edujacobi/cross-roads-reborn#readme",
+  "devDependencies": {
+    "@tsconfig/node18": "^1.0.1",
+    "@types/node": "^18.15.10",
+    "@typescript-eslint/eslint-plugin": "^8.13.0",
+    "@typescript-eslint/parser": "^8.13.0",
+    "eslint": "^8.57.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "date-fns": "^3.6.0",
+    "discord-api-types": "0.37.83",
+    "discord.js": "14.16.2",
+    "dotenv": "^16.3.1",
+    "sequelize": "^6.31.1",
+    "sqlite3": "^5.1.6"
+  }
+}
