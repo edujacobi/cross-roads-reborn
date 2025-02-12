@@ -12,7 +12,7 @@
 } from "discord.js";
 import { checkUser, removeEmbedComponents, replyInteraction } from "../../utils/logic";
 import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
-import { formatChip, formatMoney, showTime } from "../../utils/ui";
+import { formatMoney, showTime } from "../../utils/ui";
 import { Badge } from "../../models/Badge";
 import { Language } from "../../models/Language";
 import { EmoteId, EmoteString } from "../../utils/emotes";

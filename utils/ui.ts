@@ -27,7 +27,6 @@ export function defaultEmbed(options: EmbedParams): CustomEmbedBuilder {
 	return embed;
 }
 
-
 export function formatMoney(money: number, lang: Language, prefix = "Cr$") {
 	let m = money.toLocaleString("en-US");
 
@@ -36,10 +35,6 @@ export function formatMoney(money: number, lang: Language, prefix = "Cr$") {
 	}
 
 	return `${prefix} ${m}`;
-}
-
-export function formatChip(chip: number, lang: Language) {
-	return formatMoney(chip, lang, "");
 }
 
 export function showTime(time: number, humanized?: boolean) {
