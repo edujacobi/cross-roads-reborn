@@ -3,24 +3,22 @@ import {
 	APIEmbed,
 	ButtonInteraction,
 	ChatInputCommandInteraction,
-	CommandInteraction,
+	CommandInteraction, EmbedBuilder,
 	InteractionReplyOptions,
 	MessagePayload,
 } from "discord.js";
-import { Rooster } from "../models/Rooster";
-import { defaultEmbed, EmoteString, getPathText, getRarityColor, showTime } from "./ui";
-import { Roosters } from "../database/Roosters";
 import { CustomEmbedBuilder } from "../models/CustomEmbedBuilder";
 import { JSONEncodable } from "@discordjs/util";
 import { Op } from "sequelize";
 import { Notification, NotificationType } from "../models/Notification";
 import { getClient } from "../client";
 import { Log } from "./log";
-import { getRoosterEmote } from "../models/RoosterImage";
-import { Egg } from "../models/Egg";
+import { Users } from "../database/Users";
+import { EmoteString } from "./emotes";
+import { JobList } from "../models/Job";
+import { formatMoney } from "./ui";
 
 export const BOT_ID = "1089602356271927356";
-export const HOURS_TO_HATCH = 6;
 
 export async function checkUser(userId: string, interaction: CommandInteraction) {
 	const user = new User(userId);
@@ -57,203 +55,28 @@ Hope you enjoy the game!
 	}
 }
 
-export async function checkRooster(userId: string, interaction: CommandInteraction) {
-	await checkUser(userId, interaction);
 
-	const rooster = new Rooster(userId);
-
-	if (await rooster.GetInfo()) {
-		if (!rooster.IsDeleted) {
-			return rooster;
-		}
-	}
-
-	const egg = await checkEgg(userId, interaction);
-
-	if (egg) {
-		return;
-	}
-
-	if (userId == interaction.user.id) {
-		await rooster.Create();
-		return rooster.GetInfo();
-
-	}
-	else {
-		await replyInteraction(interaction, {
-			content: `I didn't find a rooster for this user in the database!`,
-			ephemeral: true,
-		});
-	}
-
-}
-
-export async function checkEgg(userId: string, interaction: CommandInteraction) {
-	const egg = new Egg(userId);
-
-	await egg.GetInfo();
-
-	if (!egg.Exists) {
-		return;
-	}
-
-	if (userId == interaction.user.id) {
-		if (egg.Hatched) {
-			return egg;
-		}
-
-		await replyInteraction(interaction, {
-			content: `You need to wait until ${showTime(egg.TimeToHatch)} for your 🥚 Egg to hatch a new rooster!`,
-			ephemeral: true,
-		});
-
-		return egg;
-	}
-	else {
-		const client = getClient();
-		const discordUser = await client.users.fetch(userId);
-
-		if (egg.Hatched) {
-			await replyInteraction(interaction, {
-				content: `${discordUser.displayName}'s 🥚 Egg hatched! He/She need to use \`/rooster\` command to see what is inside!`,
-				ephemeral: true,
-			});
-		}
-		else {
-			await replyInteraction(interaction, {
-				content: `${discordUser.displayName} need to wait until ${showTime(egg.TimeToHatch)} for their 🥚 Egg to hatch a new rooster!`,
-				ephemeral: true,
-			});
-		}
-	}
-
-	return egg;
-}
-
-interface ActionsOptions {
-	training?: boolean;
-	finishedTraining?: boolean;
-	battling?: boolean;
-	resting?: boolean;
-	lowLevel?: boolean;
-	trainedAll?: boolean;
-}
-
-/**
- * Check if the Rooster can battle by checking all battle actions.
- * @param rooster the rooster model
- * @returns if the rooster can battle (false: cannot; true: can)
- */
-export function checkAllActionsForBattle(rooster: Rooster) {
-	return checkActions({
-		training: true,
-		finishedTraining: true,
-		battling: true,
-		resting: true,
-		lowLevel: true,
-	}, rooster);
-}
-
-/**
- * Check if the Rooster can do some action.
- * @param actions the actions to verify
- * @param rooster the rooster model
- * @returns if the user can perform the action (false: cannot; true: can)
- */
-export function checkActions(actions: ActionsOptions, rooster: Rooster) {
-	const isBattling = rooster.BattlingWith != null;
-	const isTraining = rooster.Timers.Train > Date.now() && rooster.IsTraining != null;
-	const hasFinishedTraining = rooster.Timers.Train < Date.now() && rooster.IsTraining != null;
-	const isResting = rooster.Timers.Rest > Date.now() && rooster.IsTraining == null;
-	const isLowLevel = rooster.Level === 0;
-	const hasAlreadyTrainedAll = rooster.AvailableTrainings == 0;
-
-	const actionsChecked: ActionsOptions = {
-		battling: actions.battling && isBattling,
-		finishedTraining: actions.finishedTraining && hasFinishedTraining,
-		training: actions.training && isTraining,
-		resting: actions.resting && isResting,
-		lowLevel: actions.lowLevel && isLowLevel,
-		trainedAll: actions.trainedAll && hasAlreadyTrainedAll,
-	};
-
-	return actionsChecked;
-}
-
-/**
- * Show messages based on checked actions
- * @param actions the actions to show messages
- * @param rooster the rooster model
- * @param interaction the interaction to respond
- * @returns boolean if the rooster can perfom the action of the messages
- */
-export async function showMessageActions(actions: ActionsOptions, rooster: Rooster, interaction: CommandInteraction | ButtonInteraction) {
-	let description = "";
-
-	if (actions.battling) {
-		if (!rooster.BattlingWith) {
-			return;
-		}
-
-		const opponent = await Roosters.findByPk(rooster.BattlingWith);
-
-		description += `**${rooster.GetNameWithImage()}** is ${EmoteString.Battling} **Battling** with ${opponent?.name} and cannot do that right now. It will finish in a moment.\n`;
-	}
-
-	if (actions.training) {
-		description += `**${rooster.GetNameWithImage()}** is ${EmoteString.Training} **Training** in ${getPathText(<string>rooster.IsTraining)} and cannot do that right now. It will finish ${showTime(rooster.Timers.Train, true)}.\n`;
-	}
-
-	if (actions.finishedTraining) {
-		description += `**${rooster.GetNameWithImage()}** has ${EmoteString.Training} **finished his training** in ${getPathText(<string>rooster.IsTraining)} and need to complete it.\n`;
-	}
-
-	if (actions.resting) {
-		description += `**${rooster.GetNameWithImage()}** is ${EmoteString.Resting} **Resting** and cannot do that right now. It will be ready ${showTime(rooster.Timers.Rest, true)}.\n`;
-	}
-
-	if (actions.lowLevel) {
-		description += `**${rooster.GetNameWithImage()}** cannot do that until it gets to Level 1.\n`;
-	}
-
-	if (actions.trainedAll) {
-		description += `**${rooster.GetNameWithImage()}** doesn't have more ${EmoteString.Training} **Trainings** available.\n`;
-	}
-
-	if (description.length == 0) {
-		return true;
-	}
-
-	await replyInteraction(interaction, {
-		embeds: [defaultEmbed({
-			thumbnail: rooster.GetImage(),
-			color: getRarityColor(rooster.Rarity),
-			interaction,
-			description: description,
-		})],
-		ephemeral: true,
-	});
-
-	return false;
-}
-
-export async function removeAllFromBattle() {
+export async function removeAllFromRobbery() {
 	try {
-		await Roosters.update({
-			battlingWith: null,
+		await Users.update({
+			beingRobbedByUserId: null,
+			robbingUserId: null,
 		}, {
 			where: {
-				battlingWith: {
+				beingRobbedByUserId: {
+					[Op.not]: null,
+				},
+				robbingUserId: {
 					[Op.not]: null,
 				},
 			},
 		});
 
-		Log.Info(`All roosters removed from battle.`);
+		Log.Info(`All users removed from robberies.`);
 
 	}
 	catch (err) {
-		Log.Warning(`Something went wrong with removing Roosters from battle.`);
+		Log.Warning(`Something went wrong with removing Users from robberies.`);
 	}
 }
 
@@ -266,6 +89,18 @@ export async function sendPrivateMessage(userId: string, message: string) {
 			.setDescription(message);
 
 		await discordUser.send({ embeds: [embed] });
+	}
+	catch (err) {
+		Log.Warning(`Something went wrong with sending private message to ${discordUser.displayName} (${discordUser.id}).`);
+	}
+}
+
+export async function sendComplexPrivateMessage(userId: string, embed: EmbedBuilder) {
+	const client = getClient();
+	const discordUser = await client.users.fetch(userId);
+
+	try {
+		return await discordUser.send({ embeds: [embed] });
 	}
 	catch (err) {
 		Log.Warning(`Something went wrong with sending private message to ${discordUser.displayName} (${discordUser.id}).`);
@@ -285,25 +120,25 @@ export async function sendTimedNotification() {
 	const list = await Notification.GetNextNotifications(now);
 
 	for (const notification of list) {
-		const rooster = await Roosters.findByPk(notification.RoosterId);
+		const user = await new User(notification.UserId).GetInfo();
 
-		if (!rooster) {
-			Log.Warning(`Cannot send private message if the rooster was deleted (RoosterId: ${notification.RoosterId}).`);
+		if (!user) {
+			Log.Warning(`Cannot send private message if the user was deleted (UserId: ${notification.UserId}).`);
 			await notification.SetAsNotified();
 			continue;
 		}
 
-		if (notification.Type == NotificationType.Rest) {
-			await sendPrivateMessage(rooster.ownerId, `${getRoosterEmote(rooster.image)} **${rooster.name}** has rested! ${EmoteString.Resting} `);
-		}
-		else if (notification.Type == NotificationType.Train) {
-			await sendPrivateMessage(rooster.ownerId, `${getRoosterEmote(rooster.image)} **${rooster.name}** has ended his training in ${getPathText(<string>rooster.isTraining)}! ${EmoteString.Training}`);
-		}
 		else if (notification.Type == NotificationType.Daily) {
-			await sendPrivateMessage(rooster.ownerId, `${EmoteString.Experience} You can receive your daily Exp again!`);
+			await sendPrivateMessage(user.Id, `${EmoteString.Experience} You can receive your daily Exp again!`);
 		}
-		else if (notification.Type == NotificationType.Hatch) {
-			await sendPrivateMessage(rooster.ownerId, `Your 🥚 Egg has hatched! Use \`/rooster\` to see what is inside!`);
+
+		else if (notification.Type == NotificationType.Job) {
+			if (user.Job.Id === null) {
+				return;
+			}
+			const job = JobList[user.Job.Id];
+			await user.EndJob();
+			await sendPrivateMessage(notification.UserId, `Você terminou seu trabalho ${job.Description[user.Language]} e recebeu ${formatMoney(job.Salary, user.Language)}!`);
 		}
 
 		await notification.SetAsNotified();

@@ -67,9 +67,7 @@ module.exports = {
 			.setThumbnail(_user.avatarURL() ?? "")
 			.setDescription(`${badgeText}
 ${formatMoney(user.Money, user.Language)}`)
-			.setFooter({
-				text: `${user.Situation.Simple} • ${s.chips}: ${formatChip(user.Chip, user.Language)}`,
-			})
+			.setFooter({ text: user.Situation.Simple })
 			.setTimestamp();
 
 		const weaponEmotes = userItems.map(weapon => weapon.Skin.Default.Emote.String);
@@ -137,9 +135,6 @@ ${formatMoney(user.Money, user.Language)}`)
 ### ${badgeText}
 ### ${formatMoney(user.Money, user.Language)}
 -# ${s.inventoryItems}`)
-					.setFooter({
-						text: `${s.chips}: ${formatChip(user.Chip, user.Language)}`,
-					})
 					.setTimestamp();
 
 				userItems.forEach(item => {

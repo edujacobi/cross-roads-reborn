@@ -20,12 +20,6 @@ module.exports = {
 
 		const s = Strings[user.Language];
 
-		const rooster = await checkRooster(interaction.user.id, interaction);
-
-		if (!rooster) {
-			return;
-		}
-
 		if (!rooster.CanReceiveDaily()) {
 
 			if (!rooster.Daily.LastReceived) {

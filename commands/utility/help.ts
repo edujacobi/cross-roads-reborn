@@ -1,8 +1,8 @@
 ﻿import { ChatInputCommandInteraction, Colors, Locale, SlashCommandBuilder } from "discord.js";
 import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
 import { checkUser, replyInteraction } from "../../utils/logic";
-import { EmoteString } from "../../utils/ui";
 import { Language } from "../../models/Language";
+import { EmoteString } from "../../utils/emotes";
 
 module.exports = {
 	data: new SlashCommandBuilder()

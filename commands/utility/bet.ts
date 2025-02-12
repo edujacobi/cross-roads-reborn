@@ -4,23 +4,16 @@
 	Locale,
 	SlashCommandBuilder,
 	SlashCommandIntegerOption,
-<<<<<<< Updated upstream
-} from "discord.js";
-import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
-import { replyInteraction } from "../../utils/logic";
-import { setTimeout as wait } from "timers/promises";
-=======
 	SlashCommandNumberOption,
 } from "discord.js";
-import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
 import { checkUser, replyInteraction } from "../../utils/logic";
-import { setTimeout as wait } from "timers/promises";
-import { Language } from "../../models/Language";
-import { EmoteString } from "../../utils/emotes";
 import { defaultEmbed, formatMoney, showTime } from "../../utils/ui";
-import { JobList } from "../../models/Job";
 import { CrColors } from "../../utils/colors";
->>>>>>> Stashed changes
+import { JobList } from "../../models/Job";
+import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
+import { EmoteString } from "../../utils/emotes";
+import { Language } from "../../models/Language";
+import { setTimeout as wait } from "timers/promises";
 
 const enum CoinSide {
 	Heads = 0,
@@ -30,13 +23,9 @@ const enum CoinSide {
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("bet")
-<<<<<<< Updated upstream
-		.setDescription("Bet on a coin flip")
-		.setDescriptionLocalization(Locale.PortugueseBR, "Aposte em uma cara ou coroa")
-=======
 		.setDescription("Bet on two coin flips. Win 3x your bet if both are the same")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Aposte em duas cara ou coroa. Ganhe 3x sua aposta se ambas forem iguais")
->>>>>>> Stashed changes
+
 		.addIntegerOption((option: SlashCommandIntegerOption) =>
 			option
 				.setName("side")
@@ -45,11 +34,6 @@ module.exports = {
 				.setDescriptionLocalization(Locale.PortugueseBR, "O lado da moeda")
 				.setRequired(true)
 				.addChoices([
-<<<<<<< Updated upstream
-					{ name: "Heads", value: CoinSide.Heads },
-					{ name: "Tails", value: CoinSide.Tails },
-				]),
-=======
 					{
 						name: "Heads", value: CoinSide.Heads, name_localizations: {
 							[Locale.PortugueseBR]: "Cara",
@@ -70,32 +54,10 @@ module.exports = {
 				.setRequired(true)
 				.setMinValue(500)
 				.setMaxValue(500000),
->>>>>>> Stashed changes
 		),
 
 	async execute(interaction: ChatInputCommandInteraction) {
 		const side = interaction.options.getInteger("side") as CoinSide;
-<<<<<<< Updated upstream
-
-		const result = Math.floor(Math.random() * 2);
-
-		const win = side === result;
-
-		const embed = new CustomEmbedBuilder()
-			.setColor(Colors.DarkButNotBlack)
-			.setTitle("Coin Flip")
-			.setDescription("Flipping the coin...")
-			.setDefaultFooter(interaction);
-
-		await replyInteraction(interaction, { embeds: [embed] });
-
-		await wait(2000);
-
-		embed
-			.setColor(win ? Colors.Green : Colors.Red)
-			.setTitle(win ? "You won!" : "You lost!")
-			.setDescription(`You bet on ${side === CoinSide.Heads ? "Heads" : "Tails"} and the result was ${result === CoinSide.Heads ? "Heads" : "Tails"}.`);
-=======
 		const value = interaction.options.getNumber("value") as number;
 
 		const user = await checkUser(interaction.user.id, interaction);
@@ -172,13 +134,10 @@ module.exports = {
 ${win ? s.won : s.lose} ${formatMoney(win ? prize : value, user.Language)}!
 -# ${s.bet} ${formatMoney(value, user.Language)} ${s.at} ${userBet}.`)
 			.setDefaultFooter(interaction, formatMoney(user.Money, user.Language));
->>>>>>> Stashed changes
 
 		await replyInteraction(interaction, { embeds: [embed] });
 	},
 };
-<<<<<<< Updated upstream
-=======
 
 const Strings = {
 	[Language.English]: {
@@ -221,4 +180,3 @@ const Strings = {
 		working: (job: string, time: Date) => `Estás trabajando como ${job} y no puedes hacer esto. Terminará ${showTime(time.getTime(), true)}`,
 	},
 } as const;
->>>>>>> Stashed changes

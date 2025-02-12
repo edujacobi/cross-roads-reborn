@@ -1,29 +1,25 @@
 ﻿import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model } from "sequelize";
 import { sequelize } from "./Database";
+import { JobId } from "../models/Job";
 
 export class Users extends Model<
 	InferAttributes<Users>,
 	InferCreationAttributes<Users>
 > {
 	declare id: CreationOptional<string>;
-	declare createdAt: CreationOptional<Date>;
-	declare updatedAt: CreationOptional<Date>;
+	declare nickname: CreationOptional<string>;
+	declare money: number;
 	declare vipTime: CreationOptional<Date | null>;
 	declare vipEternal: CreationOptional<boolean>;
 	declare language: number;
-<<<<<<< Updated upstream
-=======
-	declare nickname: CreationOptional<string>;
-	declare money: number;
-	declare chip: number;
 	declare jobId: CreationOptional<JobId | null>;
 	declare jobTime: CreationOptional<Date>;
 	declare robbingUserId: CreationOptional<string | null>;
 	declare beingRobbedByUserId: CreationOptional<string | null>;
 	declare prisonTime: CreationOptional<Date>;
 	declare escapeTime: CreationOptional<Date>;
-
->>>>>>> Stashed changes
+	declare createdAt: CreationOptional<Date>;
+	declare updatedAt: CreationOptional<Date>;
 }
 
 Users.init(
@@ -32,8 +28,15 @@ Users.init(
 			type: new DataTypes.STRING(18),
 			primaryKey: true,
 		},
-		createdAt: DataTypes.DATE,
-		updatedAt: DataTypes.DATE,
+		nickname: {
+			type: DataTypes.STRING(18),
+			allowNull: true,
+		},
+		money: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0,
+		},
 		vipTime: {
 			type: DataTypes.DATE,
 			allowNull: true,
@@ -45,22 +48,6 @@ Users.init(
 		},
 		language: {
 			type: DataTypes.INTEGER,
-			defaultValue: 0,
-		},
-<<<<<<< Updated upstream
-=======
-		nickname: {
-			type: DataTypes.STRING(18),
-			allowNull: true,
-		},
-		money: {
-			type: DataTypes.INTEGER,
-			allowNull: false,
-			defaultValue: 0,
-		},
-		chip: {
-			type: DataTypes.INTEGER,
-			allowNull: false,
 			defaultValue: 0,
 		},
 		jobId: {
@@ -86,8 +73,9 @@ Users.init(
 		},
 		escapeTime: {
 			type: DataTypes.DATE,
-		}
->>>>>>> Stashed changes
+		},
+		createdAt: DataTypes.DATE,
+		updatedAt: DataTypes.DATE,
 	},
 	{
 		sequelize,

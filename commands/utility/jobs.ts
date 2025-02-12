@@ -118,14 +118,14 @@ module.exports = {
 					embed.setDescription(s.workingOn(user.Job.Id!, user.Job.EndsIn, user.Language)),
 				]);
 			}
-			if (user.IsEscaping()){
+			if (user.IsEscaping()) {
 				return await removeEmbedComponents(interaction, [
-					embed.setDescription(s.workingOn(, user.Language)),
+					embed.setDescription(s.workingOn("", user.Language)),
 				]);
 			}
-			if (user.IsInPrison()){
+			if (user.IsInPrison()) {
 				return await removeEmbedComponents(interaction, [
-					embed.setDescription(s.workingOn(, user.Language)),
+					embed.setDescription(s.workingOn("", user.Language)),
 				]);
 			}
 

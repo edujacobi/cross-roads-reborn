@@ -6,8 +6,9 @@
 	SlashCommandIntegerOption,
 } from "discord.js";
 import { checkUser, replyInteraction } from "../../utils/logic";
-import { defaultEmbed, EmoteString } from "../../utils/ui";
+import { defaultEmbed } from "../../utils/ui";
 import { getLanguageText, Language } from "../../models/Language";
+import { EmoteString } from "../../utils/emotes";
 
 module.exports = {
 	cooldown: 5,

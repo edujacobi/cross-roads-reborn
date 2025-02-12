@@ -6,8 +6,9 @@
 	SlashCommandIntegerOption,
 	SlashCommandStringOption,
 } from "discord.js";
-import { defaultEmbed, EmoteString } from "../../utils/ui";
+import { defaultEmbed } from "../../utils/ui";
 import { checkUser, replyInteraction, sendPrivateMessage } from "../../utils/logic";
+import { EmoteString } from "../../utils/emotes";
 
 module.exports = {
 	data: new SlashCommandBuilder()

@@ -1,20 +1,20 @@
 ﻿import { CreationOptional, DataTypes, ForeignKey, InferAttributes, InferCreationAttributes, Model } from "sequelize";
 import { sequelize } from "./Database";
-import { NotificationType } from "../models/Notification";
 import { Users } from "./Users";
+import { ItemId } from "../models/Item";
 
-export class Notifications extends Model<
-	InferAttributes<Notifications>,
-	InferCreationAttributes<Notifications>
+export class UserItems extends Model<
+	InferAttributes<UserItems>,
+	InferCreationAttributes<UserItems>
 > {
 	declare id: CreationOptional<number>;
 	declare userId: ForeignKey<Users["id"]>;
-	declare type: NotificationType;
-	declare date: Date;
-	declare notified: CreationOptional<boolean>;
+	declare itemId: ForeignKey<ItemId>;
+	declare remainingTime: CreationOptional<Date>;
+	declare quantity: CreationOptional<number>;
 }
 
-Notifications.init(
+UserItems.init(
 	{
 		id: {
 			type: DataTypes.INTEGER,
@@ -25,21 +25,21 @@ Notifications.init(
 			type: new DataTypes.STRING(18),
 			allowNull: false,
 		},
-		type: {
+		itemId: {
 			type: DataTypes.INTEGER,
 			allowNull: false,
 		},
-		date: {
+		remainingTime: {
 			type: DataTypes.DATE,
-			allowNull: false,
+			defaultValue: null,
 		},
-		notified: {
-			type: DataTypes.BOOLEAN,
-			defaultValue: false,
+		quantity: {
+			type: DataTypes.INTEGER,
+			defaultValue: null,
 		},
 	},
 	{
 		sequelize,
-		tableName: "notifications",
+		tableName: "userItems",
 	},
 );

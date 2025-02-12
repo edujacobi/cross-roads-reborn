@@ -25,14 +25,14 @@ module.exports = {
 			.setColor(Colors.Green)
 			.setDescription(`# ${s.credits}
 ### ${s.direction}
-${RoosterImage.Jacobi.Exclusive.GetEmoteString()} Jacobi
+Jacobi
 ### ${s.programming}
-${RoosterImage.Jacobi.Exclusive.GetEmoteString()} Jacobi
-${RoosterImage.Pedro.Exclusive.GetEmoteString()} Bode de Bigode
+Jacobi
+Bode de Bigode
 ### ${s.art}
-${RoosterImage.Jacobi.Exclusive.GetEmoteString()} Jacobi
-${RoosterImage.Cesar.Exclusive.GetEmoteString()} Cesar
-${RoosterImage.Miguel.Exclusive.GetEmoteString()} Miguel
+Jacobi
+Cesar
+Miguel
 
 -# ${s.disclaimer}`)
 			.setDefaultFooter(interaction);

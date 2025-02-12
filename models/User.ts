@@ -1,9 +1,5 @@
 ﻿import { Users } from "../database/Users";
 import { Log } from "../utils/log";
-<<<<<<< Updated upstream
-import { addDays } from "date-fns";
-import { Language } from "./Language";
-=======
 import { addDays, addMinutes, differenceInHours } from "date-fns";
 import { Language } from "./Language";
 import { UserItems } from "../database/UserItems";
@@ -20,7 +16,6 @@ import { CustomEmbedBuilder } from "./CustomEmbedBuilder";
 import { getClient } from "../client";
 import { setTimeout as wait } from "timers/promises";
 import { CrColors } from "../utils/colors";
->>>>>>> Stashed changes
 
 export class User {
 	Id: string = "";
@@ -29,11 +24,8 @@ export class User {
 	VipTime: Date | null = null;
 	VipEternal = false;
 	Language: Language;
-<<<<<<< Updated upstream
-=======
 	Nickname: string = "";
 	Money = 0;
-	Chip = 0;
 	Job: {
 		Id: JobId | null,
 		EndsIn: Date,
@@ -61,15 +53,13 @@ export class User {
 		Simple: string,
 		Complex: string,
 	};
->>>>>>> Stashed changes
 
 	constructor(id: string) {
+		const now = new Date();
 		this.Id = id;
-		this.CreatedAt = new Date();
-		this.UpdatedAt = new Date();
+		this.CreatedAt = now;
+		this.UpdatedAt = now;
 		this.Language = Language.English;
-<<<<<<< Updated upstream
-=======
 		this.Job = {
 			Id: null,
 			EndsIn: now,
@@ -97,7 +87,6 @@ export class User {
 			Simple: "",
 			Complex: "",
 		};
->>>>>>> Stashed changes
 	}
 
 	async Create() {
@@ -105,6 +94,8 @@ export class User {
 			await Users.create({
 				id: this.Id,
 				language: this.Language,
+				nickname: this.Nickname,
+				money: this.Money,
 			});
 			Log.Success(`User ${this.Id} created.`);
 
@@ -132,11 +123,8 @@ export class User {
 		this.VipTime = user.vipTime;
 		this.VipEternal = user.vipEternal;
 		this.Language = user.language;
-<<<<<<< Updated upstream
-=======
 		this.Nickname = user.nickname;
 		this.Money = user.money;
-		this.Chip = user.chip;
 		this.Job.Id = user.jobId;
 		this.Job.EndsIn = new Date(user.jobTime);
 		this.Timers.Prison = new Date(user.prisonTime);
@@ -151,9 +139,13 @@ export class User {
 
 		await this.GetAttributes();
 		this.GetSituation();
->>>>>>> Stashed changes
 
 		return this;
+	}
+
+	async SetNickname(nickname: string) {
+		this.Nickname = nickname;
+		await this.Update();
 	}
 
 	IsVip() {
@@ -182,8 +174,6 @@ export class User {
 		await this.Update();
 	}
 
-<<<<<<< Updated upstream
-=======
 	// Maybe change to "CanDoAction"
 	CanBuySomething() {
 		// TODO Verify if he is in a fight, in prison, in hospital, etc etc
@@ -377,7 +367,7 @@ export class User {
 		const job = JobList[this.Job.Id];
 		this.Job.Id = null;
 
-		await Notification.DismissUser(this.Id, NotificationType.Job);
+		await Notification.Dismiss(this.Id, NotificationType.Job);
 		await this.Update();
 		Log.Info(`User ${this.Nickname} (ID: ${this.Id}) canceled his job ${job.Description[this.Language]}.`);
 	}
@@ -582,7 +572,6 @@ ${EmoteString.Attack}${target.Attributes.Attack} ATK ${EmoteString.Defense}${tar
 	//
 	// }
 
->>>>>>> Stashed changes
 	async Update() {
 		try {
 			await Users.update({
@@ -591,18 +580,14 @@ ${EmoteString.Attack}${target.Attributes.Attack} ATK ${EmoteString.Defense}${tar
 				vipTime: this.VipTime,
 				vipEternal: this.VipEternal,
 				language: this.Language,
-<<<<<<< Updated upstream
-=======
 				nickname: this.Nickname,
 				money: this.Money,
-				chip: this.Chip,
 				jobId: this.Job.Id,
 				jobTime: this.Job.EndsIn,
 				robbingUserId: this.Robbery.IsRobbingId,
 				beingRobbedByUserId: this.Robbery.IsBeingRobbedById,
 				prisonTime: this.Timers.Prison,
 				escapeTime: this.Timers.Escape,
->>>>>>> Stashed changes
 			}, {
 				where: { id: this.Id },
 			});
