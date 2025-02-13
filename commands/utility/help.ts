@@ -12,10 +12,25 @@ module.exports = {
 		.setNameLocalization(Locale.PortugueseBR, "ajuda")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Algumas dicas para começar a sua aventura"),
 
-	async execute(interaction: ChatInputCommandInteraction, user: User) {
+	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 
-		let title = "Help";
-		let description = `## Cross City!
+		const s = Strings[language];
+
+		const embed = new CustomEmbedBuilder()
+			.setTitle(s.title)
+			.setColor(CrColors.Default)
+			.setThumbnail("https://media.discordapp.net/attachments/531174573463306240/854876909564461066/Interrogacao.png")
+			.setDescription(s.description)
+			.setDefaultFooter(user.Nickname, interaction.user.avatarURL());
+
+		await replyInteraction(interaction, { embeds: [embed] });
+	},
+};
+
+const Strings = {
+	[Language.English]: {
+		title: "Help",
+		description: `## Cross City!
 Welcome to Cross City! Here, all paths cross, be them good or bad. Decide your path and shape your future in this RPG game!
 ## Play now
 See your inventory using \`/inv\`.
@@ -29,11 +44,11 @@ For everything to go smoothly, make sure you can receive private messages from u
 ## Help the bot stay online
 Get VIP! VIP does not make the game _pay-to-win_, the benefits are mostly cosmetic! Use \`/vip\` for more information.
 ## Additional help
-Confused about something? Found a bug? Contact us on the [official server](https://discord.com/invite/sNf8avn).`;
-
-		if (user?.Language === Language.Portuguese) {
-			title = "Ajuda";
-			description = `## Cidade da Cruz!
+Confused about something? Found a bug? Contact us on the [official server](https://discord.com/invite/sNf8avn).`,
+	},
+	[Language.Portuguese]: {
+		title: "Ajuda",
+		description: `## Cidade da Cruz!
 Bem vindo à Cidade da Cruz! Aqui, todos os caminhos se cruzam, sejam eles bons ou ruins. Decida seu caminho e molde seu futuro nesse jogo de RPG!
 ## Jogue agora mesmo
 Veja seu inventário usando \`/inv\`.
@@ -47,16 +62,24 @@ Para tudo ocorrer belezinha, certifique-se que você pode receber mensagens priv
 ## Ajude o bot a continuar online
 Adquira VIP! O VIP não torna o jogo _pay-to-win_, os benefícios são, em sua maioria, somente cosméticos! Use \`/vip\` para mais informações.
 ## Ajuda adicional
-Ficou confuso com algo? Encontrou um bug? Entre em contato conosco no [servidor oficial](https://discord.com/invite/sNf8avn).`;
-		}
-
-		const embed = new CustomEmbedBuilder()
-			.setTitle(title)
-			.setColor(CrColors.Default)
-			.setThumbnail("https://media.discordapp.net/attachments/531174573463306240/854876909564461066/Interrogacao.png")
-			.setDescription(description)
-			.setDefaultFooter(user.Nickname, interaction.user.avatarURL());
-
-		await replyInteraction(interaction, { embeds: [embed] });
+Ficou confuso com algo? Encontrou um bug? Entre em contato conosco no [servidor oficial](https://discord.com/invite/sNf8avn).`,
+	},
+	[Language.Spanish]: {
+		title: "Ayuda",
+		description: `## ¡Ciudad de la Cruz!
+¡Bienvenido a la Ciudad de la Cruz! Aquí, todos los caminos se cruzan, sean buenos o malos. ¡Decide tu camino y moldea tu futuro en este juego de RPG!
+## Juega ahora
+Consulta tu inventario usando \`/inv\`.
+Puedes usar \`/daily\` diariamente para recibir una pequeña cantidad que aumenta si no olvidas ningún día.
+## Gana dinero
+Hay muchas formas de ganar dinero en el juego. Trabajando, ~~invirtiendo~~, apostando, robando e incluso ~~rebuscando~~ por lugares.
+## Comandos
+Para ver todos los comandos, usa \`/comandos\`.
+## Notificaciones y funcionamiento
+Para que todo vaya sobre ruedas, asegúrate de que puedes recibir mensajes privados de usuarios que no están en tu lista de amigos. Si has puesto Cross Roads en tu servidor, ¡asegúrate de que la permiso de Gestionar Mensajes está activa!
+## Ayuda al bot a mantenerse en línea
+¡Consigue VIP! ¡El VIP no convierte el juego en _pay-to-win_, los beneficios son principalmente cosméticos! Usa \`/vip\` para más información.
+## Ayuda adicional
+¿Confundido con algo? ¿Encontraste un error? Contáctanos en el [servidor oficial](https://discord.com/invite/sNf8avn).`,
 	},
 };

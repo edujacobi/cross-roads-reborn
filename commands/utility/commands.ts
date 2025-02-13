@@ -14,9 +14,9 @@ module.exports = {
 		.setNameLocalization(Locale.PortugueseBR, "comandos")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Veja todos os comandos e suas descrições!"),
 
-	async execute(interaction: ChatInputCommandInteraction, user: User) {
+	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 
-		const s = Strings[user.Language];
+		const s = Strings[language];
 
 		const commandFiles = fs.readdirSync(__dirname).filter((file: string) => file.endsWith(".js"));
 

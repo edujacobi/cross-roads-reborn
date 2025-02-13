@@ -1,6 +1,8 @@
-﻿import { Collection, CommandInteraction, Events } from "discord.js";
+﻿import { Collection, Colors, CommandInteraction, Events } from "discord.js";
 import { defaultEmbed, showTime } from "../utils/ui";
 import { checkUser, replyInteraction, setPlayerRoleInOfficialServer, setVIPRoleInOfficialServer } from "../utils/logic";
+import { getLanguageFromLocale, Language } from "../models/Language";
+import { EmoteString } from "../utils/emotes";
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const wait = require("node:timers/promises").setTimeout;
@@ -10,10 +12,14 @@ module.exports = {
 	async execute(interaction: CommandInteraction) {
 		if (!interaction.isChatInputCommand()) return;
 
+		const language = getLanguageFromLocale(interaction.locale);
+
+		const s = Strings[language];
+
 		const command = interaction.client.commands.get(interaction.commandName);
 
 		if (!command) {
-			return console.error(`No command matching ${interaction.commandName} was found.`);
+			return console.error(s.noCommand(interaction.commandName));
 		}
 
 		const user = await checkUser(interaction.user.id, interaction);
@@ -25,9 +31,9 @@ module.exports = {
 		if (!user.Nickname && command.data.name !== "setnick") {
 			return await replyInteraction(interaction, {
 				embeds: [defaultEmbed({
-					nickname: "User without nickname",
+					nickname: s.settingNick,
 					interaction,
-					description: "You must set a nickname before using any other command! Use `/setnick` to set your nickname.",
+					description: s.settingDescription,
 				})],
 				ephemeral: true,
 			});
@@ -58,7 +64,7 @@ module.exports = {
 					embeds: [defaultEmbed({
 						nickname: user.Nickname,
 						interaction,
-						description: `You will be able to reuse the \`${command.data.name}\` command ${showTime(expirationTime, true)}.`,
+						description: s.willBeAble(command.data.name, expirationTime),
 					})],
 					ephemeral: true,
 				});
@@ -68,10 +74,22 @@ module.exports = {
 					embeds: [defaultEmbed({
 						nickname: user.Nickname,
 						interaction,
-						description: `You can now use the \`${command.data.name}\` command!`,
+						description: s.canNowUse(command.data.name),
 					})],
 				});
 			}
+		}
+
+		if (command.vip && !user.IsVip()) {
+			return await replyInteraction(interaction, {
+				embeds: [defaultEmbed({
+					nickname: user.Nickname,
+					interaction,
+					color: Colors.Gold,
+					description: s.needVIP,
+				})],
+				ephemeral: true,
+			});
 		}
 
 		timestamps.set(interaction.user.id, now);
@@ -81,24 +99,42 @@ module.exports = {
 		await setVIPRoleInOfficialServer(interaction);
 
 		try {
-			command.execute(interaction, user);
+			command.execute(interaction, user, language);
 		}
 		catch (error) {
 			console.error(error);
 
-			if (interaction.replied || interaction.deferred) {
-				await interaction.followUp({
-					content: "There was an error while executing this command!",
-					ephemeral: true,
-				});
-
-			}
-			else {
-				await replyInteraction(interaction, {
-					content: "There was an error while executing this command!",
-					ephemeral: true,
-				});
-			}
+			await replyInteraction(interaction, {
+				content: "There was an error while executing this command!",
+				ephemeral: true,
+			});
 		}
 	},
 };
+
+const Strings = {
+	[Language.English]: {
+		noCommand: (command: string) => `No command matching \`${command}\` was found.`,
+		settingNick: "Setting nickname",
+		settingDescription: "You must set a nickname before using any other command! Use `/setnick` to set your nickname.",
+		willBeAble: (commandName: string, expirationTime: number) => `You will be able to reuse the \`${commandName}\` command ${showTime(expirationTime, true)}.`,
+		canNowUse: (commandName: string) => `You can now use the \`${commandName}\` command.`,
+		needVIP: `You need to be ${EmoteString.VIP} **VIP** to perform this action.`,
+	},
+	[Language.Portuguese]: {
+		noCommand: (command: string) => `Nenhum comando correspondente a \`${command}\` foi encontrado.`,
+		settingNick: "Configurando nickname",
+		settingDescription: "Você deve definir um nickname antes de usar qualquer outro comando! Use `/mudanick` para definir seu nickname.",
+		willBeAble: (commandName: string, expirationTime: number) => `Você poderá reutilizar o comando \`${commandName}\` ${showTime(expirationTime, true)}.`,
+		canNowUse: (commandName: string) => `Agora você pode usar o comando \`${commandName}\`.`,
+		needVIP: `Você precisa ser ${EmoteString.VIP} **VIP** para realizar esta ação.`,
+	},
+	[Language.Spanish]: {
+		noCommand: (command: string) => `No se encontró ningún comando que coincida con \`${command}\`.`,
+		settingNick: "Configurando nickname",
+		settingDescription: "¡Debes establecer un apodo antes de usar cualquier otro comando! Use `/setnick` para establecer su apodo.",
+		willBeAble: (commandName: string, expirationTime: number) => `Podrás reutilizar el comando \`${commandName}\` ${showTime(expirationTime, true)}.`,
+		canNowUse: (commandName: string) => `Ahora puedes usar el comando \`${commandName}\`.`,
+		needVIP: `Necesitas ser ${EmoteString.VIP} **VIP** para realizar esta acción.`,
+	},
+} as const;

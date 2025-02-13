@@ -58,12 +58,12 @@ export class User {
 		Complex: string,
 	};
 
-	constructor(id: string) {
+	constructor(id: string, language: Language = Language.English) {
 		const now = new Date();
 		this.Id = id;
 		this.CreatedAt = now;
 		this.UpdatedAt = now;
-		this.Language = Language.English;
+		this.Language = language;
 		this.Daily = {
 			CurrentStreak: 0,
 			MaxStreak: 0,
@@ -101,7 +101,6 @@ export class User {
 		try {
 			await Users.create({
 				id: this.Id,
-				language: this.Language,
 				nickname: this.Nickname,
 				money: this.Money,
 				dailyStreak: this.Daily.CurrentStreak,
@@ -133,7 +132,6 @@ export class User {
 		this.UpdatedAt = user.updatedAt;
 		this.VipTime = user.vipTime;
 		this.VipEternal = user.vipEternal;
-		this.Language = user.language;
 		this.Nickname = user.nickname;
 		this.Money = user.money;
 		this.Job.Id = user.jobId;
@@ -635,7 +633,6 @@ ${EmoteString.Attack}${target.Attributes.Attack} ATK ${EmoteString.Defense}${tar
 				updatedAt: this.UpdatedAt,
 				vipTime: this.VipTime,
 				vipEternal: this.VipEternal,
-				language: this.Language,
 				nickname: this.Nickname,
 				money: this.Money,
 				jobId: this.Job.Id,

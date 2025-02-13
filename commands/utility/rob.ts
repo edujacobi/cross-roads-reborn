@@ -14,9 +14,9 @@ import { defaultEmbed, showTime } from "../../utils/ui";
 import { EmoteId, EmoteString } from "../../utils/emotes";
 import { CrColors } from "../../utils/colors";
 import { User } from "../../models/User";
+import { Language } from "../../models/Language";
 
 module.exports = {
-	vip: true,
 	data: new SlashCommandBuilder()
 		.setName("rob")
 		.setDescription("Rob a user")
@@ -30,18 +30,20 @@ module.exports = {
 				.setDescriptionLocalization(Locale.PortugueseBR, "O usuário para roubar"),
 		),
 
-	async execute(interaction: ChatInputCommandInteraction, user: User) {
+	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 		const target = interaction.options.getUser("target");
 
-		let texto = "Você pode roubar!";
+		const s = Strings[language];
+
+		let text = `${s.userFree}`;
 		if (user.IsWorking()) {
-			texto = "Você não pode roubar enquanto trabalha!";
+			text = s.userWorking;
 		}
 		if (user.IsEscaping()) {
-			texto = `Você não pode roubar enquanto estiver sendo procurado pela polícia! Poderá roubar novamente ${showTime(user.Timers.Escape.getTime(), true)}!`;
+			text = s.userEscaping(user.Timers.Escape);
 		}
 		if (user.IsInPrison()) {
-			texto = `Você não pode roubar enquanto está preso! Será solto ${showTime(user.Timers.Prison.getTime(), true)}!`;
+			text = s.userPrison(user.Timers.Prison);
 		}
 
 		// Há uma pequena chance do alvo ser também espancado!
@@ -51,14 +53,9 @@ module.exports = {
 			const instructions = new CustomEmbedBuilder()
 				.setColor(CrColors.Robbery)
 				.setThumbnail("https://media.discordapp.net/attachments/691019843159326757/791444366727708672/roubar_20201223201323.png")
-				.setDescription(`# Roubar
-### Encontre um alvo e roube tudo!
-Quanto maior seu ${EmoteString.Attack}ATK, maiores suas chances de roubo à outros jogadores. Quanto maior sua ${EmoteString.Defense}DEF, mais protegido você estará.
+				.setDescription(`${s.description}
 
-Se falhar, você será preso por um tempo definido pelo seu ${EmoteString.Attack}ATK.
-Se conseguir, ficará em fuga e deverá esperar 1 hora para roubar novamente.
-
--# ${texto}`)
+-# ${text}`)
 				.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), `${user.Situation.Simple}`)
 				.setTimestamp();
 
@@ -71,7 +68,7 @@ Se conseguir, ficará em fuga e deverá esperar 1 hora para roubar novamente.
 					nickname: user.Nickname,
 					interaction,
 					color: Colors.Yellow,
-					description: `${EmoteString.Working} Você está trabalhando e não pode fazer isto agora!`,
+					description: `${EmoteString.Working} ${s.userWorking}`,
 				})],
 			});
 		}
@@ -118,3 +115,42 @@ function createButtonGrid() {
 
 	return rows;
 }
+
+const Strings = {
+	[Language.English]: {
+		userFree: "You can rob!",
+		userWorking: "You can't rob while working!",
+		userEscaping: (timerEscape: Date) => `You can't rob while being hunted by the police! You can rob again ${showTime(timerEscape.getTime(), true)}!`,
+		userPrison: (timerPrison: Date) => `You can't rob while in prison! You will be released ${showTime(timerPrison.getTime(), true)}!`,
+		description: `# Rob
+### Find a target and steal everything!
+The higher your ${EmoteString.Attack}ATK, the higher your chances of stealing from other players. The higher your ${EmoteString.Defense}DEF, the more protected you will be.
+
+If you fail, you will be imprisoned for a time determined by your ${EmoteString.Attack}ATK.
+If you succeed, you will be on the run and must wait 1 hour to rob again.`,
+	},
+	[Language.Portuguese]: {
+		userFree: "Você pode roubar!",
+		userWorking: "Você não pode roubar enquanto trabalha!",
+		userEscaping: (timerEscape: Date) => `Você não pode roubar enquanto estiver sendo procurado pela polícia! Poderá roubar novamente ${showTime(timerEscape.getTime(), true)}!`,
+		userPrison: (timerPrison: Date) => `Você não pode roubar enquanto está preso! Será solto ${showTime(timerPrison.getTime(), true)}!`,
+		description: `# Roubar
+### Encontre um alvo e roube tudo!
+Quanto maior seu ${EmoteString.Attack}ATK, maiores suas chances de roubo à outros jogadores. Quanto maior sua ${EmoteString.Defense}DEF, mais protegido você estará.
+
+Se falhar, você será preso por um tempo definido pelo seu ${EmoteString.Attack}ATK.
+Se conseguir, ficará em fuga e deverá esperar 1 hora para roubar novamente.`,
+	},
+	[Language.Spanish]: {
+		userFree: "¡Puedes robar!",
+		userWorking: "¡No puedes robar mientras trabajas!",
+		userEscaping: (timerEscape: Date) => `¡No puedes robar mientras eres perseguido por la policía! ¡Puedes robar de nuevo ${showTime(timerEscape.getTime(), true)}!`,
+		userPrison: (timerPrison: Date) => `¡No puedes robar mientras estás en prisión! ¡Serás liberado ${showTime(timerPrison.getTime(), true)}!`,
+		description: `# Robar
+### ¡Encuentra un objetivo y roba todo!
+Cuanto mayor sea tu ${EmoteString.Attack}ATK, mayores serán tus posibilidades de robar a otros jugadores. Cuanto mayor sea tu ${EmoteString.Defense}DEF, más protegido estarás.
+
+Si fallas, serás encarcelado por un tiempo determinado por tu ${EmoteString.Attack}ATK.
+Si tienes éxito, estarás huyendo y deberás esperar 1 hora para robar de nuevo.`,
+	},
+} as const;

@@ -57,11 +57,11 @@ module.exports = {
 				.setMaxValue(500000),
 		),
 
-	async execute(interaction: ChatInputCommandInteraction, user: User) {
+	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 		const side = interaction.options.getInteger("side") as CoinSide;
 		const value = interaction.options.getNumber("value") as number;
 
-		const s = Strings[user.Language];
+		const s = Strings[language];
 
 		if (user.IsWorking()) {
 			return replyInteraction(interaction, {
@@ -94,7 +94,7 @@ module.exports = {
 			})
 			.setColor(CrColors.Casino)
 			.setDescription(s.flipping)
-			.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), formatMoney(user.Money, user.Language));
+			.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), formatMoney(user.Money, language));
 
 		await replyInteraction(interaction, { embeds: [embed] });
 
@@ -133,7 +133,7 @@ module.exports = {
 			.setDescription(`### ${s.result(firstResult, secondResult)}
 ${win ? s.won : s.lose} ${formatMoney(win ? prize : value, user.Language)}!
 -# ${s.bet} ${formatMoney(value, user.Language)} ${s.at} ${userBet}.`)
-			.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), formatMoney(user.Money, user.Language));
+			.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), formatMoney(user.Money, language));
 
 		await replyInteraction(interaction, { embeds: [embed] });
 	},

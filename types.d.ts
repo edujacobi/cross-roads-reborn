@@ -3,16 +3,18 @@
 	ChatInputCommandInteraction,
 	Collection,
 	ModalSubmitInteraction,
-	SlashCommandBuilder
+	SlashCommandBuilder,
 } from "discord.js";
 import { User } from "./models/User";
+import { Language } from "./models/Language";
 
 export interface SlashCommand {
 	data: Omit<SlashCommandBuilder, "addSubcommand" | "addSubcommandGroup">,
-	execute: (interaction: ChatInputCommandInteraction, user: User) => void,
+	execute: (interaction: ChatInputCommandInteraction, user: User, language: Language) => void,
 	autocomplete?: (interaction: AutocompleteInteraction) => void,
 	modal?: (interaction: ModalSubmitInteraction) => void,
-	cooldown?: number // in seconds
+	cooldown?: number,
+	vip?: boolean,
 }
 
 declare global {

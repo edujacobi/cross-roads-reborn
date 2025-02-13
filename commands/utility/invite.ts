@@ -10,6 +10,7 @@ import { defaultEmbed } from "../../utils/ui";
 import { replyInteraction } from "../../utils/logic";
 import { CrColors } from "../../utils/colors";
 import { User } from "../../models/User";
+import { Language } from "../../models/Language";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -18,27 +19,28 @@ module.exports = {
 		.setNameLocalization(Locale.PortugueseBR, "convite")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Convide Cross Roads Reborn para o seu servidor!"),
 
-	async execute(interaction: ChatInputCommandInteraction, user: User) {
+	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
+
+		const s = Strings[language];
 
 		const embed = defaultEmbed({
 			nickname: user.Nickname,
 			interaction,
 			color: CrColors.Default,
 			thumbnail: interaction.client.user.avatarURL({ size: 512 }) ?? undefined,
-			footer: "Just click the buttons below!",
-			description: `## Invite\nInvite Cross Roads Reborn to your server or join the official server and challenge new players!`,
+			footer: s.footer,
+			description: s.description,
 		});
 
 		const buttonInvite = new ButtonBuilder()
-			.setLabel("Add to server")
+			.setLabel(s.addTo)
 			.setStyle(ButtonStyle.Link)
 			.setURL("https://discord.com/oauth2/authorize?client_id=1089602356271927356&permissions=319488&scope=applications.commands+bot");
 
 		const buttonServer = new ButtonBuilder()
-			.setLabel("Join the official server")
+			.setLabel(s.join)
 			.setStyle(ButtonStyle.Link)
 			.setURL("https://discord.com/invite/sNf8avn");
-
 
 		const row = new ActionRowBuilder<ButtonBuilder>()
 			.setComponents([buttonInvite, buttonServer]);
@@ -46,3 +48,24 @@ module.exports = {
 		await replyInteraction(interaction, { embeds: [embed], components: [row] });
 	},
 };
+
+const Strings = {
+	[Language.English]: {
+		footer: "Just click the buttons below!",
+		description: `## Invite\nInvite Cross Roads Reborn to your server or join the official server and challenge new players!`,
+		addTo: "Add to server",
+		join: "Join the official server",
+	},
+	[Language.Portuguese]: {
+		footer: "Apenas clique nos botões abaixo!",
+		description: "## Convite\nConvide Cross Roads Reborn para o seu servidor ou junte-se ao servidor oficial e desafie novos jogadores!",
+		addTo: "Adicionar ao servidor",
+		join: "Junte-se ao servidor oficial",
+	},
+	[Language.Spanish]: {
+		footer: "¡Simplemente haz clic en los botones de abajo!",
+		description: "## Invitación\n¡Invita a Cross Roads Reborn a tu servidor o únete al servidor oficial y desafía a nuevos jugadores!",
+		addTo: "Añadir al servidor",
+		join: "Únete al servidor oficial",
+	},
+} as const;

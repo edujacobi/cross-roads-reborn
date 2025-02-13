@@ -21,19 +21,18 @@ import { CrColors } from "../../utils/colors";
 import { User } from "../../models/User";
 
 module.exports = {
-	vip: true,
 	data: new SlashCommandBuilder()
 		.setName("jobs")
 		.setDescription("Open the job list to work")
 		.setNameLocalization(Locale.PortugueseBR, "trabalhos")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Abra a lista de trabalhos para ter um emprego"),
 
-	async execute(interaction: ChatInputCommandInteraction, user: User) {
-		const s = Strings[user.Language];
+	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
+		const s = Strings[language];
 
 		let workingText = "";
 		if (user.IsWorking()) {
-			workingText = `\n## ${s.workingOn(user.Job.Id!, user.Job.EndsIn, user.Language)}`;
+			workingText = `\n## ${s.workingOn(user.Job.Id!, user.Job.EndsIn, language)}`;
 		}
 
 		const embed = new CustomEmbedBuilder()
@@ -41,7 +40,7 @@ module.exports = {
 			.setDescription(`${s.description}${workingText}`)
 			.setThumbnail("https://media.discordapp.net/attachments/1233604589064818808/1337166947250602047/Trabalhos2.png")
 			.setColor(CrColors.Jobs)
-			.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), formatMoney(user.Money, user.Language))
+			.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), formatMoney(user.Money, language))
 			.setTimestamp();
 
 		const select = new StringSelectMenuBuilder()
@@ -53,13 +52,13 @@ module.exports = {
 		for (const job of jobList) {
 			const weaponsNeeded = getItemList().filter(item => job.NeedItem?.includes(item.Id));
 
-			const textSalary = `${s.salary}: ${formatMoney(job.Salary, user.Language)}`;
+			const textSalary = `${s.salary}: ${formatMoney(job.Salary, language)}`;
 			const textDuration = `${s.duration}: ${job.Duration}h`;
 			const textNeeded = weaponsNeeded.length ? `\n-# ${s.necessary}: ${weaponsNeeded.map(weapon => weapon.Skin.Default.Emote.String).join("")}` : "";
 
 			if (!user.IsWorking()) {
 				embed.addFields({
-					name: job.Description[user.Language],
+					name: job.Description[language],
 					value: `${textSalary}\n${textDuration}${textNeeded}`,
 					inline: true,
 				});
@@ -67,9 +66,9 @@ module.exports = {
 
 			select.addOptions(
 				new StringSelectMenuOptionBuilder()
-					.setLabel(job.Description[user.Language])
+					.setLabel(job.Description[language])
 					.setValue(String(job.Id))
-					.setDescription(`${s.salary}: ${formatMoney(job.Salary, user.Language)} • ${s.duration}: ${job.Duration}h`),
+					.setDescription(`${s.salary}: ${formatMoney(job.Salary, language)} • ${s.duration}: ${job.Duration}h`),
 			);
 		}
 
@@ -109,7 +108,7 @@ module.exports = {
 
 			if (user.IsWorking()) {
 				return await removeEmbedComponents(interaction, [
-					embed.setDescription(s.workingOn(user.Job.Id!, user.Job.EndsIn, user.Language)),
+					embed.setDescription(s.workingOn(user.Job.Id!, user.Job.EndsIn, language)),
 				]);
 			}
 			if (user.IsEscaping()) {
@@ -126,7 +125,7 @@ module.exports = {
 			if (job.NeedItem && !hasAllItems) {
 				const neededItems = job.NeedItem
 					.filter(neededItem => !userItems.some(userItem => userItem.Id === neededItem))
-					.map(neededItem => `${ItemList[neededItem].Skin.Default.Emote.String} ${ItemList[neededItem].Description[user.Language]}`)
+					.map(neededItem => `${ItemList[neededItem].Skin.Default.Emote.String} ${ItemList[neededItem].Description[language]}`)
 					.join(", ");
 				return await removeEmbedComponents(interaction, [
 					embed.setDescription(s.withoutItems(neededItems)),
@@ -137,8 +136,8 @@ module.exports = {
 
 			return await removeEmbedComponents(interaction, [
 				embed
-					.setDescription(s.jobStarted(job.Description[user.Language], user.Job.EndsIn))
-					.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), `${s.salary}: ${formatMoney(job.Salary, user.Language)} • ${s.duration}: ${job.Duration}h`),
+					.setDescription(s.jobStarted(job.Description[language], user.Job.EndsIn))
+					.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), `${s.salary}: ${formatMoney(job.Salary, language)} • ${s.duration}: ${job.Duration}h`),
 			]);
 		});
 
@@ -164,7 +163,7 @@ module.exports = {
 				const job = JobList[user.Job.Id];
 				await user.CancelJob();
 				await removeEmbedComponents(interaction, [
-					embed.setDescription(`${s.stopped} ${job.Description[user.Language]}`),
+					embed.setDescription(`${s.stopped} ${job.Description[language]}`),
 				]);
 			}
 		});

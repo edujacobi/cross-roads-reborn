@@ -14,7 +14,6 @@ export class Users extends Model<
 	declare maxDailyStreak: number;
 	declare vipTime: CreationOptional<Date | null>;
 	declare vipEternal: CreationOptional<boolean>;
-	declare language: number;
 	declare jobId: CreationOptional<JobId | null>;
 	declare jobTime: CreationOptional<Date>;
 	declare robbingUserId: CreationOptional<string | null>;
@@ -63,10 +62,6 @@ Users.init(
 		vipEternal: {
 			type: DataTypes.BOOLEAN,
 			defaultValue: false,
-		},
-		language: {
-			type: DataTypes.INTEGER,
-			defaultValue: 0,
 		},
 		jobId: {
 			type: DataTypes.INTEGER,

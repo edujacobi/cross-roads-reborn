@@ -16,6 +16,7 @@ import { formatMoney } from "../../utils/ui";
 import { EmoteString } from "../../utils/emotes";
 import { Users } from "../../database/Users";
 import { User } from "../../models/User";
+import { Language } from "../../models/Language";
 
 module.exports = {
 	cooldown: 5,
@@ -25,7 +26,9 @@ module.exports = {
 		.setDescription("List the top users with money")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários com mais dinheiro"),
 
-	async execute(interaction: ChatInputCommandInteraction, user: User) {
+	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
+
+		const s = Strings[language];
 
 		await interaction.deferReply();
 
@@ -67,26 +70,26 @@ module.exports = {
 				const user = users[i];
 				const underscore = user.id == interaction.user.id ? "__" : "";
 
-				moneyText += `### \`${i + offset + 1}.\` ${underscore}${user.nickname}${underscore}\n${formatMoney(user.money, user.language)}\n-# \`ID: ${user.id}\`\n`;
+				moneyText += `### \`${i + offset + 1}.\` ${underscore}${user.nickname}${underscore}\n${formatMoney(user.money, language)}\n-# \`ID: ${user.id}\`\n`;
 			}
 
 			return new CustomEmbedBuilder()
 				.setColor(Colors.Green)
-				.setDescription(`# ${EmoteString.TopMoney} Ranking Grana\n${moneyText}`)
-				.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), `Showing ${offset + 1} - ${offset + limit} of ${howManyUsers} results.`);
+				.setDescription(`# ${EmoteString.TopMoney} Ranking ${s.title}\n${moneyText}`)
+				.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), s.showing(offset, limit, howManyUsers));
 		}
 
 		let embed: CustomEmbedBuilder = await createEmbedRanking();
 
 		const buttonPrevious = new ButtonBuilder()
 			.setCustomId("prev")
-			.setLabel("Previous")
+			.setLabel(s.previous)
 			.setStyle(ButtonStyle.Secondary)
 			.setEmoji("⬅️");
 
 		const buttonNext = new ButtonBuilder()
 			.setCustomId("next")
-			.setLabel("Next")
+			.setLabel(s.next)
 			.setStyle(ButtonStyle.Secondary)
 			.setEmoji("➡️");
 
@@ -144,5 +147,26 @@ module.exports = {
 			await removeEmbedComponents(interaction);
 		});
 
+	},
+};
+
+const Strings = {
+	[Language.English]: {
+		title: "Money",
+		showing: (offset: number, limit: number, howMany: number) => `Showing ${offset + 1} - ${offset + limit} of ${howMany} results.`,
+		next: "Next",
+		previous: "Previous",
+	},
+	[Language.Portuguese]: {
+		title: "Grana",
+		showing: (offset: number, limit: number, howMany: number) => `Exibindo ${offset + 1} - ${offset + limit} de ${howMany} resultados.`,
+		next: "Próximo",
+		previous: "Anterior",
+	},
+	[Language.Spanish]: {
+		title: "Dinero",
+		showing: (offset: number, limit: number, howMany: number) => `Mostrando ${offset + 1} - ${offset + limit} de ${howMany} resultados.`,
+		next: "Siguiente",
+		previous: "Anterior",
 	},
 };

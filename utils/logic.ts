@@ -17,9 +17,11 @@ import { Users } from "../database/Users";
 import { EmoteString } from "./emotes";
 import { JobList } from "../models/Job";
 import { formatMoney } from "./ui";
+import { getLanguageFromLocale, Language } from "../models/Language";
 
 export async function checkUser(userId: string, interaction: CommandInteraction) {
-	const user = new User(userId);
+	const lang = getLanguageFromLocale(interaction.locale);
+	const user = new User(userId, lang);
 
 	if (await user.GetInfo()) {
 		return user;
@@ -27,7 +29,7 @@ export async function checkUser(userId: string, interaction: CommandInteraction)
 
 	if (userId == interaction.user.id) {
 		await user.Create();
-		const message = `# Welcome to Cross Roads Reborn!
+		let message = `# Welcome to Cross Roads Reborn!
 ## Hello ${interaction.user.displayName}!
 ### Welcome to Cross Roads Reborn, where all paths cross.
 ${EmoteString.Shop} Earn money, buy items, rob other players, and much more!
@@ -38,8 +40,37 @@ ${EmoteString.AK47} You can receive a little bit of money each day using \`/dail
 
 ${EmoteString.Jobs} To start working, use \`/job\`.
 
--# Hope you enjoy the game!
-`;
+-# Hope you enjoy the game!`;
+
+		if (lang === Language.Portuguese) {
+			message = `# Bem-vindo ao Cross Roads Reborn!
+## Olá ${interaction.user.displayName}!
+### Bem-vindo ao Cross Roads Reborn, onde todos os caminhos se cruzam.
+${EmoteString.Shop} Ganhe dinheiro, compre itens, roube outros jogadores e muito mais!
+
+${EmoteString.CloseInv} Veja seu inventário usando \`/inv\`.
+
+${EmoteString.AK47} Você pode receber um pouco de dinheiro todos os dias usando \`/daily\`.
+
+${EmoteString.Jobs} Para começar a trabalhar, use \`/job\`.
+
+-# Espero que você goste do jogo!`;
+		}
+		else if (lang === Language.Spanish) {
+			message = `# Bienvenido a Cross Roads Reborn!
+## ¡Hola ${interaction.user.displayName}!
+### Bienvenido a Cross Roads Reborn, donde todos los caminos se cruzan.
+${EmoteString.Shop} Gana dinero, compra objetos, roba a otros jugadores y mucho más!
+
+${EmoteString.CloseInv} Mira tu inventario usando \`/inv\`.
+
+${EmoteString.AK47} Puedes recibir un poco de dinero cada día usando \`/daily\`.
+
+${EmoteString.Jobs} Para empezar a trabajar, usa \`/job\`.
+
+-# ¡Espero que disfrutes del juego!`;
+		}
+
 		await sendPrivateMessage(interaction.user.id, message);
 		return user.GetInfo();
 	}
@@ -110,6 +141,7 @@ export async function sendTimedNotification() {
 	const list = await Notification.GetNextNotifications(now);
 
 	for (const notification of list) {
+		// TODO : Fazer localização de mensagens
 		const user = await new User(notification.UserId).GetInfo();
 
 		if (!user) {

@@ -12,8 +12,8 @@ module.exports = {
 		.setDescription("Receives a small ammount of money. Keep a streak and the money grows!")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Recebe uma pequena quantidade de grana. Mantenha uma sequência e a grana aumenta!"),
 
-	async execute(interaction: ChatInputCommandInteraction, user: User) {
-		const s = Strings[user.Language];
+	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
+		const s = Strings[language];
 
 		if (!user.CanReceiveDaily()) {
 

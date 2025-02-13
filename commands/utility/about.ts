@@ -11,8 +11,8 @@ module.exports = {
 		.setNameLocalization(Locale.PortugueseBR, "sobre")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Informações sobre Cross Roads Reborn!"),
 
-	async execute(interaction: ChatInputCommandInteraction, user: User) {
-		const s = Strings[user.Language];
+	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
+		const s = Strings[language];
 
 		const embed = new CustomEmbedBuilder()
 			.setTitle(s.title)

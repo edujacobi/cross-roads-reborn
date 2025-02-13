@@ -21,7 +21,6 @@ import { subMinutes } from "date-fns";
 import { User } from "../../models/User";
 
 module.exports = {
-	vip: true,
 	data: new SlashCommandBuilder()
 		.setName("inv")
 		.setDescription("See the inventory of a user")
@@ -34,7 +33,7 @@ module.exports = {
 				.setDescriptionLocalization(Locale.PortugueseBR, "O usuário"),
 		),
 
-	async execute(interaction: ChatInputCommandInteraction, user: User) {
+	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 		const _user = interaction.options.getUser("target") || interaction.user;
 		const target = _user ? await checkUser(_user.id, interaction) : user;
 
@@ -44,7 +43,7 @@ module.exports = {
 
 		const embedColor = target.IsVip() ? Colors.Gold : Colors.DarkButNotBlack;
 
-		const s = Strings[user.Language];
+		const s = Strings[language];
 
 		let badges = await Badge.GetList(target.Id);
 
@@ -66,7 +65,7 @@ module.exports = {
 			})
 			.setThumbnail(_user.avatarURL() ?? "")
 			.setDescription(`${badgeText}
-${formatMoney(target.Money, user.Language)}`)
+${formatMoney(target.Money, language)}`)
 			.setFooter({ text: target.Situation.Simple })
 			.setTimestamp();
 
@@ -132,13 +131,13 @@ ${formatMoney(target.Money, user.Language)}`)
 					.setThumbnail(_user.avatarURL() ?? "")
 					.setDescription(`-# ${emoteOnline}
 ### ${badgeText}
-### ${formatMoney(target.Money, user.Language)}
+### ${formatMoney(target.Money, language)}
 -# ${s.inventoryItems}`)
 					.setTimestamp();
 
 				userItems.forEach(item => {
 					invOpen.addFields([{
-						name: `${item.Skin.Default.Emote.String} ${item.Description[user.Language]}`,
+						name: `${item.Skin.Default.Emote.String} ${item.Description[language]}`,
 						value: item.Type == ItemType.Consumable ? String(item.Quantity) : showTime(new Date(item.RemainingTime).getTime(), true),
 						inline: true,
 					}]);
