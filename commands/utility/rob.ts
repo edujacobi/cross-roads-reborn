@@ -13,6 +13,7 @@ import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
 import { defaultEmbed, showTime } from "../../utils/ui";
 import { EmoteId, EmoteString } from "../../utils/emotes";
 import { CrColors } from "../../utils/colors";
+import { User } from "../../models/User";
 
 module.exports = {
 	vip: true,
@@ -29,13 +30,7 @@ module.exports = {
 				.setDescriptionLocalization(Locale.PortugueseBR, "O usuário para roubar"),
 		),
 
-	async execute(interaction: ChatInputCommandInteraction) {
-		const user = await checkUser(interaction.user.id, interaction);
-
-		if (!user) {
-			return;
-		}
-
+	async execute(interaction: ChatInputCommandInteraction, user: User) {
 		const target = interaction.options.getUser("target");
 
 		let texto = "Você pode roubar!";
@@ -64,7 +59,7 @@ Se falhar, você será preso por um tempo definido pelo seu ${EmoteString.Attack
 Se conseguir, ficará em fuga e deverá esperar 1 hora para roubar novamente.
 
 -# ${texto}`)
-				.setDefaultFooter(interaction, `${user.Situation.Simple}`)
+				.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), `${user.Situation.Simple}`)
 				.setTimestamp();
 
 			return replyInteraction(interaction, { embeds: [instructions] });
@@ -73,6 +68,7 @@ Se conseguir, ficará em fuga e deverá esperar 1 hora para roubar novamente.
 		if (user.IsWorking()) {
 			return replyInteraction(interaction, {
 				embeds: [defaultEmbed({
+					nickname: user.Nickname,
 					interaction,
 					color: Colors.Yellow,
 					description: `${EmoteString.Working} Você está trabalhando e não pode fazer isto agora!`,

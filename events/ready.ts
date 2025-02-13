@@ -8,8 +8,8 @@ module.exports = {
 	name: Events.ClientReady,
 	once: true,
 	async execute(client: Client) {
-		// await sequelize.sync({force: true});
-		await sequelize.sync();
+		await sequelize.sync({ force: true });
+		// await sequelize.sync();
 		changeActivity(client);
 		await removeAllFromRobbery();
 		await notificationProcedure();

@@ -1,5 +1,5 @@
 ﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
-import { checkUser, replyInteraction } from "../../utils/logic";
+import { replyInteraction } from "../../utils/logic";
 import { defaultEmbed, formatMoney, showTime } from "../../utils/ui";
 import { addDays } from "date-fns";
 import { Language } from "../../models/Language";
@@ -12,14 +12,7 @@ module.exports = {
 		.setDescription("Receives a small ammount of money. Keep a streak and the money grows!")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Recebe uma pequena quantidade de grana. Mantenha uma sequência e a grana aumenta!"),
 
-	async execute(interaction: ChatInputCommandInteraction) {
-
-		const user = await checkUser(interaction.user.id, interaction);
-
-		if (!user) {
-			return;
-		}
-
+	async execute(interaction: ChatInputCommandInteraction, user: User) {
 		const s = Strings[user.Language];
 
 		if (!user.CanReceiveDaily()) {
@@ -29,6 +22,7 @@ module.exports = {
 			}
 
 			const embed = defaultEmbed({
+				nickname: user.Nickname,
 				interaction,
 				description: s.descriptionReceived(user.Nickname, showTime(addDays(user.Daily.LastReceived, 1).getTime(), true)),
 				thumbnail: interaction.user.avatarURL() ?? "",
@@ -41,6 +35,7 @@ module.exports = {
 		const money = await user.ReceiveDaily();
 
 		const embed = defaultEmbed({
+			nickname: user.Nickname,
 			interaction,
 			description: s.description(user, money),
 			footer: s.footer(user.Daily.MaxStreak),

@@ -6,7 +6,7 @@
 	SlashCommandIntegerOption,
 	SlashCommandNumberOption,
 } from "discord.js";
-import { checkUser, replyInteraction } from "../../utils/logic";
+import { replyInteraction } from "../../utils/logic";
 import { defaultEmbed, formatMoney, showTime } from "../../utils/ui";
 import { CrColors } from "../../utils/colors";
 import { JobList } from "../../models/Job";
@@ -14,6 +14,7 @@ import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
 import { EmoteString } from "../../utils/emotes";
 import { Language } from "../../models/Language";
 import { setTimeout as wait } from "timers/promises";
+import { User } from "../../models/User";
 
 const enum CoinSide {
 	Heads = 0,
@@ -56,15 +57,9 @@ module.exports = {
 				.setMaxValue(500000),
 		),
 
-	async execute(interaction: ChatInputCommandInteraction) {
+	async execute(interaction: ChatInputCommandInteraction, user: User) {
 		const side = interaction.options.getInteger("side") as CoinSide;
 		const value = interaction.options.getNumber("value") as number;
-
-		const user = await checkUser(interaction.user.id, interaction);
-
-		if (!user) {
-			return;
-		}
 
 		const s = Strings[user.Language];
 
@@ -72,6 +67,7 @@ module.exports = {
 			return replyInteraction(interaction, {
 				embeds: [
 					defaultEmbed({
+						nickname: user.Nickname,
 						interaction,
 						color: Colors.Yellow,
 						description: s.working(JobList[user.Job.Id!].Description[user.Language], user.Job.EndsIn),
@@ -82,7 +78,11 @@ module.exports = {
 		if (user.Money < value) {
 			return replyInteraction(interaction, {
 				embeds: [
-					defaultEmbed({ interaction, description: s.noMoney }),
+					defaultEmbed({
+						nickname: user.Nickname,
+						interaction,
+						description: s.noMoney,
+					}),
 				],
 			});
 		}
@@ -94,7 +94,7 @@ module.exports = {
 			})
 			.setColor(CrColors.Casino)
 			.setDescription(s.flipping)
-			.setDefaultFooter(interaction, formatMoney(user.Money, user.Language));
+			.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), formatMoney(user.Money, user.Language));
 
 		await replyInteraction(interaction, { embeds: [embed] });
 
@@ -133,7 +133,7 @@ module.exports = {
 			.setDescription(`### ${s.result(firstResult, secondResult)}
 ${win ? s.won : s.lose} ${formatMoney(win ? prize : value, user.Language)}!
 -# ${s.bet} ${formatMoney(value, user.Language)} ${s.at} ${userBet}.`)
-			.setDefaultFooter(interaction, formatMoney(user.Money, user.Language));
+			.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), formatMoney(user.Money, user.Language));
 
 		await replyInteraction(interaction, { embeds: [embed] });
 	},

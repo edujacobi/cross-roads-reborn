@@ -18,6 +18,7 @@ import { Language } from "../../models/Language";
 import { EmoteId, EmoteString } from "../../utils/emotes";
 import { ItemType } from "../../models/Item";
 import { subMinutes } from "date-fns";
+import { User } from "../../models/User";
 
 module.exports = {
 	vip: true,
@@ -33,41 +34,40 @@ module.exports = {
 				.setDescriptionLocalization(Locale.PortugueseBR, "O usuário"),
 		),
 
-	async execute(interaction: ChatInputCommandInteraction) {
-		const _user = interaction.options.getUser("target") ?? interaction.user;
+	async execute(interaction: ChatInputCommandInteraction, user: User) {
+		const _user = interaction.options.getUser("target") || interaction.user;
+		const target = _user ? await checkUser(_user.id, interaction) : user;
 
-		const user = await checkUser(_user.id, interaction);
-
-		if (!user) {
+		if (!target) {
 			return;
 		}
 
-		const embedColor = user.IsVip() ? Colors.Gold : Colors.DarkButNotBlack;
+		const embedColor = target.IsVip() ? Colors.Gold : Colors.DarkButNotBlack;
 
 		const s = Strings[user.Language];
 
-		let badges = await Badge.GetList(_user.id);
+		let badges = await Badge.GetList(target.Id);
 
 		if (user.IsVip()) {
-			badges = Badge.AddVIPBadgeInList(badges, user);
+			badges = Badge.AddVIPBadgeInList(badges, target);
 		}
 
 		let badgeText = "";
 
 		badges.forEach(badge => badgeText += `${badge.Emoji} `);
 
-		const userItems = await user.GetItems();
+		const userItems = await target.GetItems();
 
 		const invClosed = new CustomEmbedBuilder()
 			.setColor(embedColor)
 			.setAuthor({
-				name: `${s.inventoryOf} ${user.Nickname}`,
+				name: `${s.inventoryOf} ${target.Nickname}`,
 				iconURL: "https://cdn.discordapp.com/attachments/531174573463306240/814662917696782376/Inventario.png",
 			})
 			.setThumbnail(_user.avatarURL() ?? "")
 			.setDescription(`${badgeText}
-${formatMoney(user.Money, user.Language)}`)
-			.setFooter({ text: user.Situation.Simple })
+${formatMoney(target.Money, user.Language)}`)
+			.setFooter({ text: target.Situation.Simple })
 			.setTimestamp();
 
 		const weaponEmotes = userItems.map(weapon => weapon.Skin.Default.Emote.String);
@@ -89,7 +89,6 @@ ${formatMoney(user.Money, user.Language)}`)
 			.setStyle(ButtonStyle.Secondary)
 			.setEmoji(EmoteId.OpenInv);
 
-
 		let isOpen = false;
 
 		function createRow() {
@@ -103,7 +102,7 @@ ${formatMoney(user.Money, user.Language)}`)
 
 		let row = createRow();
 		const response = await replyInteraction(interaction, {
-			content: interaction.user.id != _user.id ? `${interaction.options.getUser("target")}` : "",
+			// content: interaction.user.id != _user.id ? `${interaction.options.getUser("target")}` : "",
 			embeds: [invClosed],
 			components: row.components.length > 0 ? [row] : [],
 		});
@@ -116,24 +115,24 @@ ${formatMoney(user.Money, user.Language)}`)
 
 		collector?.on("collect", async btn => {
 			if (btn.customId === "moreInfo") {
-				await user.GetInfo();
+				await target.GetInfo();
 
 				isOpen = true;
 				row = createRow();
 
-				const online = user.UpdatedAt > subMinutes(new Date(), 30);
+				const online = target.UpdatedAt > subMinutes(new Date(), 30);
 				const emoteOnline = online ? `${EmoteString.Online} Online` : `${EmoteString.Offline} Offline`;
 
 				const invOpen = new CustomEmbedBuilder()
 					.setColor(embedColor)
 					.setAuthor({
-						name: `Inventário de ${user.Nickname}`,
+						name: `Inventário de ${target.Nickname}`,
 						iconURL: "https://cdn.discordapp.com/attachments/531174573463306240/814662917696782376/Inventario.png",
 					})
 					.setThumbnail(_user.avatarURL() ?? "")
 					.setDescription(`-# ${emoteOnline}
 ### ${badgeText}
-### ${formatMoney(user.Money, user.Language)}
+### ${formatMoney(target.Money, user.Language)}
 -# ${s.inventoryItems}`)
 					.setTimestamp();
 
@@ -147,7 +146,7 @@ ${formatMoney(user.Money, user.Language)}`)
 
 				invOpen.addFields([{
 					name: "\u200b󠀀󠀀",
-					value: `-# ${user.Situation.Complex} • ${EmoteString.Attack}${user.Attributes.Attack} ATK • ${EmoteString.Defense}${user.Attributes.Defense} DEF`,
+					value: `-# ${target.Situation.Complex} • ${EmoteString.Attack}${target.Attributes.Attack} ATK • ${EmoteString.Defense}${target.Attributes.Defense} DEF`,
 				}]);
 
 				await btn.update({ embeds: [invOpen], components: [row] });

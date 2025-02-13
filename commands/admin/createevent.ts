@@ -19,7 +19,7 @@ module.exports = {
 				.setDescription("Event type")
 				.setRequired(true)
 				.addChoices([
-					{ name: "EXP Multiplier", value: EventType.EXP_MULTIPLIER },
+					{ name: Event.GetEventTypeText(EventType.JOB_TIME_MULTIPLIER), value: EventType.JOB_TIME_MULTIPLIER },
 				]),
 		)
 		.addNumberOption((option: SlashCommandNumberOption) =>

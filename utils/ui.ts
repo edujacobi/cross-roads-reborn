@@ -3,6 +3,7 @@ import { CustomEmbedBuilder } from "../models/CustomEmbedBuilder";
 import { Language } from "../models/Language";
 
 interface EmbedParams {
+	nickname: string;
 	interaction: CommandInteraction | ButtonInteraction;
 	color?: ColorResolvable;
 	description?: string;
@@ -12,7 +13,7 @@ interface EmbedParams {
 
 export function defaultEmbed(options: EmbedParams): CustomEmbedBuilder {
 	const embed = new CustomEmbedBuilder()
-		.setDefaultFooter(options.interaction, options.footer);
+		.setDefaultFooter(options.nickname, options.interaction.user.avatarURL(), options.footer);
 
 	if (options.description) {
 		embed.setDescription(options.description);

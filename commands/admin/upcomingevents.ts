@@ -1,7 +1,8 @@
-import { ChatInputCommandInteraction, Colors, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
 import { Event } from "../../models/Event";
 import { replyInteraction } from "../../utils/logic";
 import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
+import { CrColors } from "../../utils/colors";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -25,7 +26,7 @@ module.exports = {
 
 		const embed = new CustomEmbedBuilder()
 			.setTitle("🔸 Upcoming Events")
-			.setColor(Colors.Red)
+			.setColor(CrColors.Default)
 			.setDescription(description);
 
 		await replyInteraction(interaction, { embeds: [embed] });

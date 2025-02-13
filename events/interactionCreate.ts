@@ -1,6 +1,6 @@
 ﻿import { Collection, CommandInteraction, Events } from "discord.js";
 import { defaultEmbed, showTime } from "../utils/ui";
-import { replyInteraction, setPlayerRoleInOfficialServer, setVIPRoleInOfficialServer } from "../utils/logic";
+import { checkUser, replyInteraction, setPlayerRoleInOfficialServer, setVIPRoleInOfficialServer } from "../utils/logic";
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const wait = require("node:timers/promises").setTimeout;
@@ -14,6 +14,23 @@ module.exports = {
 
 		if (!command) {
 			return console.error(`No command matching ${interaction.commandName} was found.`);
+		}
+
+		const user = await checkUser(interaction.user.id, interaction);
+
+		if (!user) {
+			return;
+		}
+
+		if (!user.Nickname && command.data.name !== "setnick") {
+			return await replyInteraction(interaction, {
+				embeds: [defaultEmbed({
+					nickname: "User without nickname",
+					interaction,
+					description: "You must set a nickname before using any other command! Use `/setnick` to set your nickname.",
+				})],
+				ephemeral: true,
+			});
 		}
 
 		const cooldowns = interaction.client.cooldowns;
@@ -39,6 +56,7 @@ module.exports = {
 
 				await replyInteraction(interaction, {
 					embeds: [defaultEmbed({
+						nickname: user.Nickname,
 						interaction,
 						description: `You will be able to reuse the \`${command.data.name}\` command ${showTime(expirationTime, true)}.`,
 					})],
@@ -48,6 +66,7 @@ module.exports = {
 				await wait(cooldownAmount);
 				return replyInteraction(interaction, {
 					embeds: [defaultEmbed({
+						nickname: user.Nickname,
 						interaction,
 						description: `You can now use the \`${command.data.name}\` command!`,
 					})],
@@ -62,7 +81,7 @@ module.exports = {
 		await setVIPRoleInOfficialServer(interaction);
 
 		try {
-			command.execute(interaction);
+			command.execute(interaction, user);
 		}
 		catch (error) {
 			console.error(error);

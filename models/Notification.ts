@@ -41,7 +41,10 @@ export class Notification {
 		const notification = new Notification();
 		notification.UserId = user.Id;
 		notification.Type = NotificationType.Daily;
-		notification.Date = addDays(user.Timers.Daily, 1);
+		if (!user.Daily.LastReceived) {
+			return;
+		}
+		notification.Date = addDays(user.Daily.LastReceived, 1);
 		await notification.Create();
 	}
 

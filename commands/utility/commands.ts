@@ -1,9 +1,11 @@
-﻿import { ChatInputCommandInteraction, Colors, Locale, SlashCommandBuilder } from "discord.js";
-import { checkUser, replyInteraction } from "../../utils/logic";
+﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+import { replyInteraction } from "../../utils/logic";
 import path from "node:path";
 import fs from "node:fs";
 import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
 import { Language } from "../../models/Language";
+import { CrColors } from "../../utils/colors";
+import { User } from "../../models/User";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -12,17 +14,11 @@ module.exports = {
 		.setNameLocalization(Locale.PortugueseBR, "comandos")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Veja todos os comandos e suas descrições!"),
 
-	async execute(interaction: ChatInputCommandInteraction) {
-
-		const commandFiles = fs.readdirSync(__dirname).filter((file: string) => file.endsWith(".js"));
-
-		const user = await checkUser(interaction.user.id, interaction);
-
-		if (!user) {
-			return;
-		}
+	async execute(interaction: ChatInputCommandInteraction, user: User) {
 
 		const s = Strings[user.Language];
+
+		const commandFiles = fs.readdirSync(__dirname).filter((file: string) => file.endsWith(".js"));
 
 		let text = "";
 		for (const file of commandFiles) {
@@ -39,11 +35,11 @@ module.exports = {
 		}
 
 		const embed = new CustomEmbedBuilder()
-			.setColor(Colors.Red)
+			.setColor(CrColors.Default)
 			.setTitle(s.title)
 			.setThumbnail(interaction.client.user.avatarURL({ size: 512 }))
 			.setDescription(text)
-			.setDefaultFooter(interaction, interaction.locale);
+			.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), interaction.locale);
 
 		await replyInteraction(interaction, {
 			embeds: [embed],

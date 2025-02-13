@@ -3,7 +3,6 @@
 	ButtonBuilder,
 	ButtonStyle,
 	ChatInputCommandInteraction,
-	Colors,
 	ComponentType,
 	Locale,
 	MessageComponentInteraction,
@@ -11,7 +10,7 @@
 	StringSelectMenuBuilder,
 	StringSelectMenuOptionBuilder,
 } from "discord.js";
-import { checkUser, removeEmbedComponents, replyInteraction } from "../../utils/logic";
+import { removeEmbedComponents, replyInteraction } from "../../utils/logic";
 import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
 import { EmoteString } from "../../utils/emotes";
 import { formatMoney, showTime } from "../../utils/ui";
@@ -19,6 +18,7 @@ import { getJobList, JobId, JobList } from "../../models/Job";
 import { getItemList, ItemList } from "../../models/Item";
 import { Language } from "../../models/Language";
 import { CrColors } from "../../utils/colors";
+import { User } from "../../models/User";
 
 module.exports = {
 	vip: true,
@@ -28,13 +28,7 @@ module.exports = {
 		.setNameLocalization(Locale.PortugueseBR, "trabalhos")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Abra a lista de trabalhos para ter um emprego"),
 
-	async execute(interaction: ChatInputCommandInteraction) {
-		const user = await checkUser(interaction.user.id, interaction);
-
-		if (!user) {
-			return;
-		}
-
+	async execute(interaction: ChatInputCommandInteraction, user: User) {
 		const s = Strings[user.Language];
 
 		let workingText = "";
@@ -47,7 +41,7 @@ module.exports = {
 			.setDescription(`${s.description}${workingText}`)
 			.setThumbnail("https://media.discordapp.net/attachments/1233604589064818808/1337166947250602047/Trabalhos2.png")
 			.setColor(CrColors.Jobs)
-			.setDefaultFooter(interaction, formatMoney(user.Money, user.Language))
+			.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), formatMoney(user.Money, user.Language))
 			.setTimestamp();
 
 		const select = new StringSelectMenuBuilder()
@@ -120,12 +114,12 @@ module.exports = {
 			}
 			if (user.IsEscaping()) {
 				return await removeEmbedComponents(interaction, [
-					embed.setDescription(s.workingOn("", user.Language)),
+					embed.setDescription("Escaping"),
 				]);
 			}
 			if (user.IsInPrison()) {
 				return await removeEmbedComponents(interaction, [
-					embed.setDescription(s.workingOn("", user.Language)),
+					embed.setDescription("In prison"),
 				]);
 			}
 
@@ -144,7 +138,7 @@ module.exports = {
 			return await removeEmbedComponents(interaction, [
 				embed
 					.setDescription(s.jobStarted(job.Description[user.Language], user.Job.EndsIn))
-					.setDefaultFooter(interaction, `${s.salary}: ${formatMoney(job.Salary, user.Language)} • ${s.duration}: ${job.Duration}h`),
+					.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), `${s.salary}: ${formatMoney(job.Salary, user.Language)} • ${s.duration}: ${job.Duration}h`),
 			]);
 		});
 

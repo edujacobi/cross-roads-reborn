@@ -1,6 +1,7 @@
 ﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
 import { defaultEmbed } from "../../utils/ui";
 import { replyInteraction } from "../../utils/logic";
+import { User } from "../../models/User";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -8,12 +9,13 @@ module.exports = {
 		.setDescription("Replies with Pong!")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Responde com Pong!"),
 
-	async execute(interaction: ChatInputCommandInteraction) {
+	async execute(interaction: ChatInputCommandInteraction, user: User) {
 
 		const botPing = Math.round(interaction.client.ws.ping);
 		const svPing = new Date().getTime();
 
 		const embed = defaultEmbed({
+			nickname: user.Nickname,
 			interaction: interaction,
 			description: `:satellite_orbital: ${botPing}ms API.`,
 		});

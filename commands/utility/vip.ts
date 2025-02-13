@@ -1,7 +1,8 @@
 ﻿import { ChatInputCommandInteraction, Colors, Locale, SlashCommandBuilder } from "discord.js";
 import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
 import { replyInteraction } from "../../utils/logic";
-import { EmoteString } from "../../utils/ui";
+import { EmoteString } from "../../utils/emotes";
+import { User } from "../../models/User";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -9,7 +10,7 @@ module.exports = {
 		.setDescription("Adquire VIP, get benefits and contribute to development!")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Adquira VIP, tenha vantagens e contribua com o desenvolvimento"),
 
-	async execute(interaction: ChatInputCommandInteraction) {
+	async execute(interaction: ChatInputCommandInteraction, user: User) {
 
 		const embed = new CustomEmbedBuilder()
 			.setTitle(`${EmoteString.VIP} Be VIP`)
@@ -18,18 +19,20 @@ module.exports = {
 			.setDescription(`## Benefits
 Exclusive badge in \`/user\`
 50% bonus in \`/daily\`
-New images for your rooster in \`/setimage\`
 Access to development channel
-Access to VIP category in Battle Roosters Arena server
-VIP role in Battle Roosters Arena server
-Battle messages in Portuguese
-Find wild roosters in Portuguese and faster
-Duration of trainings reduced by 25%
+- Recarga na alteração de nick
+- Menos cooldown entre comandos
+- Entrega esmolas 50% maiores
+- 25% de desconto na troca de Classe
+- Sorteios do Bilhete premiado exclusivos
+- Pode selecionar Skins para armas
+Access to VIP category in Cross Roads Reborn server
+VIP role in Cross Roads Reborn server
 Many more to come!
 ## How to adquire
-Send a DM to \`ejacobi\`. If you can't, join the Battle Roosters Arena server.
+Send a DM to \`ejacobi\`. If you can't, join the Cross Roads Reborn server.
 R$ 10,00 = 1 month. R$ 25,00 = 3 months.`)
-			.setDefaultFooter(interaction);
+			.setDefaultFooter(user.Nickname, interaction.user.avatarURL());
 
 		await replyInteraction(interaction, { embeds: [embed] });
 	},

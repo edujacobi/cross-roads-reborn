@@ -1,23 +1,17 @@
 ﻿import { ChatInputCommandInteraction, Colors, Locale, SlashCommandBuilder } from "discord.js";
 import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
-import { checkUser, replyInteraction } from "../../utils/logic";
+import { replyInteraction } from "../../utils/logic";
 import { Language } from "../../models/Language";
+import { User } from "../../models/User";
 
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("about")
-		.setDescription("Informations about Battle Roosters Arena!")
+		.setDescription("Informations about Cross Roads Reborn!")
 		.setNameLocalization(Locale.PortugueseBR, "sobre")
-		.setDescriptionLocalization(Locale.PortugueseBR, "Informações sobre Battle Roosters Arena!"),
+		.setDescriptionLocalization(Locale.PortugueseBR, "Informações sobre Cross Roads Reborn!"),
 
-	async execute(interaction: ChatInputCommandInteraction) {
-
-		const user = await checkUser(interaction.user.id, interaction);
-
-		if (!user) {
-			return;
-		}
-
+	async execute(interaction: ChatInputCommandInteraction, user: User) {
 		const s = Strings[user.Language];
 
 		const embed = new CustomEmbedBuilder()
@@ -28,14 +22,13 @@ module.exports = {
 Jacobi
 ### ${s.programming}
 Jacobi
-Bode de Bigode
 ### ${s.art}
 Jacobi
 Cesar
 Miguel
 
 -# ${s.disclaimer}`)
-			.setDefaultFooter(interaction);
+			.setDefaultFooter(user.Nickname, interaction.user.avatarURL());
 
 		await replyInteraction(interaction, { embeds: [embed] });
 	},

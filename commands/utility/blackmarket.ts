@@ -1,9 +1,10 @@
 ﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
-import { checkUser, replyInteraction } from "../../utils/logic";
+import { replyInteraction } from "../../utils/logic";
 import { BlackMarket } from "../../models/BlackMarket";
 import { defaultEmbed } from "../../utils/ui";
 import { EmoteString } from "../../utils/emotes";
 import { CrColors } from "../../utils/colors";
+import { User } from "../../models/User";
 
 module.exports = {
 	vip: true,
@@ -13,12 +14,7 @@ module.exports = {
 		.setNameLocalization(Locale.PortugueseBR, "mercadonegro")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Abra o Mercado negro para comprar alguma coisa"),
 
-	async execute(interaction: ChatInputCommandInteraction) {
-		const user = await checkUser(interaction.user.id, interaction);
-
-		if (!user) {
-			return;
-		}
+	async execute(interaction: ChatInputCommandInteraction, user: User) {
 
 		const blackMarket = new BlackMarket(user);
 
@@ -27,6 +23,7 @@ module.exports = {
 		if (!blackMarket.IsBlackMarketOpen() && !isUserJacobi) {
 			return await replyInteraction(interaction, {
 				embeds: [defaultEmbed({
+					nickname: user.Nickname,
 					interaction,
 					description: `${EmoteString.BlackMarket} "Hey, psst... Volte aqui às 20h de sexta-feira que eu terei umas coisinhas bem legais pra te mostrar..."`,
 					color: CrColors.BlackMarket,

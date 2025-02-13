@@ -15,6 +15,7 @@ import { Op } from "sequelize";
 import { formatMoney } from "../../utils/ui";
 import { EmoteString } from "../../utils/emotes";
 import { Users } from "../../database/Users";
+import { User } from "../../models/User";
 
 module.exports = {
 	cooldown: 5,
@@ -24,7 +25,7 @@ module.exports = {
 		.setDescription("List the top users with money")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários com mais dinheiro"),
 
-	async execute(interaction: ChatInputCommandInteraction) {
+	async execute(interaction: ChatInputCommandInteraction, user: User) {
 
 		await interaction.deferReply();
 
@@ -72,7 +73,7 @@ module.exports = {
 			return new CustomEmbedBuilder()
 				.setColor(Colors.Green)
 				.setDescription(`# ${EmoteString.TopMoney} Ranking Grana\n${moneyText}`)
-				.setDefaultFooter(interaction, `Showing ${offset + 1} - ${offset + limit} of ${howManyUsers} results.`);
+				.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), `Showing ${offset + 1} - ${offset + limit} of ${howManyUsers} results.`);
 		}
 
 		let embed: CustomEmbedBuilder = await createEmbedRanking();

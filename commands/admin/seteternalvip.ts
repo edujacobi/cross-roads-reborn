@@ -8,6 +8,7 @@
 import { defaultEmbed } from "../../utils/ui";
 import { checkUser, replyInteraction, sendPrivateMessage } from "../../utils/logic";
 import { EmoteString } from "../../utils/emotes";
+import { User } from "../../models/User";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -23,23 +24,24 @@ module.exports = {
 				.setRequired(true),
 		),
 
-	async execute(interaction: ChatInputCommandInteraction) {
+	async execute(interaction: ChatInputCommandInteraction, user: User) {
 
 		const userId = interaction.options.getString("userid", true);
 
-		const user = await checkUser(userId, interaction);
+		const target = await checkUser(userId, interaction);
 
-		if (!user) {
+		if (!target) {
 			return await interaction.reply("Didn't find this user");
 		}
 
-		await user?.SetEternalVip();
+		await target?.SetEternalVip();
 
-		if (user.VipEternal) {
+		if (target.VipEternal) {
 			await sendPrivateMessage(userId, `${EmoteString.VIP} Now you are a Eternal VIP!`);
 
 			await replyInteraction(interaction, {
 				embeds: [defaultEmbed({
+					nickname: user.Nickname,
 					interaction: interaction,
 					description: `${EmoteString.VIP} user <@${userId}> is now a Eternal VIP`,
 				})],
@@ -50,6 +52,7 @@ module.exports = {
 
 			await replyInteraction(interaction, {
 				embeds: [defaultEmbed({
+					nickname: user.Nickname,
 					interaction: interaction,
 					description: `${EmoteString.VIP} user <@${userId}> is no longer a Eternal VIP`,
 				})],

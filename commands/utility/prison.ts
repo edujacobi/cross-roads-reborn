@@ -2,11 +2,15 @@
 	ActionRowBuilder,
 	ButtonBuilder,
 	ButtonStyle,
-	ChatInputCommandInteraction, Colors, ComponentType, EmbedBuilder,
-	Locale, MessageComponentInteraction,
+	ChatInputCommandInteraction,
+	Colors,
+	ComponentType,
+	EmbedBuilder,
+	Locale,
+	MessageComponentInteraction,
 	SlashCommandBuilder,
 } from "discord.js";
-import { checkUser, removeEmbedComponents, replyInteraction } from "../../utils/logic";
+import { removeEmbedComponents, replyInteraction } from "../../utils/logic";
 import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
 import { EmoteString } from "../../utils/emotes";
 import { ItemId, ItemList } from "../../models/Item";
@@ -14,6 +18,7 @@ import { CrColors } from "../../utils/colors";
 import { showTime } from "../../utils/ui";
 import { Users } from "../../database/Users";
 import { Op } from "sequelize";
+import { User } from "../../models/User";
 
 module.exports = {
 	vip: true,
@@ -23,13 +28,7 @@ module.exports = {
 		.setNameLocalization(Locale.PortugueseBR, "prisao")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Conheça a prisão e seus presidiários"),
 
-	async execute(interaction: ChatInputCommandInteraction) {
-		const user = await checkUser(interaction.user.id, interaction);
-
-		if (!user) {
-			return;
-		}
-
+	async execute(interaction: ChatInputCommandInteraction, user: User) {
 		const hasJetpack = await user.GetItems().then(items => items.some(item => item.Id === ItemId.Jetpack));
 
 		const baseChance = 20;
@@ -60,7 +59,7 @@ Os guardas são gananciosos, e quanto maior o seu ${EmoteString.Attack}ATK, mais
 
 -# ${texto}`)
 			.setColor(CrColors.Police)
-			.setDefaultFooter(interaction, `Chance atual: ${totalChance}%`);
+			.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), `Chance atual: ${totalChance}%`);
 
 		const button = new ButtonBuilder()
 			.setCustomId("prisoners")

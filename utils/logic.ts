@@ -18,8 +18,6 @@ import { EmoteString } from "./emotes";
 import { JobList } from "../models/Job";
 import { formatMoney } from "./ui";
 
-export const BOT_ID = "1089602356271927356";
-
 export async function checkUser(userId: string, interaction: CommandInteraction) {
 	const user = new User(userId);
 
@@ -29,26 +27,18 @@ export async function checkUser(userId: string, interaction: CommandInteraction)
 
 	if (userId == interaction.user.id) {
 		await user.Create();
-		const message = `# Welcome to Battle Roosters Arena
+		const message = `# Welcome to Cross Roads Reborn!
 ## Hello ${interaction.user.displayName}!
+### Welcome to Cross Roads Reborn, where all paths cross.
+${EmoteString.Shop} Earn money, buy items, rob other players, and much more!
 
-Welcome to Battle Roosters Arena, where your journey as a **Rooster Trainer** begins.
+${EmoteString.CloseInv} See your inventory using \`/inv\`.
 
-There is roosters of many types. Each one of them has a Nationality (where he was born), a Race, a Color (you can change it) and a Rarity.
+${EmoteString.AK47} You can receive a little bit of money each day using \`/daily\`.
 
-You've received a rooster of random attributes. He will start at level 0.
+${EmoteString.Jobs} To start working, use \`/job\`.
 
-He can battle only at level 1. You can train him at the Dojo. Use \`/train\`.
-
-You can receive a little bit of Exp each day using \`/daily\`.
-
-The rarities of wild roosters are:
-**${EmoteString.Common} Common**
-**${EmoteString.Uncommon} Uncommon**
-**${EmoteString.Rare} Rare**
-**${EmoteString.Legendary} Legendary**
-
-Hope you enjoy the game!
+-# Hope you enjoy the game!
 `;
 		await sendPrivateMessage(interaction.user.id, message);
 		return user.GetInfo();

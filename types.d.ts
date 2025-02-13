@@ -5,10 +5,11 @@
 	ModalSubmitInteraction,
 	SlashCommandBuilder
 } from "discord.js";
+import { User } from "./models/User";
 
 export interface SlashCommand {
 	data: Omit<SlashCommandBuilder, "addSubcommand" | "addSubcommandGroup">,
-	execute: (interaction: ChatInputCommandInteraction) => void,
+	execute: (interaction: ChatInputCommandInteraction, user: User) => void,
 	autocomplete?: (interaction: AutocompleteInteraction) => void,
 	modal?: (interaction: ModalSubmitInteraction) => void,
 	cooldown?: number // in seconds

@@ -44,7 +44,7 @@ export class Shop {
 			.setDescription(this.Description)
 			.setThumbnail(this.Image)
 			.setColor(this.Color)
-			.setDefaultFooter(interaction, formatMoney(this.User.Money, this.User.Language));
+			.setDefaultFooter(this.User.Nickname, interaction.user.avatarURL(), formatMoney(this.User.Money, this.User.Language));
 
 
 		const select = new StringSelectMenuBuilder()
@@ -189,7 +189,7 @@ export class Shop {
 			return await removeEmbedComponents(interaction, [
 				embed
 					.setDescription(s.itemBought(`${item.Skin.Default.Emote.String} ${item.Description[this.User.Language]}`))
-					.setDefaultFooter(interaction, formatMoney(this.User.Money, this.User.Language)),
+					.setDefaultFooter(this.User.Nickname, interaction.user.avatarURL(), formatMoney(this.User.Money, this.User.Language)),
 			]);
 		});
 

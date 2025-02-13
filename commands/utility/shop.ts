@@ -1,6 +1,6 @@
 ﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
-import { checkUser } from "../../utils/logic";
 import { Shop } from "../../models/Shop";
+import { User } from "../../models/User";
 
 module.exports = {
 	vip: true,
@@ -10,13 +10,7 @@ module.exports = {
 		.setNameLocalization(Locale.PortugueseBR, "loja")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Abra a loja para comprar alguma coisa"),
 
-	async execute(interaction: ChatInputCommandInteraction) {
-		const user = await checkUser(interaction.user.id, interaction);
-
-		if (!user) {
-			return;
-		}
-
+	async execute(interaction: ChatInputCommandInteraction, user: User) {
 		const shop = new Shop(user);
 
 		await shop.GenerateEmbed(interaction);

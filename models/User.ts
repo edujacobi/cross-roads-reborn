@@ -212,7 +212,9 @@ export class User {
 
 		const baseValue = this.IsVip() ? 300 : 200;
 
-		const money = baseValue * streakMultiplier;
+		const MULTIPLIER_REMOVE = 50000;
+
+		const money = baseValue * streakMultiplier * MULTIPLIER_REMOVE;
 
 		this.Money += money;
 
@@ -437,6 +439,7 @@ export class User {
 		if (target.Id === this.Id) {
 			await replyInteraction(interaction, {
 				embeds: [defaultEmbed({
+					nickname: this.Nickname,
 					interaction,
 					color: CrColors.Robbery,
 					description: `${EmoteString.Robbery} Você não pode roubar a si mesmo, idiota!`,
@@ -448,6 +451,7 @@ export class User {
 		if (this.Attributes.Attack == 0) {
 			await replyInteraction(interaction, {
 				embeds: [defaultEmbed({
+					nickname: this.Nickname,
 					interaction,
 					color: CrColors.Robbery,
 					description: `${EmoteString.Robbery} Você não pode roubar sem uma arma!`,
@@ -459,6 +463,7 @@ export class User {
 		if (target.Attributes.Attack - this.Attributes.Attack > 15) {
 			await replyInteraction(interaction, {
 				embeds: [defaultEmbed({
+					nickname: this.Nickname,
 					interaction,
 					color: CrColors.Robbery,
 					description: `${EmoteString.Robbery} Você não pode roubar ${target.Nickname} usando suas armas atuais!`,
@@ -471,6 +476,7 @@ export class User {
 		if (this.IsInPrison()) {
 			await replyInteraction(interaction, {
 				embeds: [defaultEmbed({
+					nickname: this.Nickname,
 					interaction,
 					color: CrColors.Robbery,
 					description: `${EmoteString.Robbery} Você não pode roubar enquanto está preso!`,
@@ -483,6 +489,7 @@ export class User {
 			await replyInteraction(interaction, {
 				embeds: [defaultEmbed({
 					interaction,
+					nickname: this.Nickname,
 					color: CrColors.Robbery,
 					description: `${EmoteString.Robbery} Você não pode roubar enquanto está fugindo!`,
 				})],
@@ -539,7 +546,7 @@ Tempo preso caso falha: ${userTimeInPrison} minutos
 # ${target.Nickname}
 ${EmoteString.Attack}${target.Attributes.Attack} ATK ${EmoteString.Defense}${target.Attributes.Defense} DEF
 -# ${EmoteString.Attack}${target.Attributes.MoneyAttack} $ATK! ${EmoteString.Defense}${target.Attributes.MoneyDefense} $DEF!`)
-			.setDefaultFooter(interaction);
+			.setDefaultFooter(this.Nickname, interaction.user.avatarURL());
 
 		await replyInteraction(interaction, {
 			content: `${interaction.options.getUser("target")}`,
@@ -591,7 +598,7 @@ ${EmoteString.Attack}${target.Attributes.Attack} ATK ${EmoteString.Defense}${tar
 				name: `Roubo ${sucess ? "bem" : "mal"}-sucedido`,
 				iconURL: targetUser.avatarURL() ?? "",
 			})
-			.setDefaultFooter(interaction, formatMoney(this.Money, this.Language));
+			.setDefaultFooter(this.Nickname, interaction.user.avatarURL(), formatMoney(this.Money, this.Language));
 
 		await replyInteraction(interaction, { embeds: [channelEmbed], components: [] });
 

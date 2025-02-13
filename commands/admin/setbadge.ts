@@ -7,6 +7,7 @@
 import { defaultEmbed } from "../../utils/ui";
 import { Badge } from "../../models/Badge";
 import { replyInteraction } from "../../utils/logic";
+import { User } from "../../models/User";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -40,7 +41,7 @@ module.exports = {
 				.setRequired(true),
 		),
 
-	async execute(interaction: ChatInputCommandInteraction) {
+	async execute(interaction: ChatInputCommandInteraction, user: User) {
 
 		const description = interaction.options.getString("description", true);
 		const descriptionLong = interaction.options.getString("description-long", true);
@@ -57,6 +58,7 @@ module.exports = {
 
 		await replyInteraction(interaction, {
 			embeds: [defaultEmbed({
+				nickname: user.Nickname,
 				interaction: interaction,
 				description: `Badge ${emoji}${description} added to user ${userId}`,
 			})],
