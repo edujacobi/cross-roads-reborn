@@ -26,6 +26,11 @@ export class User {
 	Language: Language;
 	Nickname: string = "";
 	Money = 0;
+	Daily: {
+		CurrentStreak: number,
+		MaxStreak: number,
+		LastReceived: Date | null,
+	};
 	Job: {
 		Id: JobId | null,
 		EndsIn: Date,
@@ -41,7 +46,6 @@ export class User {
 	Timers: {
 		Prison: Date,
 		Escape: Date,
-		Daily: Date,
 	};
 	Attributes: {
 		Attack: number,
@@ -60,6 +64,11 @@ export class User {
 		this.CreatedAt = now;
 		this.UpdatedAt = now;
 		this.Language = Language.English;
+		this.Daily = {
+			CurrentStreak: 0,
+			MaxStreak: 0,
+			LastReceived: null,
+		};
 		this.Job = {
 			Id: null,
 			EndsIn: now,
@@ -75,7 +84,6 @@ export class User {
 		this.Timers = {
 			Prison: now,
 			Escape: now,
-			Daily: now,
 		};
 		this.Attributes = {
 			Attack: 0,
@@ -96,6 +104,9 @@ export class User {
 				language: this.Language,
 				nickname: this.Nickname,
 				money: this.Money,
+				dailyStreak: this.Daily.CurrentStreak,
+				maxDailyStreak: this.Daily.MaxStreak,
+				lastDailyReceived: this.Daily.LastReceived,
 			});
 			Log.Success(`User ${this.Id} created.`);
 
@@ -129,6 +140,9 @@ export class User {
 		this.Job.EndsIn = new Date(user.jobTime);
 		this.Timers.Prison = new Date(user.prisonTime);
 		this.Timers.Escape = new Date(user.escapeTime);
+		this.Daily.CurrentStreak = user.dailyStreak;
+		this.Daily.MaxStreak = user.maxDailyStreak;
+		this.Daily.LastReceived = user.lastDailyReceived;
 
 		if (user.robbingUserId) {
 			this.Robbery.IsRobbingId = user.robbingUserId;
@@ -172,6 +186,41 @@ export class User {
 	async SetEternalVip() {
 		this.VipEternal = !this.VipEternal;
 		await this.Update();
+	}
+
+	CanReceiveDaily() {
+		const today = new Date();
+
+		return this.Daily.LastReceived == null || differenceInHours(today, this.Daily.LastReceived) > 23;
+	}
+
+	async ReceiveDaily() {
+		const today = new Date();
+
+		if (this.Daily.LastReceived != null && differenceInHours(today, this.Daily.LastReceived) > 48) {
+			this.Daily.CurrentStreak = 0;
+		}
+
+		this.Daily.LastReceived = today;
+		this.Daily.CurrentStreak += 1;
+
+		if (this.Daily.CurrentStreak > this.Daily.MaxStreak) {
+			this.Daily.MaxStreak = this.Daily.CurrentStreak;
+		}
+
+		const streakMultiplier = this.Daily.CurrentStreak <= 7 ? this.Daily.CurrentStreak : 7;
+
+		const baseValue = this.IsVip() ? 300 : 200;
+
+		const money = baseValue * streakMultiplier;
+
+		this.Money += money;
+
+		await this.Update();
+
+		await Notification.Daily(this);
+
+		return money;
 	}
 
 	// Maybe change to "CanDoAction"

@@ -12,6 +12,7 @@ export class Badges extends Model<
 	declare emoji: string;
 }
 
+// TODO REFAZER SISTEMA DE BADGES
 Badges.init(
 	{
 		userId: {

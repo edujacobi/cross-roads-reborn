@@ -9,6 +9,9 @@ export class Users extends Model<
 	declare id: CreationOptional<string>;
 	declare nickname: CreationOptional<string>;
 	declare money: number;
+	declare lastDailyReceived: Date | null;
+	declare dailyStreak: number;
+	declare maxDailyStreak: number;
 	declare vipTime: CreationOptional<Date | null>;
 	declare vipEternal: CreationOptional<boolean>;
 	declare language: number;
@@ -33,6 +36,21 @@ Users.init(
 			allowNull: true,
 		},
 		money: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0,
+		},
+		lastDailyReceived: {
+			type: DataTypes.DATE,
+			allowNull: true,
+			defaultValue: null,
+		},
+		dailyStreak: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0,
+		},
+		maxDailyStreak: {
 			type: DataTypes.INTEGER,
 			allowNull: false,
 			defaultValue: 0,

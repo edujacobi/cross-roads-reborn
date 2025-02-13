@@ -3,7 +3,7 @@ import { Events } from "../database/Events";
 import { Log } from "../utils/log";
 
 export enum EventType {
-	EXP_MULTIPLIER = 1,
+	JOB_TIME_MULTIPLIER = 1,
 }
 
 class Event {
@@ -133,8 +133,8 @@ class Event {
 
 	static GetEventTypeText(eventType: EventType) {
 		switch (eventType) {
-		case EventType.EXP_MULTIPLIER:
-			return "EXP Multiplier";
+		case EventType.JOB_TIME_MULTIPLIER:
+			return "Job time multiplier";
 		default:
 			return "Unknown";
 		}

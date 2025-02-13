@@ -1,4 +1,4 @@
-﻿import { ActivityType, ButtonInteraction, Client, ColorResolvable, Colors, CommandInteraction } from "discord.js";
+﻿import { ActivityType, ButtonInteraction, Client, ColorResolvable, CommandInteraction } from "discord.js";
 import { CustomEmbedBuilder } from "../models/CustomEmbedBuilder";
 import { Language } from "../models/Language";
 

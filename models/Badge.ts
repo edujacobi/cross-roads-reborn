@@ -1,7 +1,8 @@
 ﻿import { Badges } from "../database/Badges";
 import { Log } from "../utils/log";
-import { EmoteString, showTime } from "../utils/ui";
+import { showTime } from "../utils/ui";
 import { User } from "./User";
+import { EmoteString } from "../utils/emotes";
 
 export class Badge {
 	UserId = "";
