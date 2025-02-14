@@ -378,8 +378,8 @@ export class User {
 			this.Situation.Complex = `${EmoteString.Robbery} Sendo roubado`;
 		}
 		if (this.IsEscaping()) {
-			this.Situation.Simple = "Fugindo";
-			this.Situation.Complex = `${EmoteString.Police} Fugindo até ${showTime(this.Timers.Escape.getTime())}`;
+			this.Situation.Simple = "Procurado";
+			this.Situation.Complex = `${EmoteString.Police} Procurado até ${showTime(this.Timers.Escape.getTime())}`;
 		}
 		if (this.IsInPrison()) {
 			this.Situation.Simple = "Preso";
@@ -489,7 +489,7 @@ export class User {
 					interaction,
 					nickname: this.Nickname,
 					color: CrColors.Robbery,
-					description: `${EmoteString.Robbery} Você não pode roubar enquanto está fugindo!`,
+					description: `${EmoteString.Robbery} Você não pode roubar enquanto está sendo procurado pela polícia!`,
 				})],
 			});
 			return false;

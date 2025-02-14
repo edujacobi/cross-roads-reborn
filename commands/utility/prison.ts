@@ -117,7 +117,7 @@ async function getPrisoners() {
 const Strings = {
 	[Language.English]: {
 		userFree: "You are free!",
-		userEscaping: (timerEscape: Date) => `You are being hunted by the police! You can steal again ${showTime(timerEscape.getTime(), true)}!`,
+		userEscaping: (timerEscape: Date) => `You are being wanted by the police! You can steal again ${showTime(timerEscape.getTime(), true)}!`,
 		userPrison: (timerPrison: Date) => `You are in prison! You will be released ${showTime(timerPrison.getTime(), true)}!`,
 		description: (chance: number, jetpackChance: number, language: Language, text: string) => `# Prison
 When trying to rob someone and failing, you will be imprisoned for a time determined by your ${EmoteString.Attack}ATK.
