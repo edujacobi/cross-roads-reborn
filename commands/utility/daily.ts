@@ -49,18 +49,18 @@ module.exports = {
 
 const Strings = {
 	[Language.English]: {
-		descriptionReceived: (nickname: string, userLastDaily: string) => `**${nickname}** already receive his daily Exp in the last 24 hours.\n-# You will be able to receive again ${userLastDaily}!`,
+		descriptionReceived: (nickname: string, userLastDaily: string) => `**${nickname}** already receive his daily money in the last 24 hours.\n-# You will be able to receive again ${userLastDaily}!`,
 		description: (user: User, money: number) => `**${user.Nickname}** received ${formatMoney(money, user.Language)}.\n-# Your current daily streak is **${user.Daily.CurrentStreak}**.`,
 		footer: (maxStreak: number) => `Max daily streak: ${maxStreak}`,
 	},
 
 	[Language.Portuguese]: {
-		descriptionReceived: (nickname: string, userLastDaily: string) => `**${nickname}** já recebeu seu Exp diário nas últimas 24 horas.\n-# Você poderá receber novamente ${userLastDaily}!`,
+		descriptionReceived: (nickname: string, userLastDaily: string) => `**${nickname}** já recebeu sua grana diária nas últimas 24 horas.\n-# Você poderá receber novamente ${userLastDaily}!`,
 		description: (user: User, money: number) => `**${user.Nickname}** recebeu ${formatMoney(money, user.Language)}.\n-# Sua sequência de diários atual é **${user.Daily.CurrentStreak}**.`,
 		footer: (maxStreak: number) => `Sequência máxima: ${maxStreak}`,
 	},
 	[Language.Spanish]: {
-		descriptionReceived: (nickname: string, userLastDaily: string) => `**${nickname}** ya recibió su Exp diaria en las últimas 24 horas.\n-# Podrá recibirla nuevamente ${userLastDaily}!`,
+		descriptionReceived: (nickname: string, userLastDaily: string) => `**${nickname}** ya recibió su dinero diario en las últimas 24 horas.\n-# Podrá recibirla nuevamente ${userLastDaily}!`,
 		description: (user: User, money: number) => `**${user.Nickname}** recibió ${formatMoney(money, user.Language)}.\n-# Tu racha diaria actual es **${user.Daily.CurrentStreak}**.`,
 		footer: (maxStreak: number) => `Racha máxima: ${maxStreak}`,
 	},
