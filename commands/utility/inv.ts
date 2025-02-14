@@ -91,10 +91,8 @@ ${formatMoney(target.Money, language)}`)
 		let isOpen = false;
 
 		function createRow() {
-			const row = new ActionRowBuilder<ButtonBuilder>();
-			if (badges.length > 0) {
-				row.addComponents([isOpen ? buttonClose : buttonOpen]);
-			}
+			const row = new ActionRowBuilder<ButtonBuilder>()
+				.addComponents([isOpen ? buttonClose : buttonOpen]);
 
 			return row;
 		}
@@ -130,8 +128,7 @@ ${formatMoney(target.Money, language)}`)
 					})
 					.setThumbnail(_user.avatarURL() ?? "")
 					.setDescription(`-# ${emoteOnline}
-### ${badgeText}
-### ${formatMoney(target.Money, language)}
+${badges.length > 0 ? `### ${badgeText}\n` : ""}### ${formatMoney(target.Money, language)}
 -# ${s.inventoryItems}`)
 					.setTimestamp();
 
