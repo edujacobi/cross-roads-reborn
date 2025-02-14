@@ -3,20 +3,18 @@ import {
 	APIEmbed,
 	ButtonInteraction,
 	ChatInputCommandInteraction,
-	CommandInteraction, EmbedBuilder,
+	CommandInteraction,
+	EmbedBuilder,
 	InteractionReplyOptions,
 	MessagePayload,
 } from "discord.js";
 import { CustomEmbedBuilder } from "../models/CustomEmbedBuilder";
 import { JSONEncodable } from "@discordjs/util";
 import { Op } from "sequelize";
-import { Notification, NotificationType } from "../models/Notification";
 import { getClient } from "../client";
 import { Log } from "./log";
 import { Users } from "../database/Users";
 import { EmoteString } from "./emotes";
-import { JobList } from "../models/Job";
-import { formatMoney } from "./ui";
 import { getLanguageFromLocale, Language } from "../models/Language";
 
 export async function checkUser(userId: string, interaction: CommandInteraction) {
@@ -29,53 +27,11 @@ export async function checkUser(userId: string, interaction: CommandInteraction)
 
 	if (userId == interaction.user.id) {
 		await user.Create();
-		let message = `# Welcome to Cross Roads Reborn!
-## Hello ${interaction.user.displayName}!
-### Welcome to Cross Roads Reborn, where all paths cross.
-${EmoteString.Shop} Earn money, buy items, rob other players, and much more!
 
-${EmoteString.CloseInv} See your inventory using \`/inv\`.
-
-${EmoteString.AK47} You can receive a little bit of money each day using \`/daily\`.
-
-${EmoteString.Jobs} To start working, use \`/job\`.
-
--# Hope you enjoy the game!`;
-
-		if (lang === Language.Portuguese) {
-			message = `# Bem-vindo ao Cross Roads Reborn!
-## Olá ${interaction.user.displayName}!
-### Bem-vindo ao Cross Roads Reborn, onde todos os caminhos se cruzam.
-${EmoteString.Shop} Ganhe dinheiro, compre itens, roube outros jogadores e muito mais!
-
-${EmoteString.CloseInv} Veja seu inventário usando \`/inv\`.
-
-${EmoteString.AK47} Você pode receber um pouco de dinheiro todos os dias usando \`/daily\`.
-
-${EmoteString.Jobs} Para começar a trabalhar, use \`/job\`.
-
--# Espero que você goste do jogo!`;
-		}
-		else if (lang === Language.Spanish) {
-			message = `# Bienvenido a Cross Roads Reborn!
-## ¡Hola ${interaction.user.displayName}!
-### Bienvenido a Cross Roads Reborn, donde todos los caminos se cruzan.
-${EmoteString.Shop} Gana dinero, compra objetos, roba a otros jugadores y mucho más!
-
-${EmoteString.CloseInv} Mira tu inventario usando \`/inv\`.
-
-${EmoteString.AK47} Puedes recibir un poco de dinero cada día usando \`/daily\`.
-
-${EmoteString.Jobs} Para empezar a trabajar, usa \`/job\`.
-
--# ¡Espero que disfrutes del juego!`;
-		}
-
-		await sendPrivateMessage(interaction.user.id, message);
+		await sendPrivateMessage(interaction.user.id, Strings[lang].welcomeMessage(interaction.user.username));
 		return user.GetInfo();
 	}
 }
-
 
 export async function removeAllFromRobbery() {
 	try {
@@ -126,50 +82,6 @@ export async function sendComplexPrivateMessage(userId: string, embed: EmbedBuil
 	catch (err) {
 		Log.Warning(`Something went wrong with sending private message to ${discordUser.displayName} (${discordUser.id}).`);
 	}
-}
-
-export async function sendTimedNotification() {
-	const now = new Date();
-	const hasNotification = await Notification.HasNotificationsToSend(now);
-
-	// return Log.Info(`No notifications to send. Ignoring procedure.`);
-	if (!hasNotification) {
-		return;
-	}
-
-	Log.Info(`Starting notification procedure ↓`);
-	const list = await Notification.GetNextNotifications(now);
-
-	for (const notification of list) {
-		// TODO : Fazer localização de mensagens
-		const user = await new User(notification.UserId).GetInfo();
-
-		if (!user) {
-			Log.Warning(`Cannot send private message if the user was deleted (UserId: ${notification.UserId}).`);
-			await notification.SetAsNotified();
-			continue;
-		}
-
-		else if (notification.Type == NotificationType.Daily) {
-			await sendPrivateMessage(user.Id, `${EmoteString.Experience} You can receive your daily Exp again!`);
-		}
-
-		else if (notification.Type == NotificationType.Job) {
-			if (user.Job.Id === null) {
-				return;
-			}
-			const job = JobList[user.Job.Id];
-			await user.EndJob();
-			await sendPrivateMessage(notification.UserId, `Você terminou seu trabalho ${job.Description[user.Language]} e recebeu ${formatMoney(job.Salary, user.Language)}!`);
-		}
-
-		await notification.SetAsNotified();
-	}
-	Log.Info(`Notification procedure complete ↑`);
-}
-
-export async function notificationProcedure() {
-	setInterval(sendTimedNotification, 60_000);
 }
 
 export async function replyInteraction(interaction: CommandInteraction | ButtonInteraction, options: string | MessagePayload | InteractionReplyOptions) {
@@ -308,14 +220,50 @@ export async function setVIPRoleInOfficialServer(interaction: ChatInputCommandIn
 
 const Strings = {
 	[Language.English]: {
+		welcomeMessage: (name: string) => `# Welcome to Cross Roads Reborn!
+## Hello ${name}!
+### Welcome to Cross Roads Reborn, where all paths cross.
+${EmoteString.Shop} Earn money, buy items, rob other players, and much more!
+
+${EmoteString.CloseInv} See your inventory using \`/inv\`.
+
+${EmoteString.AK47} You can receive a little bit of money each day using \`/daily\`.
+
+${EmoteString.Jobs} To start working, use \`/job\`.
+
+-# Hope you enjoy the game!`,
 		userDontExist: "This user doesn't exist in the database.",
 	},
 
 	[Language.Portuguese]: {
+		welcomeMessage: (name: string) => `# Bem-vindo ao Cross Roads Reborn!
+## Olá ${name}!
+### Bem-vindo ao Cross Roads Reborn, onde todos os caminhos se cruzam.
+${EmoteString.Shop} Ganhe dinheiro, compre itens, roube outros jogadores e muito mais!
+
+${EmoteString.CloseInv} Veja seu inventário usando \`/inv\`.
+
+${EmoteString.AK47} Você pode receber um pouco de dinheiro todos os dias usando \`/daily\`.
+
+${EmoteString.Jobs} Para começar a trabalhar, use \`/job\`.
+
+-# Espero que você goste do jogo!`,
 		userDontExist: "Este usuário não existe no banco de dados.",
 	},
 
 	[Language.Spanish]: {
+		welcomeMessage: (name: string) => `# Bienvenido a Cross Roads Reborn!
+## ¡Hola ${name}!
+### Bienvenido a Cross Roads Reborn, donde todos los caminos se cruzan.
+${EmoteString.Shop} Gana dinero, compra objetos, roba a otros jugadores y mucho más!
+
+${EmoteString.CloseInv} Mira tu inventario usando \`/inv\`.
+
+${EmoteString.AK47} Puedes recibir un poco de dinero cada día usando \`/daily\`.
+
+${EmoteString.Jobs} Para empezar a trabajar, usa \`/job\`.
+
+-# ¡Espero que disfrutes del juego!`,
 		userDontExist: "Este usuario no existe en la base de datos.",
 	},
 } as const;

@@ -2,6 +2,7 @@
 import { sequelize } from "./Database";
 import { NotificationType } from "../models/Notification";
 import { Users } from "./Users";
+import { Language } from "../models/Language";
 
 export class Notifications extends Model<
 	InferAttributes<Notifications>,
@@ -12,6 +13,7 @@ export class Notifications extends Model<
 	declare type: NotificationType;
 	declare date: Date;
 	declare notified: CreationOptional<boolean>;
+	declare language: Language;
 }
 
 Notifications.init(
@@ -36,6 +38,10 @@ Notifications.init(
 		notified: {
 			type: DataTypes.BOOLEAN,
 			defaultValue: false,
+		},
+		language: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
 		},
 	},
 	{
