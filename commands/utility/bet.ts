@@ -53,8 +53,7 @@ module.exports = {
 				.setDescription("The value of the bet")
 				.setDescriptionLocalization(Locale.PortugueseBR, "O valor da aposta")
 				.setRequired(true)
-				.setMinValue(500)
-				.setMaxValue(500000),
+				.setMinValue(500),
 		),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
