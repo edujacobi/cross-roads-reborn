@@ -8,7 +8,7 @@
 	SlashCommandBuilder,
 	SlashCommandUserOption,
 } from "discord.js";
-import { checkUser, replyInteraction } from "../../utils/logic";
+import { checkUser, replyInteraction, replyUserDontExist } from "../../utils/logic";
 import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
 import { defaultEmbed, showTime } from "../../utils/ui";
 import { EmoteId, EmoteString } from "../../utils/emotes";
@@ -76,7 +76,7 @@ module.exports = {
 		const targetUser = await checkUser(target.id, interaction);
 
 		if (!targetUser) {
-			return;
+			return await replyUserDontExist(interaction, language);
 		}
 
 		await user.RobUser(targetUser, interaction);
@@ -120,14 +120,14 @@ const Strings = {
 	[Language.English]: {
 		userFree: "You can rob!",
 		userWorking: "You can't rob while working!",
-		userEscaping: (timerEscape: Date) => `You can't rob while being hunted by the police! You can rob again ${showTime(timerEscape.getTime(), true)}!`,
+		userEscaping: (timerEscape: Date) => `You can't rob while being wanted by the police! You can rob again ${showTime(timerEscape.getTime(), true)}!`,
 		userPrison: (timerPrison: Date) => `You can't rob while in prison! You will be released ${showTime(timerPrison.getTime(), true)}!`,
 		description: `# Rob
 ### Find a target and steal everything!
 The higher your ${EmoteString.Attack}ATK, the higher your chances of stealing from other players. The higher your ${EmoteString.Defense}DEF, the more protected you will be.
 
 If you fail, you will be imprisoned for a time determined by your ${EmoteString.Attack}ATK.
-If you succeed, you will be on the run and must wait 1 hour to rob again.`,
+If you succeed, you will be wanted by the police and will have to wait 1 hour to steal again.`,
 	},
 	[Language.Portuguese]: {
 		userFree: "Você pode roubar!",
@@ -139,7 +139,7 @@ If you succeed, you will be on the run and must wait 1 hour to rob again.`,
 Quanto maior seu ${EmoteString.Attack}ATK, maiores suas chances de roubo à outros jogadores. Quanto maior sua ${EmoteString.Defense}DEF, mais protegido você estará.
 
 Se falhar, você será preso por um tempo definido pelo seu ${EmoteString.Attack}ATK.
-Se conseguir, ficará em fuga e deverá esperar 1 hora para roubar novamente.`,
+Se conseguir, será procurado pela polícia e deverá esperar 1 hora para roubar novamente.`,
 	},
 	[Language.Spanish]: {
 		userFree: "¡Puedes robar!",
@@ -151,6 +151,6 @@ Se conseguir, ficará em fuga e deverá esperar 1 hora para roubar novamente.`,
 Cuanto mayor sea tu ${EmoteString.Attack}ATK, mayores serán tus posibilidades de robar a otros jugadores. Cuanto mayor sea tu ${EmoteString.Defense}DEF, más protegido estarás.
 
 Si fallas, serás encarcelado por un tiempo determinado por tu ${EmoteString.Attack}ATK.
-Si tienes éxito, estarás huyendo y deberás esperar 1 hora para robar de nuevo.`,
+Si lo consigues, serás buscado por la policía y tendrás que esperar 1 hora para volver a robar.`,
 	},
 } as const;

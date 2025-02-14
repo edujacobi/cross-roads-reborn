@@ -25,10 +25,7 @@ module.exports = {
 		const user = await checkUser(interaction.user.id, interaction);
 
 		if (!user) {
-			return await replyInteraction(interaction, {
-				content: s.userDontExist,
-				ephemeral: true
-			});
+			return;
 		}
 
 		if (!user.Nickname && command.data.name !== "setnick") {
@@ -118,7 +115,6 @@ module.exports = {
 const Strings = {
 	[Language.English]: {
 		noCommand: (command: string) => `No command matching \`${command}\` was found.`,
-		userDontExist: "This user doesn't exist in the database.",
 		settingNick: "Setting nickname",
 		settingDescription: "You must set a nickname before using any other command! Use `/setnick` to set your nickname.",
 		willBeAble: (commandName: string, expirationTime: number) => `You will be able to reuse the \`${commandName}\` command ${showTime(expirationTime, true)}.`,
@@ -127,7 +123,6 @@ const Strings = {
 	},
 	[Language.Portuguese]: {
 		noCommand: (command: string) => `Nenhum comando correspondente a \`${command}\` foi encontrado.`,
-		userDontExist: "Este usuário não existe no banco de dados.",
 		settingNick: "Configurando nickname",
 		settingDescription: "Você deve definir um nickname antes de usar qualquer outro comando! Use `/mudanick` para definir seu nickname.",
 		willBeAble: (commandName: string, expirationTime: number) => `Você poderá reutilizar o comando \`${commandName}\` ${showTime(expirationTime, true)}.`,
@@ -136,7 +131,6 @@ const Strings = {
 	},
 	[Language.Spanish]: {
 		noCommand: (command: string) => `No se encontró ningún comando que coincida con \`${command}\`.`,
-		userDontExist: "Este usuario no existe en la base de datos.",
 		settingNick: "Configurando nickname",
 		settingDescription: "¡Debes establecer un apodo antes de usar cualquier otro comando! Use `/setnick` para establecer su apodo.",
 		willBeAble: (commandName: string, expirationTime: number) => `Podrás reutilizar el comando \`${commandName}\` ${showTime(expirationTime, true)}.`,

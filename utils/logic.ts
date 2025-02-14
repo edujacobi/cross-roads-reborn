@@ -185,6 +185,13 @@ export async function replyInteraction(interaction: CommandInteraction | ButtonI
 	}
 }
 
+export async function replyUserDontExist(interaction: CommandInteraction, language: Language) {
+	return await replyInteraction(interaction, {
+		content: Strings[language].userDontExist,
+		ephemeral: true,
+	});
+}
+
 export async function removeEmbedComponents(interaction: CommandInteraction | ButtonInteraction, embeds?: (JSONEncodable<APIEmbed> | APIEmbed)[]) {
 	try {
 		const replyOptions = embeds ? { embeds, components: [] } : { components: [] };
@@ -298,3 +305,17 @@ export async function setVIPRoleInOfficialServer(interaction: ChatInputCommandIn
 		}
 	}
 }
+
+const Strings = {
+	[Language.English]: {
+		userDontExist: "This user doesn't exist in the database.",
+	},
+
+	[Language.Portuguese]: {
+		userDontExist: "Este usuário não existe no banco de dados.",
+	},
+
+	[Language.Spanish]: {
+		userDontExist: "Este usuario no existe en la base de datos.",
+	},
+} as const;

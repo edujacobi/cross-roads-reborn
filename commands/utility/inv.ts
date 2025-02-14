@@ -10,7 +10,7 @@
 	SlashCommandBuilder,
 	SlashCommandUserOption,
 } from "discord.js";
-import { checkUser, removeEmbedComponents, replyInteraction } from "../../utils/logic";
+import { checkUser, removeEmbedComponents, replyInteraction, replyUserDontExist } from "../../utils/logic";
 import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
 import { formatMoney, showTime } from "../../utils/ui";
 import { Badge } from "../../models/Badge";
@@ -38,7 +38,7 @@ module.exports = {
 		const target = _user ? await checkUser(_user.id, interaction) : user;
 
 		if (!target) {
-			return;
+			return await replyUserDontExist(interaction, language);
 		}
 
 		const embedColor = target.IsVip() ? Colors.Gold : Colors.DarkButNotBlack;
