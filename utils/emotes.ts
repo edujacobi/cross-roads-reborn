@@ -87,10 +87,10 @@ export enum EmoteId {
 	Lazy = "854877539537125377",
 	Robbery = "791447877997297665",
 	Beat = "820088112357179453",
-	Prison = "817097391840296980",
+	Prison = "1339946677016068106",
 	Working = "948015474782912563",
 	Hospital = "539497344450691077",
-	Police = "539502682545717288",
+	Police = "1339924939385470986",
 
 	VIP = "778572312215027744",
 
@@ -196,10 +196,10 @@ export const EmoteString = {
 	Lazy: `<:Vadiando:${EmoteId.Lazy}>`,
 	Robbery: `<:roubar:${EmoteId.Robbery}>`,
 	Beat: `<:espancar:${EmoteId.Beat}>`,
-	Prison: `<:prisao:${EmoteId.Prison}>`,
+	Prison: `<:Prison:${EmoteId.Prison}>`,
 	Working: `<:Trabalhando:${EmoteId.Working}>`,
 	Hospital: `<:Hospital:${EmoteId.Hospital}>`,
-	Police: `<:Policia:${EmoteId.Police}>`,
+	Police: `<:Police2:${EmoteId.Police}>`,
 
 	VIP: `<:vip:${EmoteId.VIP}>`,
 

@@ -48,8 +48,8 @@ module.exports = {
 		}
 
 		const embed = new CustomEmbedBuilder()
-			.setThumbnail("https://cdn.discordapp.com/attachments/531174573463306240/817102027183357992/prisao.png")
-			.setDescription(s.description(baseChance, baseJetpackChance, language, text))
+			.setThumbnail("https://media.discordapp.net/attachments/1233604589064818808/1339946455913205871/Prison.png")
+			.setDescription(s.description(baseChance, baseJetpackChance + baseChance, language, text))
 			.setColor(CrColors.Police)
 			.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), `${s.currentChance}: ${totalChance}%`);
 

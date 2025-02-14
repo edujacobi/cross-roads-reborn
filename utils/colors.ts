@@ -2,7 +2,7 @@ import { Colors } from "discord.js";
 
 export const CrColors = {
 	Default: Colors.Green,
-	Police: 0x000080,
+	Police: 0x273870,
 	Casino: 0xffebd6,
 	Jobs: Colors.Yellow,
 	Robbery: Colors.DarkRed,
