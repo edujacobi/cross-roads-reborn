@@ -641,11 +641,14 @@ ${EmoteString.Attack}${target.Attributes.Attack} ATK ${EmoteString.Defense}${tar
 				beingRobbedByUserId: this.Robbery.IsBeingRobbedById,
 				prisonTime: this.Timers.Prison,
 				escapeTime: this.Timers.Escape,
+				dailyStreak: this.Daily.CurrentStreak,
+				maxDailyStreak: this.Daily.MaxStreak,
+				lastDailyReceived: this.Daily.LastReceived,
 			}, {
 				where: { id: this.Id },
 			});
 
-			Log.Info(`User ID: ${this.Id} updated.`);
+			// Log.Info(`User ID: ${this.Id} updated.`);
 
 		}
 		catch (err) {
