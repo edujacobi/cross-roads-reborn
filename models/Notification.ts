@@ -13,6 +13,8 @@ import { sendPrivateMessage } from "../utils/logic";
 export enum NotificationType {
 	Daily = 1,
 	Job,
+	RobAgain,
+	Free,
 }
 
 export class Notification {
@@ -64,7 +66,24 @@ export class Notification {
 			return;
 		}
 		notification.Date = addHours(new Date(), JobList[user.Job.Id].Duration);
-		console.log(notification.Date, JobList[user.Job.Id].Duration);
+		await notification.Create();
+	}
+
+	static async RobAgain(user: User) {
+		const notification = new Notification();
+		notification.UserId = user.Id;
+		notification.Type = NotificationType.RobAgain;
+		notification.Language = user.Language;
+		notification.Date = user.Timers.Escape;
+		await notification.Create();
+	}
+
+	static async Free(user: User) {
+		const notification = new Notification();
+		notification.UserId = user.Id;
+		notification.Type = NotificationType.Free;
+		notification.Language = user.Language;
+		notification.Date = user.Timers.Prison;
 		await notification.Create();
 	}
 
@@ -116,7 +135,7 @@ export class Notification {
 				where: { id: this.Id },
 			});
 
-			Log.Info(`Notification Timer ${this.Id} (Type: ${this.Type}) to rooster ${this.UserId} notified.`);
+			Log.Info(`Notification Timer ${this.Id} (Type: ${this.Type}) to user ${this.UserId} notified.`);
 
 		}
 		catch (err) {
@@ -186,6 +205,14 @@ export class Notification {
 				await sendPrivateMessage(notification.UserId, s.job(job.Description[lang], job.Salary));
 			}
 
+			else if (notification.Type == NotificationType.RobAgain) {
+				await sendPrivateMessage(user.Id, s.robAgain);
+			}
+
+			else if (notification.Type == NotificationType.Free) {
+				await sendPrivateMessage(user.Id, s.free);
+			}
+
 			await notification.SetAsNotified();
 		}
 		Log.Info(`Notification procedure complete ↑`);
@@ -198,15 +225,21 @@ export class Notification {
 
 const Strings = {
 	[Language.English]: {
-		daily: `${EmoteString.Experience} You can receive your daily money again!`,
-		job: (description: string, salary: number) => `You finished your ${description} job and received ${formatMoney(salary, Language.English)}!`
+		daily: `You can receive your daily money again! ${EmoteString.Experience}`,
+		job: (description: string, salary: number) => `You finished your ${description} job and received ${formatMoney(salary, Language.English)}! ${EmoteString.Jobs}`,
+		robAgain: `You can rob again! ${EmoteString.Robbery}`,
+		free: `You are free! ${EmoteString.Prison}`,
 	},
 	[Language.Portuguese]: {
-		daily: `${EmoteString.Experience} Você pode receber sua grana diária novamente!`,
-		job: (description: string, salary: number) => `Você terminou seu trabalho ${description} e recebeu ${formatMoney(salary, Language.Portuguese)}!`
+		daily: `Você pode receber sua grana diária novamente! ${EmoteString.Experience}`,
+		job: (description: string, salary: number) => `Você terminou seu trabalho ${description} e recebeu ${formatMoney(salary, Language.Portuguese)}! ${EmoteString.Jobs}`,
+		robAgain: `Você pode roubar novamente! ${EmoteString.Robbery}`,
+		free: `Você está livre! ${EmoteString.Prison}`,
 	},
 	[Language.Spanish]: {
-		daily: `${EmoteString.Experience} ¡Puedes recibir tu dinero diario de nuevo!`,
-		job: (description: string, salary: number) => `Terminaste tu trabajo ${description} y recibiste ${formatMoney(salary, Language.Spanish)}!`
+		daily: `¡Puedes recibir tu dinero diario de nuevo! ${EmoteString.Experience}`,
+		job: (description: string, salary: number) => `Terminaste tu trabajo ${description} y recibiste ${formatMoney(salary, Language.Spanish)}! ${EmoteString.Jobs}`,
+		robAgain: `¡Puedes robar de nuevo! ${EmoteString.Robbery}`,
+		free: `¡Estás libre! ${EmoteString.Prison}`,
 	},
 };
