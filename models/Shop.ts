@@ -1,8 +1,10 @@
-﻿import { formatMoney } from "../utils/ui";
+﻿import { formatMoney, showTime } from "../utils/ui";
 import { User } from "./User";
 import { CustomEmbedBuilder } from "./CustomEmbedBuilder";
 import {
 	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonStyle,
 	ChatInputCommandInteraction,
 	ColorResolvable,
 	Colors,
@@ -13,8 +15,9 @@ import {
 } from "discord.js";
 import { Language } from "./Language";
 import { removeEmbedComponents, replyInteraction } from "../utils/logic";
-import { EmoteString } from "../utils/emotes";
+import { EmoteId, EmoteString } from "../utils/emotes";
 import { getItemList, Item, ItemList, ItemType } from "./Item";
+import { subMinutes } from "date-fns";
 
 export class Shop {
 	User: User;
@@ -28,8 +31,8 @@ export class Shop {
 		const s = Strings[user.Language];
 
 		this.User = user;
-		this.Title = `${EmoteString.Shop} ${s.title}`;
-		this.Description = s.description;
+		this.Title = s.title;
+		this.Description = `# ${this.Title}\n${s.description}`;
 		this.Image = "https://media.discordapp.net/attachments/531174573463306240/854876910885797909/Loja.png";
 		this.Color = Colors.Green;
 		this.ItemList = getItemList().filter((item) => item.Shop);
@@ -40,7 +43,6 @@ export class Shop {
 		const s = Strings[this.User.Language];
 
 		const embed = new CustomEmbedBuilder()
-			.setTitle(this.Title)
 			.setDescription(this.Description)
 			.setThumbnail(this.Image)
 			.setColor(this.Color)
@@ -154,46 +156,78 @@ export class Shop {
 			);
 		});
 
-		const row = new ActionRowBuilder<StringSelectMenuBuilder>()
+		const rowSelector = new ActionRowBuilder<StringSelectMenuBuilder>()
 			.setComponents(select);
 
-		const components = row.components[0].options.length > 0 ? [row] : [];
+		const buttonBuyMore = new ButtonBuilder()
+			.setCustomId("buyMore")
+			.setLabel(s.buyMore)
+			.setEmoji("◀")
+			.setStyle(ButtonStyle.Secondary);
+
+		const rowButton = new ActionRowBuilder<ButtonBuilder>()
+			.addComponents(buttonBuyMore);
+
+		const components = rowSelector.components[0].options.length > 0 ? [rowSelector] : [];
 
 		const response = await replyInteraction(interaction, { embeds: [embed], components });
 
-		const collector = response?.createMessageComponentCollector({
+		const collectorSelector = response?.createMessageComponentCollector({
 			filter: (i: MessageComponentInteraction) => i.user.id === interaction.user.id,
 			componentType: ComponentType.StringSelect,
-			time: 60_000,
+			idle: 60_000,
 		});
 
-		collector?.on("collect", async select => {
-			embed.setFields([]);
+		const collectorButton = response?.createMessageComponentCollector({
+			filter: (i: MessageComponentInteraction) => i.user.id === interaction.user.id,
+			componentType: ComponentType.Button,
+			idle: 60_000,
+		});
 
+		collectorSelector?.on("collect", async select => {
+			await select.deferUpdate();
 			await this.User.GetInfo();
+
+			const embedBought = new CustomEmbedBuilder()
+				.setThumbnail(this.Image)
+				.setColor(this.Color)
+				.setDefaultFooter(this.User.Nickname, interaction.user.avatarURL(), formatMoney(this.User.Money, this.User.Language));
 
 			const item = ItemList[Number(select.values[0])];
 
 			if (!this.User.CanBuySomething()) {
 				return await removeEmbedComponents(interaction, [
-					embed.setDescription(s.cantBuy),
+					embedBought.setDescription(s.cantBuy),
 				]);
 			}
 
 			if (!await this.User.BuyItem(item)) {
 				return await removeEmbedComponents(interaction, [
-					embed.setDescription(s.noMoney),
+					embedBought.setDescription(s.noMoney),
 				]);
 			}
 
-			return await removeEmbedComponents(interaction, [
-				embed
-					.setDescription(s.itemBought(`${item.Skin.Default.Emote.String} ${item.Description[this.User.Language]}`))
-					.setDefaultFooter(this.User.Nickname, interaction.user.avatarURL(), formatMoney(this.User.Money, this.User.Language)),
-			]);
+			return await replyInteraction(interaction, {
+				embeds: [
+					embedBought
+						.setDescription(s.itemBought(`${item.Skin.Default.Emote.String} ${item.Description[this.User.Language]}`))
+						.setDefaultFooter(this.User.Nickname, interaction.user.avatarURL(), formatMoney(this.User.Money, this.User.Language)),
+				],
+				components: [rowButton],
+			});
 		});
 
-		collector?.on("end", async () => {
+		collectorSelector?.on("end", async () => {
+			await removeEmbedComponents(interaction);
+		});
+
+		collectorButton?.on("collect", async btn => {
+			if (btn.customId === "buyMore") {
+				await btn.update({ embeds: [embed], components });
+			}
+		});
+
+		collectorButton?.on("end", async () => {
 			await removeEmbedComponents(interaction);
 		});
 	}
@@ -211,7 +245,8 @@ const Strings = {
 		night: "night",
 		escape: "escape",
 		consumable: "consumable",
-		itemBought: (itemName: string) => `You bought ${itemName}!`,
+		itemBought: (itemName: string) => `## You bought ${itemName}!`,
+		buyMore: "Buy more!",
 	},
 
 	[Language.Portuguese]: {
@@ -224,7 +259,8 @@ const Strings = {
 		night: "noite",
 		escape: "fuga",
 		consumable: "consumível",
-		itemBought: (itemName: string) => `Você comprou ${itemName}`,
+		itemBought: (itemName: string) => `## Você comprou ${itemName}`,
+		buyMore: "Comprar mais!",
 	},
 
 	[Language.Spanish]: {
@@ -237,6 +273,7 @@ const Strings = {
 		night: "noche",
 		escape: "fuga",
 		consumable: "consumible",
-		itemBought: (itemName: string) => `Tú compraste ${itemName}`,
+		itemBought: (itemName: string) => `## Tú compraste ${itemName}`,
+		buyMore: "¡Comprar más!",
 	},
 } as const;
