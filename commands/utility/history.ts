@@ -49,7 +49,7 @@ module.exports = {
 		const limit = 5;
 		let robHistories: RobHistories[] = [];
 
-		const howManyRobberies = await RobHistories.Count(user.Id);
+		const howManyRobberies = await RobHistories.Count(target.Id);
 
 		async function createEmbedHistory(user: User) {
 
@@ -94,8 +94,8 @@ module.exports = {
 ${EmoteString.Victory} ${s.successes}: \`${user.Robbery.SuccessCount}\`
 ${EmoteString.Defeat} ${s.failures}: \`${user.Robbery.FailureCount}\`
 ${EmoteString.Winrate} ${s.successRate}: \`${winrate}\`
-${s.robbedTimes(user.Robbery.BeingRobbedCount)}
 ${s.robbedTotal} \`${formatMoney(user.Robbery.SuccessRobbedSum, user.Language)}\`
+${s.robbedTimes(user.Robbery.BeingRobbedCount)}
 ${s.lost} \`${formatMoney(user.Robbery.BeingRobbedSum, user.Language)}\`
 
 -# ${s.history}
@@ -185,8 +185,8 @@ const Strings = {
 		successes: "Successes",
 		failures: "Failures",
 		successRate: "Success rate",
-		robbedTimes: (beingRobbedCount: number) => `Robbed \`${beingRobbedCount}\` times`,
 		robbedTotal: "Robbed total of",
+		robbedTimes: (beingRobbedCount: number) => `Robbed \`${beingRobbedCount}\` times`,
 		lost: "Lost",
 		previous: "Previous",
 		next: "Next",
@@ -201,8 +201,8 @@ const Strings = {
 		successes: "Sucessos",
 		failures: "Falhas",
 		successRate: "Taxa de sucesso",
-		robbedTimes: (beingRobbedCount: number) => `Roubou \`${beingRobbedCount}\` vezes`,
 		robbedTotal: "Roubou um total de",
+		robbedTimes: (beingRobbedCount: number) => `Foi roubado \`${beingRobbedCount}\` vezes`,
 		lost: "Perdeu",
 		previous: "Anterior",
 		next: "Próximo",
@@ -217,8 +217,8 @@ const Strings = {
 		successes: "Éxitos",
 		failures: "Fracasos",
 		successRate: "Tasa de éxito",
-		robbedTimes: (beingRobbedCount: number) => `Robó \`${beingRobbedCount}\` veces`,
 		robbedTotal: "Robó un total de",
+		robbedTimes: (beingRobbedCount: number) => `Fue robado \`${beingRobbedCount}\` veces`,
 		lost: "Perdió",
 		previous: "Anterior",
 		next: "Próximo",
