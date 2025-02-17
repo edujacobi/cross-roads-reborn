@@ -41,10 +41,10 @@ module.exports = {
 
 		let text = `${s.userFree}`;
 		if (user.IsEscaping()) {
-			text = s.userEscaping(user.Timers.Escape);
+			text = s.userEscaping(user.Escape.Time);
 		}
 		if (user.IsInPrison()) {
-			text = s.userPrison(user.Timers.Prison);
+			text = s.userPrison(user.Prison.Time);
 		}
 
 		const embed = new CustomEmbedBuilder()
@@ -86,6 +86,7 @@ module.exports = {
 					embedPrisoners.addFields({
 						name: prisoner.nickname,
 						value: `${s.free} ${showTime(new Date(prisoner.prisonTime).getTime(), true)}`,
+						inline: true,
 					});
 				});
 

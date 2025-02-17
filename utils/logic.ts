@@ -6,7 +6,7 @@ import {
 	CommandInteraction,
 	EmbedBuilder,
 	InteractionReplyOptions,
-	MessagePayload,
+	MessagePayload, Snowflake,
 } from "discord.js";
 import { CustomEmbedBuilder } from "../models/CustomEmbedBuilder";
 import { JSONEncodable } from "@discordjs/util";
@@ -72,7 +72,10 @@ export async function sendPrivateMessage(userId: string, message: string) {
 	}
 }
 
-export async function sendComplexPrivateMessage(userId: string, embed: EmbedBuilder) {
+export async function sendComplexPrivateMessage(userId: Snowflake | undefined, embed: EmbedBuilder) {
+	if (!userId) {
+		return;
+	}
 	const client = getClient();
 	const discordUser = await client.users.fetch(userId);
 
@@ -218,6 +221,10 @@ export async function setVIPRoleInOfficialServer(interaction: ChatInputCommandIn
 	}
 }
 
+export function getPercent(percent: number, from: number) {
+	return (from / 100) * percent;
+}
+
 const Strings = {
 	[Language.English]: {
 		welcomeMessage: (name: string) => `# Welcome to Cross Roads Reborn!
@@ -245,7 +252,7 @@ ${EmoteString.CloseInv} Veja seu inventário usando \`/inv\`.
 
 ${EmoteString.AK47} Você pode receber um pouco de dinheiro todos os dias usando \`/daily\`.
 
-${EmoteString.Jobs} Para começar a trabalhar, use \`/job\`.
+${EmoteString.Jobs} Para começar a trabalhar, use \`/trabalhos\`.
 
 -# Espero que você goste do jogo!`,
 		userDontExist: "Este usuário não existe no banco de dados.",
@@ -261,7 +268,7 @@ ${EmoteString.CloseInv} Mira tu inventario usando \`/inv\`.
 
 ${EmoteString.AK47} Puedes recibir un poco de dinero cada día usando \`/daily\`.
 
-${EmoteString.Jobs} Para empezar a trabajar, usa \`/job\`.
+${EmoteString.Jobs} Para empezar a trabajar, usa \`/jobs\`.
 
 -# ¡Espero que disfrutes del juego!`,
 		userDontExist: "Este usuario no existe en la base de datos.",

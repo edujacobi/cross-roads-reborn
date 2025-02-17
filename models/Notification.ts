@@ -74,7 +74,7 @@ export class Notification {
 		notification.UserId = user.Id;
 		notification.Type = NotificationType.RobAgain;
 		notification.Language = user.Language;
-		notification.Date = user.Timers.Escape;
+		notification.Date = user.Escape.Time;
 		await notification.Create();
 	}
 
@@ -83,7 +83,7 @@ export class Notification {
 		notification.UserId = user.Id;
 		notification.Type = NotificationType.Free;
 		notification.Language = user.Language;
-		notification.Date = user.Timers.Prison;
+		notification.Date = user.Prison.Time;
 		await notification.Create();
 	}
 

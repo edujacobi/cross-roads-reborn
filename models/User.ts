@@ -1,6 +1,6 @@
 ﻿import { Users } from "../database/Users";
 import { Log } from "../utils/log";
-import { addDays, addMinutes, differenceInHours } from "date-fns";
+import { addDays, differenceInHours } from "date-fns";
 import { Language } from "./Language";
 import { UserItems } from "../database/UserItems";
 import { addHours } from "date-fns/addHours";
@@ -8,17 +8,11 @@ import { Op } from "sequelize";
 import { Item, ItemList, ItemType, UserItem } from "./Item";
 import { JobId, JobList } from "./Job";
 import { Notification, NotificationType } from "./Notification";
-import { defaultEmbed, formatDate, formatMoney, showTime } from "../utils/ui";
+import { formatDate, formatMoney, showTime } from "../utils/ui";
 import { EmoteString } from "../utils/emotes";
-import { ChatInputCommandInteraction } from "discord.js";
-import { replyInteraction, sendComplexPrivateMessage } from "../utils/logic";
-import { CustomEmbedBuilder } from "./CustomEmbedBuilder";
-import { getClient } from "../client";
-import { setTimeout as wait } from "timers/promises";
-import { CrColors } from "../utils/colors";
 
 export class User {
-	Id: string = "";
+	Id = "";
 	CreatedAt: Date;
 	UpdatedAt: Date;
 	VipTime: Date | null = null;
@@ -34,18 +28,40 @@ export class User {
 	Job: {
 		Id: JobId | null,
 		EndsIn: Date,
+		ReceivedSum: number,
+		ReceivedCount: number,
 	};
 	Robbery: {
+		SuccessCount: number,
+		FailureCount: number,
+		BeingRobbedCount: number,
+		SuccessRobbedSum: number,
+		BeingRobbedSum: number,
 		IsRobbingId: string | null,
 		IsBeingRobbedById: string | null,
+	};
+	Prison: {
+		BriberySum: number,
+		BriberyCount: number,
+		Time: Date,
+	};
+	Escape: {
+		Count: number,
+		Time: Date,
+	};
+	Casino: {
+		WinCount: number,
+		LoseCount: number,
+		WinSum: number,
+		LoseSum: number,
+	};
+	Shop: {
+		SpentSum: number,
+		SpentCount: number,
 	};
 	BeatUp: {
 		IsBeatingId: string | null,
 		IsBeingBeatUpById: string | null,
-	};
-	Timers: {
-		Prison: Date,
-		Escape: Date,
 	};
 	Attributes: {
 		Attack: number,
@@ -72,8 +88,15 @@ export class User {
 		this.Job = {
 			Id: null,
 			EndsIn: now,
+			ReceivedSum: 0,
+			ReceivedCount: 0,
 		};
 		this.Robbery = {
+			SuccessCount: 0,
+			FailureCount: 0,
+			SuccessRobbedSum: 0,
+			BeingRobbedCount: 0,
+			BeingRobbedSum: 0,
 			IsRobbingId: null,
 			IsBeingRobbedById: null,
 		};
@@ -81,9 +104,24 @@ export class User {
 			IsBeatingId: null,
 			IsBeingBeatUpById: null,
 		};
-		this.Timers = {
-			Prison: now,
-			Escape: now,
+		this.Prison = {
+			BriberySum: 0,
+			BriberyCount: 0,
+			Time: now,
+		};
+		this.Escape = {
+			Count: 0,
+			Time: now,
+		};
+		this.Casino = {
+			WinCount: 0,
+			LoseCount: 0,
+			WinSum: 0,
+			LoseSum: 0,
+		};
+		this.Shop = {
+			SpentSum: 0,
+			SpentCount: 0,
 		};
 		this.Attributes = {
 			Attack: 0,
@@ -106,6 +144,22 @@ export class User {
 				dailyStreak: this.Daily.CurrentStreak,
 				maxDailyStreak: this.Daily.MaxStreak,
 				lastDailyReceived: this.Daily.LastReceived,
+				casinoLoseCount: 0,
+				casinoLoseSum: 0,
+				casinoWinCount: 0,
+				casinoWinSum: 0,
+				escapeCount: 0,
+				jobReceivedCount: 0,
+				jobReceivedSum: 0,
+				prisonBriberyCount: 0,
+				prisonBriberySum: 0,
+				robberyBeingRobbedCount: 0,
+				robberyBeingRobbedSum: 0,
+				robberyFailureCount: 0,
+				robberySuccessCount: 0,
+				robberySuccessRobbedSum: 0,
+				shopSpentCount: 0,
+				shopSpentSum: 0,
 			});
 			Log.Success(`User ${this.Id} created.`);
 
@@ -134,20 +188,50 @@ export class User {
 		this.VipEternal = user.vipEternal;
 		this.Nickname = user.nickname;
 		this.Money = user.money;
+
+		// Job
 		this.Job.Id = user.jobId;
 		this.Job.EndsIn = new Date(user.jobTime);
-		this.Timers.Prison = new Date(user.prisonTime);
-		this.Timers.Escape = new Date(user.escapeTime);
+		this.Job.ReceivedCount = user.jobReceivedCount;
+		this.Job.ReceivedSum = user.jobReceivedSum;
+
+		// Daily
 		this.Daily.CurrentStreak = user.dailyStreak;
 		this.Daily.MaxStreak = user.maxDailyStreak;
 		this.Daily.LastReceived = user.lastDailyReceived;
+		this.Daily.LastReceived = user.lastDailyReceived;
 
+		// Robberies
+		this.Robbery.SuccessCount = user.robberySuccessCount;
+		this.Robbery.FailureCount = user.robberyFailureCount;
+		this.Robbery.SuccessRobbedSum = user.robberySuccessRobbedSum;
+		this.Robbery.BeingRobbedCount = user.robberyBeingRobbedCount;
+		this.Robbery.BeingRobbedSum = user.robberyBeingRobbedSum;
 		if (user.robbingUserId) {
 			this.Robbery.IsRobbingId = user.robbingUserId;
 		}
 		if (user.beingRobbedByUserId) {
 			this.Robbery.IsBeingRobbedById = user.beingRobbedByUserId;
 		}
+
+		// Prison
+		this.Prison.BriberySum = user.prisonBriberySum;
+		this.Prison.BriberyCount = user.prisonBriberyCount;
+		this.Prison.Time = new Date(user.prisonTime);
+
+		// Escape
+		this.Escape.Count = user.escapeCount;
+		this.Escape.Time = new Date(user.escapeTime);
+
+		// Casino
+		this.Casino.WinCount = user.casinoWinCount;
+		this.Casino.LoseCount = user.casinoLoseCount;
+		this.Casino.WinSum = user.casinoWinSum;
+		this.Casino.LoseSum = user.casinoLoseSum;
+
+		// Shop
+		this.Shop.SpentSum = user.shopSpentSum;
+		this.Shop.SpentCount = user.shopSpentCount;
 
 		await this.GetAttributes();
 		this.GetSituation();
@@ -234,7 +318,7 @@ export class User {
 			return false;
 		}
 
-		if (this.Timers.Prison > new Date()) {
+		if (this.Prison.Time > new Date()) {
 			return false;
 		}
 
@@ -286,6 +370,9 @@ export class User {
 
 			Log.Info(`User ${this.Nickname} (ID: ${this.Id}) bought item ${item.Description[Language.English]} (ID: ${item.Id}) for ${item.Price}. Total time: ${differenceInHours(existingItem.remainingTime, new Date())}h.`);
 		}
+
+		this.Shop.SpentCount += 1;
+		this.Shop.SpentSum += item.Price;
 
 		await this.Update();
 		return true;
@@ -379,11 +466,11 @@ export class User {
 		}
 		if (this.IsEscaping()) {
 			this.Situation.Simple = "Procurado";
-			this.Situation.Complex = `${EmoteString.Police} Procurado até ${showTime(this.Timers.Escape.getTime())}`;
+			this.Situation.Complex = `${EmoteString.Police} Procurado até ${showTime(this.Escape.Time.getTime())}`;
 		}
 		if (this.IsInPrison()) {
 			this.Situation.Simple = "Preso";
-			this.Situation.Complex = `${EmoteString.Prison} Preso até ${showTime(this.Timers.Prison.getTime())}`;
+			this.Situation.Complex = `${EmoteString.Prison} Preso até ${showTime(this.Prison.Time.getTime())}`;
 		}
 	}
 
@@ -392,11 +479,11 @@ export class User {
 	}
 
 	IsInPrison() {
-		return this.Timers.Prison > new Date();
+		return this.Prison.Time > new Date();
 	}
 
 	IsEscaping() {
-		return this.Timers.Escape > new Date();
+		return this.Escape.Time > new Date();
 	}
 
 	async StartJob(jobId: JobId) {
@@ -428,192 +515,11 @@ export class User {
 		const job = JobList[this.Job.Id];
 		this.Money += job.Salary;
 		this.Job.Id = null;
+		this.Job.ReceivedCount += 1;
+		this.Job.ReceivedSum += job.Salary;
 
 		await this.Update();
 		Log.Success(`User ${this.Nickname} (ID: ${this.Id}) finished his job ${job.Description[this.Language]} and received ${formatMoney(job.Salary, Language.English)}.`);
-	}
-
-	async CanRobUser(target: User, interaction: ChatInputCommandInteraction) {
-		if (target.Id === this.Id) {
-			await replyInteraction(interaction, {
-				embeds: [defaultEmbed({
-					nickname: this.Nickname,
-					interaction,
-					color: CrColors.Robbery,
-					description: `${EmoteString.Robbery} Você não pode roubar a si mesmo, idiota!`,
-				})],
-			});
-			return false;
-		}
-
-		if (this.Attributes.Attack == 0) {
-			await replyInteraction(interaction, {
-				embeds: [defaultEmbed({
-					nickname: this.Nickname,
-					interaction,
-					color: CrColors.Robbery,
-					description: `${EmoteString.Robbery} Você não pode roubar sem uma arma!`,
-				})],
-			});
-			return false;
-		}
-
-		if (target.Attributes.Attack - this.Attributes.Attack > 15) {
-			await replyInteraction(interaction, {
-				embeds: [defaultEmbed({
-					nickname: this.Nickname,
-					interaction,
-					color: CrColors.Robbery,
-					description: `${EmoteString.Robbery} Você não pode roubar ${target.Nickname} usando suas armas atuais!`,
-					footer: "Consiga uma arma melhor",
-				})],
-			});
-			return false;
-		}
-
-		if (this.IsInPrison()) {
-			await replyInteraction(interaction, {
-				embeds: [defaultEmbed({
-					nickname: this.Nickname,
-					interaction,
-					color: CrColors.Robbery,
-					description: `${EmoteString.Robbery} Você não pode roubar enquanto está preso!`,
-				})],
-			});
-			return false;
-		}
-
-		if (this.IsEscaping()) {
-			await replyInteraction(interaction, {
-				embeds: [defaultEmbed({
-					interaction,
-					nickname: this.Nickname,
-					color: CrColors.Robbery,
-					description: `${EmoteString.Robbery} Você não pode roubar enquanto está sendo procurado pela polícia!`,
-				})],
-			});
-			return false;
-		}
-
-		return true;
-	}
-
-	async RobUser(target: User, interaction: ChatInputCommandInteraction) {
-		const userTimeInPrison = 10 + 1.5 * this.Attributes.Attack;
-
-		if (!await this.CanRobUser(target, interaction)) {
-			return;
-		}
-
-		if (target.Attributes.Defense === 0) {
-			this.Attributes.Attack *= 1.35;
-		}
-
-		this.Robbery.IsRobbingId = target.Id;
-		await this.Update();
-		target.Robbery.IsBeingRobbedById = this.Id;
-		await target.Update();
-
-		Log.Info(`User ${this.Nickname} (ID: ${this.Id}) started a robbery to user ${target.Nickname} (ID: ${target.Id}).`);
-
-		const privateEmbed = new CustomEmbedBuilder()
-			.setColor(CrColors.Robbery)
-			.setAuthor({
-				name: `Roubo em andamento...`,
-				iconURL: interaction.user.avatarURL() ?? "",
-			})
-			.setDescription(`# ${EmoteString.Robbery} Mãos ao alto!
-${this.Nickname} está tentando roubar você!`);
-
-		const client = getClient();
-		const targetUser = await client.users.fetch(target.Id);
-
-		const privateMessage = await sendComplexPrivateMessage(targetUser.id, privateEmbed);
-
-		const channelEmbed = new CustomEmbedBuilder()
-			.setColor(CrColors.Robbery)
-			.setThumbnail("https://media.discordapp.net/attachments/691019843159326757/791444366727708672/roubar_20201223201323.png")
-			.setAuthor({
-				name: `Roubo em andamento...`,
-				iconURL: targetUser.avatarURL() ?? "",
-			})
-			.setDescription(`# ${this.Nickname}
-${EmoteString.Attack}${this.Attributes.Attack} ATK ${EmoteString.Defense}${this.Attributes.Defense} DEF
--# ${EmoteString.Attack}${this.Attributes.MoneyAttack} $ATK! ${EmoteString.Defense}${this.Attributes.MoneyDefense} $DEF!
-Tempo preso caso falha: ${userTimeInPrison} minutos
-# ${target.Nickname}
-${EmoteString.Attack}${target.Attributes.Attack} ATK ${EmoteString.Defense}${target.Attributes.Defense} DEF
--# ${EmoteString.Attack}${target.Attributes.MoneyAttack} $ATK! ${EmoteString.Defense}${target.Attributes.MoneyDefense} $DEF!`)
-			.setDefaultFooter(this.Nickname, interaction.user.avatarURL());
-
-		await replyInteraction(interaction, {
-			content: `${interaction.options.getUser("target")}`,
-			embeds: [channelEmbed],
-		});
-
-		await wait(10000);
-
-		function getPercent(percent: number, from: number) {
-			return (from / 100) * percent;
-		}
-
-		this.Attributes.Attack -= getPercent(target.Attributes.Defense, this.Attributes.Attack);
-
-		const chance = Math.random() * 100;
-		const sucess = chance < this.Attributes.Attack;
-
-		if (sucess) {
-			if (target.Attributes.Defense > 0) {
-				this.Attributes.MoneyAttack -= getPercent(target.Attributes.MoneyDefense, this.Attributes.MoneyAttack);
-			}
-
-			const money = Math.floor(getPercent(this.Attributes.MoneyAttack, target.Money));
-			this.Money += money;
-			target.Money -= money;
-
-			this.Timers.Escape = addHours(new Date(), 1);
-
-			channelEmbed.setDescription(`# Você roubou ${formatMoney(money, this.Language)} de **${target.Nickname}**!`);
-
-			privateEmbed.setDescription(`# Você foi roubado e perdeu ${formatMoney(money, target.Language)} pro ${this.Nickname}!`);
-
-			Log.Success(`User ${this.Nickname} (ID: ${this.Id}) successfully robbed user ${target.Nickname} (ID: ${target.Id}) and got ${formatMoney(money, Language.English)}.`);
-		}
-		else {
-			this.Timers.Prison = addMinutes(new Date(), userTimeInPrison);
-
-			channelEmbed
-				.setColor(CrColors.Police)
-				.setDescription(`# Você falhou na sua tentativa e ficará preso até ${showTime(this.Timers.Prison.getTime())}`);
-
-			privateEmbed.setDescription(`# ${this.Nickname} tentou lhe roubar, mas a polícia o capturou e deixará ele preso até ${showTime(this.Timers.Prison.getTime())}! ${EmoteString.Police}`);
-
-			Log.Success(`User ${this.Nickname} (ID: ${this.Id}) failed to rob user ${target.Nickname} (ID: ${target.Id}).`);
-		}
-
-		channelEmbed
-			.setAuthor({
-				name: `Roubo ${sucess ? "bem" : "mal"}-sucedido`,
-				iconURL: targetUser.avatarURL() ?? "",
-			})
-			.setDefaultFooter(this.Nickname, interaction.user.avatarURL(), formatMoney(this.Money, this.Language));
-
-		await replyInteraction(interaction, { embeds: [channelEmbed], components: [] });
-
-		if (privateMessage) {
-			privateEmbed
-				.setAuthor({
-					name: `Roubo finalizado`,
-					iconURL: interaction.user.avatarURL() ?? "",
-				})
-				.setFooter({ text: formatMoney(target.Money, target.Language) });
-			await privateMessage.edit({ embeds: [privateEmbed] });
-		}
-
-		this.Robbery.IsRobbingId = null;
-		await this.Update();
-		target.Robbery.IsBeingRobbedById = null;
-		await target.Update();
 	}
 
 	// CheckActions() {
@@ -629,21 +535,44 @@ ${EmoteString.Attack}${target.Attributes.Attack} ATK ${EmoteString.Defense}${tar
 	async Update() {
 		try {
 			await Users.update({
-				createdAt: this.CreatedAt,
-				updatedAt: this.UpdatedAt,
-				vipTime: this.VipTime,
-				vipEternal: this.VipEternal,
 				nickname: this.Nickname,
 				money: this.Money,
-				jobId: this.Job.Id,
-				jobTime: this.Job.EndsIn,
-				robbingUserId: this.Robbery.IsRobbingId,
-				beingRobbedByUserId: this.Robbery.IsBeingRobbedById,
-				prisonTime: this.Timers.Prison,
-				escapeTime: this.Timers.Escape,
+				lastDailyReceived: this.Daily.LastReceived,
 				dailyStreak: this.Daily.CurrentStreak,
 				maxDailyStreak: this.Daily.MaxStreak,
-				lastDailyReceived: this.Daily.LastReceived,
+
+				vipTime: this.VipTime,
+				vipEternal: this.VipEternal,
+
+				jobId: this.Job.Id,
+				jobTime: this.Job.EndsIn,
+				jobReceivedSum: this.Job.ReceivedSum,
+				jobReceivedCount: this.Job.ReceivedCount,
+
+				robberySuccessCount: this.Robbery.SuccessCount,
+				robberyFailureCount: this.Robbery.FailureCount,
+				robberySuccessRobbedSum: this.Robbery.SuccessRobbedSum,
+				robberyBeingRobbedCount: this.Robbery.BeingRobbedCount,
+				robberyBeingRobbedSum: this.Robbery.BeingRobbedSum,
+				robbingUserId: this.Robbery.IsRobbingId,
+				beingRobbedByUserId: this.Robbery.IsBeingRobbedById,
+
+				prisonBriberySum: this.Prison.BriberySum,
+				prisonBriberyCount: this.Prison.BriberyCount,
+				prisonTime: this.Prison.Time,
+
+				escapeCount: this.Escape.Count,
+				escapeTime: this.Escape.Time,
+
+				casinoWinCount: this.Casino.WinCount,
+				casinoLoseCount: this.Casino.LoseCount,
+				casinoWinSum: this.Casino.WinSum,
+				casinoLoseSum: this.Casino.LoseSum,
+
+				shopSpentSum: this.Shop.SpentSum,
+				shopSpentCount: this.Shop.SpentCount,
+
+				updatedAt: this.UpdatedAt,
 			}, {
 				where: { id: this.Id },
 			});

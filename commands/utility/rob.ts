@@ -1,20 +1,12 @@
-﻿import {
-	ActionRowBuilder,
-	ButtonBuilder,
-	ButtonStyle,
-	ChatInputCommandInteraction,
-	Colors,
-	Locale,
-	SlashCommandBuilder,
-	SlashCommandUserOption,
-} from "discord.js";
+﻿import { ChatInputCommandInteraction, Colors, Locale, SlashCommandBuilder, SlashCommandUserOption } from "discord.js";
 import { checkUser, replyInteraction, replyUserDontExist } from "../../utils/logic";
 import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
 import { defaultEmbed, showTime } from "../../utils/ui";
-import { EmoteId, EmoteString } from "../../utils/emotes";
+import { EmoteString } from "../../utils/emotes";
 import { CrColors } from "../../utils/colors";
 import { User } from "../../models/User";
 import { Language } from "../../models/Language";
+import { Robbery } from "../../models/Robbery";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -40,10 +32,10 @@ module.exports = {
 			text = s.userWorking;
 		}
 		if (user.IsEscaping()) {
-			text = s.userEscaping(user.Timers.Escape);
+			text = s.userEscaping(user.Escape.Time);
 		}
 		if (user.IsInPrison()) {
-			text = s.userPrison(user.Timers.Prison);
+			text = s.userPrison(user.Prison.Time);
 		}
 
 		// Há uma pequena chance do alvo ser também espancado!
@@ -68,7 +60,7 @@ module.exports = {
 					nickname: user.Nickname,
 					interaction,
 					color: Colors.Yellow,
-					description: `${EmoteString.Working} ${s.userWorking}`,
+					description: `${s.userWorking} ${EmoteString.Working}`,
 				})],
 			});
 		}
@@ -79,42 +71,24 @@ module.exports = {
 			return await replyUserDontExist(interaction, language);
 		}
 
-		await user.RobUser(targetUser, interaction);
+		const robbery = new Robbery(user, targetUser);
 
-		// channelEmbed.setDescription(`### Acerte seu alvo!`);
-		//
-		// for (let i = 0; i < 3; i++) {
-		// 	await replyInteraction(interaction, {
-		// 		embeds: [channelEmbed],
-		// 		components: createButtonGrid(),
-		// 	});
-		//
-		// 	await wait(3000);
-		// }
+		const { canRob, message } = robbery.CanRobUser();
+
+		if (!canRob) {
+			return await replyInteraction(interaction, {
+				embeds: [defaultEmbed({
+					nickname: user.Nickname,
+					interaction,
+					color: CrColors.Robbery,
+					description: message,
+				})],
+			});
+		}
+
+		await robbery.StartRobbery(interaction);
 	},
 };
-
-function createButtonGrid() {
-	const buttons = Array.from({ length: 25 }, (_, i) =>
-		new ButtonBuilder()
-			.setCustomId(`button_${i}`)
-			.setEmoji(i === 0 ? EmoteId.Attack : EmoteId.Defense)
-			.setStyle(i === 0 ? ButtonStyle.Danger : ButtonStyle.Secondary),
-	);
-
-	// Shuffle the buttons array
-	for (let i = buttons.length - 1; i > 0; i--) {
-		const j = Math.floor(Math.random() * (i + 1));
-		[buttons[i], buttons[j]] = [buttons[j], buttons[i]];
-	}
-
-	const rows = Array.from({ length: 5 }, (_, i) =>
-		new ActionRowBuilder<ButtonBuilder>()
-			.addComponents(...buttons.slice(i * 5, i * 5 + 5)),
-	);
-
-	return rows;
-}
 
 const Strings = {
 	[Language.English]: {

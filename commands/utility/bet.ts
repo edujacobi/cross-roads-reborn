@@ -112,9 +112,14 @@ module.exports = {
 
 		if (win) {
 			user.Money += prize;
+			user.Casino.WinCount += 1;
+			user.Casino.WinSum += prize;
+
 		}
 		else {
 			user.Money -= value;
+			user.Casino.LoseCount += 1;
+			user.Casino.LoseSum += value;
 		}
 
 		await user.Update();
