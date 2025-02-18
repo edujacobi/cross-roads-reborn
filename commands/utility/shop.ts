@@ -12,7 +12,7 @@ module.exports = {
 	async execute(interaction: ChatInputCommandInteraction, user: User) {
 		const shop = new Shop(user);
 
-		await shop.GenerateEmbed(interaction);
+		await shop.Start(interaction);
 
 	},
 };

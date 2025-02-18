@@ -1,4 +1,4 @@
-﻿import { formatMoney, showTime } from "../utils/ui";
+﻿import { formatMoney } from "../utils/ui";
 import { User } from "./User";
 import { CustomEmbedBuilder } from "./CustomEmbedBuilder";
 import {
@@ -15,9 +15,8 @@ import {
 } from "discord.js";
 import { Language } from "./Language";
 import { removeEmbedComponents, replyInteraction } from "../utils/logic";
-import { EmoteId, EmoteString } from "../utils/emotes";
+import { EmoteString } from "../utils/emotes";
 import { getItemList, Item, ItemList, ItemType } from "./Item";
-import { subMinutes } from "date-fns";
 
 export class Shop {
 	User: User;
@@ -38,8 +37,7 @@ export class Shop {
 		this.ItemList = getItemList().filter((item) => item.Shop);
 	}
 
-
-	async GenerateEmbed(interaction: ChatInputCommandInteraction) {
+	GenerateEmbed(interaction: ChatInputCommandInteraction) {
 		const s = Strings[this.User.Language];
 
 		const embed = new CustomEmbedBuilder()
@@ -47,7 +45,6 @@ export class Shop {
 			.setThumbnail(this.Image)
 			.setColor(this.Color)
 			.setDefaultFooter(this.User.Nickname, interaction.user.avatarURL(), formatMoney(this.User.Money, this.User.Language));
-
 
 		const select = new StringSelectMenuBuilder()
 			.setCustomId("select")
@@ -170,6 +167,14 @@ export class Shop {
 
 		const components = rowSelector.components[0].options.length > 0 ? [rowSelector] : [];
 
+		return { embed, components, rowButton };
+	}
+
+	async Start(interaction: ChatInputCommandInteraction) {
+		const s = Strings[this.User.Language];
+
+		const { embed, components, rowButton } = this.GenerateEmbed(interaction);
+
 		const response = await replyInteraction(interaction, { embeds: [embed], components });
 
 		const collectorSelector = response?.createMessageComponentCollector({
@@ -223,6 +228,7 @@ export class Shop {
 
 		collectorButton?.on("collect", async btn => {
 			if (btn.customId === "buyMore") {
+				const { embed } = this.GenerateEmbed(interaction);
 				await btn.update({ embeds: [embed], components });
 			}
 		});

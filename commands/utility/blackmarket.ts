@@ -33,7 +33,7 @@ module.exports = {
 			});
 		}
 
-		await blackMarket.GenerateEmbed(interaction);
+		await blackMarket.Start(interaction);
 	},
 };
 
