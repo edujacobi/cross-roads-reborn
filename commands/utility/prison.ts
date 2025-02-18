@@ -82,7 +82,7 @@ module.exports = {
 					embedPrisoners.setDescription(s.empty);
 				}
 
-				prisoners.forEach((prisoner, index) => {
+				prisoners.forEach(prisoner => {
 					embedPrisoners.addFields({
 						name: prisoner.nickname,
 						value: `${s.free} ${showTime(new Date(prisoner.prisonTime).getTime(), true)}`,

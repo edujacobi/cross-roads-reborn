@@ -90,12 +90,8 @@ ${formatMoney(target.Money, language)}`)
 
 		let isOpen = false;
 
-		function createRow() {
-			const row = new ActionRowBuilder<ButtonBuilder>()
-				.addComponents([isOpen ? buttonClose : buttonOpen]);
-
-			return row;
-		}
+		const createRow = () => new ActionRowBuilder<ButtonBuilder>()
+			.addComponents([isOpen ? buttonClose : buttonOpen]);
 
 		let row = createRow();
 		const response = await replyInteraction(interaction, {

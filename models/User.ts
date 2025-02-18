@@ -234,7 +234,7 @@ export class User {
 		this.Shop.SpentCount = user.shopSpentCount;
 
 		await this.GetAttributes();
-		this.GetSituation();
+		await this.GetSituation();
 
 		return this;
 	}
@@ -448,7 +448,7 @@ export class User {
 		this.Attributes.MoneyDefense += moreMoneyDEF;
 	}
 
-	GetSituation() {
+	async GetSituation() {
 		this.Situation.Simple = "Vadiando";
 		this.Situation.Complex = `${EmoteString.Lazy} Vadiando`;
 
@@ -458,19 +458,35 @@ export class User {
 		}
 		if (this.Robbery.IsRobbingId) {
 			this.Situation.Simple = "Roubando";
-			this.Situation.Complex = `${EmoteString.Robbery} Roubando`;
+			const user = await Users.findOne({
+				where: {
+					id: this.Robbery.IsRobbingId,
+				},
+			});
+			if (!user) {
+				return;
+			}
+			this.Situation.Complex = `${EmoteString.Robbery} Roubando ${user.nickname}`;
 		}
 		if (this.Robbery.IsBeingRobbedById) {
 			this.Situation.Simple = "Sendo roubado";
-			this.Situation.Complex = `${EmoteString.Robbery} Sendo roubado`;
-		}
-		if (this.IsEscaping()) {
-			this.Situation.Simple = "Procurado";
-			this.Situation.Complex = `${EmoteString.Police} Procurado até ${showTime(this.Escape.Time.getTime())}`;
+			const user = await Users.findOne({
+				where: {
+					id: this.Robbery.IsBeingRobbedById,
+				},
+			});
+			if (!user) {
+				return;
+			}
+			this.Situation.Complex = `${EmoteString.Robbery} Sendo roubado por ${user.nickname}`;
 		}
 		if (this.IsInPrison()) {
 			this.Situation.Simple = "Preso";
 			this.Situation.Complex = `${EmoteString.Prison} Preso até ${showTime(this.Prison.Time.getTime())}`;
+		}
+		if (this.IsEscaping()) {
+			this.Situation.Simple += " e Procurado";
+			this.Situation.Complex += ` e ${EmoteString.Police} Procurado até ${showTime(this.Escape.Time.getTime())}`;
 		}
 	}
 
