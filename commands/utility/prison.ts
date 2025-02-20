@@ -157,7 +157,7 @@ Os guardas são gananciosos, e quanto maior o seu ${EmoteString.Attack}ATK, mais
 	[Language.Spanish]: {
 		userFree: "¡Estás libre!",
 		userEscaping: (timerEscape: Date) => `¡Estás siendo buscado por la policía! ¡Puedes robar de nuevo ${showTime(timerEscape.getTime(), true)}!`,
-		userPrison: (timerPrison: Date) => `¡Estás en prisión! ¡Serás liberado ${showTime(timerPrison.getTime(), true)}!`,
+		userPrison: (timerPrison: Date) => `¡Estás preso! ¡Serás liberado ${showTime(timerPrison.getTime(), true)}!`,
 		description: (chance: number, jetpackChance: number, language: Language, text: string) => `# Prisión
 Al intentar robar a alguien y fallar, serás encarcelado por un tiempo determinado por tu ${EmoteString.Attack}ATK.
 

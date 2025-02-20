@@ -193,7 +193,7 @@ export const EmoteString = {
 	BlackMarket: `<:MercadoNegro:${EmoteId.BlackMarket}>`,
 	Jobs: `<:Trabalhos:${EmoteId.Jobs}>`,
 
-	Lazy: `<:Vadiando:${EmoteId.Lazy}>`,
+	Idle: `<:Vadiando:${EmoteId.Lazy}>`,
 	Robbery: `<:roubar:${EmoteId.Robbery}>`,
 	Beat: `<:espancar:${EmoteId.Beat}>`,
 	Prison: `<:Prison:${EmoteId.Prison}>`,

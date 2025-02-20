@@ -449,15 +449,16 @@ export class User {
 	}
 
 	async GetSituation() {
-		this.Situation.Simple = "Vadiando";
-		this.Situation.Complex = `${EmoteString.Lazy} Vadiando`;
+		const s = Strings[this.Language];
+		this.Situation.Simple = s.idling;
+		this.Situation.Complex = `${EmoteString.Idle} ${s.idling}`;
 
 		if (this.Job.Id !== null) {
-			this.Situation.Simple = "Trabalhando";
-			this.Situation.Complex = `${EmoteString.Working} Trabalhando como ${JobList[this.Job.Id].Description[this.Language]}. Terminará ${showTime(this.Job.EndsIn.getTime(), true)}`;
+			this.Situation.Simple = s.workingSimple;
+			this.Situation.Complex = `${EmoteString.Working} ${s.workingComplex(JobList[this.Job.Id].Description[this.Language], this.Job.EndsIn)}`;
 		}
 		if (this.Robbery.IsRobbingId) {
-			this.Situation.Simple = "Roubando";
+			this.Situation.Simple = s.robbing;
 			const user = await Users.findOne({
 				where: {
 					id: this.Robbery.IsRobbingId,
@@ -466,10 +467,10 @@ export class User {
 			if (!user) {
 				return;
 			}
-			this.Situation.Complex = `${EmoteString.Robbery} Roubando ${user.nickname}`;
+			this.Situation.Complex = `${EmoteString.Robbery} ${s.robbing} ${user.nickname}`;
 		}
 		if (this.Robbery.IsBeingRobbedById) {
-			this.Situation.Simple = "Sendo roubado";
+			this.Situation.Simple = s.beingRobbedSimple;
 			const user = await Users.findOne({
 				where: {
 					id: this.Robbery.IsBeingRobbedById,
@@ -478,15 +479,15 @@ export class User {
 			if (!user) {
 				return;
 			}
-			this.Situation.Complex = `${EmoteString.Robbery} Sendo roubado por ${user.nickname}`;
+			this.Situation.Complex = `${EmoteString.Robbery} ${s.beingRobbedComplex} ${user.nickname}`;
 		}
 		if (this.IsInPrison()) {
-			this.Situation.Simple = "Preso";
-			this.Situation.Complex = `${EmoteString.Prison} Preso até ${showTime(this.Prison.Time.getTime())}`;
+			this.Situation.Simple = s.imprisonedSimple;
+			this.Situation.Complex = `${EmoteString.Prison} ${s.imprisonedComplex} ${showTime(this.Prison.Time.getTime())}`;
 		}
 		if (this.IsEscaping()) {
-			this.Situation.Simple += " e Procurado";
-			this.Situation.Complex += ` e ${EmoteString.Police} Procurado até ${showTime(this.Escape.Time.getTime())}`;
+			this.Situation.Simple += ` ${s.wantedSimple}`;
+			this.Situation.Complex += ` ${s.wantedComplex} ${showTime(this.Escape.Time.getTime())}`;
 		}
 	}
 
@@ -601,3 +602,42 @@ export class User {
 		}
 	}
 }
+
+const Strings = {
+	[Language.English]: {
+		idling: "Idling",
+		workingSimple: "Working",
+		workingComplex: (description: string, jobTime: Date) => `Working as ${description}. Will finish ${showTime(jobTime.getTime(), true)}`,
+		robbing: "Robbing",
+		beingRobbedSimple: "Being robbed",
+		beingRobbedComplex: "Being robbed by",
+		imprisonedSimple: "Imprisoned",
+		imprisonedComplex: "Imprisoned until",
+		wantedSimple: "and Wanted",
+		wantedComplex: `and ${EmoteString.Police} Wanted until`,
+	},
+	[Language.Portuguese]: {
+		idling: "Vadiando",
+		workingSimple: "Trabalhando",
+		workingComplex: (description: string, jobTime: Date) => `Trabalhando como ${description}. Terminará ${showTime(jobTime.getTime(), true)}`,
+		robbing: "Roubando",
+		beingRobbedSimple: "Sendo roubado",
+		beingRobbedComplex: "Sendo roubado por",
+		imprisonedSimple: "Preso",
+		imprisonedComplex: "Preso até",
+		wantedSimple: "e Procurado",
+		wantedComplex: `e ${EmoteString.Police} Procurado até`,
+	},
+	[Language.Spanish]: {
+		idling: "Vagando",
+		workingSimple: "",
+		workingComplex: (description: string, jobTime: Date) => `Trabajando como ${description}. Terminará ${showTime(jobTime.getTime(), true)}`,
+		robbing: "Robando",
+		beingRobbedSimple: "Siendo robado",
+		beingRobbedComplex: "Siendo robado por",
+		imprisonedSimple: "Preso",
+		imprisonedComplex: "Preso hasta",
+		wantedSimple: "y Buscado",
+		wantedComplex: `y ${EmoteString.Police} Buscado hasta`,
+	},
+} as const;

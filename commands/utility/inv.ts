@@ -119,7 +119,7 @@ ${formatMoney(target.Money, language)}`)
 				const invOpen = new CustomEmbedBuilder()
 					.setColor(embedColor)
 					.setAuthor({
-						name: `Inventário de ${target.Nickname}`,
+						name: `${s.inventoryOf} ${target.Nickname}`,
 						iconURL: "https://cdn.discordapp.com/attachments/531174573463306240/814662917696782376/Inventario.png",
 					})
 					.setThumbnail(_user.avatarURL() ?? "")
