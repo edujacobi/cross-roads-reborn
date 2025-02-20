@@ -32,7 +32,7 @@ module.exports = {
 
 		let workingText = "";
 		if (user.IsWorking()) {
-			workingText = `\n## ${s.workingOn(user.Job.Id!, user.Job.EndsIn, language)}`;
+			workingText = `\n## ${s.workingOn(user.Job.Id!, user.Job.EndsIn)}`;
 		}
 
 		const embed = new CustomEmbedBuilder()
@@ -107,17 +107,17 @@ module.exports = {
 
 			if (user.IsWorking()) {
 				return await removeEmbedComponents(interaction, [
-					embed.setDescription(s.workingOn(user.Job.Id!, user.Job.EndsIn, language)),
+					embed.setDescription(s.workingOn(user.Job.Id!, user.Job.EndsIn)),
 				]);
 			}
-			if (user.IsEscaping()) {
+			if (user.IsWanted()) {
 				return await removeEmbedComponents(interaction, [
-					embed.setDescription("Escaping"),
+					embed.setDescription(s.userWanted(user.Escape.Time)),
 				]);
 			}
 			if (user.IsInPrison()) {
 				return await removeEmbedComponents(interaction, [
-					embed.setDescription("In prison"),
+					embed.setDescription(s.userPrison(user.Prison.Time)),
 				]);
 			}
 
@@ -177,7 +177,9 @@ const Strings = {
 	[Language.English]: {
 		title: "Jobs",
 		description: "You cannot bet, steal or search while working!",
-		workingOn: (jobId: JobId, jobTime: Date, language: Language) => `You are working as ${JobList[jobId].Description[language]} and will finish ${showTime(jobTime.getTime(), true)}. ${EmoteString.Working}`,
+		userWanted: (timerEscape: Date) => `You are being wanted by the police! You can start a job ${showTime(timerEscape.getTime(), true)}!`,
+		userPrison: (timerPrison: Date) => `You are in prison! You will be released ${showTime(timerPrison.getTime(), true)}!`,
+		workingOn: (jobId: JobId, jobTime: Date) => `You are working as ${JobList[jobId].Description[Language.English]} and will finish ${showTime(jobTime.getTime(), true)} ${EmoteString.Working}`,
 		placeholderSelect: "Select a job",
 		stop: "Stop job",
 		cannotStop: "You can't stop what you didn't start.",
@@ -191,7 +193,9 @@ const Strings = {
 	[Language.Portuguese]: {
 		title: "Trabalhos",
 		description: `Você não pode apostar, roubar nem vasculhar enquanto trabalha!`,
-		workingOn: (jobId: JobId, jobTime: Date, language: Language) => `Você está trabalhando como ${JobList[jobId].Description[language]} e terminará ${showTime(jobTime.getTime(), true)}. ${EmoteString.Working}`,
+		userWanted: (timerEscape: Date) => `Você está sendo procurado pela polícia! Poderá começar um trabalho ${showTime(timerEscape.getTime(), true)}!`,
+		userPrison: (timerPrison: Date) => `Você está preso! Será solto ${showTime(timerPrison.getTime(), true)}!`,
+		workingOn: (jobId: JobId, jobTime: Date) => `Você está trabalhando como ${JobList[jobId].Description[Language.Portuguese]} e terminará ${showTime(jobTime.getTime(), true)} ${EmoteString.Working}`,
 		placeholderSelect: "Selecione um trabalho",
 		stop: "Parar trabalho",
 		cannotStop: "Você não pode parar o que não começou.",
@@ -205,7 +209,9 @@ const Strings = {
 	[Language.Spanish]: {
 		title: "Trabajos",
 		description: "Tu no puedes apostar, robar o buscar mientras trabajas!",
-		workingOn: (jobId: JobId, jobTime: Date, language: Language) => `Usted está trabajando como ${JobList[jobId].Description[language]} y terminará ${showTime(jobTime.getTime(), true)} ${EmoteString.Working}`,
+		userWanted: (timerEscape: Date) => `¡Estás siendo buscado por la policía! ¡Puedes comenzar un trabajo ${showTime(timerEscape.getTime(), true)}!`,
+		userPrison: (timerPrison: Date) => `¡Estás preso! ¡Serás liberado ${showTime(timerPrison.getTime(), true)}!`,
+		workingOn: (jobId: JobId, jobTime: Date) => `Usted está trabajando como ${JobList[jobId].Description[Language.Spanish]} y terminará ${showTime(jobTime.getTime(), true)} ${EmoteString.Working}`,
 		placeholderSelect: "Seleccione un trabajo",
 		stop: "Detener trabajo",
 		cannotStop: "Usted no puede detener lo que no comenzó.",

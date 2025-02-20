@@ -485,7 +485,7 @@ export class User {
 			this.Situation.Simple = s.imprisonedSimple;
 			this.Situation.Complex = `${EmoteString.Prison} ${s.imprisonedComplex} ${showTime(this.Prison.Time.getTime())}`;
 		}
-		if (this.IsEscaping()) {
+		if (this.IsWanted()) {
 			this.Situation.Simple += ` ${s.wantedSimple}`;
 			this.Situation.Complex += ` ${s.wantedComplex} ${showTime(this.Escape.Time.getTime())}`;
 		}
@@ -499,7 +499,7 @@ export class User {
 		return this.Prison.Time > new Date();
 	}
 
-	IsEscaping() {
+	IsWanted() {
 		return this.Escape.Time > new Date();
 	}
 

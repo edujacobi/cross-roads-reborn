@@ -88,12 +88,10 @@ export class Robbery {
 			canRob = false;
 		}
 
-		if (this.Attacker.IsEscaping()) {
+		if (this.Attacker.IsWanted()) {
 			message = `Você não pode roubar enquanto está sendo procurado pela polícia! ${EmoteString.Robbery}\n-# Poderá roubar novamente ${showTime(this.Attacker.Escape.Time.getTime(), true)}!`;
 			canRob = false;
 		}
-
-		console.log(canRob, message);
 
 		return { canRob, message };
 	}
