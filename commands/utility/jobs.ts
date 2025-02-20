@@ -36,8 +36,7 @@ module.exports = {
 		}
 
 		const embed = new CustomEmbedBuilder()
-			.setTitle(`${EmoteString.Jobs} ${s.title}`)
-			.setDescription(`${s.description}${workingText}`)
+			.setDescription(`# ${s.title}\n${s.description}${workingText}`)
 			.setThumbnail("https://media.discordapp.net/attachments/1233604589064818808/1337166947250602047/Trabalhos2.png")
 			.setColor(CrColors.Jobs)
 			.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), formatMoney(user.Money, language))
@@ -178,7 +177,7 @@ const Strings = {
 	[Language.English]: {
 		title: "Jobs",
 		description: "You cannot bet, steal or search while working!",
-		workingOn: (jobId: JobId, jobTime: Date, language: Language) => `${EmoteString.Working} You are working as ${JobList[jobId].Description[language]} and will finish ${showTime(jobTime.getTime(), true)}.`,
+		workingOn: (jobId: JobId, jobTime: Date, language: Language) => `You are working as ${JobList[jobId].Description[language]} and will finish ${showTime(jobTime.getTime(), true)}. ${EmoteString.Working}`,
 		placeholderSelect: "Select a job",
 		stop: "Stop job",
 		cannotStop: "You can't stop what you didn't start.",
@@ -187,12 +186,12 @@ const Strings = {
 		duration: "Duration",
 		necessary: "Necessary",
 		withoutItems: (neededItems: string) => `You don't have the necessary items to start this job.\n-# You need ${neededItems}.`,
-		jobStarted: (jobDescription: string, jobTime: Date) => `${EmoteString.Working} You started working as ${jobDescription}. Will finish ${showTime(jobTime.getTime(), true)}`,
+		jobStarted: (jobDescription: string, jobTime: Date) => `You started working as ${jobDescription}. Will finish ${showTime(jobTime.getTime(), true)} ${EmoteString.Working}`,
 	},
 	[Language.Portuguese]: {
 		title: "Trabalhos",
 		description: `Você não pode apostar, roubar nem vasculhar enquanto trabalha!`,
-		workingOn: (jobId: JobId, jobTime: Date, language: Language) => `${EmoteString.Working} Você está trabalhando como ${JobList[jobId].Description[language]} e terminará ${showTime(jobTime.getTime(), true)}.`,
+		workingOn: (jobId: JobId, jobTime: Date, language: Language) => `Você está trabalhando como ${JobList[jobId].Description[language]} e terminará ${showTime(jobTime.getTime(), true)}. ${EmoteString.Working}`,
 		placeholderSelect: "Selecione um trabalho",
 		stop: "Parar trabalho",
 		cannotStop: "Você não pode parar o que não começou.",
@@ -201,12 +200,12 @@ const Strings = {
 		duration: "Duração",
 		necessary: "Necessário",
 		withoutItems: (neededItems: string) => `Você não tem os itens necessários para começar este trabalho.\n-# Você precisa de ${neededItems}.`,
-		jobStarted: (jobDescription: string, jobTime: Date) => `${EmoteString.Working} Você começou a trabalhar como ${jobDescription}. Terminará ${showTime(jobTime.getTime(), true)}`,
+		jobStarted: (jobDescription: string, jobTime: Date) => `Você começou a trabalhar como ${jobDescription}. Terminará ${showTime(jobTime.getTime(), true)} ${EmoteString.Working}`,
 	},
 	[Language.Spanish]: {
 		title: "Trabajos",
 		description: "Tu no puedes apostar, robar o buscar mientras trabajas!",
-		workingOn: (jobId: JobId, jobTime: Date, language: Language) => `${EmoteString.Working} Usted está trabajando como ${JobList[jobId].Description[language]} y terminará ${showTime(jobTime.getTime(), true)}`,
+		workingOn: (jobId: JobId, jobTime: Date, language: Language) => `Usted está trabajando como ${JobList[jobId].Description[language]} y terminará ${showTime(jobTime.getTime(), true)} ${EmoteString.Working}`,
 		placeholderSelect: "Seleccione un trabajo",
 		stop: "Detener trabajo",
 		cannotStop: "Usted no puede detener lo que no comenzó.",
@@ -215,6 +214,6 @@ const Strings = {
 		duration: "Duración",
 		necessary: "Necesario",
 		withoutItems: (neededItems: string) => `Usted no tiene los elementos necesarios para comenzar este trabajo.\n-# Usted necesita ${neededItems}.`,
-		jobStarted: (jobDescription: string, jobTime: Date) => `${EmoteString.Working} Usted comenzó a trabajar como ${jobDescription}. Terminará ${showTime(jobTime.getTime(), true)}.`,
+		jobStarted: (jobDescription: string, jobTime: Date) => `Usted comenzó a trabajar como ${jobDescription}. Terminará ${showTime(jobTime.getTime(), true)}. ${EmoteString.Working}`,
 	},
 } as const;
