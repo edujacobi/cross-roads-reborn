@@ -115,7 +115,7 @@ export class Robbery {
 		this.Embed.Private
 			.setAuthor({
 				name: `Mãos ao alto!`,
-				iconURL: interaction.user.avatarURL() ?? "",
+				iconURL: interaction.user.avatarURL() ?? undefined,
 			})
 			.setDescription(`**${this.Attacker.Nickname}** está tentando roubar você! ${EmoteString.Robbery}`);
 
@@ -186,7 +186,7 @@ export class Robbery {
 		this.Embed.Channel
 			.setAuthor({
 				name: `Roubo ${this.Success ? "bem" : "mal"}-sucedido`,
-				iconURL: this.DiscordUser?.avatarURL() ?? "",
+				iconURL: this.DiscordUser?.avatarURL() ?? undefined,
 			})
 			.setDefaultFooter(this.Attacker.Nickname, interaction.user.avatarURL(), formatMoney(this.Attacker.Money, this.Attacker.Language));
 
@@ -196,7 +196,7 @@ export class Robbery {
 			this.Embed.Private
 				.setAuthor({
 					name: `Roubo finalizado`,
-					iconURL: interaction.user.avatarURL() ?? "",
+					iconURL: interaction.user.avatarURL() ?? undefined,
 				})
 				.setFooter({ text: formatMoney(this.Defender.Money, this.Defender.Language) });
 
