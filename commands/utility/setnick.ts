@@ -27,7 +27,7 @@ module.exports = {
 
 		const s = Strings[language];
 
-		if (!/^[A-Za-z]+$/.test(newNick)) {
+		if (!/^[A-Za-z]+(?: [A-Za-z]+)*$/.test(newNick)) {
 			return replyInteraction(interaction, {
 				embeds: [defaultEmbed({
 					nickname: s.setting,
@@ -80,25 +80,25 @@ module.exports = {
 const Strings = {
 	[Language.English]: {
 		setting: "Setting nickname",
-		invalidNick: (newNick: string) => `The nickname **${newNick}** is invalid! It can only contain letters.`,
+		invalidNick: (newNick: string) => `The nickname **${newNick}** is invalid! It can only contain letters and one space between words.`,
 		nickInUse: (newNick: string, userId: string) => `The nickname **${newNick}** is already in use!\n-# by user with id \`${userId}\``,
-		newPlayer: (newNick: string) => `A new player arrives! Welcome **${newNick}**!`,
+		newPlayer: (newNick: string) => `-# A new player arrives!\n## Welcome **${newNick}**!`,
 		nickChanged: (oldNick: string, newNick: string) => `**${oldNick}** now has the nickname **${newNick}**!`,
 		footer: "Please, choose another nickname!",
 	},
 	[Language.Portuguese]: {
 		setting: "Configurando nickname",
-		invalidNick: (newNick: string) => `O nickname **${newNick}** é inválido! Só pode conter letras.`,
+		invalidNick: (newNick: string) => `O nickname **${newNick}** é inválido! Só pode conter letras e um espaço entre palavras.`,
 		nickInUse: (newNick: string, userId: string) => `O nickname **${newNick}** já está em uso!\n-# pelo usuário com id \`${userId}\``,
-		newPlayer: (newNick: string) => `Um novo jogador chegou! Bem-vindo **${newNick}**!`,
+		newPlayer: (newNick: string) => `-# Um novo jogador chegou!\n ## Bem-vindo **${newNick}**!`,
 		nickChanged: (oldNick: string, newNick: string) => `**${oldNick}** agora tem o nickname **${newNick}**!`,
 		footer: "Por favor, escolha outro nickname!",
 	},
 	[Language.Spanish]: {
 		setting: "Configurando nickname",
-		invalidNick: (newNick: string) => `El nickname **${newNick}** es inválido! Solo puede contener letras.`,
+		invalidNick: (newNick: string) => `El nickname **${newNick}** es inválido! Solo puede contener letras y un espacio entre palabras.`,
 		nickInUse: (newNick: string, userId: string) => `El nickname **${newNick}** ya está en uso!\n-# por el usuario con id \`${userId}\``,
-		newPlayer: (newNick: string) => `¡Un nuevo jugador ha llegado! Bienvenido **${newNick}**!`,
+		newPlayer: (newNick: string) => `-# ¡Un nuevo jugador ha llegado!\n ## Bienvenido **${newNick}**!`,
 		nickChanged: (oldNick: string, newNick: string) => `**${oldNick}** ahora tiene el nickname **${newNick}**!`,
 		footer: "¡Por favor, elige otro nickname!",
 	},
