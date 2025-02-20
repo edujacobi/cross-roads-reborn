@@ -2,7 +2,7 @@
 import {
 	APIEmbed,
 	ButtonInteraction,
-	ChatInputCommandInteraction,
+	ChatInputCommandInteraction, ColorResolvable,
 	CommandInteraction,
 	EmbedBuilder,
 	InteractionReplyOptions,
@@ -57,13 +57,17 @@ export async function removeAllFromRobbery() {
 	}
 }
 
-export async function sendPrivateMessage(userId: string, message: string) {
+export async function sendPrivateMessage(userId: string, message: string, color?: ColorResolvable) {
 	const client = getClient();
 	const discordUser = await client.users.fetch(userId);
 
 	try {
 		const embed = new CustomEmbedBuilder()
 			.setDescription(message);
+
+		if (color) {
+			embed.setColor(color);
+		}
 
 		await discordUser.send({ embeds: [embed] });
 	}

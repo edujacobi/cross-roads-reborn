@@ -1,5 +1,5 @@
 ﻿import {
-	ChatInputCommandInteraction,
+	ChatInputCommandInteraction, Colors,
 	Locale,
 	PermissionFlagsBits,
 	SlashCommandBuilder,
@@ -37,23 +37,25 @@ module.exports = {
 		await target?.SetEternalVip();
 
 		if (target.VipEternal) {
-			await sendPrivateMessage(userId, `${EmoteString.VIP} Now you are a Eternal VIP!`);
+			await sendPrivateMessage(userId, `${EmoteString.VIP} Now you are a Eternal VIP!`, Colors.Gold);
 
 			await replyInteraction(interaction, {
 				embeds: [defaultEmbed({
 					nickname: user.Nickname,
 					interaction: interaction,
+					color: Colors.Gold,
 					description: `${EmoteString.VIP} user <@${userId}> is now a Eternal VIP`,
 				})],
 			});
 		}
 		else {
-			await sendPrivateMessage(userId, `${EmoteString.VIP} You are no longer a Eternal VIP... How?`);
+			await sendPrivateMessage(userId, `${EmoteString.VIP} You are no longer a Eternal VIP... How?`, Colors.Gold);
 
 			await replyInteraction(interaction, {
 				embeds: [defaultEmbed({
 					nickname: user.Nickname,
 					interaction: interaction,
+					color: Colors.Gold,
 					description: `${EmoteString.VIP} user <@${userId}> is no longer a Eternal VIP`,
 				})],
 			});

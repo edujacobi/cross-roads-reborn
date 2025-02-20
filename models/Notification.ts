@@ -9,6 +9,7 @@ import { Language } from "./Language";
 import { EmoteString } from "../utils/emotes";
 import { formatMoney } from "../utils/ui";
 import { sendPrivateMessage } from "../utils/logic";
+import { CrColors } from "../utils/colors";
 
 export enum NotificationType {
 	Daily = 1,
@@ -202,15 +203,15 @@ export class Notification {
 				}
 				const job = JobList[user.Job.Id];
 				await user.EndJob();
-				await sendPrivateMessage(notification.UserId, s.job(job.Description[lang], job.Salary));
+				await sendPrivateMessage(notification.UserId, s.job(job.Description[lang], job.Salary), CrColors.Jobs);
 			}
 
 			else if (notification.Type == NotificationType.RobAgain) {
-				await sendPrivateMessage(user.Id, s.robAgain);
+				await sendPrivateMessage(user.Id, s.robAgain, CrColors.Robbery);
 			}
 
 			else if (notification.Type == NotificationType.Free) {
-				await sendPrivateMessage(user.Id, s.free);
+				await sendPrivateMessage(user.Id, s.free, CrColors.Prison);
 			}
 
 			await notification.SetAsNotified();

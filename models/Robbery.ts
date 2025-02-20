@@ -178,7 +178,9 @@ export class Robbery {
 				.setColor(CrColors.Police)
 				.setDescription(`Você falhou na sua tentativa! ${EmoteString.Police}\n-# Ficará preso até ${showTime(this.Attacker.Prison.Time.getTime())}`);
 
-			this.Embed.Private.setDescription(`**${this.Attacker.Nickname}** tentou lhe roubar, mas a polícia o capturou! ${EmoteString.Police}\n-# Ele ficará preso até ${showTime(this.Attacker.Prison.Time.getTime())}!`);
+			this.Embed.Private
+				.setColor(CrColors.Police)
+				.setDescription(`**${this.Attacker.Nickname}** tentou lhe roubar, mas a polícia o capturou! ${EmoteString.Police}\n-# Ele ficará preso até ${showTime(this.Attacker.Prison.Time.getTime())}!`);
 
 			Log.Success(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) failed to rob user ${this.Defender.Nickname} (ID: ${this.Defender.Id}).`);
 		}

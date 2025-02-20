@@ -1,5 +1,5 @@
 ﻿import {
-	ChatInputCommandInteraction,
+	ChatInputCommandInteraction, Colors,
 	Locale,
 	PermissionFlagsBits,
 	SlashCommandBuilder,
@@ -45,11 +45,12 @@ module.exports = {
 
 		await target?.AddVip(days);
 
-		await sendPrivateMessage(userId, `${EmoteString.VIP} You received ${days} days of VIP!`);
+		await sendPrivateMessage(userId, `${EmoteString.VIP} You received ${days} days of VIP!`, Colors.Gold);
 
 		await replyInteraction(interaction, {
 			embeds: [defaultEmbed({
 				nickname: user.Nickname,
+				color: Colors.Gold,
 				interaction: interaction,
 				description: `${EmoteString.VIP} ${days} days of VIP added to user <@${userId}>`,
 			})],
