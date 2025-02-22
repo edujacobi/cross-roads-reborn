@@ -9,7 +9,6 @@
 import { replyInteraction } from "../../utils/logic";
 import { defaultEmbed, formatMoney, showTime } from "../../utils/ui";
 import { CrColors } from "../../utils/colors";
-import { JobList } from "../../models/Job";
 import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
 import { EmoteString } from "../../utils/emotes";
 import { Language } from "../../models/Language";
