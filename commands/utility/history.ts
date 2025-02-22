@@ -88,7 +88,7 @@ module.exports = {
 
 			return new CustomEmbedBuilder()
 				.setTitle(`${s.title} ${user.Nickname}`)
-				.setThumbnail(_user.avatarURL() ?? "")
+				.setThumbnail(_user.avatarURL() ?? null)
 				.setColor(Colors.DarkButNotBlack)
 				.setDescription(`-# ${s.data}
 ${EmoteString.Victory} ${s.successes}: \`${user.Robbery.SuccessCount}\`

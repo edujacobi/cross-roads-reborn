@@ -63,7 +63,7 @@ module.exports = {
 				name: `${s.inventoryOf} ${target.Nickname}`,
 				iconURL: "https://cdn.discordapp.com/attachments/531174573463306240/814662917696782376/Inventario.png",
 			})
-			.setThumbnail(_user.avatarURL() ?? "")
+			.setThumbnail(_user.avatarURL() ?? null)
 			.setDescription(`${badgeText}
 ${formatMoney(target.Money, language)}`)
 			.setFooter({ text: target.Situation.Simple })
@@ -122,7 +122,7 @@ ${formatMoney(target.Money, language)}`)
 						name: `${s.inventoryOf} ${target.Nickname}`,
 						iconURL: "https://cdn.discordapp.com/attachments/531174573463306240/814662917696782376/Inventario.png",
 					})
-					.setThumbnail(_user.avatarURL() ?? "")
+					.setThumbnail(_user.avatarURL() ?? null)
 					.setDescription(`-# ${emoteOnline}
 ${badges.length > 0 ? `### ${badgeText}\n` : ""}### ${formatMoney(target.Money, language)}
 -# ${s.inventoryItems}`)
