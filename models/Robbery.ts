@@ -143,6 +143,8 @@ export class Robbery {
 	}
 
 	async EndRobbery(interaction: ChatInputCommandInteraction, privateMessage: Message | undefined) {
+		await Promise.all([this.Attacker.GetInfo(), this.Defender.GetInfo()]);
+
 		if (this.Success) {
 			if (this.Defender.Attributes.Defense > 0) {
 				this.Attacker.Attributes.MoneyAttack -= getPercent(this.Defender.Attributes.MoneyDefense, this.Attacker.Attributes.MoneyAttack);
