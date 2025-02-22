@@ -211,7 +211,7 @@ export class Notification {
 			}
 
 			else if (notification.Type == NotificationType.Free) {
-				await sendPrivateMessage(user.Id, s.free, CrColors.Prison);
+				await sendPrivateMessage(user.Id, s.free, CrColors.Police);
 			}
 
 			await notification.SetAsNotified();

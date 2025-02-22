@@ -50,7 +50,7 @@ module.exports = {
 		const embed = new CustomEmbedBuilder()
 			.setThumbnail("https://media.discordapp.net/attachments/1233604589064818808/1339946455913205871/Prison.png")
 			.setDescription(s.description(baseChance, baseJetpackChance + baseChance, language, text))
-			.setColor(CrColors.Prison)
+			.setColor(CrColors.Police)
 			.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), `${s.currentChance}: ${totalChance}%`);
 
 		const button = new ButtonBuilder()
