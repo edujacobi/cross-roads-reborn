@@ -15,6 +15,7 @@ import { EmoteString } from "../../utils/emotes";
 import { Language } from "../../models/Language";
 import { setTimeout as wait } from "timers/promises";
 import { User } from "../../models/User";
+import { Casino } from "../../models/Casino";
 
 const enum CoinSide {
 	Heads = 0,
@@ -62,27 +63,16 @@ module.exports = {
 
 		const s = Strings[language];
 
-		if (user.IsWorking()) {
-			return replyInteraction(interaction, {
-				embeds: [
-					defaultEmbed({
-						nickname: user.Nickname,
-						interaction,
-						color: Colors.Yellow,
-						description: s.working(JobList[user.Job.Id!].Description[user.Language], user.Job.EndsIn),
-					}),
-				],
-			});
-		}
-		if (user.Money < value) {
-			return replyInteraction(interaction, {
-				embeds: [
-					defaultEmbed({
-						nickname: user.Nickname,
-						interaction,
-						description: s.noMoney,
-					}),
-				],
+		const { canPlay, message } = Casino.CanUserPlayBet(user, value);
+
+		if (!canPlay) {
+			return await replyInteraction(interaction, {
+				embeds: [defaultEmbed({
+					nickname: user.Nickname,
+					interaction,
+					color: CrColors.Casino,
+					description: message,
+				})],
 			});
 		}
 

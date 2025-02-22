@@ -91,6 +91,7 @@ export enum EmoteId {
 	Working = "948015474782912563",
 	Hospital = "539497344450691077",
 	Police = "1339924939385470986",
+	Casino = "539497634780676107",
 
 	VIP = "778572312215027744",
 
@@ -200,6 +201,7 @@ export const EmoteString = {
 	Working: `<:Trabalhando:${EmoteId.Working}>`,
 	Hospital: `<:Hospital:${EmoteId.Hospital}>`,
 	Police: `<:Police2:${EmoteId.Police}>`,
+	Casino: `<:Cassino:${EmoteId.Casino}>`,
 
 	VIP: `<:vip:${EmoteId.VIP}>`,
 
