@@ -75,6 +75,7 @@ export class User {
 		Simple: string,
 		Complex: string,
 	};
+	BestGun: Item | null = null;
 
 	constructor(id: string, language: Language = Language.English) {
 		const now = new Date();
@@ -423,6 +424,8 @@ export class User {
 
 		for (const item of items) {
 			const foundItem = ItemList[item.itemId];
+
+			this.BestGun = (this.BestGun?.Attack ?? 0) > foundItem.Attack ? this.BestGun : foundItem;
 
 			this.Attributes.Attack = Math.max(this.Attributes.Attack, foundItem.Attack);
 			this.Attributes.Defense = Math.max(this.Attributes.Defense, foundItem.Defense);

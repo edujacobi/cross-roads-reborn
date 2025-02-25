@@ -5,7 +5,7 @@ import {
 	ChatInputCommandInteraction, ColorResolvable,
 	CommandInteraction,
 	EmbedBuilder,
-	InteractionReplyOptions,
+	InteractionReplyOptions, MessageCreateOptions,
 	MessagePayload, Snowflake,
 } from "discord.js";
 import { CustomEmbedBuilder } from "../models/CustomEmbedBuilder";
@@ -78,7 +78,7 @@ export async function sendPrivateMessage(userId: string, message: string, color?
 	}
 }
 
-export async function sendComplexPrivateMessage(userId: Snowflake | undefined, embed: EmbedBuilder) {
+export async function sendComplexPrivateMessage(userId: Snowflake | undefined, options: string | MessagePayload | MessageCreateOptions) {
 	if (!userId) {
 		return;
 	}
@@ -86,7 +86,7 @@ export async function sendComplexPrivateMessage(userId: Snowflake | undefined, e
 	const discordUser = await client.users.fetch(userId);
 
 	try {
-		return await discordUser.send({ embeds: [embed] });
+		return await discordUser.send(options);
 	}
 	catch (err) {
 		Log.Warning(`Something went wrong with sending private message to ${discordUser.displayName} (${discordUser.id}).`);

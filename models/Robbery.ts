@@ -5,7 +5,9 @@ import {
 	ButtonBuilder,
 	ButtonStyle,
 	ChatInputCommandInteraction,
+	ComponentType,
 	Message,
+	MessageComponentInteraction,
 	User as DUser,
 } from "discord.js";
 import { getPercent, replyInteraction, sendComplexPrivateMessage } from "../utils/logic";
@@ -21,6 +23,7 @@ import { addMinutes } from "date-fns";
 import { Language } from "./Language";
 import { RobHistories } from "../database/RobHistories";
 import { Users } from "../database/Users";
+import { ClassList } from "./Class";
 
 export enum RobTypes {
 	User = 1,
@@ -31,6 +34,8 @@ export class Robbery {
 	Id = 0;
 	Attacker: User;
 	AttackerTimeInPrison = 0;
+	AttackerAditionalTimeCallPolice = 0;
+	DefenderTimeInHospital = 0;
 	Defender: User;
 	Date: Date;
 	Chance = 0;
@@ -123,6 +128,8 @@ export class Robbery {
 
 	async StartRobbery(interaction: ChatInputCommandInteraction) {
 		this.AttackerTimeInPrison = 10 + 1.5 * this.Attacker.Attributes.Attack;
+		this.AttackerAditionalTimeCallPolice = Math.floor(25 + 0.5 * this.Attacker.Attributes.Attack);
+		this.DefenderTimeInHospital = 25 + this.Defender.Attributes.Defense / 2;
 
 		if (this.Defender.Attributes.Defense === 0) {
 			this.Attacker.Attributes.Attack *= 1.35;
@@ -134,36 +141,115 @@ export class Robbery {
 
 		Log.Info(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) started a robbery to user ${this.Defender.Nickname} (ID: ${this.Defender.Id}).`);
 
+		const usedGun = `${this.Attacker.BestGun?.Skin.Default.Emote.String} ${this.Attacker.BestGun?.Description[this.Defender.Language]}`;
+
 		this.Embed.Private
 			.setAuthor({
 				name: `Mãos ao alto!`,
 				iconURL: interaction.user.avatarURL() ?? undefined,
 			})
-			.setDescription(`**${this.Attacker.Nickname}** está tentando roubar você! ${EmoteString.Robbery}`);
+			.setDescription(`${ClassList[this.Attacker.Class].Image.Emote.String} **${this.Attacker.Nickname}** está tentando roubar você utilizando **${usedGun}** ${EmoteString.Robbery}
 
-		const privateMessage = await sendComplexPrivateMessage(this.DiscordUser?.id, this.Embed.Private);
+-# Decida o que fazer:
+### ${EmoteString.React} **Reagir**
+${EmoteString.Defense}+5 DEF, mas você ficará hospitalizado por ${this.DefenderTimeInHospital} minutos caso seja roubado
+### ${EmoteString.Police} **Chamar a polícia**
+${EmoteString.Defense}-5 DEF, mas ele ficará preso por ${this.AttackerAditionalTimeCallPolice} minutos caso falhe
+### 🏳️ **Não fazer nada**
+Nenhum efeito adicional`)
+			.setFooter({ text: "Você tem 60 segundos para responder" });
+
+		const buttoReact = new ButtonBuilder()
+			.setCustomId("react")
+			.setLabel("Reagir")
+			.setStyle(ButtonStyle.Secondary)
+			.setEmoji(EmoteId.React)
+			.setDisabled(this.Defender.IsWorking() || this.Defender.IsInPrison() || this.Defender.Attributes.Attack === 0);
+
+		const buttoPolice = new ButtonBuilder()
+			.setCustomId("police")
+			.setLabel("Chamar a polícia")
+			.setStyle(ButtonStyle.Secondary)
+			.setEmoji(EmoteId.Police)
+			.setDisabled(this.Defender.Attributes.Defense < 5);
+
+		const buttoNothing = new ButtonBuilder()
+			.setCustomId("nothing")
+			.setLabel("Não fazer nada")
+			.setStyle(ButtonStyle.Secondary)
+			.setEmoji("🏳️");
+
+		const defenderRow = new ActionRowBuilder<ButtonBuilder>()
+			.addComponents([buttoReact, buttoPolice, buttoNothing]);
+
+		const defenderMessage = await sendComplexPrivateMessage(this.DiscordUser?.id, {
+			embeds: [this.Embed.Private],
+			components: [defenderRow],
+		});
 
 		this.Embed.Channel
 			.setAuthor({
 				name: `Roubo em andamento...`,
 				iconURL: "https://media.discordapp.net/attachments/691019843159326757/791444366727708672/roubar_20201223201323.png",
 			})
-			.setDescription(`### Acerte seu alvo!`)
 			.setDefaultFooter(this.Attacker.Nickname, interaction.user.avatarURL(), `Tentando roubar ${this.Defender.Nickname}`);
 
 		await replyInteraction(interaction, {
 			embeds: [this.Embed.Channel],
-			components: this.CreateButtonGrid(),
 		});
 
-		await wait(20000);
+		const collectorPrivate = defenderMessage?.createMessageComponentCollector({
+			filter: (i: MessageComponentInteraction) => i.user.id === this.Defender.Id,
+			max: 1,
+			componentType: ComponentType.Button,
+			time: 60_000,
+		});
+
+		collectorPrivate?.on("collect", async btn => {
+			let descriptionPrivate = "";
+			let descriptionChannel = "";
+
+			collectorPrivate?.stop();
+
+			if (btn.customId === "react") {
+				this.Defender.Attributes.Defense += 5;
+
+				descriptionPrivate = `### ${EmoteString.React} Reagindo...`;
+				descriptionChannel = `### ${EmoteString.React} ${this.Defender.Nickname} está reagindo!`;
+				// this.Defender.Robbery.ReactedCount += 1;
+			}
+			else if (btn.customId === "police") {
+
+				this.Defender.Attributes.Defense -= 5;
+				this.AttackerTimeInPrison += this.AttackerAditionalTimeCallPolice;
+
+				descriptionPrivate = `### ${EmoteString.Police} Chamando a polícia...`;
+				descriptionChannel = `### ${EmoteString.Police} ${this.Defender.Nickname} está chamando a polícia!`;
+				// this.Defender.Robbery.CallPoliceCount += 1;
+			}
+			else if (btn.customId === "nothing") {
+				descriptionPrivate = `### 🏳️ Fazendo nada...`;
+				descriptionChannel = `### 🏳️ ${this.Defender.Nickname} não está fazendo nada!`;
+			}
+
+			defenderMessage?.edit({
+				embeds: [this.Embed.Private
+					.setDescription(descriptionPrivate)],
+				components: [],
+			});
+			await replyInteraction(interaction, {
+				embeds: [this.Embed.Channel.setDescription(descriptionChannel)],
+			});
+		});
+
+		await wait(60_000);
 
 		this.Attacker.Attributes.Attack -= getPercent(this.Defender.Attributes.Defense, this.Attacker.Attributes.Attack);
 
 		this.Chance = Math.random() * 100;
 		this.Success = this.Chance < this.Attacker.Attributes.Attack;
 
-		await this.EndRobbery(interaction, privateMessage);
+		await this.EndRobbery(interaction, defenderMessage);
 	}
 
 	async EndRobbery(interaction: ChatInputCommandInteraction, privateMessage: Message | undefined) {
