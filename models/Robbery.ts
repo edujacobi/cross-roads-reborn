@@ -312,7 +312,7 @@ Nenhum efeito adicional`)
 				})
 				.setFooter({ text: formatMoney(this.Defender.Money, this.Defender.Language) });
 
-			await privateMessage.edit({ embeds: [this.Embed.Private] });
+			await privateMessage.edit({ embeds: [this.Embed.Private], components: [] });
 		}
 
 		this.Attacker.Robbery.IsRobbingId = null;
