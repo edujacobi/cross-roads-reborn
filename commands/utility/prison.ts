@@ -85,7 +85,7 @@ module.exports = {
 				prisoners.forEach(prisoner => {
 					embedPrisoners.addFields({
 						name: prisoner.nickname,
-						value: `${s.free} ${showTime(new Date(prisoner.prisonTime).getTime(), true)}`,
+						value: `${s.free} ${showTime(new Date(prisoner.prisonTime).getTime(), true)}\n${s.howManyTimes(prisoner.robberyFailureCount)}`,
 						inline: true,
 					});
 				});
@@ -105,7 +105,7 @@ module.exports = {
 // Todo melhorar sistema de paginação
 async function getPrisoners() {
 	return await Users.findAll({
-		attributes: ["nickname", "prisonTime"],
+		attributes: ["nickname", "prisonTime", "robberyFailureCount"],
 		order: [["prisonTime", "DESC"]],
 		where: {
 			prisonTime: {
@@ -133,6 +133,7 @@ The guards are greedy, and the higher your ${EmoteString.Attack}ATK, the more th
 		currentChance: "Current chance",
 		prisoners: "Prisoners",
 		free: "Free",
+		howManyTimes: (times: number) => `Imprisoned \`${times}\` times`,
 		empty: "We're kinda empty today...",
 	},
 	[Language.Portuguese]: {
@@ -152,6 +153,7 @@ Os guardas são gananciosos, e quanto maior o seu ${EmoteString.Attack}ATK, mais
 		currentChance: "Chance atual",
 		prisoners: "Prisioneiros",
 		free: "Livre",
+		howManyTimes: (times: number) => `Preso \`${times}\` vezes`,
 		empty: "Estamos meio vazios hoje...",
 	},
 	[Language.Spanish]: {
@@ -171,6 +173,7 @@ Los guardias son codiciosos, y cuanto mayor sea tu ${EmoteString.Attack}ATK, má
 		currentChance: "Chance actual",
 		prisoners: "Prisioneros",
 		free: "Libre",
+		howManyTimes: (times: number) => `Encarcelado \`${times}\` veces`,
 		empty: "Estamos un poco vacíos hoy...",
 	},
 } as const;
