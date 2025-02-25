@@ -36,12 +36,16 @@ module.exports = {
 				.setRequired(true)
 				.addChoices([
 					{
-						name: "Heads", value: CoinSide.Heads, name_localizations: {
+						name: "Heads",
+						value: CoinSide.Heads,
+						name_localizations: {
 							[Locale.PortugueseBR]: "Cara",
 						},
 					},
 					{
-						name: "Tails", value: CoinSide.Tails, name_localizations: {
+						name: "Tails",
+						value: CoinSide.Tails,
+						name_localizations: {
 							[Locale.PortugueseBR]: "Coroa",
 						},
 					},
@@ -57,8 +61,8 @@ module.exports = {
 		),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
-		const side = interaction.options.getInteger("side") as CoinSide;
-		const value = interaction.options.getNumber("value") as number;
+		const side = interaction.options.getInteger("side", true) as CoinSide;
+		const value = interaction.options.getNumber("value", true);
 
 		const s = Strings[language];
 
