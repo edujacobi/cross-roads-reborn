@@ -20,6 +20,7 @@ import { Notification } from "./Notification";
 import { addMinutes } from "date-fns";
 import { Language } from "./Language";
 import { RobHistories } from "../database/RobHistories";
+import { Users } from "../database/Users";
 
 export enum RobTypes {
 	User = 1,
@@ -59,7 +60,7 @@ export class Robbery {
 		return await client.users.fetch(this.Defender.Id);
 	}
 
-	CanRobUser() {
+	async CanRobUser() {
 		let canRob = true;
 		let message = "";
 
@@ -84,12 +85,36 @@ export class Robbery {
 		}
 
 		if (this.Attacker.IsInPrison()) {
-			message = `Você não pode roubar enquanto está preso! ${EmoteString.Robbery}\n-# Será solto ${showTime(this.Attacker.Prison.Time.getTime(), true)}!`;
+			message = `Você não pode roubar enquanto está preso! ${EmoteString.Prison}\n-# Será solto ${showTime(this.Attacker.Prison.Time.getTime(), true)}!`;
 			canRob = false;
 		}
 
 		if (this.Attacker.IsWanted()) {
-			message = `Você não pode roubar enquanto está sendo procurado pela polícia! ${EmoteString.Robbery}\n-# Poderá roubar novamente ${showTime(this.Attacker.Escape.Time.getTime(), true)}!`;
+			message = `Você não pode roubar enquanto está sendo procurado pela polícia! ${EmoteString.Police}\n-# Poderá roubar novamente ${showTime(this.Attacker.Escape.Time.getTime(), true)}!`;
+			canRob = false;
+		}
+
+		if (this.Attacker.Robbery.IsRobbingId) {
+			const user = await Users.findByPk(this.Attacker.Robbery.IsRobbingId);
+			message = `Você já está roubando **${user?.nickname}**! ${EmoteString.Robbery}`;
+			canRob = false;
+		}
+
+		if (this.Attacker.Robbery.IsBeingRobbedById) {
+			const user = await Users.findByPk(this.Attacker.Robbery.IsBeingRobbedById);
+			message = `Você está sendo roubado por **${user?.nickname}**! ${EmoteString.Robbery}`;
+			canRob = false;
+		}
+
+		if (this.Defender.Robbery.IsRobbingId) {
+			const user = await Users.findByPk(this.Defender.Robbery.IsRobbingId);
+			message = `**${this.Defender.Nickname}** está roubando **${user?.nickname}**. Espere mais alguns segundos para iniciar sua ação! ${EmoteString.Robbery}`;
+			canRob = false;
+		}
+
+		if (this.Defender.Robbery.IsBeingRobbedById) {
+			const user = await Users.findByPk(this.Defender.Robbery.IsBeingRobbedById);
+			message = `**${this.Defender.Nickname}** está sendo roubado por **${user?.nickname}**. Espere mais alguns segundos para iniciar sua ação! ${EmoteString.Robbery}`;
 			canRob = false;
 		}
 
@@ -104,9 +129,8 @@ export class Robbery {
 		}
 
 		this.Attacker.Robbery.IsRobbingId = this.Defender.Id;
-		await this.Attacker.Update();
 		this.Defender.Robbery.IsBeingRobbedById = this.Attacker.Id;
-		await this.Defender.Update();
+		await Promise.all([this.Attacker.Update(), this.Defender.Update()]);
 
 		Log.Info(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) started a robbery to user ${this.Defender.Nickname} (ID: ${this.Defender.Id}).`);
 
@@ -206,9 +230,8 @@ export class Robbery {
 		}
 
 		this.Attacker.Robbery.IsRobbingId = null;
-		await this.Attacker.Update();
 		this.Defender.Robbery.IsBeingRobbedById = null;
-		await this.Defender.Update();
+		await Promise.all([this.Attacker.Update(), this.Defender.Update()]);
 
 		await RobHistories.CreateHistory(this);
 	}

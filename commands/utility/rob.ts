@@ -73,7 +73,7 @@ module.exports = {
 
 		const robbery = new Robbery(user, targetUser);
 
-		const { canRob, message } = robbery.CanRobUser();
+		const { canRob, message } = await robbery.CanRobUser();
 
 		if (!canRob) {
 			return await replyInteraction(interaction, {
