@@ -17,6 +17,7 @@ import { EmoteString } from "../../utils/emotes";
 import { Users } from "../../database/Users";
 import { User } from "../../models/User";
 import { Language } from "../../models/Language";
+import { ClassList } from "../../models/Class";
 
 module.exports = {
 	cooldown: 5,
@@ -40,7 +41,7 @@ module.exports = {
 		async function findList() {
 
 			users = await Users.findAll({
-				attributes: ["nickname", "money", "id"],
+				attributes: ["nickname", "money", "id", "class"],
 				limit,
 				order: [["money", "DESC"]],
 				offset,
@@ -70,7 +71,7 @@ module.exports = {
 				const user = users[i];
 				const underscore = user.id == interaction.user.id ? "__" : "";
 
-				moneyText += `### \`${i + offset + 1}.\` ${underscore}${user.nickname}${underscore}\n${formatMoney(user.money, language)}\n-# \`ID: ${user.id}\`\n`;
+				moneyText += `### \`${i + offset + 1}.\` ${ClassList[user.class].Image.Emote.String} ${underscore}${user.nickname}${underscore}\n${formatMoney(user.money, language)}\n-# \`ID: ${user.id}\`\n`;
 			}
 
 			return new CustomEmbedBuilder()

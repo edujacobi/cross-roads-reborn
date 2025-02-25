@@ -106,6 +106,14 @@ export enum EmoteId {
 	Scapist = "934631818844581949",
 	Politician = "934631819079462952",
 
+	// Classes
+	Assassin = "1343060412450607165",
+	Attorney = "1343060409627971676",
+	Entrepreneur = "1343060415118315633",
+	Hobo = "1343060420113596417",
+	Mafioso = "1343060418461044756",
+	Thief = "1343060416896696423",
+
 }
 
 export const EmoteString = {
@@ -215,4 +223,12 @@ export const EmoteString = {
 	TopMoney: `<:Top1_Grana_S6:${EmoteId.TopMoney}>`,
 	Scapist: `<:badge_fujao1:${EmoteId.Scapist}>`,
 	Politician: `<:badge_deputado:${EmoteId.Politician}>`,
+
+	// Classes
+	Assassin: `<:Class_Assassin:${EmoteId.Assassin}>`,
+	Attorney: `<:Class_Attorney:${EmoteId.Attorney}>`,
+	Entrepreneur: `<:Class_Entrepreneur:${EmoteId.Entrepreneur}>`,
+	Hobo: `<:Class_Hobo:${EmoteId.Hobo}>`,
+	Mafioso: `<:Class_Mafioso:${EmoteId.Mafioso}>`,
+	Thief: `<:Class_Thief:${EmoteId.Thief}>`,
 };

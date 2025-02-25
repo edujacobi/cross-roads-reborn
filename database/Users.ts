@@ -2,6 +2,8 @@
 import { sequelize } from "./Database";
 import { JobId } from "../models/Job";
 
+import { ClassId } from "../models/Class";
+
 export class Users extends Model<
 	InferAttributes<Users>,
 	InferCreationAttributes<Users>
@@ -9,6 +11,8 @@ export class Users extends Model<
 	declare id: CreationOptional<string>;
 	declare nickname: CreationOptional<string>;
 	declare money: number;
+	declare class: ClassId;
+
 	declare lastDailyReceived: Date | null;
 	declare dailyStreak: number;
 	declare maxDailyStreak: number;
@@ -59,6 +63,11 @@ Users.init(
 			allowNull: true,
 		},
 		money: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0,
+		},
+		class: {
 			type: DataTypes.INTEGER,
 			allowNull: false,
 			defaultValue: 0,

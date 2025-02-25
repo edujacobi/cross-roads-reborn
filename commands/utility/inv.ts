@@ -19,6 +19,7 @@ import { EmoteId, EmoteString } from "../../utils/emotes";
 import { ItemType } from "../../models/Item";
 import { subMinutes } from "date-fns";
 import { User } from "../../models/User";
+import { ClassList } from "../../models/Class";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -63,10 +64,14 @@ module.exports = {
 				name: `${s.inventoryOf} ${target.Nickname}`,
 				iconURL: "https://cdn.discordapp.com/attachments/531174573463306240/814662917696782376/Inventario.png",
 			})
+			// .setTitle(`${s.inventoryOf} ${target.Nickname}`)
 			.setThumbnail(_user.avatarURL() ?? null)
 			.setDescription(`${badgeText}
 ${formatMoney(target.Money, language)}`)
-			.setFooter({ text: target.Situation.Simple })
+			.setFooter({
+				iconURL: ClassList[target.Class].Image.Url,
+				text: target.Situation.Simple,
+			})
 			.setTimestamp();
 
 		const weaponEmotes = userItems.map(weapon => weapon.Skin.Default.Emote.String);
@@ -122,10 +127,15 @@ ${formatMoney(target.Money, language)}`)
 						name: `${s.inventoryOf} ${target.Nickname}`,
 						iconURL: "https://cdn.discordapp.com/attachments/531174573463306240/814662917696782376/Inventario.png",
 					})
+					// .setTitle(`${s.inventoryOf} ${target.Nickname}, ${ClassList[target.Class].Description[user.Language]}`)
 					.setThumbnail(_user.avatarURL() ?? null)
 					.setDescription(`-# ${emoteOnline}
 ${badges.length > 0 ? `### ${badgeText}\n` : ""}### ${formatMoney(target.Money, language)}
 -# ${s.inventoryItems}`)
+					.setFooter({
+						iconURL: ClassList[target.Class].Image.Url,
+						text: ClassList[target.Class].Description[user.Language],
+					})
 					.setTimestamp();
 
 				userItems.forEach(item => {
@@ -171,7 +181,7 @@ const Strings = {
 	},
 
 	[Language.Portuguese]: {
-		inventoryOf: "Inventário de ",
+		inventoryOf: "Inventário de",
 		closeInv: "Fechar",
 		openInv: "Abrir",
 		chips: "Fichas",

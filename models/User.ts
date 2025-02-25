@@ -10,6 +10,7 @@ import { JobId, JobList } from "./Job";
 import { Notification, NotificationType } from "./Notification";
 import { formatDate, formatMoney, showTime } from "../utils/ui";
 import { EmoteString } from "../utils/emotes";
+import { ClassId, ClassList } from "./Class";
 
 export class User {
 	Id = "";
@@ -20,6 +21,7 @@ export class User {
 	Language: Language;
 	Nickname: string = "";
 	Money = 0;
+	Class = ClassId.None;
 	Daily: {
 		CurrentStreak: number,
 		MaxStreak: number,
@@ -141,6 +143,7 @@ export class User {
 				id: this.Id,
 				nickname: this.Nickname,
 				money: this.Money,
+				class: this.Class,
 				dailyStreak: this.Daily.CurrentStreak,
 				maxDailyStreak: this.Daily.MaxStreak,
 				lastDailyReceived: this.Daily.LastReceived,
@@ -188,6 +191,7 @@ export class User {
 		this.VipEternal = user.vipEternal;
 		this.Nickname = user.nickname;
 		this.Money = user.money;
+		this.Class = user.class;
 
 		// Job
 		this.Job.Id = user.jobId;
@@ -242,6 +246,15 @@ export class User {
 	async SetNickname(nickname: string) {
 		this.Nickname = nickname;
 		await this.Update();
+	}
+
+	async SetClass(classId: ClassId) {
+		this.Class = classId;
+		await this.Update();
+	}
+
+	GetClassText() {
+		return ClassList[this.Class].Description[this.Language];
 	}
 
 	IsVip() {
@@ -554,6 +567,8 @@ export class User {
 			await Users.update({
 				nickname: this.Nickname,
 				money: this.Money,
+				class: this.Class,
+
 				lastDailyReceived: this.Daily.LastReceived,
 				dailyStreak: this.Daily.CurrentStreak,
 				maxDailyStreak: this.Daily.MaxStreak,
