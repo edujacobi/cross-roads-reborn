@@ -35,21 +35,23 @@ export async function checkUser(userId: string, interaction: CommandInteraction)
 
 export async function removeAllFromRobbery() {
 	try {
-		await Users.update({
+		const [affectedCount] = await Users.update({
 			beingRobbedByUserId: null,
 			robbingUserId: null,
 		}, {
 			where: {
-				beingRobbedByUserId: {
-					[Op.not]: null,
-				},
-				robbingUserId: {
-					[Op.not]: null,
+				[Op.or]: {
+					beingRobbedByUserId: {
+						[Op.not]: null,
+					},
+					robbingUserId: {
+						[Op.not]: null,
+					},
 				},
 			},
 		});
 
-		Log.Info(`All users removed from robberies.`);
+		Log.Info(`${affectedCount} users removed from robberies.`);
 
 	}
 	catch (err) {
