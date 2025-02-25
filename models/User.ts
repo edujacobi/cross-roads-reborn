@@ -320,24 +320,6 @@ export class User {
 		return money;
 	}
 
-	// Maybe change to "CanDoAction"
-	CanBuySomething() {
-		// TODO Verify if he is in a fight, in prison, in hospital, etc etc
-		if (this.Money <= 0) {
-			return false;
-		}
-
-		if (this.Robbery.IsRobbingId || this.Robbery.IsBeingRobbedById) {
-			return false;
-		}
-
-		if (this.Prison.Time > new Date()) {
-			return false;
-		}
-
-		return true;
-	}
-
 	async BuyItem(item: Item) {
 		if (this.Money < item.Price) {
 			return false;
@@ -404,7 +386,7 @@ export class User {
 					},
 				},
 			},
-			order: [["remainingTime", "DESC"]],
+			order: [["remainingTime", "ASC"]],
 		});
 
 		const itemList: UserItem[] = [];

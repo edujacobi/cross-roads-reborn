@@ -1,4 +1,4 @@
-﻿import { formatMoney } from "../utils/ui";
+﻿import { formatMoney, showTime } from "../utils/ui";
 import { User } from "./User";
 import { CustomEmbedBuilder } from "./CustomEmbedBuilder";
 import {
@@ -17,6 +17,7 @@ import { Language } from "./Language";
 import { removeEmbedComponents, replyInteraction } from "../utils/logic";
 import { EmoteString } from "../utils/emotes";
 import { getItemList, Item, ItemList, ItemType } from "./Item";
+import { Users } from "../database/Users";
 
 export class Shop {
 	User: User;
@@ -170,6 +171,36 @@ export class Shop {
 		return { embed, components, rowButton };
 	}
 
+	async CanUserBuyItem(item: Item) {
+		const s = Strings[this.User.Language];
+		let canBuy = true;
+		let message = "";
+
+		if (this.User.Money < item.Price) {
+			message = s.noMoney;
+			canBuy = false;
+		}
+
+		if (this.User.IsInPrison()) {
+			message = s.inPrison(this.User.Prison.Time);
+			canBuy = false;
+		}
+
+		if (this.User.Robbery.IsRobbingId) {
+			const user = await Users.findByPk(this.User.Robbery.IsRobbingId);
+			message = `${s.robbing(user?.nickname!)} ${EmoteString.Robbery}`;
+			canBuy = false;
+		}
+
+		if (this.User.Robbery.IsBeingRobbedById) {
+			const user = await Users.findByPk(this.User.Robbery.IsBeingRobbedById);
+			message = `${s.beingRobbed(user?.nickname!)} ${EmoteString.Robbery}`;
+			canBuy = false;
+		}
+
+		return { canBuy, message };
+	}
+
 	async Start(interaction: ChatInputCommandInteraction) {
 		const s = Strings[this.User.Language];
 
@@ -200,17 +231,15 @@ export class Shop {
 
 			const item = ItemList[Number(select.values[0])];
 
-			if (!this.User.CanBuySomething()) {
+			const { canBuy, message } = await this.CanUserBuyItem(item);
+
+			if (!canBuy) {
 				return await removeEmbedComponents(interaction, [
-					embedBought.setDescription(s.cantBuy),
+					embedBought.setDescription(message),
 				]);
 			}
 
-			if (!await this.User.BuyItem(item)) {
-				return await removeEmbedComponents(interaction, [
-					embedBought.setDescription(s.noMoney),
-				]);
-			}
+			await this.User.BuyItem(item);
 
 			return await replyInteraction(interaction, {
 				embeds: [
@@ -247,6 +276,9 @@ const Strings = {
 		placeholderSelect: "Select an item to buy",
 		cantBuy: "You can't buy anything right now",
 		noMoney: "You don't have enough money to buy this item",
+		inPrison: (prisonTime: Date) => `You can't buy items while in prison! ${EmoteString.Prison}\n-# You will be released ${showTime(prisonTime.getTime(), true)}!`,
+		robbing: (nickname: string) => `You are robbing **${nickname}** and can't buy items now!`,
+		beingRobbed: (nickname: string) => `You are being robbed by **${nickname}** and can't buy items now!`,
 		day: "day",
 		night: "night",
 		escape: "escape",
@@ -261,6 +293,9 @@ const Strings = {
 		placeholderSelect: "Selecione um item para comprar",
 		cantBuy: "Você não pode comprar algo agora",
 		noMoney: "Você não tem dinheiro suficiente para comprar este item",
+		inPrison: (prisonTime: Date) => `Você não pode comprar itens enquanto está preso! ${EmoteString.Prison}\n-# Será solto ${showTime(prisonTime.getTime(), true)}!`,
+		robbing: (nickname: string) => `Você está roubando **${nickname}** e não pode comprar itens agora!`,
+		beingRobbed: (nickname: string) => `Você está sendo roubado por **${nickname}** e não pode comprar itens agora!`,
 		day: "dia",
 		night: "noite",
 		escape: "fuga",
@@ -275,6 +310,9 @@ const Strings = {
 		placeholderSelect: "Seleccione un artículo para comprar",
 		cantBuy: "No puedes comprar nada ahora mismo",
 		noMoney: "No tienes suficiente dinero para comprar este artículo",
+		inPrison: (prisonTime: Date) => `¡No puedes comprar artículos mientras estás en prisión! ${EmoteString.Prison}\n-# Serás liberado ${showTime(prisonTime.getTime(), true)}!`,
+		robbing: (nickname: string) => `¡Estás robando a **${nickname}** y no puedes comprar artículos ahora mismo!`,
+		beingRobbed: (nickname: string) => `¡Estás siendo robado por **${nickname}** y no puedes comprar artículos ahora mismo!`,
 		day: "día",
 		night: "noche",
 		escape: "fuga",
