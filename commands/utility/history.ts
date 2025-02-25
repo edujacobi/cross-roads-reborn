@@ -81,7 +81,7 @@ module.exports = {
 				const challengerName = `${boldCs}${attacker.nickname}${boldCe}`;
 				const opponentName = `${boldOs}${defender.nickname}${boldOe}`;
 
-				historyList += `### ${emoji} ${text}\n${challengerName} ${EmoteString.Colt45} ${opponentName}\n${rob.success ? `\`${formatMoney(rob.money, user.Language)}\`\n` : ""}-# ${showTime(new Date(rob.createdAt).getTime())}\n`;
+				historyList += `### ${emoji} ${text}\n${challengerName} ${EmoteString.React} ${opponentName}\n${rob.success ? `\`${formatMoney(rob.money, user.Language)}\`\n` : ""}-# ${showTime(new Date(rob.createdAt).getTime())}\n`;
 			}
 
 			const winrate = `${user.Robbery.SuccessCount + user.Robbery.FailureCount > 0 ? (user.Robbery.SuccessCount / (user.Robbery.FailureCount + user.Robbery.SuccessCount) * 100).toFixed(2) : "0"}%`;
