@@ -245,13 +245,17 @@ export class User {
 	}
 
 	async SetNickname(nickname: string) {
+		const oldNickname = this.Nickname;
 		this.Nickname = nickname;
 		await this.Update();
+		Log.Success(`User ${oldNickname} (ID: ${this.Id}) changed nickname to ${nickname}.`);
 	}
 
 	async SetClass(classId: ClassId) {
+		const oldClass = this.Class;
 		this.Class = classId;
 		await this.Update();
+		Log.Success(`User ${this.Nickname} (ID: ${this.Id}) changed class from ${ClassList[oldClass].Description[Language.English]} to ${ClassList[classId].Description[Language.English]}.`);
 	}
 
 	GetClassText() {
@@ -276,12 +280,16 @@ export class User {
 		}
 
 		this.VipTime = addDays(this.VipTime, days);
+
 		await this.Update();
+		Log.Success(`User ${this.Nickname} (ID: ${this.Id}) received ${days} days of VIP.`);
 	}
 
 	async SetEternalVip() {
 		this.VipEternal = !this.VipEternal;
+
 		await this.Update();
+		Log.Success(`User ${this.Nickname} (ID: ${this.Id}) ${this.VipEternal ? "is now" : "is not anymore"} a eternal VIP.`);
 	}
 
 	CanReceiveDaily() {
@@ -315,6 +323,7 @@ export class User {
 		this.Money += money;
 
 		await this.Update();
+		Log.Success(`User ${this.Nickname} (ID: ${this.Id}) received ${formatMoney(money, Language.English)} from daily. Streak: ${this.Daily.CurrentStreak}.`);
 
 		await Notification.Daily(this);
 
