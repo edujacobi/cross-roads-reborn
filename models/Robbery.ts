@@ -127,6 +127,9 @@ export class Robbery {
 	}
 
 	async StartRobbery(interaction: ChatInputCommandInteraction) {
+		const sA = Strings[this.Attacker.Language];
+		const sD = Strings[this.Defender.Language];
+
 		this.AttackerTimeInPrison = 10 + 1.5 * this.Attacker.Attributes.Attack;
 		this.AttackerAditionalTimeCallPolice = Math.floor(25 + 0.5 * this.Attacker.Attributes.Attack);
 		this.DefenderTimeInHospital = 25 + this.Defender.Attributes.Defense / 2;
@@ -145,37 +148,37 @@ export class Robbery {
 
 		this.Embed.Private
 			.setAuthor({
-				name: `Mãos ao alto!`,
+				name: sD.hands,
 				iconURL: interaction.user.avatarURL() ?? undefined,
 			})
-			.setDescription(`${ClassList[this.Attacker.Class].Image.Emote.String} **${this.Attacker.Nickname}** está tentando roubar você utilizando **${usedGun}** ${EmoteString.Robbery}
+			.setDescription(`${ClassList[this.Attacker.Class].Image.Emote.String} **${this.Attacker.Nickname}** ${sD.tryingToRobYou} **${usedGun}** ${EmoteString.Robbery}
 
--# Decida o que fazer:
-### ${EmoteString.React} **Reagir**
-${EmoteString.Defense}+5 DEF, mas você ficará hospitalizado por ${this.DefenderTimeInHospital} minutos caso seja roubado
-### ${EmoteString.Police} **Chamar a polícia**
-${EmoteString.Defense}-5 DEF, mas ele ficará preso por ${this.AttackerAditionalTimeCallPolice} minutos caso falhe
-### 🏳️ **Não fazer nada**
-Nenhum efeito adicional`)
-			.setFooter({ text: "Você tem 60 segundos para responder" });
+-# ${sD.decide}:
+### ${EmoteString.React} **${sD.react}**
+${sD.reactDescription(this.DefenderTimeInHospital)}
+### ${EmoteString.Police} **${sD.callPolice}**
+${sD.callPoliceDescription(this.AttackerAditionalTimeCallPolice)}
+### 🏳️ **${sD.doNothing}**
+${sD.doNothingDescription}`)
+			.setFooter({ text: sD.secondsToRespond });
 
 		const buttoReact = new ButtonBuilder()
 			.setCustomId("react")
-			.setLabel("Reagir")
+			.setLabel(sD.react)
 			.setStyle(ButtonStyle.Secondary)
 			.setEmoji(EmoteId.React)
 			.setDisabled(this.Defender.IsWorking() || this.Defender.IsInPrison() || this.Defender.Attributes.Attack === 0);
 
 		const buttoPolice = new ButtonBuilder()
 			.setCustomId("police")
-			.setLabel("Chamar a polícia")
+			.setLabel(sD.callPolice)
 			.setStyle(ButtonStyle.Secondary)
 			.setEmoji(EmoteId.Police)
 			.setDisabled(this.Defender.Attributes.Defense < 5);
 
 		const buttoNothing = new ButtonBuilder()
 			.setCustomId("nothing")
-			.setLabel("Não fazer nada")
+			.setLabel(sD.doNothing)
 			.setStyle(ButtonStyle.Secondary)
 			.setEmoji("🏳️");
 
@@ -189,10 +192,10 @@ Nenhum efeito adicional`)
 
 		this.Embed.Channel
 			.setAuthor({
-				name: `Roubo em andamento...`,
+				name: sA.robberyInProgress,
 				iconURL: "https://media.discordapp.net/attachments/691019843159326757/791444366727708672/roubar_20201223201323.png",
 			})
-			.setDefaultFooter(this.Attacker.Nickname, interaction.user.avatarURL(), `Tentando roubar ${this.Defender.Nickname}`);
+			.setDefaultFooter(this.Attacker.Nickname, interaction.user.avatarURL(), `${sA.tryingToRob} ${this.Defender.Nickname}`);
 
 		await replyInteraction(interaction, {
 			embeds: [this.Embed.Channel],
@@ -214,8 +217,8 @@ Nenhum efeito adicional`)
 			if (btn.customId === "react") {
 				this.Defender.Attributes.Defense += 5;
 
-				descriptionPrivate = `### ${EmoteString.React} Reagindo...`;
-				descriptionChannel = `### ${EmoteString.React} ${this.Defender.Nickname} está reagindo!`;
+				descriptionPrivate = `### ${EmoteString.React} ${sD.reacting}...`;
+				descriptionChannel = `### ${EmoteString.React} ${this.Defender.Nickname} ${sA.isReacting}!`;
 				// this.Defender.Robbery.ReactedCount += 1;
 			}
 			else if (btn.customId === "police") {
@@ -223,13 +226,13 @@ Nenhum efeito adicional`)
 				this.Defender.Attributes.Defense -= 5;
 				this.AttackerTimeInPrison += this.AttackerAditionalTimeCallPolice;
 
-				descriptionPrivate = `### ${EmoteString.Police} Chamando a polícia...`;
-				descriptionChannel = `### ${EmoteString.Police} ${this.Defender.Nickname} está chamando a polícia!`;
+				descriptionPrivate = `### ${EmoteString.Police} ${sD.callingPolice}...`;
+				descriptionChannel = `### ${EmoteString.Police} ${this.Defender.Nickname} ${sA.isCallingPolice}!`;
 				// this.Defender.Robbery.CallPoliceCount += 1;
 			}
 			else if (btn.customId === "nothing") {
-				descriptionPrivate = `### 🏳️ Fazendo nada...`;
-				descriptionChannel = `### 🏳️ ${this.Defender.Nickname} não está fazendo nada!`;
+				descriptionPrivate = `### 🏳️ ${sD.doingNothing}...`;
+				descriptionChannel = `### 🏳️ ${this.Defender.Nickname} ${sA.isDoingNothing}!`;
 			}
 
 			defenderMessage?.edit({
@@ -255,6 +258,9 @@ Nenhum efeito adicional`)
 	async EndRobbery(interaction: ChatInputCommandInteraction, privateMessage: Message | undefined) {
 		await Promise.all([this.Attacker.GetInfo(), this.Defender.GetInfo()]);
 
+		const sA = Strings[this.Attacker.Language];
+		const sD = Strings[this.Defender.Language];
+
 		if (this.Success) {
 			if (this.Defender.Attributes.Defense > 0) {
 				this.Attacker.Attributes.MoneyAttack -= getPercent(this.Defender.Attributes.MoneyDefense, this.Attacker.Attributes.MoneyAttack);
@@ -272,9 +278,9 @@ Nenhum efeito adicional`)
 
 			await Notification.RobAgain(this.Attacker);
 
-			this.Embed.Channel.setDescription(`Você roubou ${formatMoney(this.MoneyRobbed, this.Attacker.Language)} de **${this.Defender.Nickname}**! ${EmoteString.Robbery}`);
+			this.Embed.Channel.setDescription(`${sA.youRobbed(formatMoney(this.MoneyRobbed, this.Attacker.Language), this.Defender.Nickname)} ${EmoteString.Robbery}`);
 
-			this.Embed.Private.setDescription(`Você foi roubado e perdeu ${formatMoney(this.MoneyRobbed, this.Defender.Language)} pro **${this.Attacker.Nickname}**! ${EmoteString.Robbery}`);
+			this.Embed.Private.setDescription(`${sD.wereRobbed(formatMoney(this.MoneyRobbed, this.Defender.Language), this.Attacker.Nickname)} ${EmoteString.Robbery}`);
 
 			Log.Success(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) successfully robbed user ${this.Defender.Nickname} (ID: ${this.Defender.Id}) and got ${formatMoney(this.MoneyRobbed, Language.English)}.`);
 		}
@@ -286,18 +292,18 @@ Nenhum efeito adicional`)
 
 			this.Embed.Channel
 				.setColor(CrColors.Police)
-				.setDescription(`Você falhou na sua tentativa! ${EmoteString.Police}\n-# Ficará preso até ${showTime(this.Attacker.Prison.Time.getTime())}`);
+				.setDescription(`${sA.youFailed}! ${EmoteString.Police}\n-# ${sA.prisonTime(this.Attacker.Prison.Time)}`);
 
 			this.Embed.Private
 				.setColor(CrColors.Police)
-				.setDescription(`**${this.Attacker.Nickname}** tentou lhe roubar, mas a polícia o capturou! ${EmoteString.Police}\n-# Ele ficará preso até ${showTime(this.Attacker.Prison.Time.getTime())}!`);
+				.setDescription(`**${this.Attacker.Nickname}** ${sD.robFailed}! ${EmoteString.Police}\n-# ${sD.prisonUntil(this.Attacker.Prison.Time)}!`);
 
 			Log.Success(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) failed to rob user ${this.Defender.Nickname} (ID: ${this.Defender.Id}).`);
 		}
 
 		this.Embed.Channel
 			.setAuthor({
-				name: `Roubo ${this.Success ? "bem" : "mal"}-sucedido`,
+				name: sA.finishedRobberyAttacker(this.Success),
 				iconURL: this.DiscordUser?.avatarURL() ?? undefined,
 			})
 			.setDefaultFooter(this.Attacker.Nickname, interaction.user.avatarURL(), formatMoney(this.Attacker.Money, this.Attacker.Language));
@@ -307,7 +313,7 @@ Nenhum efeito adicional`)
 		if (privateMessage) {
 			this.Embed.Private
 				.setAuthor({
-					name: `Roubo finalizado`,
+					name: sD.finishedRobberyDefender,
 					iconURL: interaction.user.avatarURL() ?? undefined,
 				})
 				.setFooter({ text: formatMoney(this.Defender.Money, this.Defender.Language) });
@@ -321,27 +327,97 @@ Nenhum efeito adicional`)
 
 		await RobHistories.CreateHistory(this);
 	}
-
-	private CreateButtonGrid() {
-		const buttons = Array.from({ length: 25 }, (_, i) =>
-			new ButtonBuilder()
-				.setCustomId(`button_${i}`)
-				.setEmoji(i === 0 ? EmoteId.Attack : EmoteId.Defense)
-				.setStyle(i === 0 ? ButtonStyle.Danger : ButtonStyle.Secondary),
-		);
-
-		// Shuffle the buttons array
-		for (let i = buttons.length - 1; i > 0; i--) {
-			const j = Math.floor(Math.random() * (i + 1));
-			[buttons[i], buttons[j]] = [buttons[j], buttons[i]];
-		}
-
-		const rows = Array.from({ length: 5 }, (_, i) =>
-			new ActionRowBuilder<ButtonBuilder>()
-				.addComponents(...buttons.slice(i * 5, i * 5 + 5)),
-		);
-
-		return rows;
-	}
 }
 
+const Strings = {
+	[Language.English]: {
+		// Defender
+		hands: "Hands up!",
+		tryingToRobYou: "is trying to rob you using",
+		decide: "Decide what to do",
+		react: "React",
+		reactDescription: (time: number) => `${EmoteString.Defense}+5 DEF, but you will be hospitalized for ${time} minutes if you get robbed`,
+		reacting: "Reacting",
+		callPolice: "Call the police",
+		callPoliceDescription: (time: number) => `${EmoteString.Defense}-5 DEF, but he will be inprisoned for ${time} aditional minutes if he fails`,
+		callingPolice: "Calling the police",
+		doNothing: "Do nothing",
+		doNothingDescription: "No additional effect",
+		doingNothing: "Doing nothing",
+		secondsToRespond: "You have 60 seconds to respond",
+		wereRobbed: (formattedMoney: string, attackerNick: string) => `You were robbed and lost ${formattedMoney} to **${attackerNick}**!`,
+		robFailed: "tried to rob you, but the police caught him!",
+		prisonUntil: (time: Date) => `He will be in prison until ${showTime(time.getTime())}`,
+		finishedRobberyDefender: "Robbery finished",
+		// Attacker
+		robberyInProgress: "Robbery in progress...",
+		tryingToRob: "Trying to rob",
+		isReacting: "is reacting",
+		isCallingPolice: "is calling the police",
+		isDoingNothing: "is doing nothing",
+		youRobbed: (formattedMoney: string, defenderNick: string) => `You robbed ${formattedMoney} from **${defenderNick}**!`,
+		youFailed: "You failed in your attempt",
+		prisonTime: (time: Date) => `Will be in prison until ${showTime(time.getTime())}`,
+		finishedRobberyAttacker: (success: boolean) => `Robbery ${success ? "successful" : "unsuccessful"}`,
+	},
+	[Language.Portuguese]: {
+		// Defender
+		hands: "Mãos ao alto!",
+		tryingToRobYou: "está tentando roubar você utilizando",
+		decide: "Decida o que fazer",
+		react: "Reagir",
+		reactDescription: (time: number) => `${EmoteString.Defense}+5 DEF, mas você ficará hospitalizado por ${time} minutos caso seja roubado`,
+		reacting: "Reagindo",
+		callPolice: "Chamar a polícia",
+		callPoliceDescription: (time: number) => `${EmoteString.Defense}-5 DEF, mas ele ficará preso por ${time} minutos adicionais caso falhe`,
+		callingPolice: "Chamando a polícia",
+		doNothing: "Não fazer nada",
+		doNothingDescription: "Nenhum efeito adicional",
+		doingNothing: "Fazendo nada",
+		secondsToRespond: "Você tem 60 segundos para responder",
+		wereRobbed: (formattedMoney: string, attackerNick: string) => `Você foi roubado e perdeu ${formattedMoney} para **${attackerNick}**!`,
+		robFailed: "tentou lhe roubar, mas a polícia o capturou!",
+		prisonUntil: (time: Date) => `Ele ficará preso até ${showTime(time.getTime())}`,
+		finishedRobberyDefender: "Roubo finalizado",
+		// Attacker
+		robberyInProgress: "Roubo em andamento...",
+		tryingToRob: "Tentando roubar",
+		isReacting: "está reagindo",
+		isCallingPolice: "está chamando a polícia",
+		isDoingNothing: "não está fazendo nada",
+		youRobbed: (formattedMoney: string, defenderNick: string) => `Você roubou ${formattedMoney} de **${defenderNick}**!`,
+		youFailed: "Você falhou na sua tentativa",
+		prisonTime: (time: Date) => `Ficará preso até ${showTime(time.getTime())}`,
+		finishedRobberyAttacker: (success: boolean) => `Roubo ${success ? "bem" : "mal"}-sucedido`,
+	},
+	[Language.Spanish]: {
+		// Defender
+		hands: "¡Manos arriba!",
+		tryingToRobYou: "está intentando robarte utilizando",
+		decide: "Decide qué hacer",
+		react: "Reaccionar",
+		reactDescription: (time: number) => `${EmoteString.Defense}+5 DEF, pero estarás hospitalizado por ${time} minutos si te roban`,
+		reacting: "Reaccionando",
+		callPolice: "Llamar a la policía",
+		callPoliceDescription: (time: number) => `${EmoteString.Defense}-5 DEF, pero estará en prisión por ${time} minutos adicionales si falla`,
+		callingPolice: "Llamando a la policía",
+		doNothing: "No hacer nada",
+		doNothingDescription: "Ningún efecto adicional",
+		doingNothing: "Haciendo nada",
+		secondsToRespond: "Tienes 60 segundos para responder",
+		wereRobbed: (formattedMoney: string, attackerNick: string) => `¡Fuiste robado y perdiste ${formattedMoney} con **${attackerNick}**!`,
+		robFailed: "intentó robarte, ¡pero la policía lo atrapó!",
+		prisonUntil: (time: Date) => `Estará en prisión hasta ${showTime(time.getTime())}`,
+		finishedRobberyDefender: "Robo finalizado",
+		// Attacker
+		robberyInProgress: "Robo en progreso...",
+		tryingToRob: "Intentando robar",
+		isReacting: "está reaccionando",
+		isCallingPolice: "está llamando a la policía",
+		isDoingNothing: "no está haciendo nada",
+		youRobbed: (formattedMoney: string, defenderNick: string) => `¡Robaste ${formattedMoney} de **${defenderNick}**!`,
+		youFailed: `Fallaste en tu intento`,
+		prisonTime: (time: Date) => `Estará en prisión hasta ${showTime(time.getTime())}`,
+		finishedRobberyAttacker: (success: boolean) => `Robo ${success ? "exitoso" : "fallido"}`,
+	},
+};
