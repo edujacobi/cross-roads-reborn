@@ -92,6 +92,8 @@ export enum EmoteId {
 	Hospital = "539497344450691077",
 	Police = "1339924939385470986",
 	Casino = "539497634780676107",
+	Scavenge = "948015474988445727",
+	Bank = "539497634826551307",
 	React = "1343948089249103945",
 
 	VIP = "778572312215027744",
@@ -106,6 +108,7 @@ export enum EmoteId {
 	TopMoney = "934631819444355112",
 	Scapist = "934631818844581949",
 	Politician = "934631819079462952",
+	Philantrope = "934631819024941056",
 
 	// Classes
 	Assassin = "1343060412450607165",
@@ -211,6 +214,8 @@ export const EmoteString = {
 	Hospital: `<:Hospital:${EmoteId.Hospital}>`,
 	Police: `<:Police2:${EmoteId.Police}>`,
 	Casino: `<:Cassino:${EmoteId.Casino}>`,
+	Scavenge: `<:Vasculhar:${EmoteId.Scavenge}>`,
+	Bank: `<:Banco:${EmoteId.Bank}>`,
 	React: `<:React:${EmoteId.React}>`,
 
 	VIP: `<:vip:${EmoteId.VIP}>`,
@@ -225,6 +230,7 @@ export const EmoteString = {
 	TopMoney: `<:Top1_Grana_S6:${EmoteId.TopMoney}>`,
 	Scapist: `<:badge_fujao1:${EmoteId.Scapist}>`,
 	Politician: `<:badge_deputado:${EmoteId.Politician}>`,
+	Philantrope: `<:badge_filantropo:${EmoteId.Philantrope}>`,
 
 	// Classes
 	Assassin: `<:Class_Assassin:${EmoteId.Assassin}>`,
