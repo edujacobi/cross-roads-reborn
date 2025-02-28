@@ -420,4 +420,4 @@ const Strings = {
 		prisonTime: (time: Date) => `Estará en prisión hasta ${showTime(time.getTime())}`,
 		finishedRobberyAttacker: (success: boolean) => `Robo ${success ? "exitoso" : "fallido"}`,
 	},
-};
+} as const;

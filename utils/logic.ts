@@ -4,7 +4,6 @@ import {
 	ButtonInteraction,
 	ChatInputCommandInteraction, ColorResolvable,
 	CommandInteraction,
-	EmbedBuilder,
 	InteractionReplyOptions, MessageCreateOptions,
 	MessagePayload, Snowflake,
 } from "discord.js";
@@ -22,6 +21,9 @@ export async function checkUser(userId: string, interaction: CommandInteraction)
 	const user = new User(userId, lang);
 
 	if (await user.GetInfo()) {
+		if (userId == interaction.user.id && user.Language !== lang) {
+			await user.UpdateLanguage(lang);
+		}
 		return user;
 	}
 

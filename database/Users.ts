@@ -3,6 +3,7 @@ import { sequelize } from "./Database";
 import { JobId } from "../models/Job";
 
 import { ClassId } from "../models/Class";
+import { Language } from "../models/Language";
 
 export class Users extends Model<
 	InferAttributes<Users>,
@@ -12,6 +13,7 @@ export class Users extends Model<
 	declare nickname: CreationOptional<string>;
 	declare money: number;
 	declare class: ClassId;
+	declare language: Language;
 
 	declare lastDailyReceived: Date | null;
 	declare dailyStreak: number;
@@ -68,6 +70,11 @@ Users.init(
 			defaultValue: 0,
 		},
 		class: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0,
+		},
+		language: {
 			type: DataTypes.INTEGER,
 			allowNull: false,
 			defaultValue: 0,

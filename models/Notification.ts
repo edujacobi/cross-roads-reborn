@@ -23,7 +23,6 @@ export class Notification {
 	UserId = "";
 	Type = NotificationType.Daily;
 	Date = new Date();
-	Language = Language.English;
 
 	async Create() {
 		if (!this.UserId || !this.Type || !this.Date) {
@@ -35,7 +34,6 @@ export class Notification {
 				userId: this.UserId,
 				type: this.Type,
 				date: this.Date,
-				language: this.Language,
 			});
 
 			Log.Info(`Notification Timer of type ${this.Type} for ${this.UserId} created to notify in ${this.Date}.`);
@@ -50,7 +48,6 @@ export class Notification {
 		const notification = new Notification();
 		notification.UserId = user.Id;
 		notification.Type = NotificationType.Daily;
-		notification.Language = user.Language;
 		if (!user.Daily.LastReceived) {
 			return;
 		}
@@ -62,7 +59,6 @@ export class Notification {
 		const notification = new Notification();
 		notification.UserId = user.Id;
 		notification.Type = NotificationType.Job;
-		notification.Language = user.Language;
 		if (user.Job.Id === null) {
 			return;
 		}
@@ -74,7 +70,6 @@ export class Notification {
 		const notification = new Notification();
 		notification.UserId = user.Id;
 		notification.Type = NotificationType.RobAgain;
-		notification.Language = user.Language;
 		notification.Date = user.Escape.Time;
 		await notification.Create();
 	}
@@ -83,7 +78,6 @@ export class Notification {
 		const notification = new Notification();
 		notification.UserId = user.Id;
 		notification.Type = NotificationType.Free;
-		notification.Language = user.Language;
 		notification.Date = user.Prison.Time;
 		await notification.Create();
 	}
@@ -120,7 +114,6 @@ export class Notification {
 			notificationTimer.UserId = notification.userId;
 			notificationTimer.Type = notification.type;
 			notificationTimer.Date = notification.date;
-			notificationTimer.Language = notification.language;
 
 			notificationList.push(notificationTimer);
 		}
@@ -183,8 +176,6 @@ export class Notification {
 		const list = await Notification.GetNextNotifications(now);
 
 		for (const notification of list) {
-			const lang = notification.Language;
-			const s = Strings[lang];
 			const user = await new User(notification.UserId).GetInfo();
 
 			if (!user) {
@@ -193,7 +184,9 @@ export class Notification {
 				continue;
 			}
 
-			else if (notification.Type == NotificationType.Daily) {
+			const s = Strings[user.Language];
+
+			if (notification.Type == NotificationType.Daily) {
 				await sendPrivateMessage(user.Id, s.daily);
 			}
 
@@ -203,7 +196,7 @@ export class Notification {
 				}
 				const job = JobList[user.Job.Id];
 				await user.EndJob();
-				await sendPrivateMessage(notification.UserId, s.job(job.Description[lang], job.Salary), CrColors.Jobs);
+				await sendPrivateMessage(notification.UserId, s.job(job.Description[user.Language], job.Salary), CrColors.Jobs);
 			}
 
 			else if (notification.Type == NotificationType.RobAgain) {

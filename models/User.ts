@@ -145,6 +145,7 @@ export class User {
 				nickname: this.Nickname,
 				money: this.Money,
 				class: this.Class,
+				language: this.Language,
 				dailyStreak: this.Daily.CurrentStreak,
 				maxDailyStreak: this.Daily.MaxStreak,
 				lastDailyReceived: this.Daily.LastReceived,
@@ -193,6 +194,7 @@ export class User {
 		this.Nickname = user.nickname;
 		this.Money = user.money;
 		this.Class = user.class;
+		this.Language = user.language;
 
 		// Job
 		this.Job.Id = user.jobId;
@@ -602,12 +604,23 @@ export class User {
 			}, {
 				where: { id: this.Id },
 			});
-
-			// Log.Info(`User ID: ${this.Id} updated.`);
-
 		}
 		catch (err) {
 			Log.Warning(`Something went wrong with updating user Id: ${this.Id}.`);
+		}
+	}
+
+	async UpdateLanguage(language: Language) {
+		try {
+			await Users.update({
+				language: language,
+				updatedAt: this.UpdatedAt,
+			}, {
+				where: { id: this.Id },
+			});
+		}
+		catch (err) {
+			Log.Warning(`Something went wrong with updating language for user Id: ${this.Id}.`);
 		}
 	}
 }
