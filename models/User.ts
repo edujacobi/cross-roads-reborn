@@ -610,6 +610,11 @@ export class User {
 		if (success) {
 			this.Prison.Time = new Date();
 			this.Wanted.Time = addMinutes(new Date(), 30);
+
+			await Promise.all([
+				Notification.Dismiss(this.Id, NotificationType.Free),
+				Notification.RobAgain(this)
+			]);
 		}
 
 		await this.Update();
