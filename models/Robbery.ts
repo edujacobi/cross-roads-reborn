@@ -24,6 +24,7 @@ import { Language } from "./Language";
 import { RobHistories } from "../database/RobHistories";
 import { Users } from "../database/Users";
 import { ClassList } from "./Class";
+import { CreationOptional } from "sequelize";
 
 export enum RobTypes {
 	User = 1,
@@ -66,60 +67,61 @@ export class Robbery {
 	}
 
 	async CanRobUser() {
+		const s = Strings[this.Attacker.Language];
 		let canRob = true;
 		let message = "";
 
 		if (this.Defender.Id === this.Attacker.Id) {
-			message = `Você não pode roubar a si mesmo, idiota! ${EmoteString.Robbery}`;
+			message = `${s.sameId} ${EmoteString.Robbery}`;
 			canRob = false;
 		}
 
 		if (!this.Defender.Nickname) {
-			message = `Este usuário ainda não cadastrou um nickname! ${EmoteString.Robbery}`;
+			message = `${s.withoutNick} ${EmoteString.Robbery}`;
 			canRob = false;
 		}
 
 		if (this.Attacker.Attributes.Attack == 0) {
-			message = `Você não pode roubar sem uma arma! ${EmoteString.Robbery}`;
+			message = `${s.withoutItem} ${EmoteString.Robbery}`;
 			canRob = false;
 		}
 
 		if (this.Defender.Attributes.Attack - this.Attacker.Attributes.Attack > 15) {
-			message = `Você não pode roubar ${this.Defender.Nickname} usando suas armas atuais! ${EmoteString.Robbery}\n-# Consiga uma arma melhor`;
+			message = s.lowAtk(this.Defender.Nickname);
 			canRob = false;
 		}
 
 		if (this.Attacker.IsInPrison()) {
-			message = `Você não pode roubar enquanto está preso! ${EmoteString.Prison}\n-# Será solto ${showTime(this.Attacker.Prison.Time.getTime(), true)}!`;
+			message = s.inPrison(this.Attacker.Prison.Time);
 			canRob = false;
 		}
 
 		if (this.Attacker.IsWanted()) {
-			message = `Você não pode roubar enquanto está sendo procurado pela polícia! ${EmoteString.Police}\n-# Poderá roubar novamente ${showTime(this.Attacker.Escape.Time.getTime(), true)}!`;
+			message = s.isWanted(this.Attacker.Wanted.Time);
 			canRob = false;
 		}
 
 		if (this.Attacker.Robbery.IsRobbingId) {
 			const user = await Users.findByPk(this.Attacker.Robbery.IsRobbingId);
-			message = `Você já está roubando **${user?.nickname}**! ${EmoteString.Robbery}`;
+			message = `${s.attackerIsRobbingId(user?.nickname)} ${EmoteString.Robbery}`;
 			canRob = false;
 		}
 
 		if (this.Attacker.Robbery.IsBeingRobbedById) {
 			const user = await Users.findByPk(this.Attacker.Robbery.IsBeingRobbedById);
-			message = `Você está sendo roubado por **${user?.nickname}**! ${EmoteString.Robbery}`;
+			message = `${s.attackerIsBeingRobbedById(user?.nickname)} ${EmoteString.Robbery}`;
 			canRob = false;
 		}
 
 		if (this.Defender.Robbery.IsRobbingId) {
 			const user = await Users.findByPk(this.Defender.Robbery.IsRobbingId);
-			message = `**${this.Defender.Nickname}** está roubando **${user?.nickname}**. Espere mais alguns segundos para iniciar sua ação! ${EmoteString.Robbery}`;
+			message = `**${this.Defender.Nickname}** ${s.defenderIsRobbingId(user?.nickname)} ${EmoteString.Robbery}`;
 			canRob = false;
 		}
 
 		if (this.Defender.Robbery.IsBeingRobbedById) {
 			const user = await Users.findByPk(this.Defender.Robbery.IsBeingRobbedById);
-			message = `**${this.Defender.Nickname}** está sendo roubado por **${user?.nickname}**. Espere mais alguns segundos para iniciar sua ação! ${EmoteString.Robbery}`;
+			message = `**${this.Defender.Nickname}** ${s.defenderIsBeingRobbedById(user?.nickname)} ${EmoteString.Robbery}`;
 			canRob = false;
 		}
 
@@ -270,7 +272,7 @@ ${sD.doNothingDescription}`)
 			this.Attacker.Money += this.MoneyRobbed;
 			this.Attacker.Robbery.SuccessCount += 1;
 			this.Attacker.Robbery.SuccessRobbedSum += this.MoneyRobbed;
-			this.Attacker.Escape.Time = addHours(new Date(), 1);
+			this.Attacker.Wanted.Time = addHours(new Date(), 1);
 
 			this.Defender.Money -= this.MoneyRobbed;
 			this.Defender.Robbery.BeingRobbedCount += 1;
@@ -286,6 +288,8 @@ ${sD.doNothingDescription}`)
 		}
 		else {
 			this.Attacker.Prison.Time = addMinutes(new Date(), this.AttackerTimeInPrison);
+			this.Attacker.Prison.HasPaidBribe = false;
+			this.Attacker.Escape.HasTried = false;
 			this.Attacker.Robbery.FailureCount += 1;
 
 			await Notification.Free(this.Attacker);
@@ -331,6 +335,17 @@ ${sD.doNothingDescription}`)
 
 const Strings = {
 	[Language.English]: {
+		// CanRob
+		sameId: "You can't rob yourself, idiot!",
+		withoutNick: "This user hasn't set a nickname yet!",
+		withoutItem: "You can't rob without a weapon!",
+		lowAtk: (nick: string) => `You can't rob ${nick} with your current weapons! ${EmoteString.Robbery}\n-# Get a better weapon`,
+		inPrison: (prisonTime: Date) => `You can't rob while you're in prison! ${EmoteString.Prison}\n-# Will be released ${showTime(prisonTime.getTime(), true)}!`,
+		isWanted: (wantedTime: Date) => `You can't rob while you're wanted by the police! ${EmoteString.Police}\n-# Will be able to rob again ${showTime(wantedTime.getTime(), true)}!`,
+		attackerIsRobbingId: (nick: CreationOptional<string> | undefined) => `You're already robbing **${nick}**!`,
+		attackerIsBeingRobbedById: (nick: CreationOptional<string> | undefined) => `You're being robbed by **${nick}**!`,
+		defenderIsRobbingId: (nick: CreationOptional<string> | undefined) => `is robbing **${nick}**. Wait a few more seconds to start your action!`,
+		defenderIsBeingRobbedById: (nick: CreationOptional<string> | undefined) => `is being robbed by **${nick}**. Wait a few more seconds to start your action!`,
 		// Defender
 		hands: "Hands up!",
 		tryingToRobYou: "is trying to rob you using",
@@ -361,6 +376,17 @@ const Strings = {
 		finishedRobberyAttacker: (success: boolean) => `Robbery ${success ? "successful" : "unsuccessful"}`,
 	},
 	[Language.Portuguese]: {
+		// CanRob
+		sameId: "Você não pode roubar a si mesmo, idiota!",
+		withoutNick: "Este usuário ainda não cadastrou um nickname!",
+		withoutItem: "Você não pode roubar sem uma arma!",
+		lowAtk: (nick: string) => `Você não pode roubar ${nick} usando suas armas atuais! ${EmoteString.Robbery}\n-# Consiga uma arma melhor`,
+		inPrison: (prisonTime: Date) => `Você não pode roubar enquanto está preso! ${EmoteString.Prison}\n-# Será solto ${showTime(prisonTime.getTime(), true)}!`,
+		isWanted: (wantedTime: Date) => `Você não pode roubar enquanto está sendo procurado pela polícia! ${EmoteString.Police}\n-# Poderá roubar novamente ${showTime(wantedTime.getTime(), true)}!`,
+		attackerIsRobbingId: (nick: CreationOptional<string> | undefined) => `Você já está roubando **${nick}**!`,
+		attackerIsBeingRobbedById: (nick: CreationOptional<string> | undefined) => `Você está sendo roubado por **${nick}**!`,
+		defenderIsRobbingId: (nick: CreationOptional<string> | undefined) => `está roubando **${nick}**. Espere mais alguns segundos para iniciar sua ação!`,
+		defenderIsBeingRobbedById: (nick: CreationOptional<string> | undefined) => `está sendo roubado por **${nick}**. Espere mais alguns segundos para iniciar sua ação!`,
 		// Defender
 		hands: "Mãos ao alto!",
 		tryingToRobYou: "está tentando roubar você utilizando",
@@ -391,6 +417,17 @@ const Strings = {
 		finishedRobberyAttacker: (success: boolean) => `Roubo ${success ? "bem" : "mal"}-sucedido`,
 	},
 	[Language.Spanish]: {
+		// CanRob
+		sameId: "¡No puedes robarte a ti mismo, idiota!",
+		withoutNick: "¡Este usuario aún no ha establecido un apodo!",
+		withoutItem: "¡No puedes robar sin un arma!",
+		lowAtk: (nick: string) => `¡No puedes robar a ${nick} con tus armas actuales! ${EmoteString.Robbery}\n-# Consigue un arma mejor`,
+		inPrison: (prisonTime: Date) => `¡No puedes robar mientras estás en prisión! ${EmoteString.Prison}\n-# Será liberado ${showTime(prisonTime.getTime(), true)}!`,
+		isWanted: (wantedTime: Date) => `¡No puedes robar mientras estás siendo buscado por la policía! ${EmoteString.Police}\n-# Podrá robar nuevamente ${showTime(wantedTime.getTime(), true)}!`,
+		attackerIsRobbingId: (nick: CreationOptional<string> | undefined) => `¡Ya estás robando a **${nick}**!`,
+		attackerIsBeingRobbedById: (nick: CreationOptional<string> | undefined) => `¡Estás siendo robado por **${nick}**!`,
+		defenderIsRobbingId: (nick: CreationOptional<string> | undefined) => `está robando a **${nick}**. ¡Espere unos segundos más para iniciar su acción!`,
+		defenderIsBeingRobbedById: (nick: CreationOptional<string> | undefined) => `está siendo robado por **${nick}**. ¡Espere unos segundos más para iniciar su acción!`,
 		// Defender
 		hands: "¡Manos arriba!",
 		tryingToRobYou: "está intentando robarte utilizando",
