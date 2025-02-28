@@ -1,10 +1,10 @@
 ﻿import { Users } from "../database/Users";
 import { Log } from "../utils/log";
-import { addDays, differenceInHours } from "date-fns";
+import { addDays, addMinutes, differenceInHours } from "date-fns";
 import { Language } from "./Language";
 import { UserItems } from "../database/UserItems";
 import { addHours } from "date-fns/addHours";
-import { Op } from "sequelize";
+import { CreationOptional, Op } from "sequelize";
 import { Item, ItemList, ItemType, UserItem } from "./Item";
 import { JobId, JobList } from "./Job";
 import { Notification, NotificationType } from "./Notification";
@@ -45,9 +45,15 @@ export class User {
 	Prison: {
 		BriberySum: number,
 		BriberyCount: number,
+		HasPaidBribe: boolean,
 		Time: Date,
 	};
 	Escape: {
+		Count: number,
+		Time: Date,
+		HasTried: boolean,
+	};
+	Wanted: {
 		Count: number,
 		Time: Date,
 	};
@@ -110,9 +116,15 @@ export class User {
 		this.Prison = {
 			BriberySum: 0,
 			BriberyCount: 0,
+			HasPaidBribe: false,
 			Time: now,
 		};
 		this.Escape = {
+			Count: 0,
+			Time: now,
+			HasTried: false,
+		};
+		this.Wanted = {
 			Count: 0,
 			Time: now,
 		};
@@ -154,10 +166,13 @@ export class User {
 				casinoWinCount: 0,
 				casinoWinSum: 0,
 				escapeCount: 0,
+				escapeHasTried: false,
+				wantedCount: 0,
 				jobReceivedCount: 0,
 				jobReceivedSum: 0,
 				prisonBriberyCount: 0,
 				prisonBriberySum: 0,
+				prisonHasPaidBribe: false,
 				robberyBeingRobbedCount: 0,
 				robberyBeingRobbedSum: 0,
 				robberyFailureCount: 0,
@@ -224,11 +239,17 @@ export class User {
 		// Prison
 		this.Prison.BriberySum = user.prisonBriberySum;
 		this.Prison.BriberyCount = user.prisonBriberyCount;
+		this.Prison.HasPaidBribe = user.prisonHasPaidBribe;
 		this.Prison.Time = new Date(user.prisonTime);
 
 		// Escape
 		this.Escape.Count = user.escapeCount;
 		this.Escape.Time = new Date(user.escapeTime);
+		this.Escape.HasTried = user.escapeHasTried;
+
+		// Wanted
+		this.Wanted.Count = user.wantedCount;
+		this.Wanted.Time = new Date(user.wantedTime);
 
 		// Casino
 		this.Casino.WinCount = user.casinoWinCount;
@@ -496,7 +517,7 @@ export class User {
 		}
 		if (this.IsWanted()) {
 			this.Situation.Simple += ` ${s.wantedSimple}`;
-			this.Situation.Complex += ` ${s.wantedComplex} ${showTime(this.Escape.Time.getTime())}`;
+			this.Situation.Complex += ` ${s.wantedComplex} ${showTime(this.Wanted.Time.getTime())}`;
 		}
 	}
 
@@ -509,6 +530,10 @@ export class User {
 	}
 
 	IsWanted() {
+		return this.Wanted.Time > new Date();
+	}
+
+	IsEscaping() {
 		return this.Escape.Time > new Date();
 	}
 
@@ -548,15 +573,50 @@ export class User {
 		Log.Success(`User ${this.Nickname} (ID: ${this.Id}) finished his job ${job.Description[this.Language]} and received ${formatMoney(job.Salary, Language.English)}.`);
 	}
 
-	// CheckActions() {
-	// 	const availableActions = {
-	// 		rob: false,
-	// 		beatUp: false,
-	// 		bet: false,
-	// 		scavenge: false,
-	// 	};
-	//
-	// }
+	async CanBribe() {
+		const s = Strings[this.Language];
+		let canBribe = true;
+		let message = "";
+
+		if (this.Prison.HasPaidBribe) {
+			message = s.bribeHasPaid;
+		}
+		if (!this.IsInPrison()) {
+			message = s.bribeNotInPrison;
+			canBribe = false;
+		}
+		if (this.IsEscaping()) {
+			message = s.bribeEscaping;
+			canBribe = false;
+		}
+		if (this.Robbery.IsBeingRobbedById) {
+			const user = await Users.findByPk(this.Robbery.IsBeingRobbedById);
+			message = s.bribeBeingRobbedBy(user?.nickname);
+			canBribe = false;
+		}
+
+		return { canBribe, message };
+	}
+
+	async PayBribery(bribeValue: number) {
+		const chance = Math.floor(Math.random() * 101);
+		const success = chance < 75;
+
+		this.Money -= bribeValue;
+		this.Prison.HasPaidBribe = true;
+		this.Prison.BriberySum += bribeValue;
+		this.Prison.BriberyCount += 1;
+
+		if (success) {
+			this.Prison.Time = new Date();
+			this.Wanted.Time = addMinutes(new Date(), 30);
+		}
+
+		await this.Update();
+		Log.Success(`User ${this.Nickname} (ID: ${this.Id}) paid a bribe of ${formatMoney(bribeValue, Language.English)} to leave prison. Sucess: ${success}.`);
+
+		return success;
+	}
 
 	async Update() {
 		try {
@@ -587,10 +647,15 @@ export class User {
 
 				prisonBriberySum: this.Prison.BriberySum,
 				prisonBriberyCount: this.Prison.BriberyCount,
+				prisonHasPaidBribe: this.Prison.HasPaidBribe,
 				prisonTime: this.Prison.Time,
 
 				escapeCount: this.Escape.Count,
 				escapeTime: this.Escape.Time,
+				escapeHasTried: this.Escape.HasTried,
+
+				wantedCount: this.Wanted.Count,
+				wantedTime: this.Wanted.Time,
 
 				casinoWinCount: this.Casino.WinCount,
 				casinoLoseCount: this.Casino.LoseCount,
@@ -637,6 +702,10 @@ const Strings = {
 		imprisonedComplex: "Imprisoned until",
 		wantedSimple: "and Wanted",
 		wantedComplex: `and ${EmoteString.Police} Wanted until`,
+		bribeHasPaid: `We won't accept anything from you, smartass! ${EmoteString.Police}\n-# "Maybe next time you stop being an idiot"`,
+		bribeNotInPrison: `You are not in prison! ${EmoteString.Prison}\n-# "But we can lock you in. What do you think?"`,
+		bribeEscaping: `You are trying to escape and cannot bribe! ${EmoteString.Escape}\n-# Focus!`,
+		bribeBeingRobbedBy: (nickname: CreationOptional<string> | undefined) => `You are being robbed by **${nickname}** and cannot bribe! ${EmoteString.Robbery}`,
 	},
 	[Language.Portuguese]: {
 		idling: "Vadiando",
@@ -649,6 +718,10 @@ const Strings = {
 		imprisonedComplex: "Preso até",
 		wantedSimple: "e Procurado",
 		wantedComplex: `e ${EmoteString.Police} Procurado até`,
+		bribeHasPaid: `Não aceitaremos nada vindo de você, espertalhão! ${EmoteString.Police}\n-# "Quem sabe na próxima tu deixa de ser idiota"`,
+		bribeNotInPrison: `Você não está preso! ${EmoteString.Prison}\n-# "Mas podemos te prender. O que acha?"`,
+		bribeEscaping: `Você está tentando escapar e não pode subornar! ${EmoteString.Escape}\n-# "Foco!"`,
+		bribeBeingRobbedBy: (nickname: CreationOptional<string> | undefined) => `Você está sendo roubado por **${nickname}** e não pode subornar! ${EmoteString.Robbery}`,
 	},
 	[Language.Spanish]: {
 		idling: "Vagando",
@@ -661,5 +734,9 @@ const Strings = {
 		imprisonedComplex: "Preso hasta",
 		wantedSimple: "y Buscado",
 		wantedComplex: `y ${EmoteString.Police} Buscado hasta`,
+		bribeHasPaid: `¡No aceptaremos nada de ti, listillo! ${EmoteString.Police}\n-# "Quizás la próxima vez dejas de ser idiota"`,
+		bribeNotInPrison: `¡No estás en la cárcel! ${EmoteString.Prison}\n-# "Pero podemos encerrarte. ¿Qué te parece?"`,
+		bribeEscaping: `¡Estás intentando escapar y no puedes sobornar! ${EmoteString.Escape}\n-# "¡Enfócate!"`,
+		bribeBeingRobbedBy: (nickname: CreationOptional<string> | undefined) => `¡Estás siendo robado por **${nickname}** y no puedes sobornar! ${EmoteString.Robbery}`,
 	},
 } as const;

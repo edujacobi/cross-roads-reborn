@@ -112,7 +112,7 @@ module.exports = {
 			}
 			if (user.IsWanted()) {
 				return await removeEmbedComponents(interaction, [
-					embed.setDescription(s.userWanted(user.Escape.Time)),
+					embed.setDescription(s.userWanted(user.Wanted.Time)),
 				]);
 			}
 			if (user.IsInPrison()) {

@@ -72,12 +72,12 @@ module.exports = {
 			}, {
 				name: `${EmoteString.Prison} Prisão`,
 				value: `-# \`${target.Robbery.FailureCount}\` vezes preso
--# \`${target.Prison.BriberyCount}\` subornos
--# \`${formatMoney(target.Prison.BriberySum, user.Language)}\` em suborno`,
+-# \`${target.Escape.Count}\` fugiu
+-# \`${formatMoney(target.Prison.BriberySum, user.Language)}\` (\`${target.Prison.BriberyCount}\`) em suborno`,
 				inline: true,
 			}, {
 				name: `${EmoteString.Robbery} Roubos`,
-				value: `-# ${target.Escape.Time > now ? showTime(target.Escape.Time.getTime(), true) : `Pode roubar`}
+				value: `-# ${target.Wanted.Time > now ? showTime(target.Wanted.Time.getTime(), true) : `Pode roubar`}
 -# \`${formatMoney(target.Robbery.SuccessRobbedSum, user.Language)}\` (\`${target.Robbery.SuccessCount}\`) roubados
 -# \`${formatMoney(target.Robbery.BeingRobbedSum, user.Language)}\` (\`${target.Robbery.BeingRobbedCount}\`) perdidos`,
 				inline: true,

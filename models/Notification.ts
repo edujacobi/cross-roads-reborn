@@ -70,7 +70,7 @@ export class Notification {
 		const notification = new Notification();
 		notification.UserId = user.Id;
 		notification.Type = NotificationType.RobAgain;
-		notification.Date = user.Escape.Time;
+		notification.Date = user.Wanted.Time;
 		await notification.Create();
 	}
 

@@ -32,7 +32,7 @@ module.exports = {
 			text = s.userWorking;
 		}
 		if (user.IsWanted()) {
-			text = s.userEscaping(user.Escape.Time);
+			text = s.userEscaping(user.Wanted.Time);
 		}
 		if (user.IsInPrison()) {
 			text = s.userPrison(user.Prison.Time);

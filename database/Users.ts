@@ -37,10 +37,15 @@ export class Users extends Model<
 
 	declare prisonBriberySum: number;
 	declare prisonBriberyCount: number;
+	declare prisonHasPaidBribe: boolean;
 	declare prisonTime: CreationOptional<Date>;
 
 	declare escapeCount: number;
 	declare escapeTime: CreationOptional<Date>;
+	declare escapeHasTried: boolean;
+
+	declare wantedCount: number;
+	declare wantedTime: CreationOptional<Date>;
 
 	declare casinoWinCount: number;
 	declare casinoLoseCount: number;
@@ -166,6 +171,11 @@ Users.init(
 			allowNull: false,
 			defaultValue: 0,
 		},
+		prisonHasPaidBribe: {
+			type: DataTypes.BOOLEAN,
+			allowNull: false,
+			defaultValue: false,
+		},
 		prisonTime: {
 			type: DataTypes.DATE,
 		},
@@ -175,6 +185,19 @@ Users.init(
 			defaultValue: 0,
 		},
 		escapeTime: {
+			type: DataTypes.DATE,
+		},
+		escapeHasTried: {
+			type: DataTypes.BOOLEAN,
+			allowNull: false,
+			defaultValue: false,
+		},
+		wantedCount: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0,
+		},
+		wantedTime: {
 			type: DataTypes.DATE,
 		},
 		casinoWinCount: {

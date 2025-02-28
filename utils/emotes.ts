@@ -95,6 +95,7 @@ export enum EmoteId {
 	Scavenge = "948015474988445727",
 	Bank = "539497634826551307",
 	React = "1343948089249103945",
+	Escape = "1345061962437890129",
 
 	VIP = "778572312215027744",
 
@@ -217,6 +218,7 @@ export const EmoteString = {
 	Scavenge: `<:Vasculhar:${EmoteId.Scavenge}>`,
 	Bank: `<:Banco:${EmoteId.Bank}>`,
 	React: `<:React:${EmoteId.React}>`,
+	Escape: `<:Escape:${EmoteId.Escape}>`,
 
 	VIP: `<:vip:${EmoteId.VIP}>`,
 
