@@ -18,6 +18,7 @@ import { Users } from "../../database/Users";
 import { User } from "../../models/User";
 import { Language } from "../../models/Language";
 import { ClassList } from "../../models/Class";
+import { BadgeString } from "../../utils/badges";
 
 module.exports = {
 	cooldown: 5,
@@ -76,7 +77,7 @@ module.exports = {
 
 			return new CustomEmbedBuilder()
 				.setColor(Colors.Green)
-				.setDescription(`# ${EmoteString.TopMoney} Ranking ${s.title}\n${moneyText}`)
+				.setDescription(`# ${BadgeString.Season1.Top1Money} Ranking ${s.title}\n${moneyText}`)
 				.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), s.showing(offset, limit, howManyUsers));
 		}
 
