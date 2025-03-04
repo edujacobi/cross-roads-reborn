@@ -89,7 +89,7 @@ export enum EmoteId {
 	Beat = "820088112357179453",
 	Prison = "1339946677016068106",
 	Working = "948015474782912563",
-	Hospital = "539497344450691077",
+	Hospital = "1346502427565887598",
 	Police = "1339924939385470986",
 	Casino = "539497634780676107",
 	Scavenge = "948015474988445727",
@@ -103,13 +103,6 @@ export enum EmoteId {
 	Coroamuru = "1246839956761219102",
 
 	Waiting = "1245532472654041138",
-
-	// Badges
-	CampeaoCanja = "825763812506075197",
-	TopMoney = "934631819444355112",
-	Scapist = "934631818844581949",
-	Politician = "934631819079462952",
-	Philantrope = "934631819024941056",
 
 	// Classes
 	Assassin = "1343060412450607165",
@@ -226,13 +219,6 @@ export const EmoteString = {
 	Coroamuru: `<:CoroamuruNew:${EmoteId.Coroamuru}>`,
 
 	Waiting: `<a:waiting:${EmoteId.Waiting}>`,
-
-	// Badges
-	CampeaoCanja: `<:Campeao_Canja:${EmoteId.CampeaoCanja}>`,
-	TopMoney: `<:Top1_Grana_S6:${EmoteId.TopMoney}>`,
-	Scapist: `<:badge_fujao1:${EmoteId.Scapist}>`,
-	Politician: `<:badge_deputado:${EmoteId.Politician}>`,
-	Philantrope: `<:badge_filantropo:${EmoteId.Philantrope}>`,
 
 	// Classes
 	Assassin: `<:Class_Assassin:${EmoteId.Assassin}>`,
