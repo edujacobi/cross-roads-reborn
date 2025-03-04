@@ -53,16 +53,16 @@ interface ClientActivity {
 
 export const clientActivities: ClientActivity[] = [{
 	type: ActivityType.Playing,
-	label: "Cross Roads",
+	label: "Battle Roosters Arena",
 }, {
 	type: ActivityType.Custom,
 	label: "🪙 Betting in Casino",
 }, {
 	type: ActivityType.Custom,
-	label: "📖 Reading Rooster Fighter",
+	label: "🔪 Robbing an old lady",
 }, {
 	type: ActivityType.Custom,
-	label: "🦾 Training in Dojo",
+	label: "🏃‍➡️ Escaping from prison",
 }, {
 	type: ActivityType.Watching,
 	label: "Netflix",
