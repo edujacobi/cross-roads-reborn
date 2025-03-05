@@ -205,7 +205,7 @@ export class Notification {
 				}
 				const job = JobList[user.Job.Id];
 				await user.EndJob();
-				await sendPrivateMessage(notification.UserId, s.job(job.Description[user.Language], job.Salary), CrColors.Jobs);
+				await sendPrivateMessage(user.Id, s.job(job.Description[user.Language], job.Salary), CrColors.Jobs, formatMoney(user.Money, user.Language));
 			}
 
 			else if (notification.Type == NotificationType.RobAgain) {

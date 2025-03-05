@@ -61,7 +61,7 @@ export async function removeAllFromRobbery() {
 	}
 }
 
-export async function sendPrivateMessage(userId: string, message: string, color?: ColorResolvable) {
+export async function sendPrivateMessage(userId: string, message: string, color?: ColorResolvable, footer: string = "") {
 	const client = getClient();
 	const discordUser = await client.users.fetch(userId);
 
@@ -71,6 +71,9 @@ export async function sendPrivateMessage(userId: string, message: string, color?
 
 		if (color) {
 			embed.setColor(color);
+		}
+		if (footer) {
+			embed.setFooter({ text: footer });
 		}
 
 		await discordUser.send({ embeds: [embed] });
