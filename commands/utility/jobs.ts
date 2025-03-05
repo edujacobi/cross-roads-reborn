@@ -32,15 +32,14 @@ module.exports = {
 
 		let workingText = "";
 		if (user.IsWorking()) {
-			workingText = `\n## ${s.workingOn(user.Job.Id!, user.Job.EndsIn)}`;
+			workingText = `\n${s.workingOn(user.Job.Id!, user.Job.EndsIn)}`;
 		}
 
 		const embed = new CustomEmbedBuilder()
-			.setDescription(`# ${s.title}\n${s.description}${workingText}`)
+			.setDescription(`# ${s.title}\n-# ${s.description}${workingText}`)
 			.setThumbnail("https://media.discordapp.net/attachments/1233604589064818808/1337166947250602047/Trabalhos2.png")
 			.setColor(CrColors.Jobs)
-			.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), formatMoney(user.Money, language))
-			.setTimestamp();
+			.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), formatMoney(user.Money, language));
 
 		const select = new StringSelectMenuBuilder()
 			.setCustomId("select")
