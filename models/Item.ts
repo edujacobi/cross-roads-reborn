@@ -83,7 +83,7 @@ export const ItemList: ItemListType = {
 				},
 			},
 		},
-		Price: 2500,
+		Price: 2000,
 		Attack: 15,
 		Defense: 0,
 		MoneyAttack: 6,

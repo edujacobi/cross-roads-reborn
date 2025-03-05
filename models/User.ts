@@ -383,9 +383,7 @@ export class User {
 
 		const baseValue = this.IsVip() ? 300 : 200;
 
-		const MULTIPLIER_REMOVE = 50000;
-
-		const money = baseValue * streakMultiplier * MULTIPLIER_REMOVE;
+		const money = baseValue * streakMultiplier;
 
 		this.Money += money;
 
