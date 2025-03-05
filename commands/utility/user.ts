@@ -68,7 +68,9 @@ module.exports = {
 				// 	inline: true,
 				// },
 				name: `${EmoteString.Heads} Daily`,
-				value: `-# ${target.CanReceiveDaily() ? s.available : showTime(addDays(target.Daily.LastReceived!, 1).getTime(), true)}`,
+				value: `-# ${target.CanReceiveDaily() ? s.available : showTime(addDays(target.Daily.LastReceived!, 1).getTime(), true)}
+-# \`${target.Daily.CurrentStreak}\` ${s.currentStreak}
+-# \`${target.Daily.MaxStreak}\` ${s.maxStreak}`,
 				inline: true,
 			}, {
 				name: `${EmoteString.Prison} ${s.prison}`,
@@ -130,6 +132,8 @@ const Strings = {
 		situation: "Situation",
 		className: "Class",
 		available: "Available",
+		currentStreak: "current streak",
+		maxStreak: "max streak",
 		prison: "Prison",
 		timesInPrison: "times inprisoned",
 		escapes: "escapes",
@@ -160,6 +164,8 @@ const Strings = {
 		situation: "Situação",
 		className: "Classe",
 		available: "Disponível",
+		currentStreak: "sequência atual",
+		maxStreak: "sequência máxima",
 		prison: "Prisão",
 		timesInPrison: "vezes preso",
 		escapes: "fugas",
@@ -190,6 +196,8 @@ const Strings = {
 		situation: "Situación",
 		className: "Clase",
 		available: "Disponible",
+		currentStreak: "racha actual",
+		maxStreak: "racha máxima",
 		prison: "Prisión",
 		timesInPrison: "veces en prisión",
 		escapes: "fugas",

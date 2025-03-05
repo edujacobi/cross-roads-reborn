@@ -70,13 +70,25 @@ module.exports = {
 			for (let i = 0; i < users.length; i++) {
 				const user = users[i];
 				const underscore = user.id == interaction.user.id ? "__" : "";
+				const emoteClass = ClassList[user.class].Image.Emote.String;
 
-				moneyText += `### \`${i + offset + 1}.\` ${ClassList[user.class].Image.Emote.String} ${underscore}${user.nickname}${underscore}\n${formatMoney(user.money, language)}\n-# \`ID: ${user.id}\`\n`;
+				let position = `\`${i + offset + 1}.\``;
+				if (i + offset == 0) {
+					position = BadgeString.Season1.Top1Money;
+				}
+				else if (i + offset == 1) {
+					position = BadgeString.Season1.Top2Money;
+				}
+				else if (i + offset == 2) {
+					position = BadgeString.Season1.Top3Money;
+				}
+
+				moneyText += `### ${position} ${emoteClass} ${underscore}${user.nickname}${underscore}\n${formatMoney(user.money, language)}\n-# \`ID: ${user.id}\`\n`;
 			}
 
 			return new CustomEmbedBuilder()
 				.setColor(Colors.Green)
-				.setDescription(`# ${BadgeString.Season1.Top1Money} Ranking ${s.title}\n${moneyText}`)
+				.setDescription(`# Ranking ${s.title}\n${moneyText}`)
 				.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), s.showing(offset, limit, howManyUsers));
 		}
 

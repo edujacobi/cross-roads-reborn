@@ -568,8 +568,8 @@ export class User {
 			this.Situation.Complex = `${EmoteString.Prison} ${s.imprisonedComplex} ${showTime(this.Prison.Time.getTime())}`;
 		}
 		if (this.IsInHospital()) {
-			this.Situation.Simple += ` ${s.hospitalSimple}`;
-			this.Situation.Complex += ` ${s.hospitalComplex} ${showTime(this.Hospital.Time.getTime())}`;
+			this.Situation.Simple = s.hospitalSimple;
+			this.Situation.Complex = `${EmoteString.Hospital} ${s.hospitalComplex} ${showTime(this.Hospital.Time.getTime())}`;
 		}
 		if (this.IsWanted()) {
 			this.Situation.Simple += ` ${s.wantedSimple}`;
@@ -731,8 +731,8 @@ const Strings = {
 		imprisonedAndHospitalComplex: (prisonTime: Date, hospitalTime: Date) => `${EmoteString.Prison} Imprisoned until ${showTime(prisonTime.getTime())} and ${EmoteString.Hospital} Hospitalized until ${showTime(hospitalTime.getTime())}`,
 		wantedSimple: "and Wanted",
 		wantedComplex: `and ${EmoteString.Police} Wanted until`,
-		hospitalSimple: "and Hospitalized",
-		hospitalComplex: `and ${EmoteString.Hospital} Hospitalized until`,
+		hospitalSimple: "Hospitalized",
+		hospitalComplex: `Hospitalized until`,
 	},
 	[Language.Portuguese]: {
 		idling: "Vadiando",
@@ -747,8 +747,8 @@ const Strings = {
 		imprisonedAndHospitalComplex: (prisonTime: Date, hospitalTime: Date) => `${EmoteString.Prison} Preso até ${showTime(prisonTime.getTime())} e ${EmoteString.Hospital} Hospitalizado até ${showTime(hospitalTime.getTime())}`,
 		wantedSimple: "e Procurado",
 		wantedComplex: `e ${EmoteString.Police} Procurado até`,
-		hospitalSimple: "e Hospitalizado",
-		hospitalComplex: `e ${EmoteString.Hospital} Hospitalizado até`,
+		hospitalSimple: "Hospitalizado",
+		hospitalComplex: `Hospitalizado até`,
 	},
 	[Language.Spanish]: {
 		idling: "Vagando",
@@ -763,7 +763,7 @@ const Strings = {
 		imprisonedComplex: "Preso hasta",
 		wantedSimple: "y Buscado",
 		wantedComplex: `y ${EmoteString.Police} Buscado hasta`,
-		hospitalSimple: "y Hospitalizado",
-		hospitalComplex: `y ${EmoteString.Hospital} Hospitalizado hasta`,
+		hospitalSimple: "Hospitalizado",
+		hospitalComplex: `Hospitalizado hasta`,
 	},
 } as const;

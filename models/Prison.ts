@@ -189,6 +189,20 @@ export class Prison {
 			else if (btn.customId === "confirmBribe") {
 				await this.User.GetInfo();
 
+				const { canBribe, message } = await this.CanBribe();
+
+				if (!canBribe) {
+					return await replyInteraction(this.Interaction, {
+						embeds: [defaultEmbed({
+							interaction: this.Interaction,
+							color: CrColors.Police,
+							description: message,
+							nickname: this.User.Nickname,
+						})],
+						components: [],
+					});
+				}
+
 				const success = await this.PayBribery(this.Bribe.Value);
 
 				const responseEmbed = new CustomEmbedBuilder()

@@ -23,7 +23,7 @@ import { addMinutes } from "date-fns";
 import { Language } from "./Language";
 import { RobHistories } from "../database/RobHistories";
 import { Users } from "../database/Users";
-import { ClassList } from "./Class";
+import { ClassId, ClassList } from "./Class";
 import { CreationOptional } from "sequelize";
 
 export enum RobTypes {
@@ -79,6 +79,11 @@ export class Robbery {
 
 		if (!this.Defender.Nickname) {
 			message = `${s.withoutNick} ${EmoteString.Robbery}`;
+			canRob = false;
+		}
+
+		if (this.Defender.Class === ClassId.None) {
+			message = `${s.withoutClass} ${EmoteString.Robbery}`;
 			canRob = false;
 		}
 
@@ -368,6 +373,7 @@ const Strings = {
 		// CanRob
 		sameId: "You can't rob yourself, idiot!",
 		withoutNick: "This user hasn't set a nickname yet!",
+		withoutClass: "This user hasn't choose a class yet!",
 		withoutItem: "You can't rob without a weapon!",
 		lowAtk: (nick: string) => `You can't rob ${nick} with your current weapons! ${EmoteString.Robbery}\n-# Get a better weapon`,
 		inPrison: (prisonTime: Date) => `You can't rob while you're in prison! ${EmoteString.Prison}\n-# Will be released ${showTime(prisonTime.getTime(), true)}!`,
@@ -412,6 +418,7 @@ const Strings = {
 		// CanRob
 		sameId: "Você não pode roubar a si mesmo, idiota!",
 		withoutNick: "Este usuário ainda não cadastrou um nickname!",
+		withoutClass: "Este usuário ainda não escolheu uma classe!",
 		withoutItem: "Você não pode roubar sem uma arma!",
 		lowAtk: (nick: string) => `Você não pode roubar ${nick} usando suas armas atuais! ${EmoteString.Robbery}\n-# Consiga uma arma melhor`,
 		inPrison: (prisonTime: Date) => `Você não pode roubar enquanto está preso! ${EmoteString.Prison}\n-# Será solto ${showTime(prisonTime.getTime(), true)}!`,
@@ -456,6 +463,7 @@ const Strings = {
 		// CanRob
 		sameId: "¡No puedes robarte a ti mismo, idiota!",
 		withoutNick: "¡Este usuario aún no ha establecido un apodo!",
+		withoutClass: "¡Este usuario aún no ha elegido una clase!",
 		withoutItem: "¡No puedes robar sin un arma!",
 		lowAtk: (nick: string) => `¡No puedes robar a ${nick} con tus armas actuales! ${EmoteString.Robbery}\n-# Consigue un arma mejor`,
 		inPrison: (prisonTime: Date) => `¡No puedes robar mientras estás en prisión! ${EmoteString.Prison}\n-# Será liberado ${showTime(prisonTime.getTime(), true)}!`,
