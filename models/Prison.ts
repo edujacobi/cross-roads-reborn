@@ -101,7 +101,7 @@ export class Prison {
 		const collector = response?.createMessageComponentCollector({
 			filter: (i: MessageComponentInteraction) => i.user.id === this.Interaction.user.id,
 			componentType: ComponentType.Button,
-			time: 60_000,
+			idle: 30_000,
 		});
 
 		collector?.on("collect", async btn => {

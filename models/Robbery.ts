@@ -37,6 +37,7 @@ export class Robbery {
 	AttackerTimeInPrison = 0;
 	AttackerAditionalTimeCallPolice = 0;
 	DefenderTimeInHospital = 0;
+	BeatUpChance = 0.25;
 	Defender: User;
 	Date: Date;
 	Chance = 0;
@@ -98,6 +99,11 @@ export class Robbery {
 
 		if (this.Attacker.IsWanted()) {
 			message = s.isWanted(this.Attacker.Wanted.Time);
+			canRob = false;
+		}
+
+		if (this.Attacker.IsInHospital()) {
+			message = s.isInHospital(this.Attacker.Hospital.Time);
 			canRob = false;
 		}
 
@@ -164,28 +170,32 @@ ${sD.callPoliceDescription(this.AttackerAditionalTimeCallPolice)}
 ${sD.doNothingDescription}`)
 			.setFooter({ text: sD.secondsToRespond });
 
-		const buttoReact = new ButtonBuilder()
+		const buttonReact = new ButtonBuilder()
 			.setCustomId("react")
 			.setLabel(sD.react)
 			.setStyle(ButtonStyle.Secondary)
 			.setEmoji(EmoteId.React)
-			.setDisabled(this.Defender.IsWorking() || this.Defender.IsInPrison() || this.Defender.Attributes.Attack === 0);
+			.setDisabled(this.Defender.IsWorking() ||
+				this.Defender.IsInPrison() ||
+				this.Defender.IsInHospital() ||
+				this.Defender.Attributes.Attack === 0);
 
-		const buttoPolice = new ButtonBuilder()
+		const buttonPolice = new ButtonBuilder()
 			.setCustomId("police")
 			.setLabel(sD.callPolice)
 			.setStyle(ButtonStyle.Secondary)
 			.setEmoji(EmoteId.Police)
-			.setDisabled(this.Defender.Attributes.Defense < 5);
+			.setDisabled(this.Defender.IsInHospital() ||
+				this.Defender.Attributes.Defense < 5);
 
-		const buttoNothing = new ButtonBuilder()
+		const buttonNothing = new ButtonBuilder()
 			.setCustomId("nothing")
 			.setLabel(sD.doNothing)
 			.setStyle(ButtonStyle.Secondary)
 			.setEmoji("🏳️");
 
 		const defenderRow = new ActionRowBuilder<ButtonBuilder>()
-			.addComponents([buttoReact, buttoPolice, buttoNothing]);
+			.addComponents([buttonReact, buttonPolice, buttonNothing]);
 
 		const defenderMessage = await sendComplexPrivateMessage(this.DiscordUser?.id, {
 			embeds: [this.Embed.Private],
@@ -218,6 +228,7 @@ ${sD.doNothingDescription}`)
 
 			if (btn.customId === "react") {
 				this.Defender.Attributes.Defense += 5;
+				this.BeatUpChance = 1;
 
 				descriptionPrivate = `### ${EmoteString.React} ${sD.reacting}...`;
 				descriptionChannel = `### ${EmoteString.React} ${this.Defender.Nickname} ${sA.isReacting}!`;
@@ -278,13 +289,30 @@ ${sD.doNothingDescription}`)
 			this.Defender.Robbery.BeingRobbedCount += 1;
 			this.Defender.Robbery.BeingRobbedSum += this.MoneyRobbed;
 
+			const willBeBeatenUp = Math.random() < this.BeatUpChance &&
+				!this.Defender.IsWorking() &&
+				!this.Defender.IsInPrison() &&
+				!this.Defender.IsInHospital();
+
+			if (willBeBeatenUp) {
+				this.Defender.Hospital.Count += 1;
+				this.Defender.Hospital.Time = addMinutes(new Date(), this.DefenderTimeInHospital);
+				this.Defender.BeatUp.BeatedUpCount += 1;
+				this.Attacker.BeatUp.SuccessCount += 1;
+				await Notification.Hospital(this.Defender);
+			}
+
 			await Notification.RobAgain(this.Attacker);
 
-			this.Embed.Channel.setDescription(`${sA.youRobbed(formatMoney(this.MoneyRobbed, this.Attacker.Language), this.Defender.Nickname)} ${EmoteString.Robbery}`);
+			this.Embed.Channel
+				.setDescription(`${sA.youRobbed(formatMoney(this.MoneyRobbed, this.Attacker.Language), this.Defender.Nickname)} ${EmoteString.Robbery}${willBeBeatenUp ? `
+${sA.beatenUp(this.Defender.Hospital.Time)} ${EmoteString.Hospital}` : ""}`);
 
-			this.Embed.Private.setDescription(`${sD.wereRobbed(formatMoney(this.MoneyRobbed, this.Defender.Language), this.Attacker.Nickname)} ${EmoteString.Robbery}`);
+			this.Embed.Private
+				.setDescription(`${sD.wereRobbed(formatMoney(this.MoneyRobbed, this.Defender.Language), this.Attacker.Nickname)} ${EmoteString.Robbery}${willBeBeatenUp ? `
+${sD.beatedUp(this.Defender.Hospital.Time)} ${EmoteString.Hospital}` : ""}`);
 
-			Log.Success(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) successfully robbed user ${this.Defender.Nickname} (ID: ${this.Defender.Id}) and got ${formatMoney(this.MoneyRobbed, Language.English)}.`);
+			Log.Success(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) successfully robbed user ${this.Defender.Nickname} (ID: ${this.Defender.Id}) and got ${formatMoney(this.MoneyRobbed, Language.English)}. ${willBeBeatenUp ? "The defender was beaten up." : ""}`);
 		}
 		else {
 			this.Attacker.Prison.Time = addMinutes(new Date(), this.AttackerTimeInPrison);
@@ -296,11 +324,13 @@ ${sD.doNothingDescription}`)
 
 			this.Embed.Channel
 				.setColor(CrColors.Police)
-				.setDescription(`${sA.youFailed}! ${EmoteString.Police}\n-# ${sA.prisonTime(this.Attacker.Prison.Time)}`);
+				.setDescription(`${sA.youFailed}! ${EmoteString.Police}
+-# ${sA.prisonTime(this.Attacker.Prison.Time)}`);
 
 			this.Embed.Private
 				.setColor(CrColors.Police)
-				.setDescription(`**${this.Attacker.Nickname}** ${sD.robFailed}! ${EmoteString.Police}\n-# ${sD.prisonUntil(this.Attacker.Prison.Time)}!`);
+				.setDescription(`**${this.Attacker.Nickname}** ${sD.robFailed}! ${EmoteString.Police}
+-# ${sD.prisonUntil(this.Attacker.Prison.Time)}!`);
 
 			Log.Success(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) failed to rob user ${this.Defender.Nickname} (ID: ${this.Defender.Id}).`);
 		}
@@ -342,6 +372,7 @@ const Strings = {
 		lowAtk: (nick: string) => `You can't rob ${nick} with your current weapons! ${EmoteString.Robbery}\n-# Get a better weapon`,
 		inPrison: (prisonTime: Date) => `You can't rob while you're in prison! ${EmoteString.Prison}\n-# Will be released ${showTime(prisonTime.getTime(), true)}!`,
 		isWanted: (wantedTime: Date) => `You can't rob while you're wanted by the police! ${EmoteString.Police}\n-# Will be able to rob again ${showTime(wantedTime.getTime(), true)}!`,
+		isInHospital: (hospitalTime: Date) => `You can't rob while you're hospitalized! ${EmoteString.Hospital}\n-# Will be healed ${showTime(hospitalTime.getTime(), true)}!`,
 		attackerIsRobbingId: (nick: CreationOptional<string> | undefined) => `You're already robbing **${nick}**!`,
 		attackerIsBeingRobbedById: (nick: CreationOptional<string> | undefined) => `You're being robbed by **${nick}**!`,
 		defenderIsRobbingId: (nick: CreationOptional<string> | undefined) => `is robbing **${nick}**. Wait a few more seconds to start your action!`,
@@ -361,6 +392,7 @@ const Strings = {
 		doingNothing: "Doing nothing",
 		secondsToRespond: "You have 60 seconds to respond",
 		wereRobbed: (formattedMoney: string, attackerNick: string) => `You were robbed and lost ${formattedMoney} to **${attackerNick}**!`,
+		beatedUp: (time: Date) => `You were beaten up and will be hospitalized until ${showTime(time.getTime())}`,
 		robFailed: "tried to rob you, but the police caught him!",
 		prisonUntil: (time: Date) => `He will be in prison until ${showTime(time.getTime())}`,
 		finishedRobberyDefender: "Robbery finished",
@@ -371,6 +403,7 @@ const Strings = {
 		isCallingPolice: "is calling the police",
 		isDoingNothing: "is doing nothing",
 		youRobbed: (formattedMoney: string, defenderNick: string) => `You robbed ${formattedMoney} from **${defenderNick}**!`,
+		beatenUp: (time: Date) => `You beat him up and he will be hospitalized until ${showTime(time.getTime())}`,
 		youFailed: "You failed in your attempt",
 		prisonTime: (time: Date) => `Will be in prison until ${showTime(time.getTime())}`,
 		finishedRobberyAttacker: (success: boolean) => `Robbery ${success ? "successful" : "unsuccessful"}`,
@@ -383,6 +416,7 @@ const Strings = {
 		lowAtk: (nick: string) => `Você não pode roubar ${nick} usando suas armas atuais! ${EmoteString.Robbery}\n-# Consiga uma arma melhor`,
 		inPrison: (prisonTime: Date) => `Você não pode roubar enquanto está preso! ${EmoteString.Prison}\n-# Será solto ${showTime(prisonTime.getTime(), true)}!`,
 		isWanted: (wantedTime: Date) => `Você não pode roubar enquanto está sendo procurado pela polícia! ${EmoteString.Police}\n-# Poderá roubar novamente ${showTime(wantedTime.getTime(), true)}!`,
+		isInHospital: (hospitalTime: Date) => `Você não pode roubar enquanto está hospitalizado! ${EmoteString.Hospital}\n-# Será curado ${showTime(hospitalTime.getTime(), true)}!`,
 		attackerIsRobbingId: (nick: CreationOptional<string> | undefined) => `Você já está roubando **${nick}**!`,
 		attackerIsBeingRobbedById: (nick: CreationOptional<string> | undefined) => `Você está sendo roubado por **${nick}**!`,
 		defenderIsRobbingId: (nick: CreationOptional<string> | undefined) => `está roubando **${nick}**. Espere mais alguns segundos para iniciar sua ação!`,
@@ -402,6 +436,7 @@ const Strings = {
 		doingNothing: "Fazendo nada",
 		secondsToRespond: "Você tem 60 segundos para responder",
 		wereRobbed: (formattedMoney: string, attackerNick: string) => `Você foi roubado e perdeu ${formattedMoney} para **${attackerNick}**!`,
+		beatedUp: (time: Date) => `Você tomou uma coça e ficará hospitalizado até ${showTime(time.getTime())}`,
 		robFailed: "tentou lhe roubar, mas a polícia o capturou!",
 		prisonUntil: (time: Date) => `Ele ficará preso até ${showTime(time.getTime())}`,
 		finishedRobberyDefender: "Roubo finalizado",
@@ -412,6 +447,7 @@ const Strings = {
 		isCallingPolice: "está chamando a polícia",
 		isDoingNothing: "não está fazendo nada",
 		youRobbed: (formattedMoney: string, defenderNick: string) => `Você roubou ${formattedMoney} de **${defenderNick}**!`,
+		beatenUp: (time: Date) => `Você detonou e ele ficará hospitalizado até ${showTime(time.getTime())}`,
 		youFailed: "Você falhou na sua tentativa",
 		prisonTime: (time: Date) => `Ficará preso até ${showTime(time.getTime())}`,
 		finishedRobberyAttacker: (success: boolean) => `Roubo ${success ? "bem" : "mal"}-sucedido`,
@@ -424,6 +460,7 @@ const Strings = {
 		lowAtk: (nick: string) => `¡No puedes robar a ${nick} con tus armas actuales! ${EmoteString.Robbery}\n-# Consigue un arma mejor`,
 		inPrison: (prisonTime: Date) => `¡No puedes robar mientras estás en prisión! ${EmoteString.Prison}\n-# Será liberado ${showTime(prisonTime.getTime(), true)}!`,
 		isWanted: (wantedTime: Date) => `¡No puedes robar mientras estás siendo buscado por la policía! ${EmoteString.Police}\n-# Podrá robar nuevamente ${showTime(wantedTime.getTime(), true)}!`,
+		isInHospital: (hospitalTime: Date) => `¡No puedes robar mientras estás hospitalizado! ${EmoteString.Hospital}\n-# ¡Será curado ${showTime(hospitalTime.getTime(), true)}!`,
 		attackerIsRobbingId: (nick: CreationOptional<string> | undefined) => `¡Ya estás robando a **${nick}**!`,
 		attackerIsBeingRobbedById: (nick: CreationOptional<string> | undefined) => `¡Estás siendo robado por **${nick}**!`,
 		defenderIsRobbingId: (nick: CreationOptional<string> | undefined) => `está robando a **${nick}**. ¡Espere unos segundos más para iniciar su acción!`,
@@ -443,6 +480,7 @@ const Strings = {
 		doingNothing: "Haciendo nada",
 		secondsToRespond: "Tienes 60 segundos para responder",
 		wereRobbed: (formattedMoney: string, attackerNick: string) => `¡Fuiste robado y perdiste ${formattedMoney} con **${attackerNick}**!`,
+		beatedUp: (time: Date) => `Fuiste golpeado y estarás hospitalizado hasta ${showTime(time.getTime())}`,
 		robFailed: "intentó robarte, ¡pero la policía lo atrapó!",
 		prisonUntil: (time: Date) => `Estará en prisión hasta ${showTime(time.getTime())}`,
 		finishedRobberyDefender: "Robo finalizado",
@@ -453,6 +491,7 @@ const Strings = {
 		isCallingPolice: "está llamando a la policía",
 		isDoingNothing: "no está haciendo nada",
 		youRobbed: (formattedMoney: string, defenderNick: string) => `¡Robaste ${formattedMoney} de **${defenderNick}**!`,
+		beatenUp: (time: Date) => `Lo golpeaste y estará hospitalizado hasta ${showTime(time.getTime())}`,
 		youFailed: `Fallaste en tu intento`,
 		prisonTime: (time: Date) => `Estará en prisión hasta ${showTime(time.getTime())}`,
 		finishedRobberyAttacker: (success: boolean) => `Robo ${success ? "exitoso" : "fallido"}`,

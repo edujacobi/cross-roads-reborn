@@ -30,9 +30,9 @@ export const BadgeString = {
 		Hypocondriach: `<:badge_hipocondriaco:${BadgeId.Season6.Hypocondriach}>`,
 	},
 	Season1: {
-		Top1Money: `<:badge_top1grana_s1:${BadgeId.Season6.Top1Money}>`,
-		Top2Money: `<:badge_top2grana_s1:${BadgeId.Season6.Top2Money}>`,
-		Top3Money: `<:badge_top3grana_s1:${BadgeId.Season6.Top3Money}>`,
+		Top1Money: `<:badge_top1grana_s1:${BadgeId.Season1.Top1Money}>`,
+		Top2Money: `<:badge_top2grana_s1:${BadgeId.Season1.Top2Money}>`,
+		Top3Money: `<:badge_top3grana_s1:${BadgeId.Season1.Top3Money}>`,
 	},
 	General: {
 		Champion: `<:Campeao_Canja:${BadgeId.General.Champion}>`,

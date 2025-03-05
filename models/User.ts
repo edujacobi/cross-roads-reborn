@@ -1,10 +1,10 @@
 ﻿import { Users } from "../database/Users";
 import { Log } from "../utils/log";
-import { addDays, addMinutes, addSeconds, differenceInHours } from "date-fns";
+import { addDays, differenceInHours } from "date-fns";
 import { Language } from "./Language";
 import { UserItems } from "../database/UserItems";
 import { addHours } from "date-fns/addHours";
-import { CreationOptional, Op } from "sequelize";
+import { Op } from "sequelize";
 import { Item, ItemList, ItemType, UserItem } from "./Item";
 import { JobId, JobList } from "./Job";
 import { Notification, NotificationType } from "./Notification";
@@ -57,6 +57,12 @@ export class User {
 		Count: number,
 		Time: Date,
 	};
+	Hospital: {
+		Count: number,
+		TreatmentCount: number,
+		TreatmentSum: number,
+		Time: Date,
+	};
 	Casino: {
 		WinCount: number,
 		LoseCount: number,
@@ -70,6 +76,10 @@ export class User {
 	BeatUp: {
 		IsBeatingId: string | null,
 		IsBeingBeatUpById: string | null,
+		SuccessCount: number,
+		FailureCount: number,
+		BeatedUpCount: number,
+		Time: Date,
 	};
 	Attributes: {
 		Attack: number,
@@ -112,6 +122,10 @@ export class User {
 		this.BeatUp = {
 			IsBeatingId: null,
 			IsBeingBeatUpById: null,
+			SuccessCount: 0,
+			FailureCount: 0,
+			BeatedUpCount: 0,
+			Time: now,
 		};
 		this.Prison = {
 			BriberySum: 0,
@@ -133,6 +147,12 @@ export class User {
 			LoseCount: 0,
 			WinSum: 0,
 			LoseSum: 0,
+		};
+		this.Hospital = {
+			Count: 0,
+			TreatmentCount: 0,
+			TreatmentSum: 0,
+			Time: now,
 		};
 		this.Shop = {
 			SpentSum: 0,
@@ -168,6 +188,9 @@ export class User {
 				escapeCount: 0,
 				escapeHasTried: false,
 				wantedCount: 0,
+				hospitalCount: 0,
+				hospitalTreatmentCount: 0,
+				hospitalTreatmentSum: 0,
 				jobReceivedCount: 0,
 				jobReceivedSum: 0,
 				prisonBriberyCount: 0,
@@ -178,6 +201,9 @@ export class User {
 				robberyFailureCount: 0,
 				robberySuccessCount: 0,
 				robberySuccessRobbedSum: 0,
+				beatUpSuccessCount: 0,
+				beatUpFailureCount: 0,
+				beatUpBeatedUpCount: 0,
 				shopSpentCount: 0,
 				shopSpentSum: 0,
 			});
@@ -236,6 +262,18 @@ export class User {
 			this.Robbery.IsBeingRobbedById = user.beingRobbedByUserId;
 		}
 
+		// Beat-ups
+		this.BeatUp.SuccessCount = user.beatUpSuccessCount;
+		this.BeatUp.FailureCount = user.beatUpFailureCount;
+		this.BeatUp.BeatedUpCount = user.beatUpBeatedUpCount;
+		this.BeatUp.Time = new Date(user.beatUpTime);
+		if (user.beatingUserId) {
+			this.BeatUp.IsBeatingId = user.beatingUserId;
+		}
+		if (user.beingBeatUpByUserId) {
+			this.BeatUp.IsBeingBeatUpById = user.beingBeatUpByUserId;
+		}
+
 		// Prison
 		this.Prison.BriberySum = user.prisonBriberySum;
 		this.Prison.BriberyCount = user.prisonBriberyCount;
@@ -250,6 +288,12 @@ export class User {
 		// Wanted
 		this.Wanted.Count = user.wantedCount;
 		this.Wanted.Time = new Date(user.wantedTime);
+
+		// Hospital
+		this.Hospital.Count = user.hospitalCount;
+		this.Hospital.Time = user.hospitalTime;
+		this.Hospital.TreatmentCount = user.hospitalTreatmentCount;
+		this.Hospital.TreatmentSum = user.hospitalTreatmentSum;
 
 		// Casino
 		this.Casino.WinCount = user.casinoWinCount;
@@ -476,6 +520,10 @@ export class User {
 		this.Attributes.Defense += moreDEF;
 		this.Attributes.MoneyAttack += moreMoneyATK;
 		this.Attributes.MoneyDefense += moreMoneyDEF;
+
+		if (this.IsInHospital()) {
+			this.Attributes.Defense -= 5;
+		}
 	}
 
 	async GetSituation() {
@@ -511,9 +559,17 @@ export class User {
 			}
 			this.Situation.Complex = `${EmoteString.Robbery} ${s.beingRobbedComplex} ${user.nickname}`;
 		}
+		if (this.IsInPrison() && this.IsInHospital()) {
+			this.Situation.Simple = s.imprisonedAndHospitalSimple;
+			this.Situation.Complex = s.imprisonedAndHospitalComplex(this.Prison.Time, this.Hospital.Time);
+		}
 		if (this.IsInPrison()) {
 			this.Situation.Simple = s.imprisonedSimple;
 			this.Situation.Complex = `${EmoteString.Prison} ${s.imprisonedComplex} ${showTime(this.Prison.Time.getTime())}`;
+		}
+		if (this.IsInHospital()) {
+			this.Situation.Simple += ` ${s.hospitalSimple}`;
+			this.Situation.Complex += ` ${s.hospitalComplex} ${showTime(this.Hospital.Time.getTime())}`;
 		}
 		if (this.IsWanted()) {
 			this.Situation.Simple += ` ${s.wantedSimple}`;
@@ -535,6 +591,10 @@ export class User {
 
 	IsEscaping() {
 		return this.Escape.Time > new Date();
+	}
+
+	IsInHospital() {
+		return this.Hospital.Time > new Date();
 	}
 
 	async StartJob(jobId: JobId) {
@@ -600,6 +660,13 @@ export class User {
 				robbingUserId: this.Robbery.IsRobbingId,
 				beingRobbedByUserId: this.Robbery.IsBeingRobbedById,
 
+				beatUpSuccessCount: this.BeatUp.SuccessCount,
+				beatUpFailureCount: this.BeatUp.FailureCount,
+				beatUpBeatedUpCount: this.BeatUp.BeatedUpCount,
+				beatingUserId: this.BeatUp.IsBeatingId,
+				beingBeatUpByUserId: this.BeatUp.IsBeingBeatUpById,
+				beatUpTime: this.BeatUp.Time,
+
 				prisonBriberySum: this.Prison.BriberySum,
 				prisonBriberyCount: this.Prison.BriberyCount,
 				prisonHasPaidBribe: this.Prison.HasPaidBribe,
@@ -611,6 +678,11 @@ export class User {
 
 				wantedCount: this.Wanted.Count,
 				wantedTime: this.Wanted.Time,
+
+				hospitalCount: this.Hospital.Count,
+				hospitalTime: this.Hospital.Time,
+				hospitalTreatmentCount: this.Hospital.TreatmentCount,
+				hospitalTreatmentSum: this.Hospital.TreatmentSum,
 
 				casinoWinCount: this.Casino.WinCount,
 				casinoLoseCount: this.Casino.LoseCount,
@@ -655,8 +727,12 @@ const Strings = {
 		beingRobbedComplex: "Being robbed by",
 		imprisonedSimple: "Imprisoned",
 		imprisonedComplex: "Imprisoned until",
+		imprisonedAndHospitalSimple: "Imprisoned and Hospitalized",
+		imprisonedAndHospitalComplex: (prisonTime: Date, hospitalTime: Date) => `${EmoteString.Prison} Imprisoned until ${showTime(prisonTime.getTime())} and ${EmoteString.Hospital} Hospitalized until ${showTime(hospitalTime.getTime())}`,
 		wantedSimple: "and Wanted",
 		wantedComplex: `and ${EmoteString.Police} Wanted until`,
+		hospitalSimple: "and Hospitalized",
+		hospitalComplex: `and ${EmoteString.Hospital} Hospitalized until`,
 	},
 	[Language.Portuguese]: {
 		idling: "Vadiando",
@@ -667,8 +743,12 @@ const Strings = {
 		beingRobbedComplex: "Sendo roubado por",
 		imprisonedSimple: "Preso",
 		imprisonedComplex: "Preso até",
+		imprisonedAndHospitalSimple: "Preso e Hospitalizado",
+		imprisonedAndHospitalComplex: (prisonTime: Date, hospitalTime: Date) => `${EmoteString.Prison} Preso até ${showTime(prisonTime.getTime())} e ${EmoteString.Hospital} Hospitalizado até ${showTime(hospitalTime.getTime())}`,
 		wantedSimple: "e Procurado",
 		wantedComplex: `e ${EmoteString.Police} Procurado até`,
+		hospitalSimple: "e Hospitalizado",
+		hospitalComplex: `e ${EmoteString.Hospital} Hospitalizado até`,
 	},
 	[Language.Spanish]: {
 		idling: "Vagando",
@@ -678,8 +758,12 @@ const Strings = {
 		beingRobbedSimple: "Siendo robado",
 		beingRobbedComplex: "Siendo robado por",
 		imprisonedSimple: "Preso",
+		imprisonedAndHospitalSimple: "Preso y Hospitalizado",
+		imprisonedAndHospitalComplex: (prisonTime: Date, hospitalTime: Date) => `${EmoteString.Prison} Preso hasta ${showTime(prisonTime.getTime())} y ${EmoteString.Hospital} Hospitalizado hasta ${showTime(hospitalTime.getTime())}`,
 		imprisonedComplex: "Preso hasta",
 		wantedSimple: "y Buscado",
 		wantedComplex: `y ${EmoteString.Police} Buscado hasta`,
+		hospitalSimple: "y Hospitalizado",
+		hospitalComplex: `y ${EmoteString.Hospital} Hospitalizado hasta`,
 	},
 } as const;

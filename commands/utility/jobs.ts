@@ -120,6 +120,11 @@ module.exports = {
 					embed.setDescription(s.userPrison(user.Prison.Time)),
 				]);
 			}
+			if (user.IsInHospital()) {
+				return await removeEmbedComponents(interaction, [
+					embed.setDescription(s.userHospital(user.Hospital.Time)),
+				]);
+			}
 
 			if (job.NeedItem && !hasAllItems) {
 				const neededItems = job.NeedItem
@@ -179,6 +184,7 @@ const Strings = {
 		description: "You cannot bet, steal or search while working!",
 		userWanted: (timerEscape: Date) => `You are being wanted by the police! You can start a job ${showTime(timerEscape.getTime(), true)}!`,
 		userPrison: (timerPrison: Date) => `You are in prison! You will be released ${showTime(timerPrison.getTime(), true)}!`,
+		userHospital: (timerHospital: Date) => `You are hospitalized! You will be attended ${showTime(timerHospital.getTime(), true)}`,
 		workingOn: (jobId: JobId, jobTime: Date) => `You are working as ${JobList[jobId].Description[Language.English]} and will finish ${showTime(jobTime.getTime(), true)} ${EmoteString.Working}`,
 		placeholderSelect: "Select a job",
 		stop: "Stop job",
@@ -195,6 +201,7 @@ const Strings = {
 		description: `Você não pode apostar, roubar nem vasculhar enquanto trabalha!`,
 		userWanted: (timerEscape: Date) => `Você está sendo procurado pela polícia! Poderá começar um trabalho ${showTime(timerEscape.getTime(), true)}!`,
 		userPrison: (timerPrison: Date) => `Você está preso! Será solto ${showTime(timerPrison.getTime(), true)}!`,
+		userHospital: (timerHospital: Date) => `Você está hospitalizado! Será atendido ${showTime(timerHospital.getTime(), true)}`,
 		workingOn: (jobId: JobId, jobTime: Date) => `Você está trabalhando como ${JobList[jobId].Description[Language.Portuguese]} e terminará ${showTime(jobTime.getTime(), true)} ${EmoteString.Working}`,
 		placeholderSelect: "Selecione um trabalho",
 		stop: "Parar trabalho",
@@ -211,6 +218,7 @@ const Strings = {
 		description: "Tu no puedes apostar, robar o buscar mientras trabajas!",
 		userWanted: (timerEscape: Date) => `¡Estás siendo buscado por la policía! ¡Puedes comenzar un trabajo ${showTime(timerEscape.getTime(), true)}!`,
 		userPrison: (timerPrison: Date) => `¡Estás preso! ¡Serás liberado ${showTime(timerPrison.getTime(), true)}!`,
+		userHospital: (timerHospital: Date) => `¡Estás hospitalizado! Serás atendido ${showTime(timerHospital.getTime(), true)}`,
 		workingOn: (jobId: JobId, jobTime: Date) => `Usted está trabajando como ${JobList[jobId].Description[Language.Spanish]} y terminará ${showTime(jobTime.getTime(), true)} ${EmoteString.Working}`,
 		placeholderSelect: "Seleccione un trabajo",
 		stop: "Detener trabajo",

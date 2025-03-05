@@ -61,13 +61,12 @@ module.exports = {
 				name: s.className,
 				value: `-# ${ClassList[target.Class].Image.Emote.String} ${ClassList[target.Class].Description[user.Language]}`,
 				inline: true,
-			},
-			// {
-			// 	name: `${EmoteString.InvestmentActive} Investimento`,
-			// 	value: `-# Não implementado`,
-			// 	inline: true,
-			// },
-			{
+			}, {
+				// {
+				// 	name: `${EmoteString.InvestmentActive} Investimento`,
+				// 	value: `-# Não implementado`,
+				// 	inline: true,
+				// },
 				name: `${EmoteString.Heads} Daily`,
 				value: `-# ${target.CanReceiveDaily() ? s.available : showTime(addDays(target.Daily.LastReceived!, 1).getTime(), true)}`,
 				inline: true,
@@ -83,13 +82,19 @@ module.exports = {
 -# \`${formatMoney(target.Robbery.SuccessRobbedSum, user.Language)}\` (\`${target.Robbery.SuccessCount}\`) ${s.robbed}
 -# \`${formatMoney(target.Robbery.BeingRobbedSum, user.Language)}\` (\`${target.Robbery.BeingRobbedCount}\`) ${s.robLost}`,
 				inline: true,
-			},
-			// 	{
-			// 	name: `${EmoteString.Beat} Espancamentos`,
-			// 	value: `-# Não implementado`,
-			// 	inline: true,
-			// },
-			{
+			}, {
+				name: `${EmoteString.Hospital} Hospital`,
+				value: `-# \`${target.Hospital.Count}\` ${s.timesInHospital}
+-# \`${formatMoney(target.Hospital.TreatmentSum, user.Language)}\` (\`${target.Hospital.TreatmentCount}\`) ${s.spentInTreatments}`,
+				inline: true,
+			}, {
+				name: `${EmoteString.Beat} ${s.beatUps}`,
+				value: `-# ${target.BeatUp.Time > now ? showTime(target.BeatUp.Time.getTime(), true) : s.canBeat }
+-# \`${target.BeatUp.SuccessCount}\` ${s.beatSuccess}
+-# \`${target.BeatUp.FailureCount}\` ${s.beatFailure}
+-# \`${target.BeatUp.BeatedUpCount}\` ${s.beatedUp}`,
+				inline: true,
+			}, {
 				name: `${EmoteString.Bank} ${s.money}`,
 				value: `-# \`${formatMoney(target.Job.ReceivedSum, user.Language)}\` (\`${target.Job.ReceivedCount}\`) ${s.fromJobs}
 -# \`${formatMoney(target.Shop.SpentSum, user.Language)}\` (\`${target.Shop.SpentCount}\`) ${s.spent}`,
@@ -104,11 +109,6 @@ module.exports = {
 			},
 				// {
 				// 	name: `${EmoteString.Philantrope} Esmolas`,
-				// 	value: `-# Não implementado`,
-				// 	inline: true,
-				// },
-				// {
-				// 	name: `${EmoteString.Hospital} Hospital`,
 				// 	value: `-# Não implementado`,
 				// 	inline: true,
 				// },
@@ -131,13 +131,20 @@ const Strings = {
 		className: "Class",
 		available: "Available",
 		prison: "Prison",
-		timesInPrison: "times in prison",
+		timesInPrison: "times inprisoned",
 		escapes: "escapes",
 		inBribery: "in bribery",
 		robberies: "Robberies",
 		canRob: "Can rob",
 		robbed: "robbed",
 		robLost: "lost",
+		timesInHospital: "times hospitalized",
+		spentInTreatments: "in treatments",
+		beatUps: "Beat ups",
+		canBeat: "Can beat",
+		beatSuccess: "successes",
+		beatFailure: "failures",
+		beatedUp: "times beated up",
 		money: "Money",
 		fromJobs: "from jobs",
 		spent: "spent in shops",
@@ -161,6 +168,13 @@ const Strings = {
 		canRob: "Pode roubar",
 		robbed: "roubados",
 		robLost: "perdidos",
+		timesInHospital: "vezes hospitalizado",
+		spentInTreatments: "em tratamentos",
+		beatUps: "Espancamentos",
+		canBeat: "Pode espancar",
+		beatSuccess: "sucessos",
+		beatFailure: "falhas",
+		beatedUp: "vezes espancado",
 		money: "Dinheiro",
 		fromJobs: "de trabalhos",
 		spent: "gastos em lojas",
@@ -184,6 +198,13 @@ const Strings = {
 		canRob: "Puede robar",
 		robbed: "robados",
 		robLost: "perdidos",
+		timesInHospital: "veces hospitalizado",
+		spentInTreatments: "en tratamientos",
+		beatUps: "Golpiza",
+		canBeat: "Puede golpear",
+		beatSuccess: "sucesos",
+		beatFailure: "fallos",
+		beatedUp: "veces golpeado",
 		money: "Dinero",
 		fromJobs: "de trabajos",
 		spent: "gastos en tiendas",

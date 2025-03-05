@@ -35,6 +35,13 @@ export class Users extends Model<
 	declare robbingUserId: CreationOptional<string | null>;
 	declare beingRobbedByUserId: CreationOptional<string | null>;
 
+	declare beatUpSuccessCount: number;
+	declare beatUpFailureCount: number;
+	declare beatUpBeatedUpCount: number;
+	declare beatingUserId: CreationOptional<string | null>;
+	declare beingBeatUpByUserId: CreationOptional<string | null>;
+	declare beatUpTime: CreationOptional<Date>;
+
 	declare prisonBriberySum: number;
 	declare prisonBriberyCount: number;
 	declare prisonHasPaidBribe: boolean;
@@ -46,6 +53,11 @@ export class Users extends Model<
 
 	declare wantedCount: number;
 	declare wantedTime: CreationOptional<Date>;
+
+	declare hospitalCount: number;
+	declare hospitalTime: CreationOptional<Date>;
+	declare hospitalTreatmentCount: number;
+	declare hospitalTreatmentSum: number;
 
 	declare casinoWinCount: number;
 	declare casinoLoseCount: number;
@@ -161,6 +173,34 @@ Users.init(
 			allowNull: true,
 			defaultValue: null,
 		},
+		beatUpSuccessCount: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0,
+		},
+		beatUpFailureCount: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0,
+		},
+		beatUpBeatedUpCount: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0,
+		},
+		beatingUserId: {
+			type: DataTypes.STRING(18),
+			allowNull: true,
+			defaultValue: null,
+		},
+		beingBeatUpByUserId: {
+			type: DataTypes.STRING(18),
+			allowNull: true,
+			defaultValue: null,
+		},
+		beatUpTime: {
+			type: DataTypes.DATE,
+		},
 		prisonBriberySum: {
 			type: DataTypes.INTEGER,
 			allowNull: false,
@@ -199,6 +239,24 @@ Users.init(
 		},
 		wantedTime: {
 			type: DataTypes.DATE,
+		},
+		hospitalCount: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0,
+		},
+		hospitalTime: {
+			type: DataTypes.DATE,
+		},
+		hospitalTreatmentCount: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0,
+		},
+		hospitalTreatmentSum: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0,
 		},
 		casinoWinCount: {
 			type: DataTypes.INTEGER,

@@ -47,6 +47,11 @@ export class Casino {
 			canPlay = false;
 		}
 
+		if (user.IsInHospital()) {
+			message = s.hospital(user.Hospital.Time);
+			canPlay = false;
+		}
+
 		if (user.Robbery.IsRobbingId) {
 			message = `${s.robbing} ${EmoteString.Robbery}`;
 			canPlay = false;
@@ -73,6 +78,7 @@ Bet an amount on two coins that must fall on the same side. You have a 25% chanc
 		noMoney: "You don't have enough money to bet",
 		working: (job: string, time: Date) => `You are working as ${job} and can't play on casino. Will end ${showTime(time.getTime(), true)}`,
 		prison: (time: Date) => `You can't bet while in prison! ${EmoteString.Prison}\n-# Will be free ${showTime(time.getTime(), true)}!`,
+		hospital: (time: Date) => `You can't bet while in hospital! ${EmoteString.Hospital}\n-# Will be healed ${showTime(time.getTime(), true)}!`,
 		robbing: "You are robbing and can't play on casino now!",
 		beingRobbed: "You are being robbed and can't play on casino now!",
 	},
@@ -87,6 +93,7 @@ Aposte um valor em duas moedas que devem cair no mesmo lado. Você tem 25% de ch
 		noMoney: "Você não possui dinheiro suficiente para apostar",
 		working: (job: string, time: Date) => `Você está trabalhando como ${job} e não pode apostar no cassino. Terminará ${showTime(time.getTime(), true)}`,
 		prison: (time: Date) => `Você não pode apostar enquanto está preso! ${EmoteString.Prison}\n-# Será solto ${showTime(time.getTime(), true)}!`,
+		hospital: (time: Date) => `Você não pode apostar enquanto está hospitalizado! ${EmoteString.Hospital}\n-# Será atendido ${showTime(time.getTime(), true)}!`,
 		robbing: "Você está roubando e não pode jogar no cassino agora!",
 		beingRobbed: "Você está sendo roubado e não pode jogar no cassino agora!",
 	},
@@ -101,6 +108,7 @@ Apostar una cantidad en dos monedas que deben caer del mismo lado. Tienes un 25%
 		noMoney: "No tienes suficiente dinero para apostar",
 		working: (job: string, time: Date) => `Estás trabajando como ${job} y no puedes hacer jugar en casino. Terminará ${showTime(time.getTime(), true)}`,
 		prison: (time: Date) => `No puedes apostar mientras estás en prisión! ${EmoteString.Prison}\n-# Será liberado ${showTime(time.getTime(), true)}!`,
+		hospital: (time: Date) => `No puedes apostar mientras estás en el hospital! ${EmoteString.Hospital}\n-# Será atendido ${showTime(time.getTime(), true)}!`,
 		robbing: "Estás robando y no puedes jugar en el casino ahora!",
 		beingRobbed: "Estás siendo robado y no puedes jugar en el casino ahora!",
 	},

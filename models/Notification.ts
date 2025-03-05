@@ -16,6 +16,7 @@ export enum NotificationType {
 	Job,
 	RobAgain,
 	Free,
+	Hospital,
 }
 
 export class Notification {
@@ -79,6 +80,14 @@ export class Notification {
 		notification.UserId = user.Id;
 		notification.Type = NotificationType.Free;
 		notification.Date = user.Prison.Time;
+		await notification.Create();
+	}
+
+	static async Hospital(user: User) {
+		const notification = new Notification();
+		notification.UserId = user.Id;
+		notification.Type = NotificationType.Hospital;
+		notification.Date = user.Hospital.Time;
 		await notification.Create();
 	}
 
@@ -207,6 +216,10 @@ export class Notification {
 				await sendPrivateMessage(user.Id, s.free, CrColors.Police);
 			}
 
+			else if (notification.Type == NotificationType.Hospital) {
+				await sendPrivateMessage(user.Id, s.hospital, CrColors.Hospital);
+			}
+
 			await notification.SetAsNotified();
 		}
 		Log.Info(`Notification procedure complete ↑`);
@@ -223,17 +236,20 @@ const Strings = {
 		job: (description: string, salary: number) => `You finished your ${description} job and received ${formatMoney(salary, Language.English)}! ${EmoteString.Jobs}`,
 		robAgain: `You can rob again! ${EmoteString.Robbery}`,
 		free: `You are free! ${EmoteString.Prison}`,
+		hospital: `You are healed! ${EmoteString.Hospital}`,
 	},
 	[Language.Portuguese]: {
 		daily: `Você pode receber sua grana diária novamente! ${EmoteString.Experience}`,
 		job: (description: string, salary: number) => `Você terminou seu trabalho ${description} e recebeu ${formatMoney(salary, Language.Portuguese)}! ${EmoteString.Jobs}`,
 		robAgain: `Você pode roubar novamente! ${EmoteString.Robbery}`,
 		free: `Você está livre! ${EmoteString.Prison}`,
+		hospital: `Você está curado! ${EmoteString.Hospital}`,
 	},
 	[Language.Spanish]: {
 		daily: `¡Puedes recibir tu dinero diario de nuevo! ${EmoteString.Experience}`,
 		job: (description: string, salary: number) => `Terminaste tu trabajo ${description} y recibiste ${formatMoney(salary, Language.Spanish)}! ${EmoteString.Jobs}`,
 		robAgain: `¡Puedes robar de nuevo! ${EmoteString.Robbery}`,
 		free: `¡Estás libre! ${EmoteString.Prison}`,
+		hospital: `¡Estás curado! ${EmoteString.Hospital}`,
 	},
 };

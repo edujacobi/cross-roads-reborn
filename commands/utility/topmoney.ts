@@ -13,7 +13,6 @@ import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
 import { removeEmbedComponents } from "../../utils/logic";
 import { Op } from "sequelize";
 import { formatMoney } from "../../utils/ui";
-import { EmoteString } from "../../utils/emotes";
 import { Users } from "../../database/Users";
 import { User } from "../../models/User";
 import { Language } from "../../models/Language";
