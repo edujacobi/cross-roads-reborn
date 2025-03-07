@@ -19,6 +19,7 @@ import { Language } from "./Language";
 import { addMinutes, differenceInMinutes } from "date-fns";
 import { Notification, NotificationType } from "./Notification";
 import { Log } from "../utils/log";
+import { Pagination } from "./Pagination";
 
 export class Hospital {
 	User: User;
@@ -90,19 +91,31 @@ ${s.description}
 			if (btn.customId === "hospitalized") {
 				buttonHospitalized.setDisabled(true);
 
+				const pagination = new Pagination(this.Interaction, this.User.Language);
+
+				pagination.HowManyRecords = hospitalized.length;
+				pagination.Limit = 15;
+
 				const embedHospitalized = new EmbedBuilder()
 					.setColor(Colors.DarkButNotBlack)
 					.setTitle(s.hospitalized);
 
-				hospitalized.forEach(user => {
-					embedHospitalized.addFields({
-						name: `${ClassList[user.class].Image.Emote.String} ${user.nickname}`,
-						value: `${s.healed} ${showTime(new Date(user.hospitalTime).getTime(), true)}\n${s.howManyTimes(user.hospitalCount)}`,
-						inline: true,
-					});
-				});
+				pagination.CustomizeEmbed = async () => {
+					const users = hospitalized.slice(pagination.Offset, pagination.Offset + pagination.Limit);
 
-				await replyInteraction(this.Interaction, { embeds: [embed, embedHospitalized], components: [] });
+					users.forEach(user => {
+						embedHospitalized.addFields({
+							name: `${ClassList[user.class].Image.Emote.String} ${user.nickname}`,
+							value: `${s.healed} ${showTime(new Date(user.hospitalTime).getTime(), true)}\n${s.howManyTimes(user.hospitalCount)}`,
+							inline: true,
+						});
+					});
+
+					return embedHospitalized
+						.setFooter({ text: pagination.Showing() });
+				};
+
+				await pagination.GenerateEmbed(embed);
 			}
 			else if (btn.customId === "private") {
 				buttonPrivate.setDisabled(true);

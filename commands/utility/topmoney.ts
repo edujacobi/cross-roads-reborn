@@ -1,16 +1,5 @@
-﻿import {
-	ActionRowBuilder,
-	ButtonBuilder,
-	ButtonStyle,
-	ChatInputCommandInteraction,
-	Colors,
-	ComponentType,
-	Locale,
-	MessageComponentInteraction,
-	SlashCommandBuilder,
-} from "discord.js";
+﻿import { ChatInputCommandInteraction, Colors, Locale, SlashCommandBuilder } from "discord.js";
 import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
-import { removeEmbedComponents } from "../../utils/logic";
 import { Op } from "sequelize";
 import { formatMoney } from "../../utils/ui";
 import { Users } from "../../database/Users";
@@ -18,9 +7,10 @@ import { User } from "../../models/User";
 import { Language } from "../../models/Language";
 import { ClassList } from "../../models/Class";
 import { BadgeString } from "../../utils/badges";
+import { Pagination } from "../../models/Pagination";
 
 module.exports = {
-	cooldown: 5,
+	cooldown: 10,
 	data: new SlashCommandBuilder()
 		.setName("topmoney")
 		.setNameLocalization(Locale.PortugueseBR, "topgrana")
@@ -35,16 +25,14 @@ module.exports = {
 
 		let users: Users[] = [];
 
-		let offset = 0;
-		const limit = 5;
+		const pagination = new Pagination(interaction, language);
 
 		async function findList() {
-
 			users = await Users.findAll({
 				attributes: ["nickname", "money", "id", "class"],
-				limit,
+				limit: pagination.Limit,
 				order: [["money", "DESC"]],
-				offset,
+				offset: pagination.Offset,
 				where: {
 					money: {
 						[Op.gt]: 0,
@@ -53,7 +41,7 @@ module.exports = {
 			});
 		}
 
-		const howManyUsers = await Users.count({
+		pagination.HowManyRecords = await Users.count({
 			where: {
 				money: {
 					[Op.gt]: 0,
@@ -61,8 +49,7 @@ module.exports = {
 			},
 		});
 
-		async function createEmbedRanking() {
-
+		pagination.CustomizeEmbed = async () => {
 			await findList();
 
 			let moneyText = "";
@@ -72,14 +59,14 @@ module.exports = {
 				const underscore = user.id == interaction.user.id ? "__" : "";
 				const emoteClass = ClassList[user.class].Image.Emote.String;
 
-				let position = `\`${i + offset + 1}.\``;
-				if (i + offset == 0) {
+				let position = `\`${i + pagination.Offset + 1}.\``;
+				if (i + pagination.Offset == 0) {
 					position = BadgeString.Season1.Top1Money;
 				}
-				else if (i + offset == 1) {
+				else if (i + pagination.Offset == 1) {
 					position = BadgeString.Season1.Top2Money;
 				}
-				else if (i + offset == 2) {
+				else if (i + pagination.Offset == 2) {
 					position = BadgeString.Season1.Top3Money;
 				}
 
@@ -89,97 +76,21 @@ module.exports = {
 			return new CustomEmbedBuilder()
 				.setColor(Colors.Green)
 				.setDescription(`# Ranking ${s.title}\n${moneyText}`)
-				.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), s.showing(offset, limit, howManyUsers));
-		}
+				.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), pagination.Showing());
+		};
 
-		let embed: CustomEmbedBuilder = await createEmbedRanking();
-
-		const buttonPrevious = new ButtonBuilder()
-			.setCustomId("prev")
-			.setLabel(s.previous)
-			.setStyle(ButtonStyle.Secondary)
-			.setEmoji("⬅️");
-
-		const buttonNext = new ButtonBuilder()
-			.setCustomId("next")
-			.setLabel(s.next)
-			.setStyle(ButtonStyle.Secondary)
-			.setEmoji("➡️");
-
-
-		function createRowRanking() {
-			const rowButtons = new ActionRowBuilder<ButtonBuilder>();
-
-			if (offset != 0) {
-				rowButtons.addComponents(buttonPrevious);
-			}
-
-			if (howManyUsers > (offset + limit)) {
-				rowButtons.addComponents(buttonNext);
-			}
-
-			return rowButtons;
-		}
-
-		const components = [];
-
-		let row = createRowRanking();
-
-		if (row.components.length > 0) {
-			components.push(row);
-		}
-
-		const response = await interaction.editReply({
-			embeds: [embed],
-			components: components ?? undefined,
-		});
-
-		const collector = response.createMessageComponentCollector({
-			filter: (i: MessageComponentInteraction) => i.user.id === interaction.user.id,
-			componentType: ComponentType.Button,
-			idle: 30_000,
-		});
-
-		collector.on("collect", async btn => {
-			await btn.deferUpdate();
-
-			if (btn.customId == "next") {
-				offset += limit;
-			}
-			else if (btn.customId == "prev") {
-				offset -= limit;
-			}
-
-			embed = await createEmbedRanking();
-			row = createRowRanking();
-
-			await interaction.editReply({ embeds: [embed], components: [row] });
-		});
-
-		collector.on("end", async () => {
-			await removeEmbedComponents(interaction);
-		});
-
+		await pagination.GenerateEmbed();
 	},
 };
 
 const Strings = {
 	[Language.English]: {
 		title: "Money",
-		showing: (offset: number, limit: number, howMany: number) => `Showing ${offset + 1} - ${offset + limit} of ${howMany} results.`,
-		next: "Next",
-		previous: "Previous",
 	},
 	[Language.Portuguese]: {
 		title: "Grana",
-		showing: (offset: number, limit: number, howMany: number) => `Exibindo ${offset + 1} - ${offset + limit} de ${howMany} resultados.`,
-		next: "Próximo",
-		previous: "Anterior",
 	},
 	[Language.Spanish]: {
 		title: "Dinero",
-		showing: (offset: number, limit: number, howMany: number) => `Mostrando ${offset + 1} - ${offset + limit} de ${howMany} resultados.`,
-		next: "Siguiente",
-		previous: "Anterior",
 	},
 };

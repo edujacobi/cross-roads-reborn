@@ -21,6 +21,7 @@ import { addMinutes, addSeconds } from "date-fns";
 import { Log } from "../utils/log";
 import { Notification, NotificationType } from "./Notification";
 import { BadgeString } from "../utils/badges";
+import { Pagination } from "./Pagination";
 
 export class Prison {
 	User: User;
@@ -108,19 +109,33 @@ export class Prison {
 			if (btn.customId === "prisoners") {
 				buttonPrisoners.setDisabled(true);
 
+				const pagination = new Pagination(this.Interaction, this.User.Language);
+
+				pagination.HowManyRecords = prisoners.length;
+				pagination.Limit = 15;
+
 				const embedPrisoners = new EmbedBuilder()
 					.setColor(Colors.DarkButNotBlack)
 					.setTitle(s.prisoners);
 
-				prisoners.forEach(prisoner => {
-					embedPrisoners.addFields({
-						name: `${ClassList[prisoner.class].Image.Emote.String} ${prisoner.nickname}`,
-						value: `${s.free} ${showTime(new Date(prisoner.prisonTime).getTime(), true)}\n${s.howManyTimes(prisoner.robberyFailureCount)}`,
-						inline: true,
-					});
-				});
+				pagination.CustomizeEmbed = async () => {
+					const users = prisoners.slice(pagination.Offset, pagination.Offset + pagination.Limit);
 
-				await replyInteraction(this.Interaction, { embeds: [embed, embedPrisoners], components: [row] });
+					users.forEach(prisoner => {
+						embedPrisoners.addFields({
+							name: `${ClassList[prisoner.class].Image.Emote.String} ${prisoner.nickname}`,
+							value:`${s.free} ${showTime(new Date(prisoner.prisonTime).getTime(), true)}
+-# ${s.howManyTimesPrison(prisoner.robberyFailureCount)}
+-# ${s.howManyTimesEscape(prisoner.escapeCount)}`,
+							inline: true,
+						});
+					});
+
+					return embedPrisoners
+						.setFooter({ text: pagination.Showing() });
+				};
+
+				await pagination.GenerateEmbed(embed);
 			}
 			else if (btn.customId === "escape") {
 				buttonEscape.setDisabled(true);
@@ -231,9 +246,8 @@ export class Prison {
 	}
 
 	private async GetPrisoners() {
-		// Todo melhorar sistema de paginação
 		return await Users.findAll({
-			attributes: ["nickname", "class", "prisonTime", "robberyFailureCount"],
+			attributes: ["nickname", "class", "prisonTime", "robberyFailureCount", "escapeCount"],
 			order: [["prisonTime", "DESC"]],
 			where: {
 				prisonTime: {
@@ -537,7 +551,8 @@ The guards are greedy, and the higher your ${EmoteString.Attack}ATK, the more th
 		briberyRejectedFooter: "You will remain imprisoned",
 		free: "Free",
 		confirm: "Confirm",
-		howManyTimes: (times: number) => `Imprisoned \`${times}\` times`,
+		howManyTimesPrison: (times: number) => `Imprisoned \`${times}\` times`,
+		howManyTimesEscape: (times: number) => `Escaped \`${times}\` times`,
 		escapeHasTried: `The police are watching you! ${EmoteString.Police}\n-# You won't be able to escape`,
 		escapeEscaping: `You are already trying to escape! ${EmoteString.Escape}\n-# This kind of thing requires patience`,
 		escapeBeingRobbedBy: (nickname: CreationOptional<string> | undefined) => `You are being robbed by **${nickname}** and cannot escape! ${EmoteString.Robbery}`,
@@ -578,7 +593,8 @@ Os guardas são gananciosos, e quanto maior o seu ${EmoteString.Attack}ATK, mais
 		briberyRejectedFooter: "Você continuará preso",
 		free: "Livre",
 		confirm: "Confirmar",
-		howManyTimes: (times: number) => `Preso \`${times}\` vezes`,
+		howManyTimesPrison: (times: number) => `Preso \`${times}\` vezes`,
+		howManyTimesEscape: (times: number) => `Fugiu \`${times}\` vezes`,
 		escapeHasTried: `Os policiais estão te observando! ${EmoteString.Police}\n-# Você não conseguirá fugir`,
 		escapeEscaping: `Você já está tentando fugir! ${EmoteString.Escape}\n-# Este tipo de coisa pede paciência`,
 		escapeBeingRobbedBy: (nickname: CreationOptional<string> | undefined) => `Você está sendo roubado por **${nickname}** e não pode fugir! ${EmoteString.Robbery}`,
@@ -619,7 +635,8 @@ Los guardias son codiciosos, y cuanto mayor sea tu ${EmoteString.Attack}ATK, má
 		briberyRejectedFooter: "Permanecerás encarcelado",
 		free: "Libre",
 		confirm: "Confirmar",
-		howManyTimes: (times: number) => `Encarcelado \`${times}\` veces`,
+		howManyTimesPrison: (times: number) => `Encarcelado \`${times}\` veces`,
+		howManyTimesEscape: (times: number) => `Huyó \`${times}\` veces`,
 		escapeHasTried: `¡La policía te está observando! ${EmoteString.Police}\n-# No podrás escapar`,
 		escapeEscaping: `¡Ya estás intentando escapar! ${EmoteString.Escape}\n-# Este tipo de cosas requiere paciencia`,
 		escapeBeingRobbedBy: (nickname: CreationOptional<string> | undefined) => `¡Estás siendo robado por **${nickname}** y no puedes escapar! ${EmoteString.Robbery}`,

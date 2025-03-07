@@ -1,16 +1,5 @@
-﻿import {
-	ActionRowBuilder,
-	ButtonBuilder,
-	ButtonStyle,
-	ChatInputCommandInteraction,
-	Colors,
-	ComponentType,
-	Locale,
-	MessageComponentInteraction,
-	SlashCommandBuilder,
-	SlashCommandUserOption,
-} from "discord.js";
-import { checkUser, removeEmbedComponents, replyUserDontExist } from "../../utils/logic";
+﻿import { ChatInputCommandInteraction, Colors, Locale, SlashCommandBuilder, SlashCommandUserOption } from "discord.js";
+import { checkUser, replyUserDontExist } from "../../utils/logic";
 import { formatMoney, showTime } from "../../utils/ui";
 import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
 import { User } from "../../models/User";
@@ -18,8 +7,11 @@ import { RobHistories } from "../../database/RobHistories";
 import { EmoteString } from "../../utils/emotes";
 import { Users } from "../../database/Users";
 import { Language } from "../../models/Language";
+import { Pagination } from "../../models/Pagination";
+import { ClassList } from "../../models/Class";
 
 module.exports = {
+	cooldown: 10,
 	data: new SlashCommandBuilder()
 		.setName("history")
 		.setDescription("Shows the history of your robberies")
@@ -45,15 +37,14 @@ module.exports = {
 
 		await interaction.deferReply();
 
-		let offset = 0;
-		const limit = 5;
+		const pagination = new Pagination(interaction, language);
+
 		let robHistories: RobHistories[] = [];
 
-		const howManyRobberies = await RobHistories.Count(target.Id);
+		pagination.HowManyRecords = await RobHistories.Count(target.Id);
 
-		async function createEmbedHistory(user: User) {
-
-			robHistories = await RobHistories.GetList(user.Id, limit, offset);
+		pagination.CustomizeEmbed = async () => {
+			robHistories = await RobHistories.GetList(target.Id, pagination.Limit, pagination.Offset);
 
 			let historyList = "";
 
@@ -78,99 +69,21 @@ module.exports = {
 				const boldCe = `${attacker.id == user.Id ? "__**" : ""}`;
 				const boldOe = `${defender.id == user.Id ? "__**" : ""}`;
 
-				const challengerName = `${boldCs}${attacker.nickname}${boldCe}`;
-				const opponentName = `${boldOs}${defender.nickname}${boldOe}`;
+				const challengerName = `${ClassList[attacker.class].Image.Emote.String} ${boldCs}${attacker.nickname}${boldCe}`;
+				const opponentName = `${ClassList[defender.class].Image.Emote.String} ${boldOs}${defender.nickname}${boldOe}`;
 
 				historyList += `### ${emoji} ${text}\n${challengerName} ${EmoteString.React} ${opponentName}\n${rob.success ? `\`${formatMoney(rob.money, user.Language)}\`\n` : ""}-# ${showTime(new Date(rob.createdAt).getTime())}\n`;
 			}
 
-			const winrate = `${user.Robbery.SuccessCount + user.Robbery.FailureCount > 0 ? (user.Robbery.SuccessCount / (user.Robbery.FailureCount + user.Robbery.SuccessCount) * 100).toFixed(2) : "0"}%`;
-
 			return new CustomEmbedBuilder()
-				.setTitle(`${s.title} ${user.Nickname}`)
+				.setTitle(`${s.title} ${target.Nickname}`)
 				.setThumbnail(_user.avatarURL() ?? null)
 				.setColor(Colors.DarkButNotBlack)
-				.setDescription(`-# ${s.data}
-${EmoteString.Victory} ${s.successes}: \`${user.Robbery.SuccessCount}\`
-${EmoteString.Defeat} ${s.failures}: \`${user.Robbery.FailureCount}\`
-${EmoteString.Winrate} ${s.successRate}: \`${winrate}\`
-${s.robbedTotal} \`${formatMoney(user.Robbery.SuccessRobbedSum, user.Language)}\`
-${s.robbedTimes(user.Robbery.BeingRobbedCount)}
-${s.lost} \`${formatMoney(user.Robbery.BeingRobbedSum, user.Language)}\`
+				.setDescription(historyList)
+				.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), pagination.Showing());
+		};
 
--# ${s.history}
-${historyList}`)
-				.setDefaultFooter(user.Nickname, null, `Showing ${offset + 1} - ${offset + limit} of ${howManyRobberies} results.`);
-		}
-
-		const buttonPrevious = new ButtonBuilder()
-			.setCustomId("prev")
-			.setLabel(s.previous)
-			.setStyle(ButtonStyle.Secondary)
-			.setEmoji("⬅️");
-
-		const buttonNext = new ButtonBuilder()
-			.setCustomId("next")
-			.setLabel(s.next)
-			.setStyle(ButtonStyle.Secondary)
-			.setEmoji("➡️");
-
-		function createRowHistory() {
-			const rowButtons = new ActionRowBuilder<ButtonBuilder>();
-
-			if (offset != 0) {
-				rowButtons.addComponents([buttonPrevious]);
-			}
-
-			if (howManyRobberies > (offset + limit)) {
-				rowButtons.addComponents([buttonNext]);
-			}
-
-			return rowButtons;
-		}
-
-		let embed = await createEmbedHistory(target);
-
-		let buttonRow = createRowHistory();
-
-		const components = [];
-
-		if (buttonRow.components.length > 0) {
-			components.push(buttonRow);
-		}
-
-		const response = await interaction.editReply({
-			embeds: [embed],
-			components: components ?? undefined,
-		});
-
-		const buttonCollector = response.createMessageComponentCollector({
-			filter: (i: MessageComponentInteraction) => i.user.id === interaction.user.id,
-			componentType: ComponentType.Button,
-			idle: 30_000,
-		});
-
-		buttonCollector.on("collect", async btn => {
-			await btn.deferUpdate();
-			if (btn.customId == "next") {
-				offset += limit;
-			}
-			else if (btn.customId == "prev") {
-				offset -= limit;
-			}
-
-			embed = await createEmbedHistory(target);
-			buttonRow = createRowHistory();
-
-			await btn.editReply({
-				embeds: [embed],
-				components: [buttonRow ?? undefined],
-			});
-		});
-
-		buttonCollector.on("end", async () => {
-			await removeEmbedComponents(interaction);
-		});
+		await pagination.GenerateEmbed();
 	},
 };
 
@@ -188,8 +101,6 @@ const Strings = {
 		robbedTotal: "Robbed total of",
 		robbedTimes: (beingRobbedCount: number) => `Robbed \`${beingRobbedCount}\` times`,
 		lost: "Lost",
-		previous: "Previous",
-		next: "Next",
 	},
 	[Language.Portuguese]: {
 		empty: "Este usuário não possui histórico",
@@ -204,8 +115,6 @@ const Strings = {
 		robbedTotal: "Roubou um total de",
 		robbedTimes: (beingRobbedCount: number) => `Foi roubado \`${beingRobbedCount}\` vezes`,
 		lost: "Perdeu",
-		previous: "Anterior",
-		next: "Próximo",
 	},
 	[Language.Spanish]: {
 		empty: "Este usuario no tiene historial",
@@ -220,7 +129,5 @@ const Strings = {
 		robbedTotal: "Robó un total de",
 		robbedTimes: (beingRobbedCount: number) => `Fue robado \`${beingRobbedCount}\` veces`,
 		lost: "Perdió",
-		previous: "Anterior",
-		next: "Próximo",
 	},
 } as const;
