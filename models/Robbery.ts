@@ -334,7 +334,7 @@ ${sD.beatedUp(this.Defender.Hospital.Time)} ${EmoteString.Hospital}` : ""}`);
 
 			this.Embed.Private
 				.setColor(CrColors.Police)
-				.setDescription(`**${this.Attacker.Nickname}** ${sD.robFailed}! ${EmoteString.Police}
+				.setDescription(`**${this.Attacker.Nickname}** ${sD.robFailed} ${EmoteString.Police}
 -# ${sD.prisonUntil(this.Attacker.Prison.Time)}!`);
 
 			Log.Success(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) failed to rob user ${this.Defender.Nickname} (ID: ${this.Defender.Id}).`);

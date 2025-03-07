@@ -200,12 +200,11 @@ export class Notification {
 			}
 
 			else if (notification.Type == NotificationType.Job) {
-				if (user.Job.Id === null) {
-					return;
+				if (user.Job.Id !== null) {
+					const job = JobList[user.Job.Id];
+					await user.EndJob();
+					await sendPrivateMessage(user.Id, s.job(job.Description[user.Language], job.Salary), CrColors.Jobs, formatMoney(user.Money, user.Language));
 				}
-				const job = JobList[user.Job.Id];
-				await user.EndJob();
-				await sendPrivateMessage(user.Id, s.job(job.Description[user.Language], job.Salary), CrColors.Jobs, formatMoney(user.Money, user.Language));
 			}
 
 			else if (notification.Type == NotificationType.RobAgain) {
@@ -233,21 +232,21 @@ export class Notification {
 const Strings = {
 	[Language.English]: {
 		daily: `You can receive your daily money again! ${EmoteString.Experience}`,
-		job: (description: string, salary: number) => `You finished your ${description} job and received ${formatMoney(salary, Language.English)}! ${EmoteString.Jobs}`,
+		job: (description: string, salary: number) => `You finished your **${description}** job and received ${formatMoney(salary, Language.English)}! ${EmoteString.Jobs}`,
 		robAgain: `You can rob again! ${EmoteString.Robbery}`,
 		free: `You are free! ${EmoteString.Prison}`,
 		hospital: `You are healed! ${EmoteString.Hospital}`,
 	},
 	[Language.Portuguese]: {
 		daily: `Você pode receber sua grana diária novamente! ${EmoteString.Experience}`,
-		job: (description: string, salary: number) => `Você terminou seu trabalho ${description} e recebeu ${formatMoney(salary, Language.Portuguese)}! ${EmoteString.Jobs}`,
+		job: (description: string, salary: number) => `Você terminou seu trabalho **${description}** e recebeu ${formatMoney(salary, Language.Portuguese)}! ${EmoteString.Jobs}`,
 		robAgain: `Você pode roubar novamente! ${EmoteString.Robbery}`,
 		free: `Você está livre! ${EmoteString.Prison}`,
 		hospital: `Você está curado! ${EmoteString.Hospital}`,
 	},
 	[Language.Spanish]: {
 		daily: `¡Puedes recibir tu dinero diario de nuevo! ${EmoteString.Experience}`,
-		job: (description: string, salary: number) => `Terminaste tu trabajo ${description} y recibiste ${formatMoney(salary, Language.Spanish)}! ${EmoteString.Jobs}`,
+		job: (description: string, salary: number) => `Terminaste tu trabajo **${description}** y recibiste ${formatMoney(salary, Language.Spanish)}! ${EmoteString.Jobs}`,
 		robAgain: `¡Puedes robar de nuevo! ${EmoteString.Robbery}`,
 		free: `¡Estás libre! ${EmoteString.Prison}`,
 		hospital: `¡Estás curado! ${EmoteString.Hospital}`,
