@@ -12,7 +12,6 @@ import { Language } from "../../models/Language";
 import { ClassId, ClassList } from "../../models/Class";
 
 module.exports = {
-	vip: true,
 	data: new SlashCommandBuilder()
 		.setName("setclass")
 		.setNameLocalization(Locale.PortugueseBR, "mudaclasse")
