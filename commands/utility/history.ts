@@ -9,6 +9,8 @@ import { Users } from "../../database/Users";
 import { Language } from "../../models/Language";
 import { Pagination } from "../../models/Pagination";
 import { ClassList } from "../../models/Class";
+import { LocationList } from "../../models/Locations";
+import { RobTypes } from "../../models/Robbery";
 
 module.exports = {
 	cooldown: 10,
@@ -38,6 +40,7 @@ module.exports = {
 		await interaction.deferReply();
 
 		const pagination = new Pagination(interaction, language);
+		pagination.Limit = 8;
 
 		let robHistories: RobHistories[] = [];
 
@@ -59,20 +62,28 @@ module.exports = {
 				const text = rob.success ? s.success : s.failure;
 				const attacker = await Users.findByPk(rob.attackerId);
 				const defender = await Users.findByPk(rob.defenderId);
+				const location = LocationList[rob.locationId];
 
-				if (!attacker || !defender) {
+				if (!attacker) {
 					continue;
 				}
 
 				const boldCs = `${attacker.id == user.Id ? "**__" : ""}`;
-				const boldOs = `${defender.id == user.Id ? "**__" : ""}`;
 				const boldCe = `${attacker.id == user.Id ? "__**" : ""}`;
-				const boldOe = `${defender.id == user.Id ? "__**" : ""}`;
-
 				const challengerName = `${ClassList[attacker.class].Image.Emote.String} ${boldCs}${attacker.nickname}${boldCe}`;
-				const opponentName = `${ClassList[defender.class].Image.Emote.String} ${boldOs}${defender.nickname}${boldOe}`;
 
-				historyList += `### ${emoji} ${text}\n${challengerName} ${EmoteString.React} ${opponentName}\n${rob.success ? `\`${formatMoney(rob.money, user.Language)}\`\n` : ""}-# ${showTime(new Date(rob.createdAt).getTime())}\n`;
+				let opponentName = "";
+
+				if (rob.type == RobTypes.User && defender) {
+					const boldOs = `${defender.id == user.Id ? "**__" : ""}`;
+					const boldOe = `${defender.id == user.Id ? "__**" : ""}`;
+					opponentName = `${ClassList[defender.class].Image.Emote.String} ${boldOs}${defender.nickname}${boldOe}`;
+				}
+				if (rob.type == RobTypes.Location && location) {
+					opponentName = `${location.Emote} ${location.Description[user.Language]}`;
+				}
+
+				historyList += `${challengerName} ${EmoteString.React} ${opponentName}\n${rob.success ? `\`${formatMoney(rob.money, user.Language)}\`\n` : ""}-# ${emoji} ${text} • ${showTime(new Date(rob.createdAt).getTime())}\n\n`;
 			}
 
 			return new CustomEmbedBuilder()
