@@ -1,18 +1,10 @@
 import { User } from "./User";
 import { Log } from "../utils/log";
-import {
-	ActionRowBuilder,
-	ButtonBuilder,
-	ButtonStyle,
-	ChatInputCommandInteraction,
-	ComponentType,
-	Message,
-	MessageComponentInteraction,
-} from "discord.js";
-import { getPercent, replyInteraction, sendComplexPrivateMessage } from "../utils/logic";
+import { ChatInputCommandInteraction } from "discord.js";
+import { replyInteraction } from "../utils/logic";
 import { formatMoney, showTime } from "../utils/ui";
 import { CrColors } from "../utils/colors";
-import { EmoteId, EmoteString } from "../utils/emotes";
+import { EmoteString } from "../utils/emotes";
 import { setTimeout as wait } from "timers/promises";
 import { addHours } from "date-fns/addHours";
 import { Notification } from "./Notification";
@@ -20,7 +12,6 @@ import { addMinutes } from "date-fns";
 import { Language } from "./Language";
 import { RobHistories } from "../database/RobHistories";
 import { Users } from "../database/Users";
-import { ClassList } from "./Class";
 import { CreationOptional } from "sequelize";
 import { JobId, JobList } from "./Job";
 import { Robbery, RobTypes } from "./Robbery";
@@ -91,7 +82,7 @@ export class RobberyLocation extends Robbery {
 	async StartRobbery(interaction: ChatInputCommandInteraction) {
 		const s = Strings[this.Attacker.Language];
 
-		this.AttackerTimeInPrison = 20 * this.Location.Id;
+		this.AttackerTimeInPrison = 20 * (this.Location.Id + 1);
 
 		this.Attacker.Robbery.IsRobbingLocationId = this.Location.Id;
 
