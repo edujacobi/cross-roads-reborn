@@ -40,6 +40,7 @@ export async function removeAllFromRobbery() {
 		const [affectedCount] = await Users.update({
 			beingRobbedByUserId: null,
 			robbingUserId: null,
+			robbingLocationId: null,
 		}, {
 			where: {
 				[Op.or]: {
@@ -47,6 +48,9 @@ export async function removeAllFromRobbery() {
 						[Op.not]: null,
 					},
 					robbingUserId: {
+						[Op.not]: null,
+					},
+					robbingLocationId: {
 						[Op.not]: null,
 					},
 				},

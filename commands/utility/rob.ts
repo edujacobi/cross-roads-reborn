@@ -1,14 +1,15 @@
 ﻿import {
 	ActionRowBuilder,
 	ChatInputCommandInteraction,
-	Colors,
+	ComponentType,
 	Locale,
+	MessageComponentInteraction,
 	SlashCommandBuilder,
 	SlashCommandUserOption,
 	StringSelectMenuBuilder,
 	StringSelectMenuOptionBuilder,
 } from "discord.js";
-import { checkUser, replyInteraction, replyUserDontExist } from "../../utils/logic";
+import { checkUser, removeEmbedComponents, replyInteraction, replyUserDontExist } from "../../utils/logic";
 import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
 import { defaultEmbed, formatMoney, showTime } from "../../utils/ui";
 import { EmoteString } from "../../utils/emotes";
@@ -16,7 +17,8 @@ import { CrColors } from "../../utils/colors";
 import { User } from "../../models/User";
 import { Language } from "../../models/Language";
 import { Robbery } from "../../models/Robbery";
-import { getLocationList } from "../../models/Locations";
+import { getLocationList, LocationList } from "../../models/Locations";
+import { RobberyLocation } from "../../models/RobberyLocation";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -94,7 +96,44 @@ module.exports = {
 			const rowSelect = new ActionRowBuilder<StringSelectMenuBuilder>()
 				.setComponents(select);
 
-			return replyInteraction(interaction, { embeds: [instructions], components: canUserRob ? [rowSelect] : [] });
+			const response = await replyInteraction(interaction, { embeds: [instructions], components: canUserRob ? [rowSelect] : [] });
+
+			const collector = response?.createMessageComponentCollector({
+				filter: (i: MessageComponentInteraction) => i.user.id === interaction.user.id,
+				componentType: ComponentType.StringSelect,
+				idle: 60_000,
+			});
+
+			collector?.on("collect", async select => {
+				await select.deferUpdate();
+				await user.GetInfo();
+
+				const location = LocationList[Number(select.values[0])];
+
+				const robbery = new RobberyLocation(user, location);
+
+				const { canRob, message } = await robbery.CanRobLocation();
+
+				if (!canRob) {
+					return await replyInteraction(interaction, {
+						embeds: [defaultEmbed({
+							nickname: user.Nickname,
+							interaction,
+							color: CrColors.Robbery,
+							description: message,
+						})],
+						components: [],
+					});
+				}
+
+				await robbery.StartRobbery(interaction);
+			});
+
+			collector?.on("end", async () => {
+				await removeEmbedComponents(interaction);
+			});
+
+			return;
 		}
 
 		const targetUser = await checkUser(target.id, interaction);
@@ -115,8 +154,11 @@ module.exports = {
 					color: CrColors.Robbery,
 					description: message,
 				})],
+				components: [],
 			});
 		}
+
+		await robbery.GetDiscordUser();
 
 		await robbery.StartRobbery(interaction);
 	},

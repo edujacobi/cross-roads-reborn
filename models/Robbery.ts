@@ -26,6 +26,7 @@ import { Users } from "../database/Users";
 import { ClassId, ClassList } from "./Class";
 import { CreationOptional } from "sequelize";
 import { JobId, JobList } from "./Job";
+import { LocationList } from "./Locations";
 
 export enum RobTypes {
 	User = 1,
@@ -57,15 +58,11 @@ export class Robbery {
 		this.Attacker = attacker;
 		this.Defender = defender;
 		this.Date = new Date();
-
-		(async () => {
-			this.DiscordUser = await this.GetDiscordUser().then(user => user);
-		})();
 	}
 
-	private async GetDiscordUser() {
+	async GetDiscordUser() {
 		const client = getClient();
-		return await client.users.fetch(this.Defender.Id);
+		this.DiscordUser = await client.users.fetch(this.Defender.Id);
 	}
 
 	async CanRobUser() {
@@ -139,6 +136,18 @@ export class Robbery {
 		if (this.Defender.Robbery.IsBeingRobbedById) {
 			const user = await Users.findByPk(this.Defender.Robbery.IsBeingRobbedById);
 			message = `**${this.Defender.Nickname}** ${s.defenderIsBeingRobbedById(user?.nickname)} ${EmoteString.Robbery}`;
+			canRob = false;
+		}
+
+		if (this.Attacker.Robbery.IsRobbingLocationId) {
+			const location = LocationList[this.Attacker.Robbery.IsRobbingLocationId];
+			message = `${s.attackerIsRobbingId(location.Description[this.Attacker.Language])} ${EmoteString.Robbery}`;
+			canRob = false;
+		}
+
+		if (this.Defender.Robbery.IsRobbingLocationId) {
+			const location = LocationList[this.Defender.Robbery.IsRobbingLocationId];
+			message = `${s.defenderIsRobbingId(location.Description[this.Attacker.Language])} ${EmoteString.Robbery}`;
 			canRob = false;
 		}
 
@@ -370,7 +379,7 @@ ${sD.beatedUp(this.Defender.Hospital.Time)} ${EmoteString.Hospital}` : ""}`);
 		this.Defender.Robbery.IsBeingRobbedById = null;
 		await Promise.all([this.Attacker.Update(), this.Defender.Update()]);
 
-		await RobHistories.CreateHistory(this);
+		await RobHistories.CreateUserHistory(this);
 	}
 }
 

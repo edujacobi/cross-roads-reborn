@@ -11,6 +11,7 @@ import { Notification, NotificationType } from "./Notification";
 import { formatDate, formatMoney, showTime } from "../utils/ui";
 import { EmoteString } from "../utils/emotes";
 import { ClassId, ClassList } from "./Class";
+import { LocationId } from "./Locations";
 
 export class User {
 	Id = "";
@@ -41,6 +42,7 @@ export class User {
 		BeingRobbedSum: number,
 		IsRobbingId: string | null,
 		IsBeingRobbedById: string | null,
+		IsRobbingLocationId: LocationId | null,
 	};
 	Prison: {
 		BriberySum: number,
@@ -118,6 +120,7 @@ export class User {
 			BeingRobbedSum: 0,
 			IsRobbingId: null,
 			IsBeingRobbedById: null,
+			IsRobbingLocationId: null,
 		};
 		this.BeatUp = {
 			IsBeatingId: null,
@@ -261,6 +264,7 @@ export class User {
 		if (user.beingRobbedByUserId) {
 			this.Robbery.IsBeingRobbedById = user.beingRobbedByUserId;
 		}
+		this.Robbery.IsRobbingLocationId = user.robbingLocationId;
 
 		// Beat-ups
 		this.BeatUp.SuccessCount = user.beatUpSuccessCount;
@@ -657,6 +661,7 @@ export class User {
 				robberyBeingRobbedSum: this.Robbery.BeingRobbedSum,
 				robbingUserId: this.Robbery.IsRobbingId,
 				beingRobbedByUserId: this.Robbery.IsBeingRobbedById,
+				robbingLocationId: this.Robbery.IsRobbingLocationId,
 
 				beatUpSuccessCount: this.BeatUp.SuccessCount,
 				beatUpFailureCount: this.BeatUp.FailureCount,

@@ -12,6 +12,8 @@ import { User } from "../models/User";
 import { Users } from "./Users";
 import { Robbery } from "../models/Robbery";
 import { Log } from "../utils/log";
+import { RobberyLocation } from "../models/RobberyLocation";
+import { Language } from "../models/Language";
 
 export class RobHistories extends Model<
 	InferAttributes<RobHistories>,
@@ -47,12 +49,11 @@ export class RobHistories extends Model<
 		});
 	}
 
-	static async CreateHistory(robbery: Robbery) {
+	static async CreateUserHistory(robbery: Robbery) {
 		try {
 			await RobHistories.create({
 				attackerId: robbery.Attacker.Id,
 				defenderId: robbery.Defender.Id,
-				// locationId: robbery.Location.Id,
 				success: robbery.Success,
 				money: robbery.MoneyRobbed,
 				type: robbery.Type,
@@ -62,6 +63,23 @@ export class RobHistories extends Model<
 		}
 		catch (err) {
 			Log.Warning(`Something went wrong with adding Robbery History for ${robbery.Attacker.Nickname} (ID: ${robbery.Attacker.Id}) and ${robbery.Defender.Nickname} (ID: ${robbery.Defender.Id}).`);
+		}
+	}
+
+	static async CreateLocationHistory(robbery: RobberyLocation) {
+		try {
+			await RobHistories.create({
+				attackerId: robbery.Attacker.Id,
+				locationId: robbery.Location.Id,
+				success: robbery.Success,
+				money: robbery.MoneyRobbed,
+				type: robbery.Type,
+			});
+
+			Log.Success(`Robbery History for ${robbery.Attacker.Nickname} (ID: ${robbery.Attacker.Id}) and ${robbery.Location.Description[Language.English]} (ID: ${robbery.Location.Id}) added successfully.`);
+		}
+		catch (err) {
+			Log.Warning(`Something went wrong with adding Robbery History for ${robbery.Attacker.Nickname} (ID: ${robbery.Attacker.Id}) and ${robbery.Location.Description[Language.English]} (ID: ${robbery.Location.Id}).`);
 		}
 	}
 }

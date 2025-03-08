@@ -18,6 +18,7 @@ import { removeEmbedComponents, replyInteraction } from "../utils/logic";
 import { EmoteString } from "../utils/emotes";
 import { getItemList, Item, ItemList, ItemType } from "./Item";
 import { Users } from "../database/Users";
+import { LocationList } from "./Locations";
 
 export class Shop {
 	User: User;
@@ -195,6 +196,12 @@ export class Shop {
 		if (this.User.Robbery.IsBeingRobbedById) {
 			const user = await Users.findByPk(this.User.Robbery.IsBeingRobbedById);
 			message = `${s.beingRobbed(user?.nickname!)} ${EmoteString.Robbery}`;
+			canBuy = false;
+		}
+
+		if (this.User.Robbery.IsRobbingLocationId) {
+			const location = LocationList[this.User.Robbery.IsRobbingLocationId];
+			message = `${s.robbing(location.Description[this.User.Language])} ${EmoteString.Robbery}`;
 			canBuy = false;
 		}
 

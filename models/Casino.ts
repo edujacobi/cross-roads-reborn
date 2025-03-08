@@ -52,7 +52,7 @@ export class Casino {
 			canPlay = false;
 		}
 
-		if (user.Robbery.IsRobbingId) {
+		if (user.Robbery.IsRobbingId || user.Robbery.IsRobbingLocationId) {
 			message = `${s.robbing} ${EmoteString.Robbery}`;
 			canPlay = false;
 		}

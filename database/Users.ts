@@ -4,6 +4,7 @@ import { JobId } from "../models/Job";
 
 import { ClassId } from "../models/Class";
 import { Language } from "../models/Language";
+import { LocationId } from "../models/Locations";
 
 export class Users extends Model<
 	InferAttributes<Users>,
@@ -34,6 +35,7 @@ export class Users extends Model<
 	declare robberyBeingRobbedSum: number;
 	declare robbingUserId: CreationOptional<string | null>;
 	declare beingRobbedByUserId: CreationOptional<string | null>;
+	declare robbingLocationId: CreationOptional<LocationId | null>;
 
 	declare beatUpSuccessCount: number;
 	declare beatUpFailureCount: number;
@@ -170,6 +172,11 @@ Users.init(
 		},
 		beingRobbedByUserId: {
 			type: DataTypes.STRING(18),
+			allowNull: true,
+			defaultValue: null,
+		},
+		robbingLocationId: {
+			type: DataTypes.INTEGER,
 			allowNull: true,
 			defaultValue: null,
 		},
