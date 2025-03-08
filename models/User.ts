@@ -385,7 +385,11 @@ export class User {
 
 		const streakMultiplier = this.Daily.CurrentStreak <= 7 ? this.Daily.CurrentStreak : 7;
 
-		const baseValue = this.IsVip() ? 300 : 200;
+		let baseValue = 300;
+
+		if (this.IsVip()) {
+			baseValue *= 1.5;
+		}
 
 		const money = baseValue * streakMultiplier;
 
