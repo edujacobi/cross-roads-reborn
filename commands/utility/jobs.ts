@@ -109,11 +109,6 @@ module.exports = {
 					embed.setDescription(s.workingOn(user.Job.Id!, user.Job.EndsIn)),
 				]);
 			}
-			if (user.IsWanted()) {
-				return await removeEmbedComponents(interaction, [
-					embed.setDescription(s.userWanted(user.Wanted.Time)),
-				]);
-			}
 			if (user.IsInPrison()) {
 				return await removeEmbedComponents(interaction, [
 					embed.setDescription(s.userPrison(user.Prison.Time)),
