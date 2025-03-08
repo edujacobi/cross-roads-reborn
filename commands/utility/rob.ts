@@ -1,12 +1,22 @@
-﻿import { ChatInputCommandInteraction, Colors, Locale, SlashCommandBuilder, SlashCommandUserOption } from "discord.js";
+﻿import {
+	ActionRowBuilder,
+	ChatInputCommandInteraction,
+	Colors,
+	Locale,
+	SlashCommandBuilder,
+	SlashCommandUserOption,
+	StringSelectMenuBuilder,
+	StringSelectMenuOptionBuilder,
+} from "discord.js";
 import { checkUser, replyInteraction, replyUserDontExist } from "../../utils/logic";
 import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
-import { defaultEmbed, showTime } from "../../utils/ui";
+import { defaultEmbed, formatMoney, showTime } from "../../utils/ui";
 import { EmoteString } from "../../utils/emotes";
 import { CrColors } from "../../utils/colors";
 import { User } from "../../models/User";
 import { Language } from "../../models/Language";
 import { Robbery } from "../../models/Robbery";
+import { getLocationList } from "../../models/Locations";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -28,21 +38,24 @@ module.exports = {
 		const s = Strings[language];
 
 		let text = `${s.userFree}`;
+		let canUserRob = true;
+
 		if (user.IsWorking()) {
 			text = s.userWorking;
+			canUserRob = false;
 		}
 		if (user.IsWanted()) {
 			text = s.userEscaping(user.Wanted.Time);
+			canUserRob = false;
 		}
 		if (user.IsInPrison()) {
 			text = s.userPrison(user.Prison.Time);
+			canUserRob = false;
 		}
 		if (user.IsInHospital()) {
 			text = s.userHospital(user.Hospital.Time);
+			canUserRob = false;
 		}
-
-		// Há uma pequena chance do alvo ser também espancado!
-		// -# Elas possuem ${EmoteString.Attack}ATK e ${EmoteString.Defense}DEF!
 
 		if (!target) {
 			const instructions = new CustomEmbedBuilder()
@@ -54,18 +67,34 @@ module.exports = {
 				.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), `${user.Situation.Simple}`)
 				.setTimestamp();
 
-			return replyInteraction(interaction, { embeds: [instructions] });
-		}
+			const select = new StringSelectMenuBuilder()
+				.setCustomId("select")
+				.setPlaceholder(s.placeholderSelect);
 
-		if (user.IsWorking()) {
-			return replyInteraction(interaction, {
-				embeds: [defaultEmbed({
-					nickname: user.Nickname,
-					interaction,
-					color: Colors.Yellow,
-					description: `${s.userWorking} ${EmoteString.Working}`,
-				})],
-			});
+			const locationList = getLocationList().filter(location => !location.Special);
+
+			for (const location of locationList) {
+				if (location.NeedAttack > user.Attributes.Attack) {
+					continue;
+				}
+
+				const textMinToMax = `${formatMoney(location.Reward.Min, language)} - ${formatMoney(location.Reward.Max, language)}`;
+				const textSuccess = `${s.success}: ${location.SuccessChance * 100}%`;
+				const textNeedAtk = `${location.NeedAttack} ATK`;
+
+				select.addOptions(
+					new StringSelectMenuOptionBuilder()
+						.setLabel(location.Description[language])
+						.setValue(String(location.Id))
+						.setEmoji(location.Emote)
+						.setDescription(`${textSuccess} • ${textMinToMax} • ${textNeedAtk}`),
+				);
+			}
+
+			const rowSelect = new ActionRowBuilder<StringSelectMenuBuilder>()
+				.setComponents(select);
+
+			return replyInteraction(interaction, { embeds: [instructions], components: canUserRob ? [rowSelect] : [] });
 		}
 
 		const targetUser = await checkUser(target.id, interaction);
@@ -102,10 +131,13 @@ const Strings = {
 		userHospital: (timerHospital: Date) => `You can't rob while in hospital! You will be healed ${showTime(timerHospital.getTime(), true)}!`,
 		description: `# Rob
 ### Find a target and steal everything!
-The higher your ${EmoteString.Attack}ATK, the higher your chances of stealing from other players. The higher your ${EmoteString.Defense}DEF, the more protected you will be.
+The higher your ${EmoteString.Attack}ATK, the higher your chances of stealing from other players and the more locations become available. The higher your ${EmoteString.Defense}DEF, the more protected you will be.
 
 If you fail, you will be imprisoned for a time determined by your ${EmoteString.Attack}ATK.
-If you succeed, you will be wanted by the police and will have to wait 1 hour to steal again.`,
+If you succeed, you will be wanted by the police and will have to wait 1 hour to steal again.
+There is a small chance the target will also be beaten up!`,
+		placeholderSelect: "Available locations to rob",
+		success: "Success",
 	},
 	[Language.Portuguese]: {
 		userFree: "Você pode roubar!",
@@ -115,10 +147,13 @@ If you succeed, you will be wanted by the police and will have to wait 1 hour to
 		userHospital: (timerHospital: Date) => `Você não pode roubar enquanto está hospitalizado! Será curado ${showTime(timerHospital.getTime(), true)}!`,
 		description: `# Roubar
 ### Encontre um alvo e roube tudo!
-Quanto maior seu ${EmoteString.Attack}ATK, maiores suas chances de roubo à outros jogadores. Quanto maior sua ${EmoteString.Defense}DEF, mais protegido você estará.
+Quanto maior seu ${EmoteString.Attack}ATK, maiores suas chances de roubo à outros jogadores e mais locais ficam disponíveis. Quanto maior sua ${EmoteString.Defense}DEF, mais protegido você estará.
 
 Se falhar, você será preso por um tempo definido pelo seu ${EmoteString.Attack}ATK.
-Se conseguir, será procurado pela polícia e deverá esperar 1 hora para roubar novamente.`,
+Se conseguir, será procurado pela polícia e deverá esperar 1 hora para roubar novamente.
+Há uma pequena chance do alvo ser também espancado!`,
+		placeholderSelect: "Locais disponíveis para roubar",
+		success: "Sucesso",
 	},
 	[Language.Spanish]: {
 		userFree: "¡Puedes robar!",
@@ -128,9 +163,12 @@ Se conseguir, será procurado pela polícia e deverá esperar 1 hora para roubar
 		userHospital: (timerHospital: Date) => `¡No puedes robar mientras estás en el hospital! ¡Serás curado ${showTime(timerHospital.getTime(), true)}!`,
 		description: `# Robar
 ### ¡Encuentra un objetivo y roba todo!
-Cuanto mayor sea tu ${EmoteString.Attack}ATK, mayores serán tus posibilidades de robar a otros jugadores. Cuanto mayor sea tu ${EmoteString.Defense}DEF, más protegido estarás.
+Cuanto mayor sea tu ${EmoteString.Attack}ATK, mayores serán tus posibilidades de robar a otros jugadores y más lugares estarán disponibles. Cuanto mayor sea tu ${EmoteString.Defense}DEF, más protegido estarás.
 
 Si fallas, serás encarcelado por un tiempo determinado por tu ${EmoteString.Attack}ATK.
-Si lo consigues, serás buscado por la policía y tendrás que esperar 1 hora para volver a robar.`,
+Si lo consigues, serás buscado por la policía y tendrás que esperar 1 hora para volver a robar.
+¡Hay una pequeña posibilidad de que el objetivo también sea golpeado!`,
+		placeholderSelect: "Lugares disponibles para robar",
+		success: "Éxito",
 	},
 } as const;
