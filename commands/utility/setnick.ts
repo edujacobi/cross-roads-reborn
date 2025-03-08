@@ -6,7 +6,6 @@ import { User } from "../../models/User";
 import { Language } from "../../models/Language";
 
 module.exports = {
-	vip: true,
 	data: new SlashCommandBuilder()
 		.setName("setnick")
 		.setNameLocalization(Locale.PortugueseBR, "mudanick")
