@@ -30,13 +30,13 @@ module.exports = {
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 		const s = Strings[language];
 
-		let workingText = "";
+		let description = `# ${s.title}\n-# ${s.description}`;
 		if (user.IsWorking()) {
-			workingText = `\n${s.workingOn(user.Job.Id!, user.Job.EndsIn)}`;
+			description = `${s.workingOn(user.Job.Id!, user.Job.EndsIn)}`;
 		}
 
 		const embed = new CustomEmbedBuilder()
-			.setDescription(`# ${s.title}\n-# ${s.description}${workingText}`)
+			.setDescription(description)
 			.setThumbnail("https://media.discordapp.net/attachments/1233604589064818808/1337166947250602047/Trabalhos2.png")
 			.setColor(CrColors.Jobs)
 			.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), formatMoney(user.Money, language));
@@ -156,6 +156,7 @@ module.exports = {
 
 		collectorButton?.on("collect", async btn => {
 			embed.setFields([]);
+
 			if (btn.customId === "stop") {
 				await user.GetInfo();
 				if (user.Job.Id === null) {
@@ -163,10 +164,12 @@ module.exports = {
 						embed.setDescription(s.cannotStop),
 					]);
 				}
+
 				const job = JobList[user.Job.Id];
 				await user.CancelJob();
+
 				await removeEmbedComponents(interaction, [
-					embed.setDescription(`${s.stopped} ${job.Description[language]}`),
+					embed.setDescription(`${s.stopped} **${job.Description[language]}**!`),
 				]);
 			}
 		});
@@ -183,8 +186,8 @@ const Strings = {
 		description: "You cannot bet, steal or search while working!",
 		userWanted: (timerEscape: Date) => `You are being wanted by the police! ${EmoteString.Police} \n-# You can start a job ${showTime(timerEscape.getTime(), true)}!`,
 		userPrison: (timerPrison: Date) => `You are in prison! ${EmoteString.Prison}\n -# You will be released ${showTime(timerPrison.getTime(), true)}!`,
-		userHospital: (timerHospital: Date) => `You are hospitalized! You will be attended ${showTime(timerHospital.getTime(), true)}`,
-		workingOn: (jobId: JobId, jobTime: Date) => `You are working as **${JobList[jobId].Description[Language.English]}** and will finish ${showTime(jobTime.getTime(), true)} ${EmoteString.Working}`,
+		userHospital: (timerHospital: Date) => `You are hospitalized ${EmoteString.Hospital}! You will be attended ${showTime(timerHospital.getTime(), true)}`,
+		workingOn: (jobId: JobId, jobTime: Date) => `You are working as **${JobList[jobId].Description[Language.English]}**.\n-# Will finish ${showTime(jobTime.getTime(), true)} ${EmoteString.Working}`,
 		placeholderSelect: "Select a job",
 		stop: "Stop job",
 		cannotStop: "You can't stop what you didn't start.",
@@ -193,15 +196,15 @@ const Strings = {
 		duration: "Duration",
 		necessary: "Necessary",
 		withoutItems: (neededItems: string) => `You don't have the necessary items to start this job.\n-# You need ${neededItems}.`,
-		jobStarted: (jobDescription: string, jobTime: Date) => `You started working as ${jobDescription} ${EmoteString.Working}\n-# Will finish ${showTime(jobTime.getTime(), true)}`,
+		jobStarted: (jobDescription: string, jobTime: Date) => `You started working as **${jobDescription}** ${EmoteString.Working}\n-# Will finish ${showTime(jobTime.getTime(), true)}`,
 	},
 	[Language.Portuguese]: {
 		title: "Trabalhos",
 		description: `Você não pode apostar, roubar nem vasculhar enquanto trabalha!`,
 		userWanted: (timerEscape: Date) => `Você está sendo procurado pela polícia! ${EmoteString.Police} \n-# Poderá começar um trabalho ${showTime(timerEscape.getTime(), true)}!`,
 		userPrison: (timerPrison: Date) => `Você está preso! ${EmoteString.Prison}\n -# Será solto ${showTime(timerPrison.getTime(), true)}!`,
-		userHospital: (timerHospital: Date) => `Você está hospitalizado! Será atendido ${showTime(timerHospital.getTime(), true)}`,
-		workingOn: (jobId: JobId, jobTime: Date) => `Você está trabalhando como **${JobList[jobId].Description[Language.Portuguese]}** e terminará ${showTime(jobTime.getTime(), true)} ${EmoteString.Working}`,
+		userHospital: (timerHospital: Date) => `Você está hospitalizado ${EmoteString.Hospital}! Será atendido ${showTime(timerHospital.getTime(), true)}`,
+		workingOn: (jobId: JobId, jobTime: Date) => `Você está trabalhando como **${JobList[jobId].Description[Language.Portuguese]}**.\n-# Terminará ${showTime(jobTime.getTime(), true)} ${EmoteString.Working}`,
 		placeholderSelect: "Selecione um trabalho",
 		stop: "Parar trabalho",
 		cannotStop: "Você não pode parar o que não começou.",
@@ -210,15 +213,15 @@ const Strings = {
 		duration: "Duração",
 		necessary: "Necessário",
 		withoutItems: (neededItems: string) => `Você não tem os itens necessários para começar este trabalho.\n-# Você precisa de ${neededItems}.`,
-		jobStarted: (jobDescription: string, jobTime: Date) => `Você começou a trabalhar como ${jobDescription} ${EmoteString.Working}\n-# Terminará ${showTime(jobTime.getTime(), true)}`,
+		jobStarted: (jobDescription: string, jobTime: Date) => `Você começou a trabalhar como **${jobDescription}** ${EmoteString.Working}\n-# Terminará ${showTime(jobTime.getTime(), true)}`,
 	},
 	[Language.Spanish]: {
 		title: "Trabajos",
 		description: "Tu no puedes apostar, robar o buscar mientras trabajas!",
 		userWanted: (timerEscape: Date) => `¡Estás siendo buscado por la policía! ${EmoteString.Police} \n-# ¡Puedes comenzar un trabajo ${showTime(timerEscape.getTime(), true)}!`,
 		userPrison: (timerPrison: Date) => `¡Estás preso! ${EmoteString.Prison}\n -# ¡Serás liberado ${showTime(timerPrison.getTime(), true)}!`,
-		userHospital: (timerHospital: Date) => `¡Estás hospitalizado! Serás atendido ${showTime(timerHospital.getTime(), true)}`,
-		workingOn: (jobId: JobId, jobTime: Date) => `Usted está trabajando como **${JobList[jobId].Description[Language.Spanish]}** y terminará ${showTime(jobTime.getTime(), true)} ${EmoteString.Working}`,
+		userHospital: (timerHospital: Date) => `¡Estás hospitalizado ${EmoteString.Hospital}! Serás atendido ${showTime(timerHospital.getTime(), true)}`,
+		workingOn: (jobId: JobId, jobTime: Date) => `Usted está trabajando como **${JobList[jobId].Description[Language.Spanish]}**.\n-# Terminará ${showTime(jobTime.getTime(), true)} ${EmoteString.Working}`,
 		placeholderSelect: "Seleccione un trabajo",
 		stop: "Detener trabajo",
 		cannotStop: "Usted no puede detener lo que no comenzó.",
@@ -227,6 +230,6 @@ const Strings = {
 		duration: "Duración",
 		necessary: "Necesario",
 		withoutItems: (neededItems: string) => `Usted no tiene los elementos necesarios para comenzar este trabajo.\n-# Usted necesita ${neededItems}.`,
-		jobStarted: (jobDescription: string, jobTime: Date) => `Usted comenzó a trabajar como ${jobDescription} ${EmoteString.Working}\n-# Terminará ${showTime(jobTime.getTime(), true)}.`,
+		jobStarted: (jobDescription: string, jobTime: Date) => `Usted comenzó a trabajar como **${jobDescription}** ${EmoteString.Working}\n-# Terminará ${showTime(jobTime.getTime(), true)}.`,
 	},
 } as const;

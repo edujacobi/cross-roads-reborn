@@ -25,6 +25,7 @@ import { RobHistories } from "../database/RobHistories";
 import { Users } from "../database/Users";
 import { ClassId, ClassList } from "./Class";
 import { CreationOptional } from "sequelize";
+import { JobId, JobList } from "./Job";
 
 export enum RobTypes {
 	User = 1,
@@ -94,6 +95,11 @@ export class Robbery {
 
 		if (this.Defender.Attributes.Attack - this.Attacker.Attributes.Attack > 15) {
 			message = s.lowAtk(this.Defender.Nickname);
+			canRob = false;
+		}
+
+		if (this.Attacker.IsWorking()) {
+			message = s.inJob(this.Attacker.Job.EndsIn, this.Attacker.Job.Id!);
 			canRob = false;
 		}
 
@@ -376,6 +382,7 @@ const Strings = {
 		withoutClass: "This user hasn't choose a class yet!",
 		withoutItem: "You can't rob without a weapon!",
 		lowAtk: (nick: string) => `You can't rob ${nick} with your current weapons! ${EmoteString.Robbery}\n-# Get a better weapon`,
+		inJob: (jobTime: Date, jobId: JobId) => `You can't rob while working! ${EmoteString.Jobs}\n-# Will finish your **${JobList[jobId].Description[Language.English]}** job ${showTime(jobTime.getTime(), true)}!`,
 		inPrison: (prisonTime: Date) => `You can't rob while you're in prison! ${EmoteString.Prison}\n-# Will be released ${showTime(prisonTime.getTime(), true)}!`,
 		isWanted: (wantedTime: Date) => `You can't rob while you're wanted by the police! ${EmoteString.Police}\n-# Will be able to rob again ${showTime(wantedTime.getTime(), true)}!`,
 		isInHospital: (hospitalTime: Date) => `You can't rob while you're hospitalized! ${EmoteString.Hospital}\n-# Will be healed ${showTime(hospitalTime.getTime(), true)}!`,
@@ -421,6 +428,7 @@ const Strings = {
 		withoutClass: "Este usuário ainda não escolheu uma classe!",
 		withoutItem: "Você não pode roubar sem uma arma!",
 		lowAtk: (nick: string) => `Você não pode roubar ${nick} usando suas armas atuais! ${EmoteString.Robbery}\n-# Consiga uma arma melhor`,
+		inJob: (jobTime: Date, jobId: JobId) => `Você não pode roubar enquanto está trabalhando! ${EmoteString.Jobs}\n-# Terminará seu trabalho de **${JobList[jobId].Description[Language.Portuguese]}** ${showTime(jobTime.getTime(), true)}!`,
 		inPrison: (prisonTime: Date) => `Você não pode roubar enquanto está preso! ${EmoteString.Prison}\n-# Será solto ${showTime(prisonTime.getTime(), true)}!`,
 		isWanted: (wantedTime: Date) => `Você não pode roubar enquanto está sendo procurado pela polícia! ${EmoteString.Police}\n-# Poderá roubar novamente ${showTime(wantedTime.getTime(), true)}!`,
 		isInHospital: (hospitalTime: Date) => `Você não pode roubar enquanto está hospitalizado! ${EmoteString.Hospital}\n-# Será curado ${showTime(hospitalTime.getTime(), true)}!`,
@@ -466,6 +474,7 @@ const Strings = {
 		withoutClass: "¡Este usuario aún no ha elegido una clase!",
 		withoutItem: "¡No puedes robar sin un arma!",
 		lowAtk: (nick: string) => `¡No puedes robar a ${nick} con tus armas actuales! ${EmoteString.Robbery}\n-# Consigue un arma mejor`,
+		inJob: (jobTime: Date, jobId: JobId) => `¡No puedes robar mientras trabajas! ${EmoteString.Jobs}\n-# ¡Terminará tu trabajo de **${JobList[jobId].Description[Language.Spanish]}** ${showTime(jobTime.getTime(), true)}!`,
 		inPrison: (prisonTime: Date) => `¡No puedes robar mientras estás en prisión! ${EmoteString.Prison}\n-# Será liberado ${showTime(prisonTime.getTime(), true)}!`,
 		isWanted: (wantedTime: Date) => `¡No puedes robar mientras estás siendo buscado por la policía! ${EmoteString.Police}\n-# Podrá robar nuevamente ${showTime(wantedTime.getTime(), true)}!`,
 		isInHospital: (hospitalTime: Date) => `¡No puedes robar mientras estás hospitalizado! ${EmoteString.Hospital}\n-# ¡Será curado ${showTime(hospitalTime.getTime(), true)}!`,
