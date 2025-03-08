@@ -19,6 +19,7 @@ import { EmoteString } from "../utils/emotes";
 import { getItemList, Item, ItemList, ItemType } from "./Item";
 import { Users } from "../database/Users";
 import { LocationList } from "./Locations";
+import { ClassList } from "./Class";
 
 export class Shop {
 	User: User;
@@ -189,13 +190,13 @@ export class Shop {
 
 		if (this.User.Robbery.IsRobbingId) {
 			const user = await Users.findByPk(this.User.Robbery.IsRobbingId);
-			message = `${s.robbing(user?.nickname!)} ${EmoteString.Robbery}`;
+			message = `${s.robbing(`${ClassList[user?.class!].Image.Emote.String} ${user?.nickname!}`)} ${EmoteString.Robbery}`;
 			canBuy = false;
 		}
 
 		if (this.User.Robbery.IsBeingRobbedById) {
 			const user = await Users.findByPk(this.User.Robbery.IsBeingRobbedById);
-			message = `${s.beingRobbed(user?.nickname!)} ${EmoteString.Robbery}`;
+			message = `${s.beingRobbed(`${ClassList[user?.class!].Image.Emote.String} ${user?.nickname!}`)} ${EmoteString.Robbery}`;
 			canBuy = false;
 		}
 

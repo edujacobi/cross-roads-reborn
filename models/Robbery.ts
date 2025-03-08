@@ -117,25 +117,25 @@ export class Robbery {
 
 		if (this.Attacker.Robbery.IsRobbingId) {
 			const user = await Users.findByPk(this.Attacker.Robbery.IsRobbingId);
-			message = `${s.attackerIsRobbingId(user?.nickname)} ${EmoteString.Robbery}`;
+			message = `${s.attackerIsRobbingId(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname!}`)} ${EmoteString.Robbery}`;
 			canRob = false;
 		}
 
 		if (this.Attacker.Robbery.IsBeingRobbedById) {
 			const user = await Users.findByPk(this.Attacker.Robbery.IsBeingRobbedById);
-			message = `${s.attackerIsBeingRobbedById(user?.nickname)} ${EmoteString.Robbery}`;
+			message = `${s.attackerIsBeingRobbedById(`${ClassList[user!.class!].Image.Emote.String} ${user!.nickname!}`)} ${EmoteString.Robbery}`;
 			canRob = false;
 		}
 
 		if (this.Defender.Robbery.IsRobbingId) {
 			const user = await Users.findByPk(this.Defender.Robbery.IsRobbingId);
-			message = `**${this.Defender.Nickname}** ${s.defenderIsRobbingId(user?.nickname)} ${EmoteString.Robbery}`;
+			message = `${ClassList[this.Defender.Class].Image.Emote.String} **${this.Defender.Nickname}** ${s.defenderIsRobbingId(`${ClassList[user!.class!].Image.Emote.String} ${user!.nickname!}`)} ${EmoteString.Robbery}`;
 			canRob = false;
 		}
 
 		if (this.Defender.Robbery.IsBeingRobbedById) {
 			const user = await Users.findByPk(this.Defender.Robbery.IsBeingRobbedById);
-			message = `**${this.Defender.Nickname}** ${s.defenderIsBeingRobbedById(user?.nickname)} ${EmoteString.Robbery}`;
+			message = `${ClassList[this.Defender.Class].Image.Emote.String} **${this.Defender.Nickname}** ${s.defenderIsBeingRobbedById(`${ClassList[user!.class!].Image.Emote.String} ${user!.nickname!}`)} ${EmoteString.Robbery}`;
 			canRob = false;
 		}
 
@@ -147,7 +147,7 @@ export class Robbery {
 
 		if (this.Defender.Robbery.IsRobbingLocationId) {
 			const location = LocationList[this.Defender.Robbery.IsRobbingLocationId];
-			message = `${s.defenderIsRobbingId(location.Description[this.Attacker.Language])} ${EmoteString.Robbery}`;
+			message = `${ClassList[this.Defender.Class].Image.Emote.String} **${this.Defender.Nickname}** ${s.defenderIsRobbingId(location.Description[this.Attacker.Language])} ${EmoteString.Robbery}`;
 			canRob = false;
 		}
 
