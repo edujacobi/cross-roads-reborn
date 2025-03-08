@@ -35,7 +35,7 @@ module.exports = {
 		const buttonInvite = new ButtonBuilder()
 			.setLabel(s.addTo)
 			.setStyle(ButtonStyle.Link)
-			.setURL("https://discord.com/oauth2/authorize?client_id=1089602356271927356&permissions=319488&scope=applications.commands+bot");
+			.setURL("https://discord.com/oauth2/authorize?client_id=1348017930251796510&permissions=319488&scope=applications.commands+bot");
 
 		const buttonServer = new ButtonBuilder()
 			.setLabel(s.join)

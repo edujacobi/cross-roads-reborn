@@ -11,6 +11,7 @@ import { Pagination } from "../../models/Pagination";
 
 module.exports = {
 	cooldown: 10,
+	vip: true,
 	data: new SlashCommandBuilder()
 		.setName("topworkers")
 		.setNameLocalization(Locale.PortugueseBR, "toptrabalhadores")

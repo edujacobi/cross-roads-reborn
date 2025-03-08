@@ -21,6 +21,7 @@ import { CrColors } from "../../utils/colors";
 import { User } from "../../models/User";
 
 module.exports = {
+	vip: true,
 	data: new SlashCommandBuilder()
 		.setName("jobs")
 		.setDescription("Open the job list to work")

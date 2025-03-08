@@ -4,7 +4,7 @@ import { User } from "../../models/User";
 import { Language } from "../../models/Language";
 
 module.exports = {
-	cooldown: 5,
+	vip: true,
 	data: new SlashCommandBuilder()
 		.setName("avatar")
 		.setDescription("Get the avatar URL of the selected user, or your own avatar.")

@@ -22,6 +22,7 @@ const enum CoinSide {
 }
 
 module.exports = {
+	vip: true,
 	data: new SlashCommandBuilder()
 		.setName("bet")
 		.setDescription("Bet on two coin flips. Win 3x your bet if both are the same")

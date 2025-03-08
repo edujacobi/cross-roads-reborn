@@ -3,6 +3,7 @@ import { User } from "../../models/User";
 import { Casino } from "../../models/Casino";
 
 module.exports = {
+	vip: true,
 	data: new SlashCommandBuilder()
 		.setName("casino")
 		.setDescription("Check the casino games")

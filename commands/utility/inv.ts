@@ -22,6 +22,7 @@ import { User } from "../../models/User";
 import { ClassList } from "../../models/Class";
 
 module.exports = {
+	vip: true,
 	data: new SlashCommandBuilder()
 		.setName("inv")
 		.setDescription("See the inventory of a user")

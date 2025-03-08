@@ -21,6 +21,7 @@ import { getLocationList, LocationList } from "../../models/Locations";
 import { RobberyLocation } from "../../models/RobberyLocation";
 
 module.exports = {
+	vip: true,
 	data: new SlashCommandBuilder()
 		.setName("rob")
 		.setDescription("Rob a user")

@@ -7,6 +7,7 @@ import { CrColors } from "../../utils/colors";
 import { User } from "../../models/User";
 
 module.exports = {
+	vip: true,
 	data: new SlashCommandBuilder()
 		.setName("daily")
 		.setDescription("Receives a small ammount of money. Keep a streak and the money grows!")
