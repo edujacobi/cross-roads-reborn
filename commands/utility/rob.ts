@@ -24,9 +24,9 @@ module.exports = {
 	vip: true,
 	data: new SlashCommandBuilder()
 		.setName("rob")
-		.setDescription("Rob a user")
+		.setDescription("Rob a user or a location")
 		.setNameLocalization(Locale.PortugueseBR, "roubar")
-		.setDescriptionLocalization(Locale.PortugueseBR, "Roube um usuário")
+		.setDescriptionLocalization(Locale.PortugueseBR, "Roube um usuário ou um lugar")
 		.addUserOption((option: SlashCommandUserOption) =>
 			option
 				.setName("target")
