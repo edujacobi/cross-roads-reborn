@@ -404,10 +404,6 @@ export class User {
 	}
 
 	async BuyItem(item: Item) {
-		if (this.Money < item.Price) {
-			return false;
-		}
-
 		this.Money -= item.Price;
 
 		const existingItem = await UserItems.findOne({
@@ -428,7 +424,7 @@ export class User {
 				quantity: userItem.Type == ItemType.Consumable ? 1 : undefined,
 			});
 
-			Log.Info(`User ${this.Nickname} (ID: ${this.Id}) bought item ${item.Description[Language.English]} (ID: ${item.Id}) for ${item.Price} [FIRST TIME!].`);
+			Log.Info(`User ${this.Nickname} (ID: ${this.Id}) bought item ${item.Description[Language.English]} (ID: ${item.Id}) for ${formatMoney(item.Price, Language.English)} [FIRST TIME!].`);
 		}
 		else {
 			let remaining = addHours(existingItem.remainingTime, 72);
@@ -446,7 +442,7 @@ export class User {
 				},
 			});
 
-			Log.Info(`User ${this.Nickname} (ID: ${this.Id}) bought item ${item.Description[Language.English]} (ID: ${item.Id}) for ${item.Price}. Total time: ${differenceInHours(existingItem.remainingTime, new Date())}h.`);
+			Log.Info(`User ${this.Nickname} (ID: ${this.Id}) bought item ${item.Description[Language.English]} (ID: ${item.Id}) for ${formatMoney(item.Price, Language.English)}. Total time: ${differenceInHours(remaining, new Date())}h.`);
 		}
 
 		this.Shop.SpentCount += 1;

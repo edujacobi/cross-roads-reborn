@@ -20,6 +20,9 @@ import { getItemList, Item, ItemList, ItemType } from "./Item";
 import { Users } from "../database/Users";
 import { LocationList } from "./Locations";
 import { ClassList } from "./Class";
+import { differenceInHours } from "date-fns";
+import { UserItems } from "../database/UserItems";
+import { addHours } from "date-fns/addHours";
 
 export class Shop {
 	User: User;
@@ -183,6 +186,18 @@ export class Shop {
 			canBuy = false;
 		}
 
+		const existingItem = await UserItems.findOne({
+			where: {
+				userId: this.User.Id,
+				itemId: item.Id,
+			},
+		});
+
+		if (existingItem && differenceInHours(addHours(existingItem.remainingTime, 72), new Date()) > 320) {
+			message = s.itemPassLimit(differenceInHours(existingItem.remainingTime, new Date()), `${item.Skin.Default.Emote.String} ${item.Description[this.User.Language]}`);
+			canBuy = false;
+		}
+
 		if (this.User.IsInPrison()) {
 			message = s.inPrison(this.User.Prison.Time);
 			canBuy = false;
@@ -190,13 +205,13 @@ export class Shop {
 
 		if (this.User.Robbery.IsRobbingId) {
 			const user = await Users.findByPk(this.User.Robbery.IsRobbingId);
-			message = `${s.robbing(`${ClassList[user?.class!].Image.Emote.String} ${user?.nickname!}`)} ${EmoteString.Robbery}`;
+			message = `${s.robbing(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname}`)} ${EmoteString.Robbery}`;
 			canBuy = false;
 		}
 
 		if (this.User.Robbery.IsBeingRobbedById) {
 			const user = await Users.findByPk(this.User.Robbery.IsBeingRobbedById);
-			message = `${s.beingRobbed(`${ClassList[user?.class!].Image.Emote.String} ${user?.nickname!}`)} ${EmoteString.Robbery}`;
+			message = `${s.beingRobbed(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname}`)} ${EmoteString.Robbery}`;
 			canBuy = false;
 		}
 
@@ -249,6 +264,7 @@ export class Shop {
 
 			await this.User.BuyItem(item);
 
+
 			return await replyInteraction(interaction, {
 				embeds: [
 					embedBought
@@ -292,6 +308,7 @@ const Strings = {
 		escape: "escape",
 		consumable: "consumable",
 		itemBought: (itemName: string) => `## You bought ${itemName}!`,
+		itemPassLimit: (hours: number, itemName: string) => `You can't have more than 360 hours of the same item!\n-# Has ${hours} hours of ${itemName}.`,
 		buyMore: "Buy more!",
 	},
 
@@ -308,7 +325,8 @@ const Strings = {
 		night: "noite",
 		escape: "fuga",
 		consumable: "consumível",
-		itemBought: (itemName: string) => `## Você comprou ${itemName}`,
+		itemBought: (itemName: string) => `## Você comprou ${itemName}!`,
+		itemPassLimit: (hours: number, itemName: string) => `Você não pode possuir mais de 360 horas de um mesmo item!\n-# Possui ${hours} horas de ${itemName}.`,
 		buyMore: "Comprar mais!",
 	},
 
@@ -325,7 +343,8 @@ const Strings = {
 		night: "noche",
 		escape: "fuga",
 		consumable: "consumible",
-		itemBought: (itemName: string) => `## Tú compraste ${itemName}`,
+		itemBought: (itemName: string) => `## Tú compraste ${itemName}!`,
+		itemPassLimit: (hours: number, itemName: string) => `¡No puedes tener más de 360 horas del mismo artículo!\n-# Tiene ${hours} horas de ${itemName}.`,
 		buyMore: "¡Comprar más!",
 	},
 } as const;
