@@ -107,6 +107,8 @@ module.exports = {
 		timestamps.set(interaction.user.id, now);
 		setTimeout(() => timestamps.delete(interaction.user.id), cooldownAmount);
 
+		interaction.client.userLastCommand.set(interaction.user.id, now);
+
 		setPlayerRoleInOfficialServer(interaction);
 		await setVIPRoleInOfficialServer(interaction);
 

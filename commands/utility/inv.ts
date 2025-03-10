@@ -119,7 +119,9 @@ ${formatMoney(target.Money, language)}`)
 				isOpen = true;
 				row = createRow();
 
-				const online = target.UpdatedAt > subMinutes(new Date(), 30);
+				const lastCommand = interaction.client.userLastCommand.get(target.Id) || 0;
+
+				const online = new Date(lastCommand) > subMinutes(new Date(), 30);
 				const emoteOnline = online ? `${EmoteString.Online} Online` : `${EmoteString.Offline} Offline`;
 
 				const invOpen = new CustomEmbedBuilder()
