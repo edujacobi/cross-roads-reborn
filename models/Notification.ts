@@ -251,4 +251,4 @@ const Strings = {
 		free: `¡Estás libre! ${EmoteString.Prison}`,
 		hospital: `¡Estás curado! ${EmoteString.Hospital}`,
 	},
-};
+} as const;

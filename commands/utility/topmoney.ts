@@ -94,4 +94,4 @@ const Strings = {
 	[Language.Spanish]: {
 		title: "Dinero",
 	},
-};
+} as const;

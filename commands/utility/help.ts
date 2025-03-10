@@ -82,4 +82,4 @@ Para que todo vaya sobre ruedas, asegúrate de que puedes recibir mensajes priva
 ## Ayuda adicional
 ¿Confundido con algo? ¿Encontraste un error? Contáctanos en el [servidor oficial](https://discord.com/invite/sNf8avn).`,
 	},
-};
+} as const;
