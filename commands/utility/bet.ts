@@ -27,13 +27,12 @@ module.exports = {
 		.setName("bet")
 		.setDescription("Bet on two coin flips. Win 3x your bet if both are the same")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Aposte em duas cara ou coroa. Ganhe 3x sua aposta se ambas forem iguais")
-
 		.addIntegerOption((option: SlashCommandIntegerOption) =>
 			option
-				.setName("side")
-				.setNameLocalization(Locale.PortugueseBR, "lado")
-				.setDescription("The side of the coin")
-				.setDescriptionLocalization(Locale.PortugueseBR, "O lado da moeda")
+				.setName("side1")
+				.setNameLocalization(Locale.PortugueseBR, "lado1")
+				.setDescription("The side of the first coin")
+				.setDescriptionLocalization(Locale.PortugueseBR, "O lado da primeira moeda")
 				.setRequired(true)
 				.addChoices([
 					{
@@ -50,7 +49,32 @@ module.exports = {
 							[Locale.PortugueseBR]: "Coroa",
 						},
 					},
-				]))
+				]),
+		)
+		.addIntegerOption((option: SlashCommandIntegerOption) =>
+			option
+				.setName("side2")
+				.setNameLocalization(Locale.PortugueseBR, "lado2")
+				.setDescription("The side of the second coin")
+				.setDescriptionLocalization(Locale.PortugueseBR, "O lado da segunda moeda")
+				.setRequired(true)
+				.addChoices([
+					{
+						name: "Heads",
+						value: CoinSide.Heads,
+						name_localizations: {
+							[Locale.PortugueseBR]: "Cara",
+						},
+					},
+					{
+						name: "Tails",
+						value: CoinSide.Tails,
+						name_localizations: {
+							[Locale.PortugueseBR]: "Coroa",
+						},
+					},
+				]),
+		)
 		.addNumberOption((option: SlashCommandNumberOption) =>
 			option
 				.setName("value")
@@ -62,7 +86,8 @@ module.exports = {
 		),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
-		const side = interaction.options.getInteger("side", true) as CoinSide;
+		const side1 = interaction.options.getInteger("side1", true) as CoinSide;
+		const side2 = interaction.options.getInteger("side2", true) as CoinSide;
 		const value = interaction.options.getNumber("value", true);
 
 		const s = Strings[language];
@@ -100,7 +125,7 @@ module.exports = {
 		await wait(range());
 		const secondCoinFlip = Math.floor(Math.random() * 2);
 
-		const win = side === firstCoinFlip && side === secondCoinFlip;
+		const win = side1 === firstCoinFlip && side2 === secondCoinFlip;
 
 		const prize = value * 2;
 
@@ -124,13 +149,14 @@ module.exports = {
 		const firstResult = firstCoinFlip === CoinSide.Heads ? heads : tails;
 		const secondResult = secondCoinFlip === CoinSide.Heads ? heads : tails;
 
-		const userBet = side == CoinSide.Heads ? `${heads} ${heads}` : `${tails} ${tails}`;
+		const userBet1 = side1 == CoinSide.Heads ? heads : tails;
+		const userBet2 = side2 == CoinSide.Heads ? heads : tails;
 
 		embed
 			.setColor(win ? Colors.Green : Colors.Red)
 			.setDescription(`### ${s.result(firstResult, secondResult)}
 ${win ? s.won : s.lose} ${formatMoney(win ? prize : value, user.Language)}!
--# ${s.bet} ${formatMoney(value, user.Language)}`)
+-# ${s.bet} ${formatMoney(value, user.Language)} ${s.at} ${userBet1} ${userBet2}`)
 			.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), formatMoney(user.Money, language));
 
 		await replyInteraction(interaction, { embeds: [embed] });
