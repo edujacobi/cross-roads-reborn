@@ -109,8 +109,8 @@ module.exports = {
 
 		interaction.client.userLastCommand.set(interaction.user.id, now);
 
-		setPlayerRoleInOfficialServer(interaction);
-		await setVIPRoleInOfficialServer(interaction);
+		// setPlayerRoleInOfficialServer(interaction);
+		// await setVIPRoleInOfficialServer(interaction);
 
 		try {
 			command.execute(interaction, user, language);
