@@ -12,7 +12,7 @@ export const defaultSkinDescription = {
 	[Language.Spanish]: "Por defecto",
 };
 
-interface IEmote {
+export interface IEmote {
 	Id: string,
 	String: string,
 }

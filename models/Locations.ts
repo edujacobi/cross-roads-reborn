@@ -1,4 +1,4 @@
-import { IDescription } from "./Interfaces";
+import { IDescription, IEmote } from "./Interfaces";
 import { Language } from "./Language";
 
 export enum LocationId {
@@ -15,7 +15,8 @@ export enum LocationId {
 export interface Location {
 	Id: LocationId,
 	Description: IDescription,
-	Emote: string,
+	Emote: IEmote,
+	ImageUrl: string,
 	Reward: {
 		Min: number,
 		Max: number,
@@ -37,7 +38,11 @@ export const LocationList: LocationListType = {
 			[Language.Portuguese]: "Velhinha na esquina",
 			[Language.Spanish]: "Vieja en la esquina",
 		},
-		Emote: "👵",
+		Emote: {
+			Id: "1349193564881555499",
+			String: "<:OldLady:1349193564881555499>",
+		},
+		ImageUrl: "https://media.discordapp.net/attachments/1349187098653233184/1349193675137089576/OldLady.png",
 		Reward: {
 			Min: 100,
 			Max: 350,
@@ -53,7 +58,11 @@ export const LocationList: LocationListType = {
 			[Language.Portuguese]: "Mercearia do Zé",
 			[Language.Spanish]: "Tienda de Pepe",
 		},
-		Emote: "🏪",
+		Emote: {
+			Id: "1349193566517198890",
+			String: "<:GroceryStore:1349193566517198890>",
+		},
+		ImageUrl: "https://media.discordapp.net/attachments/1349187098653233184/1349193675376300072/GroceryStore.png",
 		Reward: {
 			Min: 625,
 			Max: 1_725,
@@ -69,7 +78,11 @@ export const LocationList: LocationListType = {
 			[Language.Portuguese]: "Posto de gasolina",
 			[Language.Spanish]: "Gasolinera",
 		},
-		Emote: "⛽",
+		Emote: {
+			Id: "1349193568149049384",
+			String: "<:GasStation:1349193568149049384>",
+		},
+		ImageUrl: "https://media.discordapp.net/attachments/1349187098653233184/1349193675594531017/GasStation.png",
 		Reward: {
 			Min: 3_125,
 			Max: 8_000,
@@ -85,7 +98,11 @@ export const LocationList: LocationListType = {
 			[Language.Portuguese]: "Joalheria",
 			[Language.Spanish]: "Joyería",
 		},
-		Emote: "💎",
+		Emote: {
+			Id: "1349193569658863666",
+			String: "<:Jewelry:1349193569658863666>",
+		},
+		ImageUrl: "https://media.discordapp.net/attachments/1349187098653233184/1349193675854315641/Jewelry.png",
 		Reward: {
 			Min: 9_700,
 			Max: 16_000,
@@ -101,7 +118,11 @@ export const LocationList: LocationListType = {
 			[Language.Portuguese]: "Banco pequeno",
 			[Language.Spanish]: "Banco pequeño",
 		},
-		Emote: "🏦",
+		Emote: {
+			Id: "1349193571390984202",
+			String: "<:SmallBank:1349193571390984202>",
+		},
+		ImageUrl: "https://media.discordapp.net/attachments/1349187098653233184/1349193676106104862/SmallBank.png",
 		Reward: {
 			Min: 18_750,
 			Max: 38_000,
@@ -117,7 +138,11 @@ export const LocationList: LocationListType = {
 			[Language.Portuguese]: "Máfia Italiana",
 			[Language.Spanish]: "Mafia italiana",
 		},
-		Emote: "🎩",
+		Emote: {
+			Id: "1349193561068929144",
+			String: "<:ItalianMafia:1349193561068929144>",
+		},
+		ImageUrl: "https://media.discordapp.net/attachments/1349187098653233184/1349193674570993775/ItalianMafia.png",
 		Reward: {
 			Min: 50_000,
 			Max: 90_000,
@@ -133,7 +158,11 @@ export const LocationList: LocationListType = {
 			[Language.Portuguese]: "Depósito do Exército",
 			[Language.Spanish]: "Depósito del ejército",
 		},
-		Emote: "🪖",
+		Emote: {
+			Id: "1349193559315845190",
+			String: "<:ArmyDepot:1349193559315845190>",
+		},
+		ImageUrl: "https://media.discordapp.net/attachments/1349187098653233184/1349193674344632400/ArmyDepot.png",
 		Reward: {
 			Min: 250_000,
 			Max: 750_000,
@@ -149,7 +178,11 @@ export const LocationList: LocationListType = {
 			[Language.Portuguese]: "Palácio do Jacobi",
 			[Language.Spanish]: "Palacio de Jacobi",
 		},
-		Emote: "🏰",
+		Emote: {
+			Id: "1349193562738130964",
+			String: "<:JacobiPalace:1349193562738130964>",
+		},
+		ImageUrl: "https://media.discordapp.net/attachments/1349187098653233184/1349193674810195979/JacobiPalace.png",
 		Reward: {
 			Min: 1_000_000,
 			Max: 2_500_000,

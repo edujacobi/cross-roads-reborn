@@ -145,7 +145,7 @@ export class RobberyLocation extends Robbery {
 		this.Embed.Channel
 			.setAuthor({
 				name: s.finishedRobberyAttacker(this.Success),
-				iconURL: this.Location.Emote,
+				iconURL: this.Location.ImageUrl,
 			})
 			.setDefaultFooter(this.Attacker.Nickname, interaction.user.avatarURL(), formatMoney(this.Attacker.Money, this.Attacker.Language));
 

@@ -89,7 +89,7 @@ module.exports = {
 					new StringSelectMenuOptionBuilder()
 						.setLabel(location.Description[language])
 						.setValue(String(location.Id))
-						.setEmoji(location.Emote)
+						.setEmoji(location.Emote.Id)
 						.setDescription(`${textSuccess} • ${textMinToMax} • ${textNeedAtk}`),
 				);
 			}
