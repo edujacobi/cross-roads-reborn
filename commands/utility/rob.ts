@@ -168,10 +168,10 @@ module.exports = {
 const Strings = {
 	[Language.English]: {
 		userFree: "You can rob!",
-		userWorking: "You can't rob while working!",
-		userEscaping: (timerEscape: Date) => `You can't rob while being wanted by the police! You can rob again ${showTime(timerEscape.getTime(), true)}!`,
-		userPrison: (timerPrison: Date) => `You can't rob while in prison! You will be released ${showTime(timerPrison.getTime(), true)}!`,
-		userHospital: (timerHospital: Date) => `You can't rob while in hospital! You will be healed ${showTime(timerHospital.getTime(), true)}!`,
+		userWorking: `You can't rob while working! ${EmoteString.Working}`,
+		userEscaping: (timerEscape: Date) => `You can't rob while being wanted by the police! You can rob again ${showTime(timerEscape.getTime(), true)} ${EmoteString.Police}`,
+		userPrison: (timerPrison: Date) => `You can't rob while in prison! You will be released ${showTime(timerPrison.getTime(), true)} ${EmoteString.Prison}`,
+		userHospital: (timerHospital: Date) => `You can't rob while in hospital! You will be healed ${showTime(timerHospital.getTime(), true)} ${EmoteString.Hospital}`,
 		description: `# Rob
 ### Find a target and steal everything!
 The higher your ${EmoteString.Attack}ATK, the higher your chances of stealing from other players and the more locations become available. The higher your ${EmoteString.Defense}DEF, the more protected you will be.
@@ -184,10 +184,10 @@ There is a small chance the target will also be beaten up!`,
 	},
 	[Language.Portuguese]: {
 		userFree: "Você pode roubar!",
-		userWorking: "Você não pode roubar enquanto trabalha!",
-		userEscaping: (timerEscape: Date) => `Você não pode roubar enquanto estiver sendo procurado pela polícia! Poderá roubar novamente ${showTime(timerEscape.getTime(), true)}!`,
-		userPrison: (timerPrison: Date) => `Você não pode roubar enquanto está preso! Será solto ${showTime(timerPrison.getTime(), true)}!`,
-		userHospital: (timerHospital: Date) => `Você não pode roubar enquanto está hospitalizado! Será curado ${showTime(timerHospital.getTime(), true)}!`,
+		userWorking: `Você não pode roubar enquanto trabalha! ${EmoteString.Working}`,
+		userEscaping: (timerEscape: Date) => `Você não pode roubar enquanto estiver sendo procurado pela polícia! Poderá roubar novamente ${showTime(timerEscape.getTime(), true)} ${EmoteString.Police}`,
+		userPrison: (timerPrison: Date) => `Você não pode roubar enquanto está preso! Será solto ${showTime(timerPrison.getTime(), true)} ${EmoteString.Prison}`,
+		userHospital: (timerHospital: Date) => `Você não pode roubar enquanto está hospitalizado! Será curado ${showTime(timerHospital.getTime(), true)} ${EmoteString.Hospital}`,
 		description: `# Roubar
 ### Encontre um alvo e roube tudo!
 Quanto maior seu ${EmoteString.Attack}ATK, maiores suas chances de roubo à outros jogadores e mais locais ficam disponíveis. Quanto maior sua ${EmoteString.Defense}DEF, mais protegido você estará.
@@ -200,10 +200,10 @@ Há uma pequena chance do alvo ser também espancado!`,
 	},
 	[Language.Spanish]: {
 		userFree: "¡Puedes robar!",
-		userWorking: "¡No puedes robar mientras trabajas!",
-		userEscaping: (timerEscape: Date) => `¡No puedes robar mientras eres perseguido por la policía! ¡Puedes robar de nuevo ${showTime(timerEscape.getTime(), true)}!`,
-		userPrison: (timerPrison: Date) => `¡No puedes robar mientras estás en prisión! ¡Serás liberado ${showTime(timerPrison.getTime(), true)}!`,
-		userHospital: (timerHospital: Date) => `¡No puedes robar mientras estás en el hospital! ¡Serás curado ${showTime(timerHospital.getTime(), true)}!`,
+		userWorking: `¡No puedes robar mientras trabajas! ${EmoteString.Working}`,
+		userEscaping: (timerEscape: Date) => `¡No puedes robar mientras eres perseguido por la policía! ¡Puedes robar de nuevo ${showTime(timerEscape.getTime(), true)} ${EmoteString.Police}`,
+		userPrison: (timerPrison: Date) => `¡No puedes robar mientras estás en prisión! ¡Serás liberado ${showTime(timerPrison.getTime(), true)} ${EmoteString.Prison}`,
+		userHospital: (timerHospital: Date) => `¡No puedes robar mientras estás en el hospital! ¡Serás curado ${showTime(timerHospital.getTime(), true)} ${EmoteString.Hospital}`,
 		description: `# Robar
 ### ¡Encuentra un objetivo y roba todo!
 Cuanto mayor sea tu ${EmoteString.Attack}ATK, mayores serán tus posibilidades de robar a otros jugadores y más lugares estarán disponibles. Cuanto mayor sea tu ${EmoteString.Defense}DEF, más protegido estarás.

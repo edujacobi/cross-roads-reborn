@@ -28,7 +28,7 @@ module.exports = {
 				embeds: [defaultEmbed({
 					nickname: user.Nickname,
 					interaction,
-					description: `${EmoteString.BlackMarket} ${s.hey}`,
+					description: `${EmoteString.BlackMarket} _"${s.hey}"_`,
 					color: CrColors.BlackMarket,
 				})],
 			});
@@ -40,12 +40,12 @@ module.exports = {
 
 const Strings = {
 	[Language.English]: {
-		hey: "\"Hey, psst... Come back here at 8 PM on Friday and I will have some cool stuff to show you...\"",
+		hey: "Hey, psst... Come back here at 8 PM on Friday and I will have some cool stuff to show you...",
 	},
 	[Language.Portuguese]: {
-		hey: "\"Hey, psst... Volte aqui às 20h de sexta-feira que eu terei umas coisinhas bem legais pra te mostrar...\"",
+		hey: "Hey, psst... Volte aqui às 20h de sexta-feira que eu terei umas coisinhas bem legais pra te mostrar...",
 	},
 	[Language.Spanish]: {
-		hey: "\"Oye, psst... Vuelve aquí a las 8 PM del viernes y tendré algunas cosas geniales para mostrarte...\"",
+		hey: "Oye, psst... Vuelve aquí a las 8 PM del viernes y tendré algunas cosas geniales para mostrarte...",
 	},
 } as const;

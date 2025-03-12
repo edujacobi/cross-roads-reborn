@@ -526,8 +526,8 @@ export class Prison {
 const Strings = {
 	[Language.English]: {
 		userFree: "You are free!",
-		userWanted: (timerEscape: Date) => `You are being wanted by the police! You can steal again ${showTime(timerEscape.getTime(), true)}!`,
-		userPrison: (timerPrison: Date) => `You are in prison! You will be released ${showTime(timerPrison.getTime(), true)}!`,
+		userWanted: (timerEscape: Date) => `You are being wanted by the police! You can rob again ${showTime(timerEscape.getTime(), true)} ${EmoteString.Police}`,
+		userPrison: (timerPrison: Date) => `You are in prison! You will be released ${showTime(timerPrison.getTime(), true)} ${EmoteString.Prison}`,
 		description: (chance: number, jetpackChance: number, text: string) => `# Prison
 When trying to rob someone and failing, you will be imprisoned for a time determined by your ${EmoteString.Attack}ATK.
 
@@ -568,8 +568,8 @@ The guards are greedy, and the higher your ${EmoteString.Attack}ATK, the more th
 	},
 	[Language.Portuguese]: {
 		userFree: "Você está livre!",
-		userWanted: (timerEscape: Date) => `Você está sendo procurado pela polícia! Poderá roubar novamente ${showTime(timerEscape.getTime(), true)}!`,
-		userPrison: (timerPrison: Date) => `Você está preso! Será solto ${showTime(timerPrison.getTime(), true)}!`,
+		userWanted: (timerEscape: Date) => `Você está sendo procurado pela polícia! Poderá roubar novamente ${showTime(timerEscape.getTime(), true)} ${EmoteString.Police}`,
+		userPrison: (timerPrison: Date) => `Você está preso! Será solto ${showTime(timerPrison.getTime(), true)} ${EmoteString.Prison}`,
 		description: (chance: number, jetpackChance: number, text: string) => `# Prisão
 Ao tentar roubar alguém e falhar, você será preso por um tempo determinado pelo seu ${EmoteString.Attack}ATK.
 
@@ -610,8 +610,8 @@ Os guardas são gananciosos, e quanto maior o seu ${EmoteString.Attack}ATK, mais
 	},
 	[Language.Spanish]: {
 		userFree: "¡Estás libre!",
-		userWanted: (timerEscape: Date) => `¡Estás siendo buscado por la policía! ¡Puedes robar de nuevo ${showTime(timerEscape.getTime(), true)}!`,
-		userPrison: (timerPrison: Date) => `¡Estás preso! ¡Serás liberado ${showTime(timerPrison.getTime(), true)}!`,
+		userWanted: (timerEscape: Date) => `¡Estás siendo buscado por la policía! ¡Puedes robar de nuevo ${showTime(timerEscape.getTime(), true)} ${EmoteString.Police}`,
+		userPrison: (timerPrison: Date) => `¡Estás preso! ¡Serás liberado ${showTime(timerPrison.getTime(), true)} ${EmoteString.Prison}`,
 		description: (chance: number, jetpackChance: number, text: string) => `# Prisión
 Al intentar robar a alguien y fallar, serás encarcelado por un tiempo determinado por tu ${EmoteString.Attack}ATK.
 
