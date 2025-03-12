@@ -81,7 +81,7 @@ module.exports = {
 					opponentName = `${ClassList[defender.class].Image.Emote.String} ${boldOs}${defender.nickname}${boldOe}`;
 				}
 				if (rob.type == RobTypes.Location && location) {
-					opponentName = `${location.Emote} ${location.Description[user.Language]}`;
+					opponentName = `${location.Emote.String} ${location.Description[user.Language]}`;
 				}
 
 				historyList += `${challengerName} ${EmoteString.React} ${opponentName}\n${rob.success ? `\`${formatMoney(rob.money, user.Language)}\`\n` : ""}-# ${emoji} ${text} • ${showTime(new Date(rob.createdAt).getTime())}\n\n`;

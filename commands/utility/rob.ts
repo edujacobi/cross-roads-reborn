@@ -82,7 +82,7 @@ module.exports = {
 				}
 
 				const textMinToMax = `${formatMoney(location.Reward.Min, language)} - ${formatMoney(location.Reward.Max, language)}`;
-				const textSuccess = `${s.success}: ${location.SuccessChance * 100}%`;
+				const textSuccess = `${s.success}: ${location.SuccessChance}%`;
 				const textNeedAtk = `${location.NeedAttack} ATK`;
 
 				select.addOptions(

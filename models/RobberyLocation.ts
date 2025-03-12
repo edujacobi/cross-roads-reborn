@@ -101,7 +101,7 @@ export class RobberyLocation extends Robbery {
 
 		await wait(10_000 + (5_000 * this.Location.Id));
 
-		this.Chance = Math.random();
+		this.Chance = Math.random() * 100;
 		this.Success = this.Chance < this.Location.SuccessChance;
 
 		await this.EndRobbery(interaction);
