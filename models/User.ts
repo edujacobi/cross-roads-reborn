@@ -580,7 +580,7 @@ export class User {
 	}
 
 	IsWorking() {
-		return this.Job.Id != null && this.Job.EndsIn > new Date();
+		return this.Job.Id != null;
 	}
 
 	IsInPrison() {
