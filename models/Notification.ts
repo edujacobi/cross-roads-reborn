@@ -181,7 +181,7 @@ export class Notification {
 			return;
 		}
 
-		Log.Info(`Starting notification procedure ↓`);
+		// Log.Info(`Starting notification procedure ↓`);
 		const list = await Notification.GetNextNotifications(now);
 
 		for (const notification of list) {
@@ -221,11 +221,11 @@ export class Notification {
 
 			await notification.SetAsNotified();
 		}
-		Log.Info(`Notification procedure complete ↑`);
+		// Log.Info(`Notification procedure complete ↑`);
 	}
 
 	static StartProcedure() {
-		setInterval(this.SendTimedNotification, 40_000);
+		setInterval(this.SendTimedNotification, 20_000);
 	}
 }
 
