@@ -107,7 +107,7 @@ module.exports = {
 				value: `-# \`${target.Casino.WinCount + target.Casino.LoseCount}\` ${s.games}
 -# \`${formatMoney(target.Casino.WinSum, user.Language)}\` (\`${target.Casino.WinCount}\`) ${s.won}
 -# \`${formatMoney(target.Casino.LoseSum, user.Language)}\` (\`${target.Casino.LoseCount}\`) ${s.lost}
--# \`${(target.Casino.WinCount / (target.Casino.LoseCount) * 100).toFixed(2)}%\` win rate`,
+-# \`${(target.Casino.WinCount / (target.Casino.LoseCount + target.Casino.WinCount) * 100).toFixed(2)}%\` win rate`,
 				inline: true,
 			},
 				// {
