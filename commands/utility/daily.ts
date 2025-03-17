@@ -1,10 +1,11 @@
 ﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
 import { replyInteraction } from "../../utils/logic";
-import { defaultEmbed, formatMoney, showTime } from "../../utils/ui";
+import { formatMoney, showTime } from "../../utils/ui";
 import { addDays } from "date-fns";
 import { Language } from "../../models/Language";
 import { CrColors } from "../../utils/colors";
 import { User } from "../../models/User";
+import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
 
 module.exports = {
 	vip: true,
@@ -16,33 +17,33 @@ module.exports = {
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 		const s = Strings[language];
 
+		const embed = new CustomEmbedBuilder()
+			.setColor(CrColors.Default)
+			.setUserFooter({
+				nickname: user.Nickname,
+				image: interaction.user.avatarURL()
+			});
+
 		if (!user.CanReceiveDaily()) {
 
 			if (!user.Daily.LastReceived) {
 				return;
 			}
 
-			const embed = defaultEmbed({
-				nickname: user.Nickname,
-				interaction,
-				description: s.descriptionReceived(showTime(addDays(user.Daily.LastReceived, 1).getTime(), true)),
-				thumbnail: interaction.user.avatarURL() ?? "",
-				color: CrColors.Default,
-			});
+			embed.setDescription(s.descriptionReceived(showTime(addDays(user.Daily.LastReceived, 1).getTime(), true)));
 
 			return await replyInteraction(interaction, { embeds: [embed] });
 		}
 
 		const money = await user.ReceiveDaily();
 
-		const embed = defaultEmbed({
-			nickname: user.Nickname,
-			interaction,
-			description: s.description(money, user.Daily.CurrentStreak),
-			footer: s.footer(user.Daily.MaxStreak),
-			thumbnail: interaction.user.avatarURL() ?? "",
-			color: CrColors.Default,
-		});
+		embed
+			.setDescription(s.description(money, user.Daily.CurrentStreak))
+			.setUserFooter({
+				nickname: user.Nickname,
+				image: interaction.user.avatarURL(),
+				text: s.footer(user.Daily.MaxStreak)
+			});
 
 		await replyInteraction(interaction, { embeds: [embed] });
 	},

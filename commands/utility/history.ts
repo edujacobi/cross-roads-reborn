@@ -41,7 +41,6 @@ module.exports = {
 		await interaction.deferReply();
 
 		const pagination = new Pagination(interaction, language);
-		pagination.Limit = 8;
 
 		let robHistories: RobHistories[] = [];
 
@@ -88,8 +87,10 @@ module.exports = {
 			}
 
 			return new CustomEmbedBuilder()
-				.setTitle(`${s.title} ${target.Nickname}`)
-				.setThumbnail(_user.avatarURL() ?? null)
+				.setAuthor({
+					name: `${s.title} ${target.Nickname}`,
+					iconURL: _user.avatarURL() ?? undefined
+				})
 				.setColor(Colors.DarkButNotBlack)
 				.setDescription(historyList)
 				.setUserFooter({

@@ -129,13 +129,13 @@ export class Robbery {
 
 		if (this.Defender.Robbery.IsRobbingId) {
 			const user = await Users.findByPk(this.Defender.Robbery.IsRobbingId);
-			message = `${ClassList[this.Defender.Class].Image.Emote.String} **${this.Defender.Nickname}** ${s.defenderIsRobbingId(`${ClassList[user!.class!].Image.Emote.String} ${user!.nickname!}`)} ${EmoteString.Robbery}`;
+			message = `**${this.Defender.GetNameWithImage()}** ${s.defenderIsRobbingId(`${ClassList[user!.class!].Image.Emote.String} ${user!.nickname!}`)} ${EmoteString.Robbery}`;
 			canRob = false;
 		}
 
 		if (this.Defender.Robbery.IsBeingRobbedById) {
 			const user = await Users.findByPk(this.Defender.Robbery.IsBeingRobbedById);
-			message = `${ClassList[this.Defender.Class].Image.Emote.String} **${this.Defender.Nickname}** ${s.defenderIsBeingRobbedById(`${ClassList[user!.class!].Image.Emote.String} ${user!.nickname!}`)} ${EmoteString.Robbery}`;
+			message = `**${this.Defender.GetNameWithImage()}** ${s.defenderIsBeingRobbedById(`${ClassList[user!.class!].Image.Emote.String} ${user!.nickname!}`)} ${EmoteString.Robbery}`;
 			canRob = false;
 		}
 
@@ -147,7 +147,7 @@ export class Robbery {
 
 		if (this.Defender.Robbery.IsRobbingLocationId) {
 			const location = LocationList[this.Defender.Robbery.IsRobbingLocationId];
-			message = `${ClassList[this.Defender.Class].Image.Emote.String} **${this.Defender.Nickname}** ${s.defenderIsRobbingId(location.Description[this.Attacker.Language])} ${EmoteString.Robbery}`;
+			message = `**${this.Defender.GetNameWithImage()}** ${s.defenderIsRobbingId(location.Description[this.Attacker.Language])} ${EmoteString.Robbery}`;
 			canRob = false;
 		}
 
@@ -179,7 +179,7 @@ export class Robbery {
 				name: sD.hands,
 				iconURL: interaction.user.avatarURL() ?? undefined,
 			})
-			.setDescription(`${ClassList[this.Attacker.Class].Image.Emote.String} **${this.Attacker.Nickname}** ${sD.tryingToRobYou} **${usedGun}** ${EmoteString.Robbery}
+			.setDescription(`**${this.Attacker.GetNameWithImage()}** ${sD.tryingToRobYou} **${usedGun}** ${EmoteString.Robbery}
 
 -# ${sD.decide}:
 ### ${EmoteString.React} **${sD.react}**
@@ -255,7 +255,7 @@ ${sD.doNothingDescription}`)
 				this.BeatUpChance = 1;
 
 				descriptionPrivate = `### ${EmoteString.React} ${sD.reacting}...`;
-				descriptionChannel = `### ${EmoteString.React} ${this.Defender.Nickname} ${sA.isReacting}!`;
+				descriptionChannel = `### ${EmoteString.React} ${this.Defender.GetNameWithImage()} ${sA.isReacting}!`;
 				// this.Defender.Robbery.ReactedCount += 1;
 			}
 			else if (btn.customId === "police") {
@@ -264,12 +264,12 @@ ${sD.doNothingDescription}`)
 				this.AttackerTimeInPrison += this.AttackerAditionalTimeCallPolice;
 
 				descriptionPrivate = `### ${EmoteString.Police} ${sD.callingPolice}...`;
-				descriptionChannel = `### ${EmoteString.Police} ${this.Defender.Nickname} ${sA.isCallingPolice}!`;
+				descriptionChannel = `### ${EmoteString.Police} ${this.Defender.GetNameWithImage()} ${sA.isCallingPolice}!`;
 				// this.Defender.Robbery.CallPoliceCount += 1;
 			}
 			else if (btn.customId === "nothing") {
 				descriptionPrivate = `### 🏳️ ${sD.doingNothing}...`;
-				descriptionChannel = `### 🏳️ ${this.Defender.Nickname} ${sA.isDoingNothing}!`;
+				descriptionChannel = `### 🏳️ ${this.Defender.GetNameWithImage()} ${sA.isDoingNothing}!`;
 			}
 
 			defenderMessage?.edit({
@@ -353,7 +353,7 @@ ${sD.beatedUp(this.Defender.Hospital.Time)} ${EmoteString.Hospital}` : ""}`);
 
 			this.Embed.Private
 				.setColor(CrColors.Police)
-				.setDescription(`**${this.Attacker.Nickname}** ${sD.robFailed} ${EmoteString.Police}
+				.setDescription(`**${this.Attacker.GetNameWithImage()}** ${sD.robFailed} ${EmoteString.Police}
 -# ${sD.prisonUntil(this.Attacker.Prison.Time)}!`);
 
 			Log.Success(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) failed to rob user ${this.Defender.Nickname} (ID: ${this.Defender.Id}).`);

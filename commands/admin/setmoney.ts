@@ -75,7 +75,7 @@ module.exports = {
 					nickname: user.Nickname,
 					color: CrColors.Admin,
 					interaction: interaction,
-					description: `${formatMoney(money, user.Language)} added to user ${target.Nickname}`,
+					description: `${formatMoney(money, user.Language)} added to user **${target.GetNameWithImage()}** `,
 				})],
 			});
 		}
@@ -88,7 +88,7 @@ module.exports = {
 					nickname: user.Nickname,
 					color: CrColors.Admin,
 					interaction: interaction,
-					description: `User ${target.Nickname} now has ${formatMoney(money, user.Language)}`,
+					description: `User **${target.GetNameWithImage()}** now has ${formatMoney(money, user.Language)}`,
 				})],
 			});
 		}

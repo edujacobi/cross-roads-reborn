@@ -56,7 +56,7 @@ module.exports = {
 					nickname: user.Nickname,
 					interaction: interaction,
 					color: Colors.Gold,
-					description: `${EmoteString.VIP} user <@${userId}> is no longer a Eternal VIP`,
+					description: `${EmoteString.VIP} user **${target.GetNameWithImage()}** is no longer a Eternal VIP`,
 				})],
 			});
 		}

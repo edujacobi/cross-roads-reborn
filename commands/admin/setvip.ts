@@ -52,7 +52,7 @@ module.exports = {
 				nickname: user.Nickname,
 				color: Colors.Gold,
 				interaction: interaction,
-				description: `${EmoteString.VIP} ${days} days of VIP added to user <@${userId}>`,
+				description: `${EmoteString.VIP} ${days} days of VIP added to user **${target.GetNameWithImage()}** `,
 			})],
 		});
 	},
