@@ -333,6 +333,10 @@ export class User {
 		return ClassList[this.Class].Description[this.Language];
 	}
 
+	GetNameWithImage() {
+		return `${ClassList[this.Class].Image.Emote.String} ${this.Nickname}`;
+	}
+
 	IsVip() {
 		if (this.VipEternal) {
 			return true;

@@ -92,7 +92,11 @@ module.exports = {
 				.setThumbnail(_user.avatarURL() ?? null)
 				.setColor(Colors.DarkButNotBlack)
 				.setDescription(historyList)
-				.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), pagination.Showing());
+				.setUserFooter({
+					nickname: user.Nickname,
+					image: interaction.user.avatarURL(),
+					text: pagination.Showing()
+				});
 		};
 
 		await pagination.GenerateEmbed();

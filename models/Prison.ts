@@ -67,7 +67,11 @@ export class Prison {
 			.setThumbnail("https://media.discordapp.net/attachments/1233604589064818808/1339946455913205871/Prison.png")
 			.setDescription(s.description(this.Escape.BaseChance, this.Escape.BaseJetpackChance + this.Escape.BaseChance, text))
 			.setColor(CrColors.Police)
-			.setDefaultFooter(this.User.Nickname, this.Interaction.user.avatarURL(), `${s.currentChance}: ${this.Escape.TotalChance}%`);
+			.setUserFooter({
+				nickname: this.User.Nickname,
+				image: this.Interaction.user.avatarURL(),
+				text: `${s.currentChance}: ${this.Escape.TotalChance}%`
+			});
 
 		const prisoners = await this.GetPrisoners();
 
@@ -189,7 +193,11 @@ export class Prison {
 					.setTitle(`${EmoteString.Police} ${s.bribe}`)
 					.setColor(CrColors.Police)
 					.setDescription(s.briberyStart(this.Bribe.Value))
-					.setDefaultFooter(this.User.Nickname, this.Interaction.user.avatarURL(), formatMoney(this.User.Money, this.User.Language));
+					.setUserFooter({
+						nickname: this.User.Nickname,
+						image: this.Interaction.user.avatarURL(),
+						text: formatMoney(this.User.Money, this.User.Language)
+					});
 
 				const buttonConfirm = new ButtonBuilder()
 					.setStyle(ButtonStyle.Success)
@@ -227,13 +235,21 @@ export class Prison {
 					responseEmbed
 						.setTitle(`${EmoteString.Police} ${s.briberyAccepted}`)
 						.setDescription(s.briberyAcceptedDescription)
-						.setDefaultFooter(this.User.Nickname, this.Interaction.user.avatarURL(), s.briberyAcceptedFooter);
+						.setUserFooter({
+							nickname: this.User.Nickname,
+							image: this.Interaction.user.avatarURL(),
+							text: s.briberyAcceptedFooter
+						});
 				}
 				else {
 					responseEmbed
 						.setTitle(`${EmoteString.Police} ${s.briberyRejected}`)
 						.setDescription(s.briberyRejectedDescription)
-						.setDefaultFooter(this.User.Nickname, this.Interaction.user.avatarURL(), s.briberyRejectedFooter);
+						.setUserFooter({
+							nickname: this.User.Nickname,
+							image: this.Interaction.user.avatarURL(),
+							text: s.briberyRejectedFooter
+						});
 				}
 
 				return await replyInteraction(this.Interaction, { embeds: [responseEmbed], components: [] });
@@ -291,7 +307,10 @@ export class Prison {
 			.setDescription(`## ${emote} ${s.escapeInProgress}`)
 			.setThumbnail("https://media.discordapp.net/attachments/1233604589064818808/1339946455913205871/Prison.png")
 			.setColor(CrColors.Police)
-			.setDefaultFooter(this.User.Nickname, this.Interaction.user.avatarURL());
+			.setUserFooter({
+				nickname: this.User.Nickname,
+				image: this.Interaction.user.avatarURL(),
+			});
 
 		await replyInteraction(this.Interaction, { embeds: [escapeEmbed], components: [] });
 
@@ -453,7 +472,11 @@ export class Prison {
 
 			embed
 				.setDescription(`## ${emote} ${s.escapeSuccess}\n${textSuccess}\n-# ${textWanted}`)
-				.setDefaultFooter(this.User.Nickname, this.Interaction.user.avatarURL(), s.escapeWaitMinutes(this.Escape.TimeInMinutesWanted));
+				.setUserFooter({
+					nickname: this.User.Nickname,
+					image: this.Interaction.user.avatarURL(),
+					text: s.escapeWaitMinutes(this.Escape.TimeInMinutesWanted)
+				});
 		}
 		else {
 			this.User.Prison.Time = addMinutes(this.User.Prison.Time, totalTime);

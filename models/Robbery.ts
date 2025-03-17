@@ -227,7 +227,11 @@ ${sD.doNothingDescription}`)
 				name: sA.robberyInProgress,
 				iconURL: "https://media.discordapp.net/attachments/691019843159326757/791444366727708672/roubar_20201223201323.png",
 			})
-			.setDefaultFooter(this.Attacker.Nickname, interaction.user.avatarURL(), `${sA.tryingToRob} ${this.Defender.Nickname}`);
+			.setUserFooter({
+				nickname: this.Attacker.Nickname,
+				image: interaction.user.avatarURL(),
+				text: `${sA.tryingToRob} ${this.Defender.Nickname}`,
+			});
 
 		await replyInteraction(interaction, {
 			embeds: [this.Embed.Channel],
@@ -360,7 +364,11 @@ ${sD.beatedUp(this.Defender.Hospital.Time)} ${EmoteString.Hospital}` : ""}`);
 				name: sA.finishedRobberyAttacker(this.Success),
 				iconURL: this.DiscordUser?.avatarURL() ?? undefined,
 			})
-			.setDefaultFooter(this.Attacker.Nickname, interaction.user.avatarURL(), formatMoney(this.Attacker.Money, this.Attacker.Language));
+			.setUserFooter({
+				nickname: this.Attacker.Nickname,
+				image: interaction.user.avatarURL(),
+				text: formatMoney(this.Attacker.Money, this.Attacker.Language),
+			});
 
 		await replyInteraction(interaction, { embeds: [this.Embed.Channel], components: [] });
 

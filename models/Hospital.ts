@@ -53,7 +53,10 @@ ${s.description}
 
 -# ${text}`)
 			.setColor(CrColors.Hospital)
-			.setDefaultFooter(this.User.Nickname, this.Interaction.user.avatarURL());
+			.setUserFooter({
+				nickname: this.User.Nickname,
+				image: this.Interaction.user.avatarURL()
+			});
 
 		const hospitalized = await this.GetHospitalized();
 
@@ -140,7 +143,11 @@ ${s.description}
 					.setDescription(`## ${s.privateCare}
 ${s.treatmentCost(this.PrivatePrice)}
 -# ${s.confirmPayment}`)
-					.setDefaultFooter(this.User.Nickname, this.Interaction.user.avatarURL(), formatMoney(this.User.Money, this.User.Language));
+					.setUserFooter({
+						nickname: this.User.Nickname,
+						image: this.Interaction.user.avatarURL(),
+						text: formatMoney(this.User.Money, this.User.Language)
+					});
 
 				const buttonConfirm = new ButtonBuilder()
 					.setCustomId("confirm")
@@ -172,7 +179,11 @@ ${s.treatmentCost(this.PrivatePrice)}
 
 				embed
 					.setDescription(`## ${s.privateCare}\n### ${s.privateHealed}`)
-					.setDefaultFooter(this.User.Nickname, this.Interaction.user.avatarURL(), formatMoney(this.User.Money, this.User.Language));
+					.setUserFooter({
+						nickname: this.User.Nickname,
+						image: this.Interaction.user.avatarURL(),
+						text: formatMoney(this.User.Money, this.User.Language)
+					});
 
 				await replyInteraction(this.Interaction, {
 					embeds: [embed],

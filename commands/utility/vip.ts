@@ -21,7 +21,10 @@ module.exports = {
 			.setDescription(`# ${EmoteString.VIP} ${s.title}
 ${s.benefits}
 ${s.howToAdquire}`)
-			.setDefaultFooter(user.Nickname, interaction.user.avatarURL());
+			.setUserFooter({
+				nickname: user.Nickname,
+				image: interaction.user.avatarURL(),
+			});
 
 		await replyInteraction(interaction, { embeds: [embed] });
 	},

@@ -92,7 +92,7 @@ module.exports = {
 				inline: true,
 			}, {
 				name: `${EmoteString.Beat} ${s.beatUps}`,
-				value: `-# ${target.BeatUp.Time > now ? showTime(target.BeatUp.Time.getTime(), true) : s.canBeat }
+				value: `-# ${target.BeatUp.Time > now ? showTime(target.BeatUp.Time.getTime(), true) : s.canBeat}
 -# \`${target.BeatUp.SuccessCount}\` ${s.beatSuccess}
 -# \`${target.BeatUp.FailureCount}\` ${s.beatFailure}
 -# \`${target.BeatUp.BeatedUpCount}\` ${s.beatedUp}`,
@@ -121,7 +121,11 @@ module.exports = {
 				// 	inline: true,
 				// },
 			])
-			.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), `ID: ${target.Id} • ${s.playingSince}: ${target.CreatedAt.toLocaleDateString(interaction.locale)}`);
+			.setUserFooter({
+				nickname: user.Nickname,
+				image: interaction.user.avatarURL(),
+				text: `ID: ${target.Id} • ${s.playingSince}: ${target.CreatedAt.toLocaleDateString(interaction.locale)}`,
+			});
 
 		await replyInteraction(interaction, { embeds: [embed] });
 	},

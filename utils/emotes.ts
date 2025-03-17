@@ -83,6 +83,7 @@ export enum EmoteId {
 	Shop = "853054490915635221",
 	BlackMarket = "853054490441416724",
 	Jobs = "1337166793013334067",
+	Alms = "1351192278517153826",
 
 	Lazy = "854877539537125377",
 	Robbery = "791447877997297665",
@@ -199,6 +200,7 @@ export const EmoteString = {
 	Shop: `<:Loja:${EmoteId.Shop}>`,
 	BlackMarket: `<:MercadoNegro:${EmoteId.BlackMarket}>`,
 	Jobs: `<:Trabalhos:${EmoteId.Jobs}>`,
+	Alms: `<:Alms:${EmoteId.Alms}>`,
 
 	Idle: `<:Vadiando:${EmoteId.Lazy}>`,
 	Robbery: `<:roubar:${EmoteId.Robbery}>`,

@@ -13,7 +13,11 @@ interface EmbedParams {
 
 export function defaultEmbed(options: EmbedParams): CustomEmbedBuilder {
 	const embed = new CustomEmbedBuilder()
-		.setDefaultFooter(options.nickname, options.interaction.user.avatarURL(), options.footer);
+		.setUserFooter({
+			nickname: options.nickname,
+			image: options.interaction.user.avatarURL(),
+			text: options.footer,
+		});
 
 	if (options.description) {
 		embed.setDescription(options.description);

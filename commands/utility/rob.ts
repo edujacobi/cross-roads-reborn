@@ -67,8 +67,11 @@ module.exports = {
 				.setDescription(`${s.description}
 
 -# ${text}`)
-				.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), `${user.Situation.Simple}`)
-				.setTimestamp();
+				.setUserFooter({
+					nickname: user.Nickname,
+					image: interaction.user.avatarURL(),
+					text: user.Situation.Simple
+				});
 
 			const select = new StringSelectMenuBuilder()
 				.setCustomId("select")

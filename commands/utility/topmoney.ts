@@ -77,7 +77,11 @@ module.exports = {
 			return new CustomEmbedBuilder()
 				.setColor(Colors.Green)
 				.setDescription(`# Ranking ${s.title}\n${moneyText}`)
-				.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), pagination.Showing());
+				.setUserFooter({
+					nickname: user.Nickname,
+					image: interaction.user.avatarURL(),
+					text: pagination.Showing()
+				});
 		};
 
 		await pagination.GenerateEmbed();

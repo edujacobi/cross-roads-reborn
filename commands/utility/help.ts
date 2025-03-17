@@ -21,7 +21,10 @@ module.exports = {
 			.setColor(CrColors.Default)
 			.setThumbnail("https://media.discordapp.net/attachments/531174573463306240/854876909564461066/Interrogacao.png")
 			.setDescription(s.description)
-			.setDefaultFooter(user.Nickname, interaction.user.avatarURL());
+			.setUserFooter({
+				nickname: user.Nickname,
+				image: interaction.user.avatarURL(),
+			});
 
 		await replyInteraction(interaction, { embeds: [embed] });
 	},

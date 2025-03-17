@@ -95,7 +95,11 @@ export class RobberyLocation extends Robbery {
 				name: s.robberyInProgress,
 				iconURL: "https://media.discordapp.net/attachments/691019843159326757/791444366727708672/roubar_20201223201323.png",
 			})
-			.setDefaultFooter(this.Attacker.Nickname, interaction.user.avatarURL(), `${s.tryingToRob} ${this.Location.Description[this.Attacker.Language]}`);
+			.setUserFooter({
+				nickname: this.Attacker.Nickname,
+				image: interaction.user.avatarURL(),
+				text: `${s.tryingToRob} ${this.Location.Description[this.Attacker.Language]}`,
+			});
 
 		await replyInteraction(interaction, { embeds: [this.Embed.Channel], components: [] });
 
@@ -147,7 +151,11 @@ export class RobberyLocation extends Robbery {
 				name: s.finishedRobberyAttacker(this.Success),
 				iconURL: this.Location.ImageUrl,
 			})
-			.setDefaultFooter(this.Attacker.Nickname, interaction.user.avatarURL(), formatMoney(this.Attacker.Money, this.Attacker.Language));
+			.setUserFooter({
+				nickname: this.Attacker.Nickname,
+				image: interaction.user.avatarURL(),
+				text: formatMoney(this.Attacker.Money, this.Attacker.Language),
+			});
 
 		await replyInteraction(interaction, { embeds: [this.Embed.Channel], components: [] });
 

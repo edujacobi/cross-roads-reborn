@@ -40,7 +40,11 @@ module.exports = {
 			.setDescription(description)
 			.setThumbnail("https://media.discordapp.net/attachments/1233604589064818808/1337166947250602047/Trabalhos2.png")
 			.setColor(CrColors.Jobs)
-			.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), formatMoney(user.Money, language));
+			.setUserFooter({
+				nickname: user.Nickname,
+				image: interaction.user.avatarURL(),
+				text: formatMoney(user.Money, language)
+			});
 
 		const select = new StringSelectMenuBuilder()
 			.setCustomId("select")
@@ -137,7 +141,11 @@ module.exports = {
 				embed
 					.setThumbnail(null)
 					.setDescription(s.jobStarted(job.Description[language], user.Job.EndsIn))
-					.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), `${s.salary}: ${formatMoney(job.Salary, language)} • ${s.duration}: ${job.Duration}h`),
+					.setUserFooter({
+						nickname: user.Nickname,
+						image: interaction.user.avatarURL(),
+						text: `${s.salary}: ${formatMoney(job.Salary, language)} • ${s.duration}: ${job.Duration}h`
+					})
 			]);
 		});
 

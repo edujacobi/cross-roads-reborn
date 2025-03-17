@@ -61,26 +61,35 @@ module.exports = {
 
 		const invClosed = new CustomEmbedBuilder()
 			.setColor(embedColor)
+			// .setAuthor({
+			// 	name: `${s.inventoryOf} ${target.Nickname}`,
+			// 	iconURL: "https://cdn.discordapp.com/attachments/531174573463306240/814662917696782376/Inventario.png",
+			// })
 			.setAuthor({
 				name: `${s.inventoryOf} ${target.Nickname}`,
-				iconURL: "https://cdn.discordapp.com/attachments/531174573463306240/814662917696782376/Inventario.png",
+				iconURL: ClassList[target.Class].Image.Url,
 			})
 			// .setTitle(`${s.inventoryOf} ${target.Nickname}`)
 			.setThumbnail(_user.avatarURL() ?? null)
 			.setDescription(`${badgeText}
 ${formatMoney(target.Money, language)}`)
-			.setFooter({
-				iconURL: ClassList[target.Class].Image.Url,
-				text: target.Situation.Simple,
-			})
-			.setTimestamp();
+			.setUserFooter({
+				nickname: user.Nickname,
+				image: interaction.user.avatarURL(),
+			});
+		// .setFooter({
+		// 	iconURL: ClassList[target.Class].Image.Url,
+		// 	text: target.Situation.Simple,
+		// });
 
 		const weaponEmotes = userItems.map(weapon => weapon.Skin.Default.Emote.String);
 		const textWeapons = weaponEmotes.join(" ").match(/.{1,1023}/g) || [];
 
 		textWeapons.forEach(text => {
-			invClosed.addFields({ value: text, name: "\u200b", inline: true });
+			invClosed.addFields({ name: "\u200b", value: text, inline: true });
 		});
+
+		invClosed.addFields({ name: "\u200b", value: `-# ${target.Situation.Simple}` });
 
 		const buttonClose = new ButtonBuilder()
 			.setCustomId("lessInfo")
@@ -126,20 +135,27 @@ ${formatMoney(target.Money, language)}`)
 
 				const invOpen = new CustomEmbedBuilder()
 					.setColor(embedColor)
+					// .setAuthor({
+					// 	name: `${s.inventoryOf} ${target.Nickname}`,
+					// 	iconURL: "https://cdn.discordapp.com/attachments/531174573463306240/814662917696782376/Inventario.png",
+					// })
 					.setAuthor({
-						name: `${s.inventoryOf} ${target.Nickname}`,
-						iconURL: "https://cdn.discordapp.com/attachments/531174573463306240/814662917696782376/Inventario.png",
+						name: `${s.inventoryOf} ${target.Nickname}, ${ClassList[target.Class].Description[language]}`,
+						iconURL: ClassList[target.Class].Image.Url,
 					})
 					// .setTitle(`${s.inventoryOf} ${target.Nickname}, ${ClassList[target.Class].Description[user.Language]}`)
 					.setThumbnail(_user.avatarURL() ?? null)
 					.setDescription(`-# ${emoteOnline}
 ${badges.length > 0 ? `### ${badgeText}\n` : ""}### ${formatMoney(target.Money, language)}
 -# ${s.inventoryItems}`)
-					.setFooter({
-						iconURL: ClassList[target.Class].Image.Url,
-						text: ClassList[target.Class].Description[user.Language],
-					})
-					.setTimestamp();
+					.setUserFooter({
+						nickname: user.Nickname,
+						image: interaction.user.avatarURL(),
+					});
+					// .setFooter({
+					// 	iconURL: ClassList[target.Class].Image.Url,
+					// 	text: ClassList[target.Class].Description[user.Language],
+					// });
 
 				userItems.forEach(item => {
 					invOpen.addFields([{

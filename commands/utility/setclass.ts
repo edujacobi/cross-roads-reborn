@@ -83,7 +83,7 @@ module.exports = {
 
 		const embed = defaultEmbed({
 			nickname: user.Nickname,
-			interaction: interaction,
+			interaction,
 			thumbnail: interaction.user.avatarURL() ?? undefined,
 			color: Colors.Green,
 			description,

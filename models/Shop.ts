@@ -50,7 +50,11 @@ export class Shop {
 			.setDescription(this.Description)
 			.setThumbnail(this.Image)
 			.setColor(this.Color)
-			.setDefaultFooter(this.User.Nickname, interaction.user.avatarURL(), formatMoney(this.User.Money, this.User.Language));
+			.setUserFooter({
+				nickname: this.User.Nickname,
+				image: interaction.user.avatarURL(),
+				text: formatMoney(this.User.Money, this.User.Language),
+			});
 
 		const select = new StringSelectMenuBuilder()
 			.setCustomId("select")
@@ -250,7 +254,11 @@ export class Shop {
 			const embedBought = new CustomEmbedBuilder()
 				.setThumbnail(this.Image)
 				.setColor(this.Color)
-				.setDefaultFooter(this.User.Nickname, interaction.user.avatarURL(), formatMoney(this.User.Money, this.User.Language));
+				.setUserFooter({
+					nickname: this.User.Nickname,
+					image: interaction.user.avatarURL(),
+					text: formatMoney(this.User.Money, this.User.Language),
+				});
 
 			const item = ItemList[Number(select.values[0])];
 
@@ -269,7 +277,11 @@ export class Shop {
 				embeds: [
 					embedBought
 						.setDescription(s.itemBought(`${item.Skin.Default.Emote.String} ${item.Description[this.User.Language]}`))
-						.setDefaultFooter(this.User.Nickname, interaction.user.avatarURL(), formatMoney(this.User.Money, this.User.Language)),
+						.setUserFooter({
+							nickname: this.User.Nickname,
+							image: interaction.user.avatarURL(),
+							text: formatMoney(this.User.Money, this.User.Language),
+						}),
 				],
 				components: [rowButton],
 			});

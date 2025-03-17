@@ -16,7 +16,7 @@ module.exports = {
 
 		const embed = defaultEmbed({
 			nickname: user.Nickname,
-			interaction: interaction,
+			interaction,
 			description: `:satellite_orbital: ${botPing}ms API.`,
 		});
 

@@ -19,8 +19,11 @@ export class Log {
 		this.Date = new Date;
 
 		const embed = new EmbedBuilder()
-			.setDescription(message)
-			.setTimestamp(this.Date);
+			.setFooter({
+				text: "Cross Roads Reborn",
+				iconURL: "https://media.discordapp.net/attachments/1233604589064818808/1339600176289021952/CrossRoadsRebornLogo2.png?ex=67af4f62&is=67adfde2&hm=9c4a43ac870d13978649b724865f60fe10285e285a253fd4ddfdc363b875d37e&=&format=webp&quality=lossless&width=671&height=671",
+			})
+			.setDescription(message);
 
 		switch (this.Type) {
 		case LogType.Info:

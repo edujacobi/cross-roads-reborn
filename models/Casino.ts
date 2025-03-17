@@ -22,7 +22,10 @@ export class Casino {
 			.setThumbnail("https://media.discordapp.net/attachments/1233604589064818808/1337969966821146695/radar_mafiaCasino.png")
 			.setDescription(s.description)
 			.setColor(CrColors.Casino)
-			.setDefaultFooter(this.User.Nickname, interaction.user.avatarURL());
+			.setUserFooter({
+				nickname: this.User.Nickname,
+				image: interaction.user.avatarURL()
+			});
 
 		await replyInteraction(interaction, { embeds: [embed] });
 	}

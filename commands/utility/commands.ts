@@ -6,6 +6,7 @@ import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
 import { Language } from "../../models/Language";
 import { CrColors } from "../../utils/colors";
 import { User } from "../../models/User";
+import { formatMoney } from "../../utils/ui";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -39,7 +40,11 @@ module.exports = {
 			.setTitle(s.title)
 			.setThumbnail(interaction.client.user.avatarURL({ size: 512 }))
 			.setDescription(text)
-			.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), interaction.locale);
+			.setUserFooter({
+				nickname: user.Nickname,
+				image: interaction.user.avatarURL(),
+				text: interaction.locale
+			});
 
 		await replyInteraction(interaction, {
 			embeds: [embed],

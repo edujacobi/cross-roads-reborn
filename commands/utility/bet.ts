@@ -112,7 +112,11 @@ module.exports = {
 			})
 			.setColor(CrColors.Casino)
 			.setDescription(s.flipping)
-			.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), formatMoney(user.Money, language));
+			.setUserFooter({
+				nickname: user.Nickname,
+				image: interaction.user.avatarURL(),
+				text: formatMoney(user.Money, language),
+			});
 
 		await replyInteraction(interaction, { embeds: [embed] });
 
@@ -157,7 +161,11 @@ module.exports = {
 			.setDescription(`### ${s.result(firstResult, secondResult)}
 ${win ? s.won : s.lose} ${formatMoney(win ? prize : value, user.Language)}!
 -# ${s.bet} ${formatMoney(value, user.Language)} ${s.at} ${userBet1} ${userBet2}`)
-			.setDefaultFooter(user.Nickname, interaction.user.avatarURL(), formatMoney(user.Money, language));
+			.setUserFooter({
+				nickname: user.Nickname,
+				image: interaction.user.avatarURL(),
+				text: formatMoney(user.Money, language),
+			});
 
 		await replyInteraction(interaction, { embeds: [embed] });
 	},
