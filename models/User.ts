@@ -713,6 +713,7 @@ export class User {
 			}, {
 				where: { id: this.Id },
 			});
+			this.Language = language;
 		}
 		catch (err) {
 			Log.Warning(`Something went wrong with updating language for user Id: ${this.Id}.`);
