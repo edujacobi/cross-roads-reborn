@@ -74,9 +74,9 @@ const Strings = {
 		description: `# Casino
 Den of iniquity! Bet, win, lose, break the bank!
 -# Here you can bet and lose all your money!
+### ${EmoteString.Heads} Heads or Tails
+Bet an amount on a coin that must fall on the same side that you choose. You have a 50% chance of winning. If you win, you get 1.5x the amount bet!
 
-### ${EmoteString.Heads} Heads or tails
-Bet an amount on two coins that must fall on the same side that you choose. You have a 25% chance of winning. If you win, you get 3x the amount bet!
 -# More games coming soon`,
 		noMoney: "You don't have enough money to bet",
 		working: (job: string, time: Date) => `You are working as **${job}** and can't play on casino ${EmoteString.Working}\n-# Will end ${showTime(time.getTime(), true)}`,
@@ -89,9 +89,9 @@ Bet an amount on two coins that must fall on the same side that you choose. You 
 		description: `# Cassino
 Antro da perdição! Aposte, ganhe, perca, quebre a banca!
 -# Aqui você pode apostar e perder todo seu dinheiro!
+### ${EmoteString.Heads} Cara ou Coroa
+Aposte um valor em uma moeda que deve cair no mesmo lado que você escolheu. Você tem 50% de chance de vencer. Se vencer, ganha 1.5x o valor apostado!
 
-### ${EmoteString.Heads} Cara ou coroa
-Aposte um valor em duas moedas que devem cair no mesmo lado que você escolheu. Você tem 25% de chance de vencer. Se vencer, ganha 3x o valor apostado!
 -# Mais jogos em breve`,
 		noMoney: "Você não possui dinheiro suficiente para apostar",
 		working: (job: string, time: Date) => `Você está trabalhando como **${job}** e não pode apostar no cassino ${EmoteString.Working}\n-# Terminará ${showTime(time.getTime(), true)}`,
@@ -104,9 +104,9 @@ Aposte um valor em duas moedas que devem cair no mesmo lado que você escolheu. 
 		description: `# Casino
 Den de iniquidad! Apuesta, gana, pierde, rompe el banco!
 -# ¡Aquí puedes apostar y perder todo tu dinero!
+### ${EmoteString.Heads} Cara o Cruz
+Apostar una cantidad en una moneda que debe caer del mismo lado que elijas. Tienes un 50% de posibilidades de ganar. ¡Si ganas, obtienes 1.5 veces la cantidad apostada!
 
-### ${EmoteString.Heads} Cara o cruz
-Apostar una cantidad en dos monedas que deben caer del mismo lado que elijas. Tienes un 25% de posibilidades de ganar. ¡Si ganas, obtienes 3 veces la cantidad apostada!
 -# ¡Más juegos próximamente!`,
 		noMoney: "No tienes suficiente dinero para apostar",
 		working: (job: string, time: Date) => `Estás trabajando como **${job}** y no puedes hacer jugar en casino ${EmoteString.Working}\n-# Terminará ${showTime(time.getTime(), true)}`,
