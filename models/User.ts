@@ -555,14 +555,17 @@ export class User {
 	async GetSituation() {
 		const s = Strings[this.Language];
 		this.Situation.Simple = s.idling;
+		this.Situation.SimpleEmote = `${EmoteString.Idle} ${this.Situation.Simple}`;
 		this.Situation.Complex = `${EmoteString.Idle} ${s.idling}`;
 
 		if (this.Job.Id !== null) {
 			this.Situation.Simple = s.workingSimple;
-			this.Situation.Complex = `${EmoteString.Working} ${s.workingComplex(JobList[this.Job.Id].Description[this.Language], this.Job.EndsIn)}`;
+			this.Situation.SimpleEmote = `${EmoteString.Jobs} ${this.Situation.Simple}`;
+			this.Situation.Complex = `${EmoteString.Jobs} ${s.workingComplex(JobList[this.Job.Id].Description[this.Language], this.Job.EndsIn)}`;
 		}
 		if (this.Robbery.IsRobbingId) {
 			this.Situation.Simple = s.robbing;
+			this.Situation.SimpleEmote = `${EmoteString.Robbery} ${this.Situation.Simple}`;
 			const user = await Users.findOne({
 				where: {
 					id: this.Robbery.IsRobbingId,
@@ -575,6 +578,7 @@ export class User {
 		}
 		if (this.Robbery.IsBeingRobbedById) {
 			this.Situation.Simple = s.beingRobbedSimple;
+			this.Situation.SimpleEmote = `${EmoteString.Robbery} ${this.Situation.Simple}`;
 			const user = await Users.findOne({
 				where: {
 					id: this.Robbery.IsBeingRobbedById,
@@ -587,18 +591,22 @@ export class User {
 		}
 		if (this.IsInPrison() && this.IsInHospital()) {
 			this.Situation.Simple = s.imprisonedAndHospitalSimple;
+			this.Situation.SimpleEmote = s.imprisonedAndHospitalSimpleEmote;
 			this.Situation.Complex = s.imprisonedAndHospitalComplex(this.Prison.Time, this.Hospital.Time);
 		}
 		if (this.IsInPrison()) {
 			this.Situation.Simple = s.imprisonedSimple;
+			this.Situation.SimpleEmote = `${EmoteString.Prison} ${s.imprisonedSimple}`;
 			this.Situation.Complex = `${EmoteString.Prison} ${s.imprisonedComplex} ${showTime(this.Prison.Time.getTime())}`;
 		}
 		if (this.IsInHospital()) {
 			this.Situation.Simple = s.hospitalSimple;
+			this.Situation.SimpleEmote = `${EmoteString.Hospital} ${s.imprisonedSimple}`;
 			this.Situation.Complex = `${EmoteString.Hospital} ${s.hospitalComplex} ${showTime(this.Hospital.Time.getTime())}`;
 		}
 		if (this.IsWanted()) {
 			this.Situation.Simple += ` ${s.wantedSimple}`;
+			this.Situation.SimpleEmote += ` ${EmoteString.Police} ${s.wantedSimple}`;
 			this.Situation.Complex += ` ${s.wantedComplex} ${showTime(this.Wanted.Time.getTime())}`;
 		}
 	}
@@ -763,6 +771,7 @@ const Strings = {
 		imprisonedSimple: "Imprisoned",
 		imprisonedComplex: "Imprisoned until",
 		imprisonedAndHospitalSimple: "Imprisoned and Hospitalized",
+		imprisonedAndHospitalSimpleEmote: `${EmoteString.Prison} Imprisoned and ${EmoteString.Hospital} Hospitalized`,
 		imprisonedAndHospitalComplex: (prisonTime: Date, hospitalTime: Date) => `${EmoteString.Prison} Imprisoned until ${showTime(prisonTime.getTime())} and ${EmoteString.Hospital} Hospitalized until ${showTime(hospitalTime.getTime())}`,
 		wantedSimple: "and Wanted",
 		wantedComplex: `and ${EmoteString.Police} Wanted until`,
@@ -779,6 +788,7 @@ const Strings = {
 		imprisonedSimple: "Preso",
 		imprisonedComplex: "Preso até",
 		imprisonedAndHospitalSimple: "Preso e Hospitalizado",
+		imprisonedAndHospitalSimpleEmote: `${EmoteString.Prison} Preso e ${EmoteString.Hospital} Hospitalizado`,
 		imprisonedAndHospitalComplex: (prisonTime: Date, hospitalTime: Date) => `${EmoteString.Prison} Preso até ${showTime(prisonTime.getTime())} e ${EmoteString.Hospital} Hospitalizado até ${showTime(hospitalTime.getTime())}`,
 		wantedSimple: "e Procurado",
 		wantedComplex: `e ${EmoteString.Police} Procurado até`,
@@ -794,6 +804,7 @@ const Strings = {
 		beingRobbedComplex: "Siendo robado por",
 		imprisonedSimple: "Preso",
 		imprisonedAndHospitalSimple: "Preso y Hospitalizado",
+		imprisonedAndHospitalSimpleEmote: `${EmoteString.Prison} Preso y ${EmoteString.Hospital} Hospitalizado`,
 		imprisonedAndHospitalComplex: (prisonTime: Date, hospitalTime: Date) => `${EmoteString.Prison} Preso hasta ${showTime(prisonTime.getTime())} y ${EmoteString.Hospital} Hospitalizado hasta ${showTime(hospitalTime.getTime())}`,
 		imprisonedComplex: "Preso hasta",
 		wantedSimple: "y Buscado",

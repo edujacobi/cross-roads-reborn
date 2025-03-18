@@ -89,7 +89,7 @@ ${formatMoney(target.Money, language)}`)
 			invClosed.addFields({ name: "\u200b", value: text, inline: true });
 		});
 
-		invClosed.addFields({ name: "\u200b", value: `-# ${target.Situation.Simple}` });
+		invClosed.addFields({ name: "\u200b", value: `-# ${target.Situation.SimpleEmote}` });
 
 		const buttonClose = new ButtonBuilder()
 			.setCustomId("lessInfo")

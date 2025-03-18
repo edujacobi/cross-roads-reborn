@@ -56,7 +56,7 @@ module.exports = {
 			.setDescription(`\n${badges.length > 0 ? `### ${badgeText}\n` : ""} ### ${formatMoney(target.Money, language)}`)
 			.setFields([{
 				name: s.situation,
-				value: `-# ${target.Situation.Complex}`,
+				value: `-# ${target.Situation.SimpleEmote}`,
 				inline: true,
 			}, {
 				name: s.className,
@@ -122,11 +122,6 @@ module.exports = {
 -# \`${formatMoney(target.Shop.SpentSum, user.Language)}\` (\`${target.Shop.SpentCount}\`) ${s.spent}`,
 				inline: true,
 			},
-				// {
-				// 	name: `${EmoteString.Philantrope} Esmolas`,
-				// 	value: `-# Não implementado`,
-				// 	inline: true,
-				// },
 				// {
 				// 	name: `${EmoteString.Scavenge} Vasculhar`,
 				// 	value: `-# Não implementado`,
