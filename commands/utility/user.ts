@@ -62,6 +62,11 @@ module.exports = {
 				value: `-# ${ClassList[target.Class].Image.Emote.String} ${ClassList[target.Class].Description[user.Language]}`,
 				inline: true,
 			}, {
+				name: `${EmoteString.Hospital} Hospital`,
+				value: `-# \`${target.Hospital.Count}\` ${s.timesInHospital}
+-# \`${formatMoney(target.Hospital.TreatmentSum, user.Language)}\` (\`${target.Hospital.TreatmentCount}\`) ${s.spentInTreatments}`,
+				inline: true,
+			}, {
 				// {
 				// 	name: `${EmoteString.InvestmentActive} Investimento`,
 				// 	value: `-# Não implementado`,
@@ -85,21 +90,11 @@ module.exports = {
 -# \`${formatMoney(target.Robbery.BeingRobbedSum, user.Language)}\` (\`${target.Robbery.BeingRobbedCount}\`) ${s.robLost}`,
 				inline: true,
 			}, {
-				name: `${EmoteString.Hospital} Hospital`,
-				value: `-# \`${target.Hospital.Count}\` ${s.timesInHospital}
--# \`${formatMoney(target.Hospital.TreatmentSum, user.Language)}\` (\`${target.Hospital.TreatmentCount}\`) ${s.spentInTreatments}`,
-				inline: true,
-			}, {
 				name: `${EmoteString.Beat} ${s.beatUps}`,
 				value: `-# ${target.BeatUp.Time > now ? showTime(target.BeatUp.Time.getTime(), true) : s.canBeat}
 -# \`${target.BeatUp.SuccessCount}\` ${s.beatSuccess}
 -# \`${target.BeatUp.FailureCount}\` ${s.beatFailure}
 -# \`${target.BeatUp.BeatedUpCount}\` ${s.beatedUp}`,
-				inline: true,
-			}, {
-				name: `${EmoteString.Bank} ${s.money}`,
-				value: `-# \`${formatMoney(target.Job.ReceivedSum, user.Language)}\` (\`${target.Job.ReceivedCount}\`) ${s.fromJobs}
--# \`${formatMoney(target.Shop.SpentSum, user.Language)}\` (\`${target.Shop.SpentCount}\`) ${s.spent}`,
 				inline: true,
 			}, {
 				name: `${EmoteString.Casino} ${s.casino}`,

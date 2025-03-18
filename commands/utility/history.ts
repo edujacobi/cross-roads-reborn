@@ -58,7 +58,7 @@ module.exports = {
 			for (let i = 0; i < robHistories.length; i++) {
 				const rob = robHistories[i];
 
-				const emoji = rob.success ? EmoteString.Robbery : EmoteString.Police;
+				const emoji = rob.success ? EmoteString.Victory : EmoteString.Defeat;
 				const text = rob.success ? s.success : s.failure;
 				const attacker = await Users.findByPk(rob.attackerId);
 				const defender = await Users.findByPk(rob.defenderId);

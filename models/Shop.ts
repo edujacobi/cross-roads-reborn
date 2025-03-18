@@ -252,7 +252,11 @@ export class Shop {
 			await this.User.GetInfo();
 
 			const embedBought = new CustomEmbedBuilder()
-				.setThumbnail(this.Image)
+				// .setThumbnail(this.Image)
+				.setAuthor({
+					name: s.title,
+					iconURL: this.Image,
+				})
 				.setColor(this.Color)
 				.setUserFooter({
 					nickname: this.User.Nickname,

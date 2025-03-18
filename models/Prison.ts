@@ -4,7 +4,8 @@ import {
 	ActionRowBuilder,
 	ButtonBuilder,
 	ButtonStyle,
-	ChatInputCommandInteraction, Colors, ComponentType, EmbedBuilder,
+	ChatInputCommandInteraction,
+	ComponentType,
 	MessageComponentInteraction,
 } from "discord.js";
 import { ItemId, ItemList } from "./Item";
@@ -65,7 +66,7 @@ export class Prison {
 
 		const embed = new CustomEmbedBuilder()
 			.setThumbnail("https://media.discordapp.net/attachments/1233604589064818808/1339946455913205871/Prison.png")
-			.setDescription(s.description(this.Escape.BaseChance, this.Escape.BaseJetpackChance + this.Escape.BaseChance, text))
+			.setDescription(`# ${s.title}\n${s.description(this.Escape.BaseChance, this.Escape.BaseJetpackChance + this.Escape.BaseChance, text)}`)
 			.setColor(CrColors.Police)
 			.setUserFooter({
 				nickname: this.User.Nickname,
@@ -118,8 +119,7 @@ export class Prison {
 				pagination.HowManyRecords = prisoners.length;
 				pagination.Limit = 15;
 
-				const embedPrisoners = new EmbedBuilder()
-					.setColor(Colors.DarkButNotBlack)
+				const embedPrisoners = new CustomEmbedBuilder()
 					.setTitle(s.prisoners);
 
 				pagination.CustomizeEmbed = async () => {
@@ -190,9 +190,12 @@ export class Prison {
 				this.Bribe.Value = Math.floor(this.Bribe.BaseValue + atkFactor + moneyFactor);
 
 				const bribery = new CustomEmbedBuilder()
-					.setTitle(`${EmoteString.Police} ${s.bribe}`)
+					.setAuthor({
+						iconURL: "https://media.discordapp.net/attachments/1233604589064818808/1339946455913205871/Prison.png",
+						name: s.title,
+					})
 					.setColor(CrColors.Police)
-					.setDescription(s.briberyStart(this.Bribe.Value))
+					.setDescription(`### ${EmoteString.Police} ${s.bribe}\n${s.briberyStart(this.Bribe.Value)}`)
 					.setUserFooter({
 						nickname: this.User.Nickname,
 						image: this.Interaction.user.avatarURL(),
@@ -233,8 +236,7 @@ export class Prison {
 
 				if (success) {
 					responseEmbed
-						.setTitle(`${EmoteString.Police} ${s.briberyAccepted}`)
-						.setDescription(s.briberyAcceptedDescription)
+						.setDescription(`### ${EmoteString.Police} ${s.briberyAccepted}\n${s.briberyAcceptedDescription}`)
 						.setUserFooter({
 							nickname: this.User.Nickname,
 							image: this.Interaction.user.avatarURL(),
@@ -243,8 +245,7 @@ export class Prison {
 				}
 				else {
 					responseEmbed
-						.setTitle(`${EmoteString.Police} ${s.briberyRejected}`)
-						.setDescription(s.briberyRejectedDescription)
+						.setDescription(`### ${EmoteString.Police} ${s.briberyRejected}\n${s.briberyRejectedDescription}`)
 						.setUserFooter({
 							nickname: this.User.Nickname,
 							image: this.Interaction.user.avatarURL(),
@@ -304,8 +305,12 @@ export class Prison {
 		const emote = this.Escape.HasJetpack ? ItemList[ItemId.Jetpack].Skin.Default.Emote.String : EmoteString.Escape;
 
 		const escapeEmbed = new CustomEmbedBuilder()
-			.setDescription(`## ${emote} ${s.escapeInProgress}`)
-			.setThumbnail("https://media.discordapp.net/attachments/1233604589064818808/1339946455913205871/Prison.png")
+			.setDescription(`### ${emote} ${s.escapeInProgress}`)
+			.setAuthor({
+				iconURL: "https://media.discordapp.net/attachments/1233604589064818808/1339946455913205871/Prison.png",
+				name: s.title,
+			})
+			// .setThumbnail("https://media.discordapp.net/attachments/1233604589064818808/1339946455913205871/Prison.png")
 			.setColor(CrColors.Police)
 			.setUserFooter({
 				nickname: this.User.Nickname,
@@ -471,7 +476,7 @@ export class Prison {
 			const textWanted = wantedTexts[this.User.Language][Math.floor(Math.random() * wantedTexts[this.User.Language].length)];
 
 			embed
-				.setDescription(`## ${emote} ${s.escapeSuccess}\n${textSuccess}\n-# ${textWanted}`)
+				.setDescription(`### ${emote} ${s.escapeSuccess}\n${textSuccess}\n-# ${textWanted}`)
 				.setUserFooter({
 					nickname: this.User.Nickname,
 					image: this.Interaction.user.avatarURL(),
@@ -551,8 +556,8 @@ const Strings = {
 		userFree: "You are free!",
 		userWanted: (timerEscape: Date) => `You are being wanted by the police! You can rob again ${showTime(timerEscape.getTime(), true)} ${EmoteString.Police}`,
 		userPrison: (timerPrison: Date) => `You are in prison! You will be released ${showTime(timerPrison.getTime(), true)} ${EmoteString.Prison}`,
-		description: (chance: number, jetpackChance: number, text: string) => `# Prison
-When trying to rob someone and failing, you will be imprisoned for a time determined by your ${EmoteString.Attack}ATK.
+		title: "Prison",
+		description: (chance: number, jetpackChance: number, text: string) => `When trying to rob someone and failing, you will be imprisoned for a time determined by your ${EmoteString.Attack}ATK.
 
 -# Being imprisoned limits many of your actions in the game, such as working, investing, betting, scavenging, and of course, stealing.
 ### ${EmoteString.Escape} Escape
@@ -593,8 +598,8 @@ The guards are greedy, and the higher your ${EmoteString.Attack}ATK, the more th
 		userFree: "Você está livre!",
 		userWanted: (timerEscape: Date) => `Você está sendo procurado pela polícia! Poderá roubar novamente ${showTime(timerEscape.getTime(), true)} ${EmoteString.Police}`,
 		userPrison: (timerPrison: Date) => `Você está preso! Será solto ${showTime(timerPrison.getTime(), true)} ${EmoteString.Prison}`,
-		description: (chance: number, jetpackChance: number, text: string) => `# Prisão
-Ao tentar roubar alguém e falhar, você será preso por um tempo determinado pelo seu ${EmoteString.Attack}ATK.
+		title: "Prisão",
+		description: (chance: number, jetpackChance: number, text: string) => `Ao tentar roubar alguém e falhar, você será preso por um tempo determinado pelo seu ${EmoteString.Attack}ATK.
 
 -# Estar preso limita muitas de suas ações no jogo, como trabalhar, investir, apostar, vasculhar, e claro, roubar.
 ### ${EmoteString.Escape} Fugir
@@ -635,8 +640,8 @@ Os guardas são gananciosos, e quanto maior o seu ${EmoteString.Attack}ATK, mais
 		userFree: "¡Estás libre!",
 		userWanted: (timerEscape: Date) => `¡Estás siendo buscado por la policía! ¡Puedes robar de nuevo ${showTime(timerEscape.getTime(), true)} ${EmoteString.Police}`,
 		userPrison: (timerPrison: Date) => `¡Estás preso! ¡Serás liberado ${showTime(timerPrison.getTime(), true)} ${EmoteString.Prison}`,
-		description: (chance: number, jetpackChance: number, text: string) => `# Prisión
-Al intentar robar a alguien y fallar, serás encarcelado por un tiempo determinado por tu ${EmoteString.Attack}ATK.
+		title: "Prisión",
+		description: (chance: number, jetpackChance: number, text: string) => `Al intentar robar a alguien y fallar, serás encarcelado por un tiempo determinado por tu ${EmoteString.Attack}ATK.
 
 -# Estar encarcelado limita muchas de tus acciones en el juego, como trabajar, invertir, apostar, buscar, y por supuesto, robar.
 ### ${EmoteString.Escape} Escapar
