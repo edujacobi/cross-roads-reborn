@@ -14,84 +14,85 @@ import { ClassId, ClassList } from "./Class";
 import { LocationId } from "./Locations";
 
 export class User {
-	Id = "";
-	CreatedAt: Date;
-	UpdatedAt: Date;
+	Id: string;
+	CreatedAt = new Date();
+	UpdatedAt = new Date();
 	VipTime: Date | null = null;
 	VipEternal = false;
 	Language: Language;
-	Nickname: string = "";
+	Nickname = "";
 	Money = 0;
 	Class = ClassId.None;
-	Daily: {
-		CurrentStreak: number,
-		MaxStreak: number,
-		LastReceived: Date | null,
+	Daily = {
+		CurrentStreak: 0,
+		MaxStreak: 0,
+		LastReceived: null as Date | null,
 	};
-	Job: {
-		Id: JobId | null,
-		EndsIn: Date,
-		ReceivedSum: number,
-		ReceivedCount: number,
+	Job = {
+		Id: null as JobId | null,
+		EndsIn: new Date(),
+		ReceivedSum: 0,
+		ReceivedCount: 0,
 	};
-	Robbery: {
-		SuccessCount: number,
-		FailureCount: number,
-		BeingRobbedCount: number,
-		SuccessRobbedSum: number,
-		BeingRobbedSum: number,
-		IsRobbingId: string | null,
-		IsBeingRobbedById: string | null,
-		IsRobbingLocationId: LocationId | null,
+	Robbery = {
+		SuccessCount: 0,
+		FailureCount: 0,
+		BeingRobbedCount: 0,
+		SuccessRobbedSum: 0,
+		BeingRobbedSum: 0,
+		IsRobbingId: null as string | null,
+		IsBeingRobbedById: null as string | null,
+		IsRobbingLocationId: null as LocationId | null,
 	};
-	Prison: {
-		BriberySum: number,
-		BriberyCount: number,
-		HasPaidBribe: boolean,
-		Time: Date,
+	Prison = {
+		BriberySum: 0,
+		BriberyCount: 0,
+		HasPaidBribe: false,
+		Time: new Date(),
 	};
-	Escape: {
-		Count: number,
-		Time: Date,
-		HasTried: boolean,
+	Escape = {
+		Count: 0,
+		Time: new Date(),
+		HasTried: false,
 	};
-	Wanted: {
-		Count: number,
-		Time: Date,
+	Wanted = {
+		Count: 0,
+		Time: new Date(),
 	};
-	Hospital: {
-		Count: number,
-		TreatmentCount: number,
-		TreatmentSum: number,
-		Time: Date,
+	Hospital = {
+		Count: 0,
+		TreatmentCount: 0,
+		TreatmentSum: 0,
+		Time: new Date(),
 	};
-	Casino: {
-		WinCount: number,
-		LoseCount: number,
-		WinSum: number,
-		LoseSum: number,
+	Casino = {
+		WinCount: 0,
+		LoseCount: 0,
+		WinSum: 0,
+		LoseSum: 0,
 	};
-	Shop: {
-		SpentSum: number,
-		SpentCount: number,
+	Shop = {
+		SpentSum: 0,
+		SpentCount: 0,
 	};
-	BeatUp: {
-		IsBeatingId: string | null,
-		IsBeingBeatUpById: string | null,
-		SuccessCount: number,
-		FailureCount: number,
-		BeatedUpCount: number,
-		Time: Date,
+	BeatUp = {
+		IsBeatingId: null as string | null,
+		IsBeingBeatUpById: null as string | null,
+		SuccessCount: 0,
+		FailureCount: 0,
+		BeatedUpCount: 0,
+		Time: new Date(),
 	};
-	Attributes: {
-		Attack: number,
-		Defense: number,
-		MoneyAttack: number,
-		MoneyDefense: number,
+	Attributes = {
+		Attack: 0,
+		Defense: 0,
+		MoneyAttack: 0,
+		MoneyDefense: 0,
 	};
-	Situation: {
-		Simple: string,
-		Complex: string,
+	Situation = {
+		Simple: "",
+		SimpleEmote: "",
+		Complex: "",
 	};
 	BestGun: Item | null = null;
 	Alms = {
@@ -104,81 +105,8 @@ export class User {
 	};
 
 	constructor(id: string, language: Language = Language.English) {
-		const now = new Date();
 		this.Id = id;
-		this.CreatedAt = now;
-		this.UpdatedAt = now;
 		this.Language = language;
-		this.Daily = {
-			CurrentStreak: 0,
-			MaxStreak: 0,
-			LastReceived: null,
-		};
-		this.Job = {
-			Id: null,
-			EndsIn: now,
-			ReceivedSum: 0,
-			ReceivedCount: 0,
-		};
-		this.Robbery = {
-			SuccessCount: 0,
-			FailureCount: 0,
-			SuccessRobbedSum: 0,
-			BeingRobbedCount: 0,
-			BeingRobbedSum: 0,
-			IsRobbingId: null,
-			IsBeingRobbedById: null,
-			IsRobbingLocationId: null,
-		};
-		this.BeatUp = {
-			IsBeatingId: null,
-			IsBeingBeatUpById: null,
-			SuccessCount: 0,
-			FailureCount: 0,
-			BeatedUpCount: 0,
-			Time: now,
-		};
-		this.Prison = {
-			BriberySum: 0,
-			BriberyCount: 0,
-			HasPaidBribe: false,
-			Time: now,
-		};
-		this.Escape = {
-			Count: 0,
-			Time: now,
-			HasTried: false,
-		};
-		this.Wanted = {
-			Count: 0,
-			Time: now,
-		};
-		this.Casino = {
-			WinCount: 0,
-			LoseCount: 0,
-			WinSum: 0,
-			LoseSum: 0,
-		};
-		this.Hospital = {
-			Count: 0,
-			TreatmentCount: 0,
-			TreatmentSum: 0,
-			Time: now,
-		};
-		this.Shop = {
-			SpentSum: 0,
-			SpentCount: 0,
-		};
-		this.Attributes = {
-			Attack: 0,
-			Defense: 0,
-			MoneyAttack: 0,
-			MoneyDefense: 0,
-		};
-		this.Situation = {
-			Simple: "",
-			Complex: "",
-		};
 	}
 
 	async Create() {
