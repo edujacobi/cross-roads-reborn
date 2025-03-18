@@ -1,6 +1,6 @@
 ﻿import { ChatInputCommandInteraction, Colors, Locale, SlashCommandBuilder, SlashCommandUserOption } from "discord.js";
 import { checkUser, replyUserDontExist } from "../../utils/logic";
-import { formatMoney, showTime } from "../../utils/ui";
+import { formatDate, formatMoney, showTime } from "../../utils/ui";
 import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
 import { User } from "../../models/User";
 import { RobHistories } from "../../database/RobHistories";
@@ -83,7 +83,7 @@ module.exports = {
 					opponentName = `${location.Emote.String} ${location.Description[user.Language]}`;
 				}
 
-				historyList += `${challengerName} ${EmoteString.React} ${opponentName}\n${rob.success ? `\`${formatMoney(rob.money, user.Language)}\`\n` : ""}-# ${emoji} ${text} • ${showTime(new Date(rob.createdAt).getTime())}\n\n`;
+				historyList += `### ${challengerName} ${EmoteString.React} ${opponentName}\n-# ${emoji} ${text}${rob.success ? ` • **${formatMoney(rob.money, user.Language)}**` : ""} • ${formatDate(rob.createdAt, language)}\n`;
 			}
 
 			return new CustomEmbedBuilder()

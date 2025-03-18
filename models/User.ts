@@ -638,7 +638,7 @@ export class User {
 
 		await Notification.Job(this);
 		await this.Update();
-		Log.Info(`User ${this.Nickname} (ID: ${this.Id}) started job ${job.Description[this.Language]} (ID: ${jobId}), will finish in ${formatDate(this.Job.EndsIn)}.`);
+		Log.Info(`User ${this.Nickname} (ID: ${this.Id}) started job ${job.Description[this.Language]} (ID: ${jobId}), will finish in ${formatDate(this.Job.EndsIn, Language.English)}.`);
 	}
 
 	async CancelJob() {
