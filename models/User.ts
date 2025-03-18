@@ -94,6 +94,14 @@ export class User {
 		Complex: string,
 	};
 	BestGun: Item | null = null;
+	Alms = {
+		GiveTime: new Date(),
+		ReceiveTime: new Date(),
+		GivenSum: 0,
+		GivenCount: 0,
+		ReceivedSum: 0,
+		ReceivedCount: 0,
+	};
 
 	constructor(id: string, language: Language = Language.English) {
 		const now = new Date();
@@ -209,6 +217,10 @@ export class User {
 				beatUpBeatedUpCount: 0,
 				shopSpentCount: 0,
 				shopSpentSum: 0,
+				almsGivenSum: 0,
+				almsGivenCount: 0,
+				almsReceivedSum: 0,
+				almsReceivedCount: 0,
 			});
 			Log.Success(`User ${this.Id} created.`);
 
@@ -308,6 +320,14 @@ export class User {
 		// Shop
 		this.Shop.SpentSum = user.shopSpentSum;
 		this.Shop.SpentCount = user.shopSpentCount;
+
+		// Alms
+		this.Alms.GiveTime = user.almsGiveTime;
+		this.Alms.ReceiveTime = user.almsReceiveTime;
+		this.Alms.GivenSum = user.almsGivenSum;
+		this.Alms.GivenCount = user.almsGivenCount;
+		this.Alms.ReceivedSum = user.almsReceivedSum;
+		this.Alms.ReceivedCount = user.almsReceivedCount;
 
 		await this.GetAttributes();
 		await this.GetSituation();
@@ -698,6 +718,13 @@ export class User {
 
 				shopSpentSum: this.Shop.SpentSum,
 				shopSpentCount: this.Shop.SpentCount,
+
+				almsGiveTime: this.Alms.GiveTime,
+				almsReceiveTime: this.Alms.ReceiveTime,
+				almsGivenSum: this.Alms.GivenSum,
+				almsGivenCount: this.Alms.GivenCount,
+				almsReceivedSum: this.Alms.ReceivedSum,
+				almsReceivedCount: this.Alms.ReceivedCount,
 
 				updatedAt: this.UpdatedAt,
 			}, {

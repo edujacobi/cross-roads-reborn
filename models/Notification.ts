@@ -17,6 +17,8 @@ export enum NotificationType {
 	RobAgain,
 	Free,
 	Hospital,
+	AlmsGive,
+	AlmsReceive
 }
 
 export class Notification {
@@ -88,6 +90,22 @@ export class Notification {
 		notification.UserId = user.Id;
 		notification.Type = NotificationType.Hospital;
 		notification.Date = user.Hospital.Time;
+		await notification.Create();
+	}
+
+	static async AlmsGive(user: User) {
+		const notification = new Notification();
+		notification.UserId = user.Id;
+		notification.Type = NotificationType.AlmsGive;
+		notification.Date = user.Alms.GiveTime;
+		await notification.Create();
+	}
+
+	static async AlmsReceive(user: User) {
+		const notification = new Notification();
+		notification.UserId = user.Id;
+		notification.Type = NotificationType.AlmsReceive;
+		notification.Date = user.Alms.ReceiveTime;
 		await notification.Create();
 	}
 
@@ -219,6 +237,14 @@ export class Notification {
 				await sendPrivateMessage(user.Id, s.hospital, CrColors.Hospital);
 			}
 
+			else if (notification.Type == NotificationType.AlmsGive) {
+				await sendPrivateMessage(user.Id, s.almsGive, CrColors.Default);
+			}
+
+			else if (notification.Type == NotificationType.AlmsReceive) {
+				await sendPrivateMessage(user.Id, s.almsReceive, CrColors.Default);
+			}
+
 			await notification.SetAsNotified();
 		}
 		// Log.Info(`Notification procedure complete ↑`);
@@ -236,6 +262,8 @@ const Strings = {
 		robAgain: `You can rob again! ${EmoteString.Robbery}`,
 		free: `You are free! ${EmoteString.Prison}`,
 		hospital: `You are healed! ${EmoteString.Hospital}`,
+		almsGive: `You can give alms again! ${EmoteString.Alms}`,
+		almsReceive: `You can receive alms again! ${EmoteString.Alms}`,
 	},
 	[Language.Portuguese]: {
 		daily: `Você pode receber sua grana diária novamente! ${EmoteString.Experience}`,
@@ -243,6 +271,8 @@ const Strings = {
 		robAgain: `Você pode roubar novamente! ${EmoteString.Robbery}`,
 		free: `Você está livre! ${EmoteString.Prison}`,
 		hospital: `Você está curado! ${EmoteString.Hospital}`,
+		almsGive: `Você pode dar esmola novamente! ${EmoteString.Alms}`,
+		almsReceive: `Você pode receber esmola novamente! ${EmoteString.Alms}`,
 	},
 	[Language.Spanish]: {
 		daily: `¡Puedes recibir tu dinero diario de nuevo! ${EmoteString.Experience}`,
@@ -250,5 +280,7 @@ const Strings = {
 		robAgain: `¡Puedes robar de nuevo! ${EmoteString.Robbery}`,
 		free: `¡Estás libre! ${EmoteString.Prison}`,
 		hospital: `¡Estás curado! ${EmoteString.Hospital}`,
+		almsGive: `¡Puedes dar limosna de nuevo! ${EmoteString.Alms}`,
+		almsReceive: `¡Puedes recibir limosna de nuevo! ${EmoteString.Alms}`,
 	},
 } as const;

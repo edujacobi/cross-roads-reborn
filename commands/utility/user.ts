@@ -109,6 +109,18 @@ module.exports = {
 -# \`${formatMoney(target.Casino.LoseSum, user.Language)}\` (\`${target.Casino.LoseCount}\`) ${s.lost}
 -# \`${(target.Casino.WinCount / (target.Casino.LoseCount + target.Casino.WinCount) * 100).toFixed(2)}%\` win rate`,
 				inline: true,
+			}, {
+				name: `${EmoteString.Alms} ${s.alms}`,
+				value: `-# ${target.Alms.ReceiveTime > now ? `${s.almsReceive} ${showTime(target.Alms.ReceiveTime.getTime(), true)}` : s.almsCanReceive}
+-# ${target.Alms.GiveTime > now ? `${s.almsGive} ${showTime(target.Alms.GiveTime.getTime(), true)}` : s.almsCanGive}
+-# ${formatMoney(target.Alms.ReceivedSum, user.Language)} (\`${target.Alms.ReceivedCount}\`) ${s.almsReceived}
+-# ${formatMoney(target.Alms.GivenSum, user.Language)} (\`${target.Alms.GivenCount}\`) ${s.almsGiven}`,
+				inline: true,
+			}, {
+				name: `${EmoteString.Bank} ${s.money}`,
+				value: `-# \`${formatMoney(target.Job.ReceivedSum, user.Language)}\` (\`${target.Job.ReceivedCount}\`) ${s.fromJobs}
+-# \`${formatMoney(target.Shop.SpentSum, user.Language)}\` (\`${target.Shop.SpentCount}\`) ${s.spent}`,
+				inline: true,
 			},
 				// {
 				// 	name: `${EmoteString.Philantrope} Esmolas`,
@@ -161,6 +173,13 @@ const Strings = {
 		games: "games",
 		won: "won",
 		lost: "lost",
+		alms: "Alms",
+		almsReceive: "Receive",
+		almsCanReceive: "Can receive",
+		almsGive: "Give",
+		almsCanGive: "Can give",
+		almsReceived: "received",
+		almsGiven: "given",
 		playingSince: "Playing since",
 	},
 
@@ -193,6 +212,13 @@ const Strings = {
 		games: "jogos",
 		won: "ganhos",
 		lost: "perdidos",
+		alms: "Esmola",
+		almsReceive: "Receber",
+		almsCanReceive: "Pode receber",
+		almsGive: "Doar",
+		almsCanGive: "Pode doar",
+		almsReceived: "recebidos",
+		almsGiven: "doados",
 		playingSince: "Jogando desde",
 	},
 
@@ -225,6 +251,13 @@ const Strings = {
 		games: "juegos",
 		won: "ganados",
 		lost: "perdidos",
+		alms: "Limosna",
+		almsReceive: "Recibir",
+		almsCanReceive: "Puede recibir",
+		almsGive: "Dar",
+		almsCanGive: "Puede dar",
+		almsReceived: "recibidos",
+		almsGiven: "dado",
 		playingSince: "Jugando desde",
 	},
 } as const;

@@ -69,6 +69,13 @@ export class Users extends Model<
 	declare shopSpentSum: number;
 	declare shopSpentCount: number;
 
+	declare almsGiveTime: CreationOptional<Date>;
+	declare almsReceiveTime: CreationOptional<Date>;
+	declare almsGivenSum: number;
+	declare almsGivenCount: number;
+	declare almsReceivedSum: number;
+	declare almsReceivedCount: number;
+
 	declare createdAt: CreationOptional<Date>;
 	declare updatedAt: CreationOptional<Date>;
 }
@@ -291,6 +298,32 @@ Users.init(
 			defaultValue: 0,
 		},
 		shopSpentCount: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0,
+		},
+		almsGiveTime: {
+			type: DataTypes.DATE,
+		},
+		almsReceiveTime: {
+			type: DataTypes.DATE,
+		},
+		almsGivenSum: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0,
+		},
+		almsGivenCount: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0,
+		},
+		almsReceivedSum: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0,
+		},
+		almsReceivedCount: {
 			type: DataTypes.INTEGER,
 			allowNull: false,
 			defaultValue: 0,
