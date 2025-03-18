@@ -2,7 +2,8 @@ import {
 	ActionRowBuilder,
 	ButtonBuilder,
 	ButtonStyle,
-	ChatInputCommandInteraction, Colors, ComponentType, EmbedBuilder,
+	ChatInputCommandInteraction,
+	ComponentType,
 	MessageComponentInteraction,
 } from "discord.js";
 import { User } from "./User";
@@ -16,7 +17,7 @@ import { Op } from "sequelize";
 import { ClassList } from "./Class";
 import { defaultEmbed, formatMoney, showTime } from "../utils/ui";
 import { Language } from "./Language";
-import { addMinutes, differenceInMinutes } from "date-fns";
+import { differenceInMinutes } from "date-fns";
 import { Notification, NotificationType } from "./Notification";
 import { Log } from "../utils/log";
 import { Pagination } from "./Pagination";
@@ -36,7 +37,6 @@ export class Hospital {
 
 		this.PrivatePrice = Math.floor(this.PrivateBasePrice + defFactor + moneyFactor);
 	}
-
 
 	async GenerateEmbed() {
 		const s = Strings[this.User.Language];
@@ -99,8 +99,7 @@ ${s.description}
 				pagination.HowManyRecords = hospitalized.length;
 				pagination.Limit = 15;
 
-				const embedHospitalized = new EmbedBuilder()
-					.setColor(Colors.DarkButNotBlack)
+				const embedHospitalized = new CustomEmbedBuilder()
 					.setTitle(s.hospitalized);
 
 				pagination.CustomizeEmbed = async () => {

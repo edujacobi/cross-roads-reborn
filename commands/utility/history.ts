@@ -91,7 +91,6 @@ module.exports = {
 					name: `${s.title} ${target.Nickname}`,
 					iconURL: _user.avatarURL() ?? undefined
 				})
-				.setColor(Colors.DarkButNotBlack)
 				.setDescription(historyList)
 				.setUserFooter({
 					nickname: user.Nickname,

@@ -48,7 +48,6 @@ module.exports = {
 
 		const embed = new CustomEmbedBuilder()
 			// .setThumbnail(_user.avatarURL())
-			.setColor(Colors.DarkButNotBlack)
 			.setAuthor({
 				name: `${s.title} ${target.Nickname}`,
 				iconURL: _user.avatarURL() ?? undefined,
