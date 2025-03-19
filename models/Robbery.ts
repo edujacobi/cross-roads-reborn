@@ -116,25 +116,25 @@ export class Robbery {
 		}
 
 		if (this.Attacker.Robbery.IsRobbingId) {
-			const user = await Users.findByPk(this.Attacker.Robbery.IsRobbingId);
+			const user = await Users.findByPk(this.Attacker.Robbery.IsRobbingId, { attributes: ["class", "nickname"] });
 			message = `${s.attackerIsRobbingId(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname!}`)} ${EmoteString.Robbery}`;
 			canRob = false;
 		}
 
 		if (this.Attacker.Robbery.IsBeingRobbedById) {
-			const user = await Users.findByPk(this.Attacker.Robbery.IsBeingRobbedById);
+			const user = await Users.findByPk(this.Attacker.Robbery.IsBeingRobbedById, { attributes: ["class", "nickname"] });
 			message = `${s.attackerIsBeingRobbedById(`${ClassList[user!.class!].Image.Emote.String} ${user!.nickname!}`)} ${EmoteString.Robbery}`;
 			canRob = false;
 		}
 
 		if (this.Defender.Robbery.IsRobbingId) {
-			const user = await Users.findByPk(this.Defender.Robbery.IsRobbingId);
+			const user = await Users.findByPk(this.Defender.Robbery.IsRobbingId, { attributes: ["class", "nickname"] });
 			message = `**${this.Defender.GetNameWithImage()}** ${s.defenderIsRobbingId(`${ClassList[user!.class!].Image.Emote.String} ${user!.nickname!}`)} ${EmoteString.Robbery}`;
 			canRob = false;
 		}
 
 		if (this.Defender.Robbery.IsBeingRobbedById) {
-			const user = await Users.findByPk(this.Defender.Robbery.IsBeingRobbedById);
+			const user = await Users.findByPk(this.Defender.Robbery.IsBeingRobbedById, { attributes: ["class", "nickname"] });
 			message = `**${this.Defender.GetNameWithImage()}** ${s.defenderIsBeingRobbedById(`${ClassList[user!.class!].Image.Emote.String} ${user!.nickname!}`)} ${EmoteString.Robbery}`;
 			canRob = false;
 		}
