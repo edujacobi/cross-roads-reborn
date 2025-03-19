@@ -492,7 +492,7 @@ export class Prison {
 			const arrayFailure = this.Escape.HasJetpack ? failureTextsJetpack : failureTexts;
 			const textFailure = arrayFailure[this.User.Language][Math.floor(Math.random() * arrayFailure[this.User.Language].length)];
 
-			embed.setDescription(`## ${emote} ${s.escapeFailure}\n${textFailure}. ${s.escapeWillBeInPrison(totalTime)}\n-# ${s.free} ${showTime(this.User.Prison.Time.getTime(), true)}`);
+			embed.setDescription(`### ${emote} ${s.escapeFailure}\n${textFailure}. ${s.escapeWillBeInPrison(totalTime)}\n-# ${s.free} ${showTime(this.User.Prison.Time.getTime(), true)}`);
 		}
 
 		await this.User.Update();
