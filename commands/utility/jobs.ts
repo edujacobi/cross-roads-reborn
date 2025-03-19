@@ -19,6 +19,9 @@ import { getItemList, ItemList } from "../../models/Item";
 import { Language } from "../../models/Language";
 import { CrColors } from "../../utils/colors";
 import { User } from "../../models/User";
+import { Users } from "../../database/Users";
+import { ClassList } from "../../models/Class";
+import { LocationList } from "../../models/Locations";
 
 module.exports = {
 	vip: true,
@@ -43,7 +46,7 @@ module.exports = {
 			.setUserFooter({
 				nickname: user.Nickname,
 				image: interaction.user.avatarURL(),
-				text: formatMoney(user.Money, language)
+				text: formatMoney(user.Money, language),
 			});
 
 		const select = new StringSelectMenuBuilder()
@@ -111,17 +114,47 @@ module.exports = {
 
 			if (user.IsWorking()) {
 				return await removeEmbedComponents(interaction, [
-					embed.setDescription(s.workingOn(user.Job.Id!, user.Job.EndsIn)),
+					embed
+						.setThumbnail(null)
+						.setDescription(s.workingOn(user.Job.Id!, user.Job.EndsIn)),
 				]);
 			}
 			if (user.IsInPrison()) {
 				return await removeEmbedComponents(interaction, [
-					embed.setDescription(s.userPrison(user.Prison.Time)),
+					embed
+						.setThumbnail(null)
+						.setDescription(s.userPrison(user.Prison.Time)),
 				]);
 			}
 			if (user.IsInHospital()) {
 				return await removeEmbedComponents(interaction, [
-					embed.setDescription(s.userHospital(user.Hospital.Time)),
+					embed
+						.setThumbnail(null)
+						.setDescription(s.userHospital(user.Hospital.Time)),
+				]);
+			}
+			if (user.Robbery.IsRobbingId) {
+				const u = await Users.findByPk(user.Robbery.IsRobbingId, { attributes: ["class", "nickname"] });
+				return await removeEmbedComponents(interaction, [
+					embed
+						.setThumbnail(null)
+						.setDescription(`${s.userIsRobbingId(`${ClassList[u!.class].Image.Emote.String} ${u!.nickname!}`)} ${EmoteString.Robbery}`),
+				]);
+			}
+			if (user.Robbery.IsBeingRobbedById) {
+				const u = await Users.findByPk(user.Robbery.IsBeingRobbedById, { attributes: ["class", "nickname"] });
+				return await removeEmbedComponents(interaction, [
+					embed
+						.setThumbnail(null)
+						.setDescription(`${s.userIsBeingRobbingId(`${ClassList[u!.class].Image.Emote.String} ${u!.nickname!}`)} ${EmoteString.Robbery}`),
+				]);
+			}
+			if (user.Robbery.IsRobbingLocationId) {
+				const location = LocationList[user.Robbery.IsRobbingLocationId];
+				return await removeEmbedComponents(interaction, [
+					embed
+						.setThumbnail(null)
+						.setDescription(`${s.userIsRobbingId(location.Description[language])} ${EmoteString.Robbery}`),
 				]);
 			}
 
@@ -131,7 +164,9 @@ module.exports = {
 					.map(neededItem => `${ItemList[neededItem].Skin.Default.Emote.String} ${ItemList[neededItem].Description[language]}`)
 					.join(", ");
 				return await removeEmbedComponents(interaction, [
-					embed.setDescription(s.withoutItems(neededItems)),
+					embed
+						.setThumbnail(null)
+						.setDescription(s.withoutItems(neededItems)),
 				]);
 			}
 
@@ -144,8 +179,8 @@ module.exports = {
 					.setUserFooter({
 						nickname: user.Nickname,
 						image: interaction.user.avatarURL(),
-						text: `${s.salary}: ${formatMoney(job.Salary, language)} • ${s.duration}: ${job.Duration}h`
-					})
+						text: `${s.salary}: ${formatMoney(job.Salary, language)} • ${s.duration}: ${job.Duration}h`,
+					}),
 			]);
 		});
 
@@ -191,9 +226,10 @@ const Strings = {
 	[Language.English]: {
 		title: "Jobs",
 		description: "You cannot bet, steal or search while working!",
-		userWanted: (timerEscape: Date) => `You are being wanted by the police! ${EmoteString.Police} \n-# You can start a job ${showTime(timerEscape.getTime(), true)}`,
 		userPrison: (timerPrison: Date) => `You are in prison! ${EmoteString.Prison}\n-# You will be released ${showTime(timerPrison.getTime(), true)}`,
 		userHospital: (timerHospital: Date) => `You are hospitalized ${EmoteString.Hospital}\n-# You will be attended ${showTime(timerHospital.getTime(), true)}`,
+		userIsRobbingId: (nick: string) => `You're already robbing **${nick}**!`,
+		userIsBeingRobbingId: (nick: string) => `You're being robbed by **${nick}**!`,
 		workingOn: (jobId: JobId, jobTime: Date) => `You are working as **${JobList[jobId].Description[Language.English]}** ${EmoteString.Jobs}\n-# Will finish ${showTime(jobTime.getTime(), true)}`,
 		placeholderSelect: "Select a job",
 		stop: "Stop job",
@@ -208,9 +244,10 @@ const Strings = {
 	[Language.Portuguese]: {
 		title: "Trabalhos",
 		description: `Você não pode apostar, roubar nem vasculhar enquanto trabalha!`,
-		userWanted: (timerEscape: Date) => `Você está sendo procurado pela polícia! ${EmoteString.Police} \n-# Poderá começar um trabalho ${showTime(timerEscape.getTime(), true)}`,
 		userPrison: (timerPrison: Date) => `Você está preso! ${EmoteString.Prison}\n-# Será solto ${showTime(timerPrison.getTime(), true)}`,
 		userHospital: (timerHospital: Date) => `Você está hospitalizado ${EmoteString.Hospital}\n-# Será atendido ${showTime(timerHospital.getTime(), true)}`,
+		userIsRobbingId: (nick: string) => `Você já está roubando **${nick}**!`,
+		userIsBeingRobbingId: (nick: string) => `Você está sendo roubado por **${nick}**!`,
 		workingOn: (jobId: JobId, jobTime: Date) => `Você está trabalhando como **${JobList[jobId].Description[Language.Portuguese]}** ${EmoteString.Jobs}\n-# Terminará ${showTime(jobTime.getTime(), true)}`,
 		placeholderSelect: "Selecione um trabalho",
 		stop: "Parar trabalho",
@@ -225,9 +262,10 @@ const Strings = {
 	[Language.Spanish]: {
 		title: "Trabajos",
 		description: "Tu no puedes apostar, robar o buscar mientras trabajas!",
-		userWanted: (timerEscape: Date) => `¡Estás siendo buscado por la policía! ${EmoteString.Police} \n-# ¡Puedes comenzar un trabajo ${showTime(timerEscape.getTime(), true)}`,
 		userPrison: (timerPrison: Date) => `¡Estás preso! ${EmoteString.Prison}\n-# ¡Serás liberado ${showTime(timerPrison.getTime(), true)}`,
 		userHospital: (timerHospital: Date) => `¡Estás hospitalizado ${EmoteString.Hospital}\n-# Serás atendido ${showTime(timerHospital.getTime(), true)}`,
+		userIsRobbingId: (nick: string) => `¡Ya estás robando a **${nick}**!`,
+		userIsBeingRobbingId: (nick: string) => `¡Estás siendo robado por **${nick}**!`,
 		workingOn: (jobId: JobId, jobTime: Date) => `Usted está trabajando como **${JobList[jobId].Description[Language.Spanish]}** ${EmoteString.Jobs}\n-# Terminará ${showTime(jobTime.getTime(), true)}`,
 		placeholderSelect: "Seleccione un trabajo",
 		stop: "Detener trabajo",
