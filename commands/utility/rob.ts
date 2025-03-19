@@ -171,7 +171,7 @@ module.exports = {
 const Strings = {
 	[Language.English]: {
 		userFree: "You can rob!",
-		userWorking: `You can't rob while working! ${EmoteString.Working}`,
+		userWorking: `You can't rob while working! ${EmoteString.Jobs}`,
 		userEscaping: (timerEscape: Date) => `You can't rob while being wanted by the police! You can rob again ${showTime(timerEscape.getTime(), true)} ${EmoteString.Police}`,
 		userPrison: (timerPrison: Date) => `You can't rob while in prison! You will be released ${showTime(timerPrison.getTime(), true)} ${EmoteString.Prison}`,
 		userHospital: (timerHospital: Date) => `You can't rob while in hospital! You will be healed ${showTime(timerHospital.getTime(), true)} ${EmoteString.Hospital}`,
@@ -187,7 +187,7 @@ There is a small chance the target will also be beaten up!`,
 	},
 	[Language.Portuguese]: {
 		userFree: "Você pode roubar!",
-		userWorking: `Você não pode roubar enquanto trabalha! ${EmoteString.Working}`,
+		userWorking: `Você não pode roubar enquanto trabalha! ${EmoteString.Jobs}`,
 		userEscaping: (timerEscape: Date) => `Você não pode roubar enquanto estiver sendo procurado pela polícia! Poderá roubar novamente ${showTime(timerEscape.getTime(), true)} ${EmoteString.Police}`,
 		userPrison: (timerPrison: Date) => `Você não pode roubar enquanto está preso! Será solto ${showTime(timerPrison.getTime(), true)} ${EmoteString.Prison}`,
 		userHospital: (timerHospital: Date) => `Você não pode roubar enquanto está hospitalizado! Será curado ${showTime(timerHospital.getTime(), true)} ${EmoteString.Hospital}`,
@@ -203,7 +203,7 @@ Há uma pequena chance do alvo ser também espancado!`,
 	},
 	[Language.Spanish]: {
 		userFree: "¡Puedes robar!",
-		userWorking: `¡No puedes robar mientras trabajas! ${EmoteString.Working}`,
+		userWorking: `¡No puedes robar mientras trabajas! ${EmoteString.Jobs}`,
 		userEscaping: (timerEscape: Date) => `¡No puedes robar mientras eres perseguido por la policía! ¡Puedes robar de nuevo ${showTime(timerEscape.getTime(), true)} ${EmoteString.Police}`,
 		userPrison: (timerPrison: Date) => `¡No puedes robar mientras estás en prisión! ¡Serás liberado ${showTime(timerPrison.getTime(), true)} ${EmoteString.Prison}`,
 		userHospital: (timerHospital: Date) => `¡No puedes robar mientras estás en el hospital! ¡Serás curado ${showTime(timerHospital.getTime(), true)} ${EmoteString.Hospital}`,
