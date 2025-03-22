@@ -47,7 +47,7 @@ export class Hospital {
 		}
 
 		const embed = new CustomEmbedBuilder()
-			.setThumbnail("https://media.discordapp.net/attachments/1233604589064818808/1346499466588328017/hospital5.png")
+			.setThumbnail("https://media.discordapp.net/attachments/1233604589064818808/1352830745340805202/Hospital7.png")
 			.setDescription(`# Hospital
 ${s.description}
 
@@ -267,7 +267,7 @@ If you pay a certain amount, we will be able to treat you faster!`,
 		userInHospital: (time: Date) => `Você está hospitalizado! Será atendido ${showTime(time.getTime(), true)}!`,
 		description: `_Público, Gratuito e de Qualidade!_
 
--#	Usuários hospitalizados	possuem	${EmoteString.Defense}-5 DEF e ${EmoteString.Defense}-5 % $DEF!.
+-#	Usuários hospitalizados possuem ${EmoteString.Defense}-5 DEF e ${EmoteString.Defense}-5% $DEF!.
 ###	Serviço	público
 Infelizmente não temos mais leitos livres, então você precisará esperar no corredor até ser atendido.
 ### ${BadgeString.Season6.Hypocondriach} Atendimento particular
