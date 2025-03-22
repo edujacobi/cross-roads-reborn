@@ -7,7 +7,7 @@ import {
 	EmbedBuilder,
 	MessageComponentInteraction,
 } from "discord.js";
-import { removeEmbedComponents } from "../utils/logic";
+import { removeEmbedComponents, replyInteraction } from "../utils/logic";
 import { Language } from "./Language";
 
 export class Pagination {
@@ -85,7 +85,10 @@ export class Pagination {
 			embed = await this.CustomizeEmbed();
 			row = this.GenerateRow();
 
-			await this.Interaction.editReply({ embeds: mainEmbed ? [mainEmbed, embed] : [embed], components: [row] });
+			await replyInteraction(this.Interaction, {
+				embeds: mainEmbed ? [mainEmbed, embed] : [embed],
+				components: [row],
+			});
 		});
 
 		collector.on("end", async () => {
