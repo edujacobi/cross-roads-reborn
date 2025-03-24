@@ -443,6 +443,11 @@ export class User {
 			},
 		});
 
+		this.Attributes.Attack = 0;
+		this.Attributes.Defense = 0;
+		this.Attributes.MoneyAttack = 0;
+		this.Attributes.MoneyDefense = 0;
+
 		let moreATK = 0;
 		let moreDEF = 0;
 		let moreMoneyATK = 0;
