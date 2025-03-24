@@ -93,6 +93,7 @@ export class Prison {
 			.setCustomId("bribe")
 			.setLabel(s.bribe)
 			.setEmoji(BadgeString.Season6.Politician)
+			.setDisabled(this.User.Prison.HasPaidBribe)
 			.setStyle(ButtonStyle.Secondary);
 
 		const row = new ActionRowBuilder<ButtonBuilder>()
@@ -507,6 +508,7 @@ export class Prison {
 
 		if (this.User.Prison.HasPaidBribe) {
 			message = s.bribeHasPaid;
+			canBribe = false;
 		}
 		if (!this.User.IsInPrison()) {
 			message = s.bribeNotInPrison;
