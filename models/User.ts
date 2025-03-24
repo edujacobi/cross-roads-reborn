@@ -539,7 +539,7 @@ export class User {
 		}
 		if (this.IsWanted()) {
 			this.Situation.Simple += ` ${s.wantedSimple}`;
-			this.Situation.SimpleEmote += ` ${EmoteString.Police} ${s.wantedSimple}`;
+			this.Situation.SimpleEmote += ` ${s.wantedSimpleEmote}`;
 			this.Situation.Complex += ` ${s.wantedComplex} ${showTime(this.Wanted.Time.getTime())}`;
 		}
 	}
@@ -707,6 +707,7 @@ const Strings = {
 		imprisonedAndHospitalSimpleEmote: `${EmoteString.Prison} Imprisoned and ${EmoteString.Hospital} Hospitalized`,
 		imprisonedAndHospitalComplex: (prisonTime: Date, hospitalTime: Date) => `${EmoteString.Prison} Imprisoned until ${showTime(prisonTime.getTime())} and ${EmoteString.Hospital} Hospitalized until ${showTime(hospitalTime.getTime())}`,
 		wantedSimple: "and Wanted",
+		wantedSimpleEmote: `and ${EmoteString.Police} Wanted`,
 		wantedComplex: `and ${EmoteString.Police} Wanted until`,
 		hospitalSimple: "Hospitalized",
 		hospitalComplex: `Hospitalized until`,
@@ -724,6 +725,7 @@ const Strings = {
 		imprisonedAndHospitalSimpleEmote: `${EmoteString.Prison} Preso e ${EmoteString.Hospital} Hospitalizado`,
 		imprisonedAndHospitalComplex: (prisonTime: Date, hospitalTime: Date) => `${EmoteString.Prison} Preso até ${showTime(prisonTime.getTime())} e ${EmoteString.Hospital} Hospitalizado até ${showTime(hospitalTime.getTime())}`,
 		wantedSimple: "e Procurado",
+		wantedSimpleEmote: `e ${EmoteString.Police} Procurado`,
 		wantedComplex: `e ${EmoteString.Police} Procurado até`,
 		hospitalSimple: "Hospitalizado",
 		hospitalComplex: `Hospitalizado até`,
@@ -741,6 +743,7 @@ const Strings = {
 		imprisonedAndHospitalComplex: (prisonTime: Date, hospitalTime: Date) => `${EmoteString.Prison} Preso hasta ${showTime(prisonTime.getTime())} y ${EmoteString.Hospital} Hospitalizado hasta ${showTime(hospitalTime.getTime())}`,
 		imprisonedComplex: "Preso hasta",
 		wantedSimple: "y Buscado",
+		wantedSimpleEmote: `y ${EmoteString.Police} Buscado`,
 		wantedComplex: `y ${EmoteString.Police} Buscado hasta`,
 		hospitalSimple: "Hospitalizado",
 		hospitalComplex: `Hospitalizado hasta`,
