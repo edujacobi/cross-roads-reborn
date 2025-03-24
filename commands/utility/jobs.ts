@@ -211,7 +211,7 @@ module.exports = {
 				await removeEmbedComponents(interaction, [
 					embed
 						.setThumbnail(null)
-						.setDescription(`${s.stopped} **${job.Description[language]}**!`),
+						.setDescription(`${s.stopped} **${job.Description[language]}** ${EmoteString.Jobs}`),
 				]);
 			}
 		});
