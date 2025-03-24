@@ -59,14 +59,14 @@ export class RobberyLocation extends Robbery {
 		}
 
 		if (this.Attacker.Robbery.IsRobbingId) {
-			const user = await Users.findByPk(this.Attacker.Robbery.IsRobbingId);
-			message = `${s.attackerIsRobbingId(user?.nickname)} ${EmoteString.Robbery}`;
+			const user = await Users.findByPk(this.Attacker.Robbery.IsRobbingId, { attributes: ["nickname", "class"] });
+			message = `${s.attackerIsRobbingId(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname}`)} ${EmoteString.Robbery}`;
 			canRob = false;
 		}
 
 		if (this.Attacker.Robbery.IsBeingRobbedById) {
-			const user = await Users.findByPk(this.Attacker.Robbery.IsBeingRobbedById);
-			message = `${s.attackerIsBeingRobbedById(user?.nickname)} ${EmoteString.Robbery}`;
+			const user = await Users.findByPk(this.Attacker.Robbery.IsBeingRobbedById, { attributes: ["nickname", "class"] });
+			message = `${s.attackerIsBeingRobbedById(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname}`)} ${EmoteString.Robbery}`;
 			canRob = false;
 		}
 
