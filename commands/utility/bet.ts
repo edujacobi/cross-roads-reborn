@@ -99,7 +99,7 @@ module.exports = {
 
 		const win = side === coinFlip;
 
-		const prize = value * 0.5;
+		const prize = Math.round(value * 0.5);
 
 		if (win) {
 			user.Money += prize;
