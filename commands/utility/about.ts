@@ -26,8 +26,9 @@ Jacobi
 Jacobi
 Cesar
 Miguel
+Kenny
 
--# ${s.disclaimer}`)
+-# ${s.others}: Quantum, nadalao, CassadorEterno`)
 			.setUserFooter({
 				nickname: user.Nickname,
 				image: interaction.user.avatarURL(),
@@ -44,7 +45,7 @@ const Strings = {
 		direction: "Direction",
 		programming: "Programming",
 		art: "Art",
-		disclaimer: "Some images were made using Image Creator from Microsoft Designer (Bing).",
+		others: "Others",
 	},
 
 	[Language.Portuguese]: {
@@ -53,7 +54,7 @@ const Strings = {
 		direction: "Direção",
 		programming: "Programação",
 		art: "Arte",
-		disclaimer: "Algumas imagens foram criadas utilizando o Image Creator do Microsoft Designer (Bing).",
+		others: "Outros",
 	},
 
 	[Language.Spanish]: {
@@ -62,6 +63,6 @@ const Strings = {
 		direction: "Dirección",
 		programming: "Programación",
 		art: "Arte",
-		disclaimer: "Algunas imágenes se crearon utilizando Image Creator de Microsoft Designer (Bing).",
+		others: "Otros",
 	},
 } as const;
