@@ -208,13 +208,13 @@ export class Shop {
 		}
 
 		if (this.User.Robbery.IsRobbingId) {
-			const user = await Users.findByPk(this.User.Robbery.IsRobbingId);
+			const user = await Users.findByPk(this.User.Robbery.IsRobbingId, { attributes: ["nickname", "class"] });
 			message = `${s.robbing(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname}`)} ${EmoteString.Robbery}`;
 			canBuy = false;
 		}
 
 		if (this.User.Robbery.IsBeingRobbedById) {
-			const user = await Users.findByPk(this.User.Robbery.IsBeingRobbedById);
+			const user = await Users.findByPk(this.User.Robbery.IsBeingRobbedById, { attributes: ["nickname", "class"] });
 			message = `${s.beingRobbed(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname}`)} ${EmoteString.Robbery}`;
 			canBuy = false;
 		}

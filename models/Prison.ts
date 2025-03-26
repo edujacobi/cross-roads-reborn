@@ -293,8 +293,8 @@ export class Prison {
 			canEscape = false;
 		}
 		if (this.User.Robbery.IsBeingRobbedById) {
-			const user = await Users.findByPk(this.User.Robbery.IsBeingRobbedById);
-			message = s.escapeBeingRobbedBy(user?.nickname);
+			const user = await Users.findByPk(this.User.Robbery.IsBeingRobbedById, { attributes: ["nickname", "class"] });
+			message = s.escapeBeingRobbedBy(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname!}`);
 			canEscape = false;
 		}
 
@@ -519,8 +519,8 @@ export class Prison {
 			canBribe = false;
 		}
 		if (this.User.Robbery.IsBeingRobbedById) {
-			const user = await Users.findByPk(this.User.Robbery.IsBeingRobbedById);
-			message = s.bribeBeingRobbedBy(user?.nickname);
+			const user = await Users.findByPk(this.User.Robbery.IsBeingRobbedById, { attributes: ["nickname", "class"] });
+			message = s.bribeBeingRobbedBy(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname!}`);
 			canBribe = false;
 		}
 

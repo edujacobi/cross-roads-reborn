@@ -60,8 +60,8 @@ module.exports = {
 
 				const emoji = rob.success ? EmoteString.Victory : EmoteString.Defeat;
 				const text = rob.success ? s.success : s.failure;
-				const attacker = await Users.findByPk(rob.attackerId);
-				const defender = await Users.findByPk(rob.defenderId);
+				const attacker = await Users.findByPk(rob.attackerId, { attributes: ["id", "class", "nickname"] });
+				const defender = await Users.findByPk(rob.defenderId, { attributes: ["id", "class", "nickname"] });
 				const location = LocationList[rob.locationId];
 
 				if (!attacker) {
