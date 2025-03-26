@@ -22,6 +22,12 @@ export enum ItemId {
 	Exoskeleton,
 	Jetpack,
 	Grenade,
+	MicroUzi,
+	Sawnoff,
+	AdvancedScope,
+	Sunglasses,
+	BrassKnuckles,
+	BaseballBat,
 }
 
 export enum ItemType {
@@ -165,6 +171,39 @@ export const ItemList: ItemListType = {
 		Shop: true,
 		BlackMarket: false,
 	},
+	[ItemId.MicroUzi]: {
+		Id: ItemId.MicroUzi,
+		Type: ItemType.Weapon,
+		Description: {
+			[Language.English]: "Micro Uzi",
+			[Language.Portuguese]: "Micro Uzi",
+			[Language.Spanish]: "Micro Uzi",
+		},
+		Skin: {
+			Default: {
+				Description: defaultSkinDescription,
+				Emote: {
+					Id: EmoteId.MicroUzi,
+					String: EmoteString.MicroUzi,
+				},
+			},
+		},
+		Price: 0,
+		Attack: 25,
+		Defense: 10,
+		MoneyAttack: 10,
+		MoneyDefense: 16,
+		MoreAttack: 0,
+		MoreDefense: 0,
+		MoreMoneyATK: 0,
+		MoreMoneyDEF: 0,
+		Special: {
+			Day: false,
+			Night: false,
+		},
+		Shop: false,
+		BlackMarket: false,
+	},
 	[ItemId.Rifle]: {
 		Id: ItemId.Rifle,
 		Type: ItemType.Weapon,
@@ -229,6 +268,39 @@ export const ItemList: ItemListType = {
 			Night: false,
 		},
 		Shop: true,
+		BlackMarket: false,
+	},
+	[ItemId.Sawnoff]: {
+		Id: ItemId.Sawnoff,
+		Type: ItemType.Weapon,
+		Description: {
+			[Language.English]: "Sawnoff Uplander",
+			[Language.Portuguese]: "Uplander Serrada",
+			[Language.Spanish]: "Uplander Serrada",
+		},
+		Skin: {
+			Default: {
+				Description: defaultSkinDescription,
+				Emote: {
+					Id: EmoteId.SawnOff,
+					String: EmoteString.SawnOff,
+				},
+			},
+		},
+		Price: 40000,
+		Attack: 35,
+		Defense: 20,
+		MoneyAttack: 14,
+		MoneyDefense: 24,
+		MoreAttack: 0,
+		MoreDefense: 0,
+		MoreMoneyATK: 0,
+		MoreMoneyDEF: 0,
+		Special: {
+			Day: false,
+			Night: false,
+		},
+		Shop: false,
 		BlackMarket: false,
 	},
 	[ItemId.MP5]: {
@@ -693,6 +765,139 @@ export const ItemList: ItemListType = {
 			Night: false,
 		},
 	},
+	[ItemId.Sunglasses]: {
+		Id: ItemId.Sunglasses,
+		Type: ItemType.Wearable,
+		Description: {
+			[Language.English]: "Sun Glasses",
+			[Language.Portuguese]: "Óculos de Sol",
+			[Language.Spanish]: "Gafas de Sol",
+		},
+		Skin: {
+			Default: {
+				Description: defaultSkinDescription,
+				Emote: {
+					Id: "🕶️",
+					String: "🕶️",
+				},
+			},
+		},
+		Price: 0,
+		Shop: false,
+		BlackMarket: false,
+		Attack: 0,
+		Defense: 0,
+		MoneyAttack: 0,
+		MoneyDefense: 0,
+		MoreAttack: 0,
+		MoreDefense: 1,
+		MoreMoneyATK: 0,
+		MoreMoneyDEF: 0,
+		Special: {
+			Day: true,
+			Night: false,
+		},
+	},
+	[ItemId.BrassKnuckles]: {
+		Id: ItemId.BrassKnuckles,
+		Type: ItemType.Wearable,
+		Description: {
+			[Language.English]: "Brass Knucles",
+			[Language.Portuguese]: "Soco inglês",
+			[Language.Spanish]: "Puño de latón",
+		},
+		Skin: {
+			Default: {
+				Description: defaultSkinDescription,
+				Emote: {
+					Id: EmoteId.BrassKnuckles,
+					String: EmoteString.BrassKnuckles,
+				},
+			},
+		},
+		Price: 0,
+		Shop: false,
+		BlackMarket: false,
+		Attack: 0,
+		Defense: 0,
+		MoneyAttack: 0,
+		MoneyDefense: 0,
+		MoreAttack: 1,
+		MoreDefense: 0,
+		MoreMoneyATK: 0,
+		MoreMoneyDEF: 0,
+		Special: {
+			Day: false,
+			Night: false,
+		},
+	},
+	[ItemId.BaseballBat]: {
+		Id: ItemId.BaseballBat,
+		Type: ItemType.Wearable,
+		Description: {
+			[Language.English]: "Baseball bat",
+			[Language.Portuguese]: "Taco de beisebol",
+			[Language.Spanish]: "Bate de béisbol",
+		},
+		Skin: {
+			Default: {
+				Description: defaultSkinDescription,
+				Emote: {
+					Id: EmoteId.BaseballBat,
+					String: EmoteString.BaseballBat,
+				},
+			},
+		},
+		Price: 0,
+		Shop: false,
+		BlackMarket: false,
+		Attack: 0,
+		Defense: 0,
+		MoneyAttack: 0,
+		MoneyDefense: 0,
+		MoreAttack: 2,
+		MoreDefense: 0,
+		MoreMoneyATK: 0,
+		MoreMoneyDEF: 0,
+		Special: {
+			Day: false,
+			Night: false,
+		},
+	},
+	[ItemId.AdvancedScope]: {
+		Id: ItemId.AdvancedScope,
+		Type: ItemType.Wearable,
+		Description: {
+			[Language.English]: "Advanced scope",
+			[Language.Portuguese]: "Mira avançada",
+			[Language.Spanish]: "Mira avanzada",
+		},
+		Skin: {
+			Default: {
+				Description: defaultSkinDescription,
+				Emote: {
+					Id: EmoteId.AdvancedScope,
+					String: EmoteString.AdvancedScope,
+				},
+			},
+		},
+		Price: 1_000_000,
+		Shop: false,
+		BlackMarket: true,
+		Attack: 0,
+		Defense: 0,
+		MoneyAttack: 0,
+		MoneyDefense: 0,
+		MoreAttack: 2,
+		MoreDefense: 0,
+		MoreMoneyATK: 0,
+		MoreMoneyDEF: 0,
+		Special: {
+			Day: true,
+			Night: false,
+		},
+	},
+};
 
 export function getItemList(): Items[] {
 	return Object.values(ItemList);
