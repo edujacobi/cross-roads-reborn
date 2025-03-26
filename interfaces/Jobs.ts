@@ -45,7 +45,7 @@ export const JobList: JobType = {
 			[Language.Spanish]: "Conductor de Uber",
 		},
 		Duration: 0.5,
-		Salary: 200,
+		Salary: 175,
 		NeedItem: null,
 		Special: false,
 	},
