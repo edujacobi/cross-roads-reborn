@@ -75,6 +75,11 @@ export enum EmoteId {
 	Bazooka = "829906313315090462",
 	Exoskeleton = "829906315618025492",
 	Granade = "829906313239855105",
+	MicroUzi = "1352454623096471653",
+	SawnOff = "1352249748211372053",
+	BaseballBat = "1352249744025714698",
+	BrassKnuckles = "1352249746332450868",
+	AdvancedScope = "1352454951149895740",
 
 	CloseInv = "823344220597256223",
 	OpenInv = "823344220966223972",
@@ -93,7 +98,7 @@ export enum EmoteId {
 	Hospital = "1352830287641448540",
 	Police = "1339924939385470986",
 	Casino = "539497634780676107",
-	Scavenge = "948015474988445727",
+	Scavenge = "816407267581886575",
 	Bank = "539497634826551307",
 	React = "1343948089249103945",
 	Escape = "1345061962437890129",
@@ -113,6 +118,15 @@ export enum EmoteId {
 	Mafioso = "1343060418461044756",
 	Thief = "1343060416896696423",
 
+	// Scavenge
+	Dump = "1353083468502011956",
+	Forest = "1353083471408398510",
+	Sewer = "1353083481931907132",
+	WeaponFactory = "1353083479704866867",
+	DrugLab = "1353083470011826246",
+	NuclearPlant = "1353083473396502568",
+	AlienShip = "1353083477712703518",
+	MilitaryBase = "1353083475275546745",
 }
 
 export const EmoteString = {
@@ -192,6 +206,11 @@ export const EmoteString = {
 	Bazooka: `<:Bazuca:${EmoteId.Bazooka}>`,
 	Exoskeleton: `<:Exoesqueleto:${EmoteId.Exoskeleton}>`,
 	Granade: `<:Granada:${EmoteId.Granade}>`,
+	MicroUzi: `<:MicroUzi:${EmoteId.MicroUzi}>`,
+	SawnOff: `<:SawnOff:${EmoteId.SawnOff}>`,
+	BaseballBat: `<:BaseballBat:${EmoteId.BaseballBat}>`,
+	BrassKnuckles: `<:BrassKnuckles:${EmoteId.BrassKnuckles}>`,
+	AdvancedScope: `<:AdvancedScope:${EmoteId.AdvancedScope}>`,
 
 	CloseInv: `<:Fechar_Inventario:${EmoteId.CloseInv}>`,
 	OpenInv: `<:Abrir_Inventario:${EmoteId.OpenInv}>`,
@@ -229,4 +248,14 @@ export const EmoteString = {
 	Hobo: `<:Class_Hobo:${EmoteId.Hobo}>`,
 	Mafioso: `<:Class_Mafioso:${EmoteId.Mafioso}>`,
 	Thief: `<:Class_Thief:${EmoteId.Thief}>`,
+
+	// Scavenge
+	Dump: `<:Dump:${EmoteId.Dump}>`,
+	Forest: `<:Forest:${EmoteId.Forest}>`,
+	Sewer: `<:Sewer:${EmoteId.Sewer}>`,
+	WeaponFactory: `<:WeaponFactory:${EmoteId.WeaponFactory}>`,
+	DrugLab: `<:DrugLab:${EmoteId.DrugLab}>`,
+	NuclearPlant: `<:NuclearPlant:${EmoteId.NuclearPlant}>`,
+	AlienShip: `<:AlienShip:${EmoteId.AlienShip}>`,
+	MilitaryBase: `<:MilitaryBase:${EmoteId.MilitaryBase}>`,
 };

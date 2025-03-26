@@ -1,5 +1,6 @@
-import { ItemId } from "./Item";
-import { Language } from "./Language";
+import { ItemId } from "./Items";
+import { Language } from "../models/Language";
+import { IDescription } from "./Interfaces";
 
 export enum JobId {
 	UberDriver, // pedreiro
@@ -22,13 +23,7 @@ export enum JobId {
 	Conqueror, // conquistador
 }
 
-interface IDescription {
-	[Language.English]: string;
-	[Language.Portuguese]: string;
-	[Language.Spanish]: string;
-}
-
-export interface Job {
+export interface Jobs {
 	Id: JobId,
 	Description: IDescription;
 	Duration: number,
@@ -38,7 +33,7 @@ export interface Job {
 }
 
 interface JobType {
-	[string: string]: Job;
+	[string: string]: Jobs;
 }
 
 export const JobList: JobType = {
@@ -260,6 +255,6 @@ export const JobList: JobType = {
 	},
 };
 
-export function getJobList(): Job[] {
+export function getJobList(): Jobs[] {
 	return Object.values(JobList);
 }

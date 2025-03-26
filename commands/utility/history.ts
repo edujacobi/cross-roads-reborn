@@ -1,6 +1,6 @@
-﻿import { ChatInputCommandInteraction, Colors, Locale, SlashCommandBuilder, SlashCommandUserOption } from "discord.js";
+﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder, SlashCommandUserOption } from "discord.js";
 import { checkUser, replyUserDontExist } from "../../utils/logic";
-import { formatDate, formatMoney, showTime } from "../../utils/ui";
+import { formatDate, formatMoney } from "../../utils/ui";
 import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
 import { User } from "../../models/User";
 import { RobHistories } from "../../database/RobHistories";
@@ -8,8 +8,8 @@ import { EmoteString } from "../../utils/emotes";
 import { Users } from "../../database/Users";
 import { Language } from "../../models/Language";
 import { Pagination } from "../../models/Pagination";
-import { ClassList } from "../../models/Class";
-import { LocationList } from "../../models/Locations";
+import { ClassList } from "../../interfaces/Classes";
+import { LocationList } from "../../interfaces/Locations";
 import { RobTypes } from "../../models/Robbery";
 
 module.exports = {
@@ -89,13 +89,13 @@ module.exports = {
 			return new CustomEmbedBuilder()
 				.setAuthor({
 					name: `${s.title} ${target.Nickname}`,
-					iconURL: _user.avatarURL() ?? undefined
+					iconURL: _user.avatarURL() ?? undefined,
 				})
 				.setDescription(historyList)
 				.setUserFooter({
 					nickname: user.Nickname,
 					image: interaction.user.avatarURL(),
-					text: pagination.Showing()
+					text: pagination.Showing(),
 				});
 		};
 

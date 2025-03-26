@@ -1,12 +1,13 @@
 import { User } from "./User";
 import { EmoteString } from "../utils/emotes";
 import { showTime } from "../utils/ui";
-import { JobList } from "./Job";
+import { JobList } from "../interfaces/Jobs";
 import { Language } from "./Language";
 import { ChatInputCommandInteraction } from "discord.js";
 import { CustomEmbedBuilder } from "./CustomEmbedBuilder";
 import { CrColors } from "../utils/colors";
 import { replyInteraction } from "../utils/logic";
+import { ScavengeId, ScavengeList } from "../interfaces/Scavenge";
 
 export class Casino {
 	User: User;
@@ -24,7 +25,7 @@ export class Casino {
 			.setColor(CrColors.Casino)
 			.setUserFooter({
 				nickname: this.User.Nickname,
-				image: interaction.user.avatarURL()
+				image: interaction.user.avatarURL(),
 			});
 
 		await replyInteraction(interaction, { embeds: [embed] });
@@ -40,8 +41,13 @@ export class Casino {
 			canPlay = false;
 		}
 
+		if (user.IsScavenging()) {
+			message = s.scavenging(user.Scavenge.IsScavengingId!);
+			canPlay = false;
+		}
+
 		if (user.IsWorking()) {
-			message = `${s.working(JobList[user.Job.Id!].Description[user.Language], user.Job.EndsIn)} ${EmoteString.Jobs}`;
+			message = s.working(JobList[user.Job.Id!].Description[user.Language], user.Job.EndsIn);
 			canPlay = false;
 		}
 
@@ -79,6 +85,7 @@ Bet an amount on a coin that must fall on the same side that you choose. You hav
 
 -# More games coming soon`,
 		noMoney: "You don't have enough money to bet",
+		scavenging: (placeId: ScavengeId) => `You can't bet while scavenging ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.English]}** ${EmoteString.Scavenge}`,
 		working: (job: string, time: Date) => `You are working as **${job}** and can't play on casino ${EmoteString.Jobs}\n-# Will end ${showTime(time.getTime(), true)}`,
 		prison: (time: Date) => `You can't bet while in prison ${EmoteString.Prison}\n-# Will be free ${showTime(time.getTime(), true)}`,
 		hospital: (time: Date) => `You can't bet while in hospital ${EmoteString.Hospital}\n-# Will be healed ${showTime(time.getTime(), true)}!`,
@@ -94,6 +101,7 @@ Aposte um valor em uma moeda que deve cair no mesmo lado que você escolheu. Voc
 
 -# Mais jogos em breve`,
 		noMoney: "Você não possui dinheiro suficiente para apostar",
+		scavenging: (placeId: ScavengeId) => `Você não pode apostar enquanto está vasculhando ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Portuguese]}** ${EmoteString.Scavenge}`,
 		working: (job: string, time: Date) => `Você está trabalhando como **${job}** e não pode apostar no cassino ${EmoteString.Jobs}\n-# Terminará ${showTime(time.getTime(), true)}`,
 		prison: (time: Date) => `Você não pode apostar enquanto está preso ${EmoteString.Prison}\n-# Será solto ${showTime(time.getTime(), true)}`,
 		hospital: (time: Date) => `Você não pode apostar enquanto está hospitalizado ${EmoteString.Hospital}\n-# Será atendido ${showTime(time.getTime(), true)}`,
@@ -109,6 +117,7 @@ Apostar una cantidad en una moneda que debe caer del mismo lado que elijas. Tien
 
 -# ¡Más juegos próximamente!`,
 		noMoney: "No tienes suficiente dinero para apostar",
+		scavenging: (placeId: ScavengeId) => `No puedes apostar mientras estás buscando ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Spanish]}** ${EmoteString.Scavenge}`,
 		working: (job: string, time: Date) => `Estás trabajando como **${job}** y no puedes hacer jugar en casino ${EmoteString.Jobs}\n-# Terminará ${showTime(time.getTime(), true)}`,
 		prison: (time: Date) => `No puedes apostar mientras estás en prisión ${EmoteString.Prison}\n-# Será liberado ${showTime(time.getTime(), true)}`,
 		hospital: (time: Date) => `No puedes apostar mientras estás en el hospital ${EmoteString.Hospital}\n-# Será atendido ${showTime(time.getTime(), true)}`,

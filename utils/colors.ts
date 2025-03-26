@@ -10,4 +10,5 @@ export const CrColors = {
 	BlackMarket: 0x000001,
 	Admin: 0x80e893,
 	Jacobi: 0x426b69,
+	Scavenge: Colors.LightGrey,
 };

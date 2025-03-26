@@ -14,7 +14,7 @@ import { replyInteraction } from "../utils/logic";
 import { BadgeString } from "../utils/badges";
 import { Users } from "../database/Users";
 import { Op } from "sequelize";
-import { ClassList } from "./Class";
+import { ClassList } from "../interfaces/Classes";
 import { defaultEmbed, formatMoney, showTime } from "../utils/ui";
 import { Language } from "./Language";
 import { differenceInMinutes } from "date-fns";

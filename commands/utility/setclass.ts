@@ -9,7 +9,7 @@ import { replyInteraction } from "../../utils/logic";
 import { defaultEmbed } from "../../utils/ui";
 import { User } from "../../models/User";
 import { Language } from "../../models/Language";
-import { ClassId, ClassList } from "../../models/Class";
+import { ClassId, ClassList } from "../../interfaces/Classes";
 
 module.exports = {
 	data: new SlashCommandBuilder()

@@ -17,7 +17,7 @@ import { CrColors } from "../../utils/colors";
 import { User } from "../../models/User";
 import { Language } from "../../models/Language";
 import { Robbery } from "../../models/Robbery";
-import { getLocationList, LocationList } from "../../models/Locations";
+import { getLocationList, LocationList } from "../../interfaces/Locations";
 import { RobberyLocation } from "../../models/RobberyLocation";
 
 module.exports = {
@@ -43,6 +43,10 @@ module.exports = {
 		let text = `${s.userFree}`;
 		let canUserRob = true;
 
+		if (user.IsScavenging()) {
+			text = s.userScavenging;
+			canUserRob = false;
+		}
 		if (user.IsWorking()) {
 			text = s.userWorking;
 			canUserRob = false;
@@ -171,6 +175,7 @@ module.exports = {
 const Strings = {
 	[Language.English]: {
 		userFree: "You can rob!",
+		userScavenging: `You can't rob while scavenging! ${EmoteString.Scavenge}`,
 		userWorking: `You can't rob while working! ${EmoteString.Jobs}`,
 		userEscaping: (timerEscape: Date) => `You can't rob while being wanted by the police! You can rob again ${showTime(timerEscape.getTime(), true)} ${EmoteString.Police}`,
 		userPrison: (timerPrison: Date) => `You can't rob while in prison! You will be released ${showTime(timerPrison.getTime(), true)} ${EmoteString.Prison}`,
@@ -187,6 +192,7 @@ There is a small chance the target will also be beaten up!`,
 	},
 	[Language.Portuguese]: {
 		userFree: "Você pode roubar!",
+		userScavenging: `Você não pode roubar enquanto vasculha! ${EmoteString.Scavenge}`,
 		userWorking: `Você não pode roubar enquanto trabalha! ${EmoteString.Jobs}`,
 		userEscaping: (timerEscape: Date) => `Você não pode roubar enquanto estiver sendo procurado pela polícia! Poderá roubar novamente ${showTime(timerEscape.getTime(), true)} ${EmoteString.Police}`,
 		userPrison: (timerPrison: Date) => `Você não pode roubar enquanto está preso! Será solto ${showTime(timerPrison.getTime(), true)} ${EmoteString.Prison}`,
@@ -203,6 +209,7 @@ Há uma pequena chance do alvo ser também espancado!`,
 	},
 	[Language.Spanish]: {
 		userFree: "¡Puedes robar!",
+		userScavenging: `¡No puedes robar mientras buscas! ${EmoteString.Scavenge}`,
 		userWorking: `¡No puedes robar mientras trabajas! ${EmoteString.Jobs}`,
 		userEscaping: (timerEscape: Date) => `¡No puedes robar mientras eres perseguido por la policía! ¡Puedes robar de nuevo ${showTime(timerEscape.getTime(), true)} ${EmoteString.Police}`,
 		userPrison: (timerPrison: Date) => `¡No puedes robar mientras estás en prisión! ¡Serás liberado ${showTime(timerPrison.getTime(), true)} ${EmoteString.Prison}`,

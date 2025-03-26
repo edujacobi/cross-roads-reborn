@@ -1,7 +1,7 @@
 ﻿import { User } from "./User";
 import { Language } from "./Language";
 import { Shop } from "./Shop";
-import { getItemList } from "./Item";
+import { getItemList } from "../interfaces/Items";
 import { CrColors } from "../utils/colors";
 
 export class BlackMarket extends Shop {

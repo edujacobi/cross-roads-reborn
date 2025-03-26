@@ -1,10 +1,11 @@
 ﻿import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model } from "sequelize";
 import { sequelize } from "./Database";
-import { JobId } from "../models/Job";
+import { JobId } from "../interfaces/Jobs";
 
-import { ClassId } from "../models/Class";
+import { ClassId } from "../interfaces/Classes";
 import { Language } from "../models/Language";
-import { LocationId } from "../models/Locations";
+import { LocationId } from "../interfaces/Locations";
+import { ScavengeId } from "../interfaces/Scavenge";
 
 export class Users extends Model<
 	InferAttributes<Users>,
@@ -44,6 +45,7 @@ export class Users extends Model<
 	declare beingBeatUpByUserId: CreationOptional<string | null>;
 	declare beatUpTime: CreationOptional<Date>;
 
+	declare prisonCount: number;
 	declare prisonBriberySum: number;
 	declare prisonBriberyCount: number;
 	declare prisonHasPaidBribe: boolean;
@@ -75,6 +77,16 @@ export class Users extends Model<
 	declare almsGivenCount: number;
 	declare almsReceivedSum: number;
 	declare almsReceivedCount: number;
+
+	declare scavengingId: CreationOptional<ScavengeId | null>;
+	declare scavengeCount: number;
+	declare scavengeTime: CreationOptional<Date>;
+	declare scavengeFoundItems: number;
+	declare scavengeMoneyCount: number;
+	declare scavengeMoneySum: number;
+	declare scavengeFailures: number;
+	declare scavengeFailureWithHospital: number;
+	declare scavengeFailureWithPrison: number;
 
 	declare createdAt: CreationOptional<Date>;
 	declare updatedAt: CreationOptional<Date>;
@@ -215,6 +227,11 @@ Users.init(
 		beatUpTime: {
 			type: DataTypes.DATE,
 		},
+		prisonCount: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0,
+		},
 		prisonBriberySum: {
 			type: DataTypes.INTEGER,
 			allowNull: false,
@@ -324,6 +341,49 @@ Users.init(
 			defaultValue: 0,
 		},
 		almsReceivedCount: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0,
+		},
+		scavengingId: {
+			type: DataTypes.INTEGER,
+			allowNull: true,
+			defaultValue: null,
+		},
+		scavengeCount: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0,
+		},
+		scavengeTime: {
+			type: DataTypes.DATE,
+		},
+		scavengeFoundItems: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0,
+		},
+		scavengeMoneyCount: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0,
+		},
+		scavengeMoneySum: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0,
+		},
+		scavengeFailures: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0,
+		},
+		scavengeFailureWithHospital: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0,
+		},
+		scavengeFailureWithPrison: {
 			type: DataTypes.INTEGER,
 			allowNull: false,
 			defaultValue: 0,

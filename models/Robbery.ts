@@ -23,10 +23,11 @@ import { addMinutes } from "date-fns";
 import { Language } from "./Language";
 import { RobHistories } from "../database/RobHistories";
 import { Users } from "../database/Users";
-import { ClassId, ClassList } from "./Class";
+import { ClassId, ClassList } from "../interfaces/Classes";
 import { CreationOptional } from "sequelize";
-import { JobId, JobList } from "./Job";
-import { LocationList } from "./Locations";
+import { JobId, JobList } from "../interfaces/Jobs";
+import { LocationList } from "../interfaces/Locations";
+import { ScavengeId, ScavengeList } from "../interfaces/Scavenge";
 
 export enum RobTypes {
 	User = 1,
@@ -92,6 +93,16 @@ export class Robbery {
 
 		if (this.Defender.Attributes.Attack - this.Attacker.Attributes.Attack > 15) {
 			message = s.lowAtk(this.Defender.Nickname);
+			canRob = false;
+		}
+
+		if (this.Attacker.IsScavenging()) {
+			message = s.scavengingA(this.Attacker.Scavenge.IsScavengingId!);
+			canRob = false;
+		}
+
+		if (this.Defender.IsScavenging()) {
+			message = s.scavengingD(this.Defender.Scavenge.IsScavengingId!);
 			canRob = false;
 		}
 
@@ -343,6 +354,7 @@ ${sD.beatedUp(this.Defender.Hospital.Time)} ${EmoteString.Hospital}` : ""}`);
 			this.Attacker.Prison.HasPaidBribe = false;
 			this.Attacker.Escape.HasTried = false;
 			this.Attacker.Robbery.FailureCount += 1;
+			this.Attacker.Prison.Count += 1;
 
 			await Notification.Free(this.Attacker);
 
@@ -399,6 +411,8 @@ const Strings = {
 		withoutClass: "This user hasn't choose a class yet!",
 		withoutItem: "You can't rob without a weapon!",
 		lowAtk: (nick: string) => `You can't rob ${nick} with your current weapons! ${EmoteString.Robbery}\n-# Get a better weapon`,
+		scavengingA: (placeId: ScavengeId) => `You can't rob while scavenging ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.English]}** ${EmoteString.Scavenge}`,
+		scavengingD: (placeId: ScavengeId) => `is scavenging ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.English]}**. Wait a few more seconds to start your action! ${EmoteString.Scavenge}`,
 		inJob: (jobTime: Date, jobId: JobId) => `You can't rob while working! ${EmoteString.Jobs}\n-# Will finish your **${JobList[jobId].Description[Language.English]}** job ${showTime(jobTime.getTime(), true)}!`,
 		inPrison: (prisonTime: Date) => `You can't rob while you're in prison! ${EmoteString.Prison}\n-# Will be released ${showTime(prisonTime.getTime(), true)}!`,
 		isWanted: (wantedTime: Date) => `You can't rob while you're wanted by the police! ${EmoteString.Police}\n-# Will be able to rob again ${showTime(wantedTime.getTime(), true)}!`,
@@ -445,6 +459,8 @@ const Strings = {
 		withoutClass: "Este usuário ainda não escolheu uma classe!",
 		withoutItem: "Você não pode roubar sem uma arma!",
 		lowAtk: (nick: string) => `Você não pode roubar ${nick} usando suas armas atuais! ${EmoteString.Robbery}\n-# Consiga uma arma melhor`,
+		scavengingA: (placeId: ScavengeId) => `Você não pode roubar enquanto está vasculhando ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Portuguese]}** ${EmoteString.Scavenge}`,
+		scavengingD: (placeId: ScavengeId) => `está vasculhando ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Portuguese]}**. Espere mais alguns segundos para iniciar sua ação! ${EmoteString.Scavenge}`,
 		inJob: (jobTime: Date, jobId: JobId) => `Você não pode roubar enquanto está trabalhando! ${EmoteString.Jobs}\n-# Terminará seu trabalho de **${JobList[jobId].Description[Language.Portuguese]}** ${showTime(jobTime.getTime(), true)}!`,
 		inPrison: (prisonTime: Date) => `Você não pode roubar enquanto está preso! ${EmoteString.Prison}\n-# Será solto ${showTime(prisonTime.getTime(), true)}!`,
 		isWanted: (wantedTime: Date) => `Você não pode roubar enquanto está sendo procurado pela polícia! ${EmoteString.Police}\n-# Poderá roubar novamente ${showTime(wantedTime.getTime(), true)}!`,
@@ -491,6 +507,8 @@ const Strings = {
 		withoutClass: "¡Este usuario aún no ha elegido una clase!",
 		withoutItem: "¡No puedes robar sin un arma!",
 		lowAtk: (nick: string) => `¡No puedes robar a ${nick} con tus armas actuales! ${EmoteString.Robbery}\n-# Consigue un arma mejor`,
+		scavengingA: (placeId: ScavengeId) => `No puedes robar mientras estás buscando en ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Spanish]}** ${EmoteString.Scavenge}`,
+		scavengingD: (placeId: ScavengeId) => `está buscando en ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Spanish]}**. ¡Espere unos segundos más para iniciar su acción! ${EmoteString.Scavenge}`,
 		inJob: (jobTime: Date, jobId: JobId) => `¡No puedes robar mientras trabajas! ${EmoteString.Jobs}\n-# ¡Terminará tu trabajo de **${JobList[jobId].Description[Language.Spanish]}** ${showTime(jobTime.getTime(), true)}!`,
 		inPrison: (prisonTime: Date) => `¡No puedes robar mientras estás en prisión! ${EmoteString.Prison}\n-# Será liberado ${showTime(prisonTime.getTime(), true)}!`,
 		isWanted: (wantedTime: Date) => `¡No puedes robar mientras estás siendo buscado por la policía! ${EmoteString.Police}\n-# Podrá robar nuevamente ${showTime(wantedTime.getTime(), true)}!`,

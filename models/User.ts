@@ -5,13 +5,14 @@ import { Language } from "./Language";
 import { UserItems } from "../database/UserItems";
 import { addHours } from "date-fns/addHours";
 import { Op } from "sequelize";
-import { Item, ItemList, ItemType, UserItem } from "./Item";
-import { JobId, JobList } from "./Job";
+import { Items, ItemList, ItemType, UserItem } from "../interfaces/Items";
+import { JobId, JobList } from "../interfaces/Jobs";
 import { Notification, NotificationType } from "./Notification";
 import { formatDate, formatMoney, showTime } from "../utils/ui";
 import { EmoteString } from "../utils/emotes";
-import { ClassId, ClassList } from "./Class";
-import { LocationId } from "./Locations";
+import { ClassId, ClassList } from "../interfaces/Classes";
+import { LocationId } from "../interfaces/Locations";
+import { ScavengeId, ScavengeList } from "../interfaces/Scavenge";
 
 export class User {
 	Id: string;
@@ -45,6 +46,7 @@ export class User {
 		IsRobbingLocationId: null as LocationId | null,
 	};
 	Prison = {
+		Count: 0,
 		BriberySum: 0,
 		BriberyCount: 0,
 		HasPaidBribe: false,
@@ -94,7 +96,7 @@ export class User {
 		SimpleEmote: "",
 		Complex: "",
 	};
-	BestGun: Item | null = null;
+	BestGun: Items | null = null;
 	Alms = {
 		GiveTime: new Date(),
 		ReceiveTime: new Date(),
@@ -102,6 +104,19 @@ export class User {
 		GivenCount: 0,
 		ReceivedSum: 0,
 		ReceivedCount: 0,
+	};
+	Scavenge = {
+		IsScavengingId: null as ScavengeId | null,
+		Count: 0,
+		Time: new Date(),
+		Found: {
+			Items: 0,
+			MoneyCount: 0,
+			MoneySum: 0,
+			Failures: 0,
+			FailureWithHospital: 0,
+			FailureWithPrison: 0,
+		},
 	};
 
 	constructor(id: string, language: Language = Language.English) {
@@ -132,6 +147,7 @@ export class User {
 				hospitalTreatmentSum: 0,
 				jobReceivedCount: 0,
 				jobReceivedSum: 0,
+				prisonCount: 0,
 				prisonBriberyCount: 0,
 				prisonBriberySum: 0,
 				prisonHasPaidBribe: false,
@@ -149,6 +165,13 @@ export class User {
 				almsGivenCount: 0,
 				almsReceivedSum: 0,
 				almsReceivedCount: 0,
+				scavengeCount: 0,
+				scavengeFoundItems: 0,
+				scavengeMoneyCount: 0,
+				scavengeMoneySum: 0,
+				scavengeFailures: 0,
+				scavengeFailureWithHospital: 0,
+				scavengeFailureWithPrison: 0,
 			});
 			Log.Success(`User ${this.Id} created.`);
 
@@ -180,7 +203,7 @@ export class User {
 		this.Class = user.class;
 		this.Language = user.language;
 
-		// Job
+		// Jobs
 		this.Job.Id = user.jobId;
 		this.Job.EndsIn = new Date(user.jobTime);
 		this.Job.ReceivedCount = user.jobReceivedCount;
@@ -219,6 +242,7 @@ export class User {
 		}
 
 		// Prison
+		this.Prison.Count = user.prisonCount;
 		this.Prison.BriberySum = user.prisonBriberySum;
 		this.Prison.BriberyCount = user.prisonBriberyCount;
 		this.Prison.HasPaidBribe = user.prisonHasPaidBribe;
@@ -256,6 +280,17 @@ export class User {
 		this.Alms.GivenCount = user.almsGivenCount;
 		this.Alms.ReceivedSum = user.almsReceivedSum;
 		this.Alms.ReceivedCount = user.almsReceivedCount;
+
+		// Scavenge
+		this.Scavenge.IsScavengingId = user.scavengingId;
+		this.Scavenge.Count = user.scavengeCount;
+		this.Scavenge.Time = user.scavengeTime;
+		this.Scavenge.Found.Items = user.scavengeFoundItems;
+		this.Scavenge.Found.MoneyCount = user.scavengeMoneyCount;
+		this.Scavenge.Found.MoneySum = user.scavengeMoneySum;
+		this.Scavenge.Found.Failures = user.scavengeFailures;
+		this.Scavenge.Found.FailureWithHospital = user.scavengeFailureWithHospital;
+		this.Scavenge.Found.FailureWithPrison = user.scavengeFailureWithPrison;
 
 		await this.GetAttributes();
 		await this.GetSituation();
@@ -355,7 +390,7 @@ export class User {
 		return money;
 	}
 
-	async BuyItem(item: Item) {
+	async BuyItem(item: Items) {
 		this.Money -= item.Price;
 
 		const existingItem = await UserItems.findOne({
@@ -499,28 +534,14 @@ export class User {
 		if (this.Robbery.IsRobbingId) {
 			this.Situation.Simple = s.robbing;
 			this.Situation.SimpleEmote = `${EmoteString.Robbery} ${this.Situation.Simple}`;
-			const user = await Users.findOne({
-				where: {
-					id: this.Robbery.IsRobbingId,
-				},
-			});
-			if (!user) {
-				return;
-			}
-			this.Situation.Complex = `${EmoteString.Robbery} ${s.robbing} ${user.nickname}`;
+			const user = await Users.findByPk(this.Robbery.IsRobbingId, { attributes: ["id", "nickname"] });
+			this.Situation.Complex = `${EmoteString.Robbery} ${s.robbing} ${user!.nickname}`;
 		}
 		if (this.Robbery.IsBeingRobbedById) {
 			this.Situation.Simple = s.beingRobbedSimple;
 			this.Situation.SimpleEmote = `${EmoteString.Robbery} ${this.Situation.Simple}`;
-			const user = await Users.findOne({
-				where: {
-					id: this.Robbery.IsBeingRobbedById,
-				},
-			});
-			if (!user) {
-				return;
-			}
-			this.Situation.Complex = `${EmoteString.Robbery} ${s.beingRobbedComplex} ${user.nickname}`;
+			const user = await Users.findByPk(this.Robbery.IsBeingRobbedById, { attributes: ["id", "nickname"] });
+			this.Situation.Complex = `${EmoteString.Robbery} ${s.beingRobbedComplex} ${user!.nickname}`;
 		}
 		if (this.IsInPrison() && this.IsInHospital()) {
 			this.Situation.Simple = s.imprisonedAndHospitalSimple;
@@ -536,6 +557,11 @@ export class User {
 			this.Situation.Simple = s.hospitalSimple;
 			this.Situation.SimpleEmote = `${EmoteString.Hospital} ${s.imprisonedSimple}`;
 			this.Situation.Complex = `${EmoteString.Hospital} ${s.hospitalComplex} ${showTime(this.Hospital.Time.getTime())}`;
+		}
+		if (this.IsScavenging()) {
+			this.Situation.Simple = s.scavenging;
+			this.Situation.SimpleEmote = `${EmoteString.Scavenge} ${s.scavenging}`;
+			this.Situation.Complex = `${EmoteString.Scavenge} ${s.scavenging} ${ScavengeList[this.Scavenge.IsScavengingId!].Emote.String} ${ScavengeList[this.Scavenge.IsScavengingId!].Description[this.Language]}`;
 		}
 		if (this.IsWanted()) {
 			this.Situation.Simple += ` ${s.wantedSimple}`;
@@ -562,6 +588,10 @@ export class User {
 
 	IsInHospital() {
 		return this.Hospital.Time > new Date();
+	}
+
+	IsScavenging() {
+		return this.Scavenge.IsScavengingId != null;
 	}
 
 	async StartJob(jobId: JobId) {
@@ -635,6 +665,7 @@ export class User {
 				beingBeatUpByUserId: this.BeatUp.IsBeingBeatUpById,
 				beatUpTime: this.BeatUp.Time,
 
+				prisonCount: this.Prison.Count,
 				prisonBriberySum: this.Prison.BriberySum,
 				prisonBriberyCount: this.Prison.BriberyCount,
 				prisonHasPaidBribe: this.Prison.HasPaidBribe,
@@ -666,6 +697,16 @@ export class User {
 				almsGivenCount: this.Alms.GivenCount,
 				almsReceivedSum: this.Alms.ReceivedSum,
 				almsReceivedCount: this.Alms.ReceivedCount,
+
+				scavengingId: this.Scavenge.IsScavengingId,
+				scavengeCount: this.Scavenge.Count,
+				scavengeTime: this.Scavenge.Time,
+				scavengeFoundItems: this.Scavenge.Found.Items,
+				scavengeMoneyCount: this.Scavenge.Found.MoneyCount,
+				scavengeMoneySum: this.Scavenge.Found.MoneySum,
+				scavengeFailures: this.Scavenge.Found.Failures,
+				scavengeFailureWithHospital: this.Scavenge.Found.FailureWithHospital,
+				scavengeFailureWithPrison: this.Scavenge.Found.FailureWithPrison,
 
 				updatedAt: this.UpdatedAt,
 			}, {
@@ -706,6 +747,7 @@ const Strings = {
 		imprisonedAndHospitalSimple: "Imprisoned and Hospitalized",
 		imprisonedAndHospitalSimpleEmote: `${EmoteString.Prison} Imprisoned and ${EmoteString.Hospital} Hospitalized`,
 		imprisonedAndHospitalComplex: (prisonTime: Date, hospitalTime: Date) => `${EmoteString.Prison} Imprisoned until ${showTime(prisonTime.getTime())} and ${EmoteString.Hospital} Hospitalized until ${showTime(hospitalTime.getTime())}`,
+		scavenging: `Scavenging`,
 		wantedSimple: "and Wanted",
 		wantedSimpleEmote: `and ${EmoteString.Police} Wanted`,
 		wantedComplex: `and ${EmoteString.Police} Wanted until`,
@@ -724,6 +766,7 @@ const Strings = {
 		imprisonedAndHospitalSimple: "Preso e Hospitalizado",
 		imprisonedAndHospitalSimpleEmote: `${EmoteString.Prison} Preso e ${EmoteString.Hospital} Hospitalizado`,
 		imprisonedAndHospitalComplex: (prisonTime: Date, hospitalTime: Date) => `${EmoteString.Prison} Preso até ${showTime(prisonTime.getTime())} e ${EmoteString.Hospital} Hospitalizado até ${showTime(hospitalTime.getTime())}`,
+		scavenging: "Vasculhando",
 		wantedSimple: "e Procurado",
 		wantedSimpleEmote: `e ${EmoteString.Police} Procurado`,
 		wantedComplex: `e ${EmoteString.Police} Procurado até`,
@@ -742,6 +785,7 @@ const Strings = {
 		imprisonedAndHospitalSimpleEmote: `${EmoteString.Prison} Preso y ${EmoteString.Hospital} Hospitalizado`,
 		imprisonedAndHospitalComplex: (prisonTime: Date, hospitalTime: Date) => `${EmoteString.Prison} Preso hasta ${showTime(prisonTime.getTime())} y ${EmoteString.Hospital} Hospitalizado hasta ${showTime(hospitalTime.getTime())}`,
 		imprisonedComplex: "Preso hasta",
+		scavenging: "Buscando",
 		wantedSimple: "y Buscado",
 		wantedSimpleEmote: `y ${EmoteString.Police} Buscado`,
 		wantedComplex: `y ${EmoteString.Police} Buscado hasta`,

@@ -3,7 +3,7 @@ import { Op } from "sequelize";
 import { addDays } from "date-fns";
 import { Log } from "../utils/log";
 import { addHours } from "date-fns/addHours";
-import { JobList } from "./Job";
+import { JobList } from "../interfaces/Jobs";
 import { User } from "./User";
 import { Language } from "./Language";
 import { EmoteString } from "../utils/emotes";
@@ -18,7 +18,8 @@ export enum NotificationType {
 	Free,
 	Hospital,
 	AlmsGive,
-	AlmsReceive
+	AlmsReceive,
+	Scavenge,
 }
 
 export class Notification {
@@ -106,6 +107,14 @@ export class Notification {
 		notification.UserId = user.Id;
 		notification.Type = NotificationType.AlmsReceive;
 		notification.Date = user.Alms.ReceiveTime;
+		await notification.Create();
+	}
+
+	static async Scavenge(user: User) {
+		const notification = new Notification();
+		notification.UserId = user.Id;
+		notification.Type = NotificationType.Scavenge;
+		notification.Date = user.Scavenge.Time;
 		await notification.Create();
 	}
 
@@ -245,6 +254,10 @@ export class Notification {
 				await sendPrivateMessage(user.Id, s.almsReceive, CrColors.Default);
 			}
 
+			else if (notification.Type == NotificationType.Scavenge) {
+				await sendPrivateMessage(user.Id, s.scavenge, CrColors.Scavenge);
+			}
+
 			await notification.SetAsNotified();
 		}
 		// Log.Info(`Notification procedure complete ↑`);
@@ -264,6 +277,7 @@ const Strings = {
 		hospital: `You are healed! ${EmoteString.Hospital}`,
 		almsGive: `You can give alms again! ${EmoteString.Alms}`,
 		almsReceive: `You can receive alms again! ${EmoteString.Alms}`,
+		scavenge: `You can scavenge again! ${EmoteString.Scavenge}`,
 	},
 	[Language.Portuguese]: {
 		daily: `Você pode receber sua grana diária novamente! ${EmoteString.Experience}`,
@@ -273,6 +287,7 @@ const Strings = {
 		hospital: `Você está curado! ${EmoteString.Hospital}`,
 		almsGive: `Você pode dar esmola novamente! ${EmoteString.Alms}`,
 		almsReceive: `Você pode receber esmola novamente! ${EmoteString.Alms}`,
+		scavenge: `Você pode vasculhar novamente! ${EmoteString.Scavenge}`,
 	},
 	[Language.Spanish]: {
 		daily: `¡Puedes recibir tu dinero diario de nuevo! ${EmoteString.Experience}`,
@@ -282,5 +297,6 @@ const Strings = {
 		hospital: `¡Estás curado! ${EmoteString.Hospital}`,
 		almsGive: `¡Puedes dar limosna de nuevo! ${EmoteString.Alms}`,
 		almsReceive: `¡Puedes recibir limosna de nuevo! ${EmoteString.Alms}`,
+		scavenge: `¡Puedes buscar de nuevo! ${EmoteString.Scavenge}`,
 	},
 } as const;

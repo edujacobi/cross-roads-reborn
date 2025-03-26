@@ -41,6 +41,7 @@ export async function removeAllFromRobbery() {
 			beingRobbedByUserId: null,
 			robbingUserId: null,
 			robbingLocationId: null,
+			scavengingId: null,
 		}, {
 			where: {
 				[Op.or]: {
@@ -53,15 +54,18 @@ export async function removeAllFromRobbery() {
 					robbingLocationId: {
 						[Op.not]: null,
 					},
+					scavengingId: {
+						[Op.not]: null,
+					},
 				},
 			},
 		});
 
-		Log.Info(`${affectedCount} users removed from robberies.`);
+		Log.Info(`${affectedCount} users removed from robberies or scavenges.`);
 
 	}
 	catch (err) {
-		Log.Warning(`Something went wrong with removing Users from robberies.`);
+		Log.Warning(`Something went wrong with removing Users from robberies or scavenges.`);
 	}
 }
 

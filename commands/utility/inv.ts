@@ -16,10 +16,10 @@ import { formatMoney, showTime } from "../../utils/ui";
 import { Badge } from "../../models/Badge";
 import { Language } from "../../models/Language";
 import { EmoteId, EmoteString } from "../../utils/emotes";
-import { ItemType } from "../../models/Item";
+import { ItemType } from "../../interfaces/Items";
 import { subMinutes } from "date-fns";
 import { User } from "../../models/User";
-import { ClassList } from "../../models/Class";
+import { ClassList } from "../../interfaces/Classes";
 
 module.exports = {
 	vip: true,

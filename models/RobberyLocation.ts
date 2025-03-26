@@ -13,9 +13,11 @@ import { Language } from "./Language";
 import { RobHistories } from "../database/RobHistories";
 import { Users } from "../database/Users";
 import { CreationOptional } from "sequelize";
-import { JobId, JobList } from "./Job";
+import { JobId, JobList } from "../interfaces/Jobs";
 import { Robbery, RobTypes } from "./Robbery";
-import { Location, LocationList } from "./Locations";
+import { Location, LocationList } from "../interfaces/Locations";
+import { ClassList } from "../interfaces/Classes";
+import { ScavengeId, ScavengeList } from "../interfaces/Scavenge";
 
 export class RobberyLocation extends Robbery {
 	Location: Location;
@@ -35,6 +37,11 @@ export class RobberyLocation extends Robbery {
 
 		if (this.Attacker.Attributes.Attack < this.Location.NeedAttack) {
 			message = `${s.needMoreAttack} ${EmoteString.Robbery}`;
+			canRob = false;
+		}
+
+		if (this.Attacker.IsScavenging()) {
+			message = s.scavenging(this.Attacker.Scavenge.IsScavengingId!);
 			canRob = false;
 		}
 
@@ -135,6 +142,7 @@ export class RobberyLocation extends Robbery {
 			this.Attacker.Prison.HasPaidBribe = false;
 			this.Attacker.Escape.HasTried = false;
 			this.Attacker.Robbery.FailureCount += 1;
+			this.Attacker.Prison.Count += 1;
 
 			await Notification.Free(this.Attacker);
 
@@ -170,6 +178,7 @@ const Strings = {
 	[Language.English]: {
 		// CanRob
 		needMoreAttack: `You need more ${EmoteString.Attack}ATK to rob this location!`,
+		scavenging: (placeId: ScavengeId) => `You can't rob while scavenging ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.English]}** ${EmoteString.Scavenge}`,
 		inJob: (jobTime: Date, jobId: JobId) => `You can't rob while working! ${EmoteString.Jobs}\n-# Will finish your **${JobList[jobId].Description[Language.English]}** job ${showTime(jobTime.getTime(), true)}!`,
 		inPrison: (prisonTime: Date) => `You can't rob while you're in prison! ${EmoteString.Prison}\n-# Will be released ${showTime(prisonTime.getTime(), true)}!`,
 		isWanted: (wantedTime: Date) => `You can't rob while you're wanted by the police! ${EmoteString.Police}\n-# Will be able to rob again ${showTime(wantedTime.getTime(), true)}!`,
@@ -187,6 +196,7 @@ const Strings = {
 	[Language.Portuguese]: {
 		// CanRob
 		needMoreAttack: `Você precisa mais ${EmoteString.Attack}ATK para roubar este local!`,
+		scavenging: (placeId: ScavengeId) => `Você não pode roubar enquanto está vasculhando ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Portuguese]}** ${EmoteString.Scavenge}`,
 		inJob: (jobTime: Date, jobId: JobId) => `Você não pode roubar enquanto está trabalhando! ${EmoteString.Jobs}\n-# Terminará seu trabalho de **${JobList[jobId].Description[Language.Portuguese]}** ${showTime(jobTime.getTime(), true)}!`,
 		inPrison: (prisonTime: Date) => `Você não pode roubar enquanto está preso! ${EmoteString.Prison}\n-# Será solto ${showTime(prisonTime.getTime(), true)}!`,
 		isWanted: (wantedTime: Date) => `Você não pode roubar enquanto está sendo procurado pela polícia! ${EmoteString.Police}\n-# Poderá roubar novamente ${showTime(wantedTime.getTime(), true)}!`,
@@ -204,6 +214,7 @@ const Strings = {
 	[Language.Spanish]: {
 		// CanRob
 		needMoreAttack: `¡Necesitas más ${EmoteString.Attack}ATK para robar este lugar!`,
+		scavenging: (placeId: ScavengeId) => `¡No puedes robar mientras estás buscando en ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Spanish]}** ${EmoteString.Scavenge}`,
 		inJob: (jobTime: Date, jobId: JobId) => `¡No puedes robar mientras trabajas! ${EmoteString.Jobs}\n-# ¡Terminará tu trabajo de **${JobList[jobId].Description[Language.Spanish]}** ${showTime(jobTime.getTime(), true)}!`,
 		inPrison: (prisonTime: Date) => `¡No puedes robar mientras estás en prisión! ${EmoteString.Prison}\n-# Será liberado ${showTime(prisonTime.getTime(), true)}!`,
 		isWanted: (wantedTime: Date) => `¡No puedes robar mientras estás siendo buscado por la policía! ${EmoteString.Police}\n-# Podrá robar nuevamente ${showTime(wantedTime.getTime(), true)}!`,

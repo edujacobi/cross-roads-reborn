@@ -5,7 +5,7 @@ import { formatMoney } from "../../utils/ui";
 import { Users } from "../../database/Users";
 import { User } from "../../models/User";
 import { Language } from "../../models/Language";
-import { ClassList } from "../../models/Class";
+import { ClassList } from "../../interfaces/Classes";
 import { BadgeString } from "../../utils/badges";
 import { Pagination } from "../../models/Pagination";
 

@@ -1,5 +1,5 @@
 import { defaultSkinDescription, IDescription, ISkin } from "./Interfaces";
-import { Language } from "./Language";
+import { Language } from "../models/Language";
 import { EmoteId, EmoteString } from "../utils/emotes";
 
 export enum ItemId {
@@ -26,12 +26,12 @@ export enum ItemId {
 
 export enum ItemType {
 	Weapon,
-	Armor,
+	Wearable,
 	Accessory,
 	Consumable,
 }
 
-export interface Item {
+export interface Items {
 	Id: ItemId,
 	Type: ItemType,
 	Description: IDescription;
@@ -56,13 +56,13 @@ export interface Item {
 	}
 }
 
-export interface UserItem extends Item {
+export interface UserItem extends Items {
 	RemainingTime: Date,
 	Quantity: number
 }
 
 interface ItemListType {
-	[key: number]: Item,
+	[key: number]: Items,
 }
 
 export const ItemList: ItemListType = {
@@ -83,7 +83,7 @@ export const ItemList: ItemListType = {
 				},
 			},
 		},
-		Price: 2000,
+		Price: 2_000,
 		Attack: 15,
 		Defense: 0,
 		MoneyAttack: 6,
@@ -103,9 +103,9 @@ export const ItemList: ItemListType = {
 		Id: ItemId.Colt45,
 		Type: ItemType.Weapon,
 		Description: {
-			[Language.English]: "Colt 45",
-			[Language.Portuguese]: "Colt 45",
-			[Language.Spanish]: "Colt 45",
+			[Language.English]: "Glock 17",
+			[Language.Portuguese]: "Glock 17",
+			[Language.Spanish]: "Glock 17",
 		},
 		Skin: {
 			Default: {
@@ -116,7 +116,7 @@ export const ItemList: ItemListType = {
 				},
 			},
 		},
-		Price: 5900,
+		Price: 5_900,
 		Attack: 20,
 		Defense: 5,
 		MoneyAttack: 8,
@@ -149,7 +149,7 @@ export const ItemList: ItemListType = {
 				},
 			},
 		},
-		Price: 15000,
+		Price: 15_000,
 		Attack: 25,
 		Defense: 10,
 		MoneyAttack: 10,
@@ -182,7 +182,7 @@ export const ItemList: ItemListType = {
 				},
 			},
 		},
-		Price: 27000,
+		Price: 27_000,
 		Attack: 30,
 		Defense: 15,
 		MoneyAttack: 12,
@@ -202,9 +202,9 @@ export const ItemList: ItemListType = {
 		Id: ItemId.Shotgun,
 		Type: ItemType.Weapon,
 		Description: {
-			[Language.English]: "Shotgun",
-			[Language.Portuguese]: "Escopeta",
-			[Language.Spanish]: "Escopeta",
+			[Language.English]: "Remington 870",
+			[Language.Portuguese]: "Remington 870",
+			[Language.Spanish]: "Remington 870",
 		},
 		Skin: {
 			Default: {
@@ -215,7 +215,7 @@ export const ItemList: ItemListType = {
 				},
 			},
 		},
-		Price: 40000,
+		Price: 40_000,
 		Attack: 35,
 		Defense: 20,
 		MoneyAttack: 14,
@@ -281,7 +281,7 @@ export const ItemList: ItemListType = {
 				},
 			},
 		},
-		Price: 100000,
+		Price: 100_000,
 		Attack: 45,
 		Defense: 30,
 		MoneyAttack: 18,
@@ -301,9 +301,9 @@ export const ItemList: ItemListType = {
 		Id: ItemId.M4,
 		Type: ItemType.Weapon,
 		Description: {
-			[Language.English]: "M4",
-			[Language.Portuguese]: "M4",
-			[Language.Spanish]: "M4",
+			[Language.English]: "M4A1",
+			[Language.Portuguese]: "M4A1",
+			[Language.Spanish]: "M4A1",
 		},
 		Skin: {
 			Default: {
@@ -314,7 +314,7 @@ export const ItemList: ItemListType = {
 				},
 			},
 		},
-		Price: 135000,
+		Price: 135_000,
 		Attack: 50,
 		Defense: 35,
 		MoneyAttack: 20,
@@ -347,7 +347,7 @@ export const ItemList: ItemListType = {
 				},
 			},
 		},
-		Price: 210000,
+		Price: 210_000,
 		Attack: 55,
 		Defense: 40,
 		MoneyAttack: 22,
@@ -380,7 +380,7 @@ export const ItemList: ItemListType = {
 				},
 			},
 		},
-		Price: 330000,
+		Price: 330_000,
 		Attack: 60,
 		Defense: 45,
 		MoneyAttack: 24,
@@ -413,7 +413,7 @@ export const ItemList: ItemListType = {
 				},
 			},
 		},
-		Price: 666000,
+		Price: 666_000,
 		Attack: 70,
 		Defense: 35,
 		MoneyAttack: 26,
@@ -446,7 +446,7 @@ export const ItemList: ItemListType = {
 				},
 			},
 		},
-		Price: 10000000,
+		Price: 10_000_000,
 		Attack: 80,
 		Defense: 45,
 		MoneyAttack: 28,
@@ -497,7 +497,7 @@ export const ItemList: ItemListType = {
 	},
 	[ItemId.LightVest]: {
 		Id: ItemId.LightVest,
-		Type: ItemType.Armor,
+		Type: ItemType.Wearable,
 		Description: {
 			[Language.English]: "Light vest",
 			[Language.Portuguese]: "Colete leve",
@@ -512,7 +512,7 @@ export const ItemList: ItemListType = {
 				},
 			},
 		},
-		Price: 175000,
+		Price: 175_000,
 		Shop: true,
 		BlackMarket: false,
 		Attack: 0,
@@ -530,7 +530,7 @@ export const ItemList: ItemListType = {
 	},
 	[ItemId.HeavyVest]: {
 		Id: ItemId.HeavyVest,
-		Type: ItemType.Armor,
+		Type: ItemType.Wearable,
 		Description: {
 			[Language.English]: "Heavy vest",
 			[Language.Portuguese]: "Colete pesado",
@@ -545,7 +545,7 @@ export const ItemList: ItemListType = {
 				},
 			},
 		},
-		Price: 1000000,
+		Price: 1_000_000,
 		Shop: true,
 		BlackMarket: false,
 		Attack: 0,
@@ -563,7 +563,7 @@ export const ItemList: ItemListType = {
 	},
 	[ItemId.Goggles]: {
 		Id: ItemId.Goggles,
-		Type: ItemType.Armor,
+		Type: ItemType.Wearable,
 		Description: {
 			[Language.English]: "Night goggles",
 			[Language.Portuguese]: "Óculos noturno",
@@ -578,7 +578,7 @@ export const ItemList: ItemListType = {
 				},
 			},
 		},
-		Price: 300000,
+		Price: 300_000,
 		Shop: true,
 		BlackMarket: false,
 		Attack: 0,
@@ -596,7 +596,7 @@ export const ItemList: ItemListType = {
 	},
 	[ItemId.Exoskeleton]: {
 		Id: ItemId.Exoskeleton,
-		Type: ItemType.Armor,
+		Type: ItemType.Wearable,
 		Description: {
 			[Language.English]: "Exoskeleton",
 			[Language.Portuguese]: "Exoesqueleto",
@@ -611,7 +611,7 @@ export const ItemList: ItemListType = {
 				},
 			},
 		},
-		Price: 20000000,
+		Price: 20_000_000,
 		Shop: false,
 		BlackMarket: true,
 		Attack: 0,
@@ -644,7 +644,7 @@ export const ItemList: ItemListType = {
 				},
 			},
 		},
-		Price: 5000000,
+		Price: 5_000_000,
 		Shop: false,
 		BlackMarket: true,
 		Attack: 0,
@@ -677,7 +677,7 @@ export const ItemList: ItemListType = {
 				},
 			},
 		},
-		Price: 350000,
+		Price: 350_000,
 		Shop: false,
 		BlackMarket: true,
 		Attack: 0,
@@ -693,8 +693,7 @@ export const ItemList: ItemListType = {
 			Night: false,
 		},
 	},
-};
 
-export function getItemList(): Item[] {
+export function getItemList(): Items[] {
 	return Object.values(ItemList);
 }

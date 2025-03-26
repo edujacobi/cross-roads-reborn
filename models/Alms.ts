@@ -2,7 +2,7 @@ import { User } from "./User";
 import { EmoteString } from "../utils/emotes";
 import { formatMoney, showTime } from "../utils/ui";
 import { addHours } from "date-fns/addHours";
-import { ClassId } from "./Class";
+import { ClassId } from "../interfaces/Classes";
 import { Log } from "../utils/log";
 import { Language } from "./Language";
 import { Notification } from "./Notification";

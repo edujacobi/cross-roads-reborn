@@ -14,14 +14,15 @@ import { removeEmbedComponents, replyInteraction } from "../../utils/logic";
 import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
 import { EmoteString } from "../../utils/emotes";
 import { formatMoney, showTime } from "../../utils/ui";
-import { getJobList, JobId, JobList } from "../../models/Job";
-import { getItemList, ItemList } from "../../models/Item";
+import { getJobList, JobId, JobList } from "../../interfaces/Jobs";
+import { getItemList, ItemList } from "../../interfaces/Items";
 import { Language } from "../../models/Language";
 import { CrColors } from "../../utils/colors";
 import { User } from "../../models/User";
 import { Users } from "../../database/Users";
-import { ClassList } from "../../models/Class";
-import { LocationList } from "../../models/Locations";
+import { ClassList } from "../../interfaces/Classes";
+import { LocationList } from "../../interfaces/Locations";
+import { ScavengeId, ScavengeList } from "../../interfaces/Scavenge";
 
 module.exports = {
 	vip: true,
@@ -117,6 +118,13 @@ module.exports = {
 					embed
 						.setThumbnail(null)
 						.setDescription(s.workingOn(user.Job.Id!, user.Job.EndsIn)),
+				]);
+			}
+			if (user.IsScavenging()) {
+				return await removeEmbedComponents(interaction, [
+					embed
+						.setThumbnail(null)
+						.setDescription(s.userScavenge(user.Scavenge.IsScavengingId!)),
 				]);
 			}
 			if (user.IsInPrison()) {
@@ -231,6 +239,7 @@ const Strings = {
 		userIsRobbingId: (nick: string) => `You're already robbing **${nick}**!`,
 		userIsBeingRobbingId: (nick: string) => `You're being robbed by **${nick}**!`,
 		workingOn: (jobId: JobId, jobTime: Date) => `You are working as **${JobList[jobId].Description[Language.English]}** ${EmoteString.Jobs}\n-# Will finish ${showTime(jobTime.getTime(), true)}`,
+		userScavenge: (placeId: ScavengeId) => `You are scavenging ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.English]}**!`,
 		placeholderSelect: "Select a job",
 		stop: "Stop job",
 		cannotStop: "You can't stop what you didn't start.",
@@ -249,6 +258,7 @@ const Strings = {
 		userIsRobbingId: (nick: string) => `Você já está roubando **${nick}**!`,
 		userIsBeingRobbingId: (nick: string) => `Você está sendo roubado por **${nick}**!`,
 		workingOn: (jobId: JobId, jobTime: Date) => `Você está trabalhando como **${JobList[jobId].Description[Language.Portuguese]}** ${EmoteString.Jobs}\n-# Terminará ${showTime(jobTime.getTime(), true)}`,
+		userScavenge: (placeId: ScavengeId) => `Você está vasculhando ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Portuguese]}**!`,
 		placeholderSelect: "Selecione um trabalho",
 		stop: "Parar trabalho",
 		cannotStop: "Você não pode parar o que não começou.",
@@ -267,6 +277,7 @@ const Strings = {
 		userIsRobbingId: (nick: string) => `¡Ya estás robando a **${nick}**!`,
 		userIsBeingRobbingId: (nick: string) => `¡Estás siendo robado por **${nick}**!`,
 		workingOn: (jobId: JobId, jobTime: Date) => `Usted está trabajando como **${JobList[jobId].Description[Language.Spanish]}** ${EmoteString.Jobs}\n-# Terminará ${showTime(jobTime.getTime(), true)}`,
+		userScavenge: (placeId: ScavengeId) => `¡Estás buscando ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Spanish]}**!`,
 		placeholderSelect: "Seleccione un trabajo",
 		stop: "Detener trabajo",
 		cannotStop: "Usted no puede detener lo que no comenzó.",

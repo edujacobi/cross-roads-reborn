@@ -1,7 +1,7 @@
 ﻿import { CreationOptional, DataTypes, ForeignKey, InferAttributes, InferCreationAttributes, Model } from "sequelize";
 import { sequelize } from "./Database";
 import { Users } from "./Users";
-import { ItemId } from "../models/Item";
+import { ItemId } from "../interfaces/Items";
 
 export class UserItems extends Model<
 	InferAttributes<UserItems>,

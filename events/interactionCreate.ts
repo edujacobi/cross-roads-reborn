@@ -3,7 +3,7 @@ import { defaultEmbed, showTime } from "../utils/ui";
 import { checkUser, replyInteraction, setPlayerRoleInOfficialServer, setVIPRoleInOfficialServer } from "../utils/logic";
 import { getLanguageFromLocale, Language } from "../models/Language";
 import { EmoteString } from "../utils/emotes";
-import { ClassId } from "../models/Class";
+import { ClassId } from "../interfaces/Classes";
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const wait = require("node:timers/promises").setTimeout;

@@ -1,4 +1,4 @@
-import { Language } from "./Language";
+import { Language } from "../models/Language";
 import { IDescription } from "./Interfaces";
 import { EmoteId, EmoteString } from "../utils/emotes";
 

@@ -1,4 +1,4 @@
-import { Language } from "./Language";
+import { Language } from "../models/Language";
 
 export interface IDescription {
 	[Language.English]: string;

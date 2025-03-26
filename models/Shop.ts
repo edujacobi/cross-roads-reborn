@@ -16,13 +16,14 @@ import {
 import { Language } from "./Language";
 import { removeEmbedComponents, replyInteraction } from "../utils/logic";
 import { EmoteString } from "../utils/emotes";
-import { getItemList, Item, ItemList, ItemType } from "./Item";
+import { getItemList, Items, ItemList, ItemType } from "../interfaces/Items";
 import { Users } from "../database/Users";
-import { LocationList } from "./Locations";
-import { ClassList } from "./Class";
+import { LocationList } from "../interfaces/Locations";
+import { ClassList } from "../interfaces/Classes";
 import { differenceInHours } from "date-fns";
 import { UserItems } from "../database/UserItems";
 import { addHours } from "date-fns/addHours";
+import { ScavengeId, ScavengeList } from "../interfaces/Scavenge";
 
 export class Shop {
 	User: User;
@@ -30,7 +31,7 @@ export class Shop {
 	Description: string;
 	Image: string;
 	Color: ColorResolvable;
-	ItemList: Item[];
+	ItemList: Items[];
 
 	constructor(user: User) {
 		const s = Strings[user.Language];
@@ -60,7 +61,7 @@ export class Shop {
 			.setCustomId("select")
 			.setPlaceholder(s.placeholderSelect);
 
-		this.ItemList.forEach((item: Item) => {
+		this.ItemList.forEach((item: Items) => {
 			let textSelect = "";
 
 			if (item.Type == ItemType.Weapon) {
@@ -72,7 +73,7 @@ export class Shop {
 				textSelect = ` • ${item.Attack} ATK • ${item.Defense} DEF`;
 			}
 
-			if (item.Type == ItemType.Armor) {
+			if (item.Type == ItemType.Wearable) {
 				const textField = [];
 				const _textSelect = [];
 
@@ -180,7 +181,7 @@ export class Shop {
 		return { embed, components, rowButton };
 	}
 
-	async CanUserBuyItem(item: Item) {
+	async CanUserBuyItem(item: Items) {
 		const s = Strings[this.User.Language];
 		let canBuy = true;
 		let message = "";
@@ -202,8 +203,18 @@ export class Shop {
 			canBuy = false;
 		}
 
+		if (this.User.IsScavenging()) {
+			message = s.scavenging(this.User.Scavenge.IsScavengingId!);
+			canBuy = false;
+		}
+
 		if (this.User.IsInPrison()) {
 			message = s.inPrison(this.User.Prison.Time);
+			canBuy = false;
+		}
+
+		if (this.User.IsInHospital()) {
+			message = s.inHospital(this.User.Hospital.Time);
 			canBuy = false;
 		}
 
@@ -316,7 +327,9 @@ const Strings = {
 		placeholderSelect: "Select an item to buy",
 		cantBuy: "You can't buy anything right now",
 		noMoney: "You don't have enough money to buy this item",
-		inPrison: (prisonTime: Date) => `You can't buy items while in prison! ${EmoteString.Prison}\n-# You will be released ${showTime(prisonTime.getTime(), true)}!`,
+		scavenging: (placeId: ScavengeId) => `You can't buy items while scavenging ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.English]}** ${EmoteString.Scavenge}`,
+		inPrison: (prisonTime: Date) => `You can't buy items while in prison! ${EmoteString.Prison}\n-# Will be released ${showTime(prisonTime.getTime(), true)}!`,
+		inHospital: (hospitalTime: Date) => `You can't buy items while in the hospital! ${EmoteString.Hospital}\n-# Will be healed ${showTime(hospitalTime.getTime(), true)}!`,
 		robbing: (nickname: string) => `You are robbing **${nickname}** and can't buy items now!`,
 		beingRobbed: (nickname: string) => `You are being robbed by **${nickname}** and can't buy items now!`,
 		day: "day",
@@ -334,7 +347,9 @@ const Strings = {
 		placeholderSelect: "Selecione um item para comprar",
 		cantBuy: "Você não pode comprar algo agora",
 		noMoney: "Você não tem dinheiro suficiente para comprar este item",
+		scavenging: (placeId: ScavengeId) => `Você não pode comprar itens enquanto está vasculhando ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Portuguese]}** ${EmoteString.Scavenge}`,
 		inPrison: (prisonTime: Date) => `Você não pode comprar itens enquanto está preso! ${EmoteString.Prison}\n-# Será solto ${showTime(prisonTime.getTime(), true)}!`,
+		inHospital: (hospitalTime: Date) => `Você não pode comprar itens enqunato está hospitalizado! ${EmoteString.Hospital}\n-# Será curado ${showTime(hospitalTime.getTime(), true)}!`,
 		robbing: (nickname: string) => `Você está roubando **${nickname}** e não pode comprar itens agora!`,
 		beingRobbed: (nickname: string) => `Você está sendo roubado por **${nickname}** e não pode comprar itens agora!`,
 		day: "dia",
@@ -352,7 +367,9 @@ const Strings = {
 		placeholderSelect: "Seleccione un artículo para comprar",
 		cantBuy: "No puedes comprar nada ahora mismo",
 		noMoney: "No tienes suficiente dinero para comprar este artículo",
+		scavenging: (placeId: ScavengeId) => `¡No puedes comprar artículos mientras estás buscando en ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Spanish]}** ${EmoteString.Scavenge}`,
 		inPrison: (prisonTime: Date) => `¡No puedes comprar artículos mientras estás en prisión! ${EmoteString.Prison}\n-# Serás liberado ${showTime(prisonTime.getTime(), true)}!`,
+		inHospital: (hospitalTime: Date) => `¡No puedes comprar artículos mientras estás en el hospital! ${EmoteString.Hospital}\n-# Serás curado ${showTime(hospitalTime.getTime(), true)}!`,
 		robbing: (nickname: string) => `¡Estás robando a **${nickname}** y no puedes comprar artículos ahora mismo!`,
 		beingRobbed: (nickname: string) => `¡Estás siendo robado por **${nickname}** y no puedes comprar artículos ahora mismo!`,
 		day: "día",

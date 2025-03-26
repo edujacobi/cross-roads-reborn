@@ -1,5 +1,5 @@
 import { IDescription, IEmote } from "./Interfaces";
-import { Language } from "./Language";
+import { Language } from "../models/Language";
 
 export enum LocationId {
 	OldLady,
@@ -145,7 +145,7 @@ export const LocationList: LocationListType = {
 		ImageUrl: "https://media.discordapp.net/attachments/1349187098653233184/1349193674570993775/ItalianMafia.png",
 		Reward: {
 			Min: 50_000,
-			Max: 90_000,
+			Max: 100_000,
 		},
 		SuccessChance: 40,
 		NeedAttack: 60,
@@ -164,7 +164,7 @@ export const LocationList: LocationListType = {
 		},
 		ImageUrl: "https://media.discordapp.net/attachments/1349187098653233184/1349193674344632400/ArmyDepot.png",
 		Reward: {
-			Min: 250_000,
+			Min: 300_000,
 			Max: 750_000,
 		},
 		SuccessChance: 34,
@@ -185,7 +185,7 @@ export const LocationList: LocationListType = {
 		ImageUrl: "https://media.discordapp.net/attachments/1349187098653233184/1349193674810195979/JacobiPalace.png",
 		Reward: {
 			Min: 1_000_000,
-			Max: 2_500_000,
+			Max: 3_000_000,
 		},
 		SuccessChance: 27,
 		NeedAttack: 90,

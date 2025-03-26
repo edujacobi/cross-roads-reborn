@@ -134,7 +134,7 @@ class Event {
 	static GetEventTypeText(eventType: EventType) {
 		switch (eventType) {
 		case EventType.JOB_TIME_MULTIPLIER:
-			return "Job time multiplier";
+			return "Jobs time multiplier";
 		default:
 			return "Unknown";
 		}
