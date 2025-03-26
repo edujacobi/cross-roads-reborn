@@ -42,7 +42,7 @@ module.exports = {
 
 		const embed = new CustomEmbedBuilder()
 			.setDescription(description)
-			.setThumbnail("https://media.discordapp.net/attachments/1233604589064818808/1337166947250602047/Trabalhos2.png")
+			.setThumbnail(user.IsWorking() ? null : "https://media.discordapp.net/attachments/1233604589064818808/1337166947250602047/Trabalhos2.png")
 			.setColor(CrColors.Jobs)
 			.setUserFooter({
 				nickname: user.Nickname,
