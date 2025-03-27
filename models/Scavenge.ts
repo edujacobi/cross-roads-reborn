@@ -236,10 +236,10 @@ export class Scavenge {
 			canScavenge = false;
 		}
 
-		if (this.User.IsWanted()) {
-			message = s.isWanted(this.User.Wanted.Time);
-			canScavenge = false;
-		}
+		// if (this.User.IsWanted()) {
+		// 	message = s.isWanted(this.User.Wanted.Time);
+		// 	canScavenge = false;
+		// }
 
 		if (this.User.IsInHospital()) {
 			message = s.hospital(this.User.Hospital.Time);
