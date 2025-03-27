@@ -383,6 +383,7 @@ export class Scavenge {
 
 			if (hospitalized) {
 				this.User.Hospital.Time = addMinutes(new Date(), this.Timer.Hospital);
+				this.User.Hospital.Count += 1;
 				this.User.Scavenge.Found.FailureWithHospital += 1;
 				await Notification.Hospital(this.User);
 
@@ -390,6 +391,9 @@ export class Scavenge {
 			}
 			else if (inprisoned) {
 				this.User.Prison.Time = addMinutes(new Date(), this.Timer.Prison);
+				this.User.Prison.Count += 1;
+				this.User.Prison.HasPaidBribe = false;
+				this.User.Escape.HasTried = false;
 				this.User.Scavenge.Found.FailureWithPrison += 1;
 				await Notification.Free(this.User);
 
