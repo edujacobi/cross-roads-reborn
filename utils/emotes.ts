@@ -80,6 +80,7 @@ export enum EmoteId {
 	BaseballBat = "1352249744025714698",
 	BrassKnuckles = "1352249746332450868",
 	AdvancedScope = "1352454951149895740",
+	Sunglasses = "1354821782527279335",
 
 	CloseInv = "823344220597256223",
 	OpenInv = "823344220966223972",
@@ -211,6 +212,7 @@ export const EmoteString = {
 	BaseballBat: `<:BaseballBat:${EmoteId.BaseballBat}>`,
 	BrassKnuckles: `<:BrassKnuckles:${EmoteId.BrassKnuckles}>`,
 	AdvancedScope: `<:AdvancedScope:${EmoteId.AdvancedScope}>`,
+	Sunglasses: `<:SunGlasses:${EmoteId.Sunglasses}>`,
 
 	CloseInv: `<:Fechar_Inventario:${EmoteId.CloseInv}>`,
 	OpenInv: `<:Abrir_Inventario:${EmoteId.OpenInv}>`,

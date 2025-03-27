@@ -777,8 +777,8 @@ export const ItemList: ItemListType = {
 			Default: {
 				Description: defaultSkinDescription,
 				Emote: {
-					Id: "🕶️",
-					String: "🕶️",
+					Id: EmoteId.Sunglasses,
+					String: EmoteString.Sunglasses,
 				},
 			},
 		},
