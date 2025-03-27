@@ -25,6 +25,7 @@ import { ClassList } from "../interfaces/Classes";
 import { addHours, addMinutes } from "date-fns";
 import { Log } from "../utils/log";
 import { Notification } from "./Notification";
+import { UserItems } from "../database/UserItems";
 
 export class Scavenge {
 	User: User;
@@ -326,17 +327,44 @@ export class Scavenge {
 				const item = this.Place.Reward.Items[Math.floor(Math.random() * this.Place.Reward.Items.length)];
 				const data = ItemList[item.Id];
 
+				const existingItem = await UserItems.findOne({
+					where: {
+						userId: this.User.Id,
+						itemId: item.Id,
+					},
+				});
+
+				const now = new Date();
+
 				this.User.Scavenge.Found.Items += 1;
 
 				if (data.Type === ItemType.Consumable) {
 					const howMany = Math.floor(item.Duration.Min + Math.random() * (item.Duration.Max - item.Duration.Min));
 					rewardDescription = `${howMany} ${data.Skin.Default.Emote.String} ${data.Description[this.User.Language]}`;
 					rewardDescriptionLog = `${howMany} ${data.Description[Language.English]}`;
+
+					await UserItems.upsert({
+						userId: this.User.Id,
+						itemId: item.Id,
+						quantity: (existingItem?.quantity ?? 0) + howMany,
+					});
 				}
 				else {
 					const duration = item.Duration.Min + Math.random() * (item.Duration.Max - item.Duration.Min);
 					rewardDescription = `${data.Skin.Default.Emote.String} ${data.Description[this.User.Language]} (${duration.toFixed(1)}h)`;
 					rewardDescriptionLog = `${duration.toFixed(1)}h ${data.Description[Language.English]}`;
+
+					const remaining = existingItem?.remainingTime ?? new Date(0);
+
+					const remainingTime = now > remaining ?
+						addHours(now, duration) :
+						addHours(remaining, duration);
+
+					await UserItems.upsert({
+						userId: this.User.Id,
+						itemId: item.Id,
+						remainingTime,
+					});
 				}
 			}
 
