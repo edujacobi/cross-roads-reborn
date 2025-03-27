@@ -344,6 +344,7 @@ export class Scavenge {
 					rewardDescriptionLog = `${howMany} ${data.Description[Language.English]}`;
 
 					await UserItems.upsert({
+						id: existingItem?.id ?? undefined,
 						userId: this.User.Id,
 						itemId: item.Id,
 						quantity: (existingItem?.quantity ?? 0) + howMany,
@@ -361,6 +362,7 @@ export class Scavenge {
 						addHours(remaining, duration);
 
 					await UserItems.upsert({
+						id: existingItem?.id ?? undefined,
 						userId: this.User.Id,
 						itemId: item.Id,
 						remainingTime,
