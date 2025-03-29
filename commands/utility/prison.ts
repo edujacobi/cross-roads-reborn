@@ -3,7 +3,6 @@ import { User } from "../../models/User";
 import { Prison } from "../../models/Prison";
 
 module.exports = {
-	vip: true,
 	data: new SlashCommandBuilder()
 		.setName("prison")
 		.setDescription("Visit the prison and meet the inmates")

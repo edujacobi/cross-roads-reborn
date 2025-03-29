@@ -10,7 +10,6 @@ import { EmoteString } from "../../utils/emotes";
 import { addDays } from "date-fns";
 
 module.exports = {
-	vip: true,
 	data: new SlashCommandBuilder()
 		.setName("user")
 		.setDescription("Relevant informations about the user!")

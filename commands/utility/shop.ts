@@ -3,7 +3,6 @@ import { Shop } from "../../models/Shop";
 import { User } from "../../models/User";
 
 module.exports = {
-	vip: true,
 	data: new SlashCommandBuilder()
 		.setName("shop")
 		.setDescription("Open the shop to buy something")

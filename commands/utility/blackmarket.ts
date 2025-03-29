@@ -8,7 +8,6 @@ import { User } from "../../models/User";
 import { Language } from "../../models/Language";
 
 module.exports = {
-	vip: true,
 	data: new SlashCommandBuilder()
 		.setName("blackmarket")
 		.setDescription("Open the Black market to buy something")

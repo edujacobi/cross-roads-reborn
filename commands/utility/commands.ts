@@ -6,7 +6,6 @@ import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
 import { Language } from "../../models/Language";
 import { CrColors } from "../../utils/colors";
 import { User } from "../../models/User";
-import { formatMoney } from "../../utils/ui";
 
 module.exports = {
 	data: new SlashCommandBuilder()

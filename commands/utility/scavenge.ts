@@ -3,7 +3,6 @@ import { User } from "../../models/User";
 import { Scavenge } from "../../models/Scavenge";
 
 module.exports = {
-	vip: true,
 	data: new SlashCommandBuilder()
 		.setName("scavenge")
 		.setDescription("Many things to find in the most unexpected places")

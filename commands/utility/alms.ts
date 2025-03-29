@@ -9,7 +9,6 @@ import { CrColors } from "../../utils/colors";
 import { Alms } from "../../models/Alms";
 
 module.exports = {
-	vip: true,
 	data: new SlashCommandBuilder()
 		.setName("alms")
 		.setDescription("Donate some money to another user")

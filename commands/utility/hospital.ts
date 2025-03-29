@@ -3,7 +3,6 @@ import { User } from "../../models/User";
 import { Hospital } from "../../models/Hospital";
 
 module.exports = {
-	vip: true,
 	data: new SlashCommandBuilder()
 		.setName("hospital")
 		.setDescription("Visit the hospital and meet the sick, broken and bedridden")

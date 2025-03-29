@@ -8,7 +8,6 @@ import { User } from "../../models/User";
 import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
 
 module.exports = {
-	vip: true,
 	data: new SlashCommandBuilder()
 		.setName("daily")
 		.setDescription("Receives a small ammount of money. Keep a streak and the money grows!")

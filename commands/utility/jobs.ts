@@ -25,7 +25,6 @@ import { LocationList } from "../../interfaces/Locations";
 import { ScavengeId, ScavengeList } from "../../interfaces/Scavenge";
 
 module.exports = {
-	vip: true,
 	data: new SlashCommandBuilder()
 		.setName("jobs")
 		.setDescription("Open the job list to work")

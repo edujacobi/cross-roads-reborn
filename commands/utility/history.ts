@@ -14,7 +14,6 @@ import { RobTypes } from "../../models/Robbery";
 
 module.exports = {
 	cooldown: 10,
-	vip: true,
 	data: new SlashCommandBuilder()
 		.setName("history")
 		.setDescription("Shows the history of your robberies")

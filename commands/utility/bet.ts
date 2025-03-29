@@ -22,7 +22,6 @@ const enum CoinSide {
 }
 
 module.exports = {
-	vip: true,
 	data: new SlashCommandBuilder()
 		.setName("bet")
 		.setDescription("Bet on a coin flip. Win 1.5x your bet if you are right")
