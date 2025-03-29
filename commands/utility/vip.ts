@@ -48,7 +48,7 @@ VIP role in Cross Roads Reborn server
 Many more to come!`,
 		howToAdquire: `## How to adquire
 Send a DM to \`ejacobi\`. If you can't, join the Cross Roads Reborn server.
-$2.00 = 1 month. $5.00 = 3 months.`,
+$2.50 = 1 month. $6.00 = 3 months.`,
 	},
 	[Language.Portuguese]: {
 		title: "VIP",
@@ -67,7 +67,7 @@ Cargo VIP no servidor Cross Roads Reborn
 Muitos mais por vir!`,
 		howToAdquire: `## Como adquirir
 Envie uma DM para \`ejacobi\`. Se não conseguir, entre no servidor Cross Roads Reborn.
-R$ 10,00 = 1 mês. R$ 25,00 = 3 meses.`,
+R$ 13,00 = 1 mês. R$ 31,00 = 3 meses.`,
 	},
 	[Language.Spanish]: {
 		title: "VIP",
@@ -86,6 +86,6 @@ Rol VIP en el servidor Cross Roads Reborn
 ¡Muchos más por venir!`,
 		howToAdquire: `## Cómo adquirir
 Envía un DM a \`ejacobi\`. Si no puedes, únete al servidor Cross Roads Reborn.
-$2.00 = 1 mes. $5.00 = 3 meses.`,
+$2.50 = 1 mes. $6.00 = 3 meses.`,
 	},
 } as const;
