@@ -48,7 +48,7 @@ module.exports = {
 
 		let badges = await Badge.GetList(target.Id);
 
-		if (user.IsVip()) {
+		if (target.IsVip()) {
 			badges = Badge.AddVIPBadgeInList(badges, target);
 		}
 
