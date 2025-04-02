@@ -105,7 +105,7 @@ export const ScavengeList: ScavengeListType = {
 			},
 		},
 	},
-	// Need Glock 17 (ATK 15)
+	// Need Knife (ATK 15)
 	[ScavengeId.Forest]: {
 		Id: ScavengeId.Forest,
 		Description: {
@@ -126,17 +126,11 @@ export const ScavengeList: ScavengeListType = {
 			Items: [{
 				Id: ItemId.Knife,
 				Duration: {
-					Min: 3,
-					Max: 6,
+					Min: 4,
+					Max: 8,
 				},
 			}, {
 				Id: ItemId.Colt45,
-				Duration: {
-					Min: 2,
-					Max: 4,
-				},
-			}, {
-				Id: ItemId.MicroUzi,
 				Duration: {
 					Min: 0.5,
 					Max: 1,
