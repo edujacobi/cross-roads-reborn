@@ -103,7 +103,9 @@ module.exports = {
 			const rowSelect = new ActionRowBuilder<StringSelectMenuBuilder>()
 				.setComponents(select);
 
-			const response = await replyInteraction(interaction, { embeds: [instructions], components: canUserRob ? [rowSelect] : [] });
+			const components = rowSelect.components[0].options.length > 0 ? [rowSelect] : [];
+
+			const response = await replyInteraction(interaction, { embeds: [instructions], components: canUserRob ? components : [] });
 
 			const collector = response?.createMessageComponentCollector({
 				filter: (i: MessageComponentInteraction) => i.user.id === interaction.user.id,
