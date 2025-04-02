@@ -86,12 +86,12 @@ export class Shop {
 					_textSelect.push(`+${item.MoreDefense} DEF`);
 				}
 				if (item.MoreMoneyATK) {
-					textField.push(`-# ${EmoteString.Attack}+${item.MoreMoneyATK} $ATK!`);
-					_textSelect.push(`+${item.MoreMoneyATK} $ATK!`);
+					textField.push(`-# ${EmoteString.Attack}+${item.MoreMoneyATK} $ATK$`);
+					_textSelect.push(`+${item.MoreMoneyATK} $ATK$`);
 				}
 				if (item.MoreMoneyDEF) {
-					textField.push(`-# ${EmoteString.Defense}+${item.MoreMoneyDEF} $DEF!`);
-					_textSelect.push(`+${item.MoreMoneyDEF} $DEF!`);
+					textField.push(`-# ${EmoteString.Defense}+${item.MoreMoneyDEF} $DEF$`);
+					_textSelect.push(`+${item.MoreMoneyDEF} $DEF$`);
 				}
 				if (item.Special.Day) {
 					textField.push(`-# (${s.day})`);
@@ -132,12 +132,12 @@ export class Shop {
 					_textSelect.push(`+${item.MoreDefense} DEF`);
 				}
 				if (item.MoreMoneyATK) {
-					textField.push(`-# ${EmoteString.Attack}+${item.MoreMoneyATK} $ATK!`);
-					_textSelect.push(`+${item.MoreMoneyATK} $ATK!`);
+					textField.push(`-# ${EmoteString.Attack}+${item.MoreMoneyATK} $ATK$`);
+					_textSelect.push(`+${item.MoreMoneyATK} $ATK$`);
 				}
 				if (item.MoreMoneyDEF) {
-					textField.push(`-# ${EmoteString.Defense}+${item.MoreMoneyDEF} $DEF!`);
-					_textSelect.push(`+${item.MoreMoneyDEF} $DEF!`);
+					textField.push(`-# ${EmoteString.Defense}+${item.MoreMoneyDEF} $DEF$`);
+					_textSelect.push(`+${item.MoreMoneyDEF} $DEF$`);
 				}
 				if (item.Special.Day) {
 					textField.push(`-# (${s.day})`);
