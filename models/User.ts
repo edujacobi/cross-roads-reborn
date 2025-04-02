@@ -11,7 +11,7 @@ import { Notification, NotificationType } from "./Notification";
 import { formatDate, formatMoney, showTime } from "../utils/ui";
 import { EmoteString } from "../utils/emotes";
 import { ClassId, ClassList } from "../interfaces/Classes";
-import { LocationId } from "../interfaces/Locations";
+import { LocationId, LocationList } from "../interfaces/Locations";
 import { ScavengeId, ScavengeList } from "../interfaces/Scavenge";
 
 export class User {
@@ -537,6 +537,12 @@ export class User {
 			const user = await Users.findByPk(this.Robbery.IsRobbingId, { attributes: ["id", "nickname"] });
 			this.Situation.Complex = `${EmoteString.Robbery} ${s.robbing} ${user!.nickname}`;
 		}
+		if (this.Robbery.IsRobbingLocationId) {
+			this.Situation.Simple = s.robbing;
+			this.Situation.SimpleEmote = `${EmoteString.Robbery} ${this.Situation.Simple}`;
+			const location = LocationList[this.Robbery.IsRobbingLocationId];
+			this.Situation.Complex = `${EmoteString.Robbery} ${s.robbing} ${location.Description[this.Language]}`;
+		}
 		if (this.Robbery.IsBeingRobbedById) {
 			this.Situation.Simple = s.beingRobbedSimple;
 			this.Situation.SimpleEmote = `${EmoteString.Robbery} ${this.Situation.Simple}`;
@@ -555,7 +561,7 @@ export class User {
 		}
 		if (this.IsInHospital()) {
 			this.Situation.Simple = s.hospitalSimple;
-			this.Situation.SimpleEmote = `${EmoteString.Hospital} ${s.imprisonedSimple}`;
+			this.Situation.SimpleEmote = `${EmoteString.Hospital} ${s.hospitalSimple}`;
 			this.Situation.Complex = `${EmoteString.Hospital} ${s.hospitalComplex} ${showTime(this.Hospital.Time.getTime())}`;
 		}
 		if (this.IsScavenging()) {
