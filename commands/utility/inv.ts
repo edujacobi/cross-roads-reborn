@@ -1,5 +1,6 @@
 ﻿import {
-	ActionRowBuilder, AttachmentBuilder,
+	ActionRowBuilder,
+	AttachmentBuilder,
 	ButtonBuilder,
 	ButtonStyle,
 	ChatInputCommandInteraction,
@@ -10,21 +11,16 @@
 	SlashCommandBuilder,
 	SlashCommandUserOption,
 } from "discord.js";
-import { checkUser, removeEmbedComponents, replyInteraction, replyUserDontExist } from "../../utils/logic";
+import { checkUser, removeEmbedComponents, replyUserDontExist } from "../../utils/logic";
 import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
-import { formatMoney, showTime } from "../../utils/ui";
+import { formatMoney } from "../../utils/ui";
 import { Badge } from "../../models/Badge";
 import { Language } from "../../models/Language";
 import { EmoteId, EmoteString } from "../../utils/emotes";
-import { ItemType } from "../../interfaces/Items";
 import { subMinutes } from "date-fns";
 import { User } from "../../models/User";
 import { ClassList } from "../../interfaces/Classes";
-import Canvas from "@napi-rs/canvas";
 import { InventoryCanvasBuilder } from "../../ui/builders/InventoryCanvasBuilder";
-import Konva from "konva";
-import Image = Konva.Image;
-
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -69,10 +65,10 @@ module.exports = {
 
 		const online = new Date(lastCommand) > subMinutes(new Date(), 30);
 
-		const inventory = new InventoryCanvasBuilder(target, _user.avatarURL())
-			.AddHeader(online)
-			.AddSubHeader()
-			.AddItemGrid(userItems);
+		const inventory = new InventoryCanvasBuilder(target, _user, language);
+		await inventory.AddHeader(online);
+		await inventory.AddSubHeader();
+		await inventory.AddItemGrid(userItems);
 
 		const attachment = new AttachmentBuilder(inventory.GenerateImage(), { name: `invOf${target.Nickname}.jpg` });
 
@@ -212,26 +208,20 @@ const Strings = {
 		inventoryOf: "Inventory of",
 		closeInv: "Close",
 		openInv: "Open",
-		chips: "Chips",
 		inventoryItems: "Items in the inventory",
-		noDescription: "no description",
 	},
 
 	[Language.Portuguese]: {
 		inventoryOf: "Inventário de",
 		closeInv: "Fechar",
 		openInv: "Abrir",
-		chips: "Fichas",
 		inventoryItems: "Itens no inventário",
-		noDescription: "sem descrição",
 	},
 
 	[Language.Spanish]: {
 		inventoryOf: "Inventario de",
 		closeInv: "Cerrar",
 		openInv: "Abrir",
-		chips: "Fichas",
 		inventoryItems: "Artículos en el inventario",
-		noDescription: "sin descripción",
 	},
 } as const;

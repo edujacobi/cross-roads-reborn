@@ -14,6 +14,17 @@ import { ClassId, ClassList } from "../interfaces/Classes";
 import { LocationId, LocationList } from "../interfaces/Locations";
 import { ScavengeId, ScavengeList } from "../interfaces/Scavenge";
 
+export enum SituationId {
+	Idling,
+	Job,
+	Robbery,
+	PrisonAndHospital,
+	Prison,
+	Hospital,
+	Scavenging,
+	Wanted,
+}
+
 export class User {
 	Id: string;
 	CreatedAt = new Date();
@@ -92,6 +103,7 @@ export class User {
 		MoneyDefense: 0,
 	};
 	Situation = {
+		Id: 0,
 		Simple: "",
 		SimpleEmote: "",
 		Complex: "",
@@ -527,52 +539,79 @@ export class User {
 		this.Situation.Complex = `${EmoteString.Idle} ${s.idling}`;
 
 		if (this.Job.Id !== null) {
-			this.Situation.Simple = s.workingSimple;
-			this.Situation.SimpleEmote = `${EmoteString.Jobs} ${this.Situation.Simple}`;
-			this.Situation.Complex = `${EmoteString.Jobs} ${s.workingComplex(JobList[this.Job.Id].Description[this.Language], this.Job.EndsIn)}`;
+			this.Situation = {
+				Id: SituationId.Job,
+				Simple: s.workingSimple,
+				SimpleEmote: `${EmoteString.Jobs} ${this.Situation.Simple}`,
+				Complex: `${EmoteString.Jobs} ${s.workingComplex(JobList[this.Job.Id].Description[this.Language], this.Job.EndsIn)}`,
+			};
 		}
 		if (this.Robbery.IsRobbingId) {
-			this.Situation.Simple = s.robbing;
-			this.Situation.SimpleEmote = `${EmoteString.Robbery} ${this.Situation.Simple}`;
 			const user = await Users.findByPk(this.Robbery.IsRobbingId, { attributes: ["id", "nickname"] });
-			this.Situation.Complex = `${EmoteString.Robbery} ${s.robbing} ${user!.nickname}`;
+			this.Situation = {
+				Id: SituationId.Robbery,
+				Simple: s.robbing,
+				SimpleEmote: `${EmoteString.Robbery} ${this.Situation.Simple}`,
+				Complex: `${EmoteString.Robbery} ${s.robbing} ${user!.nickname}`,
+			};
 		}
 		if (this.Robbery.IsRobbingLocationId) {
-			this.Situation.Simple = s.robbing;
-			this.Situation.SimpleEmote = `${EmoteString.Robbery} ${this.Situation.Simple}`;
 			const location = LocationList[this.Robbery.IsRobbingLocationId];
-			this.Situation.Complex = `${EmoteString.Robbery} ${s.robbing} ${location.Description[this.Language]}`;
+			this.Situation = {
+				Id: SituationId.Robbery,
+				Simple: s.robbing,
+				SimpleEmote: `${EmoteString.Robbery} ${this.Situation.Simple}`,
+				Complex: `${EmoteString.Robbery} ${s.robbing} ${location.Description[this.Language]}`,
+			};
 		}
 		if (this.Robbery.IsBeingRobbedById) {
-			this.Situation.Simple = s.beingRobbedSimple;
-			this.Situation.SimpleEmote = `${EmoteString.Robbery} ${this.Situation.Simple}`;
 			const user = await Users.findByPk(this.Robbery.IsBeingRobbedById, { attributes: ["id", "nickname"] });
-			this.Situation.Complex = `${EmoteString.Robbery} ${s.beingRobbedComplex} ${user!.nickname}`;
+			this.Situation = {
+				Id: SituationId.Robbery,
+				Simple: s.beingRobbedSimple,
+				SimpleEmote: `${EmoteString.Robbery} ${this.Situation.Simple}`,
+				Complex: `${EmoteString.Robbery} ${s.beingRobbedComplex} ${user!.nickname}`,
+			};
 		}
 		if (this.IsInPrison() && this.IsInHospital()) {
-			this.Situation.Simple = s.imprisonedAndHospitalSimple;
-			this.Situation.SimpleEmote = s.imprisonedAndHospitalSimpleEmote;
-			this.Situation.Complex = s.imprisonedAndHospitalComplex(this.Prison.Time, this.Hospital.Time);
+			this.Situation = {
+				Id: SituationId.PrisonAndHospital,
+				Simple: s.imprisonedAndHospitalSimple,
+				SimpleEmote: s.imprisonedAndHospitalSimpleEmote,
+				Complex: s.imprisonedAndHospitalComplex(this.Prison.Time, this.Hospital.Time),
+			};
 		}
 		if (this.IsInPrison()) {
-			this.Situation.Simple = s.imprisonedSimple;
-			this.Situation.SimpleEmote = `${EmoteString.Prison} ${s.imprisonedSimple}`;
-			this.Situation.Complex = `${EmoteString.Prison} ${s.imprisonedComplex} ${showTime(this.Prison.Time.getTime())}`;
+			this.Situation = {
+				Id: SituationId.Prison,
+				Simple: s.imprisonedSimple,
+				SimpleEmote: `${EmoteString.Prison} ${s.imprisonedSimple}`,
+				Complex: `${EmoteString.Prison} ${s.imprisonedComplex} ${showTime(this.Prison.Time.getTime())}`,
+			};
 		}
 		if (this.IsInHospital()) {
-			this.Situation.Simple = s.hospitalSimple;
-			this.Situation.SimpleEmote = `${EmoteString.Hospital} ${s.hospitalSimple}`;
-			this.Situation.Complex = `${EmoteString.Hospital} ${s.hospitalComplex} ${showTime(this.Hospital.Time.getTime())}`;
+			this.Situation = {
+				Id: SituationId.Hospital,
+				Simple: s.hospitalSimple,
+				SimpleEmote: `${EmoteString.Hospital} ${s.hospitalSimple}`,
+				Complex: `${EmoteString.Hospital} ${s.hospitalComplex} ${showTime(this.Hospital.Time.getTime())}`,
+			};
 		}
 		if (this.IsScavenging()) {
-			this.Situation.Simple = s.scavenging;
-			this.Situation.SimpleEmote = `${EmoteString.Scavenge} ${s.scavenging}`;
-			this.Situation.Complex = `${EmoteString.Scavenge} ${s.scavenging} ${ScavengeList[this.Scavenge.IsScavengingId!].Emote.String} ${ScavengeList[this.Scavenge.IsScavengingId!].Description[this.Language]}`;
+			this.Situation = {
+				Id: SituationId.Scavenging,
+				Simple: s.scavenging,
+				SimpleEmote: `${EmoteString.Scavenge} ${s.scavenging}`,
+				Complex: `${EmoteString.Scavenge} ${s.scavenging} ${ScavengeList[this.Scavenge.IsScavengingId!].Emote.String} ${ScavengeList[this.Scavenge.IsScavengingId!].Description[this.Language]}`,
+			};
 		}
 		if (this.IsWanted()) {
-			this.Situation.Simple += ` ${s.wantedSimple}`;
-			this.Situation.SimpleEmote += ` ${s.wantedSimpleEmote}`;
-			this.Situation.Complex += ` ${s.wantedComplex} ${showTime(this.Wanted.Time.getTime())}`;
+			this.Situation = {
+				Id: SituationId.Wanted,
+				Simple: this.Situation.Simple + ` ${s.wantedSimple}`,
+				SimpleEmote: this.Situation.SimpleEmote + ` ${s.wantedSimpleEmote}`,
+				Complex: this.Situation.Complex + ` ${s.wantedComplex} ${showTime(this.Wanted.Time.getTime())}`,
+			};
 		}
 	}
 
