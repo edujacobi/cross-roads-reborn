@@ -65,10 +65,16 @@ module.exports = {
 
 		const online = new Date(lastCommand) > subMinutes(new Date(), 30);
 
-		const inventory = new InventoryCanvasBuilder(target, _user, language);
+		const inventory = new InventoryCanvasBuilder({
+			User: target,
+			UserItems: userItems,
+			DiscordUser: _user,
+			Language: language,
+		});
+		inventory.AddBackground();
 		await inventory.AddHeader(online);
 		await inventory.AddSubHeader();
-		await inventory.AddItemGrid(userItems);
+		await inventory.AddItemGrid();
 
 		const attachment = new AttachmentBuilder(inventory.GenerateImage(), { name: `invOf${target.Nickname}.jpg` });
 

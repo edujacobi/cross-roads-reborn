@@ -7,21 +7,34 @@ import { ItemId, UserItem } from "../../interfaces/Items";
 import { Language } from "../../models/Language";
 import { User as DUser } from "discord.js";
 
+export interface InventoryCanvasBuilderOptions {
+	User: User,
+	UserItems: UserItem[],
+	DiscordUser: DUser,
+	Language: Language,
+}
+
 export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 	User: User;
+	UserItems: UserItem[];
 	DiscordUser: DUser;
 	AvatarUrl = "https://cdn.discordapp.com/attachments/531174573463306240/814662917696782376/Inventario.png";
 
-	constructor(user: User, discordUser: DUser, language: Language) {
-		super(800, 300, language);
-		this.User = user;
-		this.DiscordUser = discordUser;
+	MAX_ITEMS_PER_ROW = 8;
 
-		// if (avatarUrl) {
-		// 	this.AvatarUrl = avatarUrl;
-		// }
+	constructor(params: InventoryCanvasBuilderOptions) {
+		let calculatedHeight = 172;
 
-		this.AddBackground();
+		if (params.UserItems.length > 0) {
+			calculatedHeight += 36;
+			calculatedHeight += Math.ceil(params.UserItems.length / 8) * 96;
+		}
+
+		super(800, calculatedHeight, params.Language);
+
+		this.User = params.User;
+		this.UserItems = params.UserItems;
+		this.DiscordUser = params.DiscordUser;
 	}
 
 	AddBackground() {
@@ -34,7 +47,28 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 			height: this.Height,
 			fill: "#242429",
 		});
-		layer.add(rect);
+
+		const ellipsis = new Konva.Circle({
+			x: this.Width - 30,
+			y: -160,
+			radius: 256,
+			opacity: 0.1,
+			fill: "#008D64",
+		});
+
+		ellipsis.cache({
+			x: -350,
+			y: -350,
+			width: 700,
+			height: 700,
+			offset: 50,
+			imageSmoothingEnabled: true,
+		});
+
+		ellipsis.filters([Konva.Filters.Blur]);
+		ellipsis.blurRadius(180);
+
+		layer.add(rect, ellipsis);
 
 		this.Stage.add(layer);
 	}
@@ -54,7 +88,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 				x: this.Padding + 32,
 				y: this.Padding + 32,
 				radius: 32,
-				opacity: 0.5,
+				opacity: 0.35,
 				fill: "#E0BA20",
 			});
 
@@ -63,11 +97,12 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 				y: -50,
 				width: 100,
 				height: 100,
-				offset : 40,
+				offset: 40,
+				imageSmoothingEnabled: true,
 			});
 
 			circleVip.filters([Konva.Filters.Blur]);
-			circleVip.blurRadius(50);
+			circleVip.blurRadius(75);
 
 			layer.add(imageVip, circleVip);
 		}
@@ -84,7 +119,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 			cornerRadius: 32,
 			fill: this.User.IsVip() ? "#E0BA20" : "#363640",
 			stroke: this.User.IsVip() ? "#E0BA20" : "#363640",
-			strokeWidth: 5,
+			strokeWidth: 10,
 		});
 
 		const onlineCircle = new Konva.Circle({
@@ -93,7 +128,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 			radius: 10,
 			fill: isOnline ? "#00B784" : "#B55243",
 			stroke: "#363640",
-			strokeWidth: 3,
+			strokeWidth: 4,
 		});
 
 		const textInv = new Konva.Text({
@@ -183,45 +218,52 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 			lineJoin: "round",
 		});
 
-		layer.add(imageClass, textClass, imageSituation, textSituation, separator);
+		layer.add(imageClass, textClass, imageSituation, textSituation);
+
+		if (this.UserItems.length > 0) {
+			layer.add(separator);
+		}
 
 		this.Stage.add(layer);
 		return this;
 	}
 
-	async AddItemGrid(userItems: UserItem[]) {
+	async AddItemGrid() {
 		const layer = new Konva.Layer();
 
-		let currentXSlot = this.Padding;
+		const rows = Math.ceil(this.UserItems.length / this.MAX_ITEMS_PER_ROW);
 
-		for (const item of userItems) {
-			const rect = new Konva.Rect({
-				x: currentXSlot,
-				y: this.Padding + 172,
-				width: 80,
-				height: 80,
-				fill: "#5B5B6B",
-				opacity: 0.25,
-				cornerRadius: 8,
-			});
+		for (let i = 0; i < rows; i++) {
+			let currentXSlot = this.Padding;
+			let currentYSlot = this.Padding + 172 + (i * 96);
 
-			const image = await this.CreateKonvaImageLocal(this.GetItemImage(item.Id), {
-				x: currentXSlot + 13,
-				y: this.Padding + 172 + 13,
-				width: 54,
-				height: 54,
-			});
+			for (let j = 0; j < this.MAX_ITEMS_PER_ROW; j++) {
+				const rect = new Konva.Rect({
+					x: currentXSlot,
+					y: currentYSlot,
+					width: 80,
+					height: 80,
+					fill: "#5B5B6B",
+					opacity: 0.25,
+					cornerRadius: 8,
+				});
 
-			currentXSlot += rect.width() + 32;
+				layer.add(rect);
 
-			// TODO: Lógica para mais linhas (aumentar background)
+				if (this.UserItems[j + i * this.MAX_ITEMS_PER_ROW]) {
+					const image = await this.CreateKonvaImageLocal(this.GetItemImage(this.UserItems[j + i * this.MAX_ITEMS_PER_ROW].Id), {
+						x: currentXSlot + 13,
+						y: currentYSlot + 13,
+						width: 54,
+						height: 54,
+					});
+					layer.add(image);
+				}
 
-			// invOpen.addFields([{
-			// 	name: `${item.Skin.Default.Emote.String} ${item.Description[language]}`,
-			// 	value: item.Type == ItemType.Consumable ? String(item.Quantity) : showTime(new Date(item.RemainingTime).getTime(), true),
-			// 	inline: true,
-			// }]);
-			layer.add(rect, image);
+				currentXSlot += rect.width() + 16;
+			}
+
+			currentYSlot += 96;
 		}
 
 		this.Stage.add(layer);
