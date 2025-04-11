@@ -5,6 +5,7 @@ import { replyInteraction } from "../../utils/logic";
 import { CrColors } from "../../utils/colors";
 import { Users } from "../../database/Users";
 import { Op } from "sequelize";
+import { subMinutes } from "date-fns";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -25,6 +26,8 @@ module.exports = {
 			},
 		});
 
+		const onlineUsers = client.userLastCommand.filter(time => new Date(time) > subMinutes(new Date(), 15)).size;
+
 		const embed = new CustomEmbedBuilder()
 			.setColor(CrColors.Admin)
 			.setThumbnail(client.user?.avatarURL() ?? null)
@@ -32,7 +35,7 @@ module.exports = {
 -# Uptime
 # \`${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)} MB\`
 -# Memory usage
-# \`${playerCount} (${client.userLastCommand.size} online)\`
+# \`${playerCount} (${onlineUsers} online)\`
 -# Active players`);
 
 		// .setFields([

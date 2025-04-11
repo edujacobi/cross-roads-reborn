@@ -63,7 +63,7 @@ module.exports = {
 
 		const lastCommand = interaction.client.userLastCommand.get(target.Id) || 0;
 
-		const online = new Date(lastCommand) > subMinutes(new Date(), 30);
+		const online = new Date(lastCommand) > subMinutes(new Date(), 15);
 
 		const closedInventory = new InventoryCanvasBuilder({
 			User: target,
