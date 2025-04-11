@@ -1,7 +1,7 @@
 ﻿import { Users } from "../database/Users";
 import { Log } from "../utils/log";
-import { addDays, differenceInHours } from "date-fns";
-import { Language } from "./Language";
+import { addDays, differenceInHours, formatDistanceToNow } from "date-fns";
+import { getLocaleFromLanguage, Language } from "./Language";
 import { UserItems } from "../database/UserItems";
 import { addHours } from "date-fns/addHours";
 import { Op } from "sequelize";
@@ -107,6 +107,7 @@ export class User {
 		Simple: "",
 		SimpleEmote: "",
 		Complex: "",
+		ComplexUI: "",
 	};
 	BestGun: Items | null = null;
 	Alms = {
@@ -537,6 +538,7 @@ export class User {
 		this.Situation.Simple = s.idling;
 		this.Situation.SimpleEmote = `${EmoteString.Idle} ${this.Situation.Simple}`;
 		this.Situation.Complex = `${EmoteString.Idle} ${s.idling}`;
+		this.Situation.ComplexUI = this.Situation.Simple;
 
 		if (this.Job.Id !== null) {
 			this.Situation = {
@@ -544,6 +546,7 @@ export class User {
 				Simple: s.workingSimple,
 				SimpleEmote: `${EmoteString.Jobs} ${this.Situation.Simple}`,
 				Complex: `${EmoteString.Jobs} ${s.workingComplex(JobList[this.Job.Id].Description[this.Language], this.Job.EndsIn)}`,
+				ComplexUI: s.workingComplexUI(JobList[this.Job.Id].Description[this.Language], this.Job.EndsIn),
 			};
 		}
 		if (this.Robbery.IsRobbingId) {
@@ -553,6 +556,7 @@ export class User {
 				Simple: s.robbing,
 				SimpleEmote: `${EmoteString.Robbery} ${this.Situation.Simple}`,
 				Complex: `${EmoteString.Robbery} ${s.robbing} ${user!.nickname}`,
+				ComplexUI: `${s.robbing} ${user!.nickname}`,
 			};
 		}
 		if (this.Robbery.IsRobbingLocationId) {
@@ -562,6 +566,7 @@ export class User {
 				Simple: s.robbing,
 				SimpleEmote: `${EmoteString.Robbery} ${this.Situation.Simple}`,
 				Complex: `${EmoteString.Robbery} ${s.robbing} ${location.Description[this.Language]}`,
+				ComplexUI: `${s.robbing} ${location.Description[this.Language]}`,
 			};
 		}
 		if (this.Robbery.IsBeingRobbedById) {
@@ -571,14 +576,7 @@ export class User {
 				Simple: s.beingRobbedSimple,
 				SimpleEmote: `${EmoteString.Robbery} ${this.Situation.Simple}`,
 				Complex: `${EmoteString.Robbery} ${s.beingRobbedComplex} ${user!.nickname}`,
-			};
-		}
-		if (this.IsInPrison() && this.IsInHospital()) {
-			this.Situation = {
-				Id: SituationId.PrisonAndHospital,
-				Simple: s.imprisonedAndHospitalSimple,
-				SimpleEmote: s.imprisonedAndHospitalSimpleEmote,
-				Complex: s.imprisonedAndHospitalComplex(this.Prison.Time, this.Hospital.Time),
+				ComplexUI: `${s.beingRobbedComplex} ${user!.nickname}`,
 			};
 		}
 		if (this.IsInPrison()) {
@@ -587,6 +585,7 @@ export class User {
 				Simple: s.imprisonedSimple,
 				SimpleEmote: `${EmoteString.Prison} ${s.imprisonedSimple}`,
 				Complex: `${EmoteString.Prison} ${s.imprisonedComplex} ${showTime(this.Prison.Time.getTime())}`,
+				ComplexUI: `${s.imprisonedComplex} ${formatDistanceToNow(this.Prison.Time, { locale: getLocaleFromLanguage(this.Language), includeSeconds: true })}`,
 			};
 		}
 		if (this.IsInHospital()) {
@@ -595,6 +594,16 @@ export class User {
 				Simple: s.hospitalSimple,
 				SimpleEmote: `${EmoteString.Hospital} ${s.hospitalSimple}`,
 				Complex: `${EmoteString.Hospital} ${s.hospitalComplex} ${showTime(this.Hospital.Time.getTime())}`,
+				ComplexUI: `${s.hospitalComplex} ${formatDistanceToNow(this.Hospital.Time, { locale: getLocaleFromLanguage(this.Language), includeSeconds: true })}`,
+			};
+		}
+		if (this.IsInPrison() && this.IsInHospital()) {
+			this.Situation = {
+				Id: SituationId.PrisonAndHospital,
+				Simple: s.imprisonedAndHospitalSimple,
+				SimpleEmote: s.imprisonedAndHospitalSimpleEmote,
+				Complex: s.imprisonedAndHospitalComplex(this.Prison.Time, this.Hospital.Time),
+				ComplexUI: s.imprisonedAndHospitalComplexUI(this.Prison.Time, this.Hospital.Time),
 			};
 		}
 		if (this.IsScavenging()) {
@@ -603,6 +612,7 @@ export class User {
 				Simple: s.scavenging,
 				SimpleEmote: `${EmoteString.Scavenge} ${s.scavenging}`,
 				Complex: `${EmoteString.Scavenge} ${s.scavenging} ${ScavengeList[this.Scavenge.IsScavengingId!].Emote.String} ${ScavengeList[this.Scavenge.IsScavengingId!].Description[this.Language]}`,
+				ComplexUI: `${s.scavenging} ${ScavengeList[this.Scavenge.IsScavengingId!].Description[this.Language]}`,
 			};
 		}
 		if (this.IsWanted()) {
@@ -611,6 +621,7 @@ export class User {
 				Simple: this.Situation.Simple + ` ${s.wantedSimple}`,
 				SimpleEmote: this.Situation.SimpleEmote + ` ${s.wantedSimpleEmote}`,
 				Complex: this.Situation.Complex + ` ${s.wantedComplex} ${showTime(this.Wanted.Time.getTime())}`,
+				ComplexUI: this.Situation.ComplexUI + `${s.wantedComplexUI} ${formatDistanceToNow(this.Wanted.Time, { locale: getLocaleFromLanguage(this.Language), includeSeconds: true })}`,
 			};
 		}
 	}
@@ -784,6 +795,7 @@ const Strings = {
 		idling: "Idling",
 		workingSimple: "Working",
 		workingComplex: (description: string, jobTime: Date) => `Working as ${description}. Will finish ${showTime(jobTime.getTime(), true)}`,
+		workingComplexUI: (description: string, jobTime: Date) => `Working as ${description}. Will finish in ${formatDistanceToNow(jobTime, { locale: getLocaleFromLanguage(Language.English), includeSeconds: true })}`,
 		robbing: "Robbing",
 		beingRobbedSimple: "Being robbed",
 		beingRobbedComplex: "Being robbed by",
@@ -792,10 +804,12 @@ const Strings = {
 		imprisonedAndHospitalSimple: "Imprisoned and Hospitalized",
 		imprisonedAndHospitalSimpleEmote: `${EmoteString.Prison} Imprisoned and ${EmoteString.Hospital} Hospitalized`,
 		imprisonedAndHospitalComplex: (prisonTime: Date, hospitalTime: Date) => `${EmoteString.Prison} Imprisoned until ${showTime(prisonTime.getTime())} and ${EmoteString.Hospital} Hospitalized until ${showTime(hospitalTime.getTime())}`,
+		imprisonedAndHospitalComplexUI: (prisonTime: Date, hospitalTime: Date) => `Imprisoned until ${formatDate(prisonTime, Language.English)} and Hospitalized until ${formatDate(hospitalTime, Language.English)}`,
 		scavenging: `Scavenging`,
 		wantedSimple: "and Wanted",
 		wantedSimpleEmote: `and ${EmoteString.Police} Wanted`,
 		wantedComplex: `and ${EmoteString.Police} Wanted until`,
+		wantedComplexUI: `and Wanted until`,
 		hospitalSimple: "Hospitalized",
 		hospitalComplex: `Hospitalized until`,
 	},
@@ -803,6 +817,7 @@ const Strings = {
 		idling: "Vadiando",
 		workingSimple: "Trabalhando",
 		workingComplex: (description: string, jobTime: Date) => `Trabalhando como ${description}. Terminará ${showTime(jobTime.getTime(), true)}`,
+		workingComplexUI: (description: string, jobTime: Date) => `Trabalhando como ${description}. Terminará em ${formatDistanceToNow(jobTime, { locale: getLocaleFromLanguage(Language.Portuguese), includeSeconds: true })}`,
 		robbing: "Roubando",
 		beingRobbedSimple: "Sendo roubado",
 		beingRobbedComplex: "Sendo roubado por",
@@ -811,10 +826,12 @@ const Strings = {
 		imprisonedAndHospitalSimple: "Preso e Hospitalizado",
 		imprisonedAndHospitalSimpleEmote: `${EmoteString.Prison} Preso e ${EmoteString.Hospital} Hospitalizado`,
 		imprisonedAndHospitalComplex: (prisonTime: Date, hospitalTime: Date) => `${EmoteString.Prison} Preso até ${showTime(prisonTime.getTime())} e ${EmoteString.Hospital} Hospitalizado até ${showTime(hospitalTime.getTime())}`,
+		imprisonedAndHospitalComplexUI: (prisonTime: Date, hospitalTime: Date) => `Preso até ${formatDate(prisonTime, Language.Portuguese)} e Hospitalizado até ${formatDate(hospitalTime, Language.Portuguese)}`,
 		scavenging: "Vasculhando",
 		wantedSimple: "e Procurado",
 		wantedSimpleEmote: `e ${EmoteString.Police} Procurado`,
 		wantedComplex: `e ${EmoteString.Police} Procurado até`,
+		wantedComplexUI: `e Procurado até`,
 		hospitalSimple: "Hospitalizado",
 		hospitalComplex: `Hospitalizado até`,
 	},
@@ -822,6 +839,7 @@ const Strings = {
 		idling: "Vagando",
 		workingSimple: "",
 		workingComplex: (description: string, jobTime: Date) => `Trabajando como ${description}. Terminará ${showTime(jobTime.getTime(), true)}`,
+		workingComplexUI: (description: string, jobTime: Date) => `Trabajando como ${description}. Terminará en ${formatDistanceToNow(jobTime, { locale: getLocaleFromLanguage(Language.Spanish), includeSeconds: true })}`,
 		robbing: "Robando",
 		beingRobbedSimple: "Siendo robado",
 		beingRobbedComplex: "Siendo robado por",
@@ -829,11 +847,13 @@ const Strings = {
 		imprisonedAndHospitalSimple: "Preso y Hospitalizado",
 		imprisonedAndHospitalSimpleEmote: `${EmoteString.Prison} Preso y ${EmoteString.Hospital} Hospitalizado`,
 		imprisonedAndHospitalComplex: (prisonTime: Date, hospitalTime: Date) => `${EmoteString.Prison} Preso hasta ${showTime(prisonTime.getTime())} y ${EmoteString.Hospital} Hospitalizado hasta ${showTime(hospitalTime.getTime())}`,
+		imprisonedAndHospitalComplexUI: (prisonTime: Date, hospitalTime: Date) => `Preso hasta ${formatDate(prisonTime, Language.Spanish)} y Hospitalizado hasta ${formatDate(hospitalTime, Language.Spanish)}`,
 		imprisonedComplex: "Preso hasta",
 		scavenging: "Buscando",
 		wantedSimple: "y Buscado",
 		wantedSimpleEmote: `y ${EmoteString.Police} Buscado`,
 		wantedComplex: `y ${EmoteString.Police} Buscado hasta`,
+		wantedComplexUI: `y Buscado hasta`,
 		hospitalSimple: "Hospitalizado",
 		hospitalComplex: `Hospitalizado hasta`,
 	},

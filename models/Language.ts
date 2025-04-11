@@ -1,4 +1,5 @@
 ﻿import { Locale } from "discord.js";
+import { enUS, es, ptBR } from "date-fns/locale";
 
 export enum Language {
 	English,
@@ -26,5 +27,16 @@ export function getLanguageFromLocale(locale: Locale) {
 		return Language.Spanish;
 	default:
 		return Language.English;
+	}
+}
+
+export function getLocaleFromLanguage(language: Language) {
+	switch (language) {
+	case Language.Portuguese:
+		return ptBR;
+	case Language.Spanish:
+		return es;
+	default:
+		return enUS;
 	}
 }

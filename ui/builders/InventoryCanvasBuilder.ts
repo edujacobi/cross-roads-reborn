@@ -1,17 +1,19 @@
 import { SituationId, User } from "../../models/User";
 import { BaseCanvasBuilder } from "./BaseCanvasBuilder";
 import Konva from "konva";
-import { formatMoney } from "../../utils/ui";
+import { formatMoney, formatDate } from "../../utils/ui";
 import { ClassId, ClassList } from "../../interfaces/Classes";
-import { ItemId, UserItem } from "../../interfaces/Items";
-import { Language } from "../../models/Language";
+import { ItemId, ItemType, UserItem } from "../../interfaces/Items";
+import { getLocaleFromLanguage, Language } from "../../models/Language";
 import { User as DUser } from "discord.js";
+import { differenceInHours, formatDistanceToNow } from "date-fns";
 
 export interface InventoryCanvasBuilderOptions {
 	User: User,
 	UserItems: UserItem[],
 	DiscordUser: DUser,
 	Language: Language,
+	FullSize: boolean
 }
 
 export class InventoryCanvasBuilder extends BaseCanvasBuilder {
@@ -19,15 +21,17 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 	UserItems: UserItem[];
 	DiscordUser: DUser;
 	AvatarUrl = "https://cdn.discordapp.com/attachments/531174573463306240/814662917696782376/Inventario.png";
+	FullSize: boolean;
 
 	MAX_ITEMS_PER_ROW = 8;
+	MAX_ITEMS_PER_ROW_FULL_SIZE = 3;
 
 	constructor(params: InventoryCanvasBuilderOptions) {
-		let calculatedHeight = 172;
+		let calculatedHeight = params.FullSize ? 236 : 172;
 
 		if (params.UserItems.length > 0) {
 			calculatedHeight += 36;
-			calculatedHeight += Math.ceil(params.UserItems.length / 8) * 96;
+			calculatedHeight += Math.ceil(params.UserItems.length / (params.FullSize ? 3 : 8)) * 96;
 		}
 
 		super(800, calculatedHeight, params.Language);
@@ -35,6 +39,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 		this.User = params.User;
 		this.UserItems = params.UserItems;
 		this.DiscordUser = params.DiscordUser;
+		this.FullSize = params.FullSize;
 	}
 
 	AddBackground() {
@@ -80,8 +85,8 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 			const imageVip = await this.CreateKonvaImageLocal("ui/assets/images/badges/vip.png", {
 				x: this.Padding + 64 + this.Padding,
 				y: this.Padding + 40,
-				width: 24,
-				height: 24,
+				width: this.FullSize ? 32 : 24,
+				height: this.FullSize ? 32 : 24,
 			});
 
 			const circleVip = new Konva.Circle({
@@ -135,7 +140,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 			x: this.Padding + 64 + this.Padding,
 			y: this.Padding,
 			text: `${Strings[this.Language].inventoryOf} ${this.User.Nickname}`,
-			fontSize: 28,
+			fontSize: 24,
 			fontStyle: "700",
 			fill: "#E3E3E6",
 		});
@@ -164,53 +169,140 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 	async AddSubHeader() {
 		const layer = new Konva.Layer();
 
-		const imageClass = await this.CreateKonvaImageLocal(this.GetClassImage(this.User.Class), {
-			x: this.Padding,
-			y: this.Padding + 92,
-			width: 32,
-			height: 32,
-			cornerRadius: 16,
-			fill: "#363640",
-			stroke: "#363640",
-			strokeWidth: 3,
-		});
+		if (this.FullSize) {
+			const imageSituation = await this.CreateKonvaImageLocal(this.GetSituationImage(this.User.Situation.Id), {
+				x: this.Padding,
+				y: this.Padding + 100,
+				width: 32,
+				height: 32,
+			});
 
-		const textClass = new Konva.Text({
-			x: this.Padding + imageClass.width() + 8,
-			y: this.Padding + 92,
-			height: 32,
-			verticalAlign: "middle",
-			text: ClassList[this.User.Class].Description[this.Language],
-			fontSize: 18,
-			fontStyle: "600",
-			fill: "#E3E3E6",
-		});
+			const textSituation = new Konva.Text({
+				x: this.Padding + imageSituation.width() + 8,
+				y: this.Padding + 100,
+				height: 32,
+				width: this.Width,
+				verticalAlign: "middle",
+				text: this.User.Situation.ComplexUI,
+				fontSize: 20,
+				fontStyle: "700",
+				fill: "#E3E3E6",
+			});
 
-		const textSituation = new Konva.Text({
-			x: this.Width / 2,
-			y: this.Padding + 92,
-			padding: this.Padding,
-			height: 32,
-			width: this.Width / 2,
-			align: "right",
-			verticalAlign: "middle",
-			text: this.User.Situation.Simple,
-			fontSize: 20,
-			fontStyle: "700",
-			fill: "#E3E3E6",
-		});
+			const imageClass = await this.CreateKonvaImageLocal(this.GetClassImage(this.User.Class), {
+				x: this.Padding,
+				y: this.Padding + 160,
+				width: 32,
+				height: 32,
+				cornerRadius: 16,
+				fill: "#363640",
+				stroke: "#363640",
+				strokeWidth: 3,
+			});
 
-		const imageSituation = await this.CreateKonvaImageLocal(this.GetSituationImage(this.User.Situation.Id), {
-			x: this.Width - (this.Padding + textSituation.getTextWidth() + 40),
-			y: this.Padding + 92,
-			width: 32,
-			height: 32,
-		});
+			const textClass = new Konva.Text({
+				x: this.Padding + imageClass.width() + 8,
+				y: this.Padding + 160,
+				height: 32,
+				verticalAlign: "middle",
+				text: ClassList[this.User.Class].Description[this.Language],
+				fontSize: 18,
+				fontStyle: "600",
+				fill: "#E3E3E6",
+			});
+
+			const textDEF = new Konva.Text({
+				x: (this.Width / 2) - this.Padding,
+				y: this.Padding + 160,
+				width: this.Width / 2,
+				height: 24,
+				align: "right",
+				verticalAlign: "middle",
+				text: `${this.User.Attributes.Defense} DEF`,
+				fontSize: 16,
+				fontStyle: "700",
+				fill: "#F4E7D2",
+			});
+
+			const imageDEF = await this.CreateKonvaImageLocal("ui/assets/images/attributes/defense.png", {
+				x: this.Width - (this.Padding + textDEF.getTextWidth()) - 24,
+				y: this.Padding + 160,
+				width: 24,
+				height: 24,
+			});
+
+			const textATK = new Konva.Text({
+				x: imageDEF.x() - 60 - 8,
+				y: this.Padding + 160,
+				width: 60,
+				height: 24,
+				verticalAlign: "middle",
+				text: `${this.User.Attributes.Attack} ATK`,
+				fontSize: 16,
+				fontStyle: "700",
+				fill: "#F4E7D2",
+			});
+
+			const imageATK = await this.CreateKonvaImageLocal("ui/assets/images/attributes/attack.png", {
+				x: textATK.x() - 24,
+				y: this.Padding + 160,
+				width: 24,
+				height: 24,
+			});
+
+			layer.add(imageClass, textClass, imageSituation, textSituation, textDEF, imageDEF, textATK, imageATK);
+		}
+		else {
+			const imageClass = await this.CreateKonvaImageLocal(this.GetClassImage(this.User.Class), {
+				x: this.Padding,
+				y: this.Padding + 92,
+				width: 32,
+				height: 32,
+				cornerRadius: 16,
+				fill: "#363640",
+				stroke: "#363640",
+				strokeWidth: 3,
+			});
+
+			const textClass = new Konva.Text({
+				x: this.Padding + imageClass.width() + 8,
+				y: this.Padding + 92,
+				height: 32,
+				verticalAlign: "middle",
+				text: ClassList[this.User.Class].Description[this.Language],
+				fontSize: 18,
+				fontStyle: "600",
+				fill: "#E3E3E6",
+			});
+
+			const textSituation = new Konva.Text({
+				x: this.Width / 2,
+				y: this.Padding + 92,
+				padding: this.Padding,
+				height: 32,
+				width: this.Width / 2,
+				align: "right",
+				verticalAlign: "middle",
+				text: this.User.Situation.Simple,
+				fontSize: 20,
+				fontStyle: "700",
+				fill: "#E3E3E6",
+			});
+
+			const imageSituation = await this.CreateKonvaImageLocal(this.GetSituationImage(this.User.Situation.Id), {
+				x: this.Width - (this.Padding + textSituation.getTextWidth() + 40),
+				y: this.Padding + 92,
+				width: 32,
+				height: 32,
+			});
+
+			layer.add(imageClass, textClass, imageSituation, textSituation);
+		}
 
 		const separator = new Konva.Line({
 			points: [
-				this.Padding, this.Padding + 148,
-				this.Width - this.Padding, this.Padding + 148,
+				this.Padding, this.Padding + (this.FullSize ? 212 : 148),
+				this.Width - this.Padding, this.Padding + (this.FullSize ? 212 : 148),
 			],
 			stroke: "#363640",
 			strokeWidth: 2,
@@ -218,7 +310,6 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 			lineJoin: "round",
 		});
 
-		layer.add(imageClass, textClass, imageSituation, textSituation);
 
 		if (this.UserItems.length > 0) {
 			layer.add(separator);
@@ -231,39 +322,87 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 	async AddItemGrid() {
 		const layer = new Konva.Layer();
 
-		const rows = Math.ceil(this.UserItems.length / this.MAX_ITEMS_PER_ROW);
+		const addItemToLayer = async (item: UserItem, x: number, y: number) => {
+			const image = await this.CreateKonvaImageLocal(this.GetItemImage(item.Id), {
+				x: x + 13,
+				y: y + 13,
+				width: 54,
+				height: 54,
+			});
+			layer.add(image);
+
+			const remainingHours = differenceInHours(item.RemainingTime, new Date());
+			const iconPath = remainingHours < 12
+				? "ui/assets/images/ui_elements/infoDanger.png"
+				: remainingHours < 24
+					? "ui/assets/images/ui_elements/infoWarning.png"
+					: null;
+
+			if (this.FullSize) {
+				const itemName = new Konva.Text({
+					x: x + 83,
+					y: y + 20,
+					text: item.Description[this.Language],
+					fontSize: 14,
+					fontStyle: "700",
+					fill: "#E3E3E6",
+				});
+				const itemDuration = new Konva.Text({
+					x: x + 83,
+					y: y + 45,
+					text: item.Type == ItemType.Consumable ? String(item.Quantity) : formatDistanceToNow(item.RemainingTime, { locale: getLocaleFromLanguage(this.Language) }),
+					fontSize: 12,
+					fontStyle: "600",
+					fill: "#E3E3E6",
+				});
+
+				if (iconPath) {
+					const icon = await this.CreateKonvaImageLocal(iconPath, {
+						x: itemDuration.x() + itemDuration.getTextWidth() + 6,
+						y: itemDuration.y() - 2,
+						width: 16,
+						height: 16,
+					});
+					layer.add(icon);
+				}
+				layer.add(itemName, itemDuration);
+			}
+			else if (iconPath) {
+				const icon = await this.CreateKonvaImageLocal(iconPath, {
+					x: x + 52,
+					y: y + 52,
+					width: 24,
+					height: 24,
+				});
+				layer.add(icon);
+			}
+		};
+
+		const itemsPerRow = this.FullSize ? this.MAX_ITEMS_PER_ROW_FULL_SIZE : this.MAX_ITEMS_PER_ROW;
+		const rectWidth = this.FullSize ? 240 : 80;
+		const rows = Math.ceil(this.UserItems.length / itemsPerRow);
 
 		for (let i = 0; i < rows; i++) {
-			let currentXSlot = this.Padding;
-			let currentYSlot = this.Padding + 172 + (i * 96);
+			const y = this.Padding + (this.FullSize ? 236 : 172) + i * 96;
 
-			for (let j = 0; j < this.MAX_ITEMS_PER_ROW; j++) {
+			for (let j = 0; j < itemsPerRow; j++) {
+				const x = this.Padding + j * (rectWidth + 16);
 				const rect = new Konva.Rect({
-					x: currentXSlot,
-					y: currentYSlot,
-					width: 80,
+					x,
+					y,
+					width: rectWidth,
 					height: 80,
 					fill: "#5B5B6B",
 					opacity: 0.25,
 					cornerRadius: 8,
 				});
-
 				layer.add(rect);
 
-				if (this.UserItems[j + i * this.MAX_ITEMS_PER_ROW]) {
-					const image = await this.CreateKonvaImageLocal(this.GetItemImage(this.UserItems[j + i * this.MAX_ITEMS_PER_ROW].Id), {
-						x: currentXSlot + 13,
-						y: currentYSlot + 13,
-						width: 54,
-						height: 54,
-					});
-					layer.add(image);
+				const item = this.UserItems[j + i * itemsPerRow];
+				if (item) {
+					await addItemToLayer(item, x, y);
 				}
-
-				currentXSlot += rect.width() + 16;
 			}
-
-			currentYSlot += 96;
 		}
 
 		this.Stage.add(layer);

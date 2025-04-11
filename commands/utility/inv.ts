@@ -43,19 +43,19 @@ module.exports = {
 			return await replyUserDontExist(interaction, language);
 		}
 
-		const embedColor = target.IsVip() ? Colors.Gold : Colors.DarkButNotBlack;
+		// const embedColor = target.IsVip() ? Colors.Gold : Colors.DarkButNotBlack;
 
 		const s = Strings[language];
 
-		let badges = await Badge.GetList(target.Id);
+		// let badges = await Badge.GetList(target.Id);
 
-		if (target.IsVip()) {
-			badges = Badge.AddVIPBadgeInList(badges, target);
-		}
-
-		let badgeText = "";
-
-		badges.forEach(badge => badgeText += `${badge.Emoji} `);
+		// if (target.IsVip()) {
+		// 	badges = Badge.AddVIPBadgeInList(badges, target);
+		// }
+		//
+		// let badgeText = "";
+		//
+		// badges.forEach(badge => badgeText += `${badge.Emoji} `);
 
 		const userItems = await target.GetItems();
 
@@ -65,18 +65,32 @@ module.exports = {
 
 		const online = new Date(lastCommand) > subMinutes(new Date(), 30);
 
-		const inventory = new InventoryCanvasBuilder({
+		const closedInventory = new InventoryCanvasBuilder({
 			User: target,
 			UserItems: userItems,
 			DiscordUser: _user,
 			Language: language,
+			FullSize: false,
 		});
-		inventory.AddBackground();
-		await inventory.AddHeader(online);
-		await inventory.AddSubHeader();
-		await inventory.AddItemGrid();
+		closedInventory.AddBackground();
+		await closedInventory.AddHeader(online);
+		await closedInventory.AddSubHeader();
+		await closedInventory.AddItemGrid();
 
-		const attachment = new AttachmentBuilder(inventory.GenerateImage(), { name: `invOf${target.Nickname}.jpg` });
+		const invClosedImage = new AttachmentBuilder(closedInventory.GenerateImage(), { name: `invOf${target.Nickname}.jpg` });
+
+		const openInventory = new InventoryCanvasBuilder({
+			User: target,
+			UserItems: userItems,
+			DiscordUser: _user,
+			Language: language,
+			FullSize: true,
+		});
+		openInventory.AddBackground();
+		await openInventory.AddHeader(online);
+		await openInventory.AddSubHeader();
+		await openInventory.AddItemGrid();
+		const invOpenImage = new AttachmentBuilder(openInventory.GenerateImage(), { name: `invOf${target.Nickname}.jpg` });
 
 		// 		const invClosed = new CustomEmbedBuilder()
 		// 			.setColor(embedColor)
@@ -131,7 +145,7 @@ module.exports = {
 		const response = await interaction.editReply({
 			// content: interaction.user.id != _user.id ? `${interaction.options.getUser("target")}` : "",
 			// embeds: [invClosed],
-			files: [attachment],
+			files: [invClosedImage],
 			components: row.components.length > 0 ? [row] : [],
 		});
 
@@ -148,30 +162,32 @@ module.exports = {
 				isOpen = true;
 				row = createRow();
 
-				const lastCommand = interaction.client.userLastCommand.get(target.Id) || 0;
 
-				const online = new Date(lastCommand) > subMinutes(new Date(), 30);
-				const emoteOnline = online ? `${EmoteString.Online} Online` : `${EmoteString.Offline} Offline`;
+				// 				const lastCommand = interaction.client.userLastCommand.get(target.Id) || 0;
+				//
+				// 				const online = new Date(lastCommand) > subMinutes(new Date(), 30);
+				// 				const emoteOnline = online ? `${EmoteString.Online} Online` : `${EmoteString.Offline} Offline`;
+				//
+				// 				const invOpen = new CustomEmbedBuilder()
+				// 					.setColor(embedColor)
+				// 					// .setAuthor({
+				// 					// 	name: `${s.inventoryOf} ${target.Nickname}`,
+				// 					// 	iconURL: "https://cdn.discordapp.com/attachments/531174573463306240/814662917696782376/Inventario.png",
+				// 					// })
+				// 					.setAuthor({
+				// 						name: `${s.inventoryOf} ${target.Nickname}, ${ClassList[target.Class].Description[language]}`,
+				// 						iconURL: ClassList[target.Class].Image.Url,
+				// 					})
+				// 					// .setTitle(`${s.inventoryOf} ${target.Nickname}, ${ClassList[target.Class].Description[user.Language]}`)
+				// 					.setThumbnail(_user.avatarURL() ?? null)
+				// 					.setDescription(`-# ${emoteOnline}
+				// ${badges.length > 0 ? `### ${badgeText}\n` : ""}### ${formatMoney(target.Money, language)}
+				// -# ${s.inventoryItems}`)
+				// 					.setUserFooter({
+				// 						nickname: user.Nickname,
+				// 						image: interaction.user.avatarURL(),
+				// 					});
 
-				const invOpen = new CustomEmbedBuilder()
-					.setColor(embedColor)
-					// .setAuthor({
-					// 	name: `${s.inventoryOf} ${target.Nickname}`,
-					// 	iconURL: "https://cdn.discordapp.com/attachments/531174573463306240/814662917696782376/Inventario.png",
-					// })
-					.setAuthor({
-						name: `${s.inventoryOf} ${target.Nickname}, ${ClassList[target.Class].Description[language]}`,
-						iconURL: ClassList[target.Class].Image.Url,
-					})
-					// .setTitle(`${s.inventoryOf} ${target.Nickname}, ${ClassList[target.Class].Description[user.Language]}`)
-					.setThumbnail(_user.avatarURL() ?? null)
-					.setDescription(`-# ${emoteOnline}
-${badges.length > 0 ? `### ${badgeText}\n` : ""}### ${formatMoney(target.Money, language)}
--# ${s.inventoryItems}`)
-					.setUserFooter({
-						nickname: user.Nickname,
-						image: interaction.user.avatarURL(),
-					});
 				// .setFooter({
 				// 	iconURL: ClassList[target.Class].Image.Url,
 				// 	text: ClassList[target.Class].Description[user.Language],
@@ -185,12 +201,12 @@ ${badges.length > 0 ? `### ${badgeText}\n` : ""}### ${formatMoney(target.Money, 
 				// 	}]);
 				// });
 
-				invOpen.addFields([{
-					name: "\u200b󠀀󠀀",
-					value: `-# ${target.Situation.Complex} • ${EmoteString.Attack}${target.Attributes.Attack} ATK • ${EmoteString.Defense}${target.Attributes.Defense} DEF`,
-				}]);
+				// invOpen.addFields([{
+				// 	name: "\u200b󠀀󠀀",
+				// 	value: `-# ${target.Situation.Complex} • ${EmoteString.Attack}${target.Attributes.Attack} ATK • ${EmoteString.Defense}${target.Attributes.Defense} DEF`,
+				// }]);
 
-				await btn.update({ embeds: [invOpen], components: [row] });
+				await btn.update({ files: [invOpenImage], components: [row] });
 
 			}
 			else if (btn.customId === "lessInfo") {
@@ -198,7 +214,7 @@ ${badges.length > 0 ? `### ${badgeText}\n` : ""}### ${formatMoney(target.Money, 
 				isOpen = false;
 				row = createRow();
 
-				// await btn.update({ embeds: [invClosed], components: [row] });
+				await btn.update({ files: [invClosedImage], components: [row] });
 
 			}
 		});
