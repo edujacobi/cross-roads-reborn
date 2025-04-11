@@ -198,7 +198,7 @@ export class Shop {
 			},
 		});
 
-		if (existingItem && differenceInHours(addHours(existingItem.remainingTime, 72), new Date()) > 320) {
+		if (existingItem && differenceInHours(addHours(existingItem.remainingTime, 72), new Date()) > 360) {
 			message = s.itemPassLimit(differenceInHours(existingItem.remainingTime, new Date()), `${item.Skin.Default.Emote.String} ${item.Description[this.User.Language]}`);
 			canBuy = false;
 		}
