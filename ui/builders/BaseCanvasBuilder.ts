@@ -6,7 +6,6 @@ import { Language } from "../../models/Language";
 export class BaseCanvasBuilder {
 	Width: number;
 	Height: number;
-	Font = "ui/assets/fonts/Inter-VariableFont_opsz,wght.ttf";
 	Stage: Konva.Stage;
 	Padding = 24;
 	Language: Language;
@@ -15,16 +14,6 @@ export class BaseCanvasBuilder {
 		this.Width = width;
 		this.Height = height;
 		this.Language = language;
-
-		// registerFont(path.join(process.cwd(), "ui/assets/fonts/", "Inter_24pt-Semibold.ttf"), {
-		// 	family: "Inter",
-		// 	weight: "600",
-		// });
-		//
-		// registerFont(path.join(process.cwd(), "ui/assets/fonts/", "Inter_28pt-Bold.ttf"), {
-		// 	family: "Inter",
-		// 	weight: "700",
-		// });
 
 		this.Stage = new Konva.Stage({
 			width,
