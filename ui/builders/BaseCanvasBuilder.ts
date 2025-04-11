@@ -34,6 +34,7 @@ export class BaseCanvasBuilder {
 			return new Konva.Image({
 				// @ts-expect-error imageObj is not HTML Image
 				image: imageObj,
+				listening: false,
 				...options,
 			});
 		}
@@ -50,6 +51,7 @@ export class BaseCanvasBuilder {
 			return new Konva.Image({
 				// @ts-expect-error imageObj is not HTML Image
 				image: imageObj,
+				listening: false,
 				...options,
 			});
 		}

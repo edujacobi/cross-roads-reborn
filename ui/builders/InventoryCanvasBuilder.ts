@@ -46,6 +46,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 		const layer = new Konva.Layer();
 
 		const rect = new Konva.Rect({
+			listening: false,
 			x: 0,
 			y: 0,
 			width: this.Width,
@@ -54,6 +55,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 		});
 
 		const ellipsis = new Konva.Circle({
+			listening: false,
 			x: this.Width - 30,
 			y: -160,
 			radius: 256,
@@ -67,13 +69,13 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 			width: 700,
 			height: 700,
 			offset: 50,
-			imageSmoothingEnabled: true,
 		});
 
 		ellipsis.filters([Konva.Filters.Blur]);
 		ellipsis.blurRadius(180);
 
 		layer.add(rect, ellipsis);
+		layer.listening(false);
 
 		this.Stage.add(layer);
 	}
@@ -90,6 +92,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 			});
 
 			const circleVip = new Konva.Circle({
+				listening: false,
 				x: this.Padding + 32,
 				y: this.Padding + 32,
 				radius: 32,
@@ -103,11 +106,10 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 				width: 100,
 				height: 100,
 				offset: 40,
-				imageSmoothingEnabled: true,
 			});
 
 			circleVip.filters([Konva.Filters.Blur]);
-			circleVip.blurRadius(75);
+			circleVip.blurRadius(70);
 
 			layer.add(imageVip, circleVip);
 		}
@@ -128,6 +130,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 		});
 
 		const onlineCircle = new Konva.Circle({
+			listening: false,
 			x: this.Padding + 10,
 			y: this.Padding + 58,
 			radius: 10,
@@ -137,6 +140,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 		});
 
 		const textInv = new Konva.Text({
+			listening: false,
 			x: this.Padding + 64 + this.Padding,
 			y: this.Padding,
 			text: `${Strings[this.Language].inventoryOf} ${this.User.Nickname}`,
@@ -147,6 +151,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 		});
 
 		const textMoney = new Konva.Text({
+			listening: false,
 			x: this.Width / 2,
 			y: this.Padding,
 			padding: this.Padding,
@@ -163,6 +168,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 
 		layer.add(image, onlineCircle, textInv, textMoney);
 
+		layer.listening(false);
 		this.Stage.add(layer);
 
 		return this;
@@ -180,6 +186,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 			});
 
 			const textSituation = new Konva.Text({
+				listening: false,
 				x: this.Padding + imageSituation.width() + 8,
 				y: this.Padding + 100,
 				height: 32,
@@ -204,6 +211,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 			});
 
 			const textClass = new Konva.Text({
+				listening: false,
 				x: this.Padding + imageClass.width() + 8,
 				y: this.Padding + 160,
 				height: 32,
@@ -216,6 +224,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 			});
 
 			const textDEF = new Konva.Text({
+				listening: false,
 				x: (this.Width / 2) - this.Padding,
 				y: this.Padding + 160,
 				width: this.Width / 2,
@@ -237,6 +246,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 			});
 
 			const textATK = new Konva.Text({
+				listening: false,
 				x: imageDEF.x() - 60 - 8,
 				y: this.Padding + 160,
 				width: 60,
@@ -271,6 +281,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 			});
 
 			const textClass = new Konva.Text({
+				listening: false,
 				x: this.Padding + imageClass.width() + 8,
 				y: this.Padding + 92,
 				height: 32,
@@ -283,6 +294,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 			});
 
 			const textSituation = new Konva.Text({
+				listening: false,
 				x: this.Width / 2,
 				y: this.Padding + 92,
 				padding: this.Padding,
@@ -323,6 +335,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 			layer.add(separator);
 		}
 
+		layer.listening(false);
 		this.Stage.add(layer);
 		return this;
 	}
@@ -348,6 +361,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 
 			if (this.FullSize) {
 				const itemName = new Konva.Text({
+					listening: false,
 					x: x + 83,
 					y: y + 20,
 					text: item.Description[this.Language],
@@ -357,6 +371,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 					fill: "#E3E3E6",
 				});
 				const itemDuration = new Konva.Text({
+					listening: false,
 					x: x + 83,
 					y: y + 45,
 					text: item.Type == ItemType.Consumable ? String(item.Quantity) : formatDistanceToNow(item.RemainingTime, { locale: getLocaleFromLanguage(this.Language) }),
@@ -398,6 +413,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 			for (let j = 0; j < itemsPerRow; j++) {
 				const x = this.Padding + j * (rectWidth + 16);
 				const rect = new Konva.Rect({
+					listening: false,
 					x,
 					y,
 					width: rectWidth,
@@ -415,6 +431,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 			}
 		}
 
+		layer.listening(false);
 		this.Stage.add(layer);
 		return this;
 	}
