@@ -1,7 +1,7 @@
 import { SituationId, User } from "../../models/User";
 import { BaseCanvasBuilder } from "./BaseCanvasBuilder";
 import Konva from "konva";
-import { formatMoney, formatDate } from "../../utils/ui";
+import { formatMoney } from "../../utils/ui";
 import { ClassId, ClassList } from "../../interfaces/Classes";
 import { ItemId, ItemType, UserItem } from "../../interfaces/Items";
 import { getLocaleFromLanguage, Language } from "../../models/Language";
@@ -145,7 +145,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 			y: this.Padding,
 			text: `${Strings[this.Language].inventoryOf} ${this.User.Nickname}`,
 			fontSize: 24,
-			fontFamily: "Inter",
+			// fontFamily: "Inter",
 			fontStyle: "700",
 			fill: "#E3E3E6",
 		});
@@ -161,7 +161,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 			verticalAlign: "middle",
 			text: formatMoney(this.User.Money, this.Language),
 			fontSize: 32,
-			fontFamily: "Inter",
+			// fontFamily: "Inter",
 			fontStyle: "700",
 			fill: "#FFFFFF",
 		});
@@ -194,7 +194,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 				verticalAlign: "middle",
 				text: this.User.Situation.ComplexUI,
 				fontSize: 20,
-				fontFamily: "Inter",
+				// fontFamily: "Inter",
 				fontStyle: "700",
 				fill: "#E3E3E6",
 			});
@@ -218,7 +218,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 				verticalAlign: "middle",
 				text: ClassList[this.User.Class].Description[this.Language],
 				fontSize: 18,
-				fontFamily: "Inter",
+				// fontFamily: "Inter",
 				fontStyle: "600",
 				fill: "#E3E3E6",
 			});
@@ -233,7 +233,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 				verticalAlign: "middle",
 				text: `${this.User.Attributes.Defense} DEF`,
 				fontSize: 16,
-				fontFamily: "Inter",
+				// fontFamily: "Inter",
 				fontStyle: "700",
 				fill: "#F4E7D2",
 			});
@@ -254,7 +254,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 				verticalAlign: "middle",
 				text: `${this.User.Attributes.Attack} ATK`,
 				fontSize: 16,
-				fontFamily: "Inter",
+				// fontFamily: "Inter",
 				fontStyle: "700",
 				fill: "#F4E7D2",
 			});
@@ -288,7 +288,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 				verticalAlign: "middle",
 				text: ClassList[this.User.Class].Description[this.Language],
 				fontSize: 18,
-				fontFamily: "Inter",
+				// fontFamily: "Inter",
 				fontStyle: "600",
 				fill: "#E3E3E6",
 			});
@@ -304,7 +304,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 				verticalAlign: "middle",
 				text: this.User.Situation.Simple,
 				fontSize: 20,
-				fontFamily: "Inter",
+				// fontFamily: "Inter",
 				fontStyle: "700",
 				fill: "#E3E3E6",
 			});
@@ -366,7 +366,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 					y: y + 20,
 					text: item.Description[this.Language],
 					fontSize: 14,
-					fontFamily: "Inter",
+					// fontFamily: "Inter",
 					fontStyle: "700",
 					fill: "#E3E3E6",
 				});
@@ -376,7 +376,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 					y: y + 45,
 					text: item.Type == ItemType.Consumable ? String(item.Quantity) : formatDistanceToNow(item.RemainingTime, { locale: getLocaleFromLanguage(this.Language) }),
 					fontSize: 12,
-					fontFamily: "Inter",
+					// fontFamily: "Inter",
 					fontStyle: "600",
 					fill: "#E3E3E6",
 				});
