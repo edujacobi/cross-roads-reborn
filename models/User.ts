@@ -535,16 +535,19 @@ export class User {
 
 	async GetSituation() {
 		const s = Strings[this.Language];
-		this.Situation.Simple = s.idling;
-		this.Situation.SimpleEmote = `${EmoteString.Idle} ${this.Situation.Simple}`;
-		this.Situation.Complex = `${EmoteString.Idle} ${s.idling}`;
-		this.Situation.ComplexUI = this.Situation.Simple;
+		this.Situation = {
+			Id: SituationId.Idling,
+			Simple: s.idling,
+			SimpleEmote: `${EmoteString.Idle} ${s.idling}`,
+			Complex: `${EmoteString.Idle} ${s.idling}`,
+			ComplexUI: s.idling,
+		};
 
 		if (this.Job.Id !== null) {
 			this.Situation = {
 				Id: SituationId.Job,
 				Simple: s.workingSimple,
-				SimpleEmote: `${EmoteString.Jobs} ${this.Situation.Simple}`,
+				SimpleEmote: `${EmoteString.Jobs} ${s.workingSimple}`,
 				Complex: `${EmoteString.Jobs} ${s.workingComplex(JobList[this.Job.Id].Description[this.Language], this.Job.EndsIn)}`,
 				ComplexUI: s.workingComplexUI(JobList[this.Job.Id].Description[this.Language], this.Job.EndsIn),
 			};
@@ -554,7 +557,7 @@ export class User {
 			this.Situation = {
 				Id: SituationId.Robbery,
 				Simple: s.robbing,
-				SimpleEmote: `${EmoteString.Robbery} ${this.Situation.Simple}`,
+				SimpleEmote: `${EmoteString.Robbery} ${s.robbing}`,
 				Complex: `${EmoteString.Robbery} ${s.robbing} ${user!.nickname}`,
 				ComplexUI: `${s.robbing} ${user!.nickname}`,
 			};
@@ -564,7 +567,7 @@ export class User {
 			this.Situation = {
 				Id: SituationId.Robbery,
 				Simple: s.robbing,
-				SimpleEmote: `${EmoteString.Robbery} ${this.Situation.Simple}`,
+				SimpleEmote: `${EmoteString.Robbery} ${s.robbing}`,
 				Complex: `${EmoteString.Robbery} ${s.robbing} ${location.Description[this.Language]}`,
 				ComplexUI: `${s.robbing} ${location.Description[this.Language]}`,
 			};
@@ -574,7 +577,7 @@ export class User {
 			this.Situation = {
 				Id: SituationId.Robbery,
 				Simple: s.beingRobbedSimple,
-				SimpleEmote: `${EmoteString.Robbery} ${this.Situation.Simple}`,
+				SimpleEmote: `${EmoteString.Robbery} ${s.beingRobbedSimple}`,
 				Complex: `${EmoteString.Robbery} ${s.beingRobbedComplex} ${user!.nickname}`,
 				ComplexUI: `${s.beingRobbedComplex} ${user!.nickname}`,
 			};
