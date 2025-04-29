@@ -39,7 +39,7 @@ module.exports = {
 		const _user = interaction.options.getUser("target") || interaction.user;
 		const target = _user ? await checkUser(_user.id, interaction) : user;
 
-		const NEW_INV = true;
+		const NEW_INV = false;
 
 		if (!target) {
 			return await replyUserDontExist(interaction, language);
