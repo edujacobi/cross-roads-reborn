@@ -6,8 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "clear": "rimraf build",
-    "build": "tsc",
-    "clear-commands": "tsc && node build/clear-commands.js",
+    "build": "tsc -b",
+    "clear-commands": "tsc -b && node build/clear-commands.js",
     "prestart": "npm run clear && npm run build",
     "start": "pm2 start build/index.js --name \"cr\"",
     "stop": "pm2 stop cr",
@@ -44,7 +44,7 @@
     "canvas": "^3.1.0",
     "date-fns": "^3.6.0",
     "discord-api-types": "0.37.83",
-    "discord.js": "14.16.2",
+    "discord.js": "14.19.1",
     "dotenv": "^16.3.1",
     "sequelize": "^6.31.1",
     "sqlite3": "^5.1.6"
