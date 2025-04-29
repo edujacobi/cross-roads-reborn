@@ -54,27 +54,28 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 			fill: "#242429",
 		});
 
-		const ellipsis = new Konva.Circle({
-			listening: false,
-			x: this.Width - 30,
-			y: -160,
-			radius: 256,
-			opacity: 0.1,
-			fill: "#008D64",
-		});
+		// const ellipsis = new Konva.Circle({
+		// 	listening: false,
+		// 	x: this.Width - 30,
+		// 	y: -160,
+		// 	radius: 256,
+		// 	opacity: 0.1,
+		// 	fill: "#008D64",
+		// });
+		//
+		// ellipsis.cache({
+		// 	x: -350,
+		// 	y: -350,
+		// 	width: 700,
+		// 	height: 700,
+		// 	offset: 50,
+		// });
+		//
+		// ellipsis.filters([Konva.Filters.Blur]);
+		// ellipsis.blurRadius(180);
 
-		ellipsis.cache({
-			x: -350,
-			y: -350,
-			width: 700,
-			height: 700,
-			offset: 50,
-		});
-
-		ellipsis.filters([Konva.Filters.Blur]);
-		ellipsis.blurRadius(180);
-
-		layer.add(rect, ellipsis);
+		// layer.add(rect, ellipsis);
+		layer.add(rect);
 		layer.listening(false);
 
 		this.Stage.add(layer);
@@ -114,19 +115,15 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 			layer.add(imageVip, circleVip);
 		}
 
-		const image = await this.CreateKonvaImageUrl(this.DiscordUser.avatarURL({
-			extension: "jpg",
-			size: 64,
-			forceStatic: true,
-		}) || this.AvatarUrl, {
+		const image = await this.CreateKonvaImageLocal(this.GetClassImage(this.User.Class), {
 			x: this.Padding,
 			y: this.Padding,
 			width: 64,
 			height: 64,
-			cornerRadius: 32,
-			fill: this.User.IsVip() ? "#E0BA20" : "#363640",
+			cornerRadius: 40,
+			fill: "#363640",
 			stroke: this.User.IsVip() ? "#E0BA20" : "#363640",
-			strokeWidth: 10,
+			strokeWidth: 4,
 		});
 
 		const onlineCircle = new Konva.Circle({
@@ -199,7 +196,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 				fill: "#E3E3E6",
 			});
 
-			const imageClass = await this.CreateKonvaImageLocal(this.GetClassImage(this.User.Class), {
+			const imageClass = await this.CreateKonvaImageLocal("ui/assets/images/ui_elements/inventory.png", {
 				x: this.Padding,
 				y: this.Padding + 160,
 				width: 32,
@@ -269,7 +266,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 			layer.add(imageClass, textClass, imageSituation, textSituation, textDEF, imageDEF, textATK, imageATK);
 		}
 		else {
-			const imageClass = await this.CreateKonvaImageLocal(this.GetClassImage(this.User.Class), {
+			const imageClass = await this.CreateKonvaImageLocal("ui/assets/images/ui_elements/inventory.png", {
 				x: this.Padding,
 				y: this.Padding + 92,
 				width: 32,

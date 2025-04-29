@@ -22,8 +22,8 @@ export class BaseCanvasBuilder {
 	}
 
 	GenerateImage() {
-		const dataURL = this.Stage.toDataURL();
-		// const dataURL = this.Stage.toDataURL({ mimeType: "image/jpeg", quality: 0.8 });
+		// const dataURL = this.Stage.toDataURL();
+		const dataURL = this.Stage.toDataURL({ mimeType: "image/jpeg", quality: 0.9 });
 		this.Stage.clear();
 		this.Stage.clearCache();
 		return Buffer.from(dataURL.split(",")[1], "base64");
