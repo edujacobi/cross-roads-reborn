@@ -1,5 +1,5 @@
 ﻿import {
-	ActionRowBuilder, AttachmentBuilder,
+	ActionRowBuilder,
 	ButtonBuilder,
 	ButtonStyle,
 	ChatInputCommandInteraction,
@@ -20,7 +20,6 @@ import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
 import { ClassList } from "../../interfaces/Classes";
 import { formatMoney, showTime } from "../../utils/ui";
 import { ItemType } from "../../interfaces/Items";
-import { InventoryCanvasBuilder } from "../../ui/builders/InventoryCanvasBuilder";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -38,8 +37,6 @@ module.exports = {
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 		const _user = interaction.options.getUser("target") || interaction.user;
 		const target = _user ? await checkUser(_user.id, interaction) : user;
-
-		const NEW_INV = false;
 
 		if (!target) {
 			return await replyUserDontExist(interaction, language);
@@ -63,48 +60,12 @@ module.exports = {
 
 		await interaction.deferReply();
 
-		const lastCommand = interaction.client.userLastCommand.get(target.Id) || 0;
-
-		const online = new Date(lastCommand) > subMinutes(new Date(), 15);
-
-		const closedInventory = new InventoryCanvasBuilder({
-			User: target,
-			UserItems: userItems,
-			DiscordUser: _user,
-			Language: language,
-			FullSize: false,
-		});
-		closedInventory.AddBackground();
-		await closedInventory.AddHeader(online);
-		await closedInventory.AddSubHeader();
-		await closedInventory.AddItemGrid();
-
-		const invClosedImage = new AttachmentBuilder(closedInventory.GenerateImage(), { name: `invOf${target.Nickname}.jpg` });
-
-		const openInventory = new InventoryCanvasBuilder({
-			User: target,
-			UserItems: userItems,
-			DiscordUser: _user,
-			Language: language,
-			FullSize: true,
-		});
-		openInventory.AddBackground();
-		await openInventory.AddHeader(online);
-		await openInventory.AddSubHeader();
-		await openInventory.AddItemGrid();
-		const invOpenImage = new AttachmentBuilder(openInventory.GenerateImage(), { name: `invOf${target.Nickname}.jpg` });
-
 		const invClosed = new CustomEmbedBuilder()
 			.setColor(embedColor)
-			// .setAuthor({
-			// 	name: `${s.inventoryOf} ${target.Nickname}`,
-			// 	iconURL: "https://cdn.discordapp.com/attachments/531174573463306240/814662917696782376/Inventario.png",
-			// })
 			.setAuthor({
 				name: `${s.inventoryOf} ${target.Nickname}`,
 				iconURL: ClassList[target.Class].Image.Url,
 			})
-			// .setTitle(`${s.inventoryOf} ${target.Nickname}`)
 			.setThumbnail(_user.avatarURL() ?? null)
 			.setDescription(`${badgeText}
 ${formatMoney(target.Money, language)}`)
@@ -112,10 +73,6 @@ ${formatMoney(target.Money, language)}`)
 				nickname: user.Nickname,
 				image: interaction.user.avatarURL(),
 			});
-		// .setFooter({
-		// 	iconURL: ClassList[target.Class].Image.Url,
-		// 	text: target.Situation.Simple,
-		// });
 
 		const weaponEmotes = userItems.map(weapon => weapon.Skin.Default.Emote.String);
 		const textWeapons = weaponEmotes.join(" ").match(/.{1,1023}/g) || [];
@@ -145,9 +102,7 @@ ${formatMoney(target.Money, language)}`)
 
 		let row = createRow();
 		const response = await interaction.editReply({
-			// content: interaction.user.id != _user.id ? `${interaction.options.getUser("target")}` : "",
-			embeds: NEW_INV ? [] : [invClosed],
-			files: NEW_INV ? [invClosedImage] : [],
+			embeds: [invClosed],
 			components: row.components.length > 0 ? [row] : [],
 		});
 
@@ -171,15 +126,10 @@ ${formatMoney(target.Money, language)}`)
 
 				const invOpen = new CustomEmbedBuilder()
 					.setColor(embedColor)
-					// .setAuthor({
-					// 	name: `${s.inventoryOf} ${target.Nickname}`,
-					// 	iconURL: "https://cdn.discordapp.com/attachments/531174573463306240/814662917696782376/Inventario.png",
-					// })
 					.setAuthor({
 						name: `${s.inventoryOf} ${target.Nickname}, ${ClassList[target.Class].Description[language]}`,
 						iconURL: ClassList[target.Class].Image.Url,
 					})
-					// .setTitle(`${s.inventoryOf} ${target.Nickname}, ${ClassList[target.Class].Description[user.Language]}`)
 					.setThumbnail(_user.avatarURL() ?? null)
 					.setDescription(`-# ${emoteOnline}
 ${badges.length > 0 ? `### ${badgeText}\n` : ""}### ${formatMoney(target.Money, language)}
@@ -188,11 +138,6 @@ ${badges.length > 0 ? `### ${badgeText}\n` : ""}### ${formatMoney(target.Money, 
 						nickname: user.Nickname,
 						image: interaction.user.avatarURL(),
 					});
-
-				// .setFooter({
-				// 	iconURL: ClassList[target.Class].Image.Url,
-				// 	text: ClassList[target.Class].Description[user.Language],
-				// });
 
 				userItems.forEach(item => {
 					invOpen.addFields([{
@@ -208,8 +153,7 @@ ${badges.length > 0 ? `### ${badgeText}\n` : ""}### ${formatMoney(target.Money, 
 				}]);
 
 				await btn.update({
-					embeds: NEW_INV ? [] : [invOpen],
-					files: NEW_INV ? [invOpenImage] : [],
+					embeds: [invOpen],
 					components: [row],
 				});
 			}
@@ -219,8 +163,7 @@ ${badges.length > 0 ? `### ${badgeText}\n` : ""}### ${formatMoney(target.Money, 
 				row = createRow();
 
 				await btn.update({
-					embeds: NEW_INV ? [] : [invClosed],
-					files: NEW_INV ? [invClosedImage] : [],
+					embeds: [invClosed],
 					components: [row],
 				});
 			}
