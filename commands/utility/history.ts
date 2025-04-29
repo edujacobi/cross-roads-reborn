@@ -10,7 +10,7 @@ import { Language } from "../../models/Language";
 import { Pagination } from "../../models/Pagination";
 import { ClassList } from "../../interfaces/Classes";
 import { LocationList } from "../../interfaces/Locations";
-import { RobTypes } from "../../models/Robbery";
+import { ClashType } from "../../models/Robbery";
 
 module.exports = {
 	cooldown: 10,
@@ -73,16 +73,20 @@ module.exports = {
 
 				let opponentName = "";
 
-				if (rob.type == RobTypes.User && defender) {
+				if ((rob.type == ClashType.User || rob.type == ClashType.BeatUp) && defender) {
 					const boldOs = `${defender.id == user.Id ? "**__" : ""}`;
 					const boldOe = `${defender.id == user.Id ? "__**" : ""}`;
 					opponentName = `${ClassList[defender.class].Image.Emote.String} ${boldOs}${defender.nickname}${boldOe}`;
 				}
-				if (rob.type == RobTypes.Location && location) {
+				if (rob.type == ClashType.Location && location) {
 					opponentName = `${location.Emote.String} ${location.Description[user.Language]}`;
 				}
 
-				historyList += `### ${challengerName} ${EmoteString.React} ${opponentName}\n-# ${emoji} ${text}${rob.success ? ` • **${formatMoney(rob.money, user.Language)}**` : ""} • ${formatDate(rob.createdAt, language)}\n`;
+				const emoteShow = rob.type == ClashType.BeatUp ? EmoteString.BaseballBat : EmoteString.React;
+
+				const textMoney = rob.success && rob.type != ClashType.BeatUp ? ` • **${formatMoney(rob.money, user.Language)}**` : "";
+
+				historyList += `### ${challengerName} ${emoteShow} ${opponentName}\n-# ${emoji} ${text}${textMoney} • ${formatDate(rob.createdAt, language)}\n`;
 			}
 
 			return new CustomEmbedBuilder()

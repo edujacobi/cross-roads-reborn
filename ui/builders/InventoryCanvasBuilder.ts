@@ -459,6 +459,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 			[SituationId.Hospital]: "5_Hospital.png",
 			[SituationId.Scavenging]: "6_Scavenging.png",
 			[SituationId.Wanted]: "7_Wanted.png",
+			[SituationId.BeatUp]: "8_BeatUp.png",
 		};
 		return "ui/assets/images/situations/" + (mapper[situationId] || mapper[SituationId.Idling]);
 	}

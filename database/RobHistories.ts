@@ -10,10 +10,11 @@
 import { sequelize } from "./Database";
 import { User } from "../models/User";
 import { Users } from "./Users";
-import { Robbery } from "../models/Robbery";
+import { ClashType, Robbery } from "../models/Robbery";
 import { Log } from "../utils/log";
 import { RobberyLocation } from "../models/RobberyLocation";
 import { Language } from "../models/Language";
+import { BeatUp } from "../models/BeatUp";
 
 export class RobHistories extends Model<
 	InferAttributes<RobHistories>,
@@ -49,7 +50,7 @@ export class RobHistories extends Model<
 		});
 	}
 
-	static async CreateUserHistory(robbery: Robbery) {
+	static async CreateUserRobberyHistory(robbery: Robbery) {
 		try {
 			await RobHistories.create({
 				attackerId: robbery.Attacker.Id,
@@ -80,6 +81,23 @@ export class RobHistories extends Model<
 		}
 		catch (err) {
 			Log.Warning(`Something went wrong with adding Robbery History for ${robbery.Attacker.Nickname} (ID: ${robbery.Attacker.Id}) and ${robbery.Location.Description[Language.English]} (ID: ${robbery.Location.Id}).`);
+		}
+	}
+
+	static async CreateUserBeatUpHistory(beatup: BeatUp) {
+		try {
+			await RobHistories.create({
+				attackerId: beatup.Attacker.Id,
+				defenderId: beatup.Defender.Id,
+				success: beatup.Success,
+				money: 0,
+				type: ClashType.BeatUp,
+			});
+
+			Log.Success(`Beat Up History for ${beatup.Attacker.Nickname} (ID: ${beatup.Attacker.Id}) and ${beatup.Defender.Nickname} (ID: ${beatup.Defender.Id}) added successfully.`);
+		}
+		catch (err) {
+			Log.Warning(`Something went wrong with adding Beat Up History for ${beatup.Attacker.Nickname} (ID: ${beatup.Attacker.Id}) and ${beatup.Defender.Nickname} (ID: ${beatup.Defender.Id}).`);
 		}
 	}
 }

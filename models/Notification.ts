@@ -20,7 +20,20 @@ export enum NotificationType {
 	AlmsGive,
 	AlmsReceive,
 	Scavenge,
+	BeatAgain,
 }
+
+const NotificationMapper = {
+	[NotificationType.Daily]: "daily",
+	[NotificationType.Job]: "job",
+	[NotificationType.RobAgain]: "robAgain",
+	[NotificationType.Free]: "free",
+	[NotificationType.Hospital]: "hospital",
+	[NotificationType.AlmsGive]: "almsGive",
+	[NotificationType.AlmsReceive]: "almsReceive",
+	[NotificationType.Scavenge]: "scavenge",
+	[NotificationType.BeatAgain]: "beatAgain",
+};
 
 export class Notification {
 	Id = 0;
@@ -40,7 +53,7 @@ export class Notification {
 				date: this.Date,
 			});
 
-			Log.Info(`Notification Timer of type ${this.Type} for ${this.UserId} created to notify in ${this.Date}.`);
+			Log.Info(`Notification Timer of type ${NotificationMapper[this.Type]} (Id: ${this.Type}) for UserId ${this.UserId} created to notify in ${this.Date}.`);
 
 		}
 		catch (err) {
@@ -118,6 +131,14 @@ export class Notification {
 		await notification.Create();
 	}
 
+	static async BeatAgain(user: User) {
+		const notification = new Notification();
+		notification.UserId = user.Id;
+		notification.Type = NotificationType.BeatAgain;
+		notification.Date = user.BeatUp.Time;
+		await notification.Create();
+	}
+
 	static async HasNotificationsToSend(time: Date) {
 		const list = await Notifications.count({
 			where: {
@@ -165,7 +186,7 @@ export class Notification {
 				where: { id: this.Id },
 			});
 
-			Log.Info(`Notification Timer ${this.Id} (Type: ${this.Type}) to user ${this.UserId} notified.`);
+			Log.Info(`Notification Timer (Id: ${this.Id}) (Type:${NotificationMapper[this.Type]} (${this.Type})) to user ${this.UserId} notified.`);
 
 		}
 		catch (err) {
@@ -257,6 +278,12 @@ export class Notification {
 			else if (notification.Type == NotificationType.Scavenge) {
 				await sendPrivateMessage(user.Id, s.scavenge, CrColors.Scavenge);
 			}
+			else if (notification.Type == NotificationType.BeatAgain) {
+				await sendPrivateMessage(user.Id, s.beatAgain, CrColors.BeatUp);
+			}
+			else {
+				Log.Warning(`Notification type ${notification.Type} not implemented.`);
+			}
 
 			await notification.SetAsNotified();
 		}
@@ -278,6 +305,7 @@ const Strings = {
 		almsGive: `You can give alms again! ${EmoteString.Alms}`,
 		almsReceive: `You can receive alms again! ${EmoteString.Alms}`,
 		scavenge: `You can scavenge again! ${EmoteString.Scavenge}`,
+		beatAgain: `You can beat up again! ${EmoteString.Beat}`,
 	},
 	[Language.Portuguese]: {
 		daily: `Você pode receber sua grana diária novamente! ${EmoteString.Experience}`,
@@ -288,6 +316,7 @@ const Strings = {
 		almsGive: `Você pode dar esmola novamente! ${EmoteString.Alms}`,
 		almsReceive: `Você pode receber esmola novamente! ${EmoteString.Alms}`,
 		scavenge: `Você pode vasculhar novamente! ${EmoteString.Scavenge}`,
+		beatAgain: `Você pode espancar novamente! ${EmoteString.Beat}`,
 	},
 	[Language.Spanish]: {
 		daily: `¡Puedes recibir tu dinero diario de nuevo! ${EmoteString.Experience}`,
@@ -298,5 +327,6 @@ const Strings = {
 		almsGive: `¡Puedes dar limosna de nuevo! ${EmoteString.Alms}`,
 		almsReceive: `¡Puedes recibir limosna de nuevo! ${EmoteString.Alms}`,
 		scavenge: `¡Puedes buscar de nuevo! ${EmoteString.Scavenge}`,
+		beatAgain: `¡Puedes golpear de nuevo! ${EmoteString.Beat}`,
 	},
 } as const;

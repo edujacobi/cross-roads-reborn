@@ -1,5 +1,7 @@
 ﻿import { Locale } from "discord.js";
 import { enUS, es, ptBR } from "date-fns/locale";
+import { CreationOptional } from "sequelize";
+import { EmoteString } from "../utils/emotes";
 
 export enum Language {
 	English,
@@ -40,3 +42,39 @@ export function getLocaleFromLanguage(language: Language) {
 		return enUS;
 	}
 }
+
+export const globalStrings = {
+	[Language.English]: {
+		attackerIsRobbingId: (nick: CreationOptional<string> | undefined) => `You're already robbing **${nick}**! ${EmoteString.Robbery}\n-# Wait a few more seconds and try again!`,
+		attackerIsBeingRobbedById: (nick: CreationOptional<string> | undefined) => `You're being robbed by **${nick}**! ${EmoteString.Robbery}\n-# Wait a few more seconds and try again!`,
+		defenderIsRobbingId: (nick: CreationOptional<string> | undefined) => `is robbing **${nick}**! ${EmoteString.Robbery}\n-# Wait a few more seconds to start your action!`,
+		defenderIsBeingRobbedById: (nick: CreationOptional<string> | undefined) => `is being robbed by **${nick}**! ${EmoteString.Robbery}\n-# Wait a few more seconds to start your action!`,
+
+		attackerIsBeatingId: (nick: CreationOptional<string> | undefined) => `You're beating **${nick}**! ${EmoteString.Beat}\n-# Wait a few more seconds and try again!`,
+		attackerIsBeingBeatedById: (nick: CreationOptional<string> | undefined) => `You're being beated by **${nick}**! ${EmoteString.Beat}\n-# Wait a few more seconds and try again!`,
+		defenderIsBeatingId: (nick: CreationOptional<string> | undefined) => `is beating **${nick}**! ${EmoteString.Beat}\n-# Wait a few more seconds to start your action!`,
+		defenderIsBeingBeatedById: (nick: CreationOptional<string> | undefined) => `is being beated by **${nick}**! ${EmoteString.Beat}\n-# Wait a few more seconds to start your action!`,
+	},
+	[Language.Portuguese]: {
+		attackerIsRobbingId: (nick: CreationOptional<string> | undefined) => `Você está roubando **${nick}**! ${EmoteString.Robbery}\n-# Espere mais alguns segundos e tente novamente!`,
+		attackerIsBeingRobbedById: (nick: CreationOptional<string> | undefined) => `Você está sendo roubado por **${nick}**! ${EmoteString.Robbery}\n-# Espere mais alguns segundos e tente novamente!`,
+		defenderIsRobbingId: (nick: CreationOptional<string> | undefined) => `está roubando **${nick}**! ${EmoteString.Robbery}\n-# Espere mais alguns segundos para iniciar sua ação!`,
+		defenderIsBeingRobbedById: (nick: CreationOptional<string> | undefined) => `está sendo roubado por **${nick}**! ${EmoteString.Robbery}\n-# Espere mais alguns segundos para iniciar sua ação!`,
+
+		attackerIsBeatingId: (nick: CreationOptional<string> | undefined) => `Você está espancando **${nick}**! ${EmoteString.Beat}\n-# Espere mais alguns segundos e tente novamente!`,
+		attackerIsBeingBeatedById: (nick: CreationOptional<string> | undefined) => `Você está sendo espancado por **${nick}**! ${EmoteString.Beat}\n-# Espere mais alguns segundos e tente novamente!`,
+		defenderIsBeatingId: (nick: CreationOptional<string> | undefined) => `está espancando **${nick}**! ${EmoteString.Beat}\n-# Espere mais alguns segundos para iniciar sua ação!`,
+		defenderIsBeingBeatedById: (nick: CreationOptional<string> | undefined) => `está sendo espancado por **${nick}**! ${EmoteString.Beat}\n-# Espere mais alguns segundos para iniciar sua ação!`,
+	},
+	[Language.Spanish]: {
+		attackerIsRobbingId: (nick: CreationOptional<string> | undefined) => `¡Estás robando a **${nick}**! ${EmoteString.Robbery}\n-# ¡Espera unos segundos más y vuelve a intentarlo!`,
+		attackerIsBeingRobbedById: (nick: CreationOptional<string> | undefined) => `¡Estás siendo robado por **${nick}**! ${EmoteString.Robbery}\n-# ¡Espera unos segundos más y vuelve a intentarlo!`,
+		defenderIsRobbingId: (nick: CreationOptional<string> | undefined) => `está robando a **${nick}**! ${EmoteString.Robbery}\n-# ¡Espera unos segundos más para iniciar tu acción!`,
+		defenderIsBeingRobbedById: (nick: CreationOptional<string> | undefined) => `está siendo robado por **${nick}**! ${EmoteString.Robbery}\n-# ¡Espera unos segundos más para iniciar tu acción!`,
+
+		attackerIsBeatingId: (nick: CreationOptional<string> | undefined) => `¡Estás golpeando a **${nick}**! ${EmoteString.Beat}\n-# ¡Espera unos segundos más y vuelve a intentarlo!`,
+		attackerIsBeingBeatedById: (nick: CreationOptional<string> | undefined) => `¡Estás siendo golpeado por **${nick}**! ${EmoteString.Beat}\n-# ¡Espera unos segundos más y vuelve a intentarlo!`,
+		defenderIsBeatingId: (nick: CreationOptional<string> | undefined) => `está golpeando a **${nick}**! ${EmoteString.Beat}\n-# ¡Espera unos segundos más para iniciar tu acción!`,
+		defenderIsBeingBeatedById: (nick: CreationOptional<string> | undefined) => `está siendo golpeado por **${nick}**! ${EmoteString.Beat}\n-# ¡Espera unos segundos más para iniciar tu acción!`,
+	},
+};

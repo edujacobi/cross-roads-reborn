@@ -9,12 +9,12 @@ import { setTimeout as wait } from "timers/promises";
 import { addHours } from "date-fns/addHours";
 import { Notification } from "./Notification";
 import { addMinutes } from "date-fns";
-import { Language } from "./Language";
+import { globalStrings, Language } from "./Language";
 import { RobHistories } from "../database/RobHistories";
 import { Users } from "../database/Users";
 import { CreationOptional } from "sequelize";
 import { JobId, JobList } from "../interfaces/Jobs";
-import { Robbery, RobTypes } from "./Robbery";
+import { Robbery, ClashType } from "./Robbery";
 import { Location, LocationList } from "../interfaces/Locations";
 import { ClassList } from "../interfaces/Classes";
 import { ScavengeId, ScavengeList } from "../interfaces/Scavenge";
@@ -26,7 +26,7 @@ export class RobberyLocation extends Robbery {
 		super(attacker, new User("0", Language.English)); // defender will not be used
 		this.Attacker = attacker;
 		this.Location = location;
-		this.Type = RobTypes.Location;
+		this.Type = ClashType.Location;
 		this.Date = new Date();
 	}
 
@@ -65,21 +65,33 @@ export class RobberyLocation extends Robbery {
 			canRob = false;
 		}
 
+		if (this.Attacker.BeatUp.IsBeatingId) {
+			const user = await Users.findByPk(this.Attacker.BeatUp.IsBeatingId, { attributes: ["class", "nickname"] });
+			message = globalStrings[this.Attacker.Language].attackerIsBeatingId(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname!}`);
+			canRob = false;
+		}
+
+		if (this.Attacker.BeatUp.IsBeingBeatUpById) {
+			const user = await Users.findByPk(this.Attacker.BeatUp.IsBeingBeatUpById, { attributes: ["class", "nickname"] });
+			message = globalStrings[this.Attacker.Language].attackerIsBeingBeatedById(`${ClassList[user!.class!].Image.Emote.String} ${user!.nickname!}`);
+			canRob = false;
+		}
+
 		if (this.Attacker.Robbery.IsRobbingId) {
 			const user = await Users.findByPk(this.Attacker.Robbery.IsRobbingId, { attributes: ["nickname", "class"] });
-			message = `${s.attackerIsRobbingId(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname}`)} ${EmoteString.Robbery}`;
+			message = globalStrings[this.Attacker.Language].attackerIsRobbingId(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname}`);
 			canRob = false;
 		}
 
 		if (this.Attacker.Robbery.IsBeingRobbedById) {
 			const user = await Users.findByPk(this.Attacker.Robbery.IsBeingRobbedById, { attributes: ["nickname", "class"] });
-			message = `${s.attackerIsBeingRobbedById(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname}`)} ${EmoteString.Robbery}`;
+			message = globalStrings[this.Attacker.Language].attackerIsBeingRobbedById(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname}`);
 			canRob = false;
 		}
 
 		if (this.Attacker.Robbery.IsRobbingLocationId) {
 			const location = LocationList[this.Attacker.Robbery.IsRobbingLocationId];
-			message = `${s.attackerIsRobbingId(location.Description[this.Attacker.Language])} ${EmoteString.Robbery}`;
+			message = globalStrings[this.Attacker.Language].attackerIsRobbingId(location.Description[this.Attacker.Language]);
 			canRob = false;
 		}
 
@@ -183,8 +195,6 @@ const Strings = {
 		inPrison: (prisonTime: Date) => `You can't rob while you're in prison! ${EmoteString.Prison}\n-# Will be released ${showTime(prisonTime.getTime(), true)}!`,
 		isWanted: (wantedTime: Date) => `You can't rob while you're wanted by the police! ${EmoteString.Police}\n-# Will be able to rob again ${showTime(wantedTime.getTime(), true)}!`,
 		isInHospital: (hospitalTime: Date) => `You can't rob while you're hospitalized! ${EmoteString.Hospital}\n-# Will be healed ${showTime(hospitalTime.getTime(), true)}!`,
-		attackerIsRobbingId: (nick: CreationOptional<string> | undefined) => `You're already robbing **${nick}**!`,
-		attackerIsBeingRobbedById: (nick: CreationOptional<string> | undefined) => `You're being robbed by **${nick}**!`,
 		// Attacker
 		robberyInProgress: "Robbery in progress...",
 		tryingToRob: "Trying to rob",
@@ -201,8 +211,6 @@ const Strings = {
 		inPrison: (prisonTime: Date) => `Você não pode roubar enquanto está preso! ${EmoteString.Prison}\n-# Será solto ${showTime(prisonTime.getTime(), true)}!`,
 		isWanted: (wantedTime: Date) => `Você não pode roubar enquanto está sendo procurado pela polícia! ${EmoteString.Police}\n-# Poderá roubar novamente ${showTime(wantedTime.getTime(), true)}!`,
 		isInHospital: (hospitalTime: Date) => `Você não pode roubar enquanto está hospitalizado! ${EmoteString.Hospital}\n-# Será curado ${showTime(hospitalTime.getTime(), true)}!`,
-		attackerIsRobbingId: (nick: CreationOptional<string> | undefined) => `Você já está roubando **${nick}**!`,
-		attackerIsBeingRobbedById: (nick: CreationOptional<string> | undefined) => `Você está sendo roubado por **${nick}**!`,
 		// Attacker
 		robberyInProgress: "Roubo em andamento...",
 		tryingToRob: "Tentando roubar",
@@ -219,8 +227,6 @@ const Strings = {
 		inPrison: (prisonTime: Date) => `¡No puedes robar mientras estás en prisión! ${EmoteString.Prison}\n-# Será liberado ${showTime(prisonTime.getTime(), true)}!`,
 		isWanted: (wantedTime: Date) => `¡No puedes robar mientras estás siendo buscado por la policía! ${EmoteString.Police}\n-# Podrá robar nuevamente ${showTime(wantedTime.getTime(), true)}!`,
 		isInHospital: (hospitalTime: Date) => `¡No puedes robar mientras estás hospitalizado! ${EmoteString.Hospital}\n-# ¡Será curado ${showTime(hospitalTime.getTime(), true)}!`,
-		attackerIsRobbingId: (nick: CreationOptional<string> | undefined) => `¡Ya estás robando a **${nick}**!`,
-		attackerIsBeingRobbedById: (nick: CreationOptional<string> | undefined) => `¡Estás siendo robado por **${nick}**!`,
 		// Attacker
 		robberyInProgress: "Robo en progreso...",
 		tryingToRob: "Intentando robar",

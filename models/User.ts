@@ -23,6 +23,7 @@ export enum SituationId {
 	Hospital,
 	Scavenging,
 	Wanted,
+	BeatUp,
 }
 
 export class User {
@@ -582,6 +583,26 @@ export class User {
 				ComplexUI: `${s.beingRobbedComplex} ${user!.nickname}`,
 			};
 		}
+		if (this.BeatUp.IsBeatingId) {
+			const user = await Users.findByPk(this.BeatUp.IsBeatingId, { attributes: ["id", "nickname"] });
+			this.Situation = {
+				Id: SituationId.BeatUp,
+				Simple: s.beating,
+				SimpleEmote: `${EmoteString.Beat} ${s.beating}`,
+				Complex: `${EmoteString.Beat} ${s.beating} ${user!.nickname}`,
+				ComplexUI: `${s.beating} ${user!.nickname}`,
+			};
+		}
+		if (this.BeatUp.IsBeingBeatUpById) {
+			const user = await Users.findByPk(this.BeatUp.IsBeingBeatUpById, { attributes: ["id", "nickname"] });
+			this.Situation = {
+				Id: SituationId.BeatUp,
+				Simple: s.beingBeatedUpSimple,
+				SimpleEmote: `${EmoteString.Beat} ${s.beingBeatedUpSimple}`,
+				Complex: `${EmoteString.Beat} ${s.beingBeatedUpComplex} ${user!.nickname}`,
+				ComplexUI: `${s.beingBeatedUpComplex} ${user!.nickname}`,
+			};
+		}
 		if (this.IsInPrison()) {
 			this.Situation = {
 				Id: SituationId.Prison,
@@ -802,6 +823,9 @@ const Strings = {
 		robbing: "Robbing",
 		beingRobbedSimple: "Being robbed",
 		beingRobbedComplex: "Being robbed by",
+		beating: "Beating",
+		beingBeatedUpSimple: "Being beaten up",
+		beingBeatedUpComplex: "Being beaten up by",
 		imprisonedSimple: "Imprisoned",
 		imprisonedComplex: "Imprisoned until",
 		imprisonedAndHospitalSimple: "Imprisoned and Hospitalized",
@@ -824,6 +848,9 @@ const Strings = {
 		robbing: "Roubando",
 		beingRobbedSimple: "Sendo roubado",
 		beingRobbedComplex: "Sendo roubado por",
+		beating: "Espancando",
+		beingBeatedUpSimple: "Sendo espancado",
+		beingBeatedUpComplex: "Sendo espancado por",
 		imprisonedSimple: "Preso",
 		imprisonedComplex: "Preso até",
 		imprisonedAndHospitalSimple: "Preso e Hospitalizado",
@@ -846,6 +873,9 @@ const Strings = {
 		robbing: "Robando",
 		beingRobbedSimple: "Siendo robado",
 		beingRobbedComplex: "Siendo robado por",
+		beating: "Golpeando",
+		beingBeatedUpSimple: "Siendo golpeado",
+		beingBeatedUpComplex: "Siendo golpeado por",
 		imprisonedSimple: "Preso",
 		imprisonedAndHospitalSimple: "Preso y Hospitalizado",
 		imprisonedAndHospitalSimpleEmote: `${EmoteString.Prison} Preso y ${EmoteString.Hospital} Hospitalizado`,

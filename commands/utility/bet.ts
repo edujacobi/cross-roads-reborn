@@ -66,7 +66,7 @@ module.exports = {
 
 		const s = Strings[language];
 
-		const { canPlay, message } = Casino.CanUserPlayBet(user, value);
+		const { canPlay, message } = await Casino.CanUserPlayBet(user, value);
 
 		if (!canPlay) {
 			return await replyInteraction(interaction, {

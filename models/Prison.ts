@@ -1,5 +1,5 @@
 import { User } from "./User";
-import { Language } from "./Language";
+import { globalStrings, Language } from "./Language";
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
@@ -71,7 +71,7 @@ export class Prison {
 			.setUserFooter({
 				nickname: this.User.Nickname,
 				image: this.Interaction.user.avatarURL(),
-				text: `${s.currentChance}: ${this.Escape.TotalChance}%`
+				text: `${s.currentChance}: ${this.Escape.TotalChance}%`,
 			});
 
 		const prisoners = await this.GetPrisoners();
@@ -129,7 +129,7 @@ export class Prison {
 					users.forEach(prisoner => {
 						embedPrisoners.addFields({
 							name: `${ClassList[prisoner.class].Image.Emote.String} ${prisoner.nickname}`,
-							value:`${s.free} ${showTime(new Date(prisoner.prisonTime).getTime(), true)}
+							value: `${s.free} ${showTime(new Date(prisoner.prisonTime).getTime(), true)}
 -# ${s.howManyTimesPrison(prisoner.robberyFailureCount)}
 -# ${s.howManyTimesEscape(prisoner.escapeCount)}`,
 							inline: true,
@@ -200,7 +200,7 @@ export class Prison {
 					.setUserFooter({
 						nickname: this.User.Nickname,
 						image: this.Interaction.user.avatarURL(),
-						text: formatMoney(this.User.Money, this.User.Language)
+						text: formatMoney(this.User.Money, this.User.Language),
 					});
 
 				const buttonConfirm = new ButtonBuilder()
@@ -241,7 +241,7 @@ export class Prison {
 						.setUserFooter({
 							nickname: this.User.Nickname,
 							image: this.Interaction.user.avatarURL(),
-							text: s.briberyAcceptedFooter
+							text: s.briberyAcceptedFooter,
 						});
 				}
 				else {
@@ -250,7 +250,7 @@ export class Prison {
 						.setUserFooter({
 							nickname: this.User.Nickname,
 							image: this.Interaction.user.avatarURL(),
-							text: s.briberyRejectedFooter
+							text: s.briberyRejectedFooter,
 						});
 				}
 
@@ -294,7 +294,12 @@ export class Prison {
 		}
 		if (this.User.Robbery.IsBeingRobbedById) {
 			const user = await Users.findByPk(this.User.Robbery.IsBeingRobbedById, { attributes: ["nickname", "class"] });
-			message = s.escapeBeingRobbedBy(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname!}`);
+			message = globalStrings[this.User.Language].attackerIsBeingRobbedById(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname!}`);
+			canEscape = false;
+		}
+		if (this.User.BeatUp.IsBeingBeatUpById) {
+			const user = await Users.findByPk(this.User.BeatUp.IsBeingBeatUpById, { attributes: ["nickname", "class"] });
+			message = globalStrings[this.User.Language].attackerIsBeingBeatedById(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname!}`);
 			canEscape = false;
 		}
 
@@ -481,7 +486,7 @@ export class Prison {
 				.setUserFooter({
 					nickname: this.User.Nickname,
 					image: this.Interaction.user.avatarURL(),
-					text: s.escapeWaitMinutes(this.Escape.TimeInMinutesWanted)
+					text: s.escapeWaitMinutes(this.Escape.TimeInMinutesWanted),
 				});
 		}
 		else {
@@ -520,7 +525,12 @@ export class Prison {
 		}
 		if (this.User.Robbery.IsBeingRobbedById) {
 			const user = await Users.findByPk(this.User.Robbery.IsBeingRobbedById, { attributes: ["nickname", "class"] });
-			message = s.bribeBeingRobbedBy(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname!}`);
+			message = globalStrings[this.User.Language].attackerIsBeingRobbedById(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname!}`);
+			canBribe = false;
+		}
+		if (this.User.BeatUp.IsBeingBeatUpById) {
+			const user = await Users.findByPk(this.User.BeatUp.IsBeingBeatUpById, { attributes: ["nickname", "class"] });
+			message = globalStrings[this.User.Language].attackerIsBeingBeatedById(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname!}`);
 			canBribe = false;
 		}
 
@@ -585,11 +595,9 @@ The guards are greedy, and the higher your ${EmoteString.Attack}ATK, the more th
 		howManyTimesEscape: (times: number) => `Escaped \`${times}\` times`,
 		escapeHasTried: `The police are watching you! ${EmoteString.Police}\n-# You won't be able to escape`,
 		escapeEscaping: `You are already trying to escape! ${EmoteString.Escape}\n-# This kind of thing requires patience`,
-		escapeBeingRobbedBy: (nickname: CreationOptional<string> | undefined) => `You are being robbed by **${nickname}** and cannot escape! ${EmoteString.Robbery}`,
 		bribeHasPaid: `We won't accept anything from you, smartass! ${EmoteString.Police}\n-# "Maybe next time you stop being an idiot"`,
 		bribeNotInPrison: `You are not in prison! ${EmoteString.Prison}\n-# "But we can lock you in. What do you think?"`,
 		bribeEscaping: `You are trying to escape and cannot bribe! ${EmoteString.Escape}\n-# Focus!`,
-		bribeBeingRobbedBy: (nickname: CreationOptional<string> | undefined) => `You are being robbed by **${nickname}** and cannot bribe! ${EmoteString.Robbery}`,
 		escapeInProgress: "Escape in progress...",
 		escapeSuccess: "Successful escape!",
 		escapeFailure: "Failed escape!",
@@ -627,11 +635,9 @@ Os guardas são gananciosos, e quanto maior o seu ${EmoteString.Attack}ATK, mais
 		howManyTimesEscape: (times: number) => `Fugiu \`${times}\` vezes`,
 		escapeHasTried: `Os policiais estão te observando! ${EmoteString.Police}\n-# Você não conseguirá fugir`,
 		escapeEscaping: `Você já está tentando fugir! ${EmoteString.Escape}\n-# Este tipo de coisa pede paciência`,
-		escapeBeingRobbedBy: (nickname: CreationOptional<string> | undefined) => `Você está sendo roubado por **${nickname}** e não pode fugir! ${EmoteString.Robbery}`,
 		bribeHasPaid: `Não aceitaremos nada vindo de você, espertalhão! ${EmoteString.Police}\n-# "Quem sabe na próxima tu deixa de ser idiota"`,
 		bribeNotInPrison: `Você não está preso! ${EmoteString.Prison}\n-# "Mas podemos te prender. O que acha?"`,
 		bribeEscaping: `Você está tentando escapar e não pode subornar! ${EmoteString.Escape}\n-# "Foco!"`,
-		bribeBeingRobbedBy: (nickname: CreationOptional<string> | undefined) => `Você está sendo roubado por **${nickname}** e não pode subornar! ${EmoteString.Robbery}`,
 		escapeInProgress: "Fuga em andamento...",
 		escapeSuccess: "Fuga bem-sucedida!",
 		escapeFailure: "Fuga fracassada!",
@@ -669,11 +675,9 @@ Los guardias son codiciosos, y cuanto mayor sea tu ${EmoteString.Attack}ATK, má
 		howManyTimesEscape: (times: number) => `Huyó \`${times}\` veces`,
 		escapeHasTried: `¡La policía te está observando! ${EmoteString.Police}\n-# No podrás escapar`,
 		escapeEscaping: `¡Ya estás intentando escapar! ${EmoteString.Escape}\n-# Este tipo de cosas requiere paciencia`,
-		escapeBeingRobbedBy: (nickname: CreationOptional<string> | undefined) => `¡Estás siendo robado por **${nickname}** y no puedes escapar! ${EmoteString.Robbery}`,
 		bribeHasPaid: `¡No aceptaremos nada de ti, listillo! ${EmoteString.Police}\n-# "Quizás la próxima vez dejas de ser idiota"`,
 		bribeNotInPrison: `¡No estás en la cárcel! ${EmoteString.Prison}\n-# "Pero podemos encerrarte. ¿Qué te parece?"`,
 		bribeEscaping: `¡Estás intentando escapar y no puedes sobornar! ${EmoteString.Escape}\n-# "¡Enfócate!"`,
-		bribeBeingRobbedBy: (nickname: CreationOptional<string> | undefined) => `¡Estás siendo robado por **${nickname}** y no puedes sobornar! ${EmoteString.Robbery}`,
 		escapeInProgress: "¡Fuga en progreso...",
 		escapeSuccess: "Fuga exitosa!",
 		escapeFailure: "Fuga fallida!",

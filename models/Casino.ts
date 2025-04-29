@@ -2,12 +2,15 @@ import { User } from "./User";
 import { EmoteString } from "../utils/emotes";
 import { showTime } from "../utils/ui";
 import { JobList } from "../interfaces/Jobs";
-import { Language } from "./Language";
+import { globalStrings, Language } from "./Language";
 import { ChatInputCommandInteraction } from "discord.js";
 import { CustomEmbedBuilder } from "./CustomEmbedBuilder";
 import { CrColors } from "../utils/colors";
 import { replyInteraction } from "../utils/logic";
 import { ScavengeId, ScavengeList } from "../interfaces/Scavenge";
+import { Users } from "../database/Users";
+import { ClassList } from "../interfaces/Classes";
+import { LocationList } from "../interfaces/Locations";
 
 export class Casino {
 	User: User;
@@ -31,7 +34,7 @@ export class Casino {
 		await replyInteraction(interaction, { embeds: [embed] });
 	}
 
-	static CanUserPlayBet(user: User, amount: number) {
+	static async CanUserPlayBet(user: User, amount: number) {
 		const s = Strings[user.Language];
 		let canPlay = true;
 		let message = "";
@@ -61,13 +64,33 @@ export class Casino {
 			canPlay = false;
 		}
 
-		if (user.Robbery.IsRobbingId || user.Robbery.IsRobbingLocationId) {
-			message = `${s.robbing} ${EmoteString.Robbery}`;
+		if (user.BeatUp.IsBeatingId) {
+			const _user = await Users.findByPk(user.BeatUp.IsBeatingId, { attributes: ["class", "nickname"] });
+			message = globalStrings[user.Language].attackerIsBeatingId(`${ClassList[_user!.class].Image.Emote.String} ${_user!.nickname!}`);
+			canPlay = false;
+		}
+
+		if (user.BeatUp.IsBeingBeatUpById) {
+			const _user = await Users.findByPk(user.BeatUp.IsBeingBeatUpById, { attributes: ["class", "nickname"] });
+			message = globalStrings[user.Language].attackerIsBeingBeatedById(`${ClassList[_user!.class!].Image.Emote.String} ${_user!.nickname!}`);
+			canPlay = false;
+		}
+
+		if (user.Robbery.IsRobbingId) {
+			const _user = await Users.findByPk(user.Robbery.IsRobbingId, { attributes: ["class", "nickname"] });
+			message = globalStrings[user.Language].attackerIsRobbingId(`${ClassList[_user!.class].Image.Emote.String} ${_user!.nickname!}`);
 			canPlay = false;
 		}
 
 		if (user.Robbery.IsBeingRobbedById) {
-			message = `${s.beingRobbed} ${EmoteString.Robbery}`;
+			const _user = await Users.findByPk(user.Robbery.IsBeingRobbedById, { attributes: ["class", "nickname"] });
+			message = globalStrings[user.Language].attackerIsBeingRobbedById(`${ClassList[_user!.class!].Image.Emote.String} ${_user!.nickname!}`);
+			canPlay = false;
+		}
+
+		if (user.Robbery.IsRobbingLocationId) {
+			const location = LocationList[user.Robbery.IsRobbingLocationId];
+			message = globalStrings[user.Language].attackerIsRobbingId(location.Description[user.Language]);
 			canPlay = false;
 		}
 
@@ -89,8 +112,6 @@ Bet an amount on a coin that must fall on the same side that you choose. You hav
 		working: (job: string, time: Date) => `You are working as **${job}** and can't play on casino ${EmoteString.Jobs}\n-# Will end ${showTime(time.getTime(), true)}`,
 		prison: (time: Date) => `You can't bet while in prison ${EmoteString.Prison}\n-# Will be free ${showTime(time.getTime(), true)}`,
 		hospital: (time: Date) => `You can't bet while in hospital ${EmoteString.Hospital}\n-# Will be healed ${showTime(time.getTime(), true)}!`,
-		robbing: "You are robbing and can't play on casino now!",
-		beingRobbed: "You are being robbed and can't play on casino now!",
 	},
 	[Language.Portuguese]: {
 		description: `# Cassino
@@ -105,8 +126,6 @@ Aposte um valor em uma moeda que deve cair no mesmo lado que você escolheu. Voc
 		working: (job: string, time: Date) => `Você está trabalhando como **${job}** e não pode apostar no cassino ${EmoteString.Jobs}\n-# Terminará ${showTime(time.getTime(), true)}`,
 		prison: (time: Date) => `Você não pode apostar enquanto está preso ${EmoteString.Prison}\n-# Será solto ${showTime(time.getTime(), true)}`,
 		hospital: (time: Date) => `Você não pode apostar enquanto está hospitalizado ${EmoteString.Hospital}\n-# Será atendido ${showTime(time.getTime(), true)}`,
-		robbing: "Você está roubando e não pode jogar no cassino agora!",
-		beingRobbed: "Você está sendo roubado e não pode jogar no cassino agora!",
 	},
 	[Language.Spanish]: {
 		description: `# Casino
@@ -121,7 +140,5 @@ Apostar una cantidad en una moneda que debe caer del mismo lado que elijas. Tien
 		working: (job: string, time: Date) => `Estás trabajando como **${job}** y no puedes hacer jugar en casino ${EmoteString.Jobs}\n-# Terminará ${showTime(time.getTime(), true)}`,
 		prison: (time: Date) => `No puedes apostar mientras estás en prisión ${EmoteString.Prison}\n-# Será liberado ${showTime(time.getTime(), true)}`,
 		hospital: (time: Date) => `No puedes apostar mientras estás en el hospital ${EmoteString.Hospital}\n-# Será atendido ${showTime(time.getTime(), true)}`,
-		robbing: "Estás robando y no puedes jugar en el casino ahora!",
-		beingRobbed: "Estás siendo robado y no puedes jugar en el casino ahora!",
 	},
 } as const;

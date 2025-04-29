@@ -13,7 +13,7 @@ import {
 	StringSelectMenuBuilder,
 	StringSelectMenuOptionBuilder,
 } from "discord.js";
-import { Language } from "./Language";
+import { globalStrings, Language } from "./Language";
 import { removeEmbedComponents, replyInteraction } from "../utils/logic";
 import { EmoteString } from "../utils/emotes";
 import { getItemList, Items, ItemList, ItemType } from "../interfaces/Items";
@@ -218,21 +218,33 @@ export class Shop {
 			canBuy = false;
 		}
 
+		if (this.User.BeatUp.IsBeatingId) {
+			const user = await Users.findByPk(this.User.BeatUp.IsBeatingId, { attributes: ["class", "nickname"] });
+			message = globalStrings[this.User.Language].attackerIsBeatingId(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname!}`);
+			canBuy = false;
+		}
+
+		if (this.User.BeatUp.IsBeingBeatUpById) {
+			const user = await Users.findByPk(this.User.BeatUp.IsBeingBeatUpById, { attributes: ["class", "nickname"] });
+			message = globalStrings[this.User.Language].attackerIsBeingBeatedById(`${ClassList[user!.class!].Image.Emote.String} ${user!.nickname!}`);
+			canBuy = false;
+		}
+
 		if (this.User.Robbery.IsRobbingId) {
 			const user = await Users.findByPk(this.User.Robbery.IsRobbingId, { attributes: ["nickname", "class"] });
-			message = `${s.robbing(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname}`)} ${EmoteString.Robbery}`;
+			message = globalStrings[this.User.Language].attackerIsRobbingId(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname}`);
 			canBuy = false;
 		}
 
 		if (this.User.Robbery.IsBeingRobbedById) {
 			const user = await Users.findByPk(this.User.Robbery.IsBeingRobbedById, { attributes: ["nickname", "class"] });
-			message = `${s.beingRobbed(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname}`)} ${EmoteString.Robbery}`;
+			message = globalStrings[this.User.Language].attackerIsBeingRobbedById(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname}`);
 			canBuy = false;
 		}
 
 		if (this.User.Robbery.IsRobbingLocationId) {
 			const location = LocationList[this.User.Robbery.IsRobbingLocationId];
-			message = `${s.robbing(location.Description[this.User.Language])} ${EmoteString.Robbery}`;
+			message = globalStrings[this.User.Language].attackerIsRobbingId(location.Description[this.User.Language]);
 			canBuy = false;
 		}
 
@@ -330,8 +342,6 @@ const Strings = {
 		scavenging: (placeId: ScavengeId) => `You can't buy items while scavenging ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.English]}** ${EmoteString.Scavenge}`,
 		inPrison: (prisonTime: Date) => `You can't buy items while in prison! ${EmoteString.Prison}\n-# Will be released ${showTime(prisonTime.getTime(), true)}!`,
 		inHospital: (hospitalTime: Date) => `You can't buy items while in the hospital! ${EmoteString.Hospital}\n-# Will be healed ${showTime(hospitalTime.getTime(), true)}!`,
-		robbing: (nickname: string) => `You are robbing **${nickname}** and can't buy items now!`,
-		beingRobbed: (nickname: string) => `You are being robbed by **${nickname}** and can't buy items now!`,
 		day: "day",
 		night: "night",
 		escape: "escape",
@@ -350,8 +360,6 @@ const Strings = {
 		scavenging: (placeId: ScavengeId) => `Você não pode comprar itens enquanto está vasculhando ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Portuguese]}** ${EmoteString.Scavenge}`,
 		inPrison: (prisonTime: Date) => `Você não pode comprar itens enquanto está preso! ${EmoteString.Prison}\n-# Será solto ${showTime(prisonTime.getTime(), true)}!`,
 		inHospital: (hospitalTime: Date) => `Você não pode comprar itens enqunato está hospitalizado! ${EmoteString.Hospital}\n-# Será curado ${showTime(hospitalTime.getTime(), true)}!`,
-		robbing: (nickname: string) => `Você está roubando **${nickname}** e não pode comprar itens agora!`,
-		beingRobbed: (nickname: string) => `Você está sendo roubado por **${nickname}** e não pode comprar itens agora!`,
 		day: "dia",
 		night: "noite",
 		escape: "fuga",
@@ -370,8 +378,6 @@ const Strings = {
 		scavenging: (placeId: ScavengeId) => `¡No puedes comprar artículos mientras estás buscando en ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Spanish]}** ${EmoteString.Scavenge}`,
 		inPrison: (prisonTime: Date) => `¡No puedes comprar artículos mientras estás en prisión! ${EmoteString.Prison}\n-# Serás liberado ${showTime(prisonTime.getTime(), true)}!`,
 		inHospital: (hospitalTime: Date) => `¡No puedes comprar artículos mientras estás en el hospital! ${EmoteString.Hospital}\n-# Serás curado ${showTime(hospitalTime.getTime(), true)}!`,
-		robbing: (nickname: string) => `¡Estás robando a **${nickname}** y no puedes comprar artículos ahora mismo!`,
-		beingRobbed: (nickname: string) => `¡Estás siendo robado por **${nickname}** y no puedes comprar artículos ahora mismo!`,
 		day: "día",
 		night: "noche",
 		escape: "fuga",

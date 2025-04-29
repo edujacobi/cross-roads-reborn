@@ -11,4 +11,5 @@ export const CrColors = {
 	Admin: 0x80e893,
 	Jacobi: 0x426b69,
 	Scavenge: Colors.LightGrey,
+	BeatUp: 0xff8C00,
 };

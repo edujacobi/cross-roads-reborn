@@ -2,10 +2,15 @@
 import {
 	APIEmbed,
 	ButtonInteraction,
-	ChatInputCommandInteraction, ColorResolvable,
+	ChatInputCommandInteraction,
+	ColorResolvable,
 	CommandInteraction,
-	InteractionReplyOptions, MessageCreateOptions,
-	MessagePayload, Snowflake,
+	InteractionEditReplyOptions,
+	InteractionReplyOptions,
+	MessageCreateOptions,
+	MessageFlags,
+	MessagePayload,
+	Snowflake,
 } from "discord.js";
 import { CustomEmbedBuilder } from "../models/CustomEmbedBuilder";
 import { JSONEncodable } from "@discordjs/util";
@@ -35,13 +40,15 @@ export async function checkUser(userId: string, interaction: CommandInteraction)
 	}
 }
 
-export async function removeAllFromRobbery() {
+export async function removeAllFromActions() {
 	try {
 		const [affectedCount] = await Users.update({
 			beingRobbedByUserId: null,
 			robbingUserId: null,
 			robbingLocationId: null,
 			scavengingId: null,
+			beatingUserId: null,
+			beingBeatUpByUserId: null,
 		}, {
 			where: {
 				[Op.or]: {
@@ -57,15 +64,21 @@ export async function removeAllFromRobbery() {
 					scavengingId: {
 						[Op.not]: null,
 					},
+					beatingUserId: {
+						[Op.not]: null,
+					},
+					beingBeatUpByUserId: {
+						[Op.not]: null,
+					},
 				},
 			},
 		});
 
-		Log.Info(`${affectedCount} users removed from robberies or scavenges.`);
+		Log.Info(`${affectedCount} users removed from actions.`);
 
 	}
 	catch (err) {
-		Log.Warning(`Something went wrong with removing Users from robberies or scavenges.`);
+		Log.Warning(`Something went wrong with removing Users from actions.`);
 	}
 }
 
@@ -106,13 +119,13 @@ export async function sendComplexPrivateMessage(userId: Snowflake | undefined, o
 	}
 }
 
-export async function replyInteraction(interaction: CommandInteraction | ButtonInteraction, options: string | MessagePayload | InteractionReplyOptions) {
+export async function replyInteraction(interaction: CommandInteraction | ButtonInteraction, options: string | MessagePayload | InteractionReplyOptions | InteractionEditReplyOptions) {
 	try {
 		if (interaction.replied) {
-			return await interaction.editReply(options);
+			return await interaction.editReply(options as InteractionEditReplyOptions);
 		}
 
-		return await interaction.reply(options);
+		return await interaction.reply(options as InteractionReplyOptions);
 	}
 	catch (err) {
 		Log.Warning(`Something went wrong with replying interaction ${interaction.id} of user ${interaction.user.displayName} in server ${interaction.guild?.name} (ID: ${interaction.guild?.id}). Error: ${err}`);
@@ -122,7 +135,7 @@ export async function replyInteraction(interaction: CommandInteraction | ButtonI
 export async function replyUserDontExist(interaction: CommandInteraction, language: Language) {
 	return await replyInteraction(interaction, {
 		content: Strings[language].userDontExist,
-		ephemeral: true,
+		flags: [MessageFlags.Ephemeral]
 	});
 }
 

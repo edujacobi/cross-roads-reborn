@@ -1,5 +1,5 @@
 ﻿import { Client, Events } from "discord.js";
-import { removeAllFromRobbery } from "../utils/logic";
+import { removeAllFromActions } from "../utils/logic";
 import { sequelize } from "../database/Database";
 import { Log } from "../utils/log";
 import { changeActivity } from "../utils/ui";
@@ -12,7 +12,7 @@ module.exports = {
 		// await sequelize.sync({ force: true });
 		await sequelize.sync();
 		changeActivity(client);
-		await removeAllFromRobbery();
+		await removeAllFromActions();
 		Notification.StartProcedure();
 		Log.Success(`🔪 CROSS ROADS REBORN ONLINE!`);
 	},
