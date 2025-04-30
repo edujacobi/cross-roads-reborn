@@ -6,7 +6,7 @@ import { Users } from "../../database/Users";
 import { User } from "../../models/User";
 import { Language } from "../../models/Language";
 import { ClassList } from "../../interfaces/Classes";
-import { BadgeString } from "../../utils/badges";
+import { EmoteBadgeString } from "../../utils/badges";
 import { Pagination } from "../../models/Pagination";
 
 module.exports = {
@@ -61,7 +61,7 @@ module.exports = {
 
 				let position = `\`${i + pagination.Offset + 1}.\``;
 				if (i + pagination.Offset == 0) {
-					position = BadgeString.Season6.TraderElite;
+					position = EmoteBadgeString.Season6.TraderElite;
 				}
 
 				moneyText += `### ${position} ${emoteClass} ${underscore}${user.nickname}${underscore}\n${formatMoney(user.casinoWinSum, language)} (${user.casinoWinCount})\n-# \`ID: ${user.id}\`\n`;

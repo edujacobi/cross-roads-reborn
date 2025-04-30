@@ -4,7 +4,7 @@ import { checkUser, replyInteraction, replyUserDontExist } from "../../utils/log
 import { Language } from "../../models/Language";
 import { User } from "../../models/User";
 import { ClassList } from "../../interfaces/Classes";
-import { Badge } from "../../models/Badge";
+import { UserBadge } from "../../models/UserBadge";
 import { formatMoney, showTime } from "../../utils/ui";
 import { EmoteString } from "../../utils/emotes";
 import { addDays } from "date-fns";
@@ -33,10 +33,10 @@ module.exports = {
 
 		const s = Strings[language];
 
-		let badges = await Badge.GetList(target.Id);
+		let badges = await UserBadge.GetList(target.Id);
 
 		if (target.IsVip()) {
-			badges = Badge.AddVIPBadgeInList(badges, target);
+			badges = UserBadge.AddVIPBadgeInList(badges, target);
 		}
 
 		let badgeText = "";

@@ -1,4 +1,4 @@
-export const BadgeId = {
+export const EmoteBadgeId = {
 	Season6: {
 		Top1Money: "934631819444355112",
 		Top2Money: "934631819008147458",
@@ -19,29 +19,31 @@ export const BadgeId = {
 	},
 	General: {
 		Champion: "825763812506075197",
+		Moderator: "816413202522570772"
 	},
 
 };
-export const BadgeString = {
+export const EmoteBadgeString = {
 	Season6: {
-		Top1Money: `<:Top1_Grana_S6:${BadgeId.Season6.Top1Money}>`,
-		Top2Money: `<:Top2_Grana_S6:${BadgeId.Season6.Top2Money}>`,
-		Top3Money: `<:Top3_Grana_S6:${BadgeId.Season6.Top3Money}>`,
-		Scapist: `<:badge_fujao1:${BadgeId.Season6.Scapist}>`,
-		Politician: `<:badge_deputado:${BadgeId.Season6.Politician}>`,
-		Philantrope: `<:badge_filantropo:${BadgeId.Season6.Philantrope}>`,
-		Hypocondriach: `<:badge_hipocondriaco:${BadgeId.Season6.Hypocondriach}>`,
-		Workaholic: `<:Workaholic:${BadgeId.Season6.Workaholic}>`,
-		Preppy: `<:Patricinha:${BadgeId.Season6.Preppy}>`,
-		TraderElite: `<:Trader_Elite:${BadgeId.Season6.TraderElite}>`,
-		SillyHand: `<:MaoBoba:${BadgeId.Season6.SillyHand}>`
+		Top1Money: `<:Top1_Grana_S6:${EmoteBadgeId.Season6.Top1Money}>`,
+		Top2Money: `<:Top2_Grana_S6:${EmoteBadgeId.Season6.Top2Money}>`,
+		Top3Money: `<:Top3_Grana_S6:${EmoteBadgeId.Season6.Top3Money}>`,
+		Scapist: `<:badge_fujao1:${EmoteBadgeId.Season6.Scapist}>`,
+		Politician: `<:badge_deputado:${EmoteBadgeId.Season6.Politician}>`,
+		Philantrope: `<:badge_filantropo:${EmoteBadgeId.Season6.Philantrope}>`,
+		Hypocondriach: `<:badge_hipocondriaco:${EmoteBadgeId.Season6.Hypocondriach}>`,
+		Workaholic: `<:Workaholic:${EmoteBadgeId.Season6.Workaholic}>`,
+		Preppy: `<:Patricinha:${EmoteBadgeId.Season6.Preppy}>`,
+		TraderElite: `<:Trader_Elite:${EmoteBadgeId.Season6.TraderElite}>`,
+		SillyHand: `<:MaoBoba:${EmoteBadgeId.Season6.SillyHand}>`
 	},
 	Season1: {
-		Top1Money: `<:badge_top1grana_s1:${BadgeId.Season1.Top1Money}>`,
-		Top2Money: `<:badge_top2grana_s1:${BadgeId.Season1.Top2Money}>`,
-		Top3Money: `<:badge_top3grana_s1:${BadgeId.Season1.Top3Money}>`,
+		Top1Money: `<:badge_top1grana_s1:${EmoteBadgeId.Season1.Top1Money}>`,
+		Top2Money: `<:badge_top2grana_s1:${EmoteBadgeId.Season1.Top2Money}>`,
+		Top3Money: `<:badge_top3grana_s1:${EmoteBadgeId.Season1.Top3Money}>`,
 	},
 	General: {
-		Champion: `<:Campeao_Canja:${BadgeId.General.Champion}>`,
+		Champion: `<:Campeao_Canja:${EmoteBadgeId.General.Champion}>`,
+		Moderator: `<:Moderador:${EmoteBadgeId.General.Moderator}>`
 	},
 };

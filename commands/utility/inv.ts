@@ -15,7 +15,7 @@ import { Language } from "../../models/Language";
 import { EmoteId, EmoteString } from "../../utils/emotes";
 import { subMinutes } from "date-fns";
 import { User } from "../../models/User";
-import { Badge } from "../../models/Badge";
+import { UserBadge } from "../../models/UserBadge";
 import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
 import { ClassList } from "../../interfaces/Classes";
 import { formatMoney, showTime } from "../../utils/ui";
@@ -46,10 +46,10 @@ module.exports = {
 
 		const s = Strings[language];
 
-		let badges = await Badge.GetList(target.Id);
+		let badges = await UserBadge.GetList(target.Id);
 
 		if (target.IsVip()) {
-			badges = Badge.AddVIPBadgeInList(badges, target);
+			badges = UserBadge.AddVIPBadgeInList(badges, target, language);
 		}
 
 		let badgeText = "";
