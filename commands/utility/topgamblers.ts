@@ -61,7 +61,7 @@ module.exports = {
 
 				let position = `\`${i + pagination.Offset + 1}.\``;
 				if (i + pagination.Offset == 0) {
-					position = EmoteBadgeString.Season6.TraderElite;
+					position = EmoteBadgeString.Season6.EliteTrader;
 				}
 
 				moneyText += `### ${position} ${emoteClass} ${underscore}${user.nickname}${underscore}\n${formatMoney(user.casinoWinSum, language)} (${user.casinoWinCount})\n-# \`ID: ${user.id}\`\n`;

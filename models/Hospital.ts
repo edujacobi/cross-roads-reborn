@@ -69,7 +69,7 @@ ${s.description}
 		const buttonPrivate = new ButtonBuilder()
 			.setCustomId("private")
 			.setLabel(s.payPrivateCare)
-			.setEmoji(EmoteBadgeString.Season6.Hypocondriach)
+			.setEmoji(EmoteBadgeString.Season6.Hypochondriac)
 			.setStyle(ButtonStyle.Secondary);
 
 		const row = new ActionRowBuilder<ButtonBuilder>()
@@ -248,7 +248,7 @@ const Strings = {
 -# Hospitalized users have ${EmoteString.Defense}-5 DEF and ${EmoteString.Defense}-5% $DEF!.
 ### Public service
 Unfortunately we have no more free beds, so you will have to wait in the hallway until you are seen.
-### ${EmoteBadgeString.Season6.Hypocondriach} Private care
+### ${EmoteBadgeString.Season6.Hypochondriac} Private care
 If you pay a certain amount, we will be able to treat you faster!`,
 		hospitalized: "Hospitalized",
 		healed: "Healed",
@@ -270,7 +270,7 @@ If you pay a certain amount, we will be able to treat you faster!`,
 -#	Usuários hospitalizados possuem ${EmoteString.Defense}-5 DEF e ${EmoteString.Defense}-5% $DEF!.
 ###	Serviço	público
 Infelizmente não temos mais leitos livres, então você precisará esperar no corredor até ser atendido.
-### ${EmoteBadgeString.Season6.Hypocondriach} Atendimento particular
+### ${EmoteBadgeString.Season6.Hypochondriac} Atendimento particular
 Caso você pague uma certa quantia, poderemos tratá-lo mais rapidamente!`,
 		hospitalized: "Hospitalizados",
 		healed: "Curado",
@@ -292,7 +292,7 @@ Caso você pague uma certa quantia, poderemos tratá-lo mais rapidamente!`,
 	-# Los usuarios hospitalizados tienen ${EmoteString.Defense}-5 DEF y ${EmoteString.Defense}-5% $DEF!.
 	### Servicio público
 	Lamentablemente, no tenemos más camas libres, por lo que deberá esperar en el pasillo hasta que le atiendan.
-	### ${EmoteBadgeString.Season6.Hypocondriach} Atención privada
+	### ${EmoteBadgeString.Season6.Hypochondriac} Atención privada
 	¡Si pagas una cierta cantidad, podemos atenderte más rápido!`,
 		hospitalized: "Hospitalizados",
 		healed: "Curado",

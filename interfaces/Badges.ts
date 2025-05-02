@@ -1448,7 +1448,313 @@ export const BadgeList: BadgeListType = {
 			Id: EmoteBadgeId.Season5.TopGang,
 			String: EmoteBadgeString.Season5.TopGang,
 		},
-	}
+	},
+	[BadgeId.S6Top1Money]: {
+		Id: BadgeId.S6Top1Money,
+		Name: {
+			[Language.English]: "Top 1 Money S6",
+			[Language.Portuguese]: "Top 1 Grana S6",
+			[Language.Spanish]: "Top 1 Dinero S6",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Money in the 6th season",
+			[Language.Portuguese]: "1º lugar no Top Grana na 6ª temporada",
+			[Language.Spanish]: "1er lugar en Top Dinero en la 6ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season6.Top1Money,
+			String: EmoteBadgeString.Season6.Top1Money,
+		},
+	},
+	[BadgeId.S6Top2Money]: {
+		Id: BadgeId.S6Top2Money,
+		Name: {
+			[Language.English]: "Top 2 Money S6",
+			[Language.Portuguese]: "Top 2 Grana S6",
+			[Language.Spanish]: "Top 2 Dinero S6",
+		},
+		Description: {
+			[Language.English]: "2nd place in Top Money in the 6th season",
+			[Language.Portuguese]: "2º lugar no Top Grana na 6ª temporada",
+			[Language.Spanish]: "2do lugar en Top Dinero en la 6ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season6.Top2Money,
+			String: EmoteBadgeString.Season6.Top2Money,
+		},
+	},
+	[BadgeId.S6Top3Money]: {
+		Id: BadgeId.S6Top3Money,
+		Name: {
+			[Language.English]: "Top 3 Money S6",
+			[Language.Portuguese]: "Top 3 Grana S6",
+			[Language.Spanish]: "Top 3 Dinero S6",
+		},
+		Description: {
+			[Language.English]: "3rd place in Top Money in the 6th season",
+			[Language.Portuguese]: "3º lugar no Top Grana na 6ª temporada",
+			[Language.Spanish]: "3er lugar en Top Dinero en la 6ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season6.Top3Money,
+			String: EmoteBadgeString.Season6.Top3Money,
+		},
+	},
+	[BadgeId.S6Top1BeatUp]: {
+		Id: BadgeId.S6Top1BeatUp,
+		Name: {
+			[Language.English]: "Head Smasher S6",
+			[Language.Portuguese]: "Esmaga Crânio S6",
+			[Language.Spanish]: "Aplasta Cráneos S6",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Beat Up in the 6th season",
+			[Language.Portuguese]: "1º lugar no Top Pancada na 6ª temporada",
+			[Language.Spanish]: "1er lugar en Top Pelea en la 6ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season6.HeadSmasher,
+			String: EmoteBadgeString.Season6.HeadSmasher,
+		},
+	},
+	[BadgeId.S6Top1Scavenge]: {
+		Id: BadgeId.S6Top1Scavenge,
+		Name: {
+			[Language.English]: "Sherlock Holmes S6",
+			[Language.Portuguese]: "Xeroque Holmes S6",
+			[Language.Spanish]: "Sherlock Holmes S6",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Scavenge in the 6th season",
+			[Language.Portuguese]: "1º lugar no Top Vasculhar na 6ª temporada",
+			[Language.Spanish]: "1er lugar en Top Rebuscar en la 6ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season6.SherlockHolmes,
+			String: EmoteBadgeString.Season6.SherlockHolmes,
+		},
+	},
+	[BadgeId.S6Top1Escapes]: {
+		Id: BadgeId.S6Top1Escapes,
+		Name: {
+			[Language.English]: "Escapist S6",
+			[Language.Portuguese]: "Fujão S6",
+			[Language.Spanish]: "Escapista S6",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Escapes in the 6th season",
+			[Language.Portuguese]: "1º lugar no Top Fugas na 6ª temporada",
+			[Language.Spanish]: "1er lugar en Top Fugas en la 6ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season6.Escapist,
+			String: EmoteBadgeString.Season6.Escapist,
+		},
+	},
+	[BadgeId.S6Top1CasinoWR]: {
+		Id: BadgeId.S6Top1CasinoWR,
+		Name: {
+			[Language.English]: "Lucky One S6",
+			[Language.Portuguese]: "Sortudo S6",
+			[Language.Spanish]: "Afortunado S6",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Casino Win Rate in the 6th season",
+			[Language.Portuguese]: "1º lugar no Top Taxa de Vitória do Cassino na 6ª temporada",
+			[Language.Spanish]: "1er lugar en Top Tasa de Victoria del Casino en la 6ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season6.LuckyOne,
+			String: EmoteBadgeString.Season6.LuckyOne,
+		},
+	},
+	[BadgeId.S6Top1CasinoProfit]: {
+		Id: BadgeId.S6Top1CasinoProfit,
+		Name: {
+			[Language.English]: "Elite Trader S6",
+			[Language.Portuguese]: "Trader Elite S6",
+			[Language.Spanish]: "Comerciante de Élite S6",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Casino Profit in the 6th season",
+			[Language.Portuguese]: "1º lugar no Top Lucro do Cassino na 6ª temporada",
+			[Language.Spanish]: "1er lugar en Top Beneficio del Casino en la 6ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season6.EliteTrader,
+			String: EmoteBadgeString.Season6.EliteTrader,
+		},
+	},
+	[BadgeId.S6Top1RobberyQuantity]: {
+		Id: BadgeId.S6Top1RobberyQuantity,
+		Name: {
+			[Language.English]: "Silly Hand S6",
+			[Language.Portuguese]: "Mão Boba S6",
+			[Language.Spanish]: "Mano Tonta S6",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Robbery Quantity in the 6th season",
+			[Language.Portuguese]: "1º lugar no Top Quantidade de Roubos na 6ª temporada",
+			[Language.Spanish]: "1er lugar en Top Cantidad de Robos en la 6ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season6.SillyHand,
+			String: EmoteBadgeString.Season6.SillyHand,
+		},
+	},
+	[BadgeId.S6Top1RobberyProfit]: {
+		Id: BadgeId.S6Top1RobberyProfit,
+		Name: {
+			[Language.English]: "Large Pocket S6",
+			[Language.Portuguese]: "Bolso Largo S6",
+			[Language.Spanish]: "Bolsillo Grande S6",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Robbery Profit in the 6th season",
+			[Language.Portuguese]: "1º lugar no Top Lucro de Roubos na 6ª temporada",
+			[Language.Spanish]: "1er lugar en Top Beneficio de Robos en la 6ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season6.LargePocket,
+			String: EmoteBadgeString.Season6.LargePocket,
+		},
+	},
+	[BadgeId.S6Top1Rooster]: {
+		Id: BadgeId.S6Top1Rooster,
+		Name: {
+			[Language.English]: "Top Rooster S6",
+			[Language.Portuguese]: "Top Galo S6",
+			[Language.Spanish]: "Top Pollo S6",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Rooster in the 6th season",
+			[Language.Portuguese]: "1º lugar no Top Galo na 6ª temporada",
+			[Language.Spanish]: "1er lugar en Top Pollo en la 6ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season6.TopRooster,
+			String: EmoteBadgeString.Season6.TopRooster,
+		},
+	},
+	[BadgeId.S6Top1Alms]: {
+		Id: BadgeId.S6Top1Alms,
+		Name: {
+			[Language.English]: "Philantrope S6",
+			[Language.Portuguese]: "Filantropo S6",
+			[Language.Spanish]: "Filántropo S6",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Alms in the 6th season",
+			[Language.Portuguese]: "1º lugar no Top Esmolas na 6ª temporada",
+			[Language.Spanish]: "1er lugar en Top Limosnas en la 6ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season6.Philantrope,
+			String: EmoteBadgeString.Season6.Philantrope,
+		},
+	},
+	[BadgeId.S6Top1Investments]: {
+		Id: BadgeId.S6Top1Investments,
+		Name: {
+			[Language.English]: "Investor S6",
+			[Language.Portuguese]: "Investidor S6",
+			[Language.Spanish]: "Inversor S6",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Investments in the 6th season",
+			[Language.Portuguese]: "1º lugar no Top Investimentos na 6ª temporada",
+			[Language.Spanish]: "1er lugar en Top Inversiones en la 6ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season6.Invester,
+			String: EmoteBadgeString.Season6.Invester,
+		},
+	},
+	[BadgeId.S6Top1Jobs]: {
+		Id: BadgeId.S6Top1Jobs,
+		Name: {
+			[Language.English]: "Workaholic S6",
+			[Language.Portuguese]: "Workaholic S6",
+			[Language.Spanish]: "Adicto al Trabajo S6",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Jobs in the 6th season",
+			[Language.Portuguese]: "1º lugar no Top Trabalhos na 6ª temporada",
+			[Language.Spanish]: "1er lugar en Top Trabajos en la 6ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season6.Workaholic,
+			String: EmoteBadgeString.Season6.Workaholic,
+		},
+	},
+	[BadgeId.S6Top1Spender]: {
+		Id: BadgeId.S6Top1Spender,
+		Name: {
+			[Language.English]: "Preppy S6",
+			[Language.Portuguese]: "Patricinha S6",
+			[Language.Spanish]: "Pijo S6",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Spender in the 6th season",
+			[Language.Portuguese]: "1º lugar no Top Gastador na 6ª temporada",
+			[Language.Spanish]: "1er lugar en Top Gastador en la 6ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season6.Preppy,
+			String: EmoteBadgeString.Season6.Preppy,
+		},
+	},
+	[BadgeId.S6Top1Bribery]: {
+		Id: BadgeId.S6Top1Bribery,
+		Name: {
+			[Language.English]: "Politician S6",
+			[Language.Portuguese]: "Deputado S6",
+			[Language.Spanish]: "Político S6",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Bribery in the 6th season",
+			[Language.Portuguese]: "1º lugar no Top Suborno na 6ª temporada",
+			[Language.Spanish]: "1er lugar en Top Soborno en la 6ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season6.Politician,
+			String: EmoteBadgeString.Season6.Politician,
+		},
+	},
+	[BadgeId.S6Top1Hospital]: {
+		Id: BadgeId.S6Top1Hospital,
+		Name: {
+			[Language.English]: "Hypochondriac S6",
+			[Language.Portuguese]: "Hipocondríaco S6",
+			[Language.Spanish]: "Hipocondríaco S6",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Hospital in the 6th season",
+			[Language.Portuguese]: "1º lugar no Top Hospital na 6ª temporada",
+			[Language.Spanish]: "1er lugar en Top Hospital en la 6ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season6.Hypochondriac,
+			String: EmoteBadgeString.Season6.Hypochondriac,
+		},
+	},
+	[BadgeId.S6Top1Gang]: {
+		Id: BadgeId.S6Top1Gang,
+		Name: {
+			[Language.English]: "Top Gang S6",
+			[Language.Portuguese]: "Top Gangue S6",
+			[Language.Spanish]: "Top Cuadrilla S6",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Gang in the 6th season",
+			[Language.Portuguese]: "1º lugar no Top Gangue na 6ª temporada",
+			[Language.Spanish]: "1er lugar en Top Cuadrilla en la 6ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season6.TopGang,
+			String: EmoteBadgeString.Season6.TopGang,
+		},
+	},
 };
 
 export function getBadgeList(): IBadge[] {
