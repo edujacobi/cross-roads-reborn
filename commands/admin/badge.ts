@@ -72,7 +72,7 @@ module.exports = {
 
 			const pagination = new Pagination(interaction, language);
 			pagination.HowManyRecords = badgeList.length;
-			pagination.Limit = 15;
+			pagination.Limit = 10;
 
 			pagination.CustomizeEmbed = async () => {
 				return new EmbedBuilder()
@@ -80,7 +80,7 @@ module.exports = {
 					.setDescription(badgeList
 						.slice(pagination.Offset, pagination.Offset + pagination.Limit)
 						.map(badge => {
-							return `\`${badge.Id}\` ${badge.Emoji.String} ${badge.Name[language]}`;
+							return `### ${badge.Emoji.String} ${badge.Name[language]} \`${badge.Id}\`\n-# ${badge.Description[language]}`;
 						})
 						.join("\n"))
 					.setFooter({ text: pagination.Showing() });

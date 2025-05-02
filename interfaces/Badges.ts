@@ -30,6 +30,7 @@ export enum BadgeId {
 	S2Top1CasinoWR,
 	S2Top1RobberyQuantity,
 	S2Top1RobberyProfit,
+	S2TopRooster,
 
 	S3Top1Money,
 	S3Top2Money,
@@ -211,8 +212,8 @@ export const BadgeList: BadgeListType = {
 		Id: BadgeId.BugCatcher,
 		Name: {
 			[Language.English]: "Bug Catcher",
-			[Language.Portuguese]: "Caçador de Bugs",
-			[Language.Spanish]: "Cazador de Bugs",
+			[Language.Portuguese]: "Cata Bug",
+			[Language.Spanish]: "Atrapa Bug",
 		},
 		Description: {
 			[Language.English]: "This user has found a game-breaking bug and reported it",
@@ -530,6 +531,23 @@ export const BadgeList: BadgeListType = {
 			String: EmoteBadgeString.Season2.LargePocket,
 		},
 	},
+	[BadgeId.S2TopRooster]: {
+		Id: BadgeId.S2TopRooster,
+		Name: {
+			[Language.English]: "Top Rooster S2",
+			[Language.Portuguese]: "Top Galo S2",
+			[Language.Spanish]: "Top Pollo S2",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Rooster in the 2nd season",
+			[Language.Portuguese]: "1º lugar no Top Galo na 2ª temporada",
+			[Language.Spanish]: "1er lugar en Top Pollo en la 2da temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season2.TopRooster,
+			String: EmoteBadgeString.Season2.TopRooster,
+		},
+	}
 };
 
 export function getBadgeList(): IBadge[] {
