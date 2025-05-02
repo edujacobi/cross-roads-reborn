@@ -1142,6 +1142,312 @@ export const BadgeList: BadgeListType = {
 			Id: EmoteBadgeId.Season4.Hypochondriac,
 			String: EmoteBadgeString.Season4.Hypochondriac,
 		},
+	},
+	[BadgeId.S5Top1Money]: {
+		Id: BadgeId.S5Top1Money,
+		Name: {
+			[Language.English]: "Top 1 Money S5",
+			[Language.Portuguese]: "Top 1 Grana S5",
+			[Language.Spanish]: "Top 1 Dinero S5",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Money in the 5th season",
+			[Language.Portuguese]: "1º lugar no Top Grana na 5ª temporada",
+			[Language.Spanish]: "1er lugar en Top Dinero en la 5ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season5.Top1Money,
+			String: EmoteBadgeString.Season5.Top1Money,
+		},
+	},
+	[BadgeId.S5Top2Money]: {
+		Id: BadgeId.S5Top2Money,
+		Name: {
+			[Language.English]: "Top 2 Money S5",
+			[Language.Portuguese]: "Top 2 Grana S5",
+			[Language.Spanish]: "Top 2 Dinero S5",
+		},
+		Description: {
+			[Language.English]: "2nd place in Top Money in the 5th season",
+			[Language.Portuguese]: "2º lugar no Top Grana na 5ª temporada",
+			[Language.Spanish]: "2do lugar en Top Dinero en la 5ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season5.Top2Money,
+			String: EmoteBadgeString.Season5.Top2Money,
+		},
+	},
+	[BadgeId.S5Top3Money]: {
+		Id: BadgeId.S5Top3Money,
+		Name: {
+			[Language.English]: "Top 3 Money S5",
+			[Language.Portuguese]: "Top 3 Grana S5",
+			[Language.Spanish]: "Top 3 Dinero S5",
+		},
+		Description: {
+			[Language.English]: "3rd place in Top Money in the 5th season",
+			[Language.Portuguese]: "3º lugar no Top Grana na 5ª temporada",
+			[Language.Spanish]: "3er lugar en Top Dinero en la 5ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season5.Top3Money,
+			String: EmoteBadgeString.Season5.Top3Money,
+		},
+	},
+	[BadgeId.S5Top1BeatUp]: {
+		Id: BadgeId.S5Top1BeatUp,
+		Name: {
+			[Language.English]: "Head Smasher S5",
+			[Language.Portuguese]: "Esmaga Crânio S5",
+			[Language.Spanish]: "Aplasta Cráneos S5",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Beat Up in the 5th season",
+			[Language.Portuguese]: "1º lugar no Top Pancada na 5ª temporada",
+			[Language.Spanish]: "1er lugar en Top Pelea en la 5ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season5.HeadSmasher,
+			String: EmoteBadgeString.Season5.HeadSmasher,
+		},
+	},
+	[BadgeId.S5Top1Scavenge]: {
+		Id: BadgeId.S5Top1Scavenge,
+		Name: {
+			[Language.English]: "Sherlock Holmes S5",
+			[Language.Portuguese]: "Xeroque Holmes S5",
+			[Language.Spanish]: "Sherlock Holmes S5",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Scavenge in the 5th season",
+			[Language.Portuguese]: "1º lugar no Top Vasculhar na 5ª temporada",
+			[Language.Spanish]: "1er lugar en Top Rebuscar en la 5ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season5.SherlockHolmes,
+			String: EmoteBadgeString.Season5.SherlockHolmes,
+		},
+	},
+	[BadgeId.S5Top1Escapes]: {
+		Id: BadgeId.S5Top1Escapes,
+		Name: {
+			[Language.English]: "Escapist S5",
+			[Language.Portuguese]: "Fujão S5",
+			[Language.Spanish]: "Escapista S5",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Escapes in the 5th season",
+			[Language.Portuguese]: "1º lugar no Top Fugas na 5ª temporada",
+			[Language.Spanish]: "1er lugar en Top Fugas en la 5ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season5.Escapist,
+			String: EmoteBadgeString.Season5.Escapist,
+		},
+	},
+	[BadgeId.S5Top1CasinoWR]: {
+		Id: BadgeId.S5Top1CasinoWR,
+		Name: {
+			[Language.English]: "Lucky One S5",
+			[Language.Portuguese]: "Sortudo S5",
+			[Language.Spanish]: "Afortunado S5",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Casino Win Rate in the 5th season",
+			[Language.Portuguese]: "1º lugar no Top Taxa de Vitória do Cassino na 5ª temporada",
+			[Language.Spanish]: "1er lugar en Top Tasa de Victoria del Casino en la 5ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season5.LuckyOne,
+			String: EmoteBadgeString.Season5.LuckyOne,
+		},
+	},
+	[BadgeId.S5Top1CasinoProfit]: {
+		Id: BadgeId.S5Top1CasinoProfit,
+		Name: {
+			[Language.English]: "Elite Trader S5",
+			[Language.Portuguese]: "Trader Elite S5",
+			[Language.Spanish]: "Comerciante de Élite S5",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Casino Profit in the 5th season",
+			[Language.Portuguese]: "1º lugar no Top Lucro do Cassino na 5ª temporada",
+			[Language.Spanish]: "1er lugar en Top Beneficio del Casino en la 5ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season5.EliteTrader,
+			String: EmoteBadgeString.Season5.EliteTrader,
+		},
+	},
+	[BadgeId.S5Top1RobberyQuantity]: {
+		Id: BadgeId.S5Top1RobberyQuantity,
+		Name: {
+			[Language.English]: "Silly Hand S5",
+			[Language.Portuguese]: "Mão Boba S5",
+			[Language.Spanish]: "Mano Tonta S5",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Robbery Quantity in the 5th season",
+			[Language.Portuguese]: "1º lugar no Top Quantidade de Roubos na 5ª temporada",
+			[Language.Spanish]: "1er lugar en Top Cantidad de Robos en la 5ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season5.SillyHand,
+			String: EmoteBadgeString.Season5.SillyHand,
+		},
+	},
+	[BadgeId.S5Top1RobberyProfit]: {
+		Id: BadgeId.S5Top1RobberyProfit,
+		Name: {
+			[Language.English]: "Large Pocket S5",
+			[Language.Portuguese]: "Bolso Largo S5",
+			[Language.Spanish]: "Bolsillo Grande S5",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Robbery Profit in the 5th season",
+			[Language.Portuguese]: "1º lugar no Top Lucro de Roubos na 5ª temporada",
+			[Language.Spanish]: "1er lugar en Top Beneficio de Robos en la 5ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season5.LargePocket,
+			String: EmoteBadgeString.Season5.LargePocket,
+		},
+	},
+	[BadgeId.S5Top1Rooster]: {
+		Id: BadgeId.S5Top1Rooster,
+		Name: {
+			[Language.English]: "Top Rooster S5",
+			[Language.Portuguese]: "Top Galo S5",
+			[Language.Spanish]: "Top Pollo S5",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Rooster in the 5th season",
+			[Language.Portuguese]: "1º lugar no Top Galo na 5ª temporada",
+			[Language.Spanish]: "1er lugar en Top Pollo en la 5ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season5.TopRooster,
+			String: EmoteBadgeString.Season5.TopRooster,
+		},
+	},
+	[BadgeId.S5Top1Alms]: {
+		Id: BadgeId.S5Top1Alms,
+		Name: {
+			[Language.English]: "Philantrope S5",
+			[Language.Portuguese]: "Filantropo S5",
+			[Language.Spanish]: "Filántropo S5",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Alms in the 5th season",
+			[Language.Portuguese]: "1º lugar no Top Esmolas na 5ª temporada",
+			[Language.Spanish]: "1er lugar en Top Limosnas en la 5ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season5.Philantrope,
+			String: EmoteBadgeString.Season5.Philantrope,
+		},
+	},
+	[BadgeId.S5Top1Investments]: {
+		Id: BadgeId.S5Top1Investments,
+		Name: {
+			[Language.English]: "Investor S5",
+			[Language.Portuguese]: "Investidor S5",
+			[Language.Spanish]: "Inversor S5",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Investments in the 5th season",
+			[Language.Portuguese]: "1º lugar no Top Investimentos na 5ª temporada",
+			[Language.Spanish]: "1er lugar en Top Inversiones en la 5ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season5.Invester,
+			String: EmoteBadgeString.Season5.Invester,
+		},
+	},
+	[BadgeId.S5Top1Jobs]: {
+		Id: BadgeId.S5Top1Jobs,
+		Name: {
+			[Language.English]: "Workaholic S5",
+			[Language.Portuguese]: "Workaholic S5",
+			[Language.Spanish]: "Adicto al Trabajo S5",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Jobs in the 5th season",
+			[Language.Portuguese]: "1º lugar no Top Trabalhos na 5ª temporada",
+			[Language.Spanish]: "1er lugar en Top Trabajos en la 5ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season5.Workaholic,
+			String: EmoteBadgeString.Season5.Workaholic,
+		},
+	},
+	[BadgeId.S5Top1Spender]: {
+		Id: BadgeId.S5Top1Spender,
+		Name: {
+			[Language.English]: "Preppy S5",
+			[Language.Portuguese]: "Patricinha S5",
+			[Language.Spanish]: "Pijo S5",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Spender in the 5th season",
+			[Language.Portuguese]: "1º lugar no Top Gastador na 5ª temporada",
+			[Language.Spanish]: "1er lugar en Top Gastador en la 5ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season5.Preppy,
+			String: EmoteBadgeString.Season5.Preppy,
+		},
+	},
+	[BadgeId.S5Top1Bribery]: {
+		Id: BadgeId.S5Top1Bribery,
+		Name: {
+			[Language.English]: "Politician S5",
+			[Language.Portuguese]: "Deputado S5",
+			[Language.Spanish]: "Político S5",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Bribery in the 5th season",
+			[Language.Portuguese]: "1º lugar no Top Suborno na 5ª temporada",
+			[Language.Spanish]: "1er lugar en Top Soborno en la 5ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season5.Politician,
+			String: EmoteBadgeString.Season5.Politician,
+		},
+	},
+	[BadgeId.S5Top1Hospital]: {
+		Id: BadgeId.S5Top1Hospital,
+		Name: {
+			[Language.English]: "Hypochondriac S5",
+			[Language.Portuguese]: "Hipocondríaco S5",
+			[Language.Spanish]: "Hipocondríaco S5",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Hospital in the 5th season",
+			[Language.Portuguese]: "1º lugar no Top Hospital na 5ª temporada",
+			[Language.Spanish]: "1er lugar en Top Hospital en la 5ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season5.Hypochondriac,
+			String: EmoteBadgeString.Season5.Hypochondriac,
+		},
+	},
+	[BadgeId.S5Top1Gang]: {
+		Id: BadgeId.S5Top1Gang,
+		Name: {
+			[Language.English]: "Top Gang S5",
+			[Language.Portuguese]: "Top Gangue S5",
+			[Language.Spanish]: "Top Cuadrilla S5",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Gang in the 5th season",
+			[Language.Portuguese]: "1º lugar no Top Gangue na 5ª temporada",
+			[Language.Spanish]: "1er lugar en Top Cuadrilla en la 5ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season5.TopGang,
+			String: EmoteBadgeString.Season5.TopGang,
+		},
 	}
 };
 
