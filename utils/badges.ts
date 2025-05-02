@@ -38,10 +38,10 @@ export const EmoteBadgeId = {
 	},
 	Events: {
 		Christmas2020: "912837287539269672",
-		Easter2021: "1367221681428627616",
+		Easter2021: "829907391519916063",
 		Halloween2021: "904559838992932884",
 		Christmas2021: "925027603352526878",
-		KeyishMandrake: "934476953321361449",
+		KeyishMandrake: "934631816546123876",
 	},
 
 };
@@ -75,8 +75,8 @@ export const EmoteBadgeString = {
 		Top3Money: `<:badge_top3grana_s1:${EmoteBadgeId.Season1.Top3Money}>`,
 	},
 	General: {
-		Developer: `<:Desenvolvedor:${EmoteBadgeId.General.Developer}`,
-		Helper: `<:Ajudante:${EmoteBadgeId.General.Helper}`,
+		Developer: `<:Desenvolvedor:${EmoteBadgeId.General.Developer}>`,
+		Helper: `<:Ajudante:${EmoteBadgeId.General.Helper}>`,
 		Moderator: `<:Moderador:${EmoteBadgeId.General.Moderator}>`,
 		Champion: `<:Campeao_Canja:${EmoteBadgeId.General.Champion}>`,
 		Artist: `<:Artista:${EmoteBadgeId.General.Artist}>`,
@@ -86,8 +86,8 @@ export const EmoteBadgeString = {
 	Events: {
 		Christmas2020: `<:badge_natal_2020:${EmoteBadgeId.Events.Christmas2020}>`,
 		Easter2021: `<:badge_Ovos_Dourados:${EmoteBadgeId.Events.Easter2021}>`,
-		Halloween2021: `<:badge_halloween_2021:${EmoteBadgeId.Events.Halloween2021}}> `,
-		Christmas2021: `<:badge_BiscoitoNatalino:${EmoteBadgeId.Events.Christmas2021}}> `,
-		KeyishMandrake: `<:MandrakeChavoso${EmoteBadgeId.Events.KeyishMandrake}:>`,
+		Halloween2021: `<:badge_halloween_2021:${EmoteBadgeId.Events.Halloween2021}> `,
+		Christmas2021: `<:badge_BiscoitoNatalino:${EmoteBadgeId.Events.Christmas2021}> `,
+		KeyishMandrake: `<:badge_mandrakeChavoso:${EmoteBadgeId.Events.KeyishMandrake}>`,
 	},
 };

@@ -4,8 +4,10 @@ import { BadgeList, getBadgeList } from "../../interfaces/Badges";
 import { Language } from "../../models/Language";
 import { checkUser, replyInteraction, replyUserDontExist } from "../../utils/logic";
 import { User } from "../../models/User";
+import { Pagination } from "../../models/Pagination";
 
 enum CommandOption {
+	Types = "types",
 	Add = "add",
 	Remove = "remove",
 	List = "list",
@@ -15,52 +17,41 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("badge")
 		.setDescription("Manage user badges")
-		.addSubcommand(subcommand =>
-			subcommand
-				.setName(CommandOption.Add)
-				.setDescription("Add a badge to a user")
-				.addUserOption(option =>
-					option.setName("user")
-						.setDescription("The user to add the badge to")
-						.setRequired(true))
-				.addIntegerOption(option =>
-					option.setName("badge")
-						.setDescription("The type of badge to add")
-						.setRequired(true)
-						.addChoices(
-							...getBadgeList().map(badge => ({
-								name: badge.Name[Language.English],
-								value: badge.Id,
-							})),
-						)),
+		.addSubcommand(subcommand => subcommand
+			.setName(CommandOption.Types)
+			.setDescription("All types of badges and respectives Ids"),
 		)
-		.addSubcommand(subcommand =>
-			subcommand
-				.setName(CommandOption.Remove)
-				.setDescription("Remove a badge from a user")
-				.addUserOption(option =>
-					option.setName("user")
-						.setDescription("The user to remove the badge from")
-						.setRequired(true))
-				.addIntegerOption(option =>
-					option.setName("badge")
-						.setDescription("The type of badge to remove")
-						.setRequired(true)
-						.addChoices(
-							...getBadgeList().map(badge => ({
-								name: badge.Name[Language.English],
-								value: badge.Id,
-							})),
-						)),
+		.addSubcommand(subcommand => subcommand
+			.setName(CommandOption.Add)
+			.setDescription("Add a badge to a user")
+			.addUserOption(option => option
+				.setName("user")
+				.setDescription("The user to add the badge to")
+				.setRequired(true))
+			.addIntegerOption(option => option
+				.setName("badge")
+				.setDescription("The type of badge to add")
+				.setRequired(true)),
 		)
-		.addSubcommand(subcommand =>
-			subcommand
-				.setName(CommandOption.List)
-				.setDescription("List all badges of a user")
-				.addUserOption(option =>
-					option.setName("user")
-						.setDescription("The user to list badges for")
-						.setRequired(true)),
+		.addSubcommand(subcommand => subcommand
+			.setName(CommandOption.Remove)
+			.setDescription("Remove a badge from a user")
+			.addUserOption(option => option
+				.setName("user")
+				.setDescription("The user to remove the badge from")
+				.setRequired(true))
+			.addIntegerOption(option => option
+				.setName("badge")
+				.setDescription("The type of badge to remove")
+				.setRequired(true)),
+		)
+		.addSubcommand(subcommand => subcommand
+			.setName(CommandOption.List)
+			.setDescription("List all badges of a user")
+			.addUserOption(option => option
+				.setName("user")
+				.setDescription("The user to list badges for")
+				.setRequired(true)),
 		),
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 		const s = Strings[language];
@@ -71,18 +62,41 @@ module.exports = {
 			});
 		}
 
-
 		const subcommand = interaction.options.getSubcommand();
-		const _user = interaction.options.getUser("user", true);
-		const target = await checkUser(_user.id, interaction);
-
-		if (!target) {
-			return await replyUserDontExist(interaction, language);
-		}
 
 		switch (subcommand) {
+		case CommandOption.Types: {
+			await interaction.deferReply();
+
+			const badgeList = getBadgeList();
+
+			const pagination = new Pagination(interaction, language);
+			pagination.HowManyRecords = badgeList.length;
+			pagination.Limit = 15;
+
+			pagination.CustomizeEmbed = async () => {
+				return new EmbedBuilder()
+					.setTitle("Badges")
+					.setDescription(badgeList
+						.slice(pagination.Offset, pagination.Offset + pagination.Limit)
+						.map(badge => {
+							return `\`${badge.Id}\` ${badge.Emoji.String} ${badge.Name[language]}`;
+						})
+						.join("\n"))
+					.setFooter({ text: pagination.Showing() });
+			};
+
+			await pagination.GenerateEmbed();
+			return;
+		}
 		case CommandOption.Add: {
 			const badgeId = interaction.options.getInteger("badge", true);
+			const _user = interaction.options.getUser("user", true);
+			const target = await checkUser(_user.id, interaction);
+
+			if (!target) {
+				return await replyUserDontExist(interaction, language);
+			}
 
 			await interaction.deferReply();
 
@@ -105,6 +119,12 @@ module.exports = {
 
 		case CommandOption.Remove: {
 			const badgeId = interaction.options.getInteger("badge", true);
+			const _user = interaction.options.getUser("user", true);
+			const target = await checkUser(_user.id, interaction);
+
+			if (!target) {
+				return await replyUserDontExist(interaction, language);
+			}
 
 			await interaction.deferReply();
 
@@ -126,6 +146,13 @@ module.exports = {
 		}
 
 		case CommandOption.List: {
+			const _user = interaction.options.getUser("user", true);
+			const target = await checkUser(_user.id, interaction);
+
+			if (!target) {
+				return await replyUserDontExist(interaction, language);
+			}
+
 			await interaction.deferReply();
 
 			let badges = await UserBadge.GetList(_user.id, language);
