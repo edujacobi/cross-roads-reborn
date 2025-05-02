@@ -853,6 +853,295 @@ export const BadgeList: BadgeListType = {
 			Id: EmoteBadgeId.Season3.Hypochondriac,
 			String: EmoteBadgeString.Season3.Hypochondriac,
 		},
+	},
+	[BadgeId.S4Top1Money]: {
+		Id: BadgeId.S4Top1Money,
+		Name: {
+			[Language.English]: "Top 1 Money S4",
+			[Language.Portuguese]: "Top 1 Grana S4",
+			[Language.Spanish]: "Top 1 Dinero S4",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Money in the 4th season",
+			[Language.Portuguese]: "1º lugar no Top Grana na 4ª temporada",
+			[Language.Spanish]: "1er lugar en Top Dinero en la 4ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season4.Top1Money,
+			String: EmoteBadgeString.Season4.Top1Money,
+		},
+	},
+	[BadgeId.S4Top2Money]: {
+		Id: BadgeId.S4Top2Money,
+		Name: {
+			[Language.English]: "Top 2 Money S4",
+			[Language.Portuguese]: "Top 2 Grana S4",
+			[Language.Spanish]: "Top 2 Dinero S4",
+		},
+		Description: {
+			[Language.English]: "2nd place in Top Money in the 4th season",
+			[Language.Portuguese]: "2º lugar no Top Grana na 4ª temporada",
+			[Language.Spanish]: "2do lugar en Top Dinero en la 4ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season4.Top2Money,
+			String: EmoteBadgeString.Season4.Top2Money,
+		},
+	},
+	[BadgeId.S4Top3Money]: {
+		Id: BadgeId.S4Top3Money,
+		Name: {
+			[Language.English]: "Top 3 Money S4",
+			[Language.Portuguese]: "Top 3 Grana S4",
+			[Language.Spanish]: "Top 3 Dinero S4",
+		},
+		Description: {
+			[Language.English]: "3rd place in Top Money in the 4th season",
+			[Language.Portuguese]: "3º lugar no Top Grana na 4ª temporada",
+			[Language.Spanish]: "3er lugar en Top Dinero en la 4ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season4.Top3Money,
+			String: EmoteBadgeString.Season4.Top3Money,
+		},
+	},
+	[BadgeId.S4Top1BeatUp]: {
+		Id: BadgeId.S4Top1BeatUp,
+		Name: {
+			[Language.English]: "Head Smasher S4",
+			[Language.Portuguese]: "Esmaga Crânio S4",
+			[Language.Spanish]: "Aplasta Cráneos S4",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Beat Up in the 4th season",
+			[Language.Portuguese]: "1º lugar no Top Pancada na 4ª temporada",
+			[Language.Spanish]: "1er lugar en Top Pelea en la 4ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season4.HeadSmasher,
+			String: EmoteBadgeString.Season4.HeadSmasher,
+		},
+	},
+	[BadgeId.S4Top1Scavenge]: {
+		Id: BadgeId.S4Top1Scavenge,
+		Name: {
+			[Language.English]: "Sherlock Holmes S4",
+			[Language.Portuguese]: "Xeroque Holmes S4",
+			[Language.Spanish]: "Sherlock Holmes S4",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Scavenge in the 4th season",
+			[Language.Portuguese]: "1º lugar no Top Vasculhar na 4ª temporada",
+			[Language.Spanish]: "1er lugar en Top Rebuscar en la 4ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season4.SherlockHolmes,
+			String: EmoteBadgeString.Season4.SherlockHolmes || `<:sherlock_holmes:${EmoteBadgeId.Season4.SherlockHolmes}>`,
+		},
+	},
+	[BadgeId.S4Top1Escapes]: {
+		Id: BadgeId.S4Top1Escapes,
+		Name: {
+			[Language.English]: "Escapist S4",
+			[Language.Portuguese]: "Fujão S4",
+			[Language.Spanish]: "Escapista S4",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Escapes in the 4th season",
+			[Language.Portuguese]: "1º lugar no Top Fugas na 4ª temporada",
+			[Language.Spanish]: "1er lugar en Top Fugas en la 4ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season4.Escapist,
+			String: EmoteBadgeString.Season4.Escapist,
+		},
+	},
+	[BadgeId.S4Top1CasinoWR]: {
+		Id: BadgeId.S4Top1CasinoWR,
+		Name: {
+			[Language.English]: "Lucky One S4",
+			[Language.Portuguese]: "Sortudo S4",
+			[Language.Spanish]: "Afortunado S4",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Casino Win Rate in the 4th season",
+			[Language.Portuguese]: "1º lugar no Top Taxa de Vitória do Cassino na 4ª temporada",
+			[Language.Spanish]: "1er lugar en Top Tasa de Victoria del Casino en la 4ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season4.LuckyOne,
+			String: EmoteBadgeString.Season4.LuckyOne,
+		},
+	},
+	[BadgeId.S4Top1CasinoProfit]: {
+		Id: BadgeId.S4Top1CasinoProfit,
+		Name: {
+			[Language.English]: "Elite Trader S4",
+			[Language.Portuguese]: "Trader Elite S4",
+			[Language.Spanish]: "Comerciante de Élite S4",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Casino Profit in the 4th season",
+			[Language.Portuguese]: "1º lugar no Top Lucro do Cassino na 4ª temporada",
+			[Language.Spanish]: "1er lugar en Top Beneficio del Casino en la 4ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season4.EliteTrader,
+			String: EmoteBadgeString.Season4.EliteTrader,
+		},
+	},
+	[BadgeId.S4Top1RobberyQuantity]: {
+		Id: BadgeId.S4Top1RobberyQuantity,
+		Name: {
+			[Language.English]: "Silly Hand S4",
+			[Language.Portuguese]: "Mão Boba S4",
+			[Language.Spanish]: "Mano Tonta S4",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Robbery Quantity in the 4th season",
+			[Language.Portuguese]: "1º lugar no Top Quantidade de Roubos na 4ª temporada",
+			[Language.Spanish]: "1er lugar en Top Cantidad de Robos en la 4ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season4.SillyHand,
+			String: EmoteBadgeString.Season4.SillyHand,
+		},
+	},
+	[BadgeId.S4Top1RobberyProfit]: {
+		Id: BadgeId.S4Top1RobberyProfit,
+		Name: {
+			[Language.English]: "Large Pocket S4",
+			[Language.Portuguese]: "Bolso Largo S4",
+			[Language.Spanish]: "Bolsillo Grande S4",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Robbery Profit in the 4th season",
+			[Language.Portuguese]: "1º lugar no Top Lucro de Roubos na 4ª temporada",
+			[Language.Spanish]: "1er lugar en Top Beneficio de Robos en la 4ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season4.LargePocket,
+			String: EmoteBadgeString.Season4.LargePocket,
+		},
+	},
+	[BadgeId.S4Top1Rooster]: {
+		Id: BadgeId.S4Top1Rooster,
+		Name: {
+			[Language.English]: "Top Rooster S4",
+			[Language.Portuguese]: "Top Galo S4",
+			[Language.Spanish]: "Top Pollo S4",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Rooster in the 4th season",
+			[Language.Portuguese]: "1º lugar no Top Galo na 4ª temporada",
+			[Language.Spanish]: "1er lugar en Top Pollo en la 4ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season4.TopRooster,
+			String: EmoteBadgeString.Season4.TopRooster,
+		},
+	},
+	[BadgeId.S4Top1Alms]: {
+		Id: BadgeId.S4Top1Alms,
+		Name: {
+			[Language.English]: "Philantrope S4",
+			[Language.Portuguese]: "Filantropo S4",
+			[Language.Spanish]: "Filántropo S4",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Alms in the 4th season",
+			[Language.Portuguese]: "1º lugar no Top Esmolas na 4ª temporada",
+			[Language.Spanish]: "1er lugar en Top Limosnas en la 4ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season4.Philantrope,
+			String: EmoteBadgeString.Season4.Philantrope,
+		},
+	},
+	[BadgeId.S4Top1Investments]: {
+		Id: BadgeId.S4Top1Investments,
+		Name: {
+			[Language.English]: "Investor S4",
+			[Language.Portuguese]: "Investidor S4",
+			[Language.Spanish]: "Inversor S4",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Investments in the 4th season",
+			[Language.Portuguese]: "1º lugar no Top Investimentos na 4ª temporada",
+			[Language.Spanish]: "1er lugar en Top Inversiones en la 4ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season4.Invester,
+			String: EmoteBadgeString.Season4.Invester,
+		},
+	},
+	[BadgeId.S4Top1Jobs]: {
+		Id: BadgeId.S4Top1Jobs,
+		Name: {
+			[Language.English]: "Workaholic S4",
+			[Language.Portuguese]: "Workaholic S4",
+			[Language.Spanish]: "Adicto al Trabajo S4",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Jobs in the 4th season",
+			[Language.Portuguese]: "1º lugar no Top Trabalhos na 4ª temporada",
+			[Language.Spanish]: "1er lugar en Top Trabajos en la 4ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season4.Workaholic,
+			String: EmoteBadgeString.Season4.Workaholic,
+		},
+	},
+	[BadgeId.S4Top1Spender]: {
+		Id: BadgeId.S4Top1Spender,
+		Name: {
+			[Language.English]: "Preppy S4",
+			[Language.Portuguese]: "Patricinha S4",
+			[Language.Spanish]: "Pijo S4",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Spender in the 4th season",
+			[Language.Portuguese]: "1º lugar no Top Gastador na 4ª temporada",
+			[Language.Spanish]: "1er lugar en Top Gastador en la 4ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season4.Preppy,
+			String: EmoteBadgeString.Season4.Preppy,
+		},
+	},
+	[BadgeId.S4Top1Bribery]: {
+		Id: BadgeId.S4Top1Bribery,
+		Name: {
+			[Language.English]: "Politician S4",
+			[Language.Portuguese]: "Deputado S4",
+			[Language.Spanish]: "Político S4",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Bribery in the 4th season",
+			[Language.Portuguese]: "1º lugar no Top Suborno na 4ª temporada",
+			[Language.Spanish]: "1er lugar en Top Soborno en la 4ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season4.Politician,
+			String: EmoteBadgeString.Season4.Politician,
+		},
+	},
+	[BadgeId.S4Top1Hospital]: {
+		Id: BadgeId.S4Top1Hospital,
+		Name: {
+			[Language.English]: "Hypochondriac S4",
+			[Language.Portuguese]: "Hipocondríaco S4",
+			[Language.Spanish]: "Hipocondríaco S4",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Hospital in the 4th season",
+			[Language.Portuguese]: "1º lugar no Top Hospital na 4ª temporada",
+			[Language.Spanish]: "1er lugar en Top Hospital en la 4ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season4.Hypochondriac,
+			String: EmoteBadgeString.Season4.Hypochondriac,
+		},
 	}
 };
 
