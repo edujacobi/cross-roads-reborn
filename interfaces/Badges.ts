@@ -547,6 +547,312 @@ export const BadgeList: BadgeListType = {
 			Id: EmoteBadgeId.Season2.TopRooster,
 			String: EmoteBadgeString.Season2.TopRooster,
 		},
+	},
+	[BadgeId.S3Top1Money]: {
+		Id: BadgeId.S3Top1Money,
+		Name: {
+			[Language.English]: "Top 1 Money S3",
+			[Language.Portuguese]: "Top 1 Grana S3",
+			[Language.Spanish]: "Top 1 Dinero S3",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Money in the 3rd season",
+			[Language.Portuguese]: "1º lugar no Top Grana na 3ª temporada",
+			[Language.Spanish]: "1er lugar en Top Dinero en la 3ra temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season3.Top1Money,
+			String: EmoteBadgeString.Season3.Top1Money,
+		},
+	},
+	[BadgeId.S3Top2Money]: {
+		Id: BadgeId.S3Top2Money,
+		Name: {
+			[Language.English]: "Top 2 Money S3",
+			[Language.Portuguese]: "Top 2 Grana S3",
+			[Language.Spanish]: "Top 2 Dinero S3",
+		},
+		Description: {
+			[Language.English]: "2nd place in Top Money in the 3rd season",
+			[Language.Portuguese]: "2º lugar no Top Grana na 3ª temporada",
+			[Language.Spanish]: "2do lugar en Top Dinero en la 3ra temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season3.Top2Money,
+			String: EmoteBadgeString.Season3.Top2Money,
+		},
+	},
+	[BadgeId.S3Top3Money]: {
+		Id: BadgeId.S3Top3Money,
+		Name: {
+			[Language.English]: "Top 3 Money S3",
+			[Language.Portuguese]: "Top 3 Grana S3",
+			[Language.Spanish]: "Top 3 Dinero S3",
+		},
+		Description: {
+			[Language.English]: "3rd place in Top Money in the 3rd season",
+			[Language.Portuguese]: "3º lugar no Top Grana na 3ª temporada",
+			[Language.Spanish]: "3er lugar en Top Dinero en la 3ra temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season3.Top3Money,
+			String: EmoteBadgeString.Season3.Top3Money,
+		},
+	},
+	[BadgeId.S3Top1BeatUp]: {
+		Id: BadgeId.S3Top1BeatUp,
+		Name: {
+			[Language.English]: "Head Smasher S3",
+			[Language.Portuguese]: "Esmaga Crânio S3",
+			[Language.Spanish]: "Aplasta Cráneos S3",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Beat Up in the 3rd season",
+			[Language.Portuguese]: "1º lugar no Top Pancada na 3ª temporada",
+			[Language.Spanish]: "1er lugar en Top Pelea en la 3ra temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season3.HeadSmasher,
+			String: EmoteBadgeString.Season3.HeadSmasher,
+		},
+	},
+	[BadgeId.S3Top1Beated]: {
+		Id: BadgeId.S3Top1Beated,
+		Name: {
+			[Language.English]: "Crazy Dead Body S3",
+			[Language.Portuguese]: "Morto Muito Louco S3",
+			[Language.Spanish]: "Cadáver Loco S3",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Beated in the 3rd season",
+			[Language.Portuguese]: "1º lugar no Top Espancado na 3ª temporada",
+			[Language.Spanish]: "1er lugar en Top Golpeado en la 3ra temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season3.CrazyDeadBody,
+			String: EmoteBadgeString.Season3.CrazyDeadBody,
+		},
+	},
+	[BadgeId.S3Top1Escapes]: {
+		Id: BadgeId.S3Top1Escapes,
+		Name: {
+			[Language.English]: "Escapist S3",
+			[Language.Portuguese]: "Fujão S3",
+			[Language.Spanish]: "Escapista S3",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Escapes in the 3rd season",
+			[Language.Portuguese]: "1º lugar no Top Fugas na 3ª temporada",
+			[Language.Spanish]: "1er lugar en Top Fugas en la 3ra temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season3.Escapist,
+			String: EmoteBadgeString.Season3.Escapist,
+		},
+	},
+	[BadgeId.S3Top1CasinoWR]: {
+		Id: BadgeId.S3Top1CasinoWR,
+		Name: {
+			[Language.English]: "Lucky One S3",
+			[Language.Portuguese]: "Sortudo S3",
+			[Language.Spanish]: "Afortunado S3",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Casino Win Rate in the 3rd season",
+			[Language.Portuguese]: "1º lugar no Top Taxa de Vitória do Cassino na 3ª temporada",
+			[Language.Spanish]: "1er lugar en Top Tasa de Victoria del Casino en la 3ra temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season3.LuckyOne,
+			String: EmoteBadgeString.Season3.LuckyOne,
+		},
+	},
+	[BadgeId.S3Top1CasinoProfit]: {
+		Id: BadgeId.S3Top1CasinoProfit,
+		Name: {
+			[Language.English]: "Elite Trader S3",
+			[Language.Portuguese]: "Trader Elite S3",
+			[Language.Spanish]: "Comerciante de Élite S3",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Casino Profit in the 3rd season",
+			[Language.Portuguese]: "1º lugar no Top Lucro do Cassino na 3ª temporada",
+			[Language.Spanish]: "1er lugar en Top Beneficio del Casino en la 3ra temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season3.EliteTrader,
+			String: EmoteBadgeString.Season3.EliteTrader,
+		},
+	},
+	[BadgeId.S3Top1RobberyQuantity]: {
+		Id: BadgeId.S3Top1RobberyQuantity,
+		Name: {
+			[Language.English]: "Silly Hand S3",
+			[Language.Portuguese]: "Mão Boba S3",
+			[Language.Spanish]: "Mano Tonta S3",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Robbery Quantity in the 3rd season",
+			[Language.Portuguese]: "1º lugar no Top Quantidade de Roubos na 3ª temporada",
+			[Language.Spanish]: "1er lugar en Top Cantidad de Robos en la 3ra temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season3.SillyHand,
+			String: EmoteBadgeString.Season3.SillyHand,
+		},
+	},
+	[BadgeId.S3Top1RobberyProfit]: {
+		Id: BadgeId.S3Top1RobberyProfit,
+		Name: {
+			[Language.English]: "Large Pocket S3",
+			[Language.Portuguese]: "Bolso Largo S3",
+			[Language.Spanish]: "Bolsillo Grande S3",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Robbery Profit in the 3rd season",
+			[Language.Portuguese]: "1º lugar no Top Lucro de Roubos na 3ª temporada",
+			[Language.Spanish]: "1er lugar en Top Beneficio de Robos en la 3ra temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season3.LargePocket,
+			String: EmoteBadgeString.Season3.LargePocket,
+		},
+	},
+	[BadgeId.S3Top1Rooster]: {
+		Id: BadgeId.S3Top1Rooster,
+		Name: {
+			[Language.English]: "Top Rooster S3",
+			[Language.Portuguese]: "Top Galo S3",
+			[Language.Spanish]: "Top Pollo S3",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Rooster in the 3rd season",
+			[Language.Portuguese]: "1º lugar no Top Galo na 3ª temporada",
+			[Language.Spanish]: "1er lugar en Top Pollo en la 3ra temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season3.TopRooster,
+			String: EmoteBadgeString.Season3.TopRooster,
+		},
+	},
+	[BadgeId.S3Top1Stolen]: {
+		Id: BadgeId.S3Top1Stolen,
+		Name: {
+			[Language.English]: "Walking Target S3",
+			[Language.Portuguese]: "Alvo Ambulante S3",
+			[Language.Spanish]: "Blanco Ambulante S3",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Stolen in the 3rd season",
+			[Language.Portuguese]: "1º lugar no Top Roubado na 3ª temporada",
+			[Language.Spanish]: "1er lugar en Top Robado en la 3ra temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season3.WalkingTarget,
+			String: EmoteBadgeString.Season3.WalkingTarget,
+		},
+	},
+	[BadgeId.S3Top1Alms]: {
+		Id: BadgeId.S3Top1Alms,
+		Name: {
+			[Language.English]: "Philantrope S3",
+			[Language.Portuguese]: "Filantropo S3",
+			[Language.Spanish]: "Filántropo S3",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Alms in the 3rd season",
+			[Language.Portuguese]: "1º lugar no Top Esmolas na 3ª temporada",
+			[Language.Spanish]: "1er lugar en Top Limosnas en la 3ra temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season3.Philantrope,
+			String: EmoteBadgeString.Season3.Philantrope,
+		},
+	},
+	[BadgeId.S3Top1Investments]: {
+		Id: BadgeId.S3Top1Investments,
+		Name: {
+			[Language.English]: "Investor S3",
+			[Language.Portuguese]: "Investidor S3",
+			[Language.Spanish]: "Inversor S3",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Investments in the 3rd season",
+			[Language.Portuguese]: "1º lugar no Top Investimentos na 3ª temporada",
+			[Language.Spanish]: "1er lugar en Top Inversiones en la 3ra temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season3.Invester,
+			String: EmoteBadgeString.Season3.Invester,
+		},
+	},
+	[BadgeId.S3Top1Jobs]: {
+		Id: BadgeId.S3Top1Jobs,
+		Name: {
+			[Language.English]: "Workaholic S3",
+			[Language.Portuguese]: "Workaholic S3",
+			[Language.Spanish]: "Workaholic S3",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Jobs in the 3rd season",
+			[Language.Portuguese]: "1º lugar no Top Trabalhos na 3ª temporada",
+			[Language.Spanish]: "1er lugar en Top Trabajos en la 3ra temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season3.Workaholic,
+			String: EmoteBadgeString.Season3.Workaholic,
+		},
+	},
+	[BadgeId.S3Top1Spender]: {
+		Id: BadgeId.S3Top1Spender,
+		Name: {
+			[Language.English]: "Preppy S3",
+			[Language.Portuguese]: "Patricinha S3",
+			[Language.Spanish]: "Pijo S3",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Spender in the 3rd season",
+			[Language.Portuguese]: "1º lugar no Top Gastador na 3ª temporada",
+			[Language.Spanish]: "1er lugar en Top Gastador en la 3ra temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season3.Preppy,
+			String: EmoteBadgeString.Season3.Preppy,
+		},
+	},
+	[BadgeId.S3Top1Bribery]: {
+		Id: BadgeId.S3Top1Bribery,
+		Name: {
+			[Language.English]: "Politician S3",
+			[Language.Portuguese]: "Deputado S3",
+			[Language.Spanish]: "Político S3",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Bribery in the 3rd season",
+			[Language.Portuguese]: "1º lugar no Top Suborno na 3ª temporada",
+			[Language.Spanish]: "1er lugar en Top Soborno en la 3ra temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season3.Politician,
+			String: EmoteBadgeString.Season3.Politician,
+		},
+	},
+	[BadgeId.S3Top1Hospital]: {
+		Id: BadgeId.S3Top1Hospital,
+		Name: {
+			[Language.English]: "Hypochondriac S3",
+			[Language.Portuguese]: "Hipocondríaco S3",
+			[Language.Spanish]: "Hipocondríaco S3",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Hospital in the 3rd season",
+			[Language.Portuguese]: "1º lugar no Top Hospital na 3ª temporada",
+			[Language.Spanish]: "1er lugar en Top Hospital en la 3ra temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season3.Hypochondriac,
+			String: EmoteBadgeString.Season3.Hypochondriac,
+		},
 	}
 };
 
