@@ -10,6 +10,7 @@ import { EmoteString } from "../utils/emotes";
 import { formatMoney } from "../utils/ui";
 import { sendPrivateMessage } from "../utils/logic";
 import { CrColors } from "../utils/colors";
+import { Event, EventType } from "./Event";
 
 export enum NotificationType {
 	Daily = 1,
@@ -79,7 +80,7 @@ export class Notification {
 		if (user.Job.Id === null) {
 			return;
 		}
-		notification.Date = addHours(new Date(), JobList[user.Job.Id].Duration);
+		notification.Date = user.Job.EndsIn;
 		await notification.Create();
 	}
 

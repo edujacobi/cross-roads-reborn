@@ -6,7 +6,7 @@ export enum EventType {
 	JOB_TIME_MULTIPLIER = 1,
 }
 
-class Event {
+export class Event {
 	/**
 	 * Creates a new event.
 	 *
@@ -140,5 +140,3 @@ class Event {
 		}
 	}
 }
-
-export { Event };

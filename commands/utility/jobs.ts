@@ -23,6 +23,7 @@ import { Users } from "../../database/Users";
 import { ClassList } from "../../interfaces/Classes";
 import { LocationList } from "../../interfaces/Locations";
 import { ScavengeId, ScavengeList } from "../../interfaces/Scavenge";
+import { Event, EventType } from "../../models/Event";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -55,11 +56,14 @@ module.exports = {
 
 		const jobList = getJobList().filter(jobs => !jobs.Special);
 
+		const eventActiveValue = await Event.GetActiveFromType(EventType.JOB_TIME_MULTIPLIER);
+
 		for (const job of jobList) {
 			const weaponsNeeded = getItemList().filter(item => job.NeedItem?.includes(item.Id));
+			const jobDuration = job.Duration * eventActiveValue;
 
 			const textSalary = `${s.salary}: ${formatMoney(job.Salary, language)}`;
-			const textDuration = `${s.duration}: ${job.Duration}h`;
+			const textDuration = `${s.duration}: ${jobDuration}h`;
 			const textNeeded = weaponsNeeded.length ? `\n-# ${s.necessary}: ${weaponsNeeded.map(weapon => weapon.Skin.Default.Emote.String).join("")}` : "";
 
 			if (!user.IsWorking()) {
@@ -74,7 +78,7 @@ module.exports = {
 				new StringSelectMenuOptionBuilder()
 					.setLabel(job.Description[language])
 					.setValue(String(job.Id))
-					.setDescription(`${s.salary}: ${formatMoney(job.Salary, language)} • ${s.duration}: ${job.Duration}h`),
+					.setDescription(`${s.salary}: ${formatMoney(job.Salary, language)} • ${s.duration}: ${jobDuration}h`),
 			);
 		}
 
@@ -177,6 +181,9 @@ module.exports = {
 				]);
 			}
 
+			const eventActiveValue = await Event.GetActiveFromType(EventType.JOB_TIME_MULTIPLIER);
+			const jobDuration = job.Duration * eventActiveValue;
+
 			await user.StartJob(job.Id);
 
 			return await removeEmbedComponents(interaction, [
@@ -186,7 +193,7 @@ module.exports = {
 					.setUserFooter({
 						nickname: user.Nickname,
 						image: interaction.user.avatarURL(),
-						text: `${s.salary}: ${formatMoney(job.Salary, language)} • ${s.duration}: ${job.Duration}h`,
+						text: `${s.salary}: ${formatMoney(job.Salary, language)} • ${s.duration}: ${jobDuration}h`,
 					}),
 			]);
 		});
