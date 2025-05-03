@@ -676,8 +676,10 @@ export class User {
 
 	async StartJob(jobId: JobId) {
 		const job = JobList[jobId];
+		const eventActiveValue = await Event.GetActiveFromType(EventType.JOB_TIME_MULTIPLIER);
+		const jobDuration = job.Duration * eventActiveValue;
 		this.Job.Id = jobId;
-		this.Job.EndsIn = addHours(new Date(), job.Duration);
+		this.Job.EndsIn = addHours(new Date(), jobDuration);
 
 		await Notification.Job(this);
 		await this.Update();
