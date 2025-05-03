@@ -13,6 +13,7 @@ import { EmoteString } from "../utils/emotes";
 import { ClassId, ClassList } from "../interfaces/Classes";
 import { LocationId, LocationList } from "../interfaces/Locations";
 import { ScavengeId, ScavengeList } from "../interfaces/Scavenge";
+import { Event, EventType } from "./Event";
 
 export enum SituationId {
 	Idling,
