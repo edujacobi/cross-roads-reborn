@@ -24,6 +24,7 @@ import { ClassList } from "../../interfaces/Classes";
 import { LocationList } from "../../interfaces/Locations";
 import { ScavengeId, ScavengeList } from "../../interfaces/Scavenge";
 import { Event, EventType } from "../../models/Event";
+import { BlackMarket } from "../../models/BlackMarket";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -54,7 +55,11 @@ module.exports = {
 			.setCustomId("select")
 			.setPlaceholder(s.placeholderSelect);
 
-		const jobList = getJobList().filter(jobs => !jobs.Special);
+		const blackMarket = new BlackMarket(user);
+
+		const { isOpen } = blackMarket.IsBlackMarketOpen();
+
+		const jobList = isOpen ? getJobList() : getJobList().filter(jobs => !jobs.Special);
 
 		const eventActiveValue = await Event.GetActiveFromType(EventType.JOB_TIME_MULTIPLIER);
 
@@ -65,19 +70,27 @@ module.exports = {
 			const textSalary = `${s.salary}: ${formatMoney(job.Salary, language)}`;
 			const textDuration = `${s.duration}: ${jobDuration}h`;
 			const textNeeded = weaponsNeeded.length ? `\n-# ${s.necessary}: ${weaponsNeeded.map(weapon => weapon.Skin.Default.Emote.String).join("")}` : "";
+			const blackMarketEmote = job.Special ? `${EmoteString.BlackMarket} ` : "";
 
 			if (!user.IsWorking()) {
 				embed.addFields({
-					name: job.Description[language],
+					name: `${blackMarketEmote}${job.Description[language]}`,
 					value: `${textSalary}\n${textDuration}${textNeeded}`,
 					inline: true,
 				});
+			}
+
+			let lastWeaponEmote = "▪️";
+
+			if (job.NeedItem) {
+				lastWeaponEmote = ItemList[job.NeedItem[job.NeedItem.length - 1]].Skin.Default.Emote.String;
 			}
 
 			select.addOptions(
 				new StringSelectMenuOptionBuilder()
 					.setLabel(job.Description[language])
 					.setValue(String(job.Id))
+					.setEmoji(lastWeaponEmote)
 					.setDescription(`${s.salary}: ${formatMoney(job.Salary, language)} • ${s.duration}: ${jobDuration}h`),
 			);
 		}

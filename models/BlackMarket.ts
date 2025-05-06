@@ -20,7 +20,26 @@ export class BlackMarket extends Shop {
 		const today = new Date();
 		const day = today.getDay();
 		const hours = today.getHours();
-		return day === 0 || day === 6 || (day === 5 && hours >= 20); // 0 is Sunday, 6 is Saturday
+
+		let isOpen = false;
+		let message = Strings[this.User.Language].hey as string;
+
+		const isUserJacobi = this.User.Id === process.env.JACOBI_ID;
+
+		const SUNDAY = 0;
+		const FRIDAY = 5;
+		const SATURDAY = 6;
+
+		if (day === SUNDAY ||
+			day === SATURDAY ||
+			(day === FRIDAY && hours >= 20) ||
+			isUserJacobi
+		) {
+			isOpen = true;
+			message = "";
+		}
+
+		return { isOpen, message };
 	}
 }
 
@@ -29,15 +48,18 @@ const Strings = {
 	[Language.English]: {
 		title: "Black Market",
 		description: "Look at these beauties!",
+		hey: "Hey, psst... Come back here at 8 PM on Friday and I will have some cool stuff to show you...",
 	},
 
 	[Language.Portuguese]: {
 		title: "Mercado Negro",
 		description: "Olhe para essas belezinhas!",
+		hey: "Hey, psst... Volte aqui às 20h de sexta-feira que eu terei umas coisinhas bem legais pra te mostrar...",
 	},
 
 	[Language.Spanish]: {
 		title: "Mercado Negro",
 		description: "¡Mira estas bellezas!",
+		hey: "Oye, psst... Vuelve aquí a las 8 PM del viernes y tendré algunas cosas geniales para mostrarte...",
 	},
 } as const;

@@ -5,7 +5,6 @@ import { defaultEmbed } from "../../utils/ui";
 import { EmoteString } from "../../utils/emotes";
 import { CrColors } from "../../utils/colors";
 import { User } from "../../models/User";
-import { Language } from "../../models/Language";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -14,20 +13,18 @@ module.exports = {
 		.setNameLocalization(Locale.PortugueseBR, "mercadonegro")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Abra o Mercado negro para comprar alguma coisa"),
 
-	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
+	async execute(interaction: ChatInputCommandInteraction, user: User) {
 
 		const blackMarket = new BlackMarket(user);
 
-		const isUserJacobi = interaction.user.id === process.env.JACOBI_ID;
+		const { isOpen, message } = blackMarket.IsBlackMarketOpen();
 
-		const s = Strings[language];
-
-		if (!blackMarket.IsBlackMarketOpen() && !isUserJacobi) {
+		if (!isOpen) {
 			return await replyInteraction(interaction, {
 				embeds: [defaultEmbed({
 					nickname: user.Nickname,
 					interaction,
-					description: `${EmoteString.BlackMarket} _"${s.hey}"_`,
+					description: `${EmoteString.BlackMarket} _"${message}"_`,
 					color: CrColors.BlackMarket,
 				})],
 			});
@@ -36,15 +33,3 @@ module.exports = {
 		await blackMarket.Start(interaction);
 	},
 };
-
-const Strings = {
-	[Language.English]: {
-		hey: "Hey, psst... Come back here at 8 PM on Friday and I will have some cool stuff to show you...",
-	},
-	[Language.Portuguese]: {
-		hey: "Hey, psst... Volte aqui às 20h de sexta-feira que eu terei umas coisinhas bem legais pra te mostrar...",
-	},
-	[Language.Spanish]: {
-		hey: "Oye, psst... Vuelve aquí a las 8 PM del viernes y tendré algunas cosas geniales para mostrarte...",
-	},
-} as const;
