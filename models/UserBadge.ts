@@ -78,6 +78,7 @@ export class UserBadge {
 			where: {
 				userId,
 			},
+			order: [["badgeId", "ASC"]],
 		});
 
 		const badgeList: UserBadge[] = [];
