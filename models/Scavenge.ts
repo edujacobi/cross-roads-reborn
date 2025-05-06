@@ -44,8 +44,8 @@ export class Scavenge {
 
 	SetPlace(place: IScavenge) {
 		this.Place = place;
-		this.Timer.Prison = 7 * (this.Place.Id + 1);
-		this.Timer.Hospital = 4 * (this.Place.Id + 1);
+		this.Timer.Prison = 5 * (this.Place.Id + 1);
+		this.Timer.Hospital = 3 * (this.Place.Id + 1);
 	}
 
 	async GenerateEmbed() {
@@ -304,7 +304,7 @@ export class Scavenge {
 		this.User.Scavenge.IsScavengingId = this.Place.Id;
 		await this.User.Update();
 
-		await wait(5_000 + (3_000 * this.Place.Id));
+		await wait(10_000 + (2_000 * this.Place.Id));
 
 		await this.EndScavenge(scavengeEmbed);
 	}
@@ -323,7 +323,7 @@ export class Scavenge {
 		const success = Math.random() * 100 < this.Place.SuccessChance;
 
 		if (success) {
-			const rewardMoney = Math.random() < 0.5;
+			const rewardMoney = Math.random() < 0.25;
 			let rewardDescription: string;
 			let rewardDescriptionLog: string;
 

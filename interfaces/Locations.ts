@@ -125,7 +125,7 @@ export const LocationList: LocationListType = {
 		ImageUrl: "https://media.discordapp.net/attachments/1349187098653233184/1349193676106104862/SmallBank.png",
 		Reward: {
 			Min: 18_750,
-			Max: 38_000,
+			Max: 40_000,
 		},
 		SuccessChance: 46,
 		NeedAttack: 45,
@@ -145,7 +145,7 @@ export const LocationList: LocationListType = {
 		ImageUrl: "https://media.discordapp.net/attachments/1349187098653233184/1349193674570993775/ItalianMafia.png",
 		Reward: {
 			Min: 50_000,
-			Max: 100_000,
+			Max: 150_000,
 		},
 		SuccessChance: 40,
 		NeedAttack: 60,
@@ -164,8 +164,8 @@ export const LocationList: LocationListType = {
 		},
 		ImageUrl: "https://media.discordapp.net/attachments/1349187098653233184/1349193674344632400/ArmyDepot.png",
 		Reward: {
-			Min: 300_000,
-			Max: 750_000,
+			Min: 350_000,
+			Max: 850_000,
 		},
 		SuccessChance: 34,
 		NeedAttack: 80,
@@ -184,7 +184,7 @@ export const LocationList: LocationListType = {
 		},
 		ImageUrl: "https://media.discordapp.net/attachments/1349187098653233184/1349193674810195979/JacobiPalace.png",
 		Reward: {
-			Min: 1_000_000,
+			Min: 1_500_000,
 			Max: 3_000_000,
 		},
 		SuccessChance: 27,

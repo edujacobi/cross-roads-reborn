@@ -24,7 +24,6 @@ import { globalStrings, Language } from "./Language";
 import { RobHistories } from "../database/RobHistories";
 import { Users } from "../database/Users";
 import { ClassId, ClassList } from "../interfaces/Classes";
-import { CreationOptional } from "sequelize";
 import { JobId, JobList } from "../interfaces/Jobs";
 import { LocationList } from "../interfaces/Locations";
 import { ScavengeId, ScavengeList } from "../interfaces/Scavenge";

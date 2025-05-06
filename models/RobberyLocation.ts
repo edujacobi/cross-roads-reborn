@@ -12,7 +12,6 @@ import { addMinutes } from "date-fns";
 import { globalStrings, Language } from "./Language";
 import { RobHistories } from "../database/RobHistories";
 import { Users } from "../database/Users";
-import { CreationOptional } from "sequelize";
 import { JobId, JobList } from "../interfaces/Jobs";
 import { Robbery, ClashType } from "./Robbery";
 import { Location, LocationList } from "../interfaces/Locations";
