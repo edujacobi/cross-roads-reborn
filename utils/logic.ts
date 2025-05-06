@@ -121,7 +121,7 @@ export async function sendComplexPrivateMessage(userId: Snowflake | undefined, o
 
 export async function replyInteraction(interaction: CommandInteraction | ButtonInteraction, options: string | MessagePayload | InteractionReplyOptions | InteractionEditReplyOptions) {
 	try {
-		if (interaction.replied) {
+		if (interaction.replied || interaction.deferred) {
 			return await interaction.editReply(options as InteractionEditReplyOptions);
 		}
 
