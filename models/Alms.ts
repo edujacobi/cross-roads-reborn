@@ -74,7 +74,7 @@ export class Alms {
 			this.Giver.Update(),
 			this.Receiver.Update(),
 			Notification.AlmsGive(this.Giver),
-			Notification.AlmsReceive(this.Receiver),
+			// Notification.AlmsReceive(this.Receiver),
 		]);
 
 		Log.Success(`User ${this.Giver.Nickname} (ID: ${this.Giver.Id}) gave ${formatMoney(this.Value, Language.English)} to ${this.Receiver.Nickname} (ID: ${this.Receiver.Id}).`);
