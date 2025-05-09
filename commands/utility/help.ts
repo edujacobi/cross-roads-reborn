@@ -39,7 +39,7 @@ Welcome to Cross City! Here, all paths cross, be them good or bad. Decide your p
 See your inventory using \`/inv\`.
 You can use \`/daily\` daily to receive a small amount that increases if you don't forget any day!
 ## Earn money
-There are many ways to earn money in the game. Working, ~~investing~~, betting, stealing and even ~~scavenging~~ through places.
+There are many ways to earn money in the game. Working, ~~investing~~, betting, stealing and even scavenging through places.
 ## Commands
 To see all commands, use \`/commands\`.
 ## Notifications and functioning
@@ -57,7 +57,7 @@ Bem vindo à Cidade da Cruz! Aqui, todos os caminhos se cruzam, sejam eles bons 
 Veja seu inventário usando \`/inv\`.
 Você pode usar \`/daily\` diariamente para receber um pequeno valor que aumenta caso você não esqueça nenhum dia!
 ## Ganhe dinheiro
-Há muitas maneiras de ganhar dinheiro no jogo. Trabalhando, ~~investindo~~, apostando, roubando e até ~~vasculhando~~ lugares.
+Há muitas maneiras de ganhar dinheiro no jogo. Trabalhando, ~~investindo~~, apostando, roubando e até vasculhando lugares.
 ## Comandos
 Para ver todos os comandos, use \`/comandos\`.
 ## Notificações e funcionamento
@@ -75,7 +75,7 @@ Ficou confuso com algo? Encontrou um bug? Entre em contato conosco no [servidor 
 Consulta tu inventario usando \`/inv\`.
 Puedes usar \`/daily\` diariamente para recibir una pequeña cantidad que aumenta si no olvidas ningún día.
 ## Gana dinero
-Hay muchas formas de ganar dinero en el juego. Trabajando, ~~invirtiendo~~, apostando, robando e incluso ~~rebuscando~~ por lugares.
+Hay muchas formas de ganar dinero en el juego. Trabajando, ~~invirtiendo~~, apostando, robando e incluso rebuscando por lugares.
 ## Comandos
 Para ver todos los comandos, usa \`/comandos\`.
 ## Notificaciones y funcionamiento
