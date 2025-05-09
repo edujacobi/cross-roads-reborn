@@ -9,7 +9,6 @@ import { Language } from "../../models/Language";
 import { BeatUp } from "../../models/BeatUp";
 
 module.exports = {
-	vip: true,
 	data: new SlashCommandBuilder()
 		.setName("beatup")
 		.setDescription("Beat a user and let it in Hospital")
