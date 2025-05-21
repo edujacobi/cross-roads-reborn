@@ -42,11 +42,11 @@
   },
   "dependencies": {
     "canvas": "^3.1.0",
-    "date-fns": "^3.6.0",
-    "discord-api-types": "0.37.83",
+    "date-fns": "^4.1.0",
+    "discord-api-types": "0.38.8",
     "discord.js": "14.19.1",
-    "dotenv": "^16.3.1",
-    "sequelize": "^6.31.1",
+    "dotenv": "^16.5.0",
+    "sequelize": "^6.37.7",
     "sqlite3": "^5.1.6"
   }
 }
