@@ -357,6 +357,7 @@ ${sD.doNothingDescription}`)
 			this.Attacker.Wanted.Count += 1;
 
 			this.Defender.Hospital.Time = addMinutes(new Date(), this.TimeInHospital.Base);
+			this.Defender.Hospital.Count += 1;
 
 			await Notification.Hospital(this.Defender);
 
@@ -375,6 +376,7 @@ ${sD.doNothingDescription}`)
 			this.Attacker.BeatUp.FailureCount += 1;
 			this.Defender.BeatUp.SuccessCount += 1;
 
+			this.Attacker.Hospital.Count += 1;
 			this.Attacker.Hospital.Time = addMinutes(new Date(), this.TimeInHospital.Base);
 			this.Attacker.BeatUp.Time = addMinutes(new Date(), 60);
 
