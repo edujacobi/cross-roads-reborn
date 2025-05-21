@@ -3,7 +3,7 @@
 	ChatInputCommandInteraction,
 	Colors,
 	ContainerBuilder,
-	Locale, MessageFlags, SectionBuilder,
+	Locale, MediaGalleryBuilder, MediaGalleryItemBuilder, MessageFlags, SectionBuilder,
 	SeparatorSpacingSize,
 	SlashCommandBuilder,
 	TextDisplayBuilder, ThumbnailBuilder,
@@ -25,19 +25,21 @@ module.exports = {
 		const container = new ContainerBuilder()
 			.setAccentColor(Colors.Green)
 			.addTextDisplayComponents(new TextDisplayBuilder()
+				.setContent(`# ${s.title}`))
+			.addMediaGalleryComponents(new MediaGalleryBuilder()
+				.addItems(new MediaGalleryItemBuilder()
+					.setURL("https://media.discordapp.net/attachments/1233604589064818808/1374807950438170675/Header_About.png?ex=682f652e&is=682e13ae&hm=c96de10ef200a0502bf105d6a00a0b182d683ba4313cbb59820990401169f3a8&=&format=webp&quality=lossless")))
+			.addTextDisplayComponents(new TextDisplayBuilder()
 				.setContent([
-					`# ${s.title}`,
-					`## ${s.credits}`,
 					`### ${s.direction}`,
 					`Jacobi`,
 				].join("\n")))
 			.addSeparatorComponents(separator => separator.setSpacing(SeparatorSpacingSize.Large))
+			.addTextDisplayComponents(new TextDisplayBuilder()
+				.setContent(`### ${s.programming}`))
 			.addSectionComponents(new SectionBuilder()
 				.addTextDisplayComponents(new TextDisplayBuilder()
-					.setContent([
-						`### ${s.programming}`,
-						`Jacobi`,
-					].join("\n")))
+					.setContent(`Jacobi`,))
 				.setButtonAccessory(new ButtonBuilder()
 					.setLabel("GitHub")
 					.setStyle(ButtonStyle.Link)
