@@ -4,6 +4,7 @@ import { sequelize } from "../database/Database";
 import { Log } from "../utils/log";
 import { changeActivity } from "../utils/ui";
 import { Notification } from "../models/Notification";
+import { HorseRacing } from "../models/HorseRacing";
 
 module.exports = {
 	name: Events.ClientReady,
@@ -14,6 +15,7 @@ module.exports = {
 		changeActivity(client);
 		await removeAllFromActions();
 		Notification.StartProcedure();
+		await HorseRacing.Initialize();
 		Log.Success(`🔪 CROSS ROADS REBORN ONLINE!`);
 	},
 };

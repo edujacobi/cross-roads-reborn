@@ -2,11 +2,13 @@
 import {
 	APIEmbed,
 	ButtonInteraction,
+	CacheType,
 	ChatInputCommandInteraction,
 	ColorResolvable,
 	CommandInteraction,
 	InteractionEditReplyOptions,
 	InteractionReplyOptions,
+	MessageComponentInteraction,
 	MessageCreateOptions,
 	MessageFlags,
 	MessagePayload,
@@ -119,10 +121,13 @@ export async function sendComplexPrivateMessage(userId: Snowflake | undefined, o
 	}
 }
 
-export async function replyInteraction(interaction: CommandInteraction | ButtonInteraction, options: string | MessagePayload | InteractionReplyOptions | InteractionEditReplyOptions) {
+export async function replyInteraction(interaction: CommandInteraction | ButtonInteraction | MessageComponentInteraction<CacheType>, options: string | MessagePayload | InteractionReplyOptions | InteractionEditReplyOptions) {
 	try {
 		if (interaction.replied || interaction.deferred) {
 			return await interaction.editReply(options as InteractionEditReplyOptions);
+		}
+		if (interaction instanceof MessageComponentInteraction) {
+			return await interaction.update(options as InteractionEditReplyOptions);
 		}
 
 		return await interaction.reply(options as InteractionReplyOptions);

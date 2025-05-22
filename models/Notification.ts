@@ -22,6 +22,7 @@ export enum NotificationType {
 	AlmsReceive,
 	Scavenge,
 	BeatAgain,
+	HorseRace,
 }
 
 const NotificationMapper = {
@@ -34,6 +35,7 @@ const NotificationMapper = {
 	[NotificationType.AlmsReceive]: "almsReceive",
 	[NotificationType.Scavenge]: "scavenge",
 	[NotificationType.BeatAgain]: "beatAgain",
+	[NotificationType.HorseRace]: "horseRace",
 };
 
 export class Notification {
@@ -282,6 +284,9 @@ export class Notification {
 			else if (notification.Type == NotificationType.BeatAgain) {
 				await sendPrivateMessage(user.Id, s.beatAgain, CrColors.BeatUp);
 			}
+			else if (notification.Type == NotificationType.HorseRace) {
+				await sendPrivateMessage(user.Id, s.horseRace, CrColors.Casino);
+			}
 			else {
 				Log.Warning(`Notification type ${notification.Type} not implemented.`);
 			}
@@ -307,6 +312,7 @@ const Strings = {
 		almsReceive: `You can receive alms again! ${EmoteString.Alms}`,
 		scavenge: `You can scavenge again! ${EmoteString.Scavenge}`,
 		beatAgain: `You can beat up again! ${EmoteString.Beat}`,
+		horseRace: `A horse race is starting soon! Place your bets now! ${EmoteString.Casino}`,
 	},
 	[Language.Portuguese]: {
 		daily: `Você pode receber sua grana diária novamente! ${EmoteString.Experience}`,
@@ -318,6 +324,7 @@ const Strings = {
 		almsReceive: `Você pode receber esmola novamente! ${EmoteString.Alms}`,
 		scavenge: `Você pode vasculhar novamente! ${EmoteString.Scavenge}`,
 		beatAgain: `Você pode espancar novamente! ${EmoteString.Beat}`,
+		horseRace: `Uma corrida de cavalos está começando em breve! Faça suas apostas agora! ${EmoteString.Casino}`,
 	},
 	[Language.Spanish]: {
 		daily: `¡Puedes recibir tu dinero diario de nuevo! ${EmoteString.Experience}`,
@@ -329,5 +336,6 @@ const Strings = {
 		almsReceive: `¡Puedes recibir limosna de nuevo! ${EmoteString.Alms}`,
 		scavenge: `¡Puedes buscar de nuevo! ${EmoteString.Scavenge}`,
 		beatAgain: `¡Puedes golpear de nuevo! ${EmoteString.Beat}`,
+		horseRace: `¡Una carrera de caballos está comenzando pronto! ¡Haz tus apuestas ahora! ${EmoteString.Casino}`,
 	},
 } as const;
