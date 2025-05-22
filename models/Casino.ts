@@ -106,7 +106,7 @@ Den of iniquity! Bet, win, lose, break the bank!
 ### ${EmoteString.Heads} Heads or Tails
 Bet an amount on a coin that must fall on the same side that you choose. You have a 50% chance of winning. If you win, you get 1.5x the amount bet!
 
-### ${EmoteString.Casino} Horse Racing
+### 🏇 Horse Racing
 Bet on one of the horses in a race. Races are held every 4 hours. If your horse wins, you share the prize pool with other winners. Maximum bet is based on your ATK.
 Use \`/horserace\` to see the next race and to place your bet.`,
 		noMoney: "You don't have enough money to bet",
@@ -122,7 +122,7 @@ Antro da perdição! Aposte, ganhe, perca, quebre a banca!
 ### ${EmoteString.Heads} Cara ou Coroa
 Aposte um valor em uma moeda que deve cair no mesmo lado que você escolheu. Você tem 50% de chance de vencer. Se vencer, ganha 1.5x o valor apostado!
 
-### ${EmoteString.Casino} Corrida de Cavalos
+### 🏇 Corrida de Cavalos
 Aposte em um dos cavalos em uma corrida. As corridas acontecem a cada 4 horas. Se seu cavalo vencer, você divide o prêmio com outros vencedores. A aposta máxima é baseada no seu ATK.
 Use \`/horserace\` para ver a próxima corrida e para fazer sua aposta.`,
 		noMoney: "Você não possui dinheiro suficiente para apostar",
@@ -138,7 +138,7 @@ Den de iniquidad! Apuesta, gana, pierde, rompe el banco!
 ### ${EmoteString.Heads} Cara o Cruz
 Apostar una cantidad en una moneda que debe caer del mismo lado que elijas. Tienes un 50% de posibilidades de ganar. ¡Si ganas, obtienes 1.5 veces la cantidad apostada!
 
-### ${EmoteString.Casino} Carrera de Caballos
+### 🏇 Carrera de Caballos
 Apuesta a uno de los caballos en una carrera. Las carreras se celebran cada 4 horas. Si tu caballo gana, compartes el premio con otros ganadores. La apuesta máxima se basa en tu ATK.
 Usa \`/horserace\` para ver la próxima carrera y para hacer tu apuesta.`,
 		noMoney: "No tienes suficiente dinero para apostar",
