@@ -297,6 +297,11 @@ export class Prison {
 			message = globalStrings[this.User.Language].attackerIsBeingRobbedById(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname!}`);
 			canEscape = false;
 		}
+		if (this.User.BeatUp.IsBeatingId) {
+			const user = await Users.findByPk(this.User.BeatUp.IsBeatingId, { attributes: ["nickname", "class"] });
+			message = globalStrings[this.User.Language].attackerIsBeatingId(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname!}`);
+			canEscape = false;
+		}
 		if (this.User.BeatUp.IsBeingBeatUpById) {
 			const user = await Users.findByPk(this.User.BeatUp.IsBeingBeatUpById, { attributes: ["nickname", "class"] });
 			message = globalStrings[this.User.Language].attackerIsBeingBeatedById(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname!}`);
@@ -526,6 +531,11 @@ export class Prison {
 		if (this.User.Robbery.IsBeingRobbedById) {
 			const user = await Users.findByPk(this.User.Robbery.IsBeingRobbedById, { attributes: ["nickname", "class"] });
 			message = globalStrings[this.User.Language].attackerIsBeingRobbedById(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname!}`);
+			canBribe = false;
+		}
+		if (this.User.BeatUp.IsBeatingId) {
+			const user = await Users.findByPk(this.User.BeatUp.IsBeatingId, { attributes: ["nickname", "class"] });
+			message = globalStrings[this.User.Language].attackerIsBeatingId(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname!}`);
 			canBribe = false;
 		}
 		if (this.User.BeatUp.IsBeingBeatUpById) {
