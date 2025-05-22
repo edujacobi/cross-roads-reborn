@@ -242,7 +242,7 @@ export class Shop {
 			canBuy = false;
 		}
 
-		if (this.User.Robbery.IsRobbingLocationId) {
+		if (this.User.Robbery.IsRobbingLocationId !== null) {
 			const location = LocationList[this.User.Robbery.IsRobbingLocationId];
 			message = globalStrings[this.User.Language].attackerIsRobbingId(location.Description[this.User.Language]);
 			canBuy = false;

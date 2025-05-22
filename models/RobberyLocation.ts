@@ -88,7 +88,7 @@ export class RobberyLocation extends Robbery {
 			canRob = false;
 		}
 
-		if (this.Attacker.Robbery.IsRobbingLocationId) {
+		if (this.Attacker.Robbery.IsRobbingLocationId !== null) {
 			const location = LocationList[this.Attacker.Robbery.IsRobbingLocationId];
 			message = globalStrings[this.Attacker.Language].attackerIsRobbingId(location.Description[this.Attacker.Language]);
 			canRob = false;

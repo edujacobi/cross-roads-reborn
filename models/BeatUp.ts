@@ -184,13 +184,13 @@ export class BeatUp {
 			canBeat = false;
 		}
 
-		if (this.Attacker.Robbery.IsRobbingLocationId) {
+		if (this.Attacker.Robbery.IsRobbingLocationId !== null) {
 			const location = LocationList[this.Attacker.Robbery.IsRobbingLocationId];
 			message = globalStrings[this.Attacker.Language].attackerIsRobbingId(location.Description[this.Attacker.Language]);
 			canBeat = false;
 		}
 
-		if (this.Defender.Robbery.IsRobbingLocationId) {
+		if (this.Defender.Robbery.IsRobbingLocationId !== null) {
 			const location = LocationList[this.Defender.Robbery.IsRobbingLocationId];
 			message = `**${this.Defender.GetNameWithImage()}** ${globalStrings[this.Attacker.Language].defenderIsRobbingId(location.Description[this.Attacker.Language])}`;
 			canBeat = false;

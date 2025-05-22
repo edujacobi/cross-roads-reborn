@@ -173,7 +173,7 @@ module.exports = {
 						.setDescription(`${s.userIsBeingRobbingId(`${ClassList[u!.class].Image.Emote.String} ${u!.nickname!}`)} ${EmoteString.Robbery}`),
 				]);
 			}
-			if (user.Robbery.IsRobbingLocationId) {
+			if (user.Robbery.IsRobbingLocationId !== null) {
 				const location = LocationList[user.Robbery.IsRobbingLocationId];
 				return await removeEmbedComponents(interaction, [
 					embed

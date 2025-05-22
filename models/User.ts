@@ -564,7 +564,7 @@ export class User {
 				ComplexUI: `${s.robbing} ${user!.nickname}`,
 			};
 		}
-		if (this.Robbery.IsRobbingLocationId) {
+		if (this.Robbery.IsRobbingLocationId !== null) {
 			const location = LocationList[this.Robbery.IsRobbingLocationId];
 			this.Situation = {
 				Id: SituationId.Robbery,
