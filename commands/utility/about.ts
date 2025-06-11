@@ -56,7 +56,7 @@ module.exports = {
 						`Kenny`,
 					].join("\n")))
 				.setThumbnailAccessory(new ThumbnailBuilder()
-					.setURL("https://media.discordapp.net/attachments/1233604589064818808/1365527910970036405/Artista2.png")),
+					.setURL("https://media.discordapp.net/attachments/1233604589064818808/1378075287518187591/Artist2.png")),
 			)
 			.addSeparatorComponents(separator => separator.setSpacing(SeparatorSpacingSize.Large))
 			.addTextDisplayComponents(new TextDisplayBuilder()
