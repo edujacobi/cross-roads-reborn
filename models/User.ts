@@ -216,7 +216,6 @@ export class User {
 		this.Nickname = user.nickname;
 		this.Money = user.money;
 		this.Class = user.class;
-		this.Language = user.language;
 
 		// Jobs
 		this.Job.Id = user.jobId;
@@ -309,6 +308,8 @@ export class User {
 
 		await this.GetAttributes();
 		await this.GetSituation();
+
+		this.Language = user.language;
 
 		return this;
 	}
