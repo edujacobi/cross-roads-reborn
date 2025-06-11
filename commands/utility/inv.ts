@@ -1,5 +1,4 @@
 ﻿import {
-	ActionRowBuilder,
 	ButtonBuilder,
 	ButtonStyle,
 	ChatInputCommandInteraction,
@@ -7,19 +6,20 @@
 	ComponentType,
 	Locale,
 	MessageComponentInteraction,
+	MessageFlags,
 	SlashCommandBuilder,
 	SlashCommandUserOption,
 } from "discord.js";
-import { checkUser, removeEmbedComponents, replyUserDontExist } from "../../utils/logic";
+import { checkUser, disableButtons, replyInteraction, replyUserDontExist } from "../../utils/logic";
 import { Language } from "../../models/Language";
 import { EmoteId, EmoteString } from "../../utils/emotes";
-import { subMinutes } from "date-fns";
+import { differenceInHours, subMinutes } from "date-fns";
 import { User } from "../../models/User";
 import { UserBadge } from "../../models/UserBadge";
-import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
 import { ClassList } from "../../interfaces/Classes";
 import { formatMoney, showTime } from "../../utils/ui";
 import { ItemType } from "../../interfaces/Items";
+import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -42,9 +42,9 @@ module.exports = {
 			return await replyUserDontExist(interaction, language);
 		}
 
-		const embedColor = target.IsVip() ? Colors.Gold : Colors.DarkButNotBlack;
-
 		const s = Strings[language];
+
+		await interaction.deferReply();
 
 		let badges = await UserBadge.GetList(target.Id);
 
@@ -57,53 +57,113 @@ module.exports = {
 		badges.forEach(badge => badgeText += `${badge.Emoji} `);
 
 		const userItems = await target.GetItems();
+		const emoteItems = userItems.map(weapon => weapon.Skin.Default.Emote.String);
 
-		await interaction.deferReply();
+		const lastCommand = interaction.client.userLastCommand.get(target.Id) || 0;
 
-		const invClosed = new CustomEmbedBuilder()
-			.setColor(embedColor)
-			.setAuthor({
-				name: `${s.inventoryOf} ${target.Nickname}`,
-				iconURL: ClassList[target.Class].Image.Url,
-			})
-			.setThumbnail(_user.avatarURL() ?? null)
-			.setDescription(`${badgeText}
-${formatMoney(target.Money, language)}`)
-			.setUserFooter({
-				nickname: user.Nickname,
-				image: interaction.user.avatarURL(),
-			});
+		const online = new Date(lastCommand) > subMinutes(new Date(), 15);
+		const emoteOnline = online ? EmoteString.Online : EmoteString.Offline;
+		const textOnline = online ? `${EmoteString.Online} Online` : `${EmoteString.Offline} Offline`;
 
-		const weaponEmotes = userItems.map(weapon => weapon.Skin.Default.Emote.String);
-		const textWeapons = weaponEmotes.join(" ").match(/.{1,1023}/g) || [];
+		function generateContainer(isClosed: boolean, target: User) {
+			const inv = new CustomContainerBuilder()
+				.setUser(user);
 
-		textWeapons.forEach(text => {
-			invClosed.addFields({ name: "\u200b", value: text, inline: true });
-		});
+			if (target.IsVip()) {
+				inv.setAccentColor(Colors.Gold);
+			}
 
-		invClosed.addFields({ name: "\u200b", value: `-# ${target.Situation.SimpleEmote}` });
+			if (isClosed) {
+				inv
+					.addSectionComponents(headerSection => {
+						headerSection
+							.addTextDisplayComponents(
+								header => header
+									.setContent(`### ${emoteOnline} ${s.inventoryOf} ${target.GetNameWithImage()}`),
+								badges => badges
+									.setContent(badgeText ? `### -# ${badgeText}` : "\u200b"),
+								money => money
+									.setContent(`# ${formatMoney(target.Money, language)}`));
 
-		const buttonClose = new ButtonBuilder()
-			.setCustomId("lessInfo")
-			.setLabel(s.closeInv)
-			.setStyle(ButtonStyle.Secondary)
-			.setEmoji(EmoteId.CloseInv);
+						if (_user.avatar != null) {
+							headerSection
+								.setThumbnailAccessory(avatar => avatar
+									.setURL(_user.avatarURL()!));
+						}
 
-		const buttonOpen = new ButtonBuilder()
-			.setCustomId("moreInfo")
-			.setLabel(s.openInv)
-			.setStyle(ButtonStyle.Secondary)
-			.setEmoji(EmoteId.OpenInv);
+						return headerSection;
+					})
+					.addTextDisplayComponents(situation => situation
+						.setContent(`-# ${target.Situation.SimpleEmote}`))
+					.addLargeSeparator()
+					.addTextDisplayComponents(items => items
+						.setContent(emoteItems.length ? `# ${emoteItems.join("\u0009")}` : "-# Inventário vazio"))
+					.addFooter({
+						button: new ButtonBuilder()
+							.setCustomId("moreInfo")
+							.setLabel(s.openInv)
+							.setStyle(ButtonStyle.Secondary)
+							.setEmoji(EmoteId.OpenInv),
+					});
+			}
+			else {
+				inv
+					.addSectionComponents(headerSection => {
+						headerSection
+							.addTextDisplayComponents(
+								header => header
+									.setContent(`### ${s.inventoryOf} ${target.GetNameWithImage()}, ${ClassList[target.Class].Description[language]}\n-# ${textOnline}`),
+								badges => badges
+									.setContent(badgeText ? `### ${badgeText}` : "\u200b"),
+								money => money
+									.setContent(`# ${formatMoney(target.Money, language)}`));
 
-		let isOpen = false;
+						if (_user.avatar != null) {
+							headerSection
+								.setThumbnailAccessory(avatar => avatar
+									.setURL(_user.avatarURL()!));
+						}
 
-		const createRow = () => new ActionRowBuilder<ButtonBuilder>()
-			.addComponents([isOpen ? buttonClose : buttonOpen]);
+						return headerSection;
+					})
+					.addTextDisplayComponents(situation => situation
+						.setContent(`${target.Situation.Complex} • ${EmoteString.Attack}${target.Attributes.Attack} ATK • ${EmoteString.Defense}${target.Attributes.Defense} DEF`))
+					.addLargeSeparator()
+					.addTextDisplayComponents(
+						label => label
+							.setContent(`-# ${s.inventoryItems}`),
+						items => {
+							const text = userItems.map(userItem => {
+								const name = `${userItem.Skin.Default.Emote.String} ${userItem.Description[language]}`;
+								const consumable = userItem.Type === ItemType.Consumable;
+								const value = consumable ? String(userItem.Quantity) : showTime(userItem.RemainingTime.getTime(), true);
+								const isLessThan24Hours = consumable ? userItem.Quantity <= 2 : differenceInHours(userItem.RemainingTime, Date.now()) < 24;
+								const isLessThan12Hours = consumable ? userItem.Quantity <= 1 : differenceInHours(userItem.RemainingTime, Date.now()) < 12;
+								const emote = isLessThan12Hours ? EmoteString.LessThan12Hours : isLessThan24Hours ? EmoteString.LessThan24Hours : "";
 
-		let row = createRow();
-		const response = await interaction.editReply({
-			embeds: [invClosed],
-			components: row.components.length > 0 ? [row] : [],
+								return `**${name}** ${value}${emote}`;
+							}).join("\n");
+							items.setContent(text || "-# Inventário vazio");
+							return items;
+						})
+					.addFooter({
+						button: new ButtonBuilder()
+							.setCustomId("lessInfo")
+							.setLabel(s.closeInv)
+							.setStyle(ButtonStyle.Secondary)
+							.setEmoji(EmoteId.CloseInv),
+					});
+			}
+
+			return inv;
+		}
+
+		let container = generateContainer(true, target);
+
+		const response = await replyInteraction(interaction, {
+			components: [container],
+			flags: MessageFlags.IsComponentsV2,
+			withResponse: true,
 		});
 
 		const collector = response?.createMessageComponentCollector({
@@ -114,63 +174,21 @@ ${formatMoney(target.Money, language)}`)
 
 		collector?.on("collect", async btn => {
 			if (btn.customId === "moreInfo") {
-				await target.GetInfo();
-
-				isOpen = true;
-				row = createRow();
-
-				const lastCommand = interaction.client.userLastCommand.get(target.Id) || 0;
-
-				const online = new Date(lastCommand) > subMinutes(new Date(), 15);
-				const emoteOnline = online ? `${EmoteString.Online} Online` : `${EmoteString.Offline} Offline`;
-
-				const invOpen = new CustomEmbedBuilder()
-					.setColor(embedColor)
-					.setAuthor({
-						name: `${s.inventoryOf} ${target.Nickname}, ${ClassList[target.Class].Description[language]}`,
-						iconURL: ClassList[target.Class].Image.Url,
-					})
-					.setThumbnail(_user.avatarURL() ?? null)
-					.setDescription(`-# ${emoteOnline}
-${badges.length > 0 ? `### ${badgeText}\n` : ""}### ${formatMoney(target.Money, language)}
--# ${s.inventoryItems}`)
-					.setUserFooter({
-						nickname: user.Nickname,
-						image: interaction.user.avatarURL(),
-					});
-
-				userItems.forEach(item => {
-					invOpen.addFields([{
-						name: `${item.Skin.Default.Emote.String} ${item.Description[language]}`,
-						value: item.Type == ItemType.Consumable ? String(item.Quantity) : showTime(new Date(item.RemainingTime).getTime(), true),
-						inline: true,
-					}]);
-				});
-
-				invOpen.addFields([{
-					name: "\u200b󠀀󠀀",
-					value: `-# ${target.Situation.Complex} • ${EmoteString.Attack}${target.Attributes.Attack} ATK • ${EmoteString.Defense}${target.Attributes.Defense} DEF`,
-				}]);
-
+				container = generateContainer(false, target);
 				await btn.update({
-					embeds: [invOpen],
-					components: [row],
+					components: [container],
 				});
 			}
 			else if (btn.customId === "lessInfo") {
-
-				isOpen = false;
-				row = createRow();
-
+				container = generateContainer(true, target);
 				await btn.update({
-					embeds: [invClosed],
-					components: [row],
+					components: [container],
 				});
 			}
 		});
 
 		collector?.on("end", async () => {
-			await removeEmbedComponents(interaction);
+			await disableButtons(interaction, container);
 		});
 	},
 };

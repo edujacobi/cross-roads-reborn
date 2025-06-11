@@ -45,6 +45,9 @@ export enum EmoteId {
 	ExpBarMidFull = "1337073485956251658",
 	ExpBarRightFull = "1337073489370419264",
 
+	LessThan12Hours = "1378458171688882347",
+	LessThan24Hours = "1378458173517856878",
+
 	Victory = "1249200014366998643",
 	Defeat = "1249200012957585522",
 	Winrate = "1249197353005613146",
@@ -176,6 +179,9 @@ export const EmoteString = {
 	ExpBarLeftFull: `<:lFull_xp:${EmoteId.ExpBarLeftFull}>`,
 	ExpBarMidFull: `<:mFull_xp:${EmoteId.ExpBarMidFull}>`,
 	ExpBarRightFull: `<:rFull_xp:${EmoteId.ExpBarRightFull}>`,
+
+	LessThan12Hours: `<:LessThan12Hours:${EmoteId.LessThan12Hours}>`,
+	LessThan24Hours: `<:LessThan24Hours:${EmoteId.LessThan24Hours}>`,
 
 	Victory: `<:Victory:${EmoteId.Victory}>`,
 	Defeat: `<:Defeat:${EmoteId.Defeat}>`,

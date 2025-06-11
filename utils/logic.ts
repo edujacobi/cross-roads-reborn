@@ -6,12 +6,15 @@ import {
 	ChatInputCommandInteraction,
 	ColorResolvable,
 	CommandInteraction,
+	ComponentType,
+	ContainerBuilder,
 	InteractionEditReplyOptions,
 	InteractionReplyOptions,
 	MessageComponentInteraction,
 	MessageCreateOptions,
 	MessageFlags,
 	MessagePayload,
+	SectionBuilder,
 	Snowflake,
 } from "discord.js";
 import { CustomEmbedBuilder } from "../models/CustomEmbedBuilder";
@@ -157,6 +160,26 @@ export async function removeEmbedComponents(interaction: CommandInteraction | Bu
 	}
 	catch (err) {
 		Log.Warning(`Something went wrong with removing components from interaction ${interaction.id} of user ${interaction.user.displayName} in server ${interaction.guild?.name} (ID: ${interaction.guild?.id}). Error: ${err}`);
+	}
+}
+
+export async function disableButtons(interaction: CommandInteraction | ButtonInteraction, container: ContainerBuilder) {
+	try {
+		for (const component of container.components) {
+			if (component instanceof SectionBuilder) {
+				if (!component.accessory) {
+					continue;
+				}
+				if (component.accessory.data.type === ComponentType.Button) {
+					component.accessory.data.disabled = true;
+				}
+			}
+		}
+
+		await replyInteraction(interaction, { components: [container] });
+	}
+	catch (err) {
+		Log.Warning(`Something went wrong with disabling buttons from container ${container.data.id} of user ${interaction.user.displayName} in server ${interaction.guild?.name} (ID: ${interaction.guild?.id}). Error: ${err}`);
 	}
 }
 
