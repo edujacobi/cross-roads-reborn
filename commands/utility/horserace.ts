@@ -3,7 +3,6 @@ import { User } from "../../models/User";
 import { HorseRacing } from "../../models/HorseRacing";
 
 module.exports = {
-	vip: true,
 	data: new SlashCommandBuilder()
 		.setName("horserace")
 		.setDescription("View and bet on horse races")
