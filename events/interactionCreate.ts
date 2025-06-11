@@ -1,4 +1,4 @@
-﻿import { Collection, Colors, CommandInteraction, Events } from "discord.js";
+﻿import { Collection, Colors, CommandInteraction, Events, MessageFlags } from "discord.js";
 import { defaultEmbed, showTime } from "../utils/ui";
 import { checkUser, replyInteraction, setPlayerRoleInOfficialServer, setVIPRoleInOfficialServer } from "../utils/logic";
 import { getLanguageFromLocale, Language } from "../models/Language";
@@ -36,7 +36,7 @@ module.exports = {
 					interaction,
 					description: s.settingNickDescription,
 				})],
-				ephemeral: true,
+				flags: [MessageFlags.Ephemeral],
 			});
 		}
 
@@ -78,7 +78,7 @@ module.exports = {
 						interaction,
 						description: s.willBeAble(command.data.name, expirationTime),
 					})],
-					ephemeral: true,
+					flags: [MessageFlags.Ephemeral],
 				});
 
 				await wait(cooldownAmount);
@@ -120,7 +120,7 @@ module.exports = {
 
 			await replyInteraction(interaction, {
 				content: "There was an error while executing this command!",
-				ephemeral: true,
+				flags: [MessageFlags.Ephemeral],
 			});
 		}
 	},

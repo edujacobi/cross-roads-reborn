@@ -387,7 +387,7 @@ export class HorseRacing {
 			//
 			// 			await modalSubmit.reply({
 			// 				embeds: [errorEmbed],
-			// 				ephemeral: true
+			// 				flags: [MessageFlags.Ephemeral],
 			// 			});
 			// 			return;
 			// 		}
