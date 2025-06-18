@@ -18,6 +18,8 @@
 
 // NEW
 {
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "_version": "22.0.0",
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig to read more about this file */
 
@@ -45,7 +47,7 @@
     // "moduleDetection": "auto",                        /* Control what method is used to detect module-format JS files. */
 
     /* Modules */
-    "module": "CommonJS",
+    "module": "NodeNext",
     /* Specify what module code is generated. */
     "rootDir": ".",
     /* Specify the root folder within your source files. */

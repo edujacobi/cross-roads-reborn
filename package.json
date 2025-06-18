@@ -7,6 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "clear": "rimraf build",
     "build": "tsc -b",
+    "build:watch": "tsc --watch",
     "clear-commands": "tsc -b && node build/clear-commands.js",
     "prestart": "npm run build",
     "start": "pm2 start build/index.js --name \"cr\"",
@@ -31,20 +32,20 @@
   },
   "homepage": "https://github.com/edujacobi/cross-roads-reborn#readme",
   "devDependencies": {
-    "@tsconfig/node18": "^1.0.1",
-    "@types/node": "^18.15.10",
-    "@typescript-eslint/eslint-plugin": "^8.13.0",
-    "@typescript-eslint/parser": "^8.13.0",
-    "eslint": "^8.57.1",
-    "konva": "^9.3.20",
+    "@tsconfig/node22": "^22.0.2",
+    "@types/node": "^24.0.3",
+    "@typescript-eslint/eslint-plugin": "^8.34.1",
+    "@typescript-eslint/parser": "^8.34.1",
+    "eslint": "^9.29.0",
     "ts-node": "^10.9.1",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.3"
   },
   "dependencies": {
     "canvas": "^3.1.0",
     "date-fns": "^4.1.0",
-    "discord-api-types": "0.38.8",
-    "discord.js": "14.19.1",
+    "date-fns-tz": "^3.2.0",
+    "discord-api-types": "0.38.12",
+    "discord.js": "14.20.0",
     "dotenv": "^16.5.0",
     "sequelize": "^6.37.7",
     "sqlite3": "^5.1.6"
