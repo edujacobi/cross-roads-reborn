@@ -289,11 +289,11 @@ Caso você pague uma certa quantia, poderemos tratá-lo mais rapidamente!`,
 		userInHospital: (time: Date) => `¡Estás hospitalizado! ¡Se servirá ${showTime(time.getTime(), true)}!`,
 		description: `_¡Público, gratuito y de calidad!_
 
-	-# Los usuarios hospitalizados tienen ${EmoteString.Defense}-5 DEF y ${EmoteString.Defense}-5% $DEF!.
-	### Servicio público
-	Lamentablemente, no tenemos más camas libres, por lo que deberá esperar en el pasillo hasta que le atiendan.
-	### ${EmoteBadgeString.Season6.Hypochondriac} Atención privada
-	¡Si pagas una cierta cantidad, podemos atenderte más rápido!`,
+-# Los usuarios hospitalizados tienen ${EmoteString.Defense}-5 DEF y ${EmoteString.Defense}-5% $DEF!.
+### Servicio público
+Lamentablemente, no tenemos más camas libres, por lo que deberá esperar en el pasillo hasta que le atiendan.
+### ${EmoteBadgeString.Season6.Hypochondriac} Atención privada
+¡Si pagas una cierta cantidad, podemos atenderte más rápido!`,
 		hospitalized: "Hospitalizados",
 		healed: "Curado",
 		privateCare: "Atención privada",
