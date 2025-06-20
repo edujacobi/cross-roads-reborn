@@ -38,14 +38,22 @@ module.exports = {
 
 		const isHappyHour = hour >= 18 && hour <= 20 || day === 0 || day === 6;
 
-		let nextHappyHour = toZonedTime(new Date(now), "America/Sao_Paulo");
-		nextHappyHour.setHours(18, 0, 0, 0);
-		if (day === 0 || day === 6) {
-			nextHappyHour.setHours(0, 0, 0, 0);
+		// Calculate next Happy Hour start time in local timezone
+		let nextHappyHour = toZonedTime(new Date(), "America/Sao_Paulo");
+
+		if (!isHappyHour) {
+			if (day === 0 || day === 6) { // If today is weekend, set to Monday's 18:00
+				nextHappyHour.setDate(nextHappyHour.getDate() + (7 - nextHappyHour.getDay()));
+				nextHappyHour.setHours(18);
+			}
+			else if (hour >= 20) { // After 20:00, set for tomorrow's 18:00
+				nextHappyHour = addDays(nextHappyHour, 1);
+				nextHappyHour.setHours(18);
+			}
 		}
-		else if (hour >= 20) {
-			nextHappyHour = addDays(nextHappyHour, 1);
-		}
+
+		// Ensure nextHappyHour is in local timezone
+		nextHappyHour = toZonedTime(nextHappyHour, "America/Sao_Paulo");
 
 		const cantDrink = user.IsInPrison() || user.IsInHospital() || user.IsWorking() || user.IsInBeatUp() || user.IsInRobbery();
 
