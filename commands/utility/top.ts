@@ -1,10 +1,4 @@
-import {
-	ChatInputCommandInteraction,
-	Colors,
-	Locale,
-	SlashCommandBuilder,
-	SlashCommandSubcommandBuilder,
-} from "discord.js";
+import { ChatInputCommandInteraction, Colors, Locale, SlashCommandBuilder } from "discord.js";
 import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
 import { Op } from "sequelize";
 import { formatMoney } from "../../utils/ui";
@@ -15,6 +9,7 @@ import { ClassList } from "../../interfaces/Classes";
 import { EmoteBadgeString } from "../../utils/badges";
 import { Pagination } from "../../models/Pagination";
 import { IDescription } from "../../interfaces/Interfaces";
+import { EmoteString } from "../../utils/emotes";
 
 enum TopSubcommand {
 	Money = "money",
@@ -22,13 +17,24 @@ enum TopSubcommand {
 	Spenders = "spenders",
 	Thieves = "thieves",
 	Workers = "workers",
+	Drunkers = "drunkers",
+	Beaters = "beaters",
+	Scavengers = "scavengers",
+	Hospital = "hospital",
+	Bribers = "bribers",
+	Escapers = "escapers",
 }
 
 interface TopSubcommandConfig {
 	attributes: string[];
 	orderField: string;
 	valueField: string;
-	countField: string | null;
+	valueModifier?: (value: number, language: Language) => string;
+	valuePrefix?: IDescription;
+	valueSufix?: IDescription;
+	countField?: string;
+	countPrefix?: IDescription;
+	countSufix?: IDescription;
 	badge: string;
 	strings: IDescription;
 }
@@ -44,45 +50,76 @@ module.exports = {
 		.setNameLocalization(Locale.PortugueseBR, "top")
 		.setDescription("View various top rankings")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Veja vários rankings de top")
-		// Money subcommand
-		.addSubcommand(new SlashCommandSubcommandBuilder()
+		.addSubcommand(money => money
 			.setName(TopSubcommand.Money)
 			.setNameLocalization(Locale.PortugueseBR, "grana")
 			.setDescription("List the top users with money")
 			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários com mais dinheiro"),
 		)
-		// Gamblers subcommand
-		.addSubcommand(new SlashCommandSubcommandBuilder()
+		.addSubcommand(gamblers => gamblers
 			.setName(TopSubcommand.Gamblers)
 			.setNameLocalization(Locale.PortugueseBR, "apostadores")
 			.setDescription("List of users who have won the most at the casino")
-			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários que mais ganharam no cassino"),
+			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários que mais ganharam no cassino")
 		)
-		// Spenders subcommand
-		.addSubcommand(new SlashCommandSubcommandBuilder()
+		.addSubcommand(spenders => spenders
 			.setName(TopSubcommand.Spenders)
 			.setNameLocalization(Locale.PortugueseBR, "gastadores")
 			.setDescription("List the users who spend the most in the shops")
 			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários que mais gastaram nas lojas"),
 		)
-		// Thieves subcommand
-		.addSubcommand(new SlashCommandSubcommandBuilder()
+		.addSubcommand(thieves => thieves
 			.setName(TopSubcommand.Thieves)
 			.setNameLocalization(Locale.PortugueseBR, "ladroes")
 			.setDescription("List the users who stole the most")
 			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários que mais roubaram"),
 		)
-		// Workers subcommand
-		.addSubcommand(new SlashCommandSubcommandBuilder()
+		.addSubcommand(workers => workers
 			.setName(TopSubcommand.Workers)
 			.setNameLocalization(Locale.PortugueseBR, "trabalhadores")
 			.setDescription("List the users who work the most")
 			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários que mais trabalharam"),
+		)
+		.addSubcommand(drunkers => drunkers
+			.setName(TopSubcommand.Drunkers)
+			.setNameLocalization(Locale.PortugueseBR, "bêbados")
+			.setDescription("List the users who drank the most")
+			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários que mais beberam"),
+		)
+		.addSubcommand(beaters => beaters
+			.setName(TopSubcommand.Beaters)
+			.setNameLocalization(Locale.PortugueseBR, "espancadores")
+			.setDescription("List the users who beat up the most")
+			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários que mais espancaram"),
+		)
+		.addSubcommand(scavengers => scavengers
+			.setName(TopSubcommand.Scavengers)
+			.setNameLocalization(Locale.PortugueseBR, "vasculhadores")
+			.setDescription("List the users who scavenge the most")
+			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários que mais vasculharam"),
+		)
+		.addSubcommand(hospital => hospital
+			.setName(TopSubcommand.Hospital)
+			.setNameLocalization(Locale.PortugueseBR, "doentes")
+			.setDescription("List the users who paid the most in hospital treatments")
+			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários que mais pagaram por tratamentos no hospital"),
+		)
+		.addSubcommand(bribers => bribers
+			.setName(TopSubcommand.Bribers)
+			.setNameLocalization(Locale.PortugueseBR, "subornadores")
+			.setDescription("List the users who paid the most in prison bribes")
+			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários que mais pagaram por subornos na prisão"),
+		)
+		.addSubcommand(escapers => escapers
+			.setName(TopSubcommand.Escapers)
+			.setNameLocalization(Locale.PortugueseBR, "fujões")
+			.setDescription("List the users who escape the most in prison")
+			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários que mais fugiram da prisão"),
 		),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 		const subcommand = interaction.options.getSubcommand();
-		
+
 		await interaction.deferReply();
 
 		const defaultAttributes = ["nickname", "id", "class"];
@@ -93,7 +130,7 @@ module.exports = {
 				attributes: [...defaultAttributes, "money"],
 				orderField: "money",
 				valueField: "money",
-				countField: null,
+				valueModifier: formatMoney,
 				badge: EmoteBadgeString.Season1.Top1Money,
 				strings: {
 					[Language.English]: "Money",
@@ -105,6 +142,7 @@ module.exports = {
 				attributes: [...defaultAttributes, "casinoWinSum", "casinoWinCount"],
 				orderField: "casinoWinSum",
 				valueField: "casinoWinSum",
+				valueModifier: formatMoney,
 				countField: "casinoWinCount",
 				badge: EmoteBadgeString.Season6.EliteTrader,
 				strings: {
@@ -117,6 +155,7 @@ module.exports = {
 				attributes: [...defaultAttributes, "shopSpentSum", "shopSpentCount"],
 				orderField: "shopSpentSum",
 				valueField: "shopSpentSum",
+				valueModifier: formatMoney,
 				countField: "shopSpentCount",
 				badge: EmoteBadgeString.Season6.Preppy,
 				strings: {
@@ -129,6 +168,7 @@ module.exports = {
 				attributes: [...defaultAttributes, "robberySuccessRobbedSum", "robberySuccessCount"],
 				orderField: "robberySuccessRobbedSum",
 				valueField: "robberySuccessRobbedSum",
+				valueModifier: formatMoney,
 				countField: "robberySuccessCount",
 				badge: EmoteBadgeString.Season6.SillyHand,
 				strings: {
@@ -141,6 +181,7 @@ module.exports = {
 				attributes: [...defaultAttributes, "jobReceivedSum", "jobReceivedCount"],
 				orderField: "jobReceivedSum",
 				valueField: "jobReceivedSum",
+				valueModifier: formatMoney,
 				countField: "jobReceivedCount",
 				badge: EmoteBadgeString.Season6.Workaholic,
 				strings: {
@@ -149,12 +190,136 @@ module.exports = {
 					[Language.Spanish]: "Trabajadores",
 				},
 			},
+			[TopSubcommand.Drunkers]: {
+				attributes: [...defaultAttributes, "drunkCount", "drinkNormal", "drinkHappyHour"],
+				orderField: "drinkHappyHour",
+				valueField: "drunkCount",
+				valuePrefix: {
+					[Language.English]: "Normal",
+					[Language.Portuguese]: "Normal",
+					[Language.Spanish]: "Normal",
+				},
+				countField: "drinkHappyHour",
+				countPrefix: {
+					[Language.English]: "Happy Hour",
+					[Language.Portuguese]: "Happy Hour",
+					[Language.Spanish]: "Happy Hour",
+				},
+				badge: EmoteString.Idle,
+				strings: {
+					[Language.English]: "Drunkers",
+					[Language.Portuguese]: "Bêbados",
+					[Language.Spanish]: "Bebedores",
+				},
+			},
+			[TopSubcommand.Beaters]: {
+				attributes: [...defaultAttributes, "beatUpSuccessCount", "beatUpBeatedUpCount"],
+				orderField: "beatUpSuccessCount",
+				valueField: "beatUpSuccessCount",
+				valuePrefix: {
+					[Language.English]: "Beated",
+					[Language.Portuguese]: "Espancou",
+					[Language.Spanish]: "Golpeó",
+				},
+				countField: "beatUpBeatedUpCount",
+				countPrefix: {
+					[Language.English]: "Was beated",
+					[Language.Portuguese]: "Foi espancado",
+					[Language.Spanish]: "Fue golpeado",
+				},
+				badge: EmoteBadgeString.Season6.HeadSmasher,
+				strings: {
+					[Language.English]: "Beaters",
+					[Language.Portuguese]: "Espancadores",
+					[Language.Spanish]: "Golpeadores",
+				},
+			},
+			[TopSubcommand.Scavengers]: {
+				attributes: [...defaultAttributes, "scavengeFoundTotal", "scavengeCount"],
+				orderField: "scavengeFoundTotal",
+				valueField: "scavengeFoundTotal",
+				valuePrefix: {
+					[Language.English]: "Found",
+					[Language.Portuguese]: "Encontrou",
+					[Language.Spanish]: "Encontró",
+				},
+				countField: "scavengeCount",
+				countSufix: {
+					[Language.English]: "attempts",
+					[Language.Portuguese]: "tentativas",
+					[Language.Spanish]: "intentos",
+				},
+				badge: EmoteBadgeString.Season6.SherlockHolmes,
+				strings: {
+					[Language.English]: "Scavengers",
+					[Language.Portuguese]: "Vasculhadores",
+					[Language.Spanish]: "Buscadores",
+				},
+			},
+			[TopSubcommand.Hospital]: {
+				attributes: [...defaultAttributes, "hospitalTreatmentSum", "hospitalTreatmentCount"],
+				orderField: "hospitalTreatmentSum",
+				valueField: "hospitalTreatmentSum",
+				valueModifier: formatMoney,
+				countField: "hospitalTreatmentCount",
+				badge: EmoteBadgeString.Season6.Hypochondriac,
+				strings: {
+					[Language.English]: "Hospital",
+					[Language.Portuguese]: "Doentes",
+					[Language.Spanish]: "Enfermos",
+				},
+			},
+			[TopSubcommand.Bribers]: {
+				attributes: [...defaultAttributes, "prisonBriberySum", "prisonBriberyCount"],
+				orderField: "prisonBriberySum",
+				valueField: "prisonBriberySum",
+				valueModifier: formatMoney,
+				countField: "prisonBriberyCount",
+				badge: EmoteBadgeString.Season6.Politician,
+				strings: {
+					[Language.English]: "Bribers",
+					[Language.Portuguese]: "Subornadores",
+					[Language.Spanish]: "Sobornadores",
+				},
+			},
+			[TopSubcommand.Escapers]: {
+				attributes: [...defaultAttributes, "escapeCount", "prisonCount"],
+				orderField: "escapeCount",
+				valueField: "escapeCount",
+				valuePrefix: {
+					[Language.English]: "Escaped",
+					[Language.Portuguese]: "Fugiu",
+					[Language.Spanish]: "Encontró",
+				},
+				valueSufix: {
+					[Language.English]: "times",
+					[Language.Portuguese]: "vezes",
+					[Language.Spanish]: "veces",
+				},
+				countField: "prisonCount",
+				countPrefix: {
+					[Language.English]: "Inprisoned",
+					[Language.Portuguese]: "Preso",
+					[Language.Spanish]: "Encarcelado",
+				},
+				countSufix: {
+					[Language.English]: "times",
+					[Language.Portuguese]: "vezes",
+					[Language.Spanish]: "veces",
+				},
+				badge: EmoteBadgeString.Season6.Escapist,
+				strings: {
+					[Language.English]: "Escapers",
+					[Language.Portuguese]: "Fujões",
+					[Language.Spanish]: "Fugitivos",
+				},
+			},
 		};
 
 		// Get the configuration for the current subcommand
 		const currentConfig = config[subcommand];
 		const title = currentConfig.strings[language];
-		
+
 		let users: Users[] = [];
 		const pagination = new Pagination(interaction, language);
 
@@ -205,11 +370,16 @@ module.exports = {
 				}
 
 				const value = user[currentConfig.valueField as keyof Users] as number;
-				const count = currentConfig.countField ? ` (${user[currentConfig.countField as keyof Users]})` : "";
+				const valueModified = currentConfig.valueModifier ? currentConfig.valueModifier(value, language) : value;
 
-				console.log(value, count);
+				const vPrefix = currentConfig.valuePrefix ? `${currentConfig.valuePrefix[language]} ` : "";
+				const vSufix = currentConfig.valueSufix ? ` ${currentConfig.valueSufix[language]}` : "";
+				const cPrefix = currentConfig.countPrefix ? `${currentConfig.countPrefix[language]} ` : "";
+				const cSufix = currentConfig.countSufix ? ` ${currentConfig.countSufix[language]}` : "";
 
-				text += `### ${position} ${emoteClass} ${underscore}${user.nickname}${underscore}\n${formatMoney(value, language)}${count}\n-# \`ID: ${user.id}\`\n`;
+				const count = currentConfig.countField ? ` (${cPrefix}${user[currentConfig.countField as keyof Users]}${cSufix})` : "";
+
+				text += `### ${position} ${emoteClass} ${underscore}${user.nickname}${underscore}\n${vPrefix}${valueModified}${vSufix}${count}\n-# \`ID: ${user.id}\`\n`;
 			}
 
 			return new CustomEmbedBuilder()

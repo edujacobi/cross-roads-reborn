@@ -327,6 +327,8 @@ export class Scavenge {
 			let rewardDescription: string;
 			let rewardDescriptionLog: string;
 
+			this.User.Scavenge.Found.Total += 1;
+
 			if (rewardMoney) {
 				const reward = this.Place.Reward.Money.Min + Math.floor(Math.random() * (this.Place.Reward.Money.Max - this.Place.Reward.Money.Min));
 

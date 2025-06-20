@@ -81,6 +81,7 @@ export class Users extends Model<
 	declare scavengingId: CreationOptional<ScavengeId | null>;
 	declare scavengeCount: number;
 	declare scavengeTime: CreationOptional<Date>;
+	declare scavengeFoundTotal: number;
 	declare scavengeFoundItems: number;
 	declare scavengeMoneyCount: number;
 	declare scavengeMoneySum: number;
@@ -361,6 +362,11 @@ Users.init(
 		},
 		scavengeTime: {
 			type: DataTypes.DATE,
+		},
+		scavengeFoundTotal: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0,
 		},
 		scavengeFoundItems: {
 			type: DataTypes.INTEGER,

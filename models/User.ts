@@ -125,6 +125,7 @@ export class User {
 		Count: 0,
 		Time: new Date(),
 		Found: {
+			Total: 0,
 			Items: 0,
 			MoneyCount: 0,
 			MoneySum: 0,
@@ -186,6 +187,7 @@ export class User {
 				almsReceivedSum: 0,
 				almsReceivedCount: 0,
 				scavengeCount: 0,
+				scavengeFoundTotal: 0,
 				scavengeFoundItems: 0,
 				scavengeMoneyCount: 0,
 				scavengeMoneySum: 0,
@@ -307,6 +309,7 @@ export class User {
 		this.Scavenge.IsScavengingId = user.scavengingId;
 		this.Scavenge.Count = user.scavengeCount;
 		this.Scavenge.Time = user.scavengeTime;
+		this.Scavenge.Found.Total = user.scavengeFoundTotal;
 		this.Scavenge.Found.Items = user.scavengeFoundItems;
 		this.Scavenge.Found.MoneyCount = user.scavengeMoneyCount;
 		this.Scavenge.Found.MoneySum = user.scavengeMoneySum;
@@ -815,6 +818,7 @@ export class User {
 				scavengingId: this.Scavenge.IsScavengingId,
 				scavengeCount: this.Scavenge.Count,
 				scavengeTime: this.Scavenge.Time,
+				scavengeFoundTotal: this.Scavenge.Found.Total,
 				scavengeFoundItems: this.Scavenge.Found.Items,
 				scavengeMoneyCount: this.Scavenge.Found.MoneyCount,
 				scavengeMoneySum: this.Scavenge.Found.MoneySum,
