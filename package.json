@@ -46,6 +46,7 @@
     "discord-api-types": "0.38.12",
     "discord.js": "14.20.0",
     "dotenv": "^16.5.0",
+    "pm2": "^6.0.8",
     "sequelize": "^6.37.7",
     "sqlite3": "^5.1.6",
     "typescript": "^5.8.3"
