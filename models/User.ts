@@ -133,6 +133,11 @@ export class User {
 			FailureWithPrison: 0,
 		},
 	};
+	Drink = {
+		Normal: 0,
+		HappyHour: 0,
+		DrunkCount: 0,
+	};
 
 	constructor(id: string, language: Language = Language.English) {
 		this.Id = id;
@@ -187,6 +192,9 @@ export class User {
 				scavengeFailures: 0,
 				scavengeFailureWithHospital: 0,
 				scavengeFailureWithPrison: 0,
+				drinkNormal: 0,
+				drinkHappyHour: 0,
+				drunkCount: 0,
 			});
 			Log.Success(`User ${this.Id} created.`);
 
@@ -305,6 +313,11 @@ export class User {
 		this.Scavenge.Found.Failures = user.scavengeFailures;
 		this.Scavenge.Found.FailureWithHospital = user.scavengeFailureWithHospital;
 		this.Scavenge.Found.FailureWithPrison = user.scavengeFailureWithPrison;
+
+		// Drink
+		this.Drink.Normal = user.drinkNormal;
+		this.Drink.HappyHour = user.drinkHappyHour;
+		this.Drink.DrunkCount = user.drunkCount;
 
 		await this.GetAttributes();
 		await this.GetSituation();
@@ -611,7 +624,10 @@ export class User {
 				Simple: s.imprisonedSimple,
 				SimpleEmote: `${EmoteString.Prison} ${s.imprisonedSimple}`,
 				Complex: `${EmoteString.Prison} ${s.imprisonedComplex} ${showTime(this.Prison.Time.getTime())}`,
-				ComplexUI: `${s.imprisonedComplex} ${formatDistanceToNow(this.Prison.Time, { locale: getLocaleFromLanguage(this.Language), includeSeconds: true })}`,
+				ComplexUI: `${s.imprisonedComplex} ${formatDistanceToNow(this.Prison.Time, {
+					locale: getLocaleFromLanguage(this.Language),
+					includeSeconds: true,
+				})}`,
 			};
 		}
 		if (this.IsInHospital()) {
@@ -620,7 +636,10 @@ export class User {
 				Simple: s.hospitalSimple,
 				SimpleEmote: `${EmoteString.Hospital} ${s.hospitalSimple}`,
 				Complex: `${EmoteString.Hospital} ${s.hospitalComplex} ${showTime(this.Hospital.Time.getTime())}`,
-				ComplexUI: `${s.hospitalComplex} ${formatDistanceToNow(this.Hospital.Time, { locale: getLocaleFromLanguage(this.Language), includeSeconds: true })}`,
+				ComplexUI: `${s.hospitalComplex} ${formatDistanceToNow(this.Hospital.Time, {
+					locale: getLocaleFromLanguage(this.Language),
+					includeSeconds: true,
+				})}`,
 			};
 		}
 		if (this.IsInPrison() && this.IsInHospital()) {
@@ -647,7 +666,10 @@ export class User {
 				Simple: this.Situation.Simple + ` ${s.wantedSimple}`,
 				SimpleEmote: this.Situation.SimpleEmote + ` ${s.wantedSimpleEmote}`,
 				Complex: this.Situation.Complex + ` ${s.wantedComplex} ${showTime(this.Wanted.Time.getTime())}`,
-				ComplexUI: this.Situation.ComplexUI + `${s.wantedComplexUI} ${formatDistanceToNow(this.Wanted.Time, { locale: getLocaleFromLanguage(this.Language), includeSeconds: true })}`,
+				ComplexUI: this.Situation.ComplexUI + `${s.wantedComplexUI} ${formatDistanceToNow(this.Wanted.Time, {
+					locale: getLocaleFromLanguage(this.Language),
+					includeSeconds: true,
+				})}`,
 			};
 		}
 	}
@@ -674,6 +696,14 @@ export class User {
 
 	IsScavenging() {
 		return this.Scavenge.IsScavengingId != null;
+	}
+
+	IsInRobbery() {
+		return this.Robbery.IsRobbingId != null || this.Robbery.IsRobbingLocationId != null || this.Robbery.IsBeingRobbedById != null;
+	}
+
+	IsInBeatUp() {
+		return this.BeatUp.IsBeatingId != null || this.BeatUp.IsBeingBeatUpById != null;
 	}
 
 	async StartJob(jobId: JobId) {
@@ -792,6 +822,10 @@ export class User {
 				scavengeFailureWithHospital: this.Scavenge.Found.FailureWithHospital,
 				scavengeFailureWithPrison: this.Scavenge.Found.FailureWithPrison,
 
+				drinkNormal: this.Drink.Normal,
+				drinkHappyHour: this.Drink.HappyHour,
+				drunkCount: this.Drink.DrunkCount,
+
 				updatedAt: this.UpdatedAt,
 			}, {
 				where: { id: this.Id },
@@ -823,7 +857,10 @@ const Strings = {
 		idling: "Idling",
 		workingSimple: "Working",
 		workingComplex: (description: string, jobTime: Date) => `Working as ${description}. Will finish ${showTime(jobTime.getTime(), true)}`,
-		workingComplexUI: (description: string, jobTime: Date) => `Working as ${description}. Will finish in ${formatDistanceToNow(jobTime, { locale: getLocaleFromLanguage(Language.English), includeSeconds: true })}`,
+		workingComplexUI: (description: string, jobTime: Date) => `Working as ${description}. Will finish in ${formatDistanceToNow(jobTime, {
+			locale: getLocaleFromLanguage(Language.English),
+			includeSeconds: true,
+		})}`,
 		robbing: "Robbing",
 		beingRobbedSimple: "Being robbed",
 		beingRobbedComplex: "Being robbed by",
@@ -848,7 +885,10 @@ const Strings = {
 		idling: "Vadiando",
 		workingSimple: "Trabalhando",
 		workingComplex: (description: string, jobTime: Date) => `Trabalhando como ${description}. Terminará ${showTime(jobTime.getTime(), true)}`,
-		workingComplexUI: (description: string, jobTime: Date) => `Trabalhando como ${description}. Terminará em ${formatDistanceToNow(jobTime, { locale: getLocaleFromLanguage(Language.Portuguese), includeSeconds: true })}`,
+		workingComplexUI: (description: string, jobTime: Date) => `Trabalhando como ${description}. Terminará em ${formatDistanceToNow(jobTime, {
+			locale: getLocaleFromLanguage(Language.Portuguese),
+			includeSeconds: true,
+		})}`,
 		robbing: "Roubando",
 		beingRobbedSimple: "Sendo roubado",
 		beingRobbedComplex: "Sendo roubado por",
@@ -873,7 +913,10 @@ const Strings = {
 		idling: "Vagando",
 		workingSimple: "",
 		workingComplex: (description: string, jobTime: Date) => `Trabajando como ${description}. Terminará ${showTime(jobTime.getTime(), true)}`,
-		workingComplexUI: (description: string, jobTime: Date) => `Trabajando como ${description}. Terminará en ${formatDistanceToNow(jobTime, { locale: getLocaleFromLanguage(Language.Spanish), includeSeconds: true })}`,
+		workingComplexUI: (description: string, jobTime: Date) => `Trabajando como ${description}. Terminará en ${formatDistanceToNow(jobTime, {
+			locale: getLocaleFromLanguage(Language.Spanish),
+			includeSeconds: true,
+		})}`,
 		robbing: "Robando",
 		beingRobbedSimple: "Siendo robado",
 		beingRobbedComplex: "Siendo robado por",

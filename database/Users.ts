@@ -88,6 +88,10 @@ export class Users extends Model<
 	declare scavengeFailureWithHospital: number;
 	declare scavengeFailureWithPrison: number;
 
+	declare drinkNormal: number;
+	declare drinkHappyHour: number;
+	declare drunkCount: number;
+
 	declare createdAt: CreationOptional<Date>;
 	declare updatedAt: CreationOptional<Date>;
 }
@@ -384,6 +388,21 @@ Users.init(
 			defaultValue: 0,
 		},
 		scavengeFailureWithPrison: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0,
+		},
+		drinkNormal: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0,
+		},
+		drinkHappyHour: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0,
+		},
+		drunkCount: {
 			type: DataTypes.INTEGER,
 			allowNull: false,
 			defaultValue: 0,

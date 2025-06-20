@@ -12,4 +12,5 @@ export const CrColors = {
 	Jacobi: 0x426b69,
 	Scavenge: Colors.LightGrey,
 	BeatUp: 0xff8C00,
+	Bar: 0x0064FF,
 };

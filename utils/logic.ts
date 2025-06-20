@@ -143,7 +143,7 @@ export async function replyInteraction(interaction: CommandInteraction | ButtonI
 export async function replyUserDontExist(interaction: CommandInteraction, language: Language) {
 	return await replyInteraction(interaction, {
 		content: Strings[language].userDontExist,
-		flags: [MessageFlags.Ephemeral]
+		flags: [MessageFlags.Ephemeral],
 	});
 }
 
@@ -283,6 +283,10 @@ export async function setVIPRoleInOfficialServer(interaction: ChatInputCommandIn
 
 export function getPercent(percent: number, from: number) {
 	return (from / 100) * percent;
+}
+
+export function getRandomItemFromArray<T>(array: T[]): T {
+	return array[Math.round(Math.random() * (array.length - 1))];
 }
 
 const Strings = {
