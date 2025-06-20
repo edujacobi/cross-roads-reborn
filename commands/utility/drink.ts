@@ -16,8 +16,7 @@ import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder
 import { EmoteString } from "../../utils/emotes";
 import { CrColors } from "../../utils/colors";
 import { showTime } from "../../utils/ui";
-import { addDays, addMinutes } from "date-fns";
-import { toZonedTime } from "date-fns-tz";
+import { addDays, addHours, addMinutes, } from "date-fns";
 import { Log } from "../../utils/log";
 import { Notification } from "../../models/Notification";
 
@@ -32,28 +31,11 @@ module.exports = {
 		await interaction.deferReply();
 		const s = Strings[language];
 
-		const now = toZonedTime(new Date(), "America/Sao_Paulo");
+		const now = addHours(new Date(), -3);
 		const day = now.getDay();
 		const hour = now.getHours();
 
 		const isHappyHour = hour >= 18 && hour <= 20 || day === 0 || day === 6;
-
-		// Calculate next Happy Hour start time in local timezone
-		let nextHappyHour = toZonedTime(new Date(), "America/Sao_Paulo");
-
-		if (!isHappyHour) {
-			if (day === 0 || day === 6) { // If today is weekend, set to Monday's 18:00
-				nextHappyHour.setDate(nextHappyHour.getDate() + (7 - nextHappyHour.getDay()));
-				nextHappyHour.setHours(18);
-			}
-			else if (hour >= 20) { // After 20:00, set for tomorrow's 18:00
-				nextHappyHour = addDays(nextHappyHour, 1);
-				nextHappyHour.setHours(18);
-			}
-		}
-
-		// Ensure nextHappyHour is in local timezone
-		nextHappyHour = toZonedTime(nextHappyHour, "America/Sao_Paulo");
 
 		const cantDrink = user.IsInPrison() || user.IsInHospital() || user.IsWorking() || user.IsInBeatUp() || user.IsInRobbery();
 
@@ -89,7 +71,7 @@ module.exports = {
 			.setUser(user)
 			.setAccentColor(CrColors.Bar)
 			.addTextDisplayComponents(header => header
-				.setContent(isHappyHour ? `-# ${s.happyHour}` : `-# Happy Hour ${showTime(nextHappyHour.getTime(), true)}`))
+				.setContent(isHappyHour ? `-# ${s.happyHour}` : `-# Happy Hour ${s.happyHourPeriods}`))
 			.addSeparatorComponents(separator => separator.setSpacing(SeparatorSpacingSize.Small))
 			.addTextDisplayComponents(
 				title => title
@@ -287,6 +269,7 @@ const Strings = {
 		drink: "Drink",
 		drinkMore: "Drink more",
 		happyHour: "Happy Hour! Chance of getting drunk x3",
+		happyHourPeriods: "from 9pm to 11pm",
 		drankNothing: "You haven't drunk anything yet",
 		barOf: "Bar of",
 		barmanDescription: (adjective: string) => `Come on in, ${adjective}, would you like something to drink?`,
@@ -314,6 +297,7 @@ const Strings = {
 		drink: "Beber",
 		drinkMore: "Beber mais",
 		happyHour: "Happy Hour! Chance de se embebedar x3",
+		happyHourPeriods: "das 18h às 20h",
 		drankNothing: "Você ainda não bebeu nada",
 		barOf: "Bar de",
 		barmanDescription: (adjective: string) => `Chega aí, ${adjective}, gostaria de beber alguma coisa?`,
@@ -341,6 +325,7 @@ const Strings = {
 		drink: "Beber",
 		drinkMore: "Beber más",
 		happyHour: "¡Happy Hour! Posibilidad de emborracharse x3",
+		happyHourPeriods: "de 21h a 23h (UTC)",
 		drankNothing: "Aún no has bebido nada",
 		barOf: "Bar de",
 		barmanDescription: (adjective: string) => `Pase, ${adjective}, ¿le gustaría beber algo?`,
