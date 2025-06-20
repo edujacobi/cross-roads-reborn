@@ -38,7 +38,7 @@ module.exports = {
 
 		const isHappyHour = hour >= 18 && hour <= 20 || day === 0 || day === 6;
 
-		let nextHappyHour = new Date(now);
+		let nextHappyHour = toZonedTime(new Date(now), "America/Sao_Paulo");
 		nextHappyHour.setHours(18, 0, 0, 0);
 		if (day === 0 || day === 6) {
 			nextHappyHour.setHours(0, 0, 0, 0);
@@ -206,9 +206,11 @@ module.exports = {
 					await Notification.Hospital(user);
 
 					if (isHappyHour) {
-						user.Drink.HappyHour = count;
+						if (count > user.Drink.HappyHour) {
+							user.Drink.HappyHour = count;
+						}
 					}
-					else {
+					else if (count > user.Drink.Normal) {
 						user.Drink.Normal = count;
 					}
 
