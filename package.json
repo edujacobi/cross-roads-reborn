@@ -6,9 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "clear": "rimraf build",
-    "build": "tsc -b",
+    "build": "tsc",
     "build:watch": "tsc --watch",
-    "clear-commands": "tsc -b && node build/clear-commands.js",
+    "clear-commands": "tsc && node build/clear-commands.js",
     "prestart": "npm run build",
     "start": "pm2 start build/index.js --name \"cr\"",
     "stop": "pm2 stop cr",
