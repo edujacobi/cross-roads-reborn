@@ -190,20 +190,31 @@ module.exports = {
 					[Language.Spanish]: "Trabajadores",
 				},
 			},
+			// Todo: drunkCount?
 			[TopSubcommand.Drunkers]: {
 				attributes: [...defaultAttributes, "drunkCount", "drinkNormal", "drinkHappyHour"],
 				orderField: "drinkHappyHour",
-				valueField: "drunkCount",
+				valueField: "drinkHappyHour",
 				valuePrefix: {
-					[Language.English]: "Normal",
-					[Language.Portuguese]: "Normal",
-					[Language.Spanish]: "Normal",
+					[Language.English]: "Drank",
+					[Language.Portuguese]: "Bebeu",
+					[Language.Spanish]: "Bebió",
 				},
-				countField: "drinkHappyHour",
+				valueSufix: {
+					[Language.English]: "at Happy Hour",
+					[Language.Portuguese]: "no Happy Hour",
+					[Language.Spanish]: "en Happy Hour",
+				},
+				countField: "drunkCount",
 				countPrefix: {
-					[Language.English]: "Happy Hour",
-					[Language.Portuguese]: "Happy Hour",
-					[Language.Spanish]: "Happy Hour",
+					[Language.English]: "Drunk",
+					[Language.Portuguese]: "Bêbado",
+					[Language.Spanish]: "Bebido",
+				},
+				countSufix: {
+					[Language.English]: "times",
+					[Language.Portuguese]: "vezes",
+					[Language.Spanish]: "veces",
 				},
 				badge: EmoteString.Idle,
 				strings: {
