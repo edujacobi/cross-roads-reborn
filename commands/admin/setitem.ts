@@ -1,0 +1,143 @@
+import { ChatInputCommandInteraction, Colors, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
+import { User } from "../../models/User";
+import { Language } from "../../models/Language";
+import { addHours } from "date-fns";
+import { UserItems } from "../../database/UserItems";
+import { ItemList, ItemType, UserItem } from "../../interfaces/Items";
+import { Log } from "../../utils/log";
+import { EmoteString } from "../../utils/emotes";
+import { sendPrivateMessage } from "../../utils/logic";
+import { CrColors } from "../../utils/colors";
+
+enum Mode {
+	Set,
+	Add
+}
+
+module.exports = {
+	data: new SlashCommandBuilder()
+		.setName("setitem")
+		.setDescription("[Admin] Adds or modifies an item for a specific user.")
+		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+		.addStringOption(userId => userId
+			.setName("user_id")
+			.setDescription("The Discord ID of the user to modify.")
+			.setRequired(true),
+		)
+		.addIntegerOption(item => item
+			.setName("item")
+			.setDescription("Which item")
+			.setRequired(true)
+			.addChoices(Object.values(ItemList).map(item => ({
+				name: item.Description[Language.English],
+				value: item.Id,
+			} as {
+				name: string; value: number;
+			}))),
+		)
+		.addIntegerOption(setOrAdd => setOrAdd
+			.setName("set_or_add")
+			.setDescription("Set a new value/duration or add to the existing one.")
+			.setRequired(true)
+			.addChoices(
+				{ name: "Set (overwrite existing)", value: Mode.Set },
+				{ name: "Add (extend/increase existing)", value: Mode.Add },
+			),
+		)
+		.addNumberOption(hoursOrQuantity => hoursOrQuantity
+			.setName("hours_or_quantity")
+			.setDescription("For TIMED items: The duration in hours. For CONSUMABLE items: The quantity to set or add.")
+			.setRequired(true),
+		),
+
+	async execute(interaction: ChatInputCommandInteraction, user: User) {
+		await interaction.deferReply();
+
+		const targetUserId = interaction.options.getString("user_id", true);
+		const itemId = interaction.options.getInteger("item", true);
+		const hoursOrQuantity = interaction.options.getNumber("hours_or_quantity", true);
+		const mode = interaction.options.getInteger("set_or_add", true) as Mode;
+
+		// 1. Validate Inputs
+		const itemData = ItemList[itemId] as UserItem;
+		if (!itemData) {
+			return await interaction.editReply(`${EmoteString.LessThan12Hours} Item with ID \`${itemId}\` was not found.`);
+		}
+
+		// 2. Fetch the target user from the database
+		const targetUser = new User(targetUserId);
+		const userExists = await targetUser.GetInfo();
+		if (!userExists) {
+			return await interaction.editReply(`${EmoteString.LessThan12Hours} User with ID \`${targetUserId}\` was not found in the database.`);
+		}
+
+		// 3. Find the existing item directly in the database
+		const existingItem = await UserItems.findOne({
+			where: { userId: targetUserId, itemId: itemId },
+		});
+
+		const now = new Date();
+		let replyMessage = "";
+
+		// 4. Apply logic based on item type
+		if (itemData.Type !== ItemType.Consumable) {
+
+			const newExpiryDate = addHours(now, hoursOrQuantity);
+
+			if (mode === Mode.Set) {
+				if (existingItem) {
+					await existingItem.update({ remainingTime: newExpiryDate });
+				}
+				else {
+					await UserItems.create({ userId: targetUserId, itemId, remainingTime: newExpiryDate });
+				}
+
+				replyMessage = `✅ Successfully **set** item ${itemData.Skin.Default.Emote.String} ${itemData.Description[Language.English]} for **${targetUser.GetNameWithImage()}**. It is now valid for ${hoursOrQuantity} hour(s)`;
+
+			}
+			else {
+				if (existingItem) {
+					const baseDate = existingItem.remainingTime > now ? existingItem.remainingTime : now;
+					const extendedExpiryDate = addHours(baseDate, hoursOrQuantity);
+					await existingItem.update({ remainingTime: extendedExpiryDate });
+				}
+				else {
+					await UserItems.create({ userId: targetUserId, itemId, remainingTime: newExpiryDate });
+				}
+
+				replyMessage = `✅ Successfully **added** ${hoursOrQuantity} hours to item ${itemData.Skin.Default.Emote.String} ${itemData.Description[Language.English]} for **${targetUser.GetNameWithImage()}**.`;
+			}
+		}
+		else {
+			// --- Logic for Consumable Items ---
+
+			if (mode === Mode.Set) {
+				if (existingItem) {
+					await existingItem.update({ quantity: hoursOrQuantity });
+				}
+				else {
+					await UserItems.create({ userId: targetUserId, itemId, quantity: hoursOrQuantity });
+				}
+
+				replyMessage = `✅ Successfully **set** item ${itemData.Skin.Default.Emote.String} ${itemData.Description[Language.English]} for **${targetUser.GetNameWithImage()}**. They now have a quantity of **${hoursOrQuantity}**.`;
+
+			}
+			else {
+				const newQuantity = (existingItem?.quantity || 0) + hoursOrQuantity;
+
+				if (existingItem) {
+					await existingItem.update({ quantity: newQuantity });
+				}
+				else {
+					await UserItems.create({ userId: targetUserId, itemId, quantity: newQuantity });
+				}
+
+				replyMessage = `✅ Successfully **added** ${hoursOrQuantity} quantity to item ${itemData.Skin.Default.Emote.String} ${itemData.Description[Language.English]} for **${targetUser.GetNameWithImage()}**.`;
+			}
+		}
+
+		Log.Success(`Admin ${user.Nickname} (${user.Id}) used setitem on ${targetUser.Nickname} (Id: ${targetUser.Id}) for item ${itemData.Description[Language.English]} (Id: ${itemData.Id}). Mode: ${mode === Mode.Set ? "set" : "add"}, ${itemData.Type == ItemType.Consumable ? "Quantity" : "Hours"}: ${hoursOrQuantity}`);
+		await sendPrivateMessage(targetUserId, `You ${mode === Mode.Set ? "now have" : "received"} ${hoursOrQuantity} ${itemData.Type == ItemType.Consumable ? "" : "hours"} of ${itemData.Skin.Default.Emote.String} ${itemData.Description[Language.English]}!`, CrColors.Admin);
+		await interaction.editReply(replyMessage);
+	},
+};

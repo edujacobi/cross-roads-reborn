@@ -5,7 +5,8 @@
 	ComponentType,
 	Locale,
 	MessageComponentInteraction,
-	MessageFlags, SeparatorSpacingSize,
+	MessageFlags,
+	SeparatorSpacingSize,
 	SlashCommandBuilder,
 	TextDisplayBuilder,
 } from "discord.js";
@@ -16,7 +17,7 @@ import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder
 import { EmoteString } from "../../utils/emotes";
 import { CrColors } from "../../utils/colors";
 import { showTime } from "../../utils/ui";
-import { addDays, addHours, addMinutes, } from "date-fns";
+import { addHours, addMinutes } from "date-fns";
 import { Log } from "../../utils/log";
 import { Notification } from "../../models/Notification";
 
