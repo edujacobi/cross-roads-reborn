@@ -3,6 +3,7 @@ import { Language } from "./Language";
 import { Shop } from "./Shop";
 import { getItemList } from "../interfaces/Items";
 import { CrColors } from "../utils/colors";
+import { addHours } from "date-fns";
 
 export class BlackMarket extends Shop {
 	constructor(user: User) {
@@ -17,9 +18,9 @@ export class BlackMarket extends Shop {
 	}
 
 	IsBlackMarketOpen() {
-		const today = new Date();
-		const day = today.getDay();
-		const hours = today.getHours();
+		const now = addHours(new Date(), -3);
+		const day = now.getDay();
+		const hours = now.getHours();
 
 		let isOpen = false;
 		let message = Strings[this.User.Language].hey as string;
