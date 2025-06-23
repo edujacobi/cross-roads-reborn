@@ -42,7 +42,7 @@ export class UserBadge {
 			return true;
 		}
 		catch (err) {
-			Log.Warning(`Something went wrong adding badge ${badgeId} for ${userId}.`);
+			Log.Warning(`Something went wrong adding badge ${badgeId} for ${userId}. Error ${err}`);
 			return false;
 		}
 	}
@@ -67,7 +67,7 @@ export class UserBadge {
 			}
 		}
 		catch (err) {
-			Log.Warning(`Something went wrong removing badge ${badgeId} for ${userId}.`);
+			Log.Warning(`Something went wrong removing badge ${badgeId} for ${userId}. Error ${err}\``);
 			return false;
 		}
 	}

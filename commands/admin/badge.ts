@@ -17,38 +17,38 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("badge")
 		.setDescription("Manage user badges")
-		.addSubcommand(subcommand => subcommand
+		.addSubcommand(types => types
 			.setName(CommandOption.Types)
 			.setDescription("All types of badges and respectives Ids"),
 		)
-		.addSubcommand(subcommand => subcommand
+		.addSubcommand(add => add
 			.setName(CommandOption.Add)
 			.setDescription("Add a badge to a user")
-			.addUserOption(option => option
+			.addUserOption(user => user
 				.setName("user")
 				.setDescription("The user to add the badge to")
 				.setRequired(true))
-			.addIntegerOption(option => option
+			.addIntegerOption(badge => badge
 				.setName("badge")
 				.setDescription("The type of badge to add")
 				.setRequired(true)),
 		)
-		.addSubcommand(subcommand => subcommand
+		.addSubcommand(remove => remove
 			.setName(CommandOption.Remove)
 			.setDescription("Remove a badge from a user")
-			.addUserOption(option => option
+			.addUserOption(user => user
 				.setName("user")
 				.setDescription("The user to remove the badge from")
 				.setRequired(true))
-			.addIntegerOption(option => option
+			.addIntegerOption(badge => badge
 				.setName("badge")
 				.setDescription("The type of badge to remove")
 				.setRequired(true)),
 		)
-		.addSubcommand(subcommand => subcommand
+		.addSubcommand(list => list
 			.setName(CommandOption.List)
 			.setDescription("List all badges of a user")
-			.addUserOption(option => option
+			.addUserOption(user => user
 				.setName("user")
 				.setDescription("The user to list badges for")
 				.setRequired(true)),
@@ -93,9 +93,10 @@ module.exports = {
 			const badgeId = interaction.options.getInteger("badge", true);
 			const _user = interaction.options.getUser("user", true);
 			const target = await checkUser(_user.id, interaction);
+			let targetName = `ID: ${_user.id}`;
 
-			if (!target) {
-				return await replyUserDontExist(interaction, language);
+			if (target) {
+				targetName = target.GetNameWithImage();
 			}
 
 			await interaction.deferReply();
@@ -107,12 +108,12 @@ module.exports = {
 				const badgeName = BadgeList[badgeId].Name[language];
 
 				return replyInteraction(interaction, {
-					content: s.badgeAdded(badgeEmoji, badgeName, target.GetNameWithImage()),
+					content: s.badgeAdded(badgeEmoji, badgeName, targetName),
 				});
 			}
 			else {
 				return replyInteraction(interaction, {
-					content: s.addError(target.GetNameWithImage()),
+					content: s.addError(targetName),
 				});
 			}
 		}
@@ -121,9 +122,10 @@ module.exports = {
 			const badgeId = interaction.options.getInteger("badge", true);
 			const _user = interaction.options.getUser("user", true);
 			const target = await checkUser(_user.id, interaction);
+			let targetName = `ID: ${_user.id}`;
 
-			if (!target) {
-				return await replyUserDontExist(interaction, language);
+			if (target) {
+				targetName = target.GetNameWithImage();
 			}
 
 			await interaction.deferReply();
@@ -135,7 +137,7 @@ module.exports = {
 				const badgeName = BadgeList[badgeId].Name[language];
 
 				return replyInteraction(interaction, {
-					content: s.badgeRemoved(badgeEmoji, badgeName, target.GetNameWithImage()),
+					content: s.badgeRemoved(badgeEmoji, badgeName, targetName),
 				});
 			}
 			else {

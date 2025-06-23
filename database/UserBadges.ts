@@ -1,13 +1,12 @@
-import { CreationOptional, DataTypes, ForeignKey, InferAttributes, InferCreationAttributes, Model } from "sequelize";
+import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model } from "sequelize";
 import { sequelize } from "./Database";
-import { Users } from "./Users";
 
 export class UserBadges extends Model<
 	InferAttributes<UserBadges>,
 	InferCreationAttributes<UserBadges>
 > {
 	declare id: CreationOptional<number>;
-	declare userId: ForeignKey<Users["id"]>;
+	declare userId: string;
 	declare badgeId: number;
 }
 
@@ -20,10 +19,6 @@ UserBadges.init(
 		},
 		userId: {
 			type: new DataTypes.STRING(18),
-			references: {
-				model: Users,
-				key: "id",
-			},
 			allowNull: false,
 		},
 		badgeId: {
