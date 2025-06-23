@@ -106,6 +106,8 @@ export enum BadgeId {
 	S6Top1Bribery,
 	S6Top1Hospital,
 	S6Top1Gang,
+
+	DefeatedCoroamuru,
 }
 
 export interface IBadge {
@@ -1753,6 +1755,23 @@ export const BadgeList: BadgeListType = {
 		Emoji: {
 			Id: EmoteBadgeId.Season6.TopGang,
 			String: EmoteBadgeString.Season6.TopGang,
+		},
+	},
+	[BadgeId.DefeatedCoroamuru]: {
+		Id: BadgeId.DefeatedCoroamuru,
+		Name: {
+			[Language.English]: "I Defeated Coroamuru",
+			[Language.Portuguese]: "Eu Derrotei Coroamuru",
+			[Language.Spanish]: "Yo derroté a Coroamuru",
+		},
+		Description: {
+			[Language.English]: "Finale Event Winner in the 4th season",
+			[Language.Portuguese]: "Vencedor do evento do final da 4ª temporada",
+			[Language.Spanish]: "Ganador del evento final de la 4ta temporada",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Events.Coroamuru,
+			String: EmoteBadgeString.Events.Coroamuru,
 		},
 	},
 };

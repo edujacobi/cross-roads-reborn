@@ -109,6 +109,7 @@ export const EmoteBadgeId = {
 		Halloween2021: "904559838992932884",
 		Christmas2021: "925027603352526878",
 		KeyishMandrake: "934631816546123876",
+		Coroamuru: "852733290616062002",
 	},
 
 };
@@ -220,8 +221,9 @@ export const EmoteBadgeString = {
 	Events: {
 		Christmas2020: `<:badge_natal_2020:${EmoteBadgeId.Events.Christmas2020}>`,
 		Easter2021: `<:badge_Ovos_Dourados:${EmoteBadgeId.Events.Easter2021}>`,
-		Halloween2021: `<:badge_halloween_2021:${EmoteBadgeId.Events.Halloween2021}> `,
+		Halloween2021: `<:badge_halloween_2021:${EmoteBadgeId.Events.Halloween2021}>`,
 		Christmas2021: `<:badge_BiscoitoNatalino:${EmoteBadgeId.Events.Christmas2021}> `,
 		KeyishMandrake: `<:badge_mandrakeChavoso:${EmoteBadgeId.Events.KeyishMandrake}>`,
+		Coroamuru: `<:EuDerroteiCoroamuru:${EmoteBadgeId.Events.Coroamuru}>`
 	},
 };
