@@ -183,7 +183,7 @@ export async function disableButtons(interaction: CommandInteraction | ButtonInt
 	}
 }
 
-export function setPlayerRoleInOfficialServer(interaction: ChatInputCommandInteraction) {
+export async function setPlayerRoleInOfficialServer(interaction: ChatInputCommandInteraction) {
 	if (process.env.NODE_ENV !== "PROD") {
 		return;
 	}
@@ -215,7 +215,7 @@ export function setPlayerRoleInOfficialServer(interaction: ChatInputCommandInter
 	}
 
 	try {
-		user.roles.add(playerRole);
+		await user.roles.add(playerRole);
 		Log.Success(`Role Player added to user ${interaction.user.displayName} (ID: ${interaction.user.id})`);
 	}
 	catch (err) {
@@ -278,6 +278,36 @@ export async function setVIPRoleInOfficialServer(interaction: ChatInputCommandIn
 		catch (err) {
 			Log.Warning(`Something went wrong with adding role VIP to user ${interaction.user.displayName} (ID: ${interaction.user.id}).`);
 		}
+	}
+}
+
+export async function setPlayerNicknameInOfficialServer(interaction: ChatInputCommandInteraction, user: User) {
+	if (process.env.NODE_ENV !== "PROD") {
+		return;
+	}
+
+	const isInOfficialServer = interaction.guild?.id === process.env.SERVER_ID;
+
+	if (!isInOfficialServer) {
+		return;
+	}
+
+	const member = interaction.guild.members.cache.get(interaction.user.id);
+
+	if (!member) {
+		return;
+	}
+
+	if (member.nickname === user.Nickname) {
+		return;
+	}
+
+	try {
+		await member.setNickname(user.Nickname);
+		Log.Success(`Nickname in server added to user ${interaction.user.displayName} (ID: ${interaction.user.id})`);
+	}
+	catch (err) {
+		Log.Warning(`Something went wrong with adding Nickname in server to user ${interaction.user.displayName} (ID: ${interaction.user.id}).`);
 	}
 }
 

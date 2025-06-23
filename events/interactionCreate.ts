@@ -1,6 +1,12 @@
 ﻿import { Collection, Colors, CommandInteraction, Events, MessageFlags } from "discord.js";
 import { defaultEmbed, showTime } from "../utils/ui";
-import { checkUser, replyInteraction, setPlayerRoleInOfficialServer, setVIPRoleInOfficialServer } from "../utils/logic";
+import {
+	checkUser,
+	replyInteraction,
+	setPlayerNicknameInOfficialServer,
+	setPlayerRoleInOfficialServer,
+	setVIPRoleInOfficialServer,
+} from "../utils/logic";
 import { getLanguageFromLocale, Language } from "../models/Language";
 import { EmoteString } from "../utils/emotes";
 import { ClassId } from "../interfaces/Classes";
@@ -47,7 +53,7 @@ module.exports = {
 					interaction,
 					description: s.settingClassDescription,
 				})],
-				ephemeral: true,
+				flags: [MessageFlags.Ephemeral],
 			});
 		}
 
@@ -100,7 +106,7 @@ module.exports = {
 					color: Colors.Gold,
 					description: s.needVIP,
 				})],
-				ephemeral: true,
+				flags: [MessageFlags.Ephemeral],
 			});
 		}
 
@@ -109,8 +115,11 @@ module.exports = {
 
 		interaction.client.userLastCommand.set(interaction.user.id, now);
 
-		setPlayerRoleInOfficialServer(interaction);
-		await setVIPRoleInOfficialServer(interaction);
+		await Promise.all([
+			setPlayerRoleInOfficialServer(interaction),
+			setVIPRoleInOfficialServer(interaction),
+			setPlayerNicknameInOfficialServer(interaction, user),
+		]);
 
 		try {
 			command.execute(interaction, user, language);
