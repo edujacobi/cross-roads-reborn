@@ -67,7 +67,7 @@ Cargo VIP no servidor Cross Roads Reborn
 Muitos mais por vir!`,
 		howToAdquire: `## Como adquirir
 Envie uma DM para \`ejacobi\`. Se não conseguir, entre no servidor Cross Roads Reborn.
-R$ 13,00 = 1 mês. R$ 31,00 = 3 meses.`,
+R$ 10,00 = 1 mês. R$ 25,00 = 3 meses.`,
 	},
 	[Language.Spanish]: {
 		title: "VIP",
