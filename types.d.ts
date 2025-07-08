@@ -1,9 +1,10 @@
 ﻿import {
+	ApplicationCommandType,
 	AutocompleteInteraction,
 	ChatInputCommandInteraction,
 	Collection,
 	ModalSubmitInteraction,
-	SlashCommandBuilder,
+	SlashCommandBuilder, Snowflake,
 } from "discord.js";
 import { User } from "./models/User";
 import { Language } from "./models/Language";
@@ -38,4 +39,19 @@ declare module "discord.js" {
 		cooldowns: Collection<string, Collection<string, number>>
 		userLastCommand: Collection<string, number>
 	}
+}
+
+export interface Command {
+	id: Snowflake,
+	application_id: Snowflake,
+	version: Snowflake,
+	default_member_permissions: string,
+	type: ApplicationCommandType,
+	name: string,
+	name_localizations: { [key: string]: string },
+	description: string,
+	description_localizations: { [key: string]: string },
+	guild_id: Snowflake,
+	options: never[],
+	nsfw: boolean
 }

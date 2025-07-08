@@ -5,6 +5,7 @@ import { SlashCommand } from "./types";
 import dotenv from "dotenv";
 import { setClient } from "./client";
 import { Log } from "./utils/log";
+import { GlobalFonts } from "@napi-rs/canvas";
 
 const client = setClient();
 
@@ -12,7 +13,7 @@ dotenv.config();
 
 // Events
 const eventsPath = path.join(__dirname, "events");
-const eventFiles = fs.readdirSync(eventsPath).filter((file: string) => file.endsWith(".js"));
+const eventFiles = fs.readdirSync(eventsPath).filter((file: string) => file.endsWith(".ts"));
 
 for (const file of eventFiles) {
 	const filePath = path.join(eventsPath, file);
@@ -40,12 +41,12 @@ const commandFolders = fs.readdirSync(foldersPath);
 
 for (const folder of commandFolders) {
 	const commandsPath = path.join(foldersPath, folder);
-	const commandFiles = fs.readdirSync(commandsPath).filter((file: string) => file.endsWith(".js"));
+	const commandFiles = fs.readdirSync(commandsPath).filter((file: string) => file.endsWith(".ts"));
 
 	for (const file of commandFiles) {
 		const filePath = path.join(commandsPath, file);
 		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const command = require(filePath);
+		const command: SlashCommand = require(filePath);
 		// Set a new item in the Collection with the key as the command name and the value as the exported module
 		if ("data" in command && "execute" in command) {
 			client.commands.set(command.data.name, command);
@@ -62,3 +63,10 @@ const token = process.env.NODE_ENV === "DEV" ? process.env.TOKEN_DEV : process.e
 
 // Login
 client.login(token).then(() => console.log(`Ready. ENV: ${process.env.NODE_ENV}. Token: ${token}`));
+
+const fontLoaded = GlobalFonts.registerFromPath(
+	path.join(__dirname, "ui", "assets", "fonts", "InterSemiBold.ttf"),
+	"Inter",
+);
+
+console.log(`Loaded Inter font with ${fontLoaded ? "Success" : "Error"}`);
