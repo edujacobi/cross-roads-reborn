@@ -1,4 +1,5 @@
 ﻿import {
+	AttachmentBuilder,
 	ButtonBuilder,
 	ButtonStyle,
 	ChatInputCommandInteraction,
@@ -17,9 +18,10 @@ import { differenceInHours, subMinutes } from "date-fns";
 import { User } from "../../models/User";
 import { UserBadge } from "../../models/UserBadge";
 import { ClassList } from "../../interfaces/Classes";
-import { formatMoney, showTime } from "../../utils/ui";
+import { convertHexNumberToString, createUserGangImage, formatMoney, hexToRGB, showTime } from "../../utils/ui";
 import { ItemType } from "../../interfaces/Items";
 import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
+import { GangColor } from "../../utils/colors";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -65,6 +67,11 @@ module.exports = {
 		const emoteOnline = online ? EmoteString.Online : EmoteString.Offline;
 		const textOnline = online ? `${EmoteString.Online} Online` : `${EmoteString.Offline} Offline`;
 
+		const gang = await target.GetGang();
+
+		const gangImage = gang ? await createUserGangImage(target, gang, language) : null;
+		const file = gangImage ? new AttachmentBuilder(gangImage, { name: "gang.webp" }) : null;
+
 		function generateContainer(isClosed: boolean, target: User) {
 			const inv = new CustomContainerBuilder()
 				.setUser(user);
@@ -73,17 +80,24 @@ module.exports = {
 				inv.setAccentColor(Colors.Gold);
 			}
 
+			if (gang) {
+				inv.setAccentColor(hexToRGB(convertHexNumberToString(GangColor[gang.Color].Color)));
+			}
+
+			const gangAcronym = gang ? `[${gang.Acronym}] ` : "";
+
 			if (isClosed) {
 				inv
 					.addSectionComponents(headerSection => {
 						headerSection
 							.addTextDisplayComponents(
 								header => header
-									.setContent(`### ${emoteOnline} ${s.inventoryOf} ${target.GetNameWithImage()}`),
+									.setContent(`### ${emoteOnline} ${s.inventoryOf} ${gangAcronym}${target.GetNameWithImage()}`),
 								badges => badges
 									.setContent(badgeText ? `### -# ${badgeText}` : "\u200b"),
 								money => money
-									.setContent(`# ${formatMoney(target.Money, language)}`));
+									.setContent(`# ${formatMoney(target.Money, language)}`),
+							);
 
 						if (_user.avatar != null) {
 							headerSection
@@ -94,10 +108,12 @@ module.exports = {
 						return headerSection;
 					})
 					.addTextDisplayComponents(situation => situation
-						.setContent(`-# ${target.Situation.SimpleEmote}`))
+						.setContent(`-# ${target.Situation.SimpleEmote}`),
+					)
 					.addLargeSeparator()
 					.addTextDisplayComponents(items => items
-						.setContent(emoteItems.length ? `# ${emoteItems.join("\u0009")}` : "-# Inventário vazio"))
+						.setContent(emoteItems.length ? `# ${emoteItems.join("\u0009")}` : "-# Inventário vazio"),
+					)
 					.addFooter({
 						button: new ButtonBuilder()
 							.setCustomId("moreInfo")
@@ -107,6 +123,15 @@ module.exports = {
 					});
 			}
 			else {
+				if (gang) {
+					inv
+						.addMediaGalleryComponents(gallery => gallery
+							.addItems(galleryItem => galleryItem
+								.setURL("attachment://gang.webp"),
+							),
+						)
+						.addSeparatorComponents(separator => separator.setDivider(false));
+				}
 				inv
 					.addSectionComponents(headerSection => {
 						headerSection
@@ -116,7 +141,8 @@ module.exports = {
 								badges => badges
 									.setContent(badgeText ? `### ${badgeText}` : "\u200b"),
 								money => money
-									.setContent(`# ${formatMoney(target.Money, language)}`));
+									.setContent(`# ${formatMoney(target.Money, language)}`),
+							);
 
 						if (_user.avatar != null) {
 							headerSection
@@ -127,7 +153,8 @@ module.exports = {
 						return headerSection;
 					})
 					.addTextDisplayComponents(situation => situation
-						.setContent(`${target.Situation.Complex} • ${EmoteString.Attack}${target.Attributes.Attack} ATK • ${EmoteString.Defense}${target.Attributes.Defense} DEF`))
+						.setContent(`${target.Situation.Complex} • ${EmoteString.Attack}${target.Attributes.Attack} ATK • ${EmoteString.Defense}${target.Attributes.Defense} DEF`),
+					)
 					.addLargeSeparator()
 					.addTextDisplayComponents(
 						label => label
@@ -143,9 +170,10 @@ module.exports = {
 
 								return `**${name}** ${value}${emote}`;
 							}).join("\n");
-							items.setContent(text || "-# Inventário vazio");
+							items.setContent(text || `-# ${s.emptyInventory}`);
 							return items;
-						})
+						},
+					)
 					.addFooter({
 						button: new ButtonBuilder()
 							.setCustomId("lessInfo")
@@ -162,6 +190,7 @@ module.exports = {
 
 		const response = await replyInteraction(interaction, {
 			components: [container],
+			files: file ? [file] : [],
 			flags: MessageFlags.IsComponentsV2,
 			withResponse: true,
 		});
@@ -199,6 +228,7 @@ const Strings = {
 		closeInv: "Close",
 		openInv: "Open",
 		inventoryItems: "Items in the inventory",
+		emptyInventory: "Empty inventory"
 	},
 
 	[Language.Portuguese]: {
@@ -206,6 +236,7 @@ const Strings = {
 		closeInv: "Fechar",
 		openInv: "Abrir",
 		inventoryItems: "Itens no inventário",
+		emptyInventory: "Inventário vazio"
 	},
 
 	[Language.Spanish]: {
@@ -213,5 +244,6 @@ const Strings = {
 		closeInv: "Cerrar",
 		openInv: "Abrir",
 		inventoryItems: "Artículos en el inventario",
+		emptyInventory: "Inventario vacío"
 	},
 } as const;

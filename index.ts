@@ -35,6 +35,8 @@ client.cooldowns = new Collection<string, Collection<string, number>>();
 client.commands = new Collection<string, SlashCommand>();
 // Users Last Commands
 client.userLastCommand = new Collection<string, number>();
+// Gang Invites
+client.invites = new Collection<number, Collection<string, number>>();
 
 const foldersPath = path.join(__dirname, "commands");
 const commandFolders = fs.readdirSync(foldersPath);

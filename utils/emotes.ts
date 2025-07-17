@@ -131,6 +131,15 @@ export enum EmoteId {
 	NuclearPlant = "1353083473396502568",
 	AlienShip = "1353083477712703518",
 	MilitaryBase = "1353083475275546745",
+
+	// Gang
+	Gang = "973709675474346105",
+	NoPermission = "1392589953803747378",
+	OnePermission = "1392589941887860826",
+	TwoPermission = "1392589944945381426",
+	ThreePermission = "1392589946958905344",
+	FourPermission = "1392589949005467888",
+	AllPermission = "1392589951757062294",
 }
 
 export const EmoteString = {
@@ -266,4 +275,13 @@ export const EmoteString = {
 	NuclearPlant: `<:NuclearPlant:${EmoteId.NuclearPlant}>`,
 	AlienShip: `<:AlienShip:${EmoteId.AlienShip}>`,
 	MilitaryBase: `<:MilitaryBase:${EmoteId.MilitaryBase}>`,
+
+	// Gang
+	Gang: `<:Gangues:${EmoteId.Gang}>`,
+	NoPermission: `<:0_permission:${EmoteId.NoPermission}>`,
+	OnePermission: `<:1_permission:${EmoteId.OnePermission}>`,
+	TwoPermission: `<:2_permission:${EmoteId.TwoPermission}>`,
+	ThreePermission: `<:3_permission:${EmoteId.ThreePermission}>`,
+	FourPermission: `<:4_permission:${EmoteId.FourPermission}>`,
+	AllPermission: `<:leader:${EmoteId.AllPermission}>`,
 };

@@ -13,7 +13,10 @@ import { EmoteString } from "../utils/emotes";
 import { ClassId, ClassList } from "../interfaces/Classes";
 import { LocationId, LocationList } from "../interfaces/Locations";
 import { ScavengeId, ScavengeList } from "../interfaces/Scavenge";
+import { Gang, GangBaseId } from "./Gang";
+import { GangMembers } from "../database/GangMembers";
 import { Event, EventType } from "./Event";
+import { GangColorId } from "../utils/colors";
 
 export enum SituationId {
 	Idling,
@@ -37,6 +40,7 @@ export class User {
 	Nickname = "";
 	Money = 0;
 	Class = ClassId.None;
+	GangId: number | null = null;
 	Daily = {
 		CurrentStreak: 0,
 		MaxStreak: 0,
@@ -226,6 +230,13 @@ export class User {
 		this.Nickname = user.nickname;
 		this.Money = user.money;
 		this.Class = user.class;
+
+		// Verificar se o usuário está em uma gangue
+		const gangMember = await GangMembers.findOne({
+			where: { userId: this.Id },
+		});
+
+		this.GangId = gangMember ? gangMember.gangId : null;
 
 		// Jobs
 		this.Job.Id = user.jobId;
@@ -853,6 +864,77 @@ export class User {
 		catch (err) {
 			Log.Warning(`Something went wrong with updating language for user Id: ${this.Id}.`);
 		}
+	}
+
+	// ==========================
+	// Métodos relacionados a gangues
+	// ==========================
+
+	IsInGang() {
+		return this.GangId !== null;
+	}
+
+	// Obtém a gangue do usuário
+	async GetGang(): Promise<Gang | null> {
+		if (!this.IsInGang()) {
+			return null;
+		}
+
+		return await Gang.GetById(this.GangId!);
+	}
+
+	// Cria uma gangue (exige que o usuário pague a taxa)
+	async CreateGang(name: string, acronym: string, description: string, color: GangColorId, image: string | null = null): Promise<Gang | null> {
+		if (this.IsInGang()) {
+			Log.Warning(`User ${this.Nickname} (ID: ${this.Id}) tried to create a gang, but already is in one.`);
+			return null;
+		}
+
+		if (this.Money < Gang.CREATION_COST) {
+			Log.Warning(`User ${this.Nickname} (ID: ${this.Id}) tried to create a gang, but doesn't have money (user: ${formatMoney(this.Money, Language.English)} / cost: ${formatMoney(Gang.CREATION_COST, Language.English)}).`);
+			return null;
+		}
+
+		const gang = await Gang.Create(this, name, acronym, description, color, image);
+
+		if (gang) {
+			this.GangId = gang.Id;
+		}
+
+		return gang;
+	}
+
+	// Sai de uma gangue
+	async LeaveGang(): Promise<boolean> {
+		if (!this.IsInGang()) {
+			return false;
+		}
+
+		const gang = await Gang.GetById(this.GangId!);
+
+		if (!gang) {
+			// Situação estranha onde o usuário tem um ID de gangue, mas a gangue não existe
+			// Vamos limpar o GangId para corrigir a inconsistência
+			this.GangId = null;
+			await this.Update();
+			return true;
+		}
+
+		// Se o usuário for o líder, ele não pode sair sem transferir a liderança
+		if (this.Id === gang.LeaderId) {
+			Log.Warning(`User ${this.Nickname} (ID: ${this.Id}) tried to leave gang ${gang.Name} (ID: ${gang.Id}), but is the leader.`);
+			return false;
+		}
+
+		const success = await gang.LeaveGang(this);
+
+		if (success) {
+			this.GangId = null;
+			await this.Update();
+			Log.Success(`User ${this.Nickname} (ID: ${this.Id}) left gang ${gang.Name} (ID: ${gang.Id}).`);
+		}
+
+		return success;
 	}
 }
 
