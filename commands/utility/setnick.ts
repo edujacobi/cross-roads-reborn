@@ -4,6 +4,7 @@ import { defaultEmbed } from "../../utils/ui";
 import { Users } from "../../database/Users";
 import { User } from "../../models/User";
 import { Language } from "../../models/Language";
+import { Op } from "sequelize";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -40,7 +41,9 @@ module.exports = {
 
 		const nickExists = await Users.findOne({
 			where: {
-				nickname: newNick,
+				nickname: {
+					[Op.like]: newNick
+				},
 			},
 		});
 
