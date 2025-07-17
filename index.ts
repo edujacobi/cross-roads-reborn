@@ -64,7 +64,7 @@ for (const folder of commandFolders) {
 const token = process.env.NODE_ENV === "DEV" ? process.env.TOKEN_DEV : process.env.TOKEN;
 
 // Login
-client.login(token).then(() => console.log(`Ready. ENV: ${process.env.NODE_ENV}. Token: ${token}`));
+client.login(token).then(() => console.log(`Ready. ENV: ${process.env.NODE_ENV}`));
 
 const fontLoaded = GlobalFonts.registerFromPath(
 	path.join(__dirname, "ui", "assets", "fonts", "InterSemiBold.ttf"),
