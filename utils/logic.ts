@@ -45,6 +45,19 @@ export async function checkUser(userId: string, interaction: CommandInteraction)
 	}
 }
 
+export async function searchUser(nameOrId: string) {
+	return await Users.findOne({
+		where: {
+			[Op.or]: {
+				nickname: {
+					[Op.like]: nameOrId,
+				},
+				id: nameOrId,
+			},
+		},
+	});
+}
+
 export async function removeAllFromActions() {
 	try {
 		const [affectedCount] = await Users.update({
