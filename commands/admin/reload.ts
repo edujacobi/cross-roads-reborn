@@ -31,7 +31,7 @@ module.exports = {
 
 		for (const folder of commandFolders) {
 			const commandsPath = path.join(foldersPath, folder);
-			const file = fs.readdirSync(commandsPath).find((file: string) => file.startsWith(commandName) && file.endsWith(".js"));
+			const file = fs.readdirSync(commandsPath).find((file: string) => file.startsWith(commandName) && file.endsWith(".ts"));
 
 			if (!file) {
 				continue;
