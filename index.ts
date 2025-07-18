@@ -14,10 +14,9 @@ const client = setClient();
 dotenv.config();
 
 const environmentFile = process.env.NODE_ENV === "DEV" ? ".ts" : ".js";
-const environmentDir = (dir: string) => process.env.NODE_ENV === "DEV" ? dir : path.join("build", dir);
 
 // Events
-const eventsPath = path.join(__dirname, environmentDir("events"));
+const eventsPath = path.join(__dirname, "events");
 const eventFiles = fs.readdirSync(eventsPath).filter((file: string) => file.endsWith(environmentFile));
 
 for (const file of eventFiles) {
@@ -43,7 +42,7 @@ client.userLastCommand = new Collection<string, number>();
 // Gang Invites
 client.invites = new Collection<number, Collection<string, number>>();
 
-const foldersPath = path.join(__dirname, environmentDir("commands"));
+const foldersPath = path.join(__dirname, "commands");
 const commandFolders = fs.readdirSync(foldersPath);
 
 for (const folder of commandFolders) {

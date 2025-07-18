@@ -7,11 +7,10 @@ import { SlashCommand, Command } from "./types";
 dotenv.config();
 
 const environmentFile = process.env.NODE_ENV === "DEV" ? ".ts" : ".js";
-const environmentDir = (dir: string) => process.env.NODE_ENV === "DEV" ? dir : path.join("build", dir);
 
 const commands: SlashCommand[] = [];
 const adminCommands: SlashCommand[] = [];
-const foldersPath = path.join(__dirname, environmentDir("commands"));
+const foldersPath = path.join(__dirname, "commands");
 const commandFolders = fs.readdirSync(foldersPath);
 
 for (const folder of commandFolders) {
