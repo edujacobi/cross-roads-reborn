@@ -13,11 +13,12 @@ const client = setClient();
 
 dotenv.config();
 
-const stageFile = process.env.NODE_ENV === "DEV" ? ".ts" : ".js";
+const environmentFile = process.env.NODE_ENV === "DEV" ? ".ts" : ".js";
+const environmentDir = (dir: string) => process.env.NODE_ENV === "DEV" ? dir : path.join("build", dir);
 
 // Events
-const eventsPath = path.join(__dirname, "events");
-const eventFiles = fs.readdirSync(eventsPath).filter((file: string) => file.endsWith(stageFile));
+const eventsPath = path.join(__dirname, environmentDir("events"));
+const eventFiles = fs.readdirSync(eventsPath).filter((file: string) => file.endsWith(environmentFile));
 
 for (const file of eventFiles) {
 	const filePath = path.join(eventsPath, file);
@@ -42,12 +43,12 @@ client.userLastCommand = new Collection<string, number>();
 // Gang Invites
 client.invites = new Collection<number, Collection<string, number>>();
 
-const foldersPath = path.join(__dirname, "commands");
+const foldersPath = path.join(__dirname, environmentDir("commands"));
 const commandFolders = fs.readdirSync(foldersPath);
 
 for (const folder of commandFolders) {
 	const commandsPath = path.join(foldersPath, folder);
-	const commandFiles = fs.readdirSync(commandsPath).filter((file: string) => file.endsWith(stageFile));
+	const commandFiles = fs.readdirSync(commandsPath).filter((file: string) => file.endsWith(environmentFile));
 
 	for (const file of commandFiles) {
 		const filePath = path.join(commandsPath, file);

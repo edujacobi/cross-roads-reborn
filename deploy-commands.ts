@@ -4,17 +4,20 @@ import path from "node:path";
 import dotenv from "dotenv";
 import { SlashCommand, Command } from "./types";
 
+dotenv.config();
+
+const environmentFile = process.env.NODE_ENV === "DEV" ? ".ts" : ".js";
+const environmentDir = (dir: string) => process.env.NODE_ENV === "DEV" ? dir : path.join("build", dir);
+
 const commands: SlashCommand[] = [];
 const adminCommands: SlashCommand[] = [];
-const foldersPath = path.join(__dirname, "commands");
+const foldersPath = path.join(__dirname, environmentDir("commands"));
 const commandFolders = fs.readdirSync(foldersPath);
-
-dotenv.config();
 
 for (const folder of commandFolders) {
 	// Grab all the command files from the commands directory you created earlier
 	const commandsPath = path.join(foldersPath, folder);
-	const commandFiles = fs.readdirSync(commandsPath).filter((file: string) => file.endsWith(".ts"));
+	const commandFiles = fs.readdirSync(commandsPath).filter((file: string) => file.endsWith(environmentFile));
 	// Grab the SlashCommandBuilder#toJSON() output of each command's data for deployment
 	for (const file of commandFiles) {
 		const filePath = path.join(commandsPath, file);
