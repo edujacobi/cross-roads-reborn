@@ -88,25 +88,19 @@ module.exports = {
 
 			if (isClosed) {
 				inv
-					.addSectionComponents(headerSection => {
-						headerSection
-							.addTextDisplayComponents(
-								header => header
-									.setContent(`### ${emoteOnline} ${s.inventoryOf} ${gangAcronym}${target.GetNameWithImage()}`),
-								badges => badges
-									.setContent(badgeText ? `### -# ${badgeText}` : "\u200b"),
-								money => money
-									.setContent(`# ${formatMoney(target.Money, language)}`),
-							);
-
-						if (_user.avatar != null) {
-							headerSection
-								.setThumbnailAccessory(avatar => avatar
-									.setURL(_user.avatarURL()!));
-						}
-
-						return headerSection;
-					})
+					.addSectionComponents(headerSection => headerSection
+						.addTextDisplayComponents(
+							header => header
+								.setContent(`### ${emoteOnline} ${s.inventoryOf} ${gangAcronym}${target.GetNameWithImage()}`),
+							badges => badges
+								.setContent(badgeText ? `### -# ${badgeText}` : "\u200b"),
+							money => money
+								.setContent(`# ${formatMoney(target.Money, language)}`),
+						)
+						.setThumbnailAccessory(avatar => avatar
+							.setURL(_user.avatarURL() ?? ClassList[target.Class].Image.Url),
+						),
+					)
 					.addTextDisplayComponents(situation => situation
 						.setContent(`-# ${target.Situation.SimpleEmote}`),
 					)
@@ -133,25 +127,18 @@ module.exports = {
 						.addSeparatorComponents(separator => separator.setDivider(false));
 				}
 				inv
-					.addSectionComponents(headerSection => {
-						headerSection
-							.addTextDisplayComponents(
-								header => header
-									.setContent(`### ${s.inventoryOf} ${target.GetNameWithImage()}, ${ClassList[target.Class].Description[language]}\n-# ${textOnline}`),
-								badges => badges
-									.setContent(badgeText ? `### ${badgeText}` : "\u200b"),
-								money => money
-									.setContent(`# ${formatMoney(target.Money, language)}`),
-							);
-
-						if (_user.avatar != null) {
-							headerSection
-								.setThumbnailAccessory(avatar => avatar
-									.setURL(_user.avatarURL()!));
-						}
-
-						return headerSection;
-					})
+					.addSectionComponents(headerSection => headerSection
+						.addTextDisplayComponents(
+							header => header
+								.setContent(`### ${s.inventoryOf} ${target.GetNameWithImage()}, ${ClassList[target.Class].Description[language]}\n-# ${textOnline}`),
+							badges => badges
+								.setContent(badgeText ? `### ${badgeText}` : "\u200b"),
+							money => money
+								.setContent(`# ${formatMoney(target.Money, language)}`),
+						)
+						.setThumbnailAccessory(avatar => avatar
+							.setURL(_user.avatarURL() ?? ClassList[target.Class].Image.Url)),
+					)
 					.addTextDisplayComponents(situation => situation
 						.setContent(`${target.Situation.Complex} • ${EmoteString.Attack}${target.Attributes.Attack} ATK • ${EmoteString.Defense}${target.Attributes.Defense} DEF`),
 					)
@@ -228,7 +215,7 @@ const Strings = {
 		closeInv: "Close",
 		openInv: "Open",
 		inventoryItems: "Items in the inventory",
-		emptyInventory: "Empty inventory"
+		emptyInventory: "Empty inventory",
 	},
 
 	[Language.Portuguese]: {
@@ -236,7 +223,7 @@ const Strings = {
 		closeInv: "Fechar",
 		openInv: "Abrir",
 		inventoryItems: "Itens no inventário",
-		emptyInventory: "Inventário vazio"
+		emptyInventory: "Inventário vazio",
 	},
 
 	[Language.Spanish]: {
@@ -244,6 +231,6 @@ const Strings = {
 		closeInv: "Cerrar",
 		openInv: "Abrir",
 		inventoryItems: "Artículos en el inventario",
-		emptyInventory: "Inventario vacío"
+		emptyInventory: "Inventario vacío",
 	},
 } as const;
