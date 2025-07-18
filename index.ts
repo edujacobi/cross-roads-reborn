@@ -6,14 +6,18 @@ import dotenv from "dotenv";
 import { setClient } from "./client";
 import { Log } from "./utils/log";
 import { GlobalFonts } from "@napi-rs/canvas";
+// import { testImage } from "./utils/ui";
+// testImage();
 
 const client = setClient();
 
 dotenv.config();
 
+const stageFile = process.env.NODE_ENV === "DEV" ? ".ts" : ".js";
+
 // Events
 const eventsPath = path.join(__dirname, "events");
-const eventFiles = fs.readdirSync(eventsPath).filter((file: string) => file.endsWith(".ts"));
+const eventFiles = fs.readdirSync(eventsPath).filter((file: string) => file.endsWith(stageFile));
 
 for (const file of eventFiles) {
 	const filePath = path.join(eventsPath, file);
@@ -43,7 +47,7 @@ const commandFolders = fs.readdirSync(foldersPath);
 
 for (const folder of commandFolders) {
 	const commandsPath = path.join(foldersPath, folder);
-	const commandFiles = fs.readdirSync(commandsPath).filter((file: string) => file.endsWith(".ts"));
+	const commandFiles = fs.readdirSync(commandsPath).filter((file: string) => file.endsWith(stageFile));
 
 	for (const file of commandFiles) {
 		const filePath = path.join(commandsPath, file);

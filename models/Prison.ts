@@ -12,7 +12,7 @@ import { ItemId, ItemList } from "../interfaces/Items";
 import { CustomEmbedBuilder } from "./CustomEmbedBuilder";
 import { CrColors } from "../utils/colors";
 import { Users } from "../database/Users";
-import { CreationOptional, Op } from "sequelize";
+import { Op } from "sequelize";
 import { defaultEmbed, formatMoney, showTime } from "../utils/ui";
 import { EmoteId, EmoteString } from "../utils/emotes";
 import { removeEmbedComponents, replyInteraction } from "../utils/logic";

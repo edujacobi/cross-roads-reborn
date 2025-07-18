@@ -1,6 +1,7 @@
 ﻿import {
 	ActionRowBuilder,
-	ActivityType, ButtonBuilder,
+	ActivityType,
+	ButtonBuilder,
 	ButtonInteraction,
 	Client,
 	ColorResolvable,
@@ -13,9 +14,8 @@ import { enUS, es, ptBR } from "date-fns/locale";
 import { formatDistanceToNow } from "date-fns";
 import { User } from "../models/User";
 import { Gang } from "../models/Gang";
-import { Canvas, GlobalFonts, Image, loadImage } from "@napi-rs/canvas";
+import { Canvas, Image, loadImage } from "@napi-rs/canvas";
 import fs from "node:fs";
-import path from "node:path";
 import { GangColor } from "./colors";
 import { CustomContainerBuilder } from "../ui/builders/CustomContainerBuilder";
 

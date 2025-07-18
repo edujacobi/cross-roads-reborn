@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, Colors, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
 import { User } from "../../models/User";
 import { Language } from "../../models/Language";
 import { addHours } from "date-fns";
@@ -108,32 +108,28 @@ module.exports = {
 				replyMessage = `✅ Successfully **added** ${hoursOrQuantity} hours to item ${itemData.Skin.Default.Emote.String} ${itemData.Description[Language.English]} for **${targetUser.GetNameWithImage()}**.`;
 			}
 		}
-		else {
-			// --- Logic for Consumable Items ---
-
-			if (mode === Mode.Set) {
-				if (existingItem) {
-					await existingItem.update({ quantity: hoursOrQuantity });
-				}
-				else {
-					await UserItems.create({ userId: targetUserId, itemId, quantity: hoursOrQuantity });
-				}
-
-				replyMessage = `✅ Successfully **set** item ${itemData.Skin.Default.Emote.String} ${itemData.Description[Language.English]} for **${targetUser.GetNameWithImage()}**. They now have a quantity of **${hoursOrQuantity}**.`;
-
+		else if (mode === Mode.Set) {
+			if (existingItem) {
+				await existingItem.update({ quantity: hoursOrQuantity });
 			}
 			else {
-				const newQuantity = (existingItem?.quantity || 0) + hoursOrQuantity;
-
-				if (existingItem) {
-					await existingItem.update({ quantity: newQuantity });
-				}
-				else {
-					await UserItems.create({ userId: targetUserId, itemId, quantity: newQuantity });
-				}
-
-				replyMessage = `✅ Successfully **added** ${hoursOrQuantity} quantity to item ${itemData.Skin.Default.Emote.String} ${itemData.Description[Language.English]} for **${targetUser.GetNameWithImage()}**.`;
+				await UserItems.create({ userId: targetUserId, itemId, quantity: hoursOrQuantity });
 			}
+
+			replyMessage = `✅ Successfully **set** item ${itemData.Skin.Default.Emote.String} ${itemData.Description[Language.English]} for **${targetUser.GetNameWithImage()}**. They now have a quantity of **${hoursOrQuantity}**.`;
+
+		}
+		else {
+			const newQuantity = (existingItem?.quantity || 0) + hoursOrQuantity;
+
+			if (existingItem) {
+				await existingItem.update({ quantity: newQuantity });
+			}
+			else {
+				await UserItems.create({ userId: targetUserId, itemId, quantity: newQuantity });
+			}
+
+			replyMessage = `✅ Successfully **added** ${hoursOrQuantity} quantity to item ${itemData.Skin.Default.Emote.String} ${itemData.Description[Language.English]} for **${targetUser.GetNameWithImage()}**.`;
 		}
 
 		Log.Success(`Admin ${user.Nickname} (${user.Id}) used setitem on ${targetUser.Nickname} (Id: ${targetUser.Id}) for item ${itemData.Description[Language.English]} (Id: ${itemData.Id}). Mode: ${mode === Mode.Set ? "set" : "add"}, ${itemData.Type == ItemType.Consumable ? "Quantity" : "Hours"}: ${hoursOrQuantity}`);

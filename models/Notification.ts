@@ -2,7 +2,6 @@
 import { Op } from "sequelize";
 import { addDays } from "date-fns";
 import { Log } from "../utils/log";
-import { addHours } from "date-fns/addHours";
 import { JobList } from "../interfaces/Jobs";
 import { User } from "./User";
 import { Language } from "./Language";
@@ -10,7 +9,6 @@ import { EmoteString } from "../utils/emotes";
 import { formatMoney } from "../utils/ui";
 import { sendPrivateMessage } from "../utils/logic";
 import { CrColors } from "../utils/colors";
-import { Event, EventType } from "./Event";
 
 export enum NotificationType {
 	Daily = 1,

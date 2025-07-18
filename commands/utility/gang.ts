@@ -399,7 +399,7 @@ module.exports = {
 
 				const membersList = gang.Members.map(member => {
 					const underscore = member.UserId == interaction.user.id ? "__" : "";
-					const emote = gang.GetMemberEmote(member);
+					const emote = gang!.GetMemberEmote(member);
 
 					return `${emote} ${underscore}${member.Nickname}${underscore} - ${member.RoleName}`;
 				}).join("\n");
@@ -412,18 +412,18 @@ module.exports = {
 					.addSectionComponents(header => header
 						.addTextDisplayComponents(
 							headerText => headerText
-								.setContent(`# [${gang.Acronym}] ${gang.Name}\n_${gang.Description}_`),
+								.setContent(`# [${gang!.Acronym}] ${gang!.Name}\n_${gang!.Description}_`),
 							levelBar => levelBar
-								.setContent(`-# ${s.level} ${gang.Level} ${gang.GetExpBar(6)}`),
+								.setContent(`-# ${s.level} ${gang!.Level} ${gang!.GetExpBar(6)}`),
 						)
 						.setThumbnailAccessory(image => image
-							.setURL(gang.Image || DEFAULT_GANG_IMAGE)
+							.setURL(gang!.Image || DEFAULT_GANG_IMAGE)
 							.setDescription(`Gang Image`),
 						),
 					)
 					.addLargeSeparator()
 					.addTextDisplayComponents(members => members
-						.setContent(`### ${s.members} (${gang.Members.length}/${gang.GetMaxMembers()})\n${membersList}`),
+						.setContent(`### ${s.members} (${gang!.Members.length}/${gang!.GetMaxMembers()})\n${membersList}`),
 					)
 					.addFooter({
 						text: `${s.created} ${showTime(gang.CreatedAt.getTime())}${adminIdText}`,
