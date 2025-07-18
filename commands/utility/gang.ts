@@ -934,9 +934,9 @@ module.exports = {
 		}
 
 		function validateImageUrl(url: string) {
-			const regex = /^(https?:\/\/.*\.(?:png|jpg|jpeg|webp)(?:\?.*)?)$/i;
+			const regex = /^https:\/\/.*\.(jpg|jpeg|png|webp)$/i;
 
-			return regex.test(url);
+			return !regex.test(url);
 		}
 
 		function warn(text: string) {
