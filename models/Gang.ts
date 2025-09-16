@@ -231,7 +231,7 @@ export class Gang {
 					[Language.English]: "Member",
 					[Language.Portuguese]: "Membro",
 					[Language.Spanish]: "Miembro",
-				}
+				},
 			};
 
 			// Criar o cargo de líder
@@ -844,7 +844,7 @@ export class Gang {
 		if (name) this.Name = name;
 		if (acronym) this.Acronym = acronym;
 		if (description) this.Description = description;
-		if (color) this.Color = color;
+		if (color != null) this.Color = color;
 		if (image) this.Image = image;
 
 		Log.Info(`Editing gang ${this.Id} with new values: ${name ? `[Name: ${this.Name}]` : ""} ${acronym ? `[Acronym: ${this.Acronym}]` : ""} ${description ? `[Description: ${this.Description}]` : ""} ${color ? `[Color: ${this.Color}]` : ""} ${image ? `[Image: ${this.Image}]` : ""}`);
