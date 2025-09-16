@@ -39,7 +39,6 @@ module.exports = {
 		const onlineUsers = client.userLastCommand.filter(time => new Date(time) > subMinutes(new Date(), 15)).size;
 		const uptime = client.uptime ? Math.floor(client.uptime / 1000 / 60) : 0;
 		const memoryUsage = process.memoryUsage().heapUsed / 1024 / 1024; // Convert to MB
-		const availableMemory = process.availableMemory() / 1024 / 1024; // Convert to MB
 
 		const container = new CustomContainerBuilder()
 			.setAccentColor(CrColors.Admin)
@@ -53,7 +52,7 @@ module.exports = {
 						`-# ${s.uptime}`,
 						`# ${uptime} min`,
 						`-# ${s.memoryUsage}`,
-						`# ${memoryUsage.toFixed(1)} MB / ${availableMemory.toFixed(1)} MB`,
+						`# ${memoryUsage.toFixed(1)} MB`,
 						`-# ${s.activePlayers}`,
 						`# ${playerCount} (${EmoteString.Online}${onlineUsers} online)`,
 					].join("\n")),
