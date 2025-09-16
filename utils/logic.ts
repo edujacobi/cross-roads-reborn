@@ -45,17 +45,15 @@ export async function checkUser(userId: string, interaction: CommandInteraction)
 	}
 }
 
-export async function searchUser(nameOrId: string) {
-	return await Users.findOne({
-		where: {
-			[Op.or]: {
-				nickname: {
-					[Op.like]: nameOrId,
-				},
-				id: nameOrId,
-			},
-		},
-	});
+export async function searchUser(nameOrId: string, interaction: CommandInteraction) {
+	const user = await User.Search(nameOrId);
+
+	if (!user) {
+		await replyUserDontExist(interaction, getLanguageFromLocale(interaction.locale));
+		return null;
+	}
+
+	return user;
 }
 
 export async function removeAllFromActions() {

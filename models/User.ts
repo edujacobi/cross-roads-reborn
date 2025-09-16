@@ -210,16 +210,22 @@ export class User {
 		}
 	}
 
-	async GetInfo() {
+	async GetInfo(fromUser?: Users) {
+		let user: Users | null;
 
-		const user = await Users.findOne({
-			where: {
-				id: this.Id,
-			},
-		});
+		if (fromUser) {
+			user = fromUser;
+		}
+		else {
+			user = await Users.findOne({
+				where: {
+					id: this.Id,
+				},
+			});
+		}
 
 		if (!user) {
-			return;
+			return null;
 		}
 
 		this.Id = user.id;
@@ -935,6 +941,25 @@ export class User {
 		}
 
 		return success;
+	}
+
+	static async Search(nameOrId: string): Promise<User | null> {
+		const user = await Users.findOne({
+			where: {
+				[Op.or]: {
+					nickname: {
+						[Op.like]: nameOrId,
+					},
+					id: nameOrId,
+				},
+			},
+		});
+
+		if (!user) {
+			return null;
+		}
+
+		return await new User(user.id).GetInfo(user);
 	}
 }
 

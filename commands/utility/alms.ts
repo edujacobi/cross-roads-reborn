@@ -1,5 +1,5 @@
-﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder, SlashCommandUserOption } from "discord.js";
-import { checkUser, replyInteraction, replyUserDontExist, sendPrivateMessage } from "../../utils/logic";
+﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+import { replyInteraction, searchUser, sendPrivateMessage } from "../../utils/logic";
 import { User } from "../../models/User";
 import { Language } from "../../models/Language";
 import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
@@ -14,28 +14,26 @@ module.exports = {
 		.setDescription("Donate some money to another user")
 		.setNameLocalization(Locale.PortugueseBR, "esmola")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Doe algum dinheiro para outro usuário")
-		.addUserOption((option: SlashCommandUserOption) =>
-			option
-				.setName("target")
-				.setDescription("The user to donate")
-				.setNameLocalization(Locale.PortugueseBR, "alvo")
-				.setDescriptionLocalization(Locale.PortugueseBR, "O avatar para doar")
-				.setRequired(true)),
+		.addStringOption(target => target
+			.setName("target")
+			.setDescription("The user to donate")
+			.setNameLocalization(Locale.PortugueseBR, "alvo")
+			.setDescriptionLocalization(Locale.PortugueseBR, "O avatar para doar")
+			.setMinLength(3)
+			.setRequired(true)),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
-		const target = interaction.options.getUser("target", true);
+		const nameOrId = interaction.options.getString("target", true);
+		const target = await searchUser(nameOrId, interaction);
 
-		const targetUser = await checkUser(target.id, interaction);
-
-		const sG = Strings[language];
-
-		if (!targetUser) {
-			return await replyUserDontExist(interaction, language);
+		if (!target) {
+			return;
 		}
 
-		const sR = Strings[targetUser?.Language];
+		const sG = Strings[language];
+		const sR = Strings[target?.Language];
 
-		const alms = new Alms(user, targetUser);
+		const alms = new Alms(user, target);
 
 		const { canGive, message } = alms.CanGiveAlms();
 
@@ -56,10 +54,10 @@ module.exports = {
 
 		const privateMessage = `**${user.GetNameWithImage()}** ${interaction.guild ? sR.receivedServer(interaction.guild.name, alms.Value) : sR.received(alms.Value)} ${EmoteString.Alms}`;
 
-		await sendPrivateMessage(target.id, privateMessage, CrColors.Default);
+		await sendPrivateMessage(target.Id, privateMessage, CrColors.Default);
 
 		const embed = new CustomEmbedBuilder()
-			.setDescription(`${sG.donated(alms.Value)} **${targetUser.GetNameWithImage()}** ${EmoteString.Alms}`)
+			.setDescription(`${sG.donated(alms.Value)} **${target.GetNameWithImage()}** ${EmoteString.Alms}`)
 			.setColor(CrColors.Default)
 			.setUserFooter({
 				nickname: user.Nickname,

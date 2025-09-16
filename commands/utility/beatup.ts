@@ -1,5 +1,5 @@
-﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder, SlashCommandUserOption } from "discord.js";
-import { checkUser, replyInteraction, replyUserDontExist } from "../../utils/logic";
+﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+import { replyInteraction, searchUser } from "../../utils/logic";
 import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
 import { defaultEmbed, showTime } from "../../utils/ui";
 import { EmoteString } from "../../utils/emotes";
@@ -14,16 +14,17 @@ module.exports = {
 		.setDescription("Beat a user and let it in Hospital")
 		.setNameLocalization(Locale.PortugueseBR, "espancar")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Espanque um usuário e deixe-o no Hospital")
-		.addUserOption((option: SlashCommandUserOption) =>
-			option
-				.setName("target")
-				.setNameLocalization(Locale.PortugueseBR, "alvo")
-				.setDescription("The user to beat up")
-				.setDescriptionLocalization(Locale.PortugueseBR, "O usuário para espancar"),
+		.addStringOption(target => target
+			.setName("target")
+			.setNameLocalization(Locale.PortugueseBR, "alvo")
+			.setDescription("The user to beat up")
+			.setMinLength(3)
+			.setDescriptionLocalization(Locale.PortugueseBR, "O usuário para espancar"),
 		),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
-		const target = interaction.options.getUser("target");
+		const nameOrId = interaction.options.getString("target");
+		const target = nameOrId ? await searchUser(nameOrId, interaction) : null;
 
 		const s = Strings[language];
 
@@ -48,7 +49,7 @@ module.exports = {
 			text = s.userHospital(user.Hospital.Time);
 		}
 
-		if (!target) {
+		if (!nameOrId) {
 			const instructions = new CustomEmbedBuilder()
 				.setColor(CrColors.BeatUp)
 				.setThumbnail("https://cdn.discordapp.com/attachments/691019843159326757/820064474995621938/Espancar_20210312194139.png")
@@ -66,13 +67,11 @@ module.exports = {
 			});
 		}
 
-		const targetUser = await checkUser(target.id, interaction);
-
-		if (!targetUser) {
-			return await replyUserDontExist(interaction, language);
+		if (!target) {
+			return;
 		}
 
-		const robbery = new BeatUp(user, targetUser);
+		const robbery = new BeatUp(user, target);
 
 		const { canBeat, message } = await robbery.CanBeatUser();
 

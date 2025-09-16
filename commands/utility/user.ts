@@ -1,6 +1,6 @@
-﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder, SlashCommandUserOption } from "discord.js";
+﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
 import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
-import { checkUser, replyInteraction, replyUserDontExist } from "../../utils/logic";
+import { replyInteraction, replyUserDontExist, searchUser } from "../../utils/logic";
 import { Language } from "../../models/Language";
 import { User } from "../../models/User";
 import { ClassList } from "../../interfaces/Classes";
@@ -8,6 +8,7 @@ import { UserBadge } from "../../models/UserBadge";
 import { formatMoney, showTime } from "../../utils/ui";
 import { EmoteString } from "../../utils/emotes";
 import { addDays } from "date-fns";
+import { getClient } from "../../client";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -15,20 +16,21 @@ module.exports = {
 		.setDescription("Relevant informations about the user!")
 		.setNameLocalization(Locale.PortugueseBR, "usuario")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Informações relevantes sobre o jogador!")
-		.addUserOption((option: SlashCommandUserOption) =>
-			option
-				.setName("target")
-				.setDescription("The user")
-				.setNameLocalization(Locale.PortugueseBR, "alvo")
-				.setDescriptionLocalization(Locale.PortugueseBR, "O usuário"),
+		.addStringOption(target => target
+			.setName("target")
+			.setDescription("The user")
+			.setMinLength(3)
+			.setNameLocalization(Locale.PortugueseBR, "alvo")
+			.setDescriptionLocalization(Locale.PortugueseBR, "O usuário"),
 		),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
-		const _user = interaction.options.getUser("target") || interaction.user;
-		const target = _user ? await checkUser(_user.id, interaction) : user;
+		const nameOrId = interaction.options.getString("target");
+		const target = nameOrId ? await searchUser(nameOrId, interaction) : user;
+		const _user = target ? await getClient().users.fetch(target.Id) : interaction.user;
 
 		if (!target) {
-			return await replyUserDontExist(interaction, language);
+			return;
 		}
 
 		const s = Strings[language];

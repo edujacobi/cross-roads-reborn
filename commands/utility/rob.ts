@@ -5,11 +5,10 @@
 	Locale,
 	MessageComponentInteraction,
 	SlashCommandBuilder,
-	SlashCommandUserOption,
 	StringSelectMenuBuilder,
 	StringSelectMenuOptionBuilder,
 } from "discord.js";
-import { checkUser, removeEmbedComponents, replyInteraction, replyUserDontExist } from "../../utils/logic";
+import { removeEmbedComponents, replyInteraction, replyUserDontExist, searchUser } from "../../utils/logic";
 import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
 import { defaultEmbed, formatMoney, showTime } from "../../utils/ui";
 import { EmoteString } from "../../utils/emotes";
@@ -26,16 +25,17 @@ module.exports = {
 		.setDescription("Rob a user or a location")
 		.setNameLocalization(Locale.PortugueseBR, "roubar")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Roube um usuário ou um lugar")
-		.addUserOption((option: SlashCommandUserOption) =>
-			option
-				.setName("target")
-				.setNameLocalization(Locale.PortugueseBR, "alvo")
-				.setDescription("The user to rob")
-				.setDescriptionLocalization(Locale.PortugueseBR, "O usuário para roubar"),
+		.addStringOption(target => target
+			.setName("target")
+			.setNameLocalization(Locale.PortugueseBR, "alvo")
+			.setDescription("The user to rob")
+			.setMinLength(3)
+			.setDescriptionLocalization(Locale.PortugueseBR, "O usuário para roubar"),
 		),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
-		const target = interaction.options.getUser("target");
+		const nameOrId = interaction.options.getString("target");
+		const target = nameOrId ? await searchUser(nameOrId, interaction) : null;
 
 		const s = Strings[language];
 
@@ -63,7 +63,7 @@ module.exports = {
 			canUserRob = false;
 		}
 
-		if (!target) {
+		if (!nameOrId) {
 			const instructions = new CustomEmbedBuilder()
 				.setColor(CrColors.Robbery)
 				.setThumbnail("https://media.discordapp.net/attachments/691019843159326757/791444366727708672/roubar_20201223201323.png")
@@ -73,7 +73,7 @@ module.exports = {
 				.setUserFooter({
 					nickname: user.Nickname,
 					image: interaction.user.avatarURL(),
-					text: user.Situation.Simple
+					text: user.Situation.Simple,
 				});
 
 			const select = new StringSelectMenuBuilder()
@@ -105,7 +105,10 @@ module.exports = {
 
 			const components = rowSelect.components[0].options.length > 0 ? [rowSelect] : [];
 
-			const response = await replyInteraction(interaction, { embeds: [instructions], components: canUserRob ? components : [] });
+			const response = await replyInteraction(interaction, {
+				embeds: [instructions],
+				components: canUserRob ? components : [],
+			});
 
 			const collector = response?.createMessageComponentCollector({
 				filter: (i: MessageComponentInteraction) => i.user.id === interaction.user.id,
@@ -145,13 +148,11 @@ module.exports = {
 			return;
 		}
 
-		const targetUser = await checkUser(target.id, interaction);
-
-		if (!targetUser) {
-			return await replyUserDontExist(interaction, language);
+		if (!target) {
+			return;
 		}
 
-		const robbery = new Robbery(user, targetUser);
+		const robbery = new Robbery(user, target);
 
 		const { canRob, message } = await robbery.CanRobUser();
 

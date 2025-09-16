@@ -22,7 +22,7 @@ import {
 	hexToRGB,
 	showTime,
 } from "../../utils/ui";
-import { disableButtons, replyInteraction, replyUserDontExist, searchUser } from "../../utils/logic";
+import { disableButtons, replyInteraction, searchUser } from "../../utils/logic";
 import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
 import { GangColor, IGangColor } from "../../utils/colors";
 
@@ -644,13 +644,7 @@ module.exports = {
 
 			const targetUserInput = interaction.options.getString("user", true);
 
-			const targetUser = await searchUser(targetUserInput);
-
-			if (!targetUser) {
-				return await replyUserDontExist(interaction, language);
-			}
-
-			const target = await new User(targetUser.id).GetInfo();
+			const target = await searchUser(targetUserInput, interaction);
 
 			if (!target) {
 				return;
@@ -782,13 +776,7 @@ module.exports = {
 
 			const targetUserInput = interaction.options.getString("user", true);
 
-			const targetUser = await searchUser(targetUserInput);
-
-			if (!targetUser) {
-				return await replyUserDontExist(interaction, language);
-			}
-
-			const target = await new User(targetUser.id).GetInfo();
+			const target = await searchUser(targetUserInput, interaction);
 
 			if (!target) {
 				return;

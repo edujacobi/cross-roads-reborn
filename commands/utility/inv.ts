@@ -9,9 +9,8 @@
 	MessageComponentInteraction,
 	MessageFlags,
 	SlashCommandBuilder,
-	SlashCommandUserOption,
 } from "discord.js";
-import { checkUser, disableButtons, replyInteraction, replyUserDontExist } from "../../utils/logic";
+import { disableButtons, replyInteraction, searchUser } from "../../utils/logic";
 import { Language } from "../../models/Language";
 import { EmoteId, EmoteString } from "../../utils/emotes";
 import { differenceInHours, subMinutes } from "date-fns";
@@ -22,26 +21,28 @@ import { convertHexNumberToString, createUserGangImage, formatMoney, hexToRGB, s
 import { ItemType } from "../../interfaces/Items";
 import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
 import { GangColor } from "../../utils/colors";
+import { getClient } from "../../client";
 
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("inv")
 		.setDescription("See the inventory of a user")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Veja o inventário de um usuário")
-		.addUserOption((option: SlashCommandUserOption) =>
-			option
-				.setName("target")
-				.setDescription("The user")
-				.setNameLocalization(Locale.PortugueseBR, "alvo")
-				.setDescriptionLocalization(Locale.PortugueseBR, "O usuário"),
+		.addStringOption(target => target
+			.setName("target")
+			.setDescription("The user")
+			.setNameLocalization(Locale.PortugueseBR, "alvo")
+			.setMinLength(3)
+			.setDescriptionLocalization(Locale.PortugueseBR, "O usuário"),
 		),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
-		const _user = interaction.options.getUser("target") || interaction.user;
-		const target = _user ? await checkUser(_user.id, interaction) : user;
+		const nameOrId = interaction.options.getString("target");
+		const target = nameOrId ? await searchUser(nameOrId, interaction) : user;
+		const _user = target ? await getClient().users.fetch(target.Id) : interaction.user;
 
 		if (!target) {
-			return await replyUserDontExist(interaction, language);
+			return;
 		}
 
 		const s = Strings[language];
@@ -106,7 +107,7 @@ module.exports = {
 					)
 					.addLargeSeparator()
 					.addTextDisplayComponents(items => items
-						.setContent(emoteItems.length ? `# ${emoteItems.join("\u0009")}` : "-# Inventário vazio"),
+						.setContent(emoteItems.length ? `# ${emoteItems.join("\u0009")}` : `-# ${s.emptyInventory}`),
 					)
 					.addFooter({
 						button: new ButtonBuilder()
