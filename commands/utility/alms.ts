@@ -18,7 +18,7 @@ module.exports = {
 			.setName("target")
 			.setDescription("The user to donate")
 			.setNameLocalization(Locale.PortugueseBR, "alvo")
-			.setDescriptionLocalization(Locale.PortugueseBR, "O avatar para doar")
+			.setDescriptionLocalization(Locale.PortugueseBR, "O alvo para doar")
 			.setMinLength(3)
 			.setRequired(true)),
 
