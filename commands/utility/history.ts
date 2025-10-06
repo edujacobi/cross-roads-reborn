@@ -1,5 +1,5 @@
-﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder, SlashCommandUserOption } from "discord.js";
-import { checkUser, replyUserDontExist } from "../../utils/logic";
+﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+import { searchUser } from "../../utils/logic";
 import { formatDate, formatMoney } from "../../utils/ui";
 import { User } from "../../models/User";
 import { RobHistories } from "../../database/RobHistories";
@@ -19,20 +19,20 @@ module.exports = {
 		.setDescription("Shows the history of your robberies")
 		.setNameLocalization(Locale.PortugueseBR, "historico")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Mostra o seu histórico de roubos")
-		.addUserOption((option: SlashCommandUserOption) =>
-			option
-				.setName("target")
-				.setDescription("The user to show")
-				.setNameLocalization(Locale.PortugueseBR, "alvo")
-				.setDescriptionLocalization(Locale.PortugueseBR, "O usuário para mostrar"),
+		.addStringOption(target => target
+			.setName("target")
+			.setDescription("The user to show")
+			.setMinLength(3)
+			.setNameLocalization(Locale.PortugueseBR, "alvo")
+			.setDescriptionLocalization(Locale.PortugueseBR, "O usuário para mostrar"),
 		),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
-		const _user = interaction.options.getUser("target") || interaction.user;
-		const target = _user ? await checkUser(_user.id, interaction) : user;
+		const nameOrId = interaction.options.getString("target");
+		const target = nameOrId ? await searchUser(nameOrId, interaction) : user;
 
 		if (!target) {
-			return await replyUserDontExist(interaction, language);
+			return;
 		}
 
 		const s = Strings[language];
