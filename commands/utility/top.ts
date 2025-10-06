@@ -11,7 +11,7 @@ import {
 	SlashCommandBuilder,
 } from "discord.js";
 import { Op } from "sequelize";
-import { formatMoney } from "../../utils/ui";
+import { defaultEmbed, formatMoney } from "../../utils/ui";
 import { Users } from "../../database/Users";
 import { User } from "../../models/User";
 import { Language } from "../../models/Language";
@@ -21,8 +21,9 @@ import { Pagination } from "../../models/Pagination";
 import { IDescription } from "../../interfaces/Interfaces";
 import { EmoteId, EmoteString } from "../../utils/emotes";
 import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
-// @ts-ignore
-import { execute as InvCommandExecute } from "./inv";
+import { Robbery } from "../../models/Robbery";
+import { replyInteraction, searchUser } from "../../utils/logic";
+import { CrColors } from "../../utils/colors";
 
 enum TopSubcommand {
 	Money = "money",
@@ -417,6 +418,7 @@ module.exports = {
 						.setButtonAccessory(btn => btn
 							.setLabel("Opções")
 							.setCustomId("position" + position)
+							.setDisabled(true)
 							.setStyle(ButtonStyle.Secondary),
 						),
 					);
@@ -437,9 +439,12 @@ module.exports = {
 
 		const { response, collector } = await pagination.GenerateContainer();
 
+		let position: number;
+
 		collector.on("collect", async btn => {
+
 			if (btn.customId.includes("position")) {
-				const position = Number(btn.customId.replace("position", ""));
+				position = (Number(btn.customId.replace("position", "")) % 6) - 1;
 
 				const originalContainer = response.components[0] as ContainerComponent;
 
@@ -451,7 +456,7 @@ module.exports = {
 
 				const sections = oldContainer.components.filter(component => component.data.type === ComponentType.Section);
 
-				const selectedSection = sections[(position % 6) - 1] as SectionBuilder;
+				const selectedSection = sections[position] as SectionBuilder;
 
 				const button = selectedSection.accessory as ButtonBuilder;
 
@@ -497,11 +502,32 @@ module.exports = {
 				});
 			}
 
-			else if (btn.customId === "inv") {
+			else if (btn.customId === "rob") {
+				const target = await searchUser(users[position].id, interaction);
+				if (!target) {
+					return;
+				}
 
-				// @ts-ignore
-				btn.options;
-				await InvCommandExecute(btn, user, language);
+				const robbery = new Robbery(user, target);
+
+				const { canRob, message } = await robbery.CanRobUser();
+
+				if (!canRob) {
+					return await replyInteraction(interaction, {
+						embeds: [defaultEmbed({
+							nickname: user.Nickname,
+							interaction,
+							color: CrColors.Robbery,
+							description: message,
+						})],
+						components: [],
+					});
+				}
+
+				await robbery.GetDiscordUser();
+
+				await robbery.StartRobbery(interaction);
+
 			}
 
 			else if (btn.customId === "goback") {
