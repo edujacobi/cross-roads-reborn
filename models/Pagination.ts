@@ -4,10 +4,11 @@ import {
 	ButtonStyle,
 	ChatInputCommandInteraction,
 	ComponentType,
-	EmbedBuilder,
+	ContainerBuilder,
 	MessageComponentInteraction,
+	MessageFlags,
 } from "discord.js";
-import { removeEmbedComponents, replyInteraction } from "../utils/logic";
+import { disableButtons, replyInteraction } from "../utils/logic";
 import { Language } from "./Language";
 
 export class Pagination {
@@ -16,18 +17,18 @@ export class Pagination {
 	Offset: number = 0;
 	Limit = 5;
 	HowManyRecords: number = 0;
-	CustomizeEmbed: (() => Promise<EmbedBuilder>);
+	CustomizeContainer: (() => Promise<ContainerBuilder>);
 
 	constructor(interaction: ChatInputCommandInteraction, language: Language) {
 		this.Interaction = interaction;
 		this.Language = language;
 
-		this.CustomizeEmbed = () => {
-			return Promise.resolve(new EmbedBuilder());
+		this.CustomizeContainer = () => {
+			return Promise.resolve(new ContainerBuilder());
 		};
 	}
 
-	private GenerateRow() {
+	public GenerateRow() {
 		const rowButtons = new ActionRowBuilder<ButtonBuilder>();
 
 		if (this.Offset != 0) {
@@ -57,13 +58,18 @@ export class Pagination {
 		return Strings[this.Language].showing(this.Offset, this.Limit, this.HowManyRecords);
 	}
 
-	async GenerateEmbed(mainEmbed?: EmbedBuilder) {
+	async GenerateContainer(mainContainer?: ContainerBuilder) {
 		let row = this.GenerateRow();
-		let embed = await this.CustomizeEmbed();
+		let container = await this.CustomizeContainer();
+
+		const components: (ContainerBuilder | ActionRowBuilder<ButtonBuilder>)[] = mainContainer ? [mainContainer, container] : [container];
+		if (row.components.length > 0) {
+			components.push(row);
+		}
 
 		const response = await this.Interaction.editReply({
-			embeds: mainEmbed ? [mainEmbed, embed] : [embed],
-			components: row.components.length > 0 ? [row] : [],
+			components,
+			flags: MessageFlags.IsComponentsV2,
 		});
 
 		const collector = response.createMessageComponentCollector({
@@ -75,6 +81,10 @@ export class Pagination {
 		collector.on("collect", async btn => {
 			await btn.deferUpdate();
 
+			if (!["next", "prev"].includes(btn.customId)) {
+				return;
+			}
+
 			if (btn.customId == "next") {
 				this.Offset += this.Limit;
 			}
@@ -82,18 +92,20 @@ export class Pagination {
 				this.Offset -= this.Limit;
 			}
 
-			embed = await this.CustomizeEmbed();
+			container = await this.CustomizeContainer();
 			row = this.GenerateRow();
 
 			await replyInteraction(this.Interaction, {
-				embeds: mainEmbed ? [mainEmbed, embed] : [embed],
-				components: [row],
+				components: mainContainer ? [mainContainer, container, row] : [container, row],
+				flags: MessageFlags.IsComponentsV2,
 			});
 		});
 
 		collector.on("end", async () => {
-			await removeEmbedComponents(this.Interaction);
+			await disableButtons(this.Interaction, mainContainer ?? container);
 		});
+
+		return { response, collector };
 	}
 }
 

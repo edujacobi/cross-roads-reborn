@@ -12,6 +12,6 @@ module.exports = {
 	async execute(interaction: ChatInputCommandInteraction, user: User) {
 		const hospital = new Hospital(user, interaction);
 
-		return await hospital.GenerateEmbed();
+		return await hospital.GenerateContainer();
 	},
 };

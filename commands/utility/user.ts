@@ -1,6 +1,6 @@
 ﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
 import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
-import { replyInteraction, replyUserDontExist, searchUser } from "../../utils/logic";
+import { replyInteraction, searchUser } from "../../utils/logic";
 import { Language } from "../../models/Language";
 import { User } from "../../models/User";
 import { ClassList } from "../../interfaces/Classes";

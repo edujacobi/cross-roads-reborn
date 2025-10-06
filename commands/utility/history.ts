@@ -1,7 +1,6 @@
 ﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder, SlashCommandUserOption } from "discord.js";
 import { checkUser, replyUserDontExist } from "../../utils/logic";
 import { formatDate, formatMoney } from "../../utils/ui";
-import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
 import { User } from "../../models/User";
 import { RobHistories } from "../../database/RobHistories";
 import { EmoteString } from "../../utils/emotes";
@@ -11,6 +10,7 @@ import { Pagination } from "../../models/Pagination";
 import { ClassList } from "../../interfaces/Classes";
 import { LocationList } from "../../interfaces/Locations";
 import { ClashType } from "../../models/Robbery";
+import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
 
 module.exports = {
 	cooldown: 10,
@@ -45,7 +45,7 @@ module.exports = {
 
 		pagination.HowManyRecords = await RobHistories.Count(target.Id);
 
-		pagination.CustomizeEmbed = async () => {
+		pagination.CustomizeContainer = async () => {
 			robHistories = await RobHistories.GetList(target.Id, pagination.Limit, pagination.Offset);
 
 			let historyList = "";
@@ -89,20 +89,19 @@ module.exports = {
 				historyList += `### ${challengerName} ${emoteShow} ${opponentName}\n-# ${emoji} ${text}${textMoney} • ${formatDate(rob.createdAt, language)}\n`;
 			}
 
-			return new CustomEmbedBuilder()
-				.setAuthor({
-					name: `${s.title} ${target.Nickname}`,
-					iconURL: _user.avatarURL() ?? undefined,
-				})
-				.setDescription(historyList)
-				.setUserFooter({
-					nickname: user.Nickname,
-					image: interaction.user.avatarURL(),
+			return new CustomContainerBuilder()
+				.setUser(user)
+				.addTextDisplayComponents(title => title
+					.setContent(`-# ${s.title} ${target.GetNameWithImage()}`))
+				.addLargeSeparator()
+				.addTextDisplayComponents(content => content
+					.setContent(historyList))
+				.addFooter({
 					text: pagination.Showing(),
 				});
 		};
 
-		await pagination.GenerateEmbed();
+		await pagination.GenerateContainer();
 	},
 };
 
@@ -111,7 +110,7 @@ const Strings = {
 		empty: "This user doesn't have a history",
 		success: "Success",
 		failure: "Failure",
-		title: `Robbery history of`,
+		title: `Robbery and beat ups history of`,
 		data: "Data",
 		history: "history",
 		successes: "Successes",
@@ -125,7 +124,7 @@ const Strings = {
 		empty: "Este usuário não possui histórico",
 		success: "Sucesso",
 		failure: "Falha",
-		title: `Histórico de roubos de`,
+		title: `Histórico de roubos e espancamentos de`,
 		data: "Dados",
 		history: "Histórico",
 		successes: "Sucessos",
@@ -139,7 +138,7 @@ const Strings = {
 		empty: "Este usuario no tiene historial",
 		success: "Éxito",
 		failure: "Fracaso",
-		title: `Historial de robos de`,
+		title: `Historial de robos y golpes de`,
 		data: "Datos",
 		history: "Historial",
 		successes: "Éxitos",

@@ -57,24 +57,34 @@ export class CustomContainerBuilder extends ContainerBuilder {
 	changeFooterText(text: string) {
 		const content = this.generateTextFooter(text);
 
-		const footerTextComponent = this.components.find(component => component.data?.id === 100);
+		return this.changeTextFromSectionId(100, content);
+	}
 
-		if (!footerTextComponent) {
+	/**
+	 * Change the text from a specific section (or text component). To change a text inside a section, both need a id, and the text should be added 1.
+	 * Example: Section: Id 30, Text inside Section: Id 31.
+	 * @param id
+	 * @param text
+	 */
+	changeTextFromSectionId(id: number, text: string) {
+		const textComponent = this.components.find(component => component.data?.id === id);
+
+		if (!textComponent) {
 			return this;
 		}
 
-		if (footerTextComponent instanceof TextDisplayBuilder) {
-			footerTextComponent.setContent(content);
+		if (textComponent instanceof TextDisplayBuilder) {
+			textComponent.setContent(text);
 		}
-		else if (footerTextComponent instanceof SectionBuilder) {
-			const footerTextComponentInside = footerTextComponent.components.find(component => component.data?.id === 101);
+		else if (textComponent instanceof SectionBuilder) {
+			const textComponentInside = textComponent.components.find(component => component.data?.id === id + 1);
 
-			if (!footerTextComponentInside) {
+			if (!textComponentInside) {
 				return this;
 			}
 
-			if (footerTextComponentInside instanceof TextDisplayBuilder) {
-				footerTextComponentInside.setContent(content);
+			if (textComponentInside instanceof TextDisplayBuilder) {
+				textComponentInside.setContent(text);
 			}
 
 		}

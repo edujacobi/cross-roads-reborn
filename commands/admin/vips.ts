@@ -1,5 +1,4 @@
 ﻿import { ChatInputCommandInteraction, Colors, Locale, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
-import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
 import { Users } from "../../database/Users";
 import { Op } from "sequelize";
 import { EmoteString } from "../../utils/emotes";
@@ -8,6 +7,7 @@ import { Language } from "../../models/Language";
 import { User } from "../../models/User";
 import { ClassList } from "../../interfaces/Classes";
 import { showTime } from "../../utils/ui";
+import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -45,7 +45,7 @@ module.exports = {
 
 		pagination.HowManyRecords = await Users.count({ where });
 
-		pagination.CustomizeEmbed = async () => {
+		pagination.CustomizeContainer = async () => {
 			await findList();
 
 			let text = "";
@@ -59,16 +59,19 @@ module.exports = {
 				text += `### ${emoteClass} ${user.nickname}\n${timeText}\n-# \`ID: ${user.id}\`\n`;
 			}
 
-			return new CustomEmbedBuilder()
-				.setColor(Colors.Gold)
-				.setDescription(`# ${EmoteString.VIP} VIP Users\n${text}`)
-				.setUserFooter({
-					nickname: user.Nickname,
-					image: interaction.user.avatarURL(),
+			return new CustomContainerBuilder()
+				.setUser(user)
+				.setAccentColor(Colors.Gold)
+				.addTextDisplayComponents(title => title
+					.setContent(`# ${EmoteString.VIP} VIP Users`))
+				.addLargeSeparator()
+				.addTextDisplayComponents(content => content
+					.setContent(text))
+				.addFooter({
 					text: pagination.Showing(),
 				});
 		};
 
-		await pagination.GenerateEmbed();
+		await pagination.GenerateContainer();
 	},
 };

@@ -5,9 +5,9 @@ import {
 	ChatInputCommandInteraction,
 	ComponentType,
 	MessageComponentInteraction,
+	MessageFlags,
 } from "discord.js";
 import { User } from "./User";
-import { CustomEmbedBuilder } from "./CustomEmbedBuilder";
 import { CrColors } from "../utils/colors";
 import { EmoteString } from "../utils/emotes";
 import { replyInteraction } from "../utils/logic";
@@ -21,6 +21,7 @@ import { differenceInMinutes } from "date-fns";
 import { Notification, NotificationType } from "./Notification";
 import { Log } from "../utils/log";
 import { Pagination } from "./Pagination";
+import { CustomContainerBuilder } from "../ui/builders/CustomContainerBuilder";
 
 export class Hospital {
 	User: User;
@@ -38,7 +39,7 @@ export class Hospital {
 		this.PrivatePrice = Math.floor(this.PrivateBasePrice + defFactor + moneyFactor);
 	}
 
-	async GenerateEmbed() {
+	async GenerateContainer() {
 		const s = Strings[this.User.Language];
 
 		let text = `${s.userFree}`;
@@ -46,17 +47,23 @@ export class Hospital {
 			text = s.userInHospital(this.User.Hospital.Time);
 		}
 
-		const embed = new CustomEmbedBuilder()
-			.setThumbnail("https://media.discordapp.net/attachments/1233604589064818808/1352830745340805202/Hospital7.png")
-			.setDescription(`# Hospital
+		const container = new CustomContainerBuilder()
+			.setUser(this.User)
+			.setAccentColor(CrColors.Hospital)
+			.addSectionComponents(header => header
+				.setId(1)
+				.addTextDisplayComponents(content => content
+					.setId(2)
+					.setContent(`# Hospital
 ${s.description}
 
--# ${text}`)
-			.setColor(CrColors.Hospital)
-			.setUserFooter({
-				nickname: this.User.Nickname,
-				image: this.Interaction.user.avatarURL()
-			});
+-# ${text}`),
+				)
+				.setThumbnailAccessory(thumb => thumb
+					.setURL("https://media.discordapp.net/attachments/1233604589064818808/1352830745340805202/Hospital7.png"),
+				),
+			)
+			.addFooter();
 
 		const hospitalized = await this.GetHospitalized();
 
@@ -80,8 +87,8 @@ ${s.description}
 		}
 
 		const response = await replyInteraction(this.Interaction, {
-			embeds: [embed],
-			components: [row],
+			components: [container, row],
+			flags: MessageFlags.IsComponentsV2,
 		});
 
 		const collector = response?.createMessageComponentCollector({
@@ -97,27 +104,28 @@ ${s.description}
 				const pagination = new Pagination(this.Interaction, this.User.Language);
 
 				pagination.HowManyRecords = hospitalized.length;
-				pagination.Limit = 15;
+				pagination.Limit = 10;
 
-				const embedHospitalized = new CustomEmbedBuilder()
-					.setTitle(s.hospitalized);
+				const containerHospitalized = new CustomContainerBuilder()
+					.setUser(this.User)
+					.addTextDisplayComponents(title => title
+						.setContent(s.hospitalized),
+					);
 
-				pagination.CustomizeEmbed = async () => {
+				pagination.CustomizeContainer = async () => {
 					const users = hospitalized.slice(pagination.Offset, pagination.Offset + pagination.Limit);
 
 					users.forEach(user => {
-						embedHospitalized.addFields({
-							name: `${ClassList[user.class].Image.Emote.String} ${user.nickname}`,
-							value: `${s.healed} ${showTime(new Date(user.hospitalTime).getTime(), true)}\n${s.howManyTimes(user.hospitalCount)}`,
-							inline: true,
-						});
+						containerHospitalized.addTextDisplayComponents(name => name
+							.setContent(`### ${ClassList[user.class].Image.Emote.String} ${user.nickname}`));
+						containerHospitalized.addTextDisplayComponents(value => value
+							.setContent(`${s.healed} ${showTime(new Date(user.hospitalTime).getTime(), true)}\n${s.howManyTimes(user.hospitalCount)}`));
 					});
 
-					return embedHospitalized
-						.setFooter({ text: pagination.Showing() });
+					return containerHospitalized;
 				};
 
-				await pagination.GenerateEmbed(embed);
+				await pagination.GenerateContainer(container);
 			}
 			else if (btn.customId === "private") {
 				buttonPrivate.setDisabled(true);
@@ -138,15 +146,11 @@ ${s.description}
 					});
 				}
 
-				embed
-					.setDescription(`## ${s.privateCare}
+				container
+					.changeFooterText(formatMoney(this.User.Money, this.User.Language))
+					.changeTextFromSectionId(1, `## ${s.privateCare}
 ${s.treatmentCost(this.PrivatePrice)}
--# ${s.confirmPayment}`)
-					.setUserFooter({
-						nickname: this.User.Nickname,
-						image: this.Interaction.user.avatarURL(),
-						text: formatMoney(this.User.Money, this.User.Language)
-					});
+-# ${s.confirmPayment}`);
 
 				const buttonConfirm = new ButtonBuilder()
 					.setCustomId("confirm")
@@ -155,7 +159,7 @@ ${s.treatmentCost(this.PrivatePrice)}
 
 				row.setComponents([buttonConfirm]);
 
-				await replyInteraction(this.Interaction, { embeds: [embed], components: [row] });
+				await replyInteraction(this.Interaction, { components: [container, row] });
 			}
 			else if (btn.customId === "confirm") {
 				await this.User.GetInfo();
@@ -176,17 +180,12 @@ ${s.treatmentCost(this.PrivatePrice)}
 
 				await this.PayPrivate();
 
-				embed
-					.setDescription(`## ${s.privateCare}\n### ${s.privateHealed}`)
-					.setUserFooter({
-						nickname: this.User.Nickname,
-						image: this.Interaction.user.avatarURL(),
-						text: formatMoney(this.User.Money, this.User.Language)
-					});
+				container
+					.changeFooterText(formatMoney(this.User.Money, this.User.Language))
+					.changeTextFromSectionId(1, `## ${s.privateCare}\n### ${s.privateHealed}`);
 
 				await replyInteraction(this.Interaction, {
-					embeds: [embed],
-					components: [],
+					components: [container],
 				});
 			}
 		});
@@ -268,7 +267,7 @@ If you pay a certain amount, we will be able to treat you faster!`,
 		description: `_Público, Gratuito e de Qualidade!_
 
 -#	Usuários hospitalizados possuem ${EmoteString.Defense}-5 DEF e ${EmoteString.Defense}-5% $DEF!.
-###	Serviço	público
+###	Serviço público
 Infelizmente não temos mais leitos livres, então você precisará esperar no corredor até ser atendido.
 ### ${EmoteBadgeString.Season6.Hypochondriac} Atendimento particular
 Caso você pague uma certa quantia, poderemos tratá-lo mais rapidamente!`,

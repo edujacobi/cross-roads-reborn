@@ -7,15 +7,15 @@ import {
 	ChatInputCommandInteraction,
 	ComponentType,
 	MessageComponentInteraction,
+	MessageFlags,
 } from "discord.js";
 import { ItemId, ItemList } from "../interfaces/Items";
-import { CustomEmbedBuilder } from "./CustomEmbedBuilder";
 import { CrColors } from "../utils/colors";
 import { Users } from "../database/Users";
 import { Op } from "sequelize";
 import { defaultEmbed, formatMoney, showTime } from "../utils/ui";
 import { EmoteId, EmoteString } from "../utils/emotes";
-import { removeEmbedComponents, replyInteraction } from "../utils/logic";
+import { disableButtons, replyInteraction } from "../utils/logic";
 import { ClassList } from "../interfaces/Classes";
 import { setTimeout as wait } from "timers/promises";
 import { addMinutes, addSeconds } from "date-fns";
@@ -23,6 +23,7 @@ import { Log } from "../utils/log";
 import { Notification, NotificationType } from "./Notification";
 import { EmoteBadgeString } from "../utils/badges";
 import { Pagination } from "./Pagination";
+import { CustomContainerBuilder } from "../ui/builders/CustomContainerBuilder";
 
 export class Prison {
 	User: User;
@@ -64,15 +65,22 @@ export class Prison {
 			text = s.userPrison(this.User.Prison.Time);
 		}
 
-		const embed = new CustomEmbedBuilder()
-			.setThumbnail("https://media.discordapp.net/attachments/1233604589064818808/1339946455913205871/Prison.png")
-			.setDescription(`# ${s.title}\n${s.description(this.Escape.BaseChance, this.Escape.BaseJetpackChance + this.Escape.BaseChance, text)}`)
-			.setColor(CrColors.Police)
-			.setUserFooter({
-				nickname: this.User.Nickname,
-				image: this.Interaction.user.avatarURL(),
-				text: `${s.currentChance}: ${this.Escape.TotalChance}%`,
-			});
+		const container = new CustomContainerBuilder()
+			.setUser(this.User)
+			.setAccentColor(CrColors.Police)
+			.addSectionComponents(header => header
+				.setId(1)
+				.addTextDisplayComponents(content => content
+					.setId(2)
+					.setContent(`# ${s.title}
+${s.description(this.Escape.BaseChance, this.Escape.BaseJetpackChance + this.Escape.BaseChance, text)}`),
+				)
+				.setThumbnailAccessory(thumb => thumb
+					.setURL("https://media.discordapp.net/attachments/1233604589064818808/1339946455913205871/Prison.png"),
+				),
+			)
+			.addFooter({ text: `${s.currentChance}: ${this.Escape.TotalChance}%` });
+
 
 		const prisoners = await this.GetPrisoners();
 
@@ -103,7 +111,10 @@ export class Prison {
 			row.addComponents(buttonEscape, buttonBribe);
 		}
 
-		const response = await replyInteraction(this.Interaction, { embeds: [embed], components: [row] });
+		const response = await replyInteraction(this.Interaction, {
+			components: [container, row],
+			flags: MessageFlags.IsComponentsV2,
+		});
 
 		const collector = response?.createMessageComponentCollector({
 			filter: (i: MessageComponentInteraction) => i.user.id === this.Interaction.user.id,
@@ -118,29 +129,30 @@ export class Prison {
 				const pagination = new Pagination(this.Interaction, this.User.Language);
 
 				pagination.HowManyRecords = prisoners.length;
-				pagination.Limit = 15;
+				pagination.Limit = 10;
 
-				const embedPrisoners = new CustomEmbedBuilder()
-					.setTitle(s.prisoners);
+				const containerPrisoners = new CustomContainerBuilder()
+					.setUser(this.User)
+					.addTextDisplayComponents(title => title
+						.setContent(s.prisoners),
+					);
 
-				pagination.CustomizeEmbed = async () => {
+				pagination.CustomizeContainer = async () => {
 					const users = prisoners.slice(pagination.Offset, pagination.Offset + pagination.Limit);
 
 					users.forEach(prisoner => {
-						embedPrisoners.addFields({
-							name: `${ClassList[prisoner.class].Image.Emote.String} ${prisoner.nickname}`,
-							value: `${s.free} ${showTime(new Date(prisoner.prisonTime).getTime(), true)}
+						containerPrisoners.addTextDisplayComponents(name => name
+							.setContent(`### ${ClassList[prisoner.class].Image.Emote.String} ${prisoner.nickname}`));
+						containerPrisoners.addTextDisplayComponents(value => value
+							.setContent(`${s.free} ${showTime(new Date(prisoner.prisonTime).getTime(), true)}
 -# ${s.howManyTimesPrison(prisoner.robberyFailureCount)}
--# ${s.howManyTimesEscape(prisoner.escapeCount)}`,
-							inline: true,
-						});
+-# ${s.howManyTimesEscape(prisoner.escapeCount)}`));
 					});
 
-					return embedPrisoners
-						.setFooter({ text: pagination.Showing() });
+					return containerPrisoners;
 				};
 
-				await pagination.GenerateEmbed(embed);
+				await pagination.GenerateContainer(container);
 			}
 			else if (btn.customId === "escape") {
 				buttonEscape.setDisabled(true);
@@ -161,11 +173,11 @@ export class Prison {
 					});
 				}
 
-				const embed = await this.StartEscape();
+				const container = await this.StartEscape();
 
 				await wait(this.Escape.DefaultDuration * 1000);
 
-				await this.EndEscape(embed);
+				await this.EndEscape(container);
 			}
 			else if (btn.customId === "bribe") {
 				buttonBribe.setDisabled(true);
@@ -190,18 +202,23 @@ export class Prison {
 				const moneyFactor = this.User.Money * (this.User.Escape.HasTried ? 0.1 : 0.05);
 				this.Bribe.Value = Math.floor(this.Bribe.BaseValue + atkFactor + moneyFactor);
 
-				const bribery = new CustomEmbedBuilder()
-					.setAuthor({
-						iconURL: "https://media.discordapp.net/attachments/1233604589064818808/1339946455913205871/Prison.png",
-						name: s.title,
-					})
-					.setColor(CrColors.Police)
-					.setDescription(`### ${EmoteString.Police} ${s.bribe}\n${s.briberyStart(this.Bribe.Value)}`)
-					.setUserFooter({
-						nickname: this.User.Nickname,
-						image: this.Interaction.user.avatarURL(),
-						text: formatMoney(this.User.Money, this.User.Language),
-					});
+				const bribery = new CustomContainerBuilder()
+					.setUser(this.User)
+					.setAccentColor(CrColors.Police)
+					.addSectionComponents(header => header
+						.setId(1)
+						.addTextDisplayComponents(content => content
+							.setId(2)
+							.setContent(`# ${s.title}
+### ${EmoteString.Police} ${s.bribe}
+
+${s.briberyStart(this.Bribe.Value)}`),
+						)
+						.setThumbnailAccessory(thumb => thumb
+							.setURL("https://media.discordapp.net/attachments/1233604589064818808/1339946455913205871/Prison.png"),
+						),
+					)
+					.addFooter({ text: formatMoney(this.User.Money, this.User.Language) });
 
 				const buttonConfirm = new ButtonBuilder()
 					.setStyle(ButtonStyle.Success)
@@ -211,7 +228,7 @@ export class Prison {
 
 				row.setComponents(buttonConfirm);
 
-				await replyInteraction(this.Interaction, { embeds: [bribery], components: [row] });
+				await replyInteraction(this.Interaction, { components: [bribery, row] });
 			}
 			else if (btn.customId === "confirmBribe") {
 				await this.User.GetInfo();
@@ -232,34 +249,29 @@ export class Prison {
 
 				const success = await this.PayBribery(this.Bribe.Value);
 
-				const responseEmbed = new CustomEmbedBuilder()
-					.setColor(CrColors.Police);
+				const responseContainer = new CustomContainerBuilder()
+					.setUser(this.User)
+					.setAccentColor(CrColors.Police);
 
 				if (success) {
-					responseEmbed
-						.setDescription(`### ${EmoteString.Police} ${s.briberyAccepted}\n${s.briberyAcceptedDescription}`)
-						.setUserFooter({
-							nickname: this.User.Nickname,
-							image: this.Interaction.user.avatarURL(),
-							text: s.briberyAcceptedFooter,
-						});
+					responseContainer
+						.addTextDisplayComponents(description => description
+							.setContent(`### ${EmoteString.Police} ${s.briberyAccepted}\n${s.briberyAcceptedDescription}`))
+						.addFooter({ text: s.briberyAcceptedFooter });
 				}
 				else {
-					responseEmbed
-						.setDescription(`### ${EmoteString.Police} ${s.briberyRejected}\n${s.briberyRejectedDescription}`)
-						.setUserFooter({
-							nickname: this.User.Nickname,
-							image: this.Interaction.user.avatarURL(),
-							text: s.briberyRejectedFooter,
-						});
+					responseContainer
+						.addTextDisplayComponents(description => description
+							.setContent(`### ${EmoteString.Police} ${s.briberyRejected}\n${s.briberyRejectedDescription}`))
+						.addFooter({ text: s.briberyRejectedFooter });
 				}
 
-				return await replyInteraction(this.Interaction, { embeds: [responseEmbed], components: [] });
+				return await replyInteraction(this.Interaction, { components: [responseContainer] });
 			}
 		});
 
 		collector?.on("end", async () => {
-			await removeEmbedComponents(this.Interaction);
+			await disableButtons(this.Interaction, container);
 		});
 	}
 
@@ -315,20 +327,23 @@ export class Prison {
 		const s = Strings[this.User.Language];
 		const emote = this.Escape.HasJetpack ? ItemList[ItemId.Jetpack].Skin.Default.Emote.String : EmoteString.Escape;
 
-		const escapeEmbed = new CustomEmbedBuilder()
-			.setDescription(`### ${emote} ${s.escapeInProgress}`)
-			.setAuthor({
-				iconURL: "https://media.discordapp.net/attachments/1233604589064818808/1339946455913205871/Prison.png",
-				name: s.title,
-			})
-			// .setThumbnail("https://media.discordapp.net/attachments/1233604589064818808/1339946455913205871/Prison.png")
-			.setColor(CrColors.Police)
-			.setUserFooter({
-				nickname: this.User.Nickname,
-				image: this.Interaction.user.avatarURL(),
-			});
+		const escapeContainer = new CustomContainerBuilder()
+			.setAccentColor(CrColors.Police)
+			.setUser(this.User)
+			.addSectionComponents(header => header
+				.setId(1)
+				.addTextDisplayComponents(content => content
+					.setId(2)
+					.setContent(`# ${s.title}
+### ${emote} ${s.escapeInProgress}`),
+				)
+				.setThumbnailAccessory(thumb => thumb
+					.setURL("https://media.discordapp.net/attachments/1233604589064818808/1339946455913205871/Prison.png"),
+				),
+			)
+			.addFooter();
 
-		await replyInteraction(this.Interaction, { embeds: [escapeEmbed], components: [] });
+		await replyInteraction(this.Interaction, { components: [escapeContainer] });
 
 		this.User.Escape.HasTried = true;
 		this.User.Escape.Time = addSeconds(new Date(), this.Escape.DefaultDuration);
@@ -336,10 +351,10 @@ export class Prison {
 		await this.User.Update();
 		Log.Info(`User ${this.User.Nickname} (ID: ${this.User.Id}) started a escape attempt from prison ${this.Escape.HasJetpack ? "with a jetpack" : ""}.`);
 
-		return escapeEmbed;
+		return escapeContainer;
 	}
 
-	async EndEscape(embed: CustomEmbedBuilder) {
+	async EndEscape(container: CustomContainerBuilder) {
 		const s = Strings[this.User.Language];
 		const emote = this.Escape.HasJetpack ? ItemList[ItemId.Jetpack].Skin.Default.Emote.String : EmoteString.Escape;
 
@@ -486,13 +501,9 @@ export class Prison {
 			const textSuccess = arraySuccess[this.User.Language][Math.floor(Math.random() * arraySuccess[this.User.Language].length)];
 			const textWanted = wantedTexts[this.User.Language][Math.floor(Math.random() * wantedTexts[this.User.Language].length)];
 
-			embed
-				.setDescription(`### ${emote} ${s.escapeSuccess}\n${textSuccess}\n-# ${textWanted}`)
-				.setUserFooter({
-					nickname: this.User.Nickname,
-					image: this.Interaction.user.avatarURL(),
-					text: s.escapeWaitMinutes(this.Escape.TimeInMinutesWanted),
-				});
+			container
+				.changeTextFromSectionId(1, `# ${s.title}\n### ${emote} ${s.escapeSuccess}\n${textSuccess}\n-# ${textWanted}`)
+				.changeFooterText(s.escapeWaitMinutes(this.Escape.TimeInMinutesWanted));
 		}
 		else {
 			this.User.Prison.Time = addMinutes(this.User.Prison.Time, totalTime);
@@ -503,12 +514,13 @@ export class Prison {
 			const arrayFailure = this.Escape.HasJetpack ? failureTextsJetpack : failureTexts;
 			const textFailure = arrayFailure[this.User.Language][Math.floor(Math.random() * arrayFailure[this.User.Language].length)];
 
-			embed.setDescription(`### ${emote} ${s.escapeFailure}\n${textFailure}. ${s.escapeWillBeInPrison(totalTime)}\n-# ${s.free} ${showTime(this.User.Prison.Time.getTime(), true)}`);
+			container
+				.changeTextFromSectionId(1, `# ${s.title}\n### ${emote} ${s.escapeFailure}\n${textFailure}. ${s.escapeWillBeInPrison(totalTime)}\n-# ${s.free} ${showTime(this.User.Prison.Time.getTime(), true)}`);
 		}
 
 		await this.User.Update();
 
-		await replyInteraction(this.Interaction, { embeds: [embed] });
+		await replyInteraction(this.Interaction, { components: [container] });
 	}
 
 	async CanBribe() {

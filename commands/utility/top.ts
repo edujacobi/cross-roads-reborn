@@ -1,5 +1,15 @@
-import { ChatInputCommandInteraction, Colors, Locale, SlashCommandBuilder } from "discord.js";
-import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
+import {
+	ButtonBuilder,
+	ButtonStyle,
+	ChatInputCommandInteraction,
+	Colors,
+	ComponentType,
+	ContainerBuilder,
+	ContainerComponent,
+	Locale,
+	SectionBuilder,
+	SlashCommandBuilder,
+} from "discord.js";
 import { Op } from "sequelize";
 import { formatMoney } from "../../utils/ui";
 import { Users } from "../../database/Users";
@@ -9,7 +19,10 @@ import { ClassList } from "../../interfaces/Classes";
 import { EmoteBadgeString } from "../../utils/badges";
 import { Pagination } from "../../models/Pagination";
 import { IDescription } from "../../interfaces/Interfaces";
-import { EmoteString } from "../../utils/emotes";
+import { EmoteId, EmoteString } from "../../utils/emotes";
+import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
+// @ts-ignore
+import { execute as InvCommandExecute } from "./inv";
 
 enum TopSubcommand {
 	Money = "money",
@@ -60,7 +73,7 @@ module.exports = {
 			.setName(TopSubcommand.Gamblers)
 			.setNameLocalization(Locale.PortugueseBR, "apostadores")
 			.setDescription("List of users who have won the most at the casino")
-			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários que mais ganharam no cassino")
+			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários que mais ganharam no cassino"),
 		)
 		.addSubcommand(spenders => spenders
 			.setName(TopSubcommand.Spenders)
@@ -356,27 +369,33 @@ module.exports = {
 			},
 		});
 
-		pagination.CustomizeEmbed = async () => {
+		pagination.CustomizeContainer = async () => {
 			await findList();
 
-			let text = "";
+			const container = new CustomContainerBuilder()
+				.setUser(user)
+				.setAccentColor(Colors.Green)
+				.addTextDisplayComponents(header => header
+					.setContent(`# Ranking ${title}`))
+				.addLargeSeparator();
 
 			for (let i = 0; i < users.length; i++) {
 				const user = users[i];
 				const underscore = user.id == interaction.user.id ? "__" : "";
 				const emoteClass = ClassList[user.class].Image.Emote.String;
 
-				let position = `\`${i + pagination.Offset + 1}.\``;
+				const position = i + pagination.Offset + 1;
+				let positionText = `\`${position}.\``;
 				if (i + pagination.Offset == 0) {
-					position = currentConfig.badge;
+					positionText = currentConfig.badge;
 				}
 				// Special case for money ranking which has badges for top 3
 				if (subcommand === TopSubcommand.Money) {
 					if (i + pagination.Offset == 1) {
-						position = EmoteBadgeString.Season1.Top2Money;
+						positionText = EmoteBadgeString.Season1.Top2Money;
 					}
 					else if (i + pagination.Offset == 2) {
-						position = EmoteBadgeString.Season1.Top3Money;
+						positionText = EmoteBadgeString.Season1.Top3Money;
 					}
 				}
 
@@ -390,19 +409,107 @@ module.exports = {
 
 				const count = currentConfig.countField ? ` (${cPrefix}${user[currentConfig.countField as keyof Users]}${cSufix})` : "";
 
-				text += `### ${position} ${emoteClass} ${underscore}${user.nickname}${underscore}\n${vPrefix}${valueModified}${vSufix}${count}\n-# \`ID: ${user.id}\`\n`;
+				container
+					.addSectionComponents(list => list
+						.addTextDisplayComponents(text => text
+							.setContent(`### ${positionText} ${emoteClass} ${underscore}${user.nickname}${underscore}\n${vPrefix}${valueModified}${vSufix}${count}\n-# \`ID: ${user.id}\`\n`),
+						)
+						.setButtonAccessory(btn => btn
+							.setLabel("Opções")
+							.setCustomId("position" + position)
+							.setStyle(ButtonStyle.Secondary),
+						),
+					);
+
+				if (i != users.length - 1) {
+					container.addSeparatorComponents(s => s
+						.setDivider(true),
+					);
+				}
 			}
 
-			return new CustomEmbedBuilder()
-				.setColor(Colors.Green)
-				.setDescription(`# Ranking ${title}\n${text}`)
-				.setUserFooter({
-					nickname: user.Nickname,
-					image: interaction.user.avatarURL(),
-					text: pagination.Showing(),
-				});
+			container.addFooter({
+				text: pagination.Showing(),
+			});
+
+			return container;
 		};
 
-		await pagination.GenerateEmbed();
+		const { response, collector } = await pagination.GenerateContainer();
+
+		collector.on("collect", async btn => {
+			if (btn.customId.includes("position")) {
+				const position = Number(btn.customId.replace("position", ""));
+
+				const originalContainer = response.components[0] as ContainerComponent;
+
+				if (!originalContainer) {
+					return;
+				}
+
+				const oldContainer = new ContainerBuilder(originalContainer.toJSON());
+
+				const sections = oldContainer.components.filter(component => component.data.type === ComponentType.Section);
+
+				const selectedSection = sections[(position % 6) - 1] as SectionBuilder;
+
+				const button = selectedSection.accessory as ButtonBuilder;
+
+				if (!button) {
+					return;
+				}
+
+				selectedSection.setButtonAccessory(
+					button
+						.setLabel("Voltar")
+						.setCustomId("goback"),
+				);
+
+				const newContainer = new ContainerBuilder()
+					.addSectionComponents(selectedSection)
+					.addActionRowComponents(row => row
+						.addComponents([
+							new ButtonBuilder()
+								.setLabel("Inventário")
+								.setEmoji(EmoteId.OpenInv)
+								.setCustomId("inv")
+								.setStyle(ButtonStyle.Secondary),
+							new ButtonBuilder()
+								.setLabel("Roubar")
+								.setEmoji(EmoteId.Robbery)
+								.setCustomId("rob")
+								.setStyle(ButtonStyle.Secondary),
+							new ButtonBuilder()
+								.setLabel("Espancar")
+								.setEmoji(EmoteId.Beat)
+								.setCustomId("beat")
+								.setStyle(ButtonStyle.Secondary),
+							new ButtonBuilder()
+								.setLabel("Convidar para gangue")
+								.setEmoji(EmoteId.Gang)
+								.setCustomId("invite")
+								.setStyle(ButtonStyle.Secondary),
+						]),
+					);
+
+				await interaction.editReply({
+					components: [newContainer],
+				});
+			}
+
+			else if (btn.customId === "inv") {
+
+				// @ts-ignore
+				btn.options;
+				await InvCommandExecute(btn, user, language);
+			}
+
+			else if (btn.customId === "goback") {
+				await interaction.editReply({
+					components: [await pagination.CustomizeContainer(), pagination.GenerateRow()],
+				});
+			}
+
+		});
 	},
 };

@@ -8,7 +8,7 @@
 	StringSelectMenuBuilder,
 	StringSelectMenuOptionBuilder,
 } from "discord.js";
-import { removeEmbedComponents, replyInteraction, replyUserDontExist, searchUser } from "../../utils/logic";
+import { removeEmbedComponents, replyInteraction, searchUser } from "../../utils/logic";
 import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
 import { defaultEmbed, formatMoney, showTime } from "../../utils/ui";
 import { EmoteString } from "../../utils/emotes";

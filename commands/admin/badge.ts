@@ -5,6 +5,7 @@ import { Language } from "../../models/Language";
 import { checkUser, replyInteraction, replyUserDontExist } from "../../utils/logic";
 import { User } from "../../models/User";
 import { Pagination } from "../../models/Pagination";
+import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
 
 enum CommandOption {
 	Types = "types",
@@ -74,19 +75,24 @@ module.exports = {
 			pagination.HowManyRecords = badgeList.length;
 			pagination.Limit = 10;
 
-			pagination.CustomizeEmbed = async () => {
-				return new EmbedBuilder()
-					.setTitle("Badges")
-					.setDescription(badgeList
-						.slice(pagination.Offset, pagination.Offset + pagination.Limit)
-						.map(badge => {
-							return `### ${badge.Emoji.String} ${badge.Name[language]} \`${badge.Id}\`\n-# ${badge.Description[language]}`;
-						})
-						.join("\n"))
-					.setFooter({ text: pagination.Showing() });
+			pagination.CustomizeContainer = async () => {
+				return new CustomContainerBuilder()
+					.addTextDisplayComponents(title => title
+						.setContent(`## Badge Types`))
+					.addLargeSeparator()
+					.addTextDisplayComponents(content => content
+						.setContent(badgeList
+							.slice(pagination.Offset, pagination.Offset + pagination.Limit)
+							.map(badge => {
+								return `### ${badge.Emoji.String} ${badge.Name[language]} \`${badge.Id}\`\n-# ${badge.Description[language]}`;
+							})
+							.join("\n")))
+					.addFooter({
+						text: pagination.Showing(),
+					});
 			};
 
-			await pagination.GenerateEmbed();
+			await pagination.GenerateContainer();
 			return;
 		}
 		case CommandOption.Add: {
