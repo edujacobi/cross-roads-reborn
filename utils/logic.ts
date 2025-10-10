@@ -322,6 +322,81 @@ export async function setPlayerNicknameInOfficialServer(interaction: ChatInputCo
 	}
 }
 
+/**
+ * Checks all members of the official server and synchronizes their VIP role.
+ * VIP users without the role will receive it; non-VIP users with the role will lose it.
+ */
+async function setAllVIPRolesInOfficialServer() {
+	if (process.env.NODE_ENV !== "PROD") {
+		return;
+	}
+
+	const client = getClient();
+	const serverId = process.env.SERVER_ID;
+	const VIPRoleId = "529680357591613442";
+
+	if (!serverId) {
+		Log.Warning("SERVER_ID is not set in environment variables.");
+		return;
+	}
+
+	const guild = client.guilds.cache.get(serverId);
+	if (!guild) {
+		Log.Warning(`Official server with Id ${serverId} not found.`);
+		return;
+	}
+
+	let members;
+	try {
+		members = await guild.members.fetch();
+	}
+	catch (err) {
+		Log.Warning(`Failed to fetch members for server Id ${serverId}. Error: ${err}`);
+		return;
+	}
+
+	const VIPRole = guild.roles.cache.get(VIPRoleId);
+	if (!VIPRole) {
+		Log.Warning(`VIP role with Id ${VIPRoleId} not found in server.`);
+		return;
+	}
+
+	for (const member of members.values()) {
+		const userId = member.user.id;
+		const user = await new User(userId).GetInfo();
+		if (!user) {
+			continue;
+		}
+
+		const hasVIPRole = member.roles.cache.has(VIPRoleId);
+		const isVIP = user.IsVip();
+
+		if (isVIP && !hasVIPRole) {
+			try {
+				await member.roles.add(VIPRole);
+				Log.Success(`VIP role added to user ${member.user.displayName} (${userId})`);
+			}
+			catch (err) {
+				Log.Warning(`Failed to add VIP role to user ${member.user.displayName} (${userId}). Error: ${err}`);
+			}
+		}
+		else if (!isVIP && hasVIPRole) {
+			try {
+				await member.roles.remove(VIPRole);
+				Log.Success(`VIP role removed from user ${member.user.displayName} (${userId})`);
+			}
+			catch (err) {
+				Log.Warning(`Failed to remove VIP role from user ${member.user.displayName} (${userId}). Error: ${err}`);
+			}
+		}
+	}
+}
+
+export async function startVIPProcedure() {
+	await setAllVIPRolesInOfficialServer();
+	setInterval(setAllVIPRolesInOfficialServer, 6 * 60 * 1_000);
+}
+
 export function getPercent(percent: number, from: number) {
 	return (from / 100) * percent;
 }

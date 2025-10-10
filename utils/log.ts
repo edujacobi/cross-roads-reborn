@@ -1,5 +1,22 @@
-﻿import { ChannelType, Colors, EmbedBuilder } from "discord.js";
+﻿import { ChannelType, ColorResolvable, Colors, ContainerBuilder, MessageFlags } from "discord.js";
 import { getClient } from "../client";
+import pino from "pino";
+
+export const logger = pino({
+	transport: {
+		target: "pino-pretty",
+		options: {
+			colorize: true,
+		},
+	},
+	formatters: {
+		level: (label) => {
+			return {
+				level: label,
+			};
+		},
+	},
+});
 
 export enum LogType {
 	Info,
@@ -12,40 +29,49 @@ export class Log {
 	Message: string;
 	Type: LogType;
 	Date: Date;
+	Title = "Title";
+	Color: ColorResolvable = Colors.DarkButNotBlack;
 
 	constructor(type: LogType, message: string) {
 		this.Type = type;
 		this.Message = message;
 		this.Date = new Date;
 
-		const embed = new EmbedBuilder()
-			.setFooter({
-				text: "Cross Roads Reborn",
-				iconURL: "https://media.discordapp.net/attachments/1233604589064818808/1339600176289021952/CrossRoadsRebornLogo2.png?ex=67af4f62&is=67adfde2&hm=9c4a43ac870d13978649b724865f60fe10285e285a253fd4ddfdc363b875d37e&=&format=webp&quality=lossless&width=671&height=671",
-			})
-			.setDescription(message);
-
 		switch (this.Type) {
 		case LogType.Info:
-			console.log(`[ℹ️ INFO] ${this.Date}: \x1b[34m${message}\x1b[0m`);
-			embed.setTitle("ℹ️ INFO").setColor(Colors.Blue);
+			logger.info(`\x1b[34m${message}\x1b[0m`);
+			this.Title = "ℹ️ INFO";
+			this.Color = Colors.Blue;
 			break;
 
 		case LogType.Warning:
-			console.warn(`[⚠️ WARNING] ${this.Date}: \x1b[33m${message}\x1b[0m`);
-			embed.setTitle("⚠️ WARNING").setColor(Colors.Yellow);
+			logger.warn(`\x1b[33m${message}\x1b[0m`);
+			this.Title = "⚠️ WARNING";
+			this.Color = Colors.Yellow;
 			break;
 
 		case LogType.Error:
-			console.error(`[⛔ ERROR] ${this.Date}: \x1b[31m${message}\x1b[0m`);
-			embed.setTitle("⛔ ERROR").setColor(Colors.Red);
+			logger.error(`\x1b[31m${message}\x1b[0m`);
+			this.Title = "⛔ ERROR";
+			this.Color = Colors.Red;
 			break;
 
 		case LogType.Success:
-			console.log(`[❇️ SUCCESS] ${this.Date}: \x1b[32m${message}\x1b[0m`);
-			embed.setTitle("❇️ SUCCESS").setColor(Colors.Green);
+			logger.info(`\x1b[32m${message}\x1b[0m`);
+			this.Title = "❇️ SUCCESS";
+			this.Color = Colors.Green;
 			break;
 		}
+
+		const container = new ContainerBuilder()
+			.addTextDisplayComponents(
+				title => title
+					.setContent(this.Title),
+				description => description
+					.setContent(this.Message),
+				footer => footer
+					.setContent(`-# Cross Roads Reborn`),
+			);
 
 		try {
 			if (process.env.NODE_ENV !== "PROD") {
@@ -59,11 +85,14 @@ export class Log {
 			}
 
 			if (channel.type == ChannelType.GuildText) {
-				channel.send({ embeds: [embed] });
+				channel.send({
+					components: [container],
+					flags: MessageFlags.IsComponentsV2,
+				});
 			}
 		}
 		catch (err) {
-			console.error("ERROR SENDING LOG TO LOG CHANNEL");
+			logger.error("Error sending log to log channel", err);
 		}
 
 	}

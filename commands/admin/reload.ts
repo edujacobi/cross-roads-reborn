@@ -2,6 +2,7 @@ import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import path from "node:path";
 import fs from "node:fs";
 import { SlashCommand } from "../../types";
+import { logger } from "../../utils/log";
 
 /**
  * @INFO: DONT FORGET TO RUN 'tsc --watch' FOR /RELOAD TO WORK PROPERLY
@@ -44,9 +45,8 @@ module.exports = {
 
 			if ("data" in newCommand && "execute" in newCommand) {
 
-
 				interaction.client.commands.set(newCommand.data.name, newCommand);
-				console.log("🟢 Command", file, "reloaded");
+				logger.info(`Command ${file} reloaded`);
 				return await interaction.editReply(`Command \`${newCommand.data.name}\` was reloaded!`);
 
 			}

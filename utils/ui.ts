@@ -18,6 +18,7 @@ import { Canvas, Image, loadImage } from "@napi-rs/canvas";
 import fs from "node:fs";
 import { GangColor } from "./colors";
 import { CustomContainerBuilder } from "../ui/builders/CustomContainerBuilder";
+import { logger } from "./log";
 
 interface EmbedParams {
 	nickname: string;
@@ -190,7 +191,7 @@ export async function createUserGangImage(user: User, gang: Gang, language: Lang
 		image = await loadImage(gang.Image ?? DEFAULT_GANG_IMAGE);
 	}
 	catch (error) {
-		console.error(`[⛔ ERROR] ${new Date()}: Error loading gang image. Default image used instead.`, error);
+		logger.error(`Error loading gang image. Default image used instead.`, error);
 		image = await loadImage(DEFAULT_GANG_IMAGE);
 	}
 
@@ -253,7 +254,7 @@ export async function testImage() {
 	const image = await createUserGangImage(user, gang, Language.English);
 
 	fs.writeFile("image.webp", image, (err) => {
-		console.log(err);
+		logger.error(err);
 	});
 
 }

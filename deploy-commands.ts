@@ -3,6 +3,7 @@ import { REST, Routes } from "discord.js";
 import path from "node:path";
 import dotenv from "dotenv";
 import { SlashCommand, Command } from "./types";
+import { logger } from "./utils/log";
 
 dotenv.config();
 
@@ -31,11 +32,11 @@ for (const folder of commandFolders) {
 				commands.push(command.data.toJSON());
 			}
 
-			console.log("✴️ File", file, "deployed");
+			logger.info(`Command ${file} deployed`);
 
 		}
 		else {
-			console.warn(`The command at ${filePath} is missing a required "data" or "execute" property.`);
+			logger.warn(`The command at ${filePath} is missing a required "data" or "execute" property.`);
 		}
 	}
 }
@@ -49,7 +50,7 @@ const rest = new REST().setToken(token);
 // and deploy your commands!
 (async () => {
 	try {
-		console.log(`Started refreshing ${commands.length} application (/) commands.`);
+		logger.info(`Started refreshing ${commands.length} application (/) commands.`);
 
 		// The put method is used to fully refresh all commands in the guild with the current set
 		const data: Command[] = await rest.put(
@@ -63,11 +64,11 @@ const rest = new REST().setToken(token);
 			{ body: adminCommands },
 		) as Command[];
 
-		console.log(`Successfully reloaded ${data.length} application (/) commands (and ${dataAdmin.length} admin commands).`);
+		logger.info(`Successfully reloaded ${data.length} application (/) commands (and ${dataAdmin.length} admin commands).`);
 	}
 	catch (error) {
 		// And of course, make sure you catch and log any errors!
-		console.error(`${error}`);
+		logger.error(error);
 	}
 })();
 

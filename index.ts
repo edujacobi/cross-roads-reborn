@@ -4,7 +4,7 @@ import { Collection } from "discord.js";
 import { SlashCommand } from "./types";
 import dotenv from "dotenv";
 import { setClient } from "./client";
-import { Log } from "./utils/log";
+import { Log, logger } from "./utils/log";
 import { GlobalFonts } from "@napi-rs/canvas";
 // import { testImage } from "./utils/ui";
 // testImage();
@@ -30,7 +30,7 @@ for (const file of eventFiles) {
 	else {
 		client.on(event.name, (...args: never[][]) => event.execute(...args));
 	}
-	console.log("❇️ Event", file, "loaded");
+	logger.info(`Event ${file} loaded`);
 }
 
 // Cooldowns
@@ -56,7 +56,7 @@ for (const folder of commandFolders) {
 		// Set a new item in the Collection with the key as the command name and the value as the exported module
 		if ("data" in command && "execute" in command) {
 			client.commands.set(command.data.name, command);
-			console.log("🟢 Command", file, "loaded");
+			logger.info(`Command ${file} loaded`);
 
 		}
 		else {
@@ -67,12 +67,11 @@ for (const folder of commandFolders) {
 
 const token = process.env.NODE_ENV === "DEV" ? process.env.TOKEN_DEV : process.env.TOKEN;
 
-// Login
-client.login(token).then(() => console.log(`Ready. ENV: ${process.env.NODE_ENV}`));
+client.login(token).then(() => logger.info(`Cross Roads Reborn Online! ENV: ${process.env.NODE_ENV}`));
 
 const fontLoaded = GlobalFonts.registerFromPath(
 	path.join(__dirname, "ui", "assets", "fonts", "InterSemiBold.ttf"),
 	"Inter",
 );
 
-console.log(`Loaded Inter font with ${fontLoaded ? "Success" : "Error"}`);
+logger.info(`Loaded Inter font with ${fontLoaded ? "Success" : "Error"}`);

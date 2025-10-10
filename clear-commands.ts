@@ -1,5 +1,6 @@
 ﻿import { REST, Routes } from "discord.js";
 import dotenv from "dotenv";
+import { logger } from "./utils/log";
 
 dotenv.config();
 
@@ -10,22 +11,22 @@ const rest = new REST().setToken(token);
 
 (async () => {
 	try {
-		console.log(`Started clearing application (/) commands.`);
+		logger.info(`Started clearing application (/) commands.`);
 
 		await rest.put(
 			Routes.applicationCommands(clientId),
 			{ body: [] }
 		);
-		
+
 		await rest.put(
 			Routes.applicationGuildCommands(clientId, process.env.GUILD_ID),
 			{ body: [] },
 		);
 
-		console.log(`Successfully cleared application (/) commands admin commands).`);
+		logger.info(`Successfully cleared application (/) commands admin commands).`);
 	}
 	catch (error) {
-		console.error(`${error}`);
+		logger.error(`${error}`);
 	}
 })();
 

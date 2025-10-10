@@ -10,6 +10,7 @@ import {
 import { getLanguageFromLocale, Language } from "../models/Language";
 import { EmoteString } from "../utils/emotes";
 import { ClassId } from "../interfaces/Classes";
+import { logger } from "../utils/log";
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const wait = require("node:timers/promises").setTimeout;
@@ -125,7 +126,7 @@ module.exports = {
 			command.execute(interaction, user, language);
 		}
 		catch (error) {
-			console.error(error);
+			logger.error(error);
 
 			await replyInteraction(interaction, {
 				content: "There was an error while executing this command!",
