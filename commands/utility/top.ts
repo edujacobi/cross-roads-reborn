@@ -11,7 +11,7 @@ import {
 	SlashCommandBuilder,
 } from "discord.js";
 import { Op } from "sequelize";
-import { defaultEmbed, formatMoney } from "../../utils/ui";
+import { DEFAULT_GANG_IMAGE, defaultEmbed, formatMoney } from "../../utils/ui";
 import { Users } from "../../database/Users";
 import { User } from "../../models/User";
 import { Language } from "../../models/Language";
@@ -23,7 +23,9 @@ import { EmoteId, EmoteString } from "../../utils/emotes";
 import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
 import { Robbery } from "../../models/Robbery";
 import { replyInteraction, searchUser } from "../../utils/logic";
-import { CrColors } from "../../utils/colors";
+import { CrColors, GangColor, IGangColor } from "../../utils/colors";
+import Gangs from "../../database/Gangs";
+import { Gang } from "../../models/Gang";
 
 enum TopSubcommand {
 	Money = "money",
@@ -37,6 +39,7 @@ enum TopSubcommand {
 	Hospital = "hospital",
 	Bribers = "bribers",
 	Escapers = "escapers",
+	Gangs = "gangs",
 }
 
 interface TopSubcommandConfig {
@@ -129,6 +132,12 @@ module.exports = {
 			.setNameLocalization(Locale.PortugueseBR, "fujões")
 			.setDescription("List the users who escape the most in prison")
 			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários que mais fugiram da prisão"),
+		)
+		.addSubcommand(gang => gang
+			.setName(TopSubcommand.Gangs)
+			.setNameLocalization(Locale.PortugueseBR, "gangues")
+			.setDescription("List the gangs")
+			.setDescriptionLocalization(Locale.PortugueseBR, "Lista as gangues"),
 		),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
@@ -339,6 +348,27 @@ module.exports = {
 					[Language.Spanish]: "Fugitivos",
 				},
 			},
+			[TopSubcommand.Gangs]: {
+				attributes: ["id", "level"],
+				orderField: "level",
+				valueField: "level",
+				badge: EmoteBadgeString.Season6.TopGang,
+				valuePrefix: {
+					[Language.English]: "Leader",
+					[Language.Portuguese]: "Líder",
+					[Language.Spanish]: "Líder",
+				},
+				countPrefix: {
+					[Language.English]: "Members",
+					[Language.Portuguese]: "Membros",
+					[Language.Spanish]: "Miembros",
+				},
+				strings: {
+					[Language.English]: "Gangs",
+					[Language.Portuguese]: "Gangues",
+					[Language.Spanish]: "Cuadrillas",
+				},
+			},
 		};
 
 		// Get the configuration for the current subcommand
@@ -346,6 +376,7 @@ module.exports = {
 		const title = currentConfig.strings[language];
 
 		let users: Users[] = [];
+		let gangs: Gang[] = [];
 		const pagination = new Pagination(interaction, language);
 
 		async function findList() {
@@ -362,80 +393,167 @@ module.exports = {
 			});
 		}
 
-		pagination.HowManyRecords = await Users.count({
-			where: {
-				[currentConfig.orderField]: {
-					[Op.gt]: 0,
-				},
-			},
-		});
-
-		pagination.CustomizeContainer = async () => {
-			await findList();
-
-			const container = new CustomContainerBuilder()
-				.setUser(user)
-				.setAccentColor(Colors.Green)
-				.addTextDisplayComponents(header => header
-					.setContent(`# Ranking ${title}`))
-				.addLargeSeparator();
-
-			for (let i = 0; i < users.length; i++) {
-				const user = users[i];
-				const underscore = user.id == interaction.user.id ? "__" : "";
-				const emoteClass = ClassList[user.class].Image.Emote.String;
-
-				const position = i + pagination.Offset + 1;
-				let positionText = `\`${position}.\``;
-				if (i + pagination.Offset == 0) {
-					positionText = currentConfig.badge;
-				}
-				// Special case for money ranking which has badges for top 3
-				if (subcommand === TopSubcommand.Money) {
-					if (i + pagination.Offset == 1) {
-						positionText = EmoteBadgeString.Season1.Top2Money;
-					}
-					else if (i + pagination.Offset == 2) {
-						positionText = EmoteBadgeString.Season1.Top3Money;
-					}
-				}
-
-				const value = user[currentConfig.valueField as keyof Users] as number;
-				const valueModified = currentConfig.valueModifier ? currentConfig.valueModifier(value, language) : value;
-
-				const vPrefix = currentConfig.valuePrefix ? `${currentConfig.valuePrefix[language]} ` : "";
-				const vSufix = currentConfig.valueSufix ? ` ${currentConfig.valueSufix[language]}` : "";
-				const cPrefix = currentConfig.countPrefix ? `${currentConfig.countPrefix[language]} ` : "";
-				const cSufix = currentConfig.countSufix ? ` ${currentConfig.countSufix[language]}` : "";
-
-				const count = currentConfig.countField ? ` (${cPrefix}${user[currentConfig.countField as keyof Users]}${cSufix})` : "";
-
-				container
-					.addSectionComponents(list => list
-						.addTextDisplayComponents(text => text
-							.setContent(`### ${positionText} ${emoteClass} ${underscore}${user.nickname}${underscore}\n${vPrefix}${valueModified}${vSufix}${count}\n-# \`ID: ${user.id}\`\n`),
-						)
-						.setButtonAccessory(btn => btn
-							.setLabel("Opções")
-							.setCustomId("position" + position)
-							.setDisabled(true)
-							.setStyle(ButtonStyle.Secondary),
-						),
-					);
-
-				if (i != users.length - 1) {
-					container.addSeparatorComponents(s => s
-						.setDivider(true),
-					);
-				}
-			}
-
-			container.addFooter({
-				text: pagination.Showing(),
+		async function findGangs() {
+			const list = await Gangs.findAll({
+				attributes: currentConfig.attributes,
+				limit: pagination.Limit,
+				offset: pagination.Offset,
 			});
 
-			return container;
-		};
+			gangs = [];
+
+			for (const g of list) {
+				const gang = await Gang.GetById(g.id);
+				if (!gang) {
+					continue;
+				}
+				gangs.push(gang);
+			}
+
+			return gangs;
+		}
+
+		if (subcommand === TopSubcommand.Gangs) {
+			pagination.HowManyRecords = await Gangs.count();
+		}
+		else {
+			pagination.HowManyRecords = await Users.count({
+				where: {
+					[currentConfig.orderField]: {
+						[Op.gt]: 0,
+					},
+				},
+			});
+		}
+
+		if (subcommand === TopSubcommand.Gangs) {
+			pagination.CustomizeContainer = async () => {
+				await findGangs();
+
+				const container = new CustomContainerBuilder()
+					.setUser(user)
+					.setAccentColor(Colors.Green)
+					.addTextDisplayComponents(header => header
+						.setContent(`# Ranking ${title}`))
+					.addLargeSeparator();
+
+				for (let i = 0; i < gangs.length; i++) {
+					const gang = gangs[i];
+					const underscore = gang.Id == user.GangId ? "__" : "";
+
+					const position = i + pagination.Offset + 1;
+					let positionText = `\`${position}.\``;
+					if (i + pagination.Offset == 0) {
+						positionText = currentConfig.badge;
+					}
+
+					const members = currentConfig.countPrefix?.[language] ?? "";
+					const leader = currentConfig.valuePrefix?.[language] ?? "";
+
+					const leaderUser = await User.Search(gang.LeaderId);
+
+					if (!leaderUser) {
+						continue;
+					}
+
+					const description = [
+						`${gang.Members.length}/${gang.GetMaxMembers()} ${members}`,
+						`-# ${leader}: **${leaderUser.GetNameWithImage()}**`,
+						`-# ${gang.GetExpBar(6)}`,
+					].join("\n");
+
+					container
+						.addSectionComponents(list => list
+							.addTextDisplayComponents(text => text
+								.setContent(`### ${positionText} ${underscore}[${gang.Acronym}] ${gang.Name}${underscore} ${GangColor[gang.Color].Emote.String}\n${description}\n-# \`ID: ${gang.Id}\`\n`),
+							)
+							.setThumbnailAccessory(thumb => thumb
+								.setURL(gang.Image || DEFAULT_GANG_IMAGE),
+							),
+						);
+
+					if (i != gangs.length - 1) {
+						container.addSeparatorComponents(s => s
+							.setDivider(true),
+						);
+					}
+				}
+
+				container.addFooter({
+					text: pagination.Showing(),
+				});
+
+				return container;
+			};
+		}
+		else {
+			pagination.CustomizeContainer = async () => {
+				await findList();
+
+				const container = new CustomContainerBuilder()
+					.setUser(user)
+					.setAccentColor(Colors.Green)
+					.addTextDisplayComponents(header => header
+						.setContent(`# Ranking ${title}`))
+					.addLargeSeparator();
+
+				for (let i = 0; i < users.length; i++) {
+					const user = users[i];
+					const underscore = user.id == interaction.user.id ? "__" : "";
+					const emoteClass = ClassList[user.class].Image.Emote.String;
+
+					const position = i + pagination.Offset + 1;
+					let positionText = `\`${position}.\``;
+					if (i + pagination.Offset == 0) {
+						positionText = currentConfig.badge;
+					}
+					// Special case for money ranking which has badges for top 3
+					if (subcommand === TopSubcommand.Money) {
+						if (i + pagination.Offset == 1) {
+							positionText = EmoteBadgeString.Season1.Top2Money;
+						}
+						else if (i + pagination.Offset == 2) {
+							positionText = EmoteBadgeString.Season1.Top3Money;
+						}
+					}
+
+					const value = user[currentConfig.valueField as keyof Users] as number;
+					const valueModified = currentConfig.valueModifier ? currentConfig.valueModifier(value, language) : value;
+
+					const vPrefix = currentConfig.valuePrefix ? `${currentConfig.valuePrefix[language]} ` : "";
+					const vSufix = currentConfig.valueSufix ? ` ${currentConfig.valueSufix[language]}` : "";
+					const cPrefix = currentConfig.countPrefix ? `${currentConfig.countPrefix[language]} ` : "";
+					const cSufix = currentConfig.countSufix ? ` ${currentConfig.countSufix[language]}` : "";
+
+					const count = currentConfig.countField ? ` (${cPrefix}${user[currentConfig.countField as keyof Users]}${cSufix})` : "";
+
+					container
+						.addSectionComponents(list => list
+							.addTextDisplayComponents(text => text
+								.setContent(`### ${positionText} ${emoteClass} ${underscore}${user.nickname}${underscore}\n${vPrefix}${valueModified}${vSufix}${count}\n-# \`ID: ${user.id}\`\n`),
+							)
+							.setButtonAccessory(btn => btn
+								.setLabel("Opções")
+								.setCustomId("position" + position)
+								.setDisabled(true)
+								.setStyle(ButtonStyle.Secondary),
+							),
+						);
+
+					if (i != gangs.length - 1) {
+						container.addSeparatorComponents(s => s
+							.setDivider(true),
+						);
+					}
+				}
+
+				container.addFooter({
+					text: pagination.Showing(),
+				});
+
+				return container;
+			};
+		}
 
 		const { response, collector } = await pagination.GenerateContainer();
 
