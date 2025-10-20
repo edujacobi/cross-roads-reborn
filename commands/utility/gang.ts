@@ -412,7 +412,7 @@ module.exports = {
 					.addSectionComponents(header => header
 						.addTextDisplayComponents(
 							headerText => headerText
-								.setContent(`# [${gang!.Acronym}] ${gang!.Name}\n_${gang!.Description}_`),
+								.setContent(`# [${gang!.Acronym}] ${gang!.Name} ${GangColor[gang!.Color].Emote.String}\n_${gang!.Description}_`),
 							levelBar => levelBar
 								.setContent(`-# ${s.level} ${gang!.Level} ${gang!.GetExpBar(6)}`),
 						)
@@ -525,7 +525,7 @@ module.exports = {
 					.setContent(`### ${s.description}\n${gang.Description}`),
 				)
 				.addTextDisplayComponents(Color => Color
-					.setContent(`### ${s.color}\n${GangColor[gang.Color].Description[language]}`),
+					.setContent(`### ${s.color}\n${GangColor[gang.Color].Emote.String} ${GangColor[gang.Color].Description[language]}`),
 				);
 
 			if (image) {
@@ -611,9 +611,9 @@ module.exports = {
 				container.addTextDisplayComponents(newDescription => newDescription
 					.setContent(`### ${s.description}\n-# ~~${old.description}~~\n${gang.Description}`));
 			}
-			if (color) {
+			if (color != null) {
 				container.addTextDisplayComponents(newColor => newColor
-					.setContent(`### ${s.color}\n-# ~~${GangColor[old.color].Description[language]}~~\n${GangColor[gang.Color].Description[language]}`));
+					.setContent(`### ${s.color}\n-# ~~${GangColor[old.color].Emote.String} ${GangColor[old.color].Description[language]}~~\n${GangColor[gang.Color].Emote.String} ${GangColor[gang.Color].Description[language]}`));
 			}
 			if (image) {
 				container.addTextDisplayComponents(newImage => newImage
