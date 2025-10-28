@@ -1,16 +1,15 @@
 import {
 	ChatInputCommandInteraction,
-	ContainerBuilder,
+	codeBlock,
 	Locale,
 	MessageFlags,
 	PermissionFlagsBits,
 	SlashCommandBuilder,
-	codeBlock, TextDisplayBuilder,
+	TextDisplayBuilder,
 } from "discord.js";
 import { Users } from "../../database/Users";
 import { Op } from "sequelize";
 import { getLanguageFromLocale } from "../../models/Language";
-import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
 import { replyInteraction, replyUserDontExist } from "../../utils/logic";
 
 module.exports = {
