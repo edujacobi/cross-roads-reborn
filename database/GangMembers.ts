@@ -56,4 +56,9 @@ GangMembers.init(
 	},
 );
 
+// Uma gangue tem muitos membros
+Gangs.hasMany(GangMembers, { foreignKey: "gangId", as: "GangMembers" });
+// Um membro pertence a uma gangue
+GangMembers.belongsTo(Gangs, { foreignKey: "gangId", as: "Gang" });
+
 export default GangMembers;

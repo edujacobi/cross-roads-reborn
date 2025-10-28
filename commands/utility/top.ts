@@ -26,6 +26,8 @@ import { replyInteraction, searchUser } from "../../utils/logic";
 import { CrColors, GangColor } from "../../utils/colors";
 import Gangs from "../../database/Gangs";
 import { Gang } from "../../models/Gang";
+import { sequelize } from "../../database/Database";
+import GangMembers from "../../database/GangMembers";
 
 enum TopSubcommand {
 	Money = "money",
@@ -349,7 +351,7 @@ module.exports = {
 				},
 			},
 			[TopSubcommand.Gangs]: {
-				attributes: ["id", "level"],
+				attributes: ["id", "gangId"],
 				orderField: "level",
 				valueField: "level",
 				badge: EmoteBadgeString.Season6.TopGang,
@@ -394,8 +396,10 @@ module.exports = {
 		}
 
 		async function findGangs() {
-			const list = await Gangs.findAll({
+			const list = await GangMembers.findAll({
 				attributes: currentConfig.attributes,
+				group: "gangId",
+				order: [[sequelize.fn("COUNT", sequelize.col("gangId")), "DESC"]],
 				limit: pagination.Limit,
 				offset: pagination.Offset,
 			});
@@ -403,7 +407,7 @@ module.exports = {
 			gangs = [];
 
 			for (const g of list) {
-				const gang = await Gang.GetById(g.id);
+				const gang = await Gang.GetById(g.gangId);
 				if (!gang) {
 					continue;
 				}
