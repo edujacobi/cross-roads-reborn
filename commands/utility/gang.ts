@@ -412,7 +412,7 @@ module.exports = {
 					.addSectionComponents(header => header
 						.addTextDisplayComponents(
 							headerText => headerText
-								.setContent(`# [${gang!.Acronym}] ${gang!.Name} ${GangColor[gang!.Color].Emote.String}\n_${gang!.Description}_`),
+								.setContent(`# [${gang!.Acronym}] ${gang!.Name}${GangColor[gang!.Color].Emote.String}\n_${gang!.Description}_`),
 							levelBar => levelBar
 								.setContent(`-# ${s.level} ${gang!.Level} ${gang!.GetExpBar(6)}`),
 						)

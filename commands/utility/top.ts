@@ -23,7 +23,7 @@ import { EmoteId, EmoteString } from "../../utils/emotes";
 import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
 import { Robbery } from "../../models/Robbery";
 import { replyInteraction, searchUser } from "../../utils/logic";
-import { CrColors, GangColor, IGangColor } from "../../utils/colors";
+import { CrColors, GangColor } from "../../utils/colors";
 import Gangs from "../../database/Gangs";
 import { Gang } from "../../models/Gang";
 
@@ -359,9 +359,9 @@ module.exports = {
 					[Language.Spanish]: "Líder",
 				},
 				countPrefix: {
-					[Language.English]: "Members",
-					[Language.Portuguese]: "Membros",
-					[Language.Spanish]: "Miembros",
+					[Language.English]: "members",
+					[Language.Portuguese]: "membros",
+					[Language.Spanish]: "miembros",
 				},
 				strings: {
 					[Language.English]: "Gangs",
@@ -465,7 +465,7 @@ module.exports = {
 					container
 						.addSectionComponents(list => list
 							.addTextDisplayComponents(text => text
-								.setContent(`### ${positionText} ${underscore}[${gang.Acronym}] ${gang.Name}${underscore} ${GangColor[gang.Color].Emote.String}\n${description}\n-# \`ID: ${gang.Id}\`\n`),
+								.setContent(`### ${positionText} ${underscore}[${gang.Acronym}] ${gang.Name}${underscore}${GangColor[gang.Color].Emote.String}\n${description}\n`),
 							)
 							.setThumbnailAccessory(thumb => thumb
 								.setURL(gang.Image || DEFAULT_GANG_IMAGE),
@@ -517,6 +517,10 @@ module.exports = {
 						}
 					}
 
+					const userGang = await Gang.GetByUserId(user.id);
+					const gPrefix = userGang ? `[${userGang.Acronym}]` : "";
+					const gSufix = userGang ? GangColor[userGang.Color].Emote.String : "";
+
 					const value = user[currentConfig.valueField as keyof Users] as number;
 					const valueModified = currentConfig.valueModifier ? currentConfig.valueModifier(value, language) : value;
 
@@ -530,7 +534,7 @@ module.exports = {
 					container
 						.addSectionComponents(list => list
 							.addTextDisplayComponents(text => text
-								.setContent(`### ${positionText} ${emoteClass} ${underscore}${user.nickname}${underscore}\n${vPrefix}${valueModified}${vSufix}${count}\n-# \`ID: ${user.id}\`\n`),
+								.setContent(`### ${positionText} ${gPrefix} ${emoteClass} ${underscore}${user.nickname}${underscore}${gSufix}\n${vPrefix}${valueModified}${vSufix}${count}\n-# \`ID: ${user.id}\`\n`),
 							)
 							.setButtonAccessory(btn => btn
 								.setLabel("Opções")
@@ -540,7 +544,7 @@ module.exports = {
 							),
 						);
 
-					if (i != gangs.length - 1) {
+					if (i != users.length - 1) {
 						container.addSeparatorComponents(s => s
 							.setDivider(true),
 						);
