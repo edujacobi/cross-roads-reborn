@@ -56,22 +56,24 @@ Players can earn money, fight other users, work jobs, manage inventory, and much
 
 ### Admin Commands
 
-| Command           | Description               |
-|-------------------|---------------------------|
-| `/badge`          | Manage user badges        |
-| `/createevent`    | Create a new event        |
-| `/process`        | Manage system processes   |
-| `/seteternalvip`  | Set a user as eternal VIP |
-| `/setmoney`       | Set a user's money        |
-| `/setvip`         | Set a user as VIP         |
-| `/upcomingevents` | View upcoming events      |
-| `/updateevent`    | Update an existing event  |
+| Command           | Description                       |
+|-------------------|-----------------------------------|
+| `/badge`          | Manage user badges                |
+| `/createevent`    | Create a new event                |
+| `/process`        | Manage system processes           |
+| `/seteternalvip`  | Set a user as eternal VIP         |
+| `/setmoney`       | Set a user's money                |
+| `/setvip`         | Set a user as VIP                 |
+| `/upcomingevents` | View upcoming events              |
+| `/updateevent`    | Update an existing event          |
+| `/userdb`         | View the tabular data of the user |
+
 
 ## Installation
 
 ### Prerequisites
 
-- Node.js 18 or higher
+- Node.js 22 or higher
 - npm
 - A Discord bot token
 

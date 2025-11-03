@@ -64,9 +64,10 @@ export class Log {
 		}
 
 		const container = new ContainerBuilder()
+			.setAccentColor(this.Color)
 			.addTextDisplayComponents(
 				title => title
-					.setContent(this.Title),
+					.setContent(`### ${this.Title}`),
 				description => description
 					.setContent(this.Message),
 				footer => footer

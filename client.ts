@@ -7,6 +7,6 @@ export function getClient() {
 }
 
 export function setClient() {
-	client = new Client({ intents: [GatewayIntentBits.Guilds] });
+	client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers] });
 	return client;
 }
