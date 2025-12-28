@@ -164,6 +164,10 @@ export const ItemList: ItemListType = {
 				Id: EmoteId.MicroUzi,
 				String: EmoteString.MicroUzi,
 			},
+			[BundleId.Traditional]: {
+				Id: "1454922924518670418",
+				String: "<:micro_uzi:1454922924518670418>",
+			},
 		},
 		Price: 0,
 		Attack: 25,
@@ -262,6 +266,10 @@ export const ItemList: ItemListType = {
 				Id: EmoteId.SawnOff,
 				String: EmoteString.SawnOff,
 			},
+			[BundleId.Traditional]: {
+				Id: "1454922962947014770",
+				String: "<:sawnoff:1454922962947014770>"
+			}
 		},
 		Price: 40000,
 		Attack: 35,
@@ -794,6 +802,10 @@ export const ItemList: ItemListType = {
 				Id: EmoteId.BrassKnuckles,
 				String: EmoteString.BrassKnuckles,
 			},
+			[BundleId.Traditional]: {
+				Id: "1454923590087479515",
+				String: "<:brassknucles:1454923590087479515>"
+			}
 		},
 		Price: 0,
 		Shop: false,
@@ -824,6 +836,10 @@ export const ItemList: ItemListType = {
 				Id: EmoteId.BaseballBat,
 				String: EmoteString.BaseballBat,
 			},
+			[BundleId.Traditional]: {
+				Id: "1454922867568279665",
+				String: "<:bati:1454922867568279665>"
+			}
 		},
 		Price: 0,
 		Shop: false,
