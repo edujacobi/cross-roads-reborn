@@ -17,6 +17,9 @@ import { Gang } from "./Gang";
 import { GangMembers } from "../database/GangMembers";
 import { Event, EventType } from "./Event";
 import { GangColorId } from "../utils/colors";
+import { BundleId } from "../interfaces/Ids";
+import { UserBundle } from "./UserBundle";
+import { BundleList, SkinBundles } from "../interfaces/Skins";
 
 export enum SituationId {
 	Idling,
@@ -41,6 +44,7 @@ export class User {
 	Money = 0;
 	Class = ClassId.None;
 	GangId: number | null = null;
+	SpecialCoin = 0;
 	Daily = {
 		CurrentStreak: 0,
 		MaxStreak: 0,
@@ -160,6 +164,7 @@ export class User {
 				dailyStreak: this.Daily.CurrentStreak,
 				maxDailyStreak: this.Daily.MaxStreak,
 				lastDailyReceived: this.Daily.LastReceived,
+				specialCoin: 0,
 				casinoLoseCount: 0,
 				casinoLoseSum: 0,
 				casinoWinCount: 0,
@@ -236,6 +241,7 @@ export class User {
 		this.Nickname = user.nickname;
 		this.Money = user.money;
 		this.Class = user.class;
+		this.SpecialCoin = user.specialCoin;
 
 		// Verificar se o usuário está em uma gangue
 		const gangMember = await GangMembers.findOne({
@@ -458,6 +464,7 @@ export class User {
 				itemId: item.Id,
 				remainingTime: userItem.Type != ItemType.Consumable ? addHours(now, 72) : undefined,
 				quantity: userItem.Type == ItemType.Consumable ? 1 : undefined,
+				skin: BundleId.Default,
 			});
 
 			Log.Info(`User ${this.Nickname} (ID: ${this.Id}) bought item ${item.Description[Language.English]} (ID: ${item.Id}) for ${formatMoney(item.Price, Language.English)} [FIRST TIME!].`);
@@ -510,11 +517,64 @@ export class User {
 			const foundWeapon = ItemList[item.itemId] as UserItem;
 			foundWeapon.RemainingTime = item.remainingTime;
 			foundWeapon.Quantity = item.quantity;
+			foundWeapon.SelectedSkin = item.skin;
 
 			itemList.push(foundWeapon);
 		}
 
 		return itemList;
+	}
+
+	async GetAllItems() {
+		const items = await UserItems.findAll({
+			where: {
+				userId: this.Id,
+			},
+		});
+
+		const itemList: UserItem[] = [];
+
+		for (const item of items) {
+			const foundWeapon = ItemList[item.itemId] as UserItem;
+			foundWeapon.RemainingTime = item.remainingTime;
+			foundWeapon.Quantity = item.quantity;
+			foundWeapon.SelectedSkin = item.skin;
+
+			itemList.push(foundWeapon);
+		}
+
+		return itemList;
+	}
+
+	async SetItemSkin(item: Items, bundle: SkinBundles) {
+		const existingItem = await UserItems.findOne({
+			where: {
+				userId: this.Id,
+				itemId: item.Id,
+			},
+		});
+
+		if (!existingItem) {
+			await UserItems.create({
+				userId: this.Id,
+				itemId: item.Id,
+				remainingTime: undefined,
+				quantity: undefined,
+				skin: bundle.Id,
+			});
+		}
+		else {
+			await UserItems.update({
+				skin: bundle.Id,
+			}, {
+				where: {
+					userId: this.Id,
+					itemId: item.Id,
+				},
+			});
+		}
+
+		Log.Info(`User ${this.Nickname} (ID: ${this.Id}) has set skin ${bundle.Description[Language.English]} (ID: ${bundle.Id}) for item ${item.Description[Language.English]} (ID: ${item.Id}).`);
 	}
 
 	async GetAttributes() {
@@ -764,6 +824,21 @@ export class User {
 		Log.Success(`User ${this.Nickname} (ID: ${this.Id}) finished his job ${job.Description[this.Language]} and received ${formatMoney(job.Salary, Language.English)}.`);
 	}
 
+	async BuySkinBundle(bundleId: BundleId) {
+		const success = await UserBundle.Create(this.Id, bundleId);
+
+		if (success) {
+			this.SpecialCoin -= BundleList[bundleId].Price;
+			await this.Update();
+			Log.Success(`User ${this.Nickname} (ID: ${this.Id}) bought skin bundle ${BundleList[bundleId].Description[Language.English]} (ID: ${bundleId}) for ${formatMoney(BundleList[bundleId].Price, Language.English, "")}.`);
+		}
+		else {
+			Log.Warning(`User ${this.Nickname} (ID: ${this.Id}) tried to buy skin bundle ${BundleList[bundleId].Description[Language.English]} (ID: ${bundleId}), but failed.`);
+		}
+
+		return success;
+	}
+
 	async Update() {
 		try {
 			await Users.update({
@@ -777,6 +852,7 @@ export class User {
 
 				vipTime: this.VipTime,
 				vipEternal: this.VipEternal,
+				specialCoin: this.SpecialCoin,
 
 				jobId: this.Job.Id,
 				jobTime: this.Job.EndsIn,

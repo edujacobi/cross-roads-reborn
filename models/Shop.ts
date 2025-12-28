@@ -24,6 +24,7 @@ import { differenceInHours } from "date-fns";
 import { UserItems } from "../database/UserItems";
 import { addHours } from "date-fns/addHours";
 import { ScavengeId, ScavengeList } from "../interfaces/Scavenge";
+import { BundleId } from "../interfaces/Ids";
 
 export class Shop {
 	User: User;
@@ -66,7 +67,7 @@ export class Shop {
 
 			if (item.Type == ItemType.Weapon) {
 				embed.addFields({
-					name: `${item.Skin.Default.Emote.String} ${item.Description[this.User.Language]}`,
+					name: `${item.Skin[BundleId.Default].String} ${item.Description[this.User.Language]}`,
 					value: `${formatMoney(item.Price, this.User.Language)}\n-# ${EmoteString.Attack}${item.Attack} ATK\n-# ${EmoteString.Defense}${item.Defense} DEF`,
 					inline: true,
 				});
@@ -103,7 +104,7 @@ export class Shop {
 				}
 
 				embed.addFields({
-					name: `${item.Skin.Default.Emote.String} ${item.Description[this.User.Language]}`,
+					name: `${item.Skin[BundleId.Default].String} ${item.Description[this.User.Language]}`,
 					value: `${formatMoney(item.Price, this.User.Language)}\n${textField.join("\n")}`,
 					inline: true,
 				});
@@ -112,7 +113,7 @@ export class Shop {
 
 			if (item.Type == ItemType.Accessory) {
 				embed.addFields({
-					name: `${item.Skin.Default.Emote.String} ${item.Description[this.User.Language]}`,
+					name: `${item.Skin[BundleId.Default].String} ${item.Description[this.User.Language]}`,
 					value: `${formatMoney(item.Price, this.User.Language)}\n-# +30% ${s.escape}`,
 					inline: true,
 				});
@@ -148,7 +149,7 @@ export class Shop {
 					_textSelect.push(`(${s.night})`);
 				}
 				embed.addFields({
-					name: `${item.Skin.Default.Emote.String} ${item.Description[this.User.Language]}`,
+					name: `${item.Skin[BundleId.Default].String} ${item.Description[this.User.Language]}`,
 					value: `${formatMoney(item.Price, this.User.Language)}\n${textField.join("\n")}\n-# (${s.consumable})`,
 					inline: true,
 				});
@@ -160,7 +161,7 @@ export class Shop {
 					.setLabel(item.Description[this.User.Language])
 					.setValue(String(item.Id))
 					.setDescription(`${formatMoney(item.Price, this.User.Language)}${textSelect}`)
-					.setEmoji(item.Skin.Default.Emote.String),
+					.setEmoji(item.Skin[BundleId.Default].String),
 			);
 		});
 
@@ -199,7 +200,7 @@ export class Shop {
 		});
 
 		if (existingItem && differenceInHours(addHours(existingItem.remainingTime, 72), new Date()) > 360) {
-			message = s.itemPassLimit(differenceInHours(existingItem.remainingTime, new Date()), `${item.Skin.Default.Emote.String} ${item.Description[this.User.Language]}`);
+			message = s.itemPassLimit(differenceInHours(existingItem.remainingTime, new Date()), `${item.Skin[BundleId.Default].String} ${item.Description[this.User.Language]}`);
 			canBuy = false;
 		}
 
@@ -303,7 +304,7 @@ export class Shop {
 			return await replyInteraction(interaction, {
 				embeds: [
 					embedBought
-						.setDescription(s.itemBought(`${item.Skin.Default.Emote.String} ${item.Description[this.User.Language]}`))
+						.setDescription(s.itemBought(`${item.Skin[BundleId.Default].String} ${item.Description[this.User.Language]}`))
 						.setUserFooter({
 							nickname: this.User.Nickname,
 							image: interaction.user.avatarURL(),

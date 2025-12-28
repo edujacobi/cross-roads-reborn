@@ -1,4 +1,4 @@
-import { ItemId } from "./Items";
+import { ItemId } from "./Ids";
 import { Language } from "../models/Language";
 import { IDescription } from "./Interfaces";
 

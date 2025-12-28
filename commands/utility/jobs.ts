@@ -25,6 +25,7 @@ import { LocationList } from "../../interfaces/Locations";
 import { ScavengeId, ScavengeList } from "../../interfaces/Scavenge";
 import { Event, EventType } from "../../models/Event";
 import { BlackMarket } from "../../models/BlackMarket";
+import { BundleId } from "../../interfaces/Ids";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -69,7 +70,7 @@ module.exports = {
 
 			const textSalary = `${s.salary}: ${formatMoney(job.Salary, language)}`;
 			const textDuration = `${s.duration}: ${jobDuration}h`;
-			const textNeeded = weaponsNeeded.length ? `\n-# ${s.necessary}: ${weaponsNeeded.map(weapon => weapon.Skin.Default.Emote.String).join("")}` : "";
+			const textNeeded = weaponsNeeded.length ? `\n-# ${s.necessary}: ${weaponsNeeded.map(weapon => weapon.Skin[BundleId.Default].String).join("")}` : "";
 			const blackMarketEmote = job.Special ? `${EmoteString.BlackMarket} ` : "";
 
 			if (!user.IsWorking()) {
@@ -83,7 +84,7 @@ module.exports = {
 			let lastWeaponEmote = "▪️";
 
 			if (job.NeedItem) {
-				lastWeaponEmote = ItemList[job.NeedItem[job.NeedItem.length - 1]].Skin.Default.Emote.String;
+				lastWeaponEmote = ItemList[job.NeedItem[job.NeedItem.length - 1]].Skin[BundleId.Default].String;
 			}
 
 			select.addOptions(
@@ -185,7 +186,7 @@ module.exports = {
 			if (job.NeedItem && !hasAllItems) {
 				const neededItems = job.NeedItem
 					.filter(neededItem => !userItems.some(userItem => userItem.Id === neededItem))
-					.map(neededItem => `${ItemList[neededItem].Skin.Default.Emote.String} ${ItemList[neededItem].Description[language]}`)
+					.map(neededItem => `${ItemList[neededItem].Skin[BundleId.Default].String} ${ItemList[neededItem].Description[language]}`)
 					.join(", ");
 				return await removeEmbedComponents(interaction, [
 					embed

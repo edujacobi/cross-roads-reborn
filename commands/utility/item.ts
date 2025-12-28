@@ -14,6 +14,8 @@ import { ItemList, ItemType } from "../../interfaces/Items";
 import { EmoteString } from "../../utils/emotes";
 import { UserItems } from "../../database/UserItems";
 import { Op } from "sequelize";
+import { BundleId } from "../../interfaces/Ids";
+import { BundleList } from "../../interfaces/Skins";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -87,11 +89,12 @@ module.exports = {
 			[s.special, item.Special.Day ? `☀️ ${s.specialDay}` : item.Special.Night ? `🌙 ${s.specialNight}` : s.no],
 			[`${EmoteString.Shop} ${s.shop}`, item.Shop ? s.yes : s.no],
 			[`${EmoteString.BlackMarket} ${s.blackMarket}`, item.BlackMarket ? s.yes : s.no],
+			[`Skins`, Object.entries(item.Skin).map(([bundleId, skin]) => `- ${skin.String} ${BundleList[Number(bundleId)].Description[language]}`).join("\n")],
 		];
 
 		const embed = new CustomEmbedBuilder()
 			.setColor(itemMapper[item.Type].color)
-			.setDescription(`# ${item.Skin.Default.Emote.String} ${item.Description[language]}
+			.setDescription(`# ${item.Skin[BundleId.Default].String} ${item.Description[language]}
 ## ${EmoteString.Attack}${item.Attack} ATK ${EmoteString.Defense}${item.Defense} DEF\n`,
 			)
 			.setFields(itemData.map(([name, value]) => ({
@@ -102,7 +105,7 @@ module.exports = {
 			.setUserFooter({
 				nickname: user.Nickname,
 				image: interaction.user.avatarURL(),
-				text: `${s.usersWithItem}: ${usersWithItem}`
+				text: `${s.usersWithItem}: ${usersWithItem}`,
 			});
 
 		await replyInteraction(interaction, { embeds: [embed] });

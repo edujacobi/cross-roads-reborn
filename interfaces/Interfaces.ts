@@ -16,8 +16,3 @@ export interface IEmote {
 	Id: string,
 	String: string,
 }
-
-export interface ISkin {
-	Description: IDescription;
-	Emote: IEmote;
-}

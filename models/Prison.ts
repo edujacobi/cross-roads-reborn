@@ -9,7 +9,7 @@ import {
 	MessageComponentInteraction,
 	MessageFlags,
 } from "discord.js";
-import { ItemId, ItemList } from "../interfaces/Items";
+import { ItemList } from "../interfaces/Items";
 import { CrColors } from "../utils/colors";
 import { Users } from "../database/Users";
 import { Op } from "sequelize";
@@ -24,6 +24,7 @@ import { Notification, NotificationType } from "./Notification";
 import { EmoteBadgeString } from "../utils/badges";
 import { Pagination } from "./Pagination";
 import { CustomContainerBuilder } from "../ui/builders/CustomContainerBuilder";
+import { BundleId, ItemId } from "../interfaces/Ids";
 
 export class Prison {
 	User: User;
@@ -93,7 +94,7 @@ ${s.description(this.Escape.BaseChance, this.Escape.BaseJetpackChance + this.Esc
 		const buttonEscape = new ButtonBuilder()
 			.setCustomId("escape")
 			.setLabel(s.escape)
-			.setEmoji(this.Escape.HasJetpack ? ItemList[ItemId.Jetpack].Skin.Default.Emote.Id : EmoteId.Escape)
+			.setEmoji(this.Escape.HasJetpack ? ItemList[ItemId.Jetpack].Skin[BundleId.Default].Id : EmoteId.Escape)
 			.setDisabled(this.User.Escape.HasTried)
 			.setStyle(ButtonStyle.Secondary);
 
@@ -325,7 +326,7 @@ ${s.briberyStart(this.Bribe.Value)}`),
 
 	async StartEscape() {
 		const s = Strings[this.User.Language];
-		const emote = this.Escape.HasJetpack ? ItemList[ItemId.Jetpack].Skin.Default.Emote.String : EmoteString.Escape;
+		const emote = this.Escape.HasJetpack ? ItemList[ItemId.Jetpack].Skin[BundleId.Default].String : EmoteString.Escape;
 
 		const escapeContainer = new CustomContainerBuilder()
 			.setAccentColor(CrColors.Police)
@@ -356,7 +357,7 @@ ${s.briberyStart(this.Bribe.Value)}`),
 
 	async EndEscape(container: CustomContainerBuilder) {
 		const s = Strings[this.User.Language];
-		const emote = this.Escape.HasJetpack ? ItemList[ItemId.Jetpack].Skin.Default.Emote.String : EmoteString.Escape;
+		const emote = this.Escape.HasJetpack ? ItemList[ItemId.Jetpack].Skin[BundleId.Default].String : EmoteString.Escape;
 
 		await Notification.Dismiss(this.User.Id, NotificationType.Free);
 
@@ -364,7 +365,7 @@ ${s.briberyStart(this.Bribe.Value)}`),
 		const additionalTime = this.User.Attributes.Attack * 0.5;
 		const totalTime = baseTime + additionalTime;
 
-		const jetpack = `${ItemList[ItemId.Jetpack].Skin.Default.Emote.String} ${ItemList[ItemId.Jetpack].Description[this.User.Language]}`;
+		const jetpack = `${ItemList[ItemId.Jetpack].Skin[BundleId.Default].String} ${ItemList[ItemId.Jetpack].Description[this.User.Language]}`;
 
 		const chance = Math.floor(Math.random() * 101);
 		const success = chance < this.Escape.TotalChance;
@@ -595,7 +596,7 @@ const Strings = {
 
 -# Being imprisoned limits many of your actions in the game, such as working, investing, betting, scavenging, and of course, stealing.
 ### ${EmoteString.Escape} Escape
-You have a ${chance}% (${jetpackChance}% if you have a ${ItemList[ItemId.Jetpack].Skin.Default.Emote.String} **${ItemList[ItemId.Jetpack].Description[Language.English]}**) chance of escaping from prison!
+You have a ${chance}% (${jetpackChance}% if you have a ${ItemList[ItemId.Jetpack].Skin[BundleId.Default].String} **${ItemList[ItemId.Jetpack].Description[Language.English]}**) chance of escaping from prison!
 ### ${EmoteBadgeString.Season6.Politician} Bribe
 The guards are greedy, and the higher your ${EmoteString.Attack}ATK, the more they will ask for! They can also refuse your bribe, but they will keep your money.
 
@@ -635,7 +636,7 @@ The guards are greedy, and the higher your ${EmoteString.Attack}ATK, the more th
 
 -# Estar preso limita muitas de suas ações no jogo, como trabalhar, investir, apostar, vasculhar, e claro, roubar.
 ### ${EmoteString.Escape} Fugir
-Você tem ${chance}% (${jetpackChance}% se possuir uma ${ItemList[ItemId.Jetpack].Skin.Default.Emote.String} **${ItemList[ItemId.Jetpack].Description[Language.Portuguese]}**) de chance de fugir da prisão!
+Você tem ${chance}% (${jetpackChance}% se possuir uma ${ItemList[ItemId.Jetpack].Skin[BundleId.Default].String} **${ItemList[ItemId.Jetpack].Description[Language.Portuguese]}**) de chance de fugir da prisão!
 ### ${EmoteBadgeString.Season6.Politician} Subornar
 Os guardas são gananciosos, e quanto maior o seu ${EmoteString.Attack}ATK, mais eles pedirão! Eles também podem recusar seu suborno, mas ficarão com seu dinheiro.
 
@@ -675,7 +676,7 @@ Os guardas são gananciosos, e quanto maior o seu ${EmoteString.Attack}ATK, mais
 
 -# Estar encarcelado limita muchas de tus acciones en el juego, como trabajar, invertir, apostar, buscar, y por supuesto, robar.
 ### ${EmoteString.Escape} Escapar
-Tienes un ${chance}% (${jetpackChance}% si tienes un ${ItemList[ItemId.Jetpack].Skin.Default.Emote.String} **${ItemList[ItemId.Jetpack].Description[Language.Spanish]}**) de escapar de la prisión!
+Tienes un ${chance}% (${jetpackChance}% si tienes un ${ItemList[ItemId.Jetpack].Skin[BundleId.Default].String} **${ItemList[ItemId.Jetpack].Description[Language.Spanish]}**) de escapar de la prisión!
 ### ${EmoteBadgeString.Season6.Politician} Sobornar
 Los guardias son codiciosos, y cuanto mayor sea tu ${EmoteString.Attack}ATK, más te pedirán! También pueden rechazar tu soborno, pero se quedarán con tu dinero.
 

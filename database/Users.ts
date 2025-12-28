@@ -24,6 +24,8 @@ export class Users extends Model<
 	declare vipTime: CreationOptional<Date | null>;
 	declare vipEternal: CreationOptional<boolean>;
 
+	declare specialCoin: number;
+
 	declare jobId: CreationOptional<JobId | null>;
 	declare jobTime: CreationOptional<Date>;
 	declare jobReceivedSum: number;
@@ -145,6 +147,11 @@ Users.init(
 		vipEternal: {
 			type: DataTypes.BOOLEAN,
 			defaultValue: false,
+		},
+		specialCoin: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0,
 		},
 		jobId: {
 			type: DataTypes.INTEGER,

@@ -26,6 +26,7 @@ import { ClassId, ClassList } from "../interfaces/Classes";
 import { JobId, JobList } from "../interfaces/Jobs";
 import { LocationList } from "../interfaces/Locations";
 import { ScavengeId, ScavengeList } from "../interfaces/Scavenge";
+import { BundleId } from "../interfaces/Ids";
 
 export class BeatUp {
 	Id = 0;
@@ -228,7 +229,7 @@ export class BeatUp {
 
 		Log.Info(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) started beating up user ${this.Defender.Nickname} (ID: ${this.Defender.Id}).`);
 
-		const usedGun = `${this.Attacker.BestGun?.Skin.Default.Emote.String} ${this.Attacker.BestGun?.Description[this.Defender.Language]}`;
+		const usedGun = `${this.Attacker.BestGun?.Skin[BundleId.Default].String} ${this.Attacker.BestGun?.Description[this.Defender.Language]}`;
 
 		this.Embed.Private
 			.setAuthor({

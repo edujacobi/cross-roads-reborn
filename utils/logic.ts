@@ -1,6 +1,8 @@
 ﻿import { User } from "../models/User";
 import {
+	ActionRowBuilder,
 	APIEmbed,
+	ButtonBuilder,
 	ButtonInteraction,
 	CacheType,
 	ChatInputCommandInteraction,
@@ -16,6 +18,7 @@ import {
 	MessagePayload,
 	SectionBuilder,
 	Snowflake,
+	StringSelectMenuBuilder,
 } from "discord.js";
 import { CustomEmbedBuilder } from "../models/CustomEmbedBuilder";
 import { JSONEncodable } from "@discordjs/util";
@@ -183,6 +186,16 @@ export async function disableButtons(interaction: CommandInteraction | ButtonInt
 				}
 				if (component.accessory.data.type === ComponentType.Button) {
 					component.accessory.data.disabled = true;
+				}
+			}
+			if (component instanceof ActionRowBuilder) {
+				if (component.components.length === 0) {
+					continue;
+				}
+				for (const c of component.components) {
+					if (c instanceof ButtonBuilder || c instanceof StringSelectMenuBuilder) {
+						c.setDisabled(true);
+					}
 				}
 			}
 		}

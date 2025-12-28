@@ -66,7 +66,7 @@ module.exports = {
 
 		const now = Date.now();
 		const timestamps = cooldowns.get(command.data.name);
-		const defaultCooldownDuration = 5;
+		const defaultCooldownDuration = user.IsVip() ? 2.5 : 5;
 		const cooldownAmount = (command.cooldown ?? defaultCooldownDuration) * 1000;
 
 		if (!timestamps) {

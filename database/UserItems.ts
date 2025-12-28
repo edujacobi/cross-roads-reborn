@@ -1,7 +1,7 @@
 ﻿import { CreationOptional, DataTypes, ForeignKey, InferAttributes, InferCreationAttributes, Model } from "sequelize";
 import { sequelize } from "./Database";
 import { Users } from "./Users";
-import { ItemId } from "../interfaces/Items";
+import { BundleId, ItemId } from "../interfaces/Ids";
 
 export class UserItems extends Model<
 	InferAttributes<UserItems>,
@@ -12,6 +12,7 @@ export class UserItems extends Model<
 	declare itemId: ForeignKey<ItemId>;
 	declare remainingTime: CreationOptional<Date>;
 	declare quantity: CreationOptional<number>;
+	declare skin: BundleId;
 }
 
 UserItems.init(
@@ -36,6 +37,10 @@ UserItems.init(
 		quantity: {
 			type: DataTypes.INTEGER,
 			defaultValue: null,
+		},
+		skin: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
 		},
 	},
 	{

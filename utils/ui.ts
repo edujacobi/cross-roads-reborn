@@ -92,6 +92,10 @@ export function formatMoney(money: number, lang: Language, prefix = "Cr$") {
 		m = money.toLocaleString("pt-BR").replace(/,/g, ".");
 	}
 
+	if (prefix === "") {
+		return m;
+	}
+
 	return `${prefix} ${m}`;
 }
 

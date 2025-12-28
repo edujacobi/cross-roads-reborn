@@ -22,6 +22,7 @@ import { ItemType } from "../../interfaces/Items";
 import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
 import { GangColor } from "../../utils/colors";
 import { getClient } from "../../client";
+import { BundleId } from "../../interfaces/Ids";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -60,7 +61,7 @@ module.exports = {
 		badges.forEach(badge => badgeText += `${badge.Emoji} `);
 
 		const userItems = await target.GetItems();
-		const emoteItems = userItems.map(weapon => weapon.Skin.Default.Emote.String);
+		const emoteItems = userItems.map(weapon => weapon.Skin[weapon.SelectedSkin].String);
 
 		const lastCommand = interaction.client.userLastCommand.get(target.Id) || 0;
 
@@ -149,7 +150,7 @@ module.exports = {
 							.setContent(`-# ${s.inventoryItems}`),
 						items => {
 							const text = userItems.map(userItem => {
-								const name = `${userItem.Skin.Default.Emote.String} ${userItem.Description[language]}`;
+								const name = `${userItem.Skin[BundleId.Default].String} ${userItem.Description[language]}`;
 								const consumable = userItem.Type === ItemType.Consumable;
 								const value = consumable ? String(userItem.Quantity) : showTime(userItem.RemainingTime.getTime(), true);
 								const isLessThan24Hours = consumable ? userItem.Quantity <= 2 : differenceInHours(userItem.RemainingTime, Date.now()) < 24;

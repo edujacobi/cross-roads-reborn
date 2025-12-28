@@ -140,6 +140,8 @@ export enum EmoteId {
 	ThreePermission = "1392589946958905344",
 	FourPermission = "1392589949005467888",
 	AllPermission = "1392589951757062294",
+
+	SpecialCoinShop = "1454137203163791598",
 }
 
 export const EmoteString = {
@@ -284,4 +286,6 @@ export const EmoteString = {
 	ThreePermission: `<:3_permission:${EmoteId.ThreePermission}>`,
 	FourPermission: `<:4_permission:${EmoteId.FourPermission}>`,
 	AllPermission: `<:leader:${EmoteId.AllPermission}>`,
+
+	SpecialCoinShop: `<:SpecialCoinShop:${EmoteId.SpecialCoinShop}>`,
 };

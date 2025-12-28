@@ -1,7 +1,8 @@
 import { Language } from "../models/Language";
 import { IDescription, IEmote } from "./Interfaces";
-import { ItemId, ItemList } from "./Items";
+import { ItemList } from "./Items";
 import { EmoteId, EmoteString } from "../utils/emotes";
+import { ItemId } from "./Ids";
 
 export enum ScavengeId {
 	Dump,

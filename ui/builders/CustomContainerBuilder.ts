@@ -34,6 +34,13 @@ export class CustomContainerBuilder extends ContainerBuilder {
 		return `-# ${content}`;
 	}
 
+	addTexts(texts: string[]) {
+		this.addTextDisplayComponents(text => text
+			.setContent(texts.join("\n")));
+
+		return this;
+	}
+
 	addFooter(options?: FooterOptions) {
 
 		this.addLargeSeparator();
@@ -94,6 +101,13 @@ export class CustomContainerBuilder extends ContainerBuilder {
 	addLargeSeparator(visible = true) {
 		this.addSeparatorComponents(separator => separator
 			.setSpacing(SeparatorSpacingSize.Large)
+			.setDivider(visible));
+		return this;
+	}
+
+	addSmallSeparator(visible = true) {
+		this.addSeparatorComponents(separator => separator
+			.setSpacing(SeparatorSpacingSize.Small)
 			.setDivider(visible));
 		return this;
 	}

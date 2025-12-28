@@ -26,6 +26,7 @@ import { addHours, addMinutes } from "date-fns";
 import { Log } from "../utils/log";
 import { Notification } from "./Notification";
 import { UserItems } from "../database/UserItems";
+import { BundleId } from "../interfaces/Ids";
 
 export class Scavenge {
 	User: User;
@@ -73,7 +74,7 @@ export class Scavenge {
 
 			const textItems = place.Reward.Items.map(item => {
 				const data = ItemList[item.Id];
-				const emote = data.Skin.Default.Emote.String;
+				const emote = data.Skin[BundleId.Default].String;
 				const hoursOrUnits = data.Type === ItemType.Consumable ? "" : "h";
 
 				return `${emote} ${item.Duration.Min}${hoursOrUnits} - ${item.Duration.Max}${hoursOrUnits}`;
@@ -356,7 +357,7 @@ export class Scavenge {
 
 				if (data.Type === ItemType.Consumable) {
 					const howMany = Math.floor(item.Duration.Min + Math.random() * (item.Duration.Max - item.Duration.Min));
-					rewardDescription = `${howMany} ${data.Skin.Default.Emote.String} ${data.Description[this.User.Language]}`;
+					rewardDescription = `${howMany} ${data.Skin[BundleId.Default].String} ${data.Description[this.User.Language]}`;
 					rewardDescriptionLog = `${howMany} ${data.Description[Language.English]}`;
 
 					await UserItems.upsert({
@@ -364,11 +365,12 @@ export class Scavenge {
 						userId: this.User.Id,
 						itemId: item.Id,
 						quantity: (existingItem?.quantity ?? 0) + howMany,
+						skin: BundleId.Default,
 					});
 				}
 				else {
 					const duration = item.Duration.Min + Math.random() * (item.Duration.Max - item.Duration.Min);
-					rewardDescription = `${data.Skin.Default.Emote.String} ${data.Description[this.User.Language]} (${duration.toFixed(1)}h)`;
+					rewardDescription = `${data.Skin[BundleId.Default].String} ${data.Description[this.User.Language]} (${duration.toFixed(1)}h)`;
 					rewardDescriptionLog = `${duration.toFixed(1)}h ${data.Description[Language.English]}`;
 
 					const remaining = existingItem?.remainingTime ?? new Date(0);
@@ -382,6 +384,7 @@ export class Scavenge {
 						userId: this.User.Id,
 						itemId: item.Id,
 						remainingTime,
+						skin: BundleId.Default,
 					});
 				}
 			}

@@ -40,9 +40,10 @@ Access to development channel
 Nickname change recharge
 Less cooldown between commands
 50% larger alms delivery
-25% discount on Class change
-Exclusive Prize Ticket draws
+~~25% discount on Class change~~
+~~Exclusive Prize Ticket draws~~
 Can select Skins for weapons
+${EmoteString.SpecialCoinShop}4,000 Special Coins
 Access to VIP category in Cross Roads Reborn server
 VIP role in Cross Roads Reborn server
 Many more to come!`,
@@ -59,9 +60,10 @@ Acesso ao canal de desenvolvimento
 Recarga na alteração de nick
 Menos cooldown entre comandos
 Entrega esmolas 50% maiores
-25% de desconto na troca de Classe
-Sorteios do Bilhete premiado exclusivos
+~~25% de desconto na troca de Classe~~
+~~Sorteios do Bilhete premiado exclusivos~~
 Pode selecionar Skins para armas
+${EmoteString.SpecialCoinShop}4.000 Moedas Especiais
 Acesso à categoria VIP no servidor Cross Roads Reborn
 Cargo VIP no servidor Cross Roads Reborn
 Muitos mais por vir!`,
@@ -77,10 +79,11 @@ Insignia exclusiva en \`/user\`
 Acceso al canal de desarrollo
 Recarga en el cambio de apodo
 Menos tiempo de espera entre comandos
-Entrega de limosnas 50% mayores
-25% de descuento en el cambio de Clase
+~~Entrega de limosnas 50% mayores~~
+~~25% de descuento en el cambio de Clase~~
 Sorteos exclusivos del Billete premiado
 Puede seleccionar Skins para armas
+${EmoteString.SpecialCoinShop}4.000 Monedas especiales
 Acceso a la categoría VIP en el servidor Cross Roads Reborn
 Rol VIP en el servidor Cross Roads Reborn
 ¡Muchos más por venir!`,

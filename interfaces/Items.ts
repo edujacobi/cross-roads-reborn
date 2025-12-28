@@ -1,34 +1,7 @@
-import { defaultSkinDescription, IDescription, ISkin } from "./Interfaces";
+import { IDescription, IEmote } from "./Interfaces";
 import { Language } from "../models/Language";
 import { EmoteId, EmoteString } from "../utils/emotes";
-
-export enum ItemId {
-	Knife,
-	Colt45,
-	Tec9,
-	Rifle,
-	Shotgun,
-	MP5,
-	AK47,
-	M4,
-	Sniper,
-	Katana,
-	RPG,
-	Minigun,
-	Bazooka,
-	LightVest,
-	HeavyVest,
-	Goggles,
-	Exoskeleton,
-	Jetpack,
-	Grenade,
-	MicroUzi,
-	Sawnoff,
-	AdvancedScope,
-	Sunglasses,
-	BrassKnuckles,
-	BaseballBat,
-}
+import { BundleId, ItemId } from "./Ids";
 
 export enum ItemType {
 	Weapon,
@@ -42,8 +15,7 @@ export interface Items {
 	Type: ItemType,
 	Description: IDescription;
 	Skin: {
-		Default: ISkin,
-		[skin: string]: ISkin;
+		[bundleId: number]: IEmote;
 	};
 	Price: number;
 	Shop: boolean;
@@ -64,7 +36,8 @@ export interface Items {
 
 export interface UserItem extends Items {
 	RemainingTime: Date,
-	Quantity: number
+	Quantity: number,
+	SelectedSkin: BundleId,
 }
 
 interface ItemListType {
@@ -81,12 +54,13 @@ export const ItemList: ItemListType = {
 			[Language.Spanish]: "Cuchillo",
 		},
 		Skin: {
-			Default: {
-				Description: defaultSkinDescription,
-				Emote: {
-					Id: EmoteId.Knife,
-					String: EmoteString.Knife,
-				},
+			[BundleId.Default]: {
+				Id: EmoteId.Knife,
+				String: EmoteString.Knife,
+			},
+			[BundleId.Traditional]: {
+				Id: "937170775063023636",
+				String: "<:faca:937170775063023636>",
 			},
 		},
 		Price: 2_000,
@@ -114,12 +88,13 @@ export const ItemList: ItemListType = {
 			[Language.Spanish]: "Glock 17",
 		},
 		Skin: {
-			Default: {
-				Description: defaultSkinDescription,
-				Emote: {
-					Id: EmoteId.Colt45,
-					String: EmoteString.Colt45,
-				},
+			[BundleId.Default]: {
+				Id: EmoteId.Colt45,
+				String: EmoteString.Colt45,
+			},
+			[BundleId.Traditional]: {
+				Id: "937170775117553704",
+				String: "<:colt45:937170775117553704>",
 			},
 		},
 		Price: 5_900,
@@ -147,12 +122,17 @@ export const ItemList: ItemListType = {
 			[Language.Spanish]: "Tec 9",
 		},
 		Skin: {
-			Default: {
-				Description: defaultSkinDescription,
-				Emote: {
-					Id: EmoteId.Tec9,
-					String: EmoteString.Tec9,
-				},
+			[BundleId.Default]: {
+				Id: EmoteId.Tec9,
+				String: EmoteString.Tec9,
+			},
+			[BundleId.Traditional]: {
+				Id: "937170775281119262",
+				String: "<:tec9:937170775281119262>",
+			},
+			[BundleId.Brazilian]: {
+				Id: "1454163361402065017",
+				String: "<:tec9BR:1454163361402065017>",
 			},
 		},
 		Price: 15_000,
@@ -180,12 +160,9 @@ export const ItemList: ItemListType = {
 			[Language.Spanish]: "Micro Uzi",
 		},
 		Skin: {
-			Default: {
-				Description: defaultSkinDescription,
-				Emote: {
-					Id: EmoteId.MicroUzi,
-					String: EmoteString.MicroUzi,
-				},
+			[BundleId.Default]: {
+				Id: EmoteId.MicroUzi,
+				String: EmoteString.MicroUzi,
 			},
 		},
 		Price: 0,
@@ -213,12 +190,13 @@ export const ItemList: ItemListType = {
 			[Language.Spanish]: "Rifle",
 		},
 		Skin: {
-			Default: {
-				Description: defaultSkinDescription,
-				Emote: {
-					Id: EmoteId.Rifle,
-					String: EmoteString.Rifle,
-				},
+			[BundleId.Default]: {
+				Id: EmoteId.Rifle,
+				String: EmoteString.Rifle,
+			},
+			[BundleId.Traditional]: {
+				Id: "937170774727475242",
+				String: "<:rifle:937170774727475242>",
 			},
 		},
 		Price: 27_000,
@@ -246,12 +224,13 @@ export const ItemList: ItemListType = {
 			[Language.Spanish]: "Remington 870",
 		},
 		Skin: {
-			Default: {
-				Description: defaultSkinDescription,
-				Emote: {
-					Id: EmoteId.Shotgun,
-					String: EmoteString.Shotgun,
-				},
+			[BundleId.Default]: {
+				Id: EmoteId.Shotgun,
+				String: EmoteString.Shotgun,
+			},
+			[BundleId.Traditional]: {
+				Id: "937170774983319552",
+				String: "<:escopeta:937170774983319552>",
 			},
 		},
 		Price: 40_000,
@@ -279,12 +258,9 @@ export const ItemList: ItemListType = {
 			[Language.Spanish]: "Uplander Serrada",
 		},
 		Skin: {
-			Default: {
-				Description: defaultSkinDescription,
-				Emote: {
-					Id: EmoteId.SawnOff,
-					String: EmoteString.SawnOff,
-				},
+			[BundleId.Default]: {
+				Id: EmoteId.SawnOff,
+				String: EmoteString.SawnOff,
 			},
 		},
 		Price: 40000,
@@ -312,12 +288,13 @@ export const ItemList: ItemListType = {
 			[Language.Spanish]: "MP5",
 		},
 		Skin: {
-			Default: {
-				Description: defaultSkinDescription,
-				Emote: {
-					Id: EmoteId.MP5,
-					String: EmoteString.MP5,
-				},
+			[BundleId.Default]: {
+				Id: EmoteId.MP5,
+				String: EmoteString.MP5,
+			},
+			[BundleId.Traditional]: {
+				Id: "937170775050436619",
+				String: "<:mp5:937170775050436619>",
 			},
 		},
 		Price: 65000,
@@ -345,12 +322,13 @@ export const ItemList: ItemListType = {
 			[Language.Spanish]: "AK47",
 		},
 		Skin: {
-			Default: {
-				Description: defaultSkinDescription,
-				Emote: {
-					Id: EmoteId.AK47,
-					String: EmoteString.AK47,
-				},
+			[BundleId.Default]: {
+				Id: EmoteId.AK47,
+				String: EmoteString.AK47,
+			},
+			[BundleId.Traditional]: {
+				Id: "937170774920400957",
+				String: "<:ak47:937170774920400957>",
 			},
 		},
 		Price: 100_000,
@@ -378,12 +356,13 @@ export const ItemList: ItemListType = {
 			[Language.Spanish]: "M4A1",
 		},
 		Skin: {
-			Default: {
-				Description: defaultSkinDescription,
-				Emote: {
-					Id: EmoteId.M4,
-					String: EmoteString.M4,
-				},
+			[BundleId.Default]: {
+				Id: EmoteId.M4,
+				String: EmoteString.M4,
+			},
+			[BundleId.Traditional]: {
+				Id: "937170775100760114",
+				String: "<:m4:937170775100760114>",
 			},
 		},
 		Price: 135_000,
@@ -411,12 +390,13 @@ export const ItemList: ItemListType = {
 			[Language.Spanish]: "Sniper",
 		},
 		Skin: {
-			Default: {
-				Description: defaultSkinDescription,
-				Emote: {
-					Id: EmoteId.Sniper,
-					String: EmoteString.Sniper,
-				},
+			[BundleId.Default]: {
+				Id: EmoteId.Sniper,
+				String: EmoteString.Sniper,
+			},
+			[BundleId.Traditional]: {
+				Id: "937170775138508830",
+				String: "<:sniper:937170775138508830>",
 			},
 		},
 		Price: 210_000,
@@ -444,12 +424,17 @@ export const ItemList: ItemListType = {
 			[Language.Spanish]: "Katana",
 		},
 		Skin: {
-			Default: {
-				Description: defaultSkinDescription,
-				Emote: {
-					Id: EmoteId.Katana,
-					String: EmoteString.Katana,
-				},
+			[BundleId.Default]: {
+				Id: EmoteId.Katana,
+				String: EmoteString.Katana,
+			},
+			[BundleId.Traditional]: {
+				Id: "937170775021068378",
+				String: "<:katanaicon:937170775021068378>",
+			},
+			[BundleId.Flaming]: {
+				Id: "1454163271333580895",
+				String: "<:katanaflames:1454163271333580895>",
 			},
 		},
 		Price: 330_000,
@@ -477,12 +462,13 @@ export const ItemList: ItemListType = {
 			[Language.Spanish]: "RPG",
 		},
 		Skin: {
-			Default: {
-				Description: defaultSkinDescription,
-				Emote: {
-					Id: EmoteId.RPG,
-					String: EmoteString.RPG,
-				},
+			[BundleId.Default]: {
+				Id: EmoteId.RPG,
+				String: EmoteString.RPG,
+			},
+			[BundleId.Traditional]: {
+				Id: "937170775096557588",
+				String: "<:rpg:937170775096557588>",
 			},
 		},
 		Price: 666_000,
@@ -510,12 +496,13 @@ export const ItemList: ItemListType = {
 			[Language.Spanish]: "Minigun",
 		},
 		Skin: {
-			Default: {
-				Description: defaultSkinDescription,
-				Emote: {
-					Id: EmoteId.Minigun,
-					String: EmoteString.Minigun,
-				},
+			[BundleId.Default]: {
+				Id: EmoteId.Minigun,
+				String: EmoteString.Minigun,
+			},
+			[BundleId.Traditional]: {
+				Id: "937170775121731604",
+				String: "<:minigun:937170775121731604>",
 			},
 		},
 		Price: 10_000_000,
@@ -543,12 +530,13 @@ export const ItemList: ItemListType = {
 			[Language.Spanish]: "Bazuca",
 		},
 		Skin: {
-			Default: {
-				Description: defaultSkinDescription,
-				Emote: {
-					Id: EmoteId.Bazooka,
-					String: EmoteString.Bazooka,
-				},
+			[BundleId.Default]: {
+				Id: EmoteId.Bazooka,
+				String: EmoteString.Bazooka,
+			},
+			[BundleId.Traditional]: {
+				Id: "937170775201439774",
+				String: "<:bazuca:937170775201439774>",
 			},
 		},
 		Price: 0,
@@ -576,12 +564,9 @@ export const ItemList: ItemListType = {
 			[Language.Spanish]: "Chaleco ligero",
 		},
 		Skin: {
-			Default: {
-				Description: defaultSkinDescription,
-				Emote: {
-					Id: EmoteId.LightVest,
-					String: EmoteString.LightVest,
-				},
+			[BundleId.Default]: {
+				Id: EmoteId.LightVest,
+				String: EmoteString.LightVest,
 			},
 		},
 		Price: 175_000,
@@ -609,12 +594,9 @@ export const ItemList: ItemListType = {
 			[Language.Spanish]: "Chaleco pesado",
 		},
 		Skin: {
-			Default: {
-				Description: defaultSkinDescription,
-				Emote: {
-					Id: EmoteId.HeavyVest,
-					String: EmoteString.HeavyVest,
-				},
+			[BundleId.Default]: {
+				Id: EmoteId.HeavyVest,
+				String: EmoteString.HeavyVest,
 			},
 		},
 		Price: 1_000_000,
@@ -642,12 +624,13 @@ export const ItemList: ItemListType = {
 			[Language.Spanish]: "Gafas nocturnas",
 		},
 		Skin: {
-			Default: {
-				Description: defaultSkinDescription,
-				Emote: {
-					Id: EmoteId.Nightvision,
-					String: EmoteString.Nightvision,
-				},
+			[BundleId.Default]: {
+				Id: EmoteId.Nightvision,
+				String: EmoteString.Nightvision,
+			},
+			[BundleId.Traditional]: {
+				Id: "937170774446461008",
+				String: "<:goggles:937170774446461008>",
 			},
 		},
 		Price: 300_000,
@@ -675,12 +658,9 @@ export const ItemList: ItemListType = {
 			[Language.Spanish]: "Exoesqueleto",
 		},
 		Skin: {
-			Default: {
-				Description: defaultSkinDescription,
-				Emote: {
-					Id: EmoteId.Exoskeleton,
-					String: EmoteString.Exoskeleton,
-				},
+			[BundleId.Default]: {
+				Id: EmoteId.Exoskeleton,
+				String: EmoteString.Exoskeleton,
 			},
 		},
 		Price: 20_000_000,
@@ -708,12 +688,17 @@ export const ItemList: ItemListType = {
 			[Language.Spanish]: "Jetpack",
 		},
 		Skin: {
-			Default: {
-				Description: defaultSkinDescription,
-				Emote: {
-					Id: EmoteId.Jetpack,
-					String: EmoteString.Jetpack,
-				},
+			[BundleId.Default]: {
+				Id: EmoteId.Jetpack,
+				String: EmoteString.Jetpack,
+			},
+			[BundleId.Traditional]: {
+				Id: "937170775079792690",
+				String: "<:jetpack:937170775079792690>",
+			},
+			[BundleId.Brazilian]: {
+				Id: "937411620198563910",
+				String: "<:jetpackbr:937411620198563910>",
 			},
 		},
 		Price: 5_000_000,
@@ -741,12 +726,13 @@ export const ItemList: ItemListType = {
 			[Language.Spanish]: "Granada",
 		},
 		Skin: {
-			Default: {
-				Description: defaultSkinDescription,
-				Emote: {
-					Id: EmoteId.Granade,
-					String: EmoteString.Granade,
-				},
+			[BundleId.Default]: {
+				Id: EmoteId.Granade,
+				String: EmoteString.Granade,
+			},
+			[BundleId.Traditional]: {
+				Id: "937170774152859670",
+				String: "<:granada:937170774152859670>",
 			},
 		},
 		Price: 350_000,
@@ -774,12 +760,9 @@ export const ItemList: ItemListType = {
 			[Language.Spanish]: "Gafas de Sol",
 		},
 		Skin: {
-			Default: {
-				Description: defaultSkinDescription,
-				Emote: {
-					Id: EmoteId.Sunglasses,
-					String: EmoteString.Sunglasses,
-				},
+			[BundleId.Default]: {
+				Id: EmoteId.Sunglasses,
+				String: EmoteString.Sunglasses,
 			},
 		},
 		Price: 0,
@@ -807,12 +790,9 @@ export const ItemList: ItemListType = {
 			[Language.Spanish]: "Puño de latón",
 		},
 		Skin: {
-			Default: {
-				Description: defaultSkinDescription,
-				Emote: {
-					Id: EmoteId.BrassKnuckles,
-					String: EmoteString.BrassKnuckles,
-				},
+			[BundleId.Default]: {
+				Id: EmoteId.BrassKnuckles,
+				String: EmoteString.BrassKnuckles,
 			},
 		},
 		Price: 0,
@@ -840,12 +820,9 @@ export const ItemList: ItemListType = {
 			[Language.Spanish]: "Bate de béisbol",
 		},
 		Skin: {
-			Default: {
-				Description: defaultSkinDescription,
-				Emote: {
-					Id: EmoteId.BaseballBat,
-					String: EmoteString.BaseballBat,
-				},
+			[BundleId.Default]: {
+				Id: EmoteId.BaseballBat,
+				String: EmoteString.BaseballBat,
 			},
 		},
 		Price: 0,
@@ -873,12 +850,9 @@ export const ItemList: ItemListType = {
 			[Language.Spanish]: "Mira avanzada",
 		},
 		Skin: {
-			Default: {
-				Description: defaultSkinDescription,
-				Emote: {
-					Id: EmoteId.AdvancedScope,
-					String: EmoteString.AdvancedScope,
-				},
+			[BundleId.Default]: {
+				Id: EmoteId.AdvancedScope,
+				String: EmoteString.AdvancedScope,
 			},
 		},
 		Price: 1_000_000,

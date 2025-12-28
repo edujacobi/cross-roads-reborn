@@ -8,6 +8,7 @@ import { Log } from "../../utils/log";
 import { EmoteString } from "../../utils/emotes";
 import { sendPrivateMessage } from "../../utils/logic";
 import { CrColors } from "../../utils/colors";
+import { BundleId } from "../../interfaces/Ids";
 
 enum Mode {
 	Set,
@@ -89,10 +90,15 @@ module.exports = {
 					await existingItem.update({ remainingTime: newExpiryDate });
 				}
 				else {
-					await UserItems.create({ userId: targetUserId, itemId, remainingTime: newExpiryDate });
+					await UserItems.create({
+						userId: targetUserId,
+						itemId,
+						remainingTime: newExpiryDate,
+						skin: BundleId.Default,
+					});
 				}
 
-				replyMessage = `✅ Successfully **set** item ${itemData.Skin.Default.Emote.String} ${itemData.Description[Language.English]} for **${targetUser.GetNameWithImage()}**. It is now valid for ${hoursOrQuantity} hour(s)`;
+				replyMessage = `✅ Successfully **set** item ${itemData.Skin[BundleId.Default].String} ${itemData.Description[Language.English]} for **${targetUser.GetNameWithImage()}**. It is now valid for ${hoursOrQuantity} hour(s)`;
 
 			}
 			else {
@@ -102,10 +108,15 @@ module.exports = {
 					await existingItem.update({ remainingTime: extendedExpiryDate });
 				}
 				else {
-					await UserItems.create({ userId: targetUserId, itemId, remainingTime: newExpiryDate });
+					await UserItems.create({
+						userId: targetUserId,
+						itemId,
+						remainingTime: newExpiryDate,
+						skin: BundleId.Default,
+					});
 				}
 
-				replyMessage = `✅ Successfully **added** ${hoursOrQuantity} hours to item ${itemData.Skin.Default.Emote.String} ${itemData.Description[Language.English]} for **${targetUser.GetNameWithImage()}**.`;
+				replyMessage = `✅ Successfully **added** ${hoursOrQuantity} hours to item ${itemData.Skin[BundleId.Default].String} ${itemData.Description[Language.English]} for **${targetUser.GetNameWithImage()}**.`;
 			}
 		}
 		else if (mode === Mode.Set) {
@@ -113,10 +124,15 @@ module.exports = {
 				await existingItem.update({ quantity: hoursOrQuantity });
 			}
 			else {
-				await UserItems.create({ userId: targetUserId, itemId, quantity: hoursOrQuantity });
+				await UserItems.create({
+					userId: targetUserId,
+					itemId,
+					quantity: hoursOrQuantity,
+					skin: BundleId.Default,
+				});
 			}
 
-			replyMessage = `✅ Successfully **set** item ${itemData.Skin.Default.Emote.String} ${itemData.Description[Language.English]} for **${targetUser.GetNameWithImage()}**. They now have a quantity of **${hoursOrQuantity}**.`;
+			replyMessage = `✅ Successfully **set** item ${itemData.Skin[BundleId.Default].String} ${itemData.Description[Language.English]} for **${targetUser.GetNameWithImage()}**. They now have a quantity of **${hoursOrQuantity}**.`;
 
 		}
 		else {
@@ -126,14 +142,19 @@ module.exports = {
 				await existingItem.update({ quantity: newQuantity });
 			}
 			else {
-				await UserItems.create({ userId: targetUserId, itemId, quantity: newQuantity });
+				await UserItems.create({
+					userId: targetUserId,
+					itemId,
+					quantity: newQuantity,
+					skin: BundleId.Default,
+				});
 			}
 
-			replyMessage = `✅ Successfully **added** ${hoursOrQuantity} quantity to item ${itemData.Skin.Default.Emote.String} ${itemData.Description[Language.English]} for **${targetUser.GetNameWithImage()}**.`;
+			replyMessage = `✅ Successfully **added** ${hoursOrQuantity} quantity to item ${itemData.Skin[BundleId.Default].String} ${itemData.Description[Language.English]} for **${targetUser.GetNameWithImage()}**.`;
 		}
 
 		Log.Success(`Admin ${user.Nickname} (${user.Id}) used setitem on ${targetUser.Nickname} (Id: ${targetUser.Id}) for item ${itemData.Description[Language.English]} (Id: ${itemData.Id}). Mode: ${mode === Mode.Set ? "set" : "add"}, ${itemData.Type == ItemType.Consumable ? "Quantity" : "Hours"}: ${hoursOrQuantity}`);
-		await sendPrivateMessage(targetUserId, `You ${mode === Mode.Set ? "now have" : "received"} ${hoursOrQuantity} ${itemData.Type == ItemType.Consumable ? "" : "hours"} of ${itemData.Skin.Default.Emote.String} ${itemData.Description[Language.English]}!`, CrColors.Admin);
+		await sendPrivateMessage(targetUserId, `You ${mode === Mode.Set ? "now have" : "received"} ${hoursOrQuantity} ${itemData.Type == ItemType.Consumable ? "" : "hours"} of ${itemData.Skin[BundleId.Default].String} ${itemData.Description[Language.English]}!`, CrColors.Admin);
 		await interaction.editReply(replyMessage);
 	},
 };
