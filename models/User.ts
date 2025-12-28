@@ -394,15 +394,22 @@ export class User {
 
 		this.VipTime = addDays(this.VipTime, days);
 
+		const specialCoins = Math.round((days / 30)) * 4_000;
+		this.SpecialCoin += specialCoins;
+
 		await this.Update();
-		Log.Success(`User ${this.Nickname} (ID: ${this.Id}) received ${days} days of VIP.`);
+		Log.Success(`User ${this.Nickname} (ID: ${this.Id}) received ${days} days of VIP and ${specialCoins} special coins.`);
+		return specialCoins;
 	}
 
 	async SetEternalVip() {
 		this.VipEternal = !this.VipEternal;
+		const specialCoins = this.VipEternal ? 1_000_000 : 0;
+		this.SpecialCoin = specialCoins;
 
 		await this.Update();
 		Log.Success(`User ${this.Nickname} (ID: ${this.Id}) ${this.VipEternal ? "is now" : "is not anymore"} a eternal VIP.`);
+		return specialCoins;
 	}
 
 	CanReceiveDaily() {

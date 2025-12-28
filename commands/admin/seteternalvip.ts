@@ -1,5 +1,6 @@
 ﻿import {
-	ChatInputCommandInteraction, Colors,
+	ChatInputCommandInteraction,
+	Colors,
 	Locale,
 	PermissionFlagsBits,
 	SlashCommandBuilder,
@@ -9,6 +10,7 @@ import { defaultEmbed } from "../../utils/ui";
 import { checkUser, replyInteraction, sendPrivateMessage } from "../../utils/logic";
 import { EmoteString } from "../../utils/emotes";
 import { User } from "../../models/User";
+import { Language } from "../../models/Language";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -36,8 +38,23 @@ module.exports = {
 
 		await target?.SetEternalVip();
 
+		const messages = {
+			[Language.English]: {
+				VIP: `${EmoteString.VIP} Now you are a Eternal VIP!`,
+				noVIP: `${EmoteString.VIP} You are no longer a Eternal VIP... How?`,
+			},
+			[Language.Portuguese]: {
+				VIP: `${EmoteString.VIP} Você agora é um VIP Eterno!`,
+				noVIP: `${EmoteString.VIP} Você não é mais um VIP Eterno... Como?`,
+			},
+			[Language.Spanish]: {
+				VIP: `${EmoteString.VIP} Ahora eres un VIP Eternal!`,
+				noVIP: `${EmoteString.VIP} No eres más un VIP Eternal... Cómo?`,
+			},
+		} as const;
+
 		if (target.VipEternal) {
-			await sendPrivateMessage(userId, `${EmoteString.VIP} Now you are a Eternal VIP!`, Colors.Gold);
+			await sendPrivateMessage(userId, messages[target.Language].VIP, Colors.Gold);
 
 			await replyInteraction(interaction, {
 				embeds: [defaultEmbed({
@@ -49,7 +66,7 @@ module.exports = {
 			});
 		}
 		else {
-			await sendPrivateMessage(userId, `${EmoteString.VIP} You are no longer a Eternal VIP... How?`, Colors.Gold);
+			await sendPrivateMessage(userId, messages[target.Language].noVIP, Colors.Gold);
 
 			await replyInteraction(interaction, {
 				embeds: [defaultEmbed({
