@@ -150,7 +150,7 @@ module.exports = {
 							.setContent(`-# ${s.inventoryItems}`),
 						items => {
 							const text = userItems.map(userItem => {
-								const name = `${userItem.Skin[BundleId.Default].String} ${userItem.Description[language]}`;
+								const name = `${userItem.Skin[userItem.SelectedSkin].String} ${userItem.Description[language]}`;
 								const consumable = userItem.Type === ItemType.Consumable;
 								const value = consumable ? String(userItem.Quantity) : showTime(userItem.RemainingTime.getTime(), true);
 								const isLessThan24Hours = consumable ? userItem.Quantity <= 2 : differenceInHours(userItem.RemainingTime, Date.now()) < 24;
