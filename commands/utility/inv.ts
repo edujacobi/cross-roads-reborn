@@ -23,6 +23,7 @@ import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder
 import { GangColor } from "../../utils/colors";
 import { getClient } from "../../client";
 import { BundleId } from "../../interfaces/Ids";
+import { UserImageCanvasBuilder } from "../../ui/builders/UserImageCanvasBuilder";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -56,6 +57,12 @@ module.exports = {
 			badges = UserBadge.AddVIPBadgeInList(badges, target, language);
 		}
 
+		const userImage = await new UserImageCanvasBuilder(target, _user.avatarURL({ size: 256 }))
+			.SetBadges(badges)
+			.GenerateImage();
+
+		const userImageFile = new AttachmentBuilder(userImage, { name: "user.webp" });
+
 		let badgeText = "";
 
 		badges.forEach(badge => badgeText += `${badge.Emoji} `);
@@ -72,7 +79,7 @@ module.exports = {
 		const gang = await target.GetGang();
 
 		const gangImage = gang ? await createUserGangImage(target, gang, language) : null;
-		const file = gangImage ? new AttachmentBuilder(gangImage, { name: "gang.webp" }) : null;
+		const gangImageFile = gangImage ? new AttachmentBuilder(gangImage, { name: "gang.webp" }) : null;
 
 		function generateContainer(isClosed: boolean, target: User) {
 			const inv = new CustomContainerBuilder()
@@ -100,7 +107,7 @@ module.exports = {
 								.setContent(`# ${formatMoney(target.Money, language)}`),
 						)
 						.setThumbnailAccessory(avatar => avatar
-							.setURL(_user.avatarURL() ?? ClassList[target.Class].Image.Url),
+							.setURL("attachment://user.webp"),
 						),
 					)
 					.addTextDisplayComponents(situation => situation
@@ -139,7 +146,8 @@ module.exports = {
 								.setContent(`# ${formatMoney(target.Money, language)}`),
 						)
 						.setThumbnailAccessory(avatar => avatar
-							.setURL(_user.avatarURL() ?? ClassList[target.Class].Image.Url)),
+							.setURL("attachment://user.webp"),
+						),
 					)
 					.addTextDisplayComponents(situation => situation
 						.setContent(`${target.Situation.Complex} • ${EmoteString.Attack}${target.Attributes.Attack} ATK • ${EmoteString.Defense}${target.Attributes.Defense} DEF`),
@@ -177,9 +185,17 @@ module.exports = {
 
 		let container = generateContainer(true, target);
 
+		const files = [];
+		if (gangImageFile) {
+			files.push(gangImageFile);
+		}
+		if (userImageFile) {
+			files.push(userImageFile);
+		}
+
 		const response = await replyInteraction(interaction, {
 			components: [container],
-			files: file ? [file] : [],
+			files,
 			flags: MessageFlags.IsComponentsV2,
 			withResponse: true,
 		});

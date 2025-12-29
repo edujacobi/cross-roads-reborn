@@ -137,7 +137,7 @@ export class UserBadge {
 			const badge = await UserBadges.findOne({
 				where: {
 					userId,
-					badgeId: "moderator", // This key is defined in BadgeId.Moderator in interfaces/Badges.ts
+					badgeId: BadgeId.Moderator, // This key is defined in BadgeId.Moderator in interfaces/Badges.ts
 				},
 			});
 
@@ -145,6 +145,33 @@ export class UserBadge {
 		}
 		catch (err) {
 			Log.Warning(`Error checking moderator status for user ${userId}`);
+			return false;
+		}
+	}
+
+	/**
+	 * Checks if a user has the Developer badge
+	 * @param userId User ID to check
+	 * @returns Promise<boolean> True if the user has the developer badge
+	 */
+	static async IsDeveloper(userId: string): Promise<boolean> {
+		if (!userId) {
+			Log.Warning("Cannot check developer status without a userId");
+			return false;
+		}
+
+		try {
+			const badge = await UserBadges.findOne({
+				where: {
+					userId,
+					badgeId: BadgeId.Developer, // This key is defined in BadgeId.Developer in interfaces/Badges.ts
+				},
+			});
+
+			return !!badge; // Convert to boolean
+		}
+		catch (err) {
+			Log.Warning(`Error checking developer status for user ${userId}`);
 			return false;
 		}
 	}
