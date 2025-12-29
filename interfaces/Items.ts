@@ -62,6 +62,10 @@ export const ItemList: ItemListType = {
 				Id: "937170775063023636",
 				String: "<:faca:937170775063023636>",
 			},
+			[BundleId.Brazilian]: {
+				Id: "1455275871563677780",
+				String: "<:Canivete:1455275871563677780>",
+			},
 		},
 		Price: 2_000,
 		Attack: 15,
@@ -304,6 +308,10 @@ export const ItemList: ItemListType = {
 				Id: "937170775050436619",
 				String: "<:mp5:937170775050436619>",
 			},
+			[BundleId.Brazilian]: {
+				Id: "1455284475058716925",
+				String: "<:Taurus_M972:1455284475058716925>",
+			},
 		},
 		Price: 65000,
 		Attack: 40,
@@ -337,6 +345,10 @@ export const ItemList: ItemListType = {
 			[BundleId.Traditional]: {
 				Id: "937170774920400957",
 				String: "<:ak47:937170774920400957>",
+			},
+			[BundleId.Brazilian]: {
+				Id: "1455275951457042463",
+				String: "<:FN_FAL:1455275951457042463>",
 			},
 		},
 		Price: 100_000,
@@ -843,6 +855,10 @@ export const ItemList: ItemListType = {
 			[BundleId.Traditional]: {
 				Id: "1454922867568279665",
 				String: "<:bati:1454922867568279665>",
+			},
+			[BundleId.Brazilian]: {
+				Id: "1455276013922816260",
+				String: "<:Pau_com_pregos:1455276013922816260>",
 			},
 		},
 		Price: 0,

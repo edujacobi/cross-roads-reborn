@@ -88,9 +88,13 @@ export const BundleList: SkinBundleListType = {
 			[Language.Spanish]: "Brasileño",
 		},
 		Items: [
+			ItemId.Knife,
 			ItemId.Tec9,
+			ItemId.MP5,
+			ItemId.AK47,
 			ItemId.Jetpack,
 			ItemId.BrassKnuckles,
+			ItemId.BaseballBat,
 		],
 		Shop: true,
 		Price: 2500,
