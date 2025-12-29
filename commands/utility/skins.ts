@@ -15,7 +15,7 @@ import { disableButtons, replyInteraction } from "../../utils/logic";
 import { User } from "../../models/User";
 import { Language } from "../../models/Language";
 import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
-import { BundleList } from "../../interfaces/Skins";
+import { BundleList, getSkinBundleList } from "../../interfaces/Skins";
 import { ItemList, Items } from "../../interfaces/Items";
 import { UserBundle } from "../../models/UserBundle";
 import { CrColors } from "../../utils/colors";
@@ -40,16 +40,19 @@ module.exports = {
 			.sort((a, b) => a.Id - b.Id),
 		)];
 
-		const userHasBundles = userBundles.length > 0;
+		const userHasBundles = itemsWithSkins.length > 0;
 
 		function addHeader(container = new CustomContainerBuilder()) {
 			container.setUser(user)
 				.setAccentColor(CrColors.Default)
 				.addTexts([
 					`# Skins`,
-					userHasBundles ? s.choose : s.dontHave,
-				])
-				.addLargeSeparator();
+					userHasBundles ? s.subtitle : s.dontHave,
+				]);
+
+			if (userHasBundles) {
+				container.addLargeSeparator();
+			}
 
 			return container;
 		}
@@ -65,6 +68,11 @@ module.exports = {
 
 			const container = addHeader();
 
+			container.addTexts([
+				`### ${s.selectItem}`,
+				s.choose,
+			]);
+
 			for (const chunk of itemsWithSkinsChunks) {
 				container.addActionRowComponents(row => row
 					.addComponents(
@@ -72,7 +80,34 @@ module.exports = {
 							.setLabel(item.Description[language])
 							.setEmoji(item.Skin[BundleId.Default].Id)
 							.setStyle(ButtonStyle.Secondary)
-							.setCustomId("change" + item.Id),
+							.setCustomId("change-item" + item.Id),
+						),
+					),
+				);
+			}
+
+			container.addLargeSeparator();
+
+			container.addTexts([
+				`### ${s.selectBundle}`,
+				s.allItems,
+			]);
+
+			// separate bundles in different arrays with length = 5
+			const bundlesChunks = [];
+			const bundleList = getSkinBundleList();
+			for (let i = 0; i < bundleList.length; i += 5) {
+				bundlesChunks.push(bundleList.slice(i, i + 5));
+			}
+
+			for (const chunk of bundlesChunks) {
+				container.addActionRowComponents(row => row
+					.addComponents(
+						chunk.map(bundle => new ButtonBuilder()
+							.setLabel(bundle.Description[language])
+							.setEmoji(ItemList[bundle.Items[0]].Skin[bundle.Id].Id)
+							.setStyle(ButtonStyle.Secondary)
+							.setCustomId("change-bundle" + bundle.Id),
 						),
 					),
 				);
@@ -124,17 +159,12 @@ module.exports = {
 				});
 			}
 
-			else if (btn.customId.includes("change")) {
-				const itemId = Number(btn.customId.replace("change", ""));
+			else if (btn.customId.includes("change-item")) {
+				const itemId = Number(btn.customId.replace("change-item", ""));
 				const item = ItemList[itemId];
 
 				const bundles = userBundles.filter(bundle => bundle.Items.includes(item));
-				const userItems = await user.GetAllItems();
-				const userItem = userItems.find(item => item.Id === itemId);
-
-				if (!userItem) {
-					return;
-				}
+				const userItem = await user.GetSpecificItem(item.Id);
 
 				selectedItem = item;
 
@@ -155,6 +185,66 @@ module.exports = {
 								)),
 						]),
 					)
+					.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
+						.addComponents([
+							new ButtonBuilder()
+								.setLabel(s.goBack)
+								.setStyle(ButtonStyle.Secondary)
+								.setCustomId("back"),
+						]),
+					);
+
+				container.addFooter();
+
+				await replyInteraction(interaction, {
+					components: [container],
+					flags: MessageFlags.IsComponentsV2,
+				});
+			}
+
+			else if (btn.customId.includes("change-bundle")) {
+				const bundleId = Number(btn.customId.replace("change-bundle", ""));
+				const bundle = BundleList[bundleId];
+
+				const itemData = bundle.Items.map(item => `- ${ItemList[item].Skin[bundle.Id].String} ${ItemList[item].Description[language]}`);
+
+				container = addHeader()
+					.addTexts([
+						`## ${ItemList[bundle.Items[0]].Skin[bundle.Id].String} ${bundle.Description[language]}`,
+						`-# ${s.willApplyTo}:\n${itemData.join("\n")}`,
+					])
+					.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
+						.addComponents([
+							new ButtonBuilder()
+								.setLabel(s.goBack)
+								.setStyle(ButtonStyle.Secondary)
+								.setCustomId("back"),
+							new ButtonBuilder()
+								.setLabel(s.select)
+								.setStyle(ButtonStyle.Primary)
+								.setCustomId("confirm" + bundle.Id),
+						]),
+					);
+
+				container.addFooter();
+
+				await replyInteraction(interaction, {
+					components: [container],
+					flags: MessageFlags.IsComponentsV2,
+				});
+			}
+			else if (btn.customId.includes("confirm")) {
+				const bundleId = Number(btn.customId.replace("confirm", ""));
+				const bundle = BundleList[bundleId];
+
+				await user.GetInfo();
+				await user.SetBundleSkin(bundle);
+
+				container = addHeader()
+					.addTexts([
+						`## ${ItemList[bundle.Items[0]].Skin[bundle.Id].String} ${bundle.Description[language]}`,
+						`-# ${s.applied}`,
+					])
 					.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
 						.addComponents([
 							new ButtonBuilder()
@@ -215,21 +305,42 @@ module.exports = {
 
 const Strings = {
 	[Language.English]: {
+		subtitle: "Show to everyone how different you are!",
+		selectItem: "Select item",
 		choose: "Choose the item and then the skin",
 		dontHave: "You don't have skins. Buy at `/specialshop`!",
+		selectBundle: "Select bundle",
+		allItems: `All items in bundle will change skin`,
 		goBack: "Go back",
 		selectedSkin: "Selected skin",
+		willApplyTo: "Will apply to items",
+		select: "Select",
+		applied: "Applied to all items",
 	},
 	[Language.Portuguese]: {
+		subtitle: "Mostre à todos que você é diferentão!",
+		selectItem: "Selecionar item",
 		choose: "Escolha o item e depois a skin",
 		dontHave: "Você não possui skins. Compre na `/lojaespecial`!",
+		selectBundle: "Selecionar pacote",
+		allItems: "Todos os itens no pacote irão alterar a skin",
 		goBack: "Voltar",
 		selectedSkin: "Skin selecionada",
+		willApplyTo: "Irá aplicar aos itens",
+		select: "Selecionar",
+		applied: "Aplicado a todos os itens",
 	},
 	[Language.Spanish]: {
+		subtitle: "Muestra a todos lo diferente que eres",
+		selectItem: "Seleccionar item",
 		choose: "Elija el item y luego la skin",
 		dontHave: "No tiene skins. Compre en `/tiendaespecial`!",
+		selectBundle: "Seleccionar paquete",
+		allItems: "Todos los artículos en el paquete cambiarán la skin",
 		goBack: "Volver",
 		selectedSkin: "Skin seleccionada",
+		willApplyTo: "Irá aplicar a los artículos",
+		select: "Seleccionar",
+		applied: "Aplicado a todos los artículos",
 	},
 } as const;

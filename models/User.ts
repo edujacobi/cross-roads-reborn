@@ -5,7 +5,7 @@ import { getLocaleFromLanguage, Language } from "./Language";
 import { UserItems } from "../database/UserItems";
 import { addHours } from "date-fns/addHours";
 import { Op } from "sequelize";
-import { ItemList, Items, ItemType, UserItem } from "../interfaces/Items";
+import { getItemList, ItemList, Items, ItemType, UserItem } from "../interfaces/Items";
 import { JobId, JobList } from "../interfaces/Jobs";
 import { Notification, NotificationType } from "./Notification";
 import { formatDate, formatMoney, showTime } from "../utils/ui";
@@ -502,6 +502,10 @@ export class User {
 		return true;
 	}
 
+	/**
+	 * Get all items from user that are greater than 0 and or are not expired
+	 * @constructor
+	 */
 	async GetItems() {
 		const items = await UserItems.findAll({
 			where: {
@@ -532,6 +536,10 @@ export class User {
 		return itemList;
 	}
 
+	/**
+	 * Get all items from user, even if quantity is 0 and remaining time is less than now (expired)
+	 * @constructor
+	 */
 	async GetAllItems() {
 		const items = await UserItems.findAll({
 			where: {
@@ -551,6 +559,27 @@ export class User {
 		}
 
 		return itemList;
+	}
+
+	/**
+	 * Get the Item data, even if user doesnot have it in database (blank values)
+	 * @param itemId
+	 * @constructor
+	 */
+	async GetSpecificItem(itemId: number) {
+		const item = await UserItems.findOne({
+			where: {
+				userId: this.Id,
+				itemId,
+			},
+		});
+
+		const foundWeapon = ItemList[itemId] as UserItem;
+		foundWeapon.RemainingTime = new Date();
+		foundWeapon.Quantity = 0;
+		foundWeapon.SelectedSkin = item?.skin ?? BundleId.Default;
+
+		return foundWeapon;
 	}
 
 	async SetItemSkin(item: Items, bundle: SkinBundles) {
@@ -582,6 +611,50 @@ export class User {
 		}
 
 		Log.Info(`User ${this.Nickname} (ID: ${this.Id}) has set skin ${bundle.Description[Language.English]} (ID: ${bundle.Id}) for item ${item.Description[Language.English]} (ID: ${item.Id}).`);
+	}
+
+	async SetBundleSkin(bundle: SkinBundles) {
+		const itemsToCreate = [];
+		const itemsToUpdate = [];
+
+		const existingItems = await UserItems.findAll({
+			where: {
+				userId: this.Id,
+				itemId: {
+					[Op.in]: bundle.Items,
+				},
+			},
+		});
+
+		const existingItemIds = new Set(existingItems.map(item => item.itemId));
+
+		for (const itemId of bundle.Items) {
+			if (!existingItemIds.has(itemId)) {
+				itemsToCreate.push({
+					userId: this.Id,
+					itemId: itemId,
+					skin: bundle.Id,
+				});
+			}
+			else {
+				itemsToUpdate.push(itemId);
+			}
+		}
+
+		if (itemsToCreate.length > 0) {
+			await UserItems.bulkCreate(itemsToCreate);
+		}
+
+		if (itemsToUpdate.length > 0) {
+			await UserItems.update({ skin: bundle.Id }, {
+				where: {
+					userId: this.Id,
+					itemId: { [Op.in]: itemsToUpdate },
+				},
+			});
+		}
+
+		Log.Info(`User ${this.Nickname} (ID: ${this.Id}) has set skin ${bundle.Description[Language.English]} (ID: ${bundle.Id}) for all items in bundle.`);
 	}
 
 	async GetAttributes() {
