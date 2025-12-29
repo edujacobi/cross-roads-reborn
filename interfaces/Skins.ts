@@ -75,7 +75,7 @@ export const BundleList: SkinBundleListType = {
 			ItemId.Grenade,
 			ItemId.Bazooka,
 			ItemId.BrassKnuckles,
-			ItemId.BaseballBat
+			ItemId.BaseballBat,
 		],
 		Shop: true,
 		Price: 5000,
@@ -90,6 +90,7 @@ export const BundleList: SkinBundleListType = {
 		Items: [
 			ItemId.Tec9,
 			ItemId.Jetpack,
+			ItemId.BrassKnuckles,
 		],
 		Shop: true,
 		Price: 2500,

@@ -268,8 +268,8 @@ export const ItemList: ItemListType = {
 			},
 			[BundleId.Traditional]: {
 				Id: "1454922962947014770",
-				String: "<:sawnoff:1454922962947014770>"
-			}
+				String: "<:sawnoff:1454922962947014770>",
+			},
 		},
 		Price: 40000,
 		Attack: 35,
@@ -804,8 +804,12 @@ export const ItemList: ItemListType = {
 			},
 			[BundleId.Traditional]: {
 				Id: "1454923590087479515",
-				String: "<:brassknucles:1454923590087479515>"
-			}
+				String: "<:brassknucles:1454923590087479515>",
+			},
+			[BundleId.Brazilian]: {
+				Id: "1455226259175903516",
+				String: "<:Havaiana:1455226259175903516>",
+			},
 		},
 		Price: 0,
 		Shop: false,
@@ -838,8 +842,8 @@ export const ItemList: ItemListType = {
 			},
 			[BundleId.Traditional]: {
 				Id: "1454922867568279665",
-				String: "<:bati:1454922867568279665>"
-			}
+				String: "<:bati:1454922867568279665>",
+			},
 		},
 		Price: 0,
 		Shop: false,
