@@ -70,7 +70,7 @@ export const JobList: JobType = {
 		},
 		Duration: 1.5,
 		Salary: 1.5 * 700,
-		NeedItem: [ItemId.Colt45],
+		NeedItem: [ItemId.Pistol],
 		Special: false,
 	},
 	[JobId.Gangster]: {
@@ -82,7 +82,7 @@ export const JobList: JobType = {
 		},
 		Duration: 2,
 		Salary: 2 * 1_150,
-		NeedItem: [ItemId.Tec9],
+		NeedItem: [ItemId.MachinePistol],
 		Special: false,
 	},
 	[JobId.Hunter]: {
@@ -94,7 +94,7 @@ export const JobList: JobType = {
 		},
 		Duration: 2.5,
 		Salary: 2.5 * 1_700,
-		NeedItem: [ItemId.Rifle],
+		NeedItem: [ItemId.HuntRifle],
 		Special: false,
 	},
 	[JobId.Funeral]: {
@@ -118,7 +118,7 @@ export const JobList: JobType = {
 		},
 		Duration: 3.5,
 		Salary: 3.5 * 2_400,
-		NeedItem: [ItemId.MP5],
+		NeedItem: [ItemId.SMG],
 		Special: false,
 	},
 	[JobId.Terrorist]: {
@@ -130,7 +130,7 @@ export const JobList: JobType = {
 		},
 		Duration: 4,
 		Salary: 4 * 2900,
-		NeedItem: [ItemId.AK47],
+		NeedItem: [ItemId.AssaultRifle],
 		Special: false,
 	},
 	[JobId.CounterTerrorist]: {
@@ -142,7 +142,7 @@ export const JobList: JobType = {
 		},
 		Duration: 4.5,
 		Salary: 4.5 * 3_700,
-		NeedItem: [ItemId.M4],
+		NeedItem: [ItemId.Carbine],
 		Special: false,
 	},
 	[JobId.Spy]: {
@@ -190,7 +190,7 @@ export const JobList: JobType = {
 		},
 		Duration: 7,
 		Salary: 7 * 100_000,
-		NeedItem: [ItemId.Knife, ItemId.Colt45, ItemId.Tec9, ItemId.Rifle, ItemId.Shotgun, ItemId.MP5, ItemId.AK47, ItemId.M4, ItemId.Sniper, ItemId.Katana, ItemId.RPG, ItemId.LightVest],
+		NeedItem: [ItemId.Knife, ItemId.Pistol, ItemId.MachinePistol, ItemId.HuntRifle, ItemId.Shotgun, ItemId.SMG, ItemId.AssaultRifle, ItemId.Carbine, ItemId.Sniper, ItemId.Katana, ItemId.RPG, ItemId.LightVest],
 		Special: false,
 	},
 	[JobId.BlackMarket]: {

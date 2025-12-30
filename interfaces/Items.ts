@@ -83,18 +83,18 @@ export const ItemList: ItemListType = {
 		Shop: true,
 		BlackMarket: false,
 	},
-	[ItemId.Colt45]: {
-		Id: ItemId.Colt45,
+	[ItemId.Pistol]: {
+		Id: ItemId.Pistol,
 		Type: ItemType.Weapon,
 		Description: {
-			[Language.English]: "Glock 17",
-			[Language.Portuguese]: "Glock 17",
-			[Language.Spanish]: "Glock 17",
+			[Language.English]: "Pistol",
+			[Language.Portuguese]: "Pistola",
+			[Language.Spanish]: "Pistola",
 		},
 		Skin: {
 			[BundleId.Default]: {
-				Id: EmoteId.Colt45,
-				String: EmoteString.Colt45,
+				Id: EmoteId.Pistol,
+				String: EmoteString.Pistol,
 			},
 			[BundleId.Traditional]: {
 				Id: "937170775117553704",
@@ -117,18 +117,18 @@ export const ItemList: ItemListType = {
 		Shop: true,
 		BlackMarket: false,
 	},
-	[ItemId.Tec9]: {
-		Id: ItemId.Tec9,
+	[ItemId.MachinePistol]: {
+		Id: ItemId.MachinePistol,
 		Type: ItemType.Weapon,
 		Description: {
-			[Language.English]: "Tec 9",
-			[Language.Portuguese]: "Tec 9",
-			[Language.Spanish]: "Tec 9",
+			[Language.English]: "Machine Pistol",
+			[Language.Portuguese]: "Pistola-Metralhadora",
+			[Language.Spanish]: "Pistola Ametralladora",
 		},
 		Skin: {
 			[BundleId.Default]: {
-				Id: EmoteId.Tec9,
-				String: EmoteString.Tec9,
+				Id: EmoteId.MachinePistol,
+				String: EmoteString.MachinePistol,
 			},
 			[BundleId.Traditional]: {
 				Id: "937170775281119262",
@@ -155,18 +155,18 @@ export const ItemList: ItemListType = {
 		Shop: true,
 		BlackMarket: false,
 	},
-	[ItemId.MicroUzi]: {
-		Id: ItemId.MicroUzi,
+	[ItemId.CompactSMG]: {
+		Id: ItemId.CompactSMG,
 		Type: ItemType.Weapon,
 		Description: {
-			[Language.English]: "Micro Uzi",
-			[Language.Portuguese]: "Micro Uzi",
-			[Language.Spanish]: "Micro Uzi",
+			[Language.English]: "Compact Submachine Gun",
+			[Language.Portuguese]: "Submetralhadora Compacta",
+			[Language.Spanish]: "Subfusil Compacto",
 		},
 		Skin: {
 			[BundleId.Default]: {
-				Id: EmoteId.MicroUzi,
-				String: EmoteString.MicroUzi,
+				Id: EmoteId.CompactSMG,
+				String: EmoteString.CompactSMG,
 			},
 			[BundleId.Traditional]: {
 				Id: "1454922924518670418",
@@ -189,13 +189,13 @@ export const ItemList: ItemListType = {
 		Shop: false,
 		BlackMarket: false,
 	},
-	[ItemId.Rifle]: {
-		Id: ItemId.Rifle,
+	[ItemId.HuntRifle]: {
+		Id: ItemId.HuntRifle,
 		Type: ItemType.Weapon,
 		Description: {
-			[Language.English]: "Rifle",
-			[Language.Portuguese]: "Rifle",
-			[Language.Spanish]: "Rifle",
+			[Language.English]: "Hunt Rifle",
+			[Language.Portuguese]: "Espingarda de Caça",
+			[Language.Spanish]: "Rifle de caza",
 		},
 		Skin: {
 			[BundleId.Default]: {
@@ -227,9 +227,9 @@ export const ItemList: ItemListType = {
 		Id: ItemId.Shotgun,
 		Type: ItemType.Weapon,
 		Description: {
-			[Language.English]: "Remington 870",
-			[Language.Portuguese]: "Remington 870",
-			[Language.Spanish]: "Remington 870",
+			[Language.English]: "Shotgun",
+			[Language.Portuguese]: "Escopeta",
+			[Language.Spanish]: "Escopeta",
 		},
 		Skin: {
 			[BundleId.Default]: {
@@ -261,9 +261,9 @@ export const ItemList: ItemListType = {
 		Id: ItemId.Sawnoff,
 		Type: ItemType.Weapon,
 		Description: {
-			[Language.English]: "Sawnoff Uplander",
-			[Language.Portuguese]: "Uplander Serrada",
-			[Language.Spanish]: "Uplander Serrada",
+			[Language.English]: "Sawed-Off Shotgun",
+			[Language.Portuguese]: "Escopeta de Cano Serrado",
+			[Language.Spanish]: "Escopeta Recortada",
 		},
 		Skin: {
 			[BundleId.Default]: {
@@ -291,18 +291,18 @@ export const ItemList: ItemListType = {
 		Shop: false,
 		BlackMarket: false,
 	},
-	[ItemId.MP5]: {
-		Id: ItemId.MP5,
+	[ItemId.SMG]: {
+		Id: ItemId.SMG,
 		Type: ItemType.Weapon,
 		Description: {
-			[Language.English]: "MP5",
-			[Language.Portuguese]: "MP5",
-			[Language.Spanish]: "MP5",
+			[Language.English]: "Submachine Gun",
+			[Language.Portuguese]: "Submetralhadora",
+			[Language.Spanish]: "Subfusil",
 		},
 		Skin: {
 			[BundleId.Default]: {
-				Id: EmoteId.MP5,
-				String: EmoteString.MP5,
+				Id: EmoteId.SMG,
+				String: EmoteString.SMG,
 			},
 			[BundleId.Traditional]: {
 				Id: "937170775050436619",
@@ -329,18 +329,18 @@ export const ItemList: ItemListType = {
 		Shop: true,
 		BlackMarket: false,
 	},
-	[ItemId.AK47]: {
-		Id: ItemId.AK47,
+	[ItemId.AssaultRifle]: {
+		Id: ItemId.AssaultRifle,
 		Type: ItemType.Weapon,
 		Description: {
-			[Language.English]: "AK47",
-			[Language.Portuguese]: "AK47",
-			[Language.Spanish]: "AK47",
+			[Language.English]: "Assault Rifle",
+			[Language.Portuguese]: "Fuzil de Assalto",
+			[Language.Spanish]: "Fusil de Asalto",
 		},
 		Skin: {
 			[BundleId.Default]: {
-				Id: EmoteId.AK47,
-				String: EmoteString.AK47,
+				Id: EmoteId.AssaultRifle,
+				String: EmoteString.AssaultRifle,
 			},
 			[BundleId.Traditional]: {
 				Id: "937170774920400957",
@@ -367,18 +367,18 @@ export const ItemList: ItemListType = {
 		Shop: true,
 		BlackMarket: false,
 	},
-	[ItemId.M4]: {
-		Id: ItemId.M4,
+	[ItemId.Carbine]: {
+		Id: ItemId.Carbine,
 		Type: ItemType.Weapon,
 		Description: {
-			[Language.English]: "M4A1",
-			[Language.Portuguese]: "M4A1",
-			[Language.Spanish]: "M4A1",
+			[Language.English]: "Carbine",
+			[Language.Portuguese]: "Carabina",
+			[Language.Spanish]: "Carabina",
 		},
 		Skin: {
 			[BundleId.Default]: {
-				Id: EmoteId.M4,
-				String: EmoteString.M4,
+				Id: EmoteId.Carbine,
+				String: EmoteString.Carbine,
 			},
 			[BundleId.Traditional]: {
 				Id: "937170775100760114",

@@ -131,7 +131,7 @@ export const ScavengeList: ScavengeListType = {
 					Max: 8,
 				},
 			}, {
-				Id: ItemId.Colt45,
+				Id: ItemId.Pistol,
 				Duration: {
 					Min: 0.5,
 					Max: 1,
@@ -193,19 +193,19 @@ export const ScavengeList: ScavengeListType = {
 					Max: 8,
 				},
 			}, {
-				Id: ItemId.Colt45,
+				Id: ItemId.Pistol,
 				Duration: {
 					Min: 3,
 					Max: 6,
 				},
 			}, {
-				Id: ItemId.Tec9,
+				Id: ItemId.MachinePistol,
 				Duration: {
 					Min: 1,
 					Max: 2,
 				},
 			}, {
-				Id: ItemId.MicroUzi,
+				Id: ItemId.CompactSMG,
 				Duration: {
 					Min: 1,
 					Max: 2,
@@ -267,13 +267,13 @@ export const ScavengeList: ScavengeListType = {
 		},
 		Reward: {
 			Items: [{
-				Id: ItemId.Tec9,
+				Id: ItemId.MachinePistol,
 				Duration: {
 					Min: 6,
 					Max: 12,
 				},
 			}, {
-				Id: ItemId.Rifle,
+				Id: ItemId.HuntRifle,
 				Duration: {
 					Min: 3,
 					Max: 6,
@@ -316,9 +316,9 @@ export const ScavengeList: ScavengeListType = {
 		Hospital: {
 			Chance: 8,
 			Text: {
-				[Language.English]: `You almost got a ${EmoteString.Rifle} ${ItemList[ItemId.Rifle].Description[Language.English]}, but it accidentally fired and hit your toe.`,
-				[Language.Portuguese]: `Você quase pegou uma ${EmoteString.Rifle} ${ItemList[ItemId.Rifle].Description[Language.Portuguese]}, mas ela disparou por engano e acertou seu dedão do pé.`,
-				[Language.Spanish]: `Casi agarras un ${EmoteString.Rifle} ${ItemList[ItemId.Rifle].Description[Language.Spanish]}, pero disparó accidentalmente y te golpeó el dedo gordo del pie.`,
+				[Language.English]: `You almost got a ${EmoteString.Rifle} ${ItemList[ItemId.HuntRifle].Description[Language.English]}, but it accidentally fired and hit your toe.`,
+				[Language.Portuguese]: `Você quase pegou uma ${EmoteString.Rifle} ${ItemList[ItemId.HuntRifle].Description[Language.Portuguese]}, mas ela disparou por engano e acertou seu dedão do pé.`,
+				[Language.Spanish]: `Casi agarras un ${EmoteString.Rifle} ${ItemList[ItemId.HuntRifle].Description[Language.Spanish]}, pero disparó accidentalmente y te golpeó el dedo gordo del pie.`,
 			},
 		},
 	},
@@ -341,13 +341,13 @@ export const ScavengeList: ScavengeListType = {
 		},
 		Reward: {
 			Items: [{
-				Id: ItemId.AK47,
+				Id: ItemId.AssaultRifle,
 				Duration: {
 					Min: 3,
 					Max: 6,
 				},
 			}, {
-				Id: ItemId.M4,
+				Id: ItemId.Carbine,
 				Duration: {
 					Min: 1,
 					Max: 2,

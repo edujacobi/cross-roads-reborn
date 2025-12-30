@@ -427,7 +427,7 @@ ${EmoteString.Shop} Earn money, buy items, rob other players, and much more!
 
 ${EmoteString.CloseInv} See your inventory using \`/inv\`.
 
-${EmoteString.AK47} You can receive a little bit of money each day using \`/daily\`.
+${EmoteString.AssaultRifle} You can receive a little bit of money each day using \`/daily\`.
 
 ${EmoteString.Jobs} To start working, use \`/job\`.
 
@@ -443,7 +443,7 @@ ${EmoteString.Shop} Ganhe dinheiro, compre itens, roube outros jogadores e muito
 
 ${EmoteString.CloseInv} Veja seu inventário usando \`/inv\`.
 
-${EmoteString.AK47} Você pode receber um pouco de dinheiro todos os dias usando \`/daily\`.
+${EmoteString.AssaultRifle} Você pode receber um pouco de dinheiro todos os dias usando \`/daily\`.
 
 ${EmoteString.Jobs} Para começar a trabalhar, use \`/trabalhos\`.
 
@@ -459,7 +459,7 @@ ${EmoteString.Shop} Gana dinero, compra objetos, roba a otros jugadores y mucho 
 
 ${EmoteString.CloseInv} Mira tu inventario usando \`/inv\`.
 
-${EmoteString.AK47} Puedes recibir un poco de dinero cada día usando \`/daily\`.
+${EmoteString.AssaultRifle} Puedes recibir un poco de dinero cada día usando \`/daily\`.
 
 ${EmoteString.Jobs} Para empezar a trabajar, usa \`/jobs\`.
 
