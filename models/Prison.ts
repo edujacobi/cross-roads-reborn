@@ -29,6 +29,7 @@ import { BundleId, ItemId } from "../interfaces/Ids";
 export class Prison {
 	User: User;
 	Interaction: ChatInputCommandInteraction;
+	Container = new CustomContainerBuilder();
 
 	Bribe = {
 		BaseValue: 20_000,
@@ -66,7 +67,7 @@ export class Prison {
 			text = s.userPrison(this.User.Prison.Time);
 		}
 
-		const container = new CustomContainerBuilder()
+		this.Container = new CustomContainerBuilder()
 			.setUser(this.User)
 			.setAccentColor(CrColors.Police)
 			.addSectionComponents(header => header
@@ -113,7 +114,7 @@ ${s.description(this.Escape.BaseChance, this.Escape.BaseJetpackChance + this.Esc
 		}
 
 		const response = await replyInteraction(this.Interaction, {
-			components: [container, row],
+			components: [this.Container, row],
 			flags: MessageFlags.IsComponentsV2,
 		});
 
@@ -153,7 +154,7 @@ ${s.description(this.Escape.BaseChance, this.Escape.BaseJetpackChance + this.Esc
 					return containerPrisoners;
 				};
 
-				await pagination.GenerateContainer(container);
+				await pagination.GenerateContainer(this.Container);
 			}
 			else if (btn.customId === "escape") {
 				buttonEscape.setDisabled(true);
@@ -174,11 +175,11 @@ ${s.description(this.Escape.BaseChance, this.Escape.BaseJetpackChance + this.Esc
 					});
 				}
 
-				const container = await this.StartEscape();
+				await this.StartEscape();
 
 				await wait(this.Escape.DefaultDuration * 1000);
 
-				await this.EndEscape(container);
+				await this.EndEscape();
 			}
 			else if (btn.customId === "bribe") {
 				buttonBribe.setDisabled(true);
@@ -272,7 +273,7 @@ ${s.briberyStart(this.Bribe.Value)}`),
 		});
 
 		collector?.on("end", async () => {
-			await disableButtons(this.Interaction, container);
+			await disableButtons(this.Interaction, this.Container);
 		});
 	}
 
@@ -328,7 +329,7 @@ ${s.briberyStart(this.Bribe.Value)}`),
 		const s = Strings[this.User.Language];
 		const emote = this.Escape.HasJetpack ? ItemList[ItemId.Jetpack].Skin[BundleId.Default].String : EmoteString.Escape;
 
-		const escapeContainer = new CustomContainerBuilder()
+		this.Container = new CustomContainerBuilder()
 			.setAccentColor(CrColors.Police)
 			.setUser(this.User)
 			.addSectionComponents(header => header
@@ -344,18 +345,16 @@ ${s.briberyStart(this.Bribe.Value)}`),
 			)
 			.addFooter();
 
-		await replyInteraction(this.Interaction, { components: [escapeContainer] });
+		await replyInteraction(this.Interaction, { components: [this.Container] });
 
 		this.User.Escape.HasTried = true;
 		this.User.Escape.Time = addSeconds(new Date(), this.Escape.DefaultDuration);
 
 		await this.User.Update();
 		Log.Info(`User ${this.User.Nickname} (ID: ${this.User.Id}) started a escape attempt from prison ${this.Escape.HasJetpack ? "with a jetpack" : ""}.`);
-
-		return escapeContainer;
 	}
 
-	async EndEscape(container: CustomContainerBuilder) {
+	async EndEscape() {
 		const s = Strings[this.User.Language];
 		const emote = this.Escape.HasJetpack ? ItemList[ItemId.Jetpack].Skin[BundleId.Default].String : EmoteString.Escape;
 
@@ -502,7 +501,7 @@ ${s.briberyStart(this.Bribe.Value)}`),
 			const textSuccess = arraySuccess[this.User.Language][Math.floor(Math.random() * arraySuccess[this.User.Language].length)];
 			const textWanted = wantedTexts[this.User.Language][Math.floor(Math.random() * wantedTexts[this.User.Language].length)];
 
-			container
+			this.Container
 				.changeTextFromSectionId(1, `# ${s.title}\n### ${emote} ${s.escapeSuccess}\n${textSuccess}\n-# ${textWanted}`)
 				.changeFooterText(s.escapeWaitMinutes(this.Escape.TimeInMinutesWanted));
 		}
@@ -515,13 +514,13 @@ ${s.briberyStart(this.Bribe.Value)}`),
 			const arrayFailure = this.Escape.HasJetpack ? failureTextsJetpack : failureTexts;
 			const textFailure = arrayFailure[this.User.Language][Math.floor(Math.random() * arrayFailure[this.User.Language].length)];
 
-			container
+			this.Container
 				.changeTextFromSectionId(1, `# ${s.title}\n### ${emote} ${s.escapeFailure}\n${textFailure}. ${s.escapeWillBeInPrison(totalTime)}\n-# ${s.free} ${showTime(this.User.Prison.Time.getTime(), true)}`);
 		}
 
 		await this.User.Update();
 
-		await replyInteraction(this.Interaction, { components: [container] });
+		await replyInteraction(this.Interaction, { components: [this.Container] });
 	}
 
 	async CanBribe() {
