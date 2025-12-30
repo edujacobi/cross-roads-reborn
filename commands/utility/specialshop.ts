@@ -57,17 +57,17 @@ module.exports = {
 				.addTextDisplayComponents(subtitle => subtitle
 					.setContent(`## ${s.skinBundles}`));
 
-			const skinBundles = getSkinBundleList();
+			const skinBundles = getSkinBundleList().filter(bundle => bundle.Shop);
 			for (let idx = 0; idx < skinBundles.length; idx++) {
 				const bundle = skinBundles[idx];
-				if (bundle.Shop && bundle.Items.length > 0) {
+				if (bundle.Items.length > 0) {
 					const itemEmotes = bundle.Items.map(item => ItemList[item].Skin[bundle.Id].String);
 
 					const userHasBundle = await UserBundle.HasBundle(user.Id, bundle.Id);
 
 					container.addSectionComponents(section => section
 						.addTextDisplayComponents(title => title
-							.setContent(`### ${bundle.Description[language]}\n-# ${s.howManyItems(itemEmotes)}\n# ${itemEmotes.join(" ")}`)
+							.setContent(`### ${bundle.Description[language]}\n-# ${s.howManyItems(itemEmotes)}\n# ${itemEmotes.join(" ")}`),
 						)
 						.setButtonAccessory(new ButtonBuilder()
 							.setLabel(formatMoney(bundle.Price, language, ""))
