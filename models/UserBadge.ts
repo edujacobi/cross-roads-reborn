@@ -175,4 +175,31 @@ export class UserBadge {
 			return false;
 		}
 	}
+
+	/**
+	 * Checks if a user has the Helper badge
+	 * @param userId User ID to check
+	 * @returns Promise<boolean> True if the user has the helper badge
+	 */
+	static async IsHelper(userId: string): Promise<boolean> {
+		if (!userId) {
+			Log.Warning("Cannot check helper status without a userId");
+			return false;
+		}
+
+		try {
+			const badge = await UserBadges.findOne({
+				where: {
+					userId,
+					badgeId: BadgeId.Helper, // This key is defined in BadgeId.Helper in interfaces/Badges.ts
+				},
+			});
+
+			return !!badge; // Convert to boolean
+		}
+		catch (err) {
+			Log.Warning(`Error checking helper status for user ${userId}`);
+			return false;
+		}
+	}
 }

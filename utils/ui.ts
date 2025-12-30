@@ -260,5 +260,4 @@ export async function testImage() {
 	fs.writeFile("image.webp", image, (err) => {
 		logger.error(err);
 	});
-
 }
