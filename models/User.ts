@@ -657,7 +657,7 @@ export class User {
 		Log.Info(`User ${this.Nickname} (ID: ${this.Id}) has set skin ${bundle.Description[Language.English]} (ID: ${bundle.Id}) for all items in bundle.`);
 	}
 
-	async GetAttributes() {
+	async GetAttributes(isBeatUp = false) {
 		const items = await UserItems.findAll({
 			where: {
 				userId: this.Id,
@@ -683,6 +683,10 @@ export class User {
 
 		for (const item of items) {
 			const foundItem = ItemList[item.itemId];
+
+			if (foundItem.Type === ItemType.BeatUp && !isBeatUp) {
+				continue;
+			}
 
 			this.BestGun = (this.BestGun?.Attack ?? 0) > foundItem.Attack ? this.BestGun : foundItem;
 

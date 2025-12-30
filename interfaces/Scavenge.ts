@@ -142,6 +142,12 @@ export const ScavengeList: ScavengeListType = {
 					Min: 3,
 					Max: 6,
 				},
+			}, {
+				Id: ItemId.BrassKnuckles,
+				Duration: {
+					Min: 2,
+					Max: 4,
+				},
 			}],
 			Money: {
 				Min: 400,
@@ -222,6 +228,18 @@ export const ScavengeList: ScavengeListType = {
 					Min: 8,
 					Max: 12,
 				},
+			}, {
+				Id: ItemId.BrassKnuckles,
+				Duration: {
+					Min: 6,
+					Max: 10,
+				},
+			}, {
+				Id: ItemId.BaseballBat,
+				Duration: {
+					Min: 3,
+					Max: 6,
+				},
 			}],
 			Money: {
 				Min: 1_000,
@@ -295,6 +313,12 @@ export const ScavengeList: ScavengeListType = {
 				Duration: {
 					Min: 2,
 					Max: 3,
+				},
+			}, {
+				Id: ItemId.BaseballBat,
+				Duration: {
+					Min: 8,
+					Max: 12,
 				},
 			}],
 			Money: {

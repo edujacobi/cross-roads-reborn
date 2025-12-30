@@ -8,6 +8,7 @@ export enum ItemType {
 	Wearable,
 	Accessory,
 	Consumable,
+	BeatUp
 }
 
 export interface Items {
@@ -811,7 +812,7 @@ export const ItemList: ItemListType = {
 	},
 	[ItemId.BrassKnuckles]: {
 		Id: ItemId.BrassKnuckles,
-		Type: ItemType.Wearable,
+		Type: ItemType.BeatUp,
 		Description: {
 			[Language.English]: "Brass Knucles",
 			[Language.Portuguese]: "Soco inglês",
@@ -849,7 +850,7 @@ export const ItemList: ItemListType = {
 	},
 	[ItemId.BaseballBat]: {
 		Id: ItemId.BaseballBat,
-		Type: ItemType.Wearable,
+		Type: ItemType.BeatUp,
 		Description: {
 			[Language.English]: "Baseball bat",
 			[Language.Portuguese]: "Taco de beisebol",

@@ -16,6 +16,7 @@ import { UserItems } from "../../database/UserItems";
 import { Op } from "sequelize";
 import { BundleId } from "../../interfaces/Ids";
 import { BundleList } from "../../interfaces/Skins";
+import { CrColors } from "../../utils/colors";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -61,6 +62,10 @@ module.exports = {
 				color: Colors.Green,
 				type: s.typeConsumable,
 			},
+			[ItemType.BeatUp]: {
+				color: CrColors.BeatUp,
+				type: s.typeBeatUp,
+			}
 		};
 
 		const usersWithItem = await UserItems.count({
@@ -118,6 +123,7 @@ const Strings = {
 		typeWearable: "Wearable",
 		typeAccessory: "Accessory",
 		typeConsumable: "Consumable",
+		typeBeatUp: "Beat Up",
 		type: "Type",
 		price: "Price",
 		modifier: "Modifiers",
@@ -138,6 +144,7 @@ const Strings = {
 		typeWearable: "Vestível",
 		typeAccessory: "Acessório",
 		typeConsumable: "Consumível",
+		typeBeatUp: "Espancamento",
 		type: "Tipo",
 		price: "Preço",
 		modifier: "Modificadores",
@@ -157,6 +164,7 @@ const Strings = {
 		typeWearable: "Vestible",
 		typeAccessory: "Accesorio",
 		typeConsumable: "Consumible",
+		typeBeatUp: "Golpeamento",
 		type: "Tipo",
 		price: "Precio",
 		modifier: "Modificadores",

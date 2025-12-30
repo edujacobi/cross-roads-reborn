@@ -50,6 +50,8 @@ export class BeatUp {
 		this.Attacker = attacker;
 		this.Defender = defender;
 		this.Date = new Date();
+		this.Attacker.GetAttributes(true);
+		this.Defender.GetAttributes(true);
 	}
 
 	async GetDiscordUser() {
