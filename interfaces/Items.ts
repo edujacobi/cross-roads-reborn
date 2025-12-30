@@ -100,6 +100,10 @@ export const ItemList: ItemListType = {
 				Id: "937170775117553704",
 				String: "<:colt45:937170775117553704>",
 			},
+			[BundleId.Brazilian]: {
+				Id: "1455561434619711508",
+				String: "<:Taurus_24_7:1455561434619711508>",
+			},
 		},
 		Price: 5_900,
 		Attack: 20,
@@ -383,6 +387,10 @@ export const ItemList: ItemListType = {
 			[BundleId.Traditional]: {
 				Id: "937170775100760114",
 				String: "<:m4:937170775100760114>",
+			},
+			[BundleId.Brazilian]: {
+				Id: "1455562151396642826",
+				String: "<:IMBEL_IA2:1455562151396642826>",
 			},
 		},
 		Price: 135_000,

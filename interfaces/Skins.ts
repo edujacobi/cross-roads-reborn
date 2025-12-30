@@ -89,9 +89,11 @@ export const BundleList: SkinBundleListType = {
 		},
 		Items: [
 			ItemId.Knife,
+			ItemId.Pistol,
 			ItemId.MachinePistol,
 			ItemId.SMG,
 			ItemId.AssaultRifle,
+			ItemId.Carbine,
 			ItemId.Jetpack,
 			ItemId.BrassKnuckles,
 			ItemId.BaseballBat,
@@ -109,7 +111,7 @@ export const BundleList: SkinBundleListType = {
 		Items: [
 			ItemId.Katana,
 		],
-		Shop: true,
+		Shop: false,
 		Price: 5000,
 	},
 };
