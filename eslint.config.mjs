@@ -1,4 +1,4 @@
-import { defineConfig } from "eslint/config";
+import { defineConfig, globalIgnores } from "eslint/config";
 import typescriptEslint from "@typescript-eslint/eslint-plugin";
 import globals from "globals";
 import tsParser from "@typescript-eslint/parser";
@@ -17,85 +17,87 @@ const compat = new FlatCompat({
 	allConfig: js.configs.all,
 });
 
-export default defineConfig([{
-	extends: compat.extends(
-		"eslint:recommended",
-		"plugin:@typescript-eslint/eslint-recommended",
-		"plugin:@typescript-eslint/recommended",
-	),
+export default defineConfig([
+	globalIgnores(["build/*"]),
+	{
+		extends: compat.extends(
+			"eslint:recommended",
+			"plugin:@typescript-eslint/eslint-recommended",
+			"plugin:@typescript-eslint/recommended",
+		),
 
-	plugins: {
-		"@typescript-eslint": typescriptEslint,
-	},
-
-	languageOptions: {
-		globals: {
-			...globals.node,
+		plugins: {
+			"@typescript-eslint": typescriptEslint,
 		},
 
-		parser: tsParser,
-		ecmaVersion: 2023,
-		sourceType: "commonjs",
-	},
+		languageOptions: {
+			globals: {
+				...globals.node,
+			},
 
-	rules: {
-		"@typescript-eslint/no-unused-vars": ["warn", {
-			caughtErrors: "none",
-		}],
+			parser: tsParser,
+			ecmaVersion: 2023,
+			sourceType: "commonjs",
+		},
 
-		"arrow-spacing": ["warn", {
-			before: true,
-			after: true,
-		}],
+		rules: {
+			"@typescript-eslint/no-unused-vars": ["warn", {
+				caughtErrors: "none",
+			}],
 
-		"brace-style": ["error", "stroustrup"],
-		curly: ["error", "multi-line", "consistent"],
-		"dot-location": ["error", "property"],
-		"handle-callback-err": "off",
-		indent: ["error", "tab"],
-		"keyword-spacing": "error",
+			"arrow-spacing": ["warn", {
+				before: true,
+				after: true,
+			}],
 
-		"max-nested-callbacks": ["error", {
-			max: 4,
-		}],
+			"brace-style": ["error", "stroustrup"],
+			curly: ["error", "multi-line", "consistent"],
+			"dot-location": ["error", "property"],
+			"handle-callback-err": "off",
+			indent: ["error", "tab"],
+			"keyword-spacing": "error",
 
-		"max-statements-per-line": ["error", {
-			max: 2,
-		}],
+			"max-nested-callbacks": ["error", {
+				max: 4,
+			}],
 
-		"no-console": "off",
-		"no-empty-function": "error",
-		"no-floating-decimal": "error",
-		"no-lonely-if": "error",
-		"no-multi-spaces": "error",
+			"max-statements-per-line": ["error", {
+				max: 2,
+			}],
 
-		"no-multiple-empty-lines": ["error", {
-			max: 2,
-			maxEOF: 1,
-			maxBOF: 0,
-		}],
+			"no-console": "off",
+			"no-empty-function": "error",
+			"no-floating-decimal": "error",
+			"no-lonely-if": "error",
+			"no-multi-spaces": "error",
 
-		"no-var": "error",
-		"object-curly-spacing": ["error", "always"],
-		"prefer-const": "error",
+			"no-multiple-empty-lines": ["error", {
+				max: 2,
+				maxEOF: 1,
+				maxBOF: 0,
+			}],
 
-		quotes: ["error", "double", {
-			allowTemplateLiterals: true,
-		}],
+			"no-var": "error",
+			"object-curly-spacing": ["error", "always"],
+			"prefer-const": "error",
 
-		semi: ["error", "always"],
-		"space-before-blocks": "error",
+			quotes: ["error", "double", {
+				allowTemplateLiterals: true,
+			}],
 
-		"space-before-function-paren": ["error", {
-			anonymous: "never",
-			named: "never",
-			asyncArrow: "always",
-		}],
+			semi: ["error", "always"],
+			"space-before-blocks": "error",
 
-		"space-in-parens": "error",
-		"space-infix-ops": "error",
-		"space-unary-ops": "error",
-		"spaced-comment": "error",
-		yoda: "error",
-	},
-}]);
+			"space-before-function-paren": ["error", {
+				anonymous: "never",
+				named: "never",
+				asyncArrow: "always",
+			}],
+
+			"space-in-parens": "error",
+			"space-infix-ops": "error",
+			"space-unary-ops": "error",
+			"spaced-comment": "error",
+			yoda: "error",
+		},
+	}]);
