@@ -111,6 +111,7 @@ module.exports = {
 							.setLabel(bundle.Description[language])
 							.setEmoji(ItemList[bundle.Items[0]].Skin[bundle.Id].Id)
 							.setStyle(ButtonStyle.Secondary)
+							.setDisabled(userOwnedBundles.length === 1)
 							.setCustomId("change-bundle" + bundle.Id),
 						),
 					),
