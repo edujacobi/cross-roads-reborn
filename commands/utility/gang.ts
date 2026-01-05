@@ -25,6 +25,7 @@ import {
 import { disableButtons, replyInteraction, searchUser } from "../../utils/logic";
 import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
 import { GangColor, IGangColor } from "../../utils/colors";
+import { EmoteString } from "../../utils/emotes";
 
 enum CommandOption {
 	Info = "info",
@@ -353,8 +354,7 @@ module.exports = {
 						.setContent(s.gangDescription),
 				)
 				.setThumbnailAccessory(thumb => thumb
-					.setURL("https://i.imgur.com/k2KSJsE.png")
-					.setDescription("Gang icon"),
+					.setURL("https://cdn.discordapp.com/attachments/1233604589064818808/1457724304383938611/GangImage.png"),
 				),
 			)
 			.addFooter();
@@ -417,14 +417,14 @@ module.exports = {
 								.setContent(`-# ${s.level} ${gang!.Level} ${gang!.GetExpBar(6)}`),
 						)
 						.setThumbnailAccessory(image => image
-							.setURL(gang!.Image || DEFAULT_GANG_IMAGE)
-							.setDescription(`Gang Image`),
+							.setURL(gang!.Image || DEFAULT_GANG_IMAGE),
 						),
 					)
 					.addLargeSeparator()
-					.addTextDisplayComponents(members => members
-						.setContent(`### ${s.members} (${gang!.Members.length}/${gang!.GetMaxMembers()})\n${membersList}`),
-					)
+					.addTexts([
+						`### ${s.members} (${gang!.Members.length}/${gang!.GetMaxMembers()})`,
+						`${membersList}`,
+					])
 					.addFooter({
 						text: `${s.created} ${showTime(gang.CreatedAt.getTime())}${adminIdText}`,
 					});
@@ -515,18 +515,16 @@ module.exports = {
 					description => description
 						.setContent(s.gangCreatedDetails(gang.Name, formatMoney(Gang.CREATION_COST, language))),
 				)
-				.addTextDisplayComponents(Name => Name
-					.setContent(`### ${s.name}\n${gang.Name}`),
-				)
-				.addTextDisplayComponents(Acronym => Acronym
-					.setContent(`### ${s.acronym}\n${gang.Acronym.toUpperCase()}`),
-				)
-				.addTextDisplayComponents(Description => Description
-					.setContent(`### ${s.description}\n${gang.Description}`),
-				)
-				.addTextDisplayComponents(Color => Color
-					.setContent(`### ${s.color}\n${GangColor[gang.Color].Emote.String} ${GangColor[gang.Color].Description[language]}`),
-				);
+				.addTexts([
+					`### ${s.name}`,
+					`${gang.Name}`,
+					`### ${s.acronym}`,
+					`${gang.Acronym.toUpperCase()}`,
+					`### ${s.description}`,
+					`${gang.Description}`,
+					`### ${s.color}`,
+					`${GangColor[gang.Color].Emote.String} ${GangColor[gang.Color].Description[language]}`,
+				]);
 
 			if (image) {
 				container.addTextDisplayComponents(Image => Image
@@ -600,24 +598,39 @@ module.exports = {
 				.addLargeSeparator();
 
 			if (name) {
-				container.addTextDisplayComponents(newName => newName
-					.setContent(`### ${s.name}\n-# ~~${old.name}~~\n${gang.Name}`));
+				container.addTexts([
+					`### ${s.name}`,
+					`-# ~~${old.name}~~`,
+					`${gang.Name}`,
+				]);
 			}
 			if (acronym) {
-				container.addTextDisplayComponents(newAcronym => newAcronym
-					.setContent(`### ${s.acronym}\n-# ~~${old.acronym.toUpperCase()}~~\n${gang.Acronym.toUpperCase()}`));
+				container.addTexts([
+					`### ${s.acronym}`,
+					`-# ~~${old.acronym.toUpperCase()}~~`,
+					`${gang.Acronym.toUpperCase()}`,
+				]);
 			}
 			if (description) {
-				container.addTextDisplayComponents(newDescription => newDescription
-					.setContent(`### ${s.description}\n-# ~~${old.description}~~\n${gang.Description}`));
+				container.addTexts([
+					`### ${s.description}`,
+					`-# ~~${old.description}~~`,
+					`${gang.Description}`,
+				]);
 			}
 			if (color != null) {
-				container.addTextDisplayComponents(newColor => newColor
-					.setContent(`### ${s.color}\n-# ~~${GangColor[old.color].Emote.String} ${GangColor[old.color].Description[language]}~~\n${GangColor[gang.Color].Emote.String} ${GangColor[gang.Color].Description[language]}`));
+				container.addTexts([
+					`### ${s.color}`,
+					`-# ${GangColor[old.color].Emote.String} ~~${GangColor[old.color].Description[language]}~~`,
+					`${GangColor[gang.Color].Emote.String} ${GangColor[gang.Color].Description[language]}`,
+				]);
 			}
 			if (image) {
-				container.addTextDisplayComponents(newImage => newImage
-					.setContent(`### ${s.image}\n-# ~~${old.image}~~\n${gang.Image}`));
+				container.addTexts([
+					`### ${s.image}`,
+					`-# ~~${old.image}~~`,
+					`${gang.Image}`,
+				]);
 			}
 
 			container.addFooter();
@@ -664,15 +677,15 @@ module.exports = {
 				return warn(s.errorInviteGangGeneric);
 			}
 
+			const container = defaultComponent({
+				color: GangColor[gang.Color].Color as ColorResolvable,
+				description: s.successInviteGang(target.GetNameWithImage(), gang.Name),
+				user,
+			});
+
 			return replyInteraction(interaction, {
-				components: [defaultComponent({
-					color: GangColor[gang.Color].Color as ColorResolvable,
-					description: s.successInviteGang(target.GetNameWithImage(), gang.Name),
-					user,
-				})],
-				flags: [
-					MessageFlags.IsComponentsV2,
-				],
+				components: [container],
+				flags: MessageFlags.IsComponentsV2,
 			});
 		}
 
@@ -696,15 +709,15 @@ module.exports = {
 			const row = new ActionRowBuilder<ButtonBuilder>()
 				.addComponents([buttonConfirm]);
 
+			const container = defaultComponent({
+				user,
+				color: GangColor[gang.Color].Color as ColorResolvable,
+				description: s.confirmLeave(gang.Name),
+				buttons: row,
+			});
+
 			const response = await replyInteraction(interaction, {
-				components: [
-					defaultComponent({
-						user,
-						color: GangColor[gang.Color].Color as ColorResolvable,
-						description: s.confirmLeave(gang.Name),
-						buttons: row,
-					}),
-				],
+				components: [container],
 				flags: MessageFlags.IsComponentsV2,
 			});
 
@@ -731,15 +744,15 @@ module.exports = {
 						return warn(s.errorLeaveGang);
 					}
 
+					const container = defaultComponent({
+						color: GangColor[gang.Color].Color as ColorResolvable,
+						description: s.successLeaveGang(gang.Name),
+						user,
+					});
+
 					return replyInteraction(interaction, {
-						components: [defaultComponent({
-							color: GangColor[gang.Color].Color as ColorResolvable,
-							description: s.successLeaveGang(gang.Name),
-							user,
-						})],
-						flags: [
-							MessageFlags.IsComponentsV2,
-						],
+						components: [container],
+						flags: MessageFlags.IsComponentsV2,
 					});
 				}
 			});
@@ -747,14 +760,13 @@ module.exports = {
 			collector?.on("end", async () => {
 				if (responded) return;
 
-				await disableButtons(
-					interaction,
-					defaultComponent({
-						color: GangColor[gang.Color].Color as ColorResolvable,
-						description: s.noResponseLeaveGang(gang.Name),
-						user,
-					}),
-				);
+				const container = defaultComponent({
+					color: GangColor[gang.Color].Color as ColorResolvable,
+					description: s.noResponseLeaveGang(gang.Name),
+					user,
+				});
+
+				await disableButtons(interaction, container);
 			});
 
 			return;
@@ -798,15 +810,15 @@ module.exports = {
 			const row = new ActionRowBuilder<ButtonBuilder>()
 				.addComponents([buttonConfirm]);
 
+			const container = defaultComponent({
+				user,
+				color: GangColor[gang.Color].Color as ColorResolvable,
+				description: s.confirmKick(target.Nickname, gang.Name),
+				buttons: row,
+			});
+
 			const response = await replyInteraction(interaction, {
-				components: [
-					defaultComponent({
-						user,
-						color: GangColor[gang.Color].Color as ColorResolvable,
-						description: s.confirmKick(target.Nickname, gang.Name),
-						buttons: row,
-					}),
-				],
+				components: [container],
 				flags: MessageFlags.IsComponentsV2,
 			});
 
@@ -833,15 +845,15 @@ module.exports = {
 						return warn(s.errorKickGang(target.Nickname, gang.Name));
 					}
 
+					const container = defaultComponent({
+						color: GangColor[gang.Color].Color as ColorResolvable,
+						description: s.successKickGang(target.Nickname, gang.Name),
+						user,
+					});
+
 					return replyInteraction(interaction, {
-						components: [defaultComponent({
-							color: GangColor[gang.Color].Color as ColorResolvable,
-							description: s.successKickGang(target.Nickname, gang.Name),
-							user,
-						})],
-						flags: [
-							MessageFlags.IsComponentsV2,
-						],
+						components: [container],
+						flags: MessageFlags.IsComponentsV2,
 					});
 				}
 			});
@@ -849,14 +861,13 @@ module.exports = {
 			collector?.on("end", async () => {
 				if (responded) return;
 
-				await disableButtons(
-					interaction,
-					defaultComponent({
-						color: GangColor[gang.Color].Color as ColorResolvable,
-						description: s.noResponseKickGang(target.Nickname, gang.Name),
-						user,
-					}),
-				);
+				const container = defaultComponent({
+					color: GangColor[gang.Color].Color as ColorResolvable,
+					description: s.noResponseKickGang(target.Nickname, gang.Name),
+					user,
+				});
+
+				await disableButtons(interaction, container);
 			});
 
 			return;
@@ -880,13 +891,15 @@ module.exports = {
 
 			await gang.OfficialCommunication(user, text);
 
+			const container = defaultComponent({
+				color: GangColor[gang.Color].Color as ColorResolvable,
+				description: `> ${text}\n${s.messageSent}`,
+				user,
+			});
+
 			return replyInteraction(interaction, {
-				components: [defaultComponent({
-					color: GangColor[gang.Color].Color as ColorResolvable,
-					description: `> ${text}\n${s.messageSent}`,
-					user,
-				})],
-				flags: [MessageFlags.IsComponentsV2],
+				components: [container],
+				flags: MessageFlags.IsComponentsV2,
 			});
 		}
 		}
@@ -928,12 +941,14 @@ module.exports = {
 		}
 
 		function warn(text: string) {
+			const container = defaultComponent({
+				color: Colors.Red,
+				description: text,
+				user,
+			});
+
 			return replyInteraction(interaction, {
-				components: [defaultComponent({
-					color: Colors.Red,
-					description: text,
-					user,
-				})],
+				components: [container],
 				flags: MessageFlags.IsComponentsV2,
 			});
 		}
@@ -942,171 +957,171 @@ module.exports = {
 
 const Strings = {
 	[Language.English]: {
-		gangTitle: "Gangs",
+		gangTitle: `Gangs`,
 		gangDescription: `Create your gang and work as a team! Participate in ~~group robberies and gang fights~~!\n\n**Cost to create a gang: ${formatMoney(Gang.CREATION_COST, Language.English)}**`,
-		gangNotFound: "Gang not found with this Id!",
-		gangNotFoundByName: (name: string) => `No gang found with name or acronym **${name}**!`,
-		notInGang: "You are not in a gang! To see a specific gang, use the `name` parameter.",
-		errorGettingGang: "Error retrieving gang information.",
-		errorSearchingGang: "Error while searching for gang.",
-		name: "Name",
-		acronym: "Acronym",
-		base: "Base",
-		leader: "Leader",
-		level: "Level",
-		members: "Members",
-		created: "Created",
-		updated: "Last Updated",
-		description: "Description",
-		color: "Color",
-		image: "Image",
+		gangNotFound: `Gang not found with this Id ${EmoteString.Gang}`,
+		gangNotFoundByName: (name: string) => `No gang found with name or acronym **${name}** ${EmoteString.Gang}`,
+		notInGang: `You are not in a gang! To see a specific gang, use the \`name\` parameter ${EmoteString.Gang}`,
+		errorGettingGang: `Error retrieving gang information ${EmoteString.Gang}`,
+		errorSearchingGang: `Error while searching for gang ${EmoteString.Gang}`,
+		name: `Name`,
+		acronym: `Acronym`,
+		base: `Base`,
+		leader: `Leader`,
+		level: `Level`,
+		members: `Members`,
+		created: `Created`,
+		updated: `Last Updated`,
+		description: `Description`,
+		color: `Color`,
+		image: `Image`,
 		gangId: (id: number) => `Gang Id: ${id}`,
-		noMembers: "This gang has no members!",
-		membersOf: "Members of",
+		noMembers: `This gang has no members!`,
+		membersOf: `Members of`,
 		pageFooter: (current: number, total: number, members: number) => `Page ${current}/${total} · ${members} members`,
-		gangAlreadyExistsName: (name: string) => `A gang with the name **${name}** already exists!`,
-		gangAlreadyExistsAcronym: (acronym: string) => `A gang with the acronym **${acronym}** already exists!`,
-		alreadyInGang: "You are already in a gang! You need to leave your current gang before creating a new one.",
-		userAlreadyInGang: (user: User) => `**${user.GetNameWithImage()}** is already in a gang!`,
-		notEnoughMoney: (cost: string) => `You don't have enough money to create a gang! It costs ${cost}.`,
-		lettersAndNumbers: "Gang name can only contain letters and numbers.",
-		invalidURLImage: "Invalid image URL! Please provide a valid image URL ending with .jpg, .jpeg, .webp or .png.",
-		errorCreatingGang: "Error while creating the gang. Try again later.",
-		gangCreated: "Gang created successfully!",
-		gangCreatedDetails: (name: string, cost: string) => `You've created the gang **${name}** for ${cost}.\nUse \`/gang info\` to see more details about your gang.`,
-		gangEditted: "Gang editted successfully!",
-		errorEdittingGang: "Error while editting the gang. Try again later.",
-		errorEdittingGangPermission: "You don't have permission to edit the gang.",
-		errorInviteGangPermission: "You don't have permission to invite users to the gang.",
-		errorInviteGangYourself: "You cannot invite yourself to the gang.",
-		errorInviteGangGeneric: "Error inviting user to the gang. Please try again later.",
-		successInviteGang: (nickname: string, gangName: string) => `**${nickname}** has been invited to the gang **${gangName}**!`,
-		confirm: "Confirm",
-		confirmLeave: (gangName: string) => `Confirm leaving the gang **${gangName}**?`,
-		errorLeaveGang: "Error leaving the gang. Please try again later.",
-		errorLeaveGangLeader: `You cannot leave the gang as the leader. You need to transfer leadership or disband the gang.`,
-		successLeaveGang: (gangName: string) => `You have left gang **${gangName}** successfully.`,
-		noResponseLeaveGang: (gangName: string) => `You took too long to respond and did not leave gang **${gangName}**.`,
-		confirmKick: (nickname: string, gangName: string) => `Are you sure you want to kick **${nickname}** from the gang **${gangName}**?`,
-		errorKickGangPermission: "You don't have permission to kick users from the gang.",
-		errorKickGangYourself: "You cannot kick yourself from the gang.",
-		errorKickGangLeader: "You cannot kick the gang leader.",
-		errorKickGang: (nickname: string, gangName: string) => `Error kicking **${nickname}** from the gang **${gangName}**. Please try again later.`,
-		successKickGang: (nickname: string, gangName: string) => `**${nickname}** has been kicked from the gang **${gangName}**!`,
-		noResponseKickGang: (nickname: string, gangName: string) => `You took too long to respond and did not kick **${nickname}** from the gang **${gangName}**.`,
-		errorCommunicateGangPermission: "You don't have permission to communicate with gang members.",
-		messageSent: "Message sent to gang members!",
+		gangAlreadyExistsName: (name: string) => `A gang with the name **${name}** already exists ${EmoteString.Gang}`,
+		gangAlreadyExistsAcronym: (acronym: string) => `A gang with the acronym **${acronym}** already exists ${EmoteString.Gang}`,
+		alreadyInGang: `You are already in a gang! You need to leave your current gang before creating a new one ${EmoteString.Gang}`,
+		userAlreadyInGang: (user: User) => `**${user.GetNameWithImage()}** is already in a gang ${EmoteString.Gang}`,
+		notEnoughMoney: (cost: string) => `You don't have enough money to create a gang! It costs ${cost} ${EmoteString.Gang}`,
+		lettersAndNumbers: `Gang name can only contain letters and numbers ${EmoteString.Gang}`,
+		invalidURLImage: `Invalid image URL! Please provide a valid image URL ending with .jpg, .jpeg, .webp or .png ${EmoteString.Gang}`,
+		errorCreatingGang: `Error while creating the gang. Try again later ${EmoteString.Gang}`,
+		gangCreated: `Gang created successfully! ${EmoteString.Gang}`,
+		gangCreatedDetails: (name: string, cost: string) => `You've created the gang **${name}** for ${cost} ${EmoteString.Gang}\n-# Use \`/gang info\` to see more details about your gang.`,
+		gangEditted: `Gang editted successfully! ${EmoteString.Gang}`,
+		errorEdittingGang: `Error while editting the gang. Try again later ${EmoteString.Gang}`,
+		errorEdittingGangPermission: `You don't have permission to edit the gang ${EmoteString.Gang}`,
+		errorInviteGangPermission: `You don't have permission to invite users to the gang ${EmoteString.Gang}`,
+		errorInviteGangYourself: `You cannot invite yourself to the gang ${EmoteString.Gang}`,
+		errorInviteGangGeneric: `Error inviting user to the gang. Please try again later ${EmoteString.Gang}`,
+		successInviteGang: (nickname: string, gangName: string) => `**${nickname}** has been invited to the gang **${gangName}**! ${EmoteString.Gang}`,
+		confirm: `Confirm`,
+		confirmLeave: (gangName: string) => `Confirm leaving the gang **${gangName}**? ${EmoteString.Gang}`,
+		errorLeaveGang: `Error leaving the gang. Please try again later ${EmoteString.Gang}`,
+		errorLeaveGangLeader: `You cannot leave the gang as the leader. You need to transfer leadership or disband the gang ${EmoteString.Gang}`,
+		successLeaveGang: (gangName: string) => `You have left gang **${gangName}** successfully ${EmoteString.Gang}`,
+		noResponseLeaveGang: (gangName: string) => `You took too long to respond and did not leave gang **${gangName}** ${EmoteString.Gang}`,
+		confirmKick: (nickname: string, gangName: string) => `Are you sure you want to kick **${nickname}** from the gang **${gangName}**? ${EmoteString.Gang}`,
+		errorKickGangPermission: `You don't have permission to kick users from the gang ${EmoteString.Gang}`,
+		errorKickGangYourself: `You cannot kick yourself from the gang ${EmoteString.Gang}`,
+		errorKickGangLeader: `You cannot kick the gang leader ${EmoteString.Gang}`,
+		errorKickGang: (nickname: string, gangName: string) => `Error kicking **${nickname}** from the gang **${gangName}**. Please try again later ${EmoteString.Gang}`,
+		successKickGang: (nickname: string, gangName: string) => `**${nickname}** has been kicked from the gang **${gangName}**! ${EmoteString.Gang}`,
+		noResponseKickGang: (nickname: string, gangName: string) => `You took too long to respond and did not kick **${nickname}** from the gang **${gangName}** ${EmoteString.Gang}`,
+		errorCommunicateGangPermission: `You don't have permission to communicate with gang members ${EmoteString.Gang}`,
+		messageSent: `Message sent to gang members! ${EmoteString.Gang}`,
 	},
 	[Language.Portuguese]: {
-		gangTitle: "Gangues",
+		gangTitle: `Gangues`,
 		gangDescription: `Crie sua gangue e trabalhe em equipe! Participe de ~~assaltos em grupo e lutas generalizadas~~!\n\n**Custo para criar uma gangue: ${formatMoney(Gang.CREATION_COST, Language.Portuguese)}**`,
-		gangNotFound: "Gangue não encontrada com este Id!",
-		gangNotFoundByName: (name: string) => `Nenhuma gangue encontrada com o nome ou acrônimo **${name}**!`,
-		notInGang: "Você não está em uma gangue! Para ver uma gangue específica, use o parâmetro `name`.",
-		errorGettingGang: "Erro ao buscar informações da gangue.",
-		errorSearchingGang: "Erro ao procurar pela gangue.",
-		name: "Nome",
-		acronym: "Acrônimo",
-		base: "Base",
-		leader: "Líder",
-		level: "Nível",
-		members: "Membros",
-		created: "Criada em",
-		updated: "Atualizada em",
-		description: "Descrição",
-		color: "Cor",
-		image: "Imagem",
+		gangNotFound: `Gangue não encontrada com este Id ${EmoteString.Gang}`,
+		gangNotFoundByName: (name: string) => `Nenhuma gangue encontrada com o nome ou acrônimo **${name}** ${EmoteString.Gang}`,
+		notInGang: `Você não está em uma gangue! Para ver uma gangue específica, use o parâmetro \`name\` ${EmoteString.Gang}`,
+		errorGettingGang: `Erro ao buscar informações da gangue ${EmoteString.Gang}`,
+		errorSearchingGang: `Erro ao procurar pela gangue ${EmoteString.Gang}`,
+		name: `Nome`,
+		acronym: `Acrônimo`,
+		base: `Base`,
+		leader: `Líder`,
+		level: `Nível`,
+		members: `Membros`,
+		created: `Criada em`,
+		updated: `Atualizada em`,
+		description: `Descrição`,
+		color: `Cor`,
+		image: `Imagem`,
 		gangId: (id: number) => `Id da Gangue: ${id}`,
-		noMembers: "Esta gangue não tem membros!",
-		membersOf: "Membros de",
+		noMembers: `Esta gangue não tem membros!`,
+		membersOf: `Membros de`,
 		pageFooter: (current: number, total: number, members: number) => `Página ${current}/${total} · ${members} membros`,
-		gangAlreadyExistsName: (name: string) => `Uma gangue com o nome **${name}** já existe!`,
-		gangAlreadyExistsAcronym: (acronym: string) => `Uma gangue com o acrônimo **${acronym}** já existe!`,
-		alreadyInGang: "Você já está em uma gangue! Você precisa sair da sua gangue atual antes de criar uma nova.",
-		userAlreadyInGang: (user: User) => `**${user.GetNameWithImage()}** já está em uma gangue!`,
-		notEnoughMoney: (cost: string) => `Você não tem dinheiro suficiente para criar uma gangue! Custa ${cost}.`,
-		lettersAndNumbers: "Nome da gangue só pode conter letras e números.",
-		invalidURLImage: "URL de imagem inválida! Por favor, forneça uma URL de imagem válida terminando com .jpg, .jpeg, .webp ou .png.",
-		errorCreatingGang: "Erro ao criar a gangue. Tente novamente mais tarde.",
-		gangCreated: "Gangue criada com sucesso!",
-		gangCreatedDetails: (name: string, cost: string) => `Você criou a gangue **${name}** por ${cost}.\nUse \`/gang info\` para ver mais detalhes sobre sua gangue.`,
-		gangEditted: "Gangue editada com sucesso!",
-		errorEdittingGang: "Erro ao editar a gangue. Tente novamente mais tarde.",
-		errorEdittingGangPermission: "Você não possui permissão para editar a gangue",
-		errorInviteGangPermission: "Você não possui permissão para convidar usuários para a gangue.",
-		errorInviteGangYourself: "Você não pode convidar a si mesmo para a gangue.",
-		errorInviteGangGeneric: "Erro ao convidar usuário para a gangue. Tente novamente mais tarde.",
-		successInviteGang: (nickname: string, gangName: string) => `**${nickname}** foi convidado para a gangue **${gangName}**!`,
-		confirm: "Confirmar",
-		confirmLeave: (gangName: string) => `Confirmar saída da gangue **${gangName}**?`,
-		errorLeaveGang: "Erro ao sair da gangue. Tente novamente mais tarde.",
-		errorLeaveGangLeader: `Você não pode sair da gangue como líder. Você precisa transferir a liderança ou dissolver a gangue.`,
-		successLeaveGang: (gangName: string) => `Você saiu da gangue **${gangName}** com sucesso.`,
-		noResponseLeaveGang: (gangName: string) => `Você demorou para responder e não saiu da gangue **${gangName}**`,
-		confirmKick: (nickname: string, gangName: string) => `Você tem certeza que deseja expulsar **${nickname}** da gangue **${gangName}**?`,
-		errorKickGangPermission: "Você não possui permissão para expulsar usuários da gangue.",
-		errorKickGangYourself: "Você não pode expulsar a si mesmo da gangue.",
-		errorKickGangLeader: "Você não pode expulsar o líder da gangue.",
-		errorKickGang: (nickname: string, gangName: string) => `Erro ao expulsar **${nickname}** da gangue **${gangName}**. Tente novamente mais tarde.`,
-		successKickGang: (nickname: string, gangName: string) => `**${nickname}** foi expulso da gangue **${gangName}**!`,
-		noResponseKickGang: (nickname: string, gangName: string) => `Você demorou para responder e não expulsou **${nickname}** da gangue **${gangName}**.`,
-		errorCommunicateGangPermission: "Você não possui permissão para comunicar com os membros da gangue.",
-		messageSent: "Mensagem enviada para os membros da gangue!",
+		gangAlreadyExistsName: (name: string) => `Uma gangue com o nome **${name}** já existe ${EmoteString.Gang}`,
+		gangAlreadyExistsAcronym: (acronym: string) => `Uma gangue com o acrônimo **${acronym}** já existe ${EmoteString.Gang}`,
+		alreadyInGang: `Você já está em uma gangue! Você precisa sair da sua gangue atual antes de criar uma nova ${EmoteString.Gang}`,
+		userAlreadyInGang: (user: User) => `**${user.GetNameWithImage()}** já está em uma gangue ${EmoteString.Gang}`,
+		notEnoughMoney: (cost: string) => `Você não tem dinheiro suficiente para criar uma gangue! Custa ${cost} ${EmoteString.Gang}`,
+		lettersAndNumbers: `Nome da gangue só pode conter letras e números ${EmoteString.Gang}`,
+		invalidURLImage: `URL de imagem inválida! Por favor, forneça uma URL de imagem válida terminando com .jpg, .jpeg, .webp ou .png. ${EmoteString.Gang}`,
+		errorCreatingGang: `Erro ao criar a gangue. Tente novamente mais tarde. ${EmoteString.Gang}`,
+		gangCreated: `Gangue criada com sucesso! ${EmoteString.Gang}`,
+		gangCreatedDetails: (name: string, cost: string) => `Você criou a gangue **${name}** por ${cost} ${EmoteString.Gang}\n-# Use \`/gang info\` para ver mais detalhes sobre sua gangue.`,
+		gangEditted: `Gangue editada com sucesso! ${EmoteString.Gang}`,
+		errorEdittingGang: `Erro ao editar a gangue. Tente novamente mais tarde ${EmoteString.Gang}`,
+		errorEdittingGangPermission: `Você não possui permissão para editar a gangue ${EmoteString.Gang}`,
+		errorInviteGangPermission: `Você não possui permissão para convidar usuários para a gangue ${EmoteString.Gang}`,
+		errorInviteGangYourself: `Você não pode convidar a si mesmo para a gangue ${EmoteString.Gang}`,
+		errorInviteGangGeneric: `Erro ao convidar usuário para a gangue. Tente novamente mais tarde ${EmoteString.Gang}`,
+		successInviteGang: (nickname: string, gangName: string) => `**${nickname}** foi convidado para a gangue **${gangName}**! ${EmoteString.Gang}`,
+		confirm: `Confirmar`,
+		confirmLeave: (gangName: string) => `Confirmar saída da gangue **${gangName}**? ${EmoteString.Gang}`,
+		errorLeaveGang: `Erro ao sair da gangue. Tente novamente mais tarde ${EmoteString.Gang}`,
+		errorLeaveGangLeader: `Você não pode sair da gangue como líder. Você precisa transferir a liderança ou dissolver a gangue ${EmoteString.Gang}`,
+		successLeaveGang: (gangName: string) => `Você saiu da gangue **${gangName}** com sucesso ${EmoteString.Gang}`,
+		noResponseLeaveGang: (gangName: string) => `Você demorou para responder e não saiu da gangue **${gangName}** ${EmoteString.Gang}`,
+		confirmKick: (nickname: string, gangName: string) => `Você tem certeza que deseja expulsar **${nickname}** da gangue **${gangName}**? ${EmoteString.Gang}`,
+		errorKickGangPermission: `Você não possui permissão para expulsar usuários da gangue ${EmoteString.Gang}`,
+		errorKickGangYourself: `Você não pode expulsar a si mesmo da gangue ${EmoteString.Gang}`,
+		errorKickGangLeader: `Você não pode expulsar o líder da gangue ${EmoteString.Gang}`,
+		errorKickGang: (nickname: string, gangName: string) => `Erro ao expulsar **${nickname}** da gangue **${gangName}**. Tente novamente mais tarde ${EmoteString.Gang}`,
+		successKickGang: (nickname: string, gangName: string) => `**${nickname}** foi expulso da gangue **${gangName}**! ${EmoteString.Gang}`,
+		noResponseKickGang: (nickname: string, gangName: string) => `Você demorou para responder e não expulsou **${nickname}** da gangue **${gangName}** ${EmoteString.Gang}`,
+		errorCommunicateGangPermission: `Você não possui permissão para comunicar com os membros da gangue ${EmoteString.Gang}`,
+		messageSent: `Mensagem enviada para os membros da gangue! ${EmoteString.Gang}`,
 	},
 	[Language.Spanish]: {
-		gangTitle: "Cuadrillas",
+		gangTitle: `Cuadrillas`,
 		gangDescription: `¡Crea tu cuadrilla y trabaja en equipo! ¡Participa en ~~atracos grupales y peleas de cuadrillas~~!\n\n**Costo para crear una cuadrilla: ${formatMoney(Gang.CREATION_COST, Language.Spanish)}**`,
-		gangNotFound: "¡Cuadrilla no encontrada con este Id!",
-		gangNotFoundByName: (name: string) => `¡No se encontró ninguna quadrilla con el nombre o acrónimo **${name}**!`,
-		notInGang: "¡No estás en una quadrilla! Para ver una cuadrilla específica, usa el parámetro `name`.",
-		errorGettingGang: "Error al obtener información de la cuadrilla.",
-		errorSearchingGang: "Error al buscar la cuadrilla.",
-		name: "Nombre",
-		acronym: "Acrónimo",
-		base: "Base",
-		leader: "Líder",
-		level: "Nivel",
-		members: "Miembros",
-		created: "Creada",
-		updated: "Actualizada",
-		description: "Descripción",
-		color: "Color",
-		image: "Imagen",
+		gangNotFound: `¡Cuadrilla no encontrada con este Id ${EmoteString.Gang}`,
+		gangNotFoundByName: (name: string) => `¡No se encontró ninguna quadrilla con el nombre o acrónimo **${name}** ${EmoteString.Gang}`,
+		notInGang: `¡No estás en una quadrilla! Para ver una cuadrilla específica, usa el parámetro \`name\` ${EmoteString.Gang}`,
+		errorGettingGang: `Error al obtener información de la cuadrilla ${EmoteString.Gang}`,
+		errorSearchingGang: `Error al buscar la cuadrilla ${EmoteString.Gang}`,
+		name: `Nombre`,
+		acronym: `Acrónimo`,
+		base: `Base`,
+		leader: `Líder`,
+		level: `Nivel`,
+		members: `Miembros`,
+		created: `Creada`,
+		updated: `Actualizada`,
+		description: `Descripción`,
+		color: `Color`,
+		image: `Imagen`,
 		gangId: (id: number) => `Id de Cuadrilla: ${id}`,
 		noMembers: "¡Esta cuadrilla no tiene miembros!",
-		membersOf: "Miembros de",
+		membersOf: `Miembros de`,
 		pageFooter: (current: number, total: number, members: number) => `Página ${current}/${total} · ${members} miembros`,
-		gangAlreadyExistsName: (name: string) => `¡Una cuadrilla con el nombre **${name}** ya existe!`,
-		gangAlreadyExistsAcronym: (acronym: string) => `¡Una cuadrilla con el acrónimo **${acronym}** ya existe!`,
-		alreadyInGang: "¡Ya estás en una cuadrilla! Necesitas salir de tu cuadrilla actual antes de crear una nueva.",
-		userAlreadyInGang: (user: User) => `**${user.GetNameWithImage()}** ya está en una cuadrilla!`,
-		notEnoughMoney: (cost: string) => `¡No tienes suficiente dinero para crear una cuadrilla! Cuesta ${cost}.`,
-		lettersAndNumbers: "El nombre de la cuadrilla solo puede contener letras y números.",
-		invalidURLImage: "¡URL de imagen inválida! Por favor, proporciona una URL de imagen válida que termine en .jpg, .jpeg, .webp o .png.",
-		errorCreatingGang: "Error al crear la cuadrilla. Inténtalo de nuevo más tarde.",
-		gangCreated: "¡Cuadrilla creada con éxito!",
-		gangCreatedDetails: (name: string, cost: string) => `Has creado la cuadrilla **${name}** por ${cost}.\nUsa \`/gang info\` para ver más detalles sobre tu cuadrilla.`,
-		gangEditted: "¡Cuadrilla editada con éxito!",
-		errorEdittingGang: "Error al editar la cuadrilla. Inténtalo de nuevo más tarde.",
-		errorEdittingGangPermission: "No tienes permiso para editar la cuadrilla",
-		errorInviteGangPermission: "No tienes permiso para invitar usuarios a la cuadrilla.",
-		errorInviteGangYourself: "No puedes invitarte a ti mismo a la cuadrilla.",
-		errorInviteGangGeneric: "Error al invitar usuario a la cuadrilla. Por favor, inténtalo de nuevo más tarde.",
-		successInviteGang: (nickname: string, gangName: string) => `**${nickname}** ha sido invitado a la cuadrilla **${gangName}**!`,
-		confirm: "Confirmar",
-		confirmLeave: (gangName: string) => `¿Confirmar salida de la cuadrilla **${gangName}**?`,
-		errorLeaveGang: "Error al salir de la cuadrilla. Inténtalo de nuevo más tarde.",
-		errorLeaveGangLeader: `No puedes salir de la cuadrilla como líder. Necesitas transferir el liderazgo o disolver la cuadrilla.`,
-		successLeaveGang: (gangName: string) => `Has salido de la cuadrilla **${gangName}** con éxito.`,
-		noResponseLeaveGang: (gangName: string) => `Te demoraste en responder y no saliste de la cuadrilla **${gangName}**.`,
-		confirmKick: (nickname: string, gangName: string) => `¿Estás seguro de que deseas expulsar a **${nickname}** de la cuadrilla **${gangName}**?`,
-		errorKickGangPermission: "No tienes permiso para expulsar usuarios de la cuadrilla.",
-		errorKickGangYourself: "No puedes expulsarte a ti mismo de la cuadrilla.",
-		errorKickGangLeader: "No puedes expulsar al líder de la cuadrilla.",
-		errorKickGang: (nickname: string, gangName: string) => `Error al expulsar a **${nickname}** de la cuadrilla **${gangName}**. Inténtalo de nuevo más tarde.`,
-		successKickGang: (nickname: string, gangName: string) => `**${nickname}** ha sido expulsado de la cuadrilla **${gangName}**!`,
-		noResponseKickGang: (nickname: string, gangName: string) => `Te demoraste en responder y no expulsaste a **${nickname}** de la cuadrilla **${gangName}**.`,
-		errorCommunicateGangPermission: "No tienes permiso para comunicarte con los miembros de la cuadrilla.",
-		messageSent: "¡Mensaje enviado a los miembros de la cuadrilla!",
+		gangAlreadyExistsName: (name: string) => `¡Una cuadrilla con el nombre **${name}** ya existe ${EmoteString.Gang}`,
+		gangAlreadyExistsAcronym: (acronym: string) => `¡Una cuadrilla con el acrónimo **${acronym}** ya existe ${EmoteString.Gang}`,
+		alreadyInGang: `¡Ya estás en una cuadrilla! Necesitas salir de tu cuadrilla actual antes de crear una nueva ${EmoteString.Gang}`,
+		userAlreadyInGang: (user: User) => `**${user.GetNameWithImage()}** ya está en una cuadrilla ${EmoteString.Gang}`,
+		notEnoughMoney: (cost: string) => `¡No tienes suficiente dinero para crear una cuadrilla! Cuesta ${cost} ${EmoteString.Gang}`,
+		lettersAndNumbers: `El nombre de la cuadrilla solo puede contener letras y números ${EmoteString.Gang}`,
+		invalidURLImage: `¡URL de imagen inválida! Por favor, proporciona una URL de imagen válida que termine en .jpg, .jpeg, .webp o .png ${EmoteString.Gang}`,
+		errorCreatingGang: `Error al crear la cuadrilla. Inténtalo de nuevo más tarde ${EmoteString.Gang}`,
+		gangCreated: `¡Cuadrilla creada con éxito! ${EmoteString.Gang}`,
+		gangCreatedDetails: (name: string, cost: string) => `Has creado la cuadrilla **${name}** por ${cost} ${EmoteString.Gang}\n-# Usa \`/gang info\` para ver más detalles sobre tu cuadrilla.`,
+		gangEditted: `¡Cuadrilla editada con éxito! ${EmoteString.Gang}`,
+		errorEdittingGang: `Error al editar la cuadrilla. Inténtalo de nuevo más tarde ${EmoteString.Gang}`,
+		errorEdittingGangPermission: `No tienes permiso para editar la cuadrilla ${EmoteString.Gang}`,
+		errorInviteGangPermission: `No tienes permiso para invitar usuarios a la cuadrilla ${EmoteString.Gang}`,
+		errorInviteGangYourself: `No puedes invitarte a ti mismo a la cuadrilla ${EmoteString.Gang}`,
+		errorInviteGangGeneric: `Error al invitar usuario a la cuadrilla. Por favor, inténtalo de nuevo más tarde ${EmoteString.Gang}`,
+		successInviteGang: (nickname: string, gangName: string) => `**${nickname}** ha sido invitado a la cuadrilla **${gangName}**! ${EmoteString.Gang}`,
+		confirm: `Confirmar`,
+		confirmLeave: (gangName: string) => `¿Confirmar salida de la cuadrilla **${gangName}**? ${EmoteString.Gang}`,
+		errorLeaveGang: `Error al salir de la cuadrilla. Inténtalo de nuevo más tarde ${EmoteString.Gang}`,
+		errorLeaveGangLeader: `No puedes salir de la cuadrilla como líder. Necesitas transferir el liderazgo o disolver la cuadrilla ${EmoteString.Gang}`,
+		successLeaveGang: (gangName: string) => `Has salido de la cuadrilla **${gangName}** con éxito ${EmoteString.Gang}`,
+		noResponseLeaveGang: (gangName: string) => `Te demoraste en responder y no saliste de la cuadrilla **${gangName}** ${EmoteString.Gang}`,
+		confirmKick: (nickname: string, gangName: string) => `¿Estás seguro de que deseas expulsar a **${nickname}** de la cuadrilla **${gangName}**? ${EmoteString.Gang}`,
+		errorKickGangPermission: `No tienes permiso para expulsar usuarios de la cuadrilla ${EmoteString.Gang}`,
+		errorKickGangYourself: `No puedes expulsarte a ti mismo de la cuadrilla ${EmoteString.Gang}`,
+		errorKickGangLeader: `No puedes expulsar al líder de la cuadrilla ${EmoteString.Gang}`,
+		errorKickGang: (nickname: string, gangName: string) => `Error al expulsar a **${nickname}** de la cuadrilla **${gangName}**. Inténtalo de nuevo más tarde ${EmoteString.Gang}`,
+		successKickGang: (nickname: string, gangName: string) => `**${nickname}** ha sido expulsado de la cuadrilla **${gangName}**! ${EmoteString.Gang}`,
+		noResponseKickGang: (nickname: string, gangName: string) => `Te demoraste en responder y no expulsaste a **${nickname}** de la cuadrilla **${gangName}** ${EmoteString.Gang}`,
+		errorCommunicateGangPermission: `No tienes permiso para comunicarte con los miembros de la cuadrilla ${EmoteString.Gang}`,
+		messageSent: `¡Mensaje enviado a los miembros de la cuadrilla! ${EmoteString.Gang}`,
 	},
 } as const;

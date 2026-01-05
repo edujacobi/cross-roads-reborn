@@ -133,7 +133,7 @@ export enum EmoteId {
 	MilitaryBase = "1353083475275546745",
 
 	// Gang
-	Gang = "973709675474346105",
+	Gang = "1457723997478322327",
 	NoPermission = "1392589953803747378",
 	OnePermission = "1392589941887860826",
 	TwoPermission = "1392589944945381426",
@@ -279,7 +279,7 @@ export const EmoteString = {
 	MilitaryBase: `<:MilitaryBase:${EmoteId.MilitaryBase}>`,
 
 	// Gang
-	Gang: `<:Gangues:${EmoteId.Gang}>`,
+	Gang: `<:GangEmote:${EmoteId.Gang}>`,
 	NoPermission: `<:0_permission:${EmoteId.NoPermission}>`,
 	OnePermission: `<:1_permission:${EmoteId.OnePermission}>`,
 	TwoPermission: `<:2_permission:${EmoteId.TwoPermission}>`,
