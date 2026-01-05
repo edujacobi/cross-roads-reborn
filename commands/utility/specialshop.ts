@@ -18,6 +18,7 @@ import { EmoteId, EmoteString } from "../../utils/emotes";
 import { formatMoney } from "../../utils/ui";
 import { ItemList } from "../../interfaces/Items";
 import { UserBundle } from "../../models/UserBundle";
+import { CrColors } from "../../utils/colors";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -32,7 +33,7 @@ module.exports = {
 
 		function addHeader(container = new CustomContainerBuilder()) {
 			container.setUser(user)
-				.setAccentColor(0x03a2e9)
+				.setAccentColor(CrColors.SpecialShop)
 				.addTexts([
 					`# ${s.title}`,
 					s.permanent,
@@ -50,12 +51,13 @@ module.exports = {
 			return container;
 		}
 
+		const VIP_BASE_PRICE = 5_000;
+
 		async function generateDefaultContainer() {
 			await user.GetInfo();
 
 			let container = addHeader()
-				.addTextDisplayComponents(subtitle => subtitle
-					.setContent(`## ${s.skinBundles}`));
+				.addTexts([`## ${s.skinBundles}`]);
 
 			const skinBundles = getSkinBundleList().filter(bundle => bundle.Shop);
 			for (let idx = 0; idx < skinBundles.length; idx++) {
@@ -65,9 +67,25 @@ module.exports = {
 
 					const userHasBundle = await UserBundle.HasBundle(user.Id, bundle.Id);
 
+					const meanValuePerSkin = bundle.Price / bundle.Items.length;
+
+					let rarityEmote = EmoteString.Common;
+					if (meanValuePerSkin > 500) {
+						rarityEmote = EmoteString.Mythic;
+					}
+					else if (meanValuePerSkin > 400) {
+						rarityEmote = EmoteString.Legendary;
+					}
+					else if (meanValuePerSkin > 300) {
+						rarityEmote = EmoteString.Rare;
+					}
+					else if (meanValuePerSkin > 200) {
+						rarityEmote = EmoteString.Uncommon;
+					}
+
 					container.addSectionComponents(section => section
 						.addTextDisplayComponents(title => title
-							.setContent(`### ${bundle.Description[language]}\n-# ${s.howManyItems(itemEmotes)}\n# ${itemEmotes.join(" ")}`),
+							.setContent(`### ${rarityEmote}${bundle.Description[language]}\n-# ${s.howManyItems(itemEmotes)}\n# ${itemEmotes.join(" ")}`),
 						)
 						.setButtonAccessory(new ButtonBuilder()
 							.setLabel(formatMoney(bundle.Price, language, ""))
@@ -82,6 +100,32 @@ module.exports = {
 					}
 				}
 			}
+
+			container
+				.addLargeSeparator()
+				.addTexts([
+					`## ${EmoteString.VIP} VIP`,
+					s.vipDescription,
+					`-# ${s.vipMoreInfo}`,
+				]);
+
+			const row = new ActionRowBuilder<ButtonBuilder>();
+
+			for (let idx = 1; idx <= 3; idx++) {
+				row.addComponents(new ButtonBuilder()
+					.setLabel(`${s.months(idx)}: ${formatMoney(idx * VIP_BASE_PRICE, language, "")}`)
+					.setEmoji(EmoteId.SpecialCoinShop)
+					.setStyle(ButtonStyle.Secondary)
+					.setCustomId("vip" + idx));
+			}
+
+			container
+				.addActionRowComponents(row)
+				.addLargeSeparator()
+				.addTexts([
+					`### ${s.howToAcquireTitle}`,
+					`-# ${s.howToAcquireDescription}`,
+				]);
 
 			container = addFooter(container);
 
@@ -119,8 +163,8 @@ module.exports = {
 				});
 			}
 
-			else if (btn.customId.includes("confirm")) {
-				const bundleId = Number(btn.customId.replace("confirm", ""));
+			else if (btn.customId.includes("confirmbuy")) {
+				const bundleId = Number(btn.customId.replace("confirmbuy", ""));
 				const bundle = BundleList[bundleId];
 				await user.GetInfo();
 
@@ -203,7 +247,71 @@ module.exports = {
 								.setLabel(s.buy)
 								.setStyle(ButtonStyle.Success)
 								.setDisabled(!canBuy)
-								.setCustomId("confirm" + bundle.Id),
+								.setCustomId("confirmbuy" + bundle.Id),
+						]),
+					);
+
+				container = addFooter(container);
+
+				await replyInteraction(interaction, {
+					components: [container],
+					flags: MessageFlags.IsComponentsV2,
+				});
+			}
+
+			else if (btn.customId.includes("confirmvip")) {
+				const vipMonths = Number(btn.customId.replace("confirmvip", ""));
+				const price = vipMonths * VIP_BASE_PRICE;
+				await user.GetInfo();
+
+				if (user.SpecialCoin < price) {
+					container = addHeader()
+						.addTexts([
+							s.dontHaveCoins(price),
+						]);
+
+					container = addFooter(container);
+
+					return replyInteraction(interaction, {
+						components: [container],
+					});
+				}
+
+				await user.AddVip(vipMonths * 30);
+
+				container = addHeader()
+					.addTexts([
+						`${s.vipBought(vipMonths)}`,
+					]);
+
+				container = addFooter(container);
+
+				return replyInteraction(interaction, {
+					components: [container],
+				});
+			}
+
+			else if (btn.customId.includes("vip")) {
+				const vipMonths = Number(btn.customId.replace("vip", ""));
+				const price = vipMonths * VIP_BASE_PRICE;
+				const canBuy = price <= user.SpecialCoin;
+
+				container = addHeader(new CustomContainerBuilder())
+					.addTexts([
+						`## ${EmoteString.VIP} VIP - ${s.months(vipMonths)}`,
+						`${s.price}: ${EmoteString.SpecialCoinShop}${formatMoney(price, language, "")}`,
+					])
+					.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
+						.addComponents([
+							new ButtonBuilder()
+								.setLabel(s.goBack)
+								.setStyle(ButtonStyle.Secondary)
+								.setCustomId("back"),
+							new ButtonBuilder()
+								.setLabel(s.buy)
+								.setStyle(ButtonStyle.Success)
+								.setDisabled(!canBuy)
+								.setCustomId("confirmvip" + vipMonths),
 						]),
 					);
 
@@ -233,7 +341,13 @@ const Strings = {
 		price: "Price",
 		content: "Content",
 		goBack: "Go back",
+		months: (months: number) => `${months} ${months === 1 ? "Month" : "Months"}`,
+		vipDescription: `All that a new aristrocrat needs!`,
+		vipMoreInfo: `For more information, see \`/vip\``,
+		vipBought: (months: number) => `You bought **${Strings[Language.English].months(months)}** of ${EmoteString.VIP} VIP!`,
 		buy: "Buy",
+		howToAcquireTitle: "How to acquire",
+		howToAcquireDescription: "On the official server, in the #vip-special-coins channel",
 	},
 	[Language.Portuguese]: {
 		title: "Loja especial",
@@ -249,7 +363,13 @@ const Strings = {
 		price: "Preço",
 		content: "Conteúdo",
 		goBack: "Voltar",
+		months: (months: number) => `${months} ${months === 1 ? "Mês" : "Meses"}`,
+		vipDescription: `Tudo que um novo aristocrata precisa!`,
+		vipMoreInfo: `Para mais informações, veja \`/vip\``,
+		vipBought: (months: number) => `Você comprou **${Strings[Language.Portuguese].months(months)}** de ${EmoteString.VIP} VIP!`,
 		buy: "Comprar",
+		howToAcquireTitle: "Como adquirir",
+		howToAcquireDescription: "No servidor oficial, no canal #vip-moedas-especiais",
 	},
 	[Language.Spanish]: {
 		title: "Comercio especial",
@@ -265,6 +385,12 @@ const Strings = {
 		price: "Precio",
 		content: "Contenido",
 		goBack: "Volver",
+		months: (months: number) => `${months} ${months === 1 ? "Mes" : "Meses"}`,
+		vipDescription: `Todo lo que necesita un nuevo aristócrata!`,
+		vipMoreInfo: `Para obtener más información, consulte \`/vip\``,
+		vipBought: (months: number) => `Compraste **${Strings[Language.English].months(months)}** de ${EmoteString.VIP} VIP!`,
 		buy: "Comprar",
+		howToAcquireTitle: "Cómo adquirir",
+		howToAcquireDescription: "En el servidor oficial, en el canal #vip-special-coins.",
 	},
 } as const;

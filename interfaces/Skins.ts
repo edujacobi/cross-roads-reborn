@@ -78,7 +78,7 @@ export const BundleList: SkinBundleListType = {
 			ItemId.BaseballBat,
 		],
 		Shop: true,
-		Price: 5000,
+		Price: 3000,
 	},
 	[BundleId.Brazilian]: {
 		Id: BundleId.Brazilian,
@@ -99,7 +99,7 @@ export const BundleList: SkinBundleListType = {
 			ItemId.BaseballBat,
 		],
 		Shop: true,
-		Price: 2500,
+		Price: 2000,
 	},
 	[BundleId.Flaming]: {
 		Id: BundleId.Flaming,

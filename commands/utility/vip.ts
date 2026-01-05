@@ -8,7 +8,7 @@ import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("vip")
-		.setDescription("Adquire VIP, get benefits and contribute to development!")
+		.setDescription("Acquire VIP, get benefits and contribute to development!")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Adquira VIP, tenha vantagens e contribua com o desenvolvimento"),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
@@ -27,7 +27,7 @@ ${s.benefits}`),
 					.setURL("https://media.discordapp.net/attachments/531174573463306240/799060089503875072/VIP.png")),
 			)
 			.addLargeSeparator()
-			.addTexts([s.howToAdquire])
+			.addTexts([s.howToAcquire])
 			.addFooter();
 
 		return await replyInteraction(interaction, {
@@ -50,13 +50,11 @@ const Strings = {
 - ~~25% discount on Class change~~
 - ~~Exclusive Prize Ticket draws~~
 - Can select Skins for weapons
-- ${EmoteString.SpecialCoinShop}4,000 Special Coins
 - Access to VIP category in Cross Roads Reborn server
 - VIP role in Cross Roads Reborn server
 - Many more to come!`,
-		howToAdquire: `## How to adquire
-Send a DM to \`ejacobi\`. If you can't, join the Cross Roads Reborn server.
-$2.50 = 1 month. $6.00 = 3 months.`,
+		howToAcquire: `## How to acquire
+In \`/specialshop\`, using the ${EmoteString.SpecialCoinShop}Special Coins!`,
 	},
 	[Language.Portuguese]: {
 		title: "VIP",
@@ -70,13 +68,11 @@ $2.50 = 1 month. $6.00 = 3 months.`,
 - ~~25% de desconto na troca de Classe~~
 - ~~Sorteios do Bilhete premiado exclusivos~~
 - Pode selecionar Skins para armas
-- ${EmoteString.SpecialCoinShop}4.000 Moedas Especiais
 - Acesso à categoria VIP no servidor Cross Roads Reborn
 - Cargo VIP no servidor Cross Roads Reborn
 - Muitos mais por vir!`,
-		howToAdquire: `## Como adquirir
-Envie uma DM para \`ejacobi\`. Se não conseguir, entre no servidor Cross Roads Reborn.
-R$ 10,00 = 1 mês. R$ 25,00 = 3 meses.`,
+		howToAcquire: `## Como adquirir
+Na \`/lojaespecial\`, utilizando as ${EmoteString.SpecialCoinShop}Moedas Especiais!`,
 	},
 	[Language.Spanish]: {
 		title: "VIP",
@@ -90,12 +86,10 @@ R$ 10,00 = 1 mês. R$ 25,00 = 3 meses.`,
 - ~~25% de descuento en el cambio de Clase~~
 - Sorteos exclusivos del Billete premiado
 - Puede seleccionar Skins para armas
-- ${EmoteString.SpecialCoinShop}4.000 Monedas especiales
 - Acceso a la categoría VIP en el servidor Cross Roads Reborn
 - Rol VIP en el servidor Cross Roads Reborn
 - ¡Muchos más por venir!`,
-		howToAdquire: `## Cómo adquirir
-Envía un DM a \`ejacobi\`. Si no puedes, únete al servidor Cross Roads Reborn.
-$2.50 = 1 mes. $6.00 = 3 meses.`,
+		howToAcquire: `## Cómo adquirir
+En \`/specialshop\`, usando ¡${EmoteString.SpecialCoinShop}Monedas especiales!`,
 	},
 } as const;

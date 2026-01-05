@@ -8,7 +8,7 @@
 	SlashCommandIntegerOption,
 	SlashCommandStringOption,
 } from "discord.js";
-import { defaultComponent, formatMoney } from "../../utils/ui";
+import { defaultComponent } from "../../utils/ui";
 import { checkUser, replyInteraction, sendPrivateMessage } from "../../utils/logic";
 import { EmoteString } from "../../utils/emotes";
 import { User } from "../../models/User";
@@ -46,12 +46,12 @@ module.exports = {
 			return await interaction.reply("Didn't find this user");
 		}
 
-		const specialCoins = await target?.AddVip(days);
+		await target?.AddVip(days);
 
 		const messages = {
-			[Language.English]: `${EmoteString.VIP} You received ${days} days of VIP and ${EmoteString.SpecialCoinShop}${formatMoney(specialCoins, Language.English, "")} Special Coins!`,
-			[Language.Portuguese]: `${EmoteString.VIP} Você recebeu ${days} dias de VIP e ${EmoteString.SpecialCoinShop}${formatMoney(specialCoins, Language.Portuguese, "")} Moedas Especiais!`,
-			[Language.Spanish]: `${EmoteString.VIP} Has recibido ${days} días de VIP y ${EmoteString.SpecialCoinShop}${formatMoney(specialCoins, Language.Spanish, "")} Monedas Especiales!`,
+			[Language.English]: `${EmoteString.VIP} You received ${days} days of VIP`,
+			[Language.Portuguese]: `${EmoteString.VIP} Você recebeu ${days} dias de VIP`,
+			[Language.Spanish]: `${EmoteString.VIP} Has recibido ${days} días de VIP`,
 		} as const;
 
 		await sendPrivateMessage(userId, messages[target.Language], Colors.Gold);
@@ -59,7 +59,7 @@ module.exports = {
 		const container = defaultComponent({
 			user,
 			color: Colors.Gold,
-			description: `${EmoteString.VIP} ${days} days of VIP and ${EmoteString.SpecialCoinShop}${formatMoney(specialCoins, Language.English, "")} Special Coins added to user **${target.GetNameWithImage()}**`,
+			description: `${EmoteString.VIP} ${days} days of VIP added to user **${target.GetNameWithImage()}**`,
 		});
 
 		await replyInteraction(interaction, {

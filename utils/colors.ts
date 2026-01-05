@@ -15,6 +15,7 @@ export const CrColors = {
 	Scavenge: Colors.LightGrey,
 	BeatUp: 0xff8C00,
 	Bar: 0x0064FF,
+	SpecialShop: 0x03a2e9,
 };
 
 export enum GangColorId {
