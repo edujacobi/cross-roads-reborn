@@ -1,6 +1,6 @@
 import { User } from "./User";
 import { Log } from "../utils/log";
-import { ChatInputCommandInteraction } from "discord.js";
+import { ChatInputCommandInteraction, MessageFlags } from "discord.js";
 import { replyInteraction } from "../utils/logic";
 import { formatMoney, showTime } from "../utils/ui";
 import { CrColors } from "../utils/colors";
@@ -13,7 +13,7 @@ import { globalStrings, Language } from "./Language";
 import { RobHistories } from "../database/RobHistories";
 import { Users } from "../database/Users";
 import { JobId, JobList } from "../interfaces/Jobs";
-import { Robbery, ClashType } from "./Robbery";
+import { ClashType, Robbery } from "./Robbery";
 import { Location, LocationList } from "../interfaces/Locations";
 import { ClassList } from "../interfaces/Classes";
 import { ScavengeId, ScavengeList } from "../interfaces/Scavenge";
@@ -109,17 +109,20 @@ export class RobberyLocation extends Robbery {
 		Log.Info(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) started a robbery to location ${this.Location.Description[Language.English]} (ID: ${this.Location.Id}).`);
 
 		this.Container.Channel
-			.setAuthor({
-				name: s.robberyInProgress,
-				iconURL: "https://media.discordapp.net/attachments/691019843159326757/791444366727708672/roubar_20201223201323.png",
-			})
-			.setUserFooter({
-				nickname: this.Attacker.Nickname,
-				image: interaction.user.avatarURL(),
-				text: `${s.tryingToRob} ${this.Location.Description[this.Attacker.Language]}`,
-			});
+			.setUser(this.Attacker)
+			.addTexts([
+				`${EmoteString.Robbery} ${s.robberyInProgress}`,
+			], 1)
+			.addLargeSeparator()
+			.addTexts([
+				`${s.tryingToRob} ${this.Location.Emote.String} **${this.Location.Description[this.Attacker.Language]}**`,
+			], 50)
+			.addFooter();
 
-		await replyInteraction(interaction, { embeds: [this.Container.Channel], components: [] });
+		await replyInteraction(interaction, {
+			components: [this.Container.Channel],
+			flags: MessageFlags.IsComponentsV2,
+		});
 
 		await wait(10_000 + (5_000 * this.Location.Id));
 
@@ -143,8 +146,7 @@ export class RobberyLocation extends Robbery {
 
 			await Notification.RobAgain(this.Attacker);
 
-			this.Container.Channel
-				.setDescription(`${s.youRobbed(formatMoney(this.MoneyRobbed, this.Attacker.Language), this.Location.Description[this.Attacker.Language])} ${EmoteString.Robbery}`);
+			this.Container.Channel.changeTextFromSectionId(50, `${s.youRobbed(formatMoney(this.MoneyRobbed, this.Attacker.Language), this.Location.Description[this.Attacker.Language])} ${EmoteString.Robbery}`);
 
 			Log.Success(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) successfully robbed location ${this.Location.Description[Language.English]} (ID: ${this.Location.Id}) and got ${formatMoney(this.MoneyRobbed, Language.English)}.`);
 		}
@@ -158,25 +160,20 @@ export class RobberyLocation extends Robbery {
 			await Notification.Free(this.Attacker);
 
 			this.Container.Channel
-				.setColor(CrColors.Police)
-				.setDescription(`${s.youFailed}! ${EmoteString.Police}
+				.setAccentColor(CrColors.Police)
+				.changeTextFromSectionId(50, `${s.youFailed}! ${EmoteString.Police}
 -# ${s.prisonTime(this.Attacker.Prison.Time)}`);
 
 			Log.Success(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) failed to rob location ${this.Location.Description[Language.English]} (ID: ${this.Location.Id}).`);
 		}
 
 		this.Container.Channel
-			.setAuthor({
-				name: s.finishedRobberyAttacker(this.Success),
-				iconURL: this.Location.ImageUrl,
-			})
-			.setUserFooter({
-				nickname: this.Attacker.Nickname,
-				image: interaction.user.avatarURL(),
-				text: formatMoney(this.Attacker.Money, this.Attacker.Language),
-			});
+			.changeTextFromSectionId(1, `${EmoteString.Robbery} ${s.finishedRobberyAttacker(this.Success)}`)
+			.changeFooterText(formatMoney(this.Attacker.Money, this.Attacker.Language));
 
-		await replyInteraction(interaction, { embeds: [this.Container.Channel], components: [] });
+		await replyInteraction(interaction, {
+			components: [this.Container.Channel],
+		});
 
 		this.Attacker.Robbery.IsRobbingLocationId = null;
 		await this.Attacker.Update();

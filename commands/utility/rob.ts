@@ -66,7 +66,10 @@ module.exports = {
 			canUserRob = false;
 		}
 
+
 		if (!nameOrId) {
+			let robLocationStarted = false;
+
 			const container = new CustomContainerBuilder()
 				.setUser(user)
 				.setAccentColor(CrColors.Robbery)
@@ -147,11 +150,15 @@ module.exports = {
 					});
 				}
 
+				robLocationStarted = true;
+
 				await robbery.StartRobbery(interaction);
 			});
 
 			collector?.on("end", async () => {
-				await disableButtons(interaction, container);
+				if (!robLocationStarted) {
+					await disableButtons(interaction, container);
+				}
 			});
 
 			return;
