@@ -47,7 +47,7 @@ export class UserBundle {
 	}
 
 	static async HasBundle(userId: string, bundleId: BundleId) {
-		if (!userId || !bundleId) {
+		if (!userId || bundleId === null) {
 			Log.Warning(`Cannot check if user has bundle without userId and bundleId.`);
 			return false;
 		}

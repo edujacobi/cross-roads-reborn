@@ -97,8 +97,11 @@ module.exports = {
 			// separate bundles in different arrays with length = 5
 			const bundlesChunks = [];
 			const bundleList = getSkinBundleList();
-			for (let i = 0; i < bundleList.length; i += 5) {
-				bundlesChunks.push(bundleList.slice(i, i + 5));
+			const userOwnedBundles = bundleList.filter(bundle => bundle.Id === BundleId.Default || userBundles.some(ub => ub.BundleId === bundle.Id));
+			for (let i = 0; i < userOwnedBundles.length; i += 5) {
+				if (userOwnedBundles[i]) {
+					bundlesChunks.push(userOwnedBundles.slice(i, i + 5));
+				}
 			}
 
 			for (const chunk of bundlesChunks) {
