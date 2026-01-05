@@ -43,7 +43,8 @@ module.exports = {
 		const userHasBundles = itemsWithSkins.length > 0;
 
 		function addHeader(container = new CustomContainerBuilder()) {
-			container.setUser(user)
+			container
+				.setUser(user)
 				.setAccentColor(CrColors.Default)
 				.addTexts([
 					`# Skins`,

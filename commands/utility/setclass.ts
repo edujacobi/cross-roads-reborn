@@ -2,11 +2,12 @@
 	ChatInputCommandInteraction,
 	Colors,
 	Locale,
+	MessageFlags,
 	SlashCommandBuilder,
 	SlashCommandIntegerOption,
 } from "discord.js";
 import { replyInteraction } from "../../utils/logic";
-import { defaultEmbed } from "../../utils/ui";
+import { defaultComponent } from "../../utils/ui";
 import { User } from "../../models/User";
 import { Language } from "../../models/Language";
 import { ClassId, ClassList } from "../../interfaces/Classes";
@@ -29,43 +30,43 @@ module.exports = {
 						name: ClassList[ClassId.Thief].Description[Language.English],
 						value: ClassId.Thief,
 						name_localizations: {
-							[Locale.PortugueseBR]: ClassList[ClassId.Thief].Description[Language.Portuguese]
-						}
+							[Locale.PortugueseBR]: ClassList[ClassId.Thief].Description[Language.Portuguese],
+						},
 					},
 					{
 						name: ClassList[ClassId.Assassin].Description[Language.English],
 						value: ClassId.Assassin,
 						name_localizations: {
-							[Locale.PortugueseBR]: ClassList[ClassId.Assassin].Description[Language.Portuguese]
-						}
+							[Locale.PortugueseBR]: ClassList[ClassId.Assassin].Description[Language.Portuguese],
+						},
 					},
 					{
 						name: ClassList[ClassId.Entrepreneur].Description[Language.English],
 						value: ClassId.Entrepreneur,
 						name_localizations: {
-							[Locale.PortugueseBR]: ClassList[ClassId.Entrepreneur].Description[Language.Portuguese]
-						}
+							[Locale.PortugueseBR]: ClassList[ClassId.Entrepreneur].Description[Language.Portuguese],
+						},
 					},
 					{
 						name: ClassList[ClassId.Hobo].Description[Language.English],
 						value: ClassId.Hobo,
 						name_localizations: {
-							[Locale.PortugueseBR]: ClassList[ClassId.Hobo].Description[Language.Portuguese]
-						}
+							[Locale.PortugueseBR]: ClassList[ClassId.Hobo].Description[Language.Portuguese],
+						},
 					},
 					{
 						name: ClassList[ClassId.Mafioso].Description[Language.English],
 						value: ClassId.Mafioso,
 						name_localizations: {
-							[Locale.PortugueseBR]: ClassList[ClassId.Mafioso].Description[Language.Portuguese]
-						}
+							[Locale.PortugueseBR]: ClassList[ClassId.Mafioso].Description[Language.Portuguese],
+						},
 					},
 					{
 						name: ClassList[ClassId.Attorney].Description[Language.English],
 						value: ClassId.Attorney,
 						name_localizations: {
-							[Locale.PortugueseBR]: ClassList[ClassId.Attorney].Description[Language.Portuguese]
-						}
+							[Locale.PortugueseBR]: ClassList[ClassId.Attorney].Description[Language.Portuguese],
+						},
 					},
 				]),
 		),
@@ -81,15 +82,17 @@ module.exports = {
 
 		const description = s.classChanged(user.Nickname, oldClass, newClass);
 
-		const embed = defaultEmbed({
-			nickname: user.Nickname,
-			interaction,
+		const container = defaultComponent({
+			user,
 			thumbnail: interaction.user.avatarURL() ?? undefined,
 			color: Colors.Green,
 			description,
 		});
 
-		await replyInteraction(interaction, { embeds: [embed] });
+		await replyInteraction(interaction, {
+			components: [container],
+			flags: MessageFlags.IsComponentsV2,
+		});
 	},
 };
 

@@ -5,11 +5,11 @@ import { getLocaleFromLanguage, Language } from "./Language";
 import { UserItems } from "../database/UserItems";
 import { addHours } from "date-fns/addHours";
 import { Op } from "sequelize";
-import { getItemList, ItemList, Items, ItemType, UserItem } from "../interfaces/Items";
+import { ItemList, Items, ItemType, UserItem } from "../interfaces/Items";
 import { JobId, JobList } from "../interfaces/Jobs";
 import { Notification, NotificationType } from "./Notification";
 import { formatDate, formatMoney, showTime } from "../utils/ui";
-import { EmoteString } from "../utils/emotes";
+import { EmoteId, EmoteString } from "../utils/emotes";
 import { ClassId, ClassList } from "../interfaces/Classes";
 import { LocationId, LocationList } from "../interfaces/Locations";
 import { ScavengeId, ScavengeList } from "../interfaces/Scavenge";
@@ -118,6 +118,7 @@ export class User {
 		SimpleEmote: "",
 		Complex: "",
 		ComplexUI: "",
+		EmoteId: "",
 	};
 	BestGun: Items | null = null;
 	Alms = {
@@ -721,6 +722,7 @@ export class User {
 			SimpleEmote: `${EmoteString.Idle} ${s.idling}`,
 			Complex: `${EmoteString.Idle} ${s.idling}`,
 			ComplexUI: s.idling,
+			EmoteId: EmoteId.Lazy,
 		};
 
 		if (this.Job.Id !== null) {
@@ -730,6 +732,7 @@ export class User {
 				SimpleEmote: `${EmoteString.Jobs} ${s.workingSimple}`,
 				Complex: `${EmoteString.Jobs} ${s.workingComplex(JobList[this.Job.Id].Description[this.Language], this.Job.EndsIn)}`,
 				ComplexUI: s.workingComplexUI(JobList[this.Job.Id].Description[this.Language], this.Job.EndsIn),
+				EmoteId: EmoteId.Jobs,
 			};
 		}
 		if (this.Robbery.IsRobbingId) {
@@ -740,6 +743,7 @@ export class User {
 				SimpleEmote: `${EmoteString.Robbery} ${s.robbing}`,
 				Complex: `${EmoteString.Robbery} ${s.robbing} ${user!.nickname}`,
 				ComplexUI: `${s.robbing} ${user!.nickname}`,
+				EmoteId: EmoteId.Robbery,
 			};
 		}
 		if (this.Robbery.IsRobbingLocationId !== null) {
@@ -750,6 +754,7 @@ export class User {
 				SimpleEmote: `${EmoteString.Robbery} ${s.robbing}`,
 				Complex: `${EmoteString.Robbery} ${s.robbing} ${location.Description[this.Language]}`,
 				ComplexUI: `${s.robbing} ${location.Description[this.Language]}`,
+				EmoteId: EmoteId.Robbery,
 			};
 		}
 		if (this.Robbery.IsBeingRobbedById) {
@@ -760,6 +765,7 @@ export class User {
 				SimpleEmote: `${EmoteString.Robbery} ${s.beingRobbedSimple}`,
 				Complex: `${EmoteString.Robbery} ${s.beingRobbedComplex} ${user!.nickname}`,
 				ComplexUI: `${s.beingRobbedComplex} ${user!.nickname}`,
+				EmoteId: EmoteId.Robbery,
 			};
 		}
 		if (this.BeatUp.IsBeatingId) {
@@ -770,6 +776,7 @@ export class User {
 				SimpleEmote: `${EmoteString.Beat} ${s.beating}`,
 				Complex: `${EmoteString.Beat} ${s.beating} ${user!.nickname}`,
 				ComplexUI: `${s.beating} ${user!.nickname}`,
+				EmoteId: EmoteId.Beat,
 			};
 		}
 		if (this.BeatUp.IsBeingBeatUpById) {
@@ -780,6 +787,7 @@ export class User {
 				SimpleEmote: `${EmoteString.Beat} ${s.beingBeatedUpSimple}`,
 				Complex: `${EmoteString.Beat} ${s.beingBeatedUpComplex} ${user!.nickname}`,
 				ComplexUI: `${s.beingBeatedUpComplex} ${user!.nickname}`,
+				EmoteId: EmoteId.Beat,
 			};
 		}
 		if (this.IsInPrison()) {
@@ -792,6 +800,7 @@ export class User {
 					locale: getLocaleFromLanguage(this.Language),
 					includeSeconds: true,
 				})}`,
+				EmoteId: EmoteId.Prison,
 			};
 		}
 		if (this.IsInHospital()) {
@@ -804,6 +813,7 @@ export class User {
 					locale: getLocaleFromLanguage(this.Language),
 					includeSeconds: true,
 				})}`,
+				EmoteId: EmoteId.Hospital,
 			};
 		}
 		if (this.IsInPrison() && this.IsInHospital()) {
@@ -813,6 +823,7 @@ export class User {
 				SimpleEmote: s.imprisonedAndHospitalSimpleEmote,
 				Complex: s.imprisonedAndHospitalComplex(this.Prison.Time, this.Hospital.Time),
 				ComplexUI: s.imprisonedAndHospitalComplexUI(this.Prison.Time, this.Hospital.Time),
+				EmoteId: EmoteId.Prison,
 			};
 		}
 		if (this.IsScavenging()) {
@@ -822,6 +833,7 @@ export class User {
 				SimpleEmote: `${EmoteString.Scavenge} ${s.scavenging}`,
 				Complex: `${EmoteString.Scavenge} ${s.scavenging} ${ScavengeList[this.Scavenge.IsScavengingId!].Emote.String} ${ScavengeList[this.Scavenge.IsScavengingId!].Description[this.Language]}`,
 				ComplexUI: `${s.scavenging} ${ScavengeList[this.Scavenge.IsScavengingId!].Description[this.Language]}`,
+				EmoteId: EmoteId.Scavenge,
 			};
 		}
 		if (this.IsWanted()) {
@@ -834,6 +846,7 @@ export class User {
 					locale: getLocaleFromLanguage(this.Language),
 					includeSeconds: true,
 				})}`,
+				EmoteId: this.Situation.EmoteId,
 			};
 		}
 	}

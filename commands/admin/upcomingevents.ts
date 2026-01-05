@@ -1,8 +1,8 @@
-import { ChatInputCommandInteraction, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
 import { Event } from "../../models/Event";
 import { replyInteraction } from "../../utils/logic";
-import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
 import { CrColors } from "../../utils/colors";
+import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -24,12 +24,17 @@ module.exports = {
 			description += `### \`${event.id}.\` ${Event.GetEventTypeText(event.type)}: ${event.value}\n-# Start: ${event.periodStart}\n-# End: ${event.periodEnd}\n`;
 		});
 
-		const embed = new CustomEmbedBuilder()
-			.setTitle("🔸 Upcoming Events")
-			.setColor(CrColors.Default)
-			.setDescription(description);
+		const container = new CustomContainerBuilder()
+			.setAccentColor(CrColors.Default)
+			.addTexts([
+				"# 🔸 Upcoming Events",
+				description,
+			]);
 
-		await replyInteraction(interaction, { embeds: [embed] });
+		await replyInteraction(interaction, {
+			components: [container],
+			flags: MessageFlags.IsComponentsV2,
+		});
 
 	},
 };

@@ -1,7 +1,10 @@
 ﻿import {
+	ButtonBuilder,
+	ButtonStyle,
 	ChatInputCommandInteraction,
-	Colors,
+	Colors, ComponentEmojiResolvable,
 	Locale,
+	MessageFlags,
 	SlashCommandBuilder,
 	SlashCommandIntegerOption,
 } from "discord.js";
@@ -9,14 +12,14 @@ import { replyInteraction } from "../../utils/logic";
 import { formatMoney } from "../../utils/ui";
 import { Language } from "../../models/Language";
 import { User } from "../../models/User";
-import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
 import { ItemList, ItemType } from "../../interfaces/Items";
-import { EmoteString } from "../../utils/emotes";
+import { EmoteId, EmoteString } from "../../utils/emotes";
 import { UserItems } from "../../database/UserItems";
 import { Op } from "sequelize";
 import { BundleId } from "../../interfaces/Ids";
 import { BundleList } from "../../interfaces/Skins";
-import { CrColors } from "../../utils/colors";
+import { CrColors, GangColor, GangColorId } from "../../utils/colors";
+import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -48,24 +51,29 @@ module.exports = {
 		const itemMapper = {
 			[ItemType.Weapon]: {
 				color: Colors.Red,
+				emoji: GangColor[GangColorId.Red].Emote.Id,
 				type: s.typeWeapon,
 			},
 			[ItemType.Wearable]: {
 				color: Colors.Blue,
+				emoji: GangColor[GangColorId.Blue].Emote.Id,
 				type: s.typeWearable,
 			},
 			[ItemType.Accessory]: {
 				color: Colors.Purple,
+				emoji: GangColor[GangColorId.Purple].Emote.Id,
 				type: s.typeAccessory,
 			},
 			[ItemType.Consumable]: {
 				color: Colors.Green,
+				emoji: GangColor[GangColorId.Green].Emote.Id,
 				type: s.typeConsumable,
 			},
 			[ItemType.BeatUp]: {
 				color: CrColors.BeatUp,
+				emoji: GangColor[GangColorId.Orange].Emote.Id,
 				type: s.typeBeatUp,
-			}
+			},
 		};
 
 		const usersWithItem = await UserItems.count({
@@ -84,36 +92,104 @@ module.exports = {
 			},
 		});
 
-		const itemData: string[][] = [
-			["Id", item.Id.toString()],
-			[s.type, itemMapper[item.Type].type],
-			[s.price, formatMoney(item.Price, language)],
-			[s.modifier, `${EmoteString.Attack}+${item.MoreAttack} ATK ${EmoteString.Defense}+${item.MoreDefense} DEF`],
-			[s.percentRobbed, `${item.MoneyAttack} (+${item.MoreMoneyATK})%`],
-			[s.percentDefended, `${item.MoneyDefense} (+${item.MoreMoneyDEF})%`],
-			[s.special, item.Special.Day ? `☀️ ${s.specialDay}` : item.Special.Night ? `🌙 ${s.specialNight}` : s.no],
-			[`${EmoteString.Shop} ${s.shop}`, item.Shop ? s.yes : s.no],
-			[`${EmoteString.BlackMarket} ${s.blackMarket}`, item.BlackMarket ? s.yes : s.no],
-			[`Skins`, Object.entries(item.Skin).map(([bundleId, skin]) => `- ${skin.String} ${BundleList[Number(bundleId)].Description[language]}`).join("\n")],
-		];
+		interface buttonParams {
+			label: string;
+			customId: string;
+			style?: ButtonStyle;
+			emoji?: ComponentEmojiResolvable;
+		}
 
-		const embed = new CustomEmbedBuilder()
-			.setColor(itemMapper[item.Type].color)
-			.setDescription(`# ${item.Skin[BundleId.Default].String} ${item.Description[language]}
-## ${EmoteString.Attack}${item.Attack} ATK ${EmoteString.Defense}${item.Defense} DEF\n`,
+		function button(params: buttonParams) {
+			const btn = new ButtonBuilder()
+				.setLabel(params.label)
+				.setDisabled(true)
+				.setCustomId(params.customId)
+				.setStyle(params.style ?? ButtonStyle.Secondary);
+
+			if (params.emoji) {
+				btn.setEmoji(params.emoji);
+			}
+
+			return btn;
+		}
+
+		const container = new CustomContainerBuilder()
+			.setUser(user)
+			.setAccentColor(itemMapper[item.Type].color)
+			.addTexts([
+				`# ${item.Skin[BundleId.Default].String} ${item.Description[language]}`,
+				`## ${EmoteString.Attack}${item.Attack} ATK ${EmoteString.Defense}${item.Defense} DEF`,
+			])
+			.addLargeSeparator()
+			.addActionRowComponents(row => row
+				.addComponents(
+					button({
+						label: `${s.type}: ${itemMapper[item.Type].type}`,
+						customId: "type",
+						emoji: itemMapper[item.Type].emoji,
+					}),
+					button({
+						label: `${s.price}: ${formatMoney(item.Price, language)}`,
+						customId: "price",
+					}),
+					button({
+						label: `+${item.MoreAttack} ATK `,
+						emoji: EmoteId.Attack,
+						customId: "modifierAttack",
+					}),
+					button({
+						label: `+${item.MoreDefense} DEF `,
+						emoji: EmoteId.Defense,
+						customId: "modifierDefense",
+					}),
+				),
 			)
-			.setFields(itemData.map(([name, value]) => ({
-				name,
-				value: `-# ${value}`,
-				inline: true,
-			})))
-			.setUserFooter({
-				nickname: user.Nickname,
-				image: interaction.user.avatarURL(),
-				text: `${s.usersWithItem}: ${usersWithItem}`,
+			.addActionRowComponents(row2 => row2
+				.addComponents(
+					button({
+						label: `${s.percentRobbed} ${item.MoneyAttack} (+${item.MoreMoneyATK})%`,
+						customId: "percentRobbed",
+					}),
+					button({
+						label: `${s.percentDefended} ${item.MoneyDefense} (+${item.MoreMoneyDEF})%`,
+						customId: "percentDefended",
+					}),
+					button({
+						label: `${s.special}: ${item.Special.Day ? `☀️ ${s.specialDay}` : item.Special.Night ? `🌙 ${s.specialNight}` : s.no}`,
+						customId: "special",
+						style: item.Special.Day || item.Special.Night ? ButtonStyle.Primary : ButtonStyle.Secondary,
+					}),
+				),
+			)
+			.addActionRowComponents(row3 => row3
+				.addComponents(
+					button({
+						label: `${s.shop}: ${item.Shop ? s.yes : s.no}`,
+						emoji: EmoteId.Shop,
+						customId: "shop",
+						style: item.Shop ? ButtonStyle.Success : ButtonStyle.Secondary,
+					}),
+					button({
+						label: `${s.blackMarket}: ${item.BlackMarket ? s.yes : s.no}`,
+						emoji: EmoteId.BlackMarket,
+						customId: "blackmarket",
+						style: item.BlackMarket ? ButtonStyle.Success : ButtonStyle.Secondary,
+					}),
+				),
+			)
+			.addLargeSeparator()
+			.addTexts([
+				"### Skins",
+				Object.entries(item.Skin).map(([bundleId, skin]) => `- ${skin.String} ${BundleList[Number(bundleId)].Description[language]}`).join("\n"),
+			])
+			.addFooter({
+				text: `Id: ${item.Id.toString()} • ${s.usersWithItem}: ${usersWithItem}`,
 			});
 
-		await replyInteraction(interaction, { embeds: [embed] });
+		await replyInteraction(interaction, {
+			components: [container],
+			flags: MessageFlags.IsComponentsV2,
+		});
 	},
 };
 
@@ -127,8 +203,8 @@ const Strings = {
 		type: "Type",
 		price: "Price",
 		modifier: "Modifiers",
-		percentRobbed: "Rob $ATK$",
-		percentDefended: "Defend $DEF$",
+		percentRobbed: "Rob",
+		percentDefended: "Defend",
 		special: "Special",
 		specialDay: "Only day",
 		specialNight: "Only night",
@@ -148,8 +224,8 @@ const Strings = {
 		type: "Tipo",
 		price: "Preço",
 		modifier: "Modificadores",
-		percentRobbed: "Rouba $ATK$",
-		percentDefended: "Defende $DEF$",
+		percentRobbed: "Rouba",
+		percentDefended: "Defende",
 		special: "Especial",
 		specialDay: "Somente dia",
 		specialNight: "Somente noite",
@@ -168,8 +244,8 @@ const Strings = {
 		type: "Tipo",
 		price: "Precio",
 		modifier: "Modificadores",
-		percentRobbed: "Roba $ATK$",
-		percentDefended: "Defende $DEF$",
+		percentRobbed: "Roba",
+		percentDefended: "Defende",
 		special: "Especial",
 		specialDay: "Solo día",
 		specialNight: "Solo noche",

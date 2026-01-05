@@ -4,9 +4,10 @@
 	ButtonStyle,
 	ChatInputCommandInteraction,
 	Locale,
+	MessageFlags,
 	SlashCommandBuilder,
 } from "discord.js";
-import { defaultEmbed } from "../../utils/ui";
+import { defaultComponent } from "../../utils/ui";
 import { replyInteraction } from "../../utils/logic";
 import { CrColors } from "../../utils/colors";
 import { User } from "../../models/User";
@@ -23,9 +24,8 @@ module.exports = {
 
 		const s = Strings[language];
 
-		const embed = defaultEmbed({
-			nickname: user.Nickname,
-			interaction,
+		const container = defaultComponent({
+			user,
 			color: CrColors.Default,
 			thumbnail: interaction.client.user.avatarURL({ size: 512 }) ?? undefined,
 			footer: s.footer,
@@ -35,7 +35,7 @@ module.exports = {
 		const buttonInvite = new ButtonBuilder()
 			.setLabel(s.addTo)
 			.setStyle(ButtonStyle.Link)
-			.setURL("https://discord.com/oauth2/authorize?client_id=1348017930251796510&permissions=319488&scope=applications.commands+bot");
+			.setURL(`https://discord.com/oauth2/authorize?client_id=${interaction.client.user.id}&permissions=319488&scope=applications.commands+bot`);
 
 		const buttonServer = new ButtonBuilder()
 			.setLabel(s.join)
@@ -45,7 +45,10 @@ module.exports = {
 		const row = new ActionRowBuilder<ButtonBuilder>()
 			.setComponents([buttonInvite, buttonServer]);
 
-		await replyInteraction(interaction, { embeds: [embed], components: [row] });
+		await replyInteraction(interaction, {
+			components: [container, row],
+			flags: MessageFlags.IsComponentsV2,
+		});
 	},
 };
 

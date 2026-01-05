@@ -12,6 +12,6 @@ module.exports = {
 	async execute(interaction: ChatInputCommandInteraction, user: User) {
 		const scavenge = new Scavenge(user, interaction);
 
-		return await scavenge.GenerateEmbed();
+		return await scavenge.GenerateContainer();
 	},
 };

@@ -1,12 +1,13 @@
 ﻿import {
 	ChatInputCommandInteraction,
 	Locale,
+	MessageFlags,
 	PermissionFlagsBits,
 	SlashCommandBuilder,
 	SlashCommandIntegerOption,
 	SlashCommandStringOption,
 } from "discord.js";
-import { defaultEmbed, formatMoney } from "../../utils/ui";
+import { defaultComponent, formatMoney } from "../../utils/ui";
 import { checkUser, replyInteraction, sendPrivateMessage } from "../../utils/logic";
 import { User } from "../../models/User";
 import { CrColors } from "../../utils/colors";
@@ -66,32 +67,30 @@ module.exports = {
 			return await interaction.reply("Didn't find this user");
 		}
 
+		let description = "";
+
 		if (addOrSet === SetMoneyConfiguration.Add) {
 			target.Money += money;
 			await sendPrivateMessage(userId, `You received ${formatMoney(money, user.Language)}.`, CrColors.Admin);
+			description = `${formatMoney(money, user.Language)} added to user **${target.GetNameWithImage()}**`;
 
-			await replyInteraction(interaction, {
-				embeds: [defaultEmbed({
-					nickname: user.Nickname,
-					color: CrColors.Admin,
-					interaction: interaction,
-					description: `${formatMoney(money, user.Language)} added to user **${target.GetNameWithImage()}** `,
-				})],
-			});
 		}
 		else {
 			target.Money = money;
 			await sendPrivateMessage(userId, `Your money is now ${formatMoney(money, user.Language)}.`, CrColors.Admin);
-
-			await replyInteraction(interaction, {
-				embeds: [defaultEmbed({
-					nickname: user.Nickname,
-					color: CrColors.Admin,
-					interaction: interaction,
-					description: `User **${target.GetNameWithImage()}** now has ${formatMoney(money, user.Language)}`,
-				})],
-			});
+			description = `User **${target.GetNameWithImage()}** now has ${formatMoney(money, user.Language)}`;
 		}
+
+		const container = defaultComponent({
+			user,
+			color: CrColors.Admin,
+			description,
+		});
+
+		await replyInteraction(interaction, {
+			components: [container],
+			flags: MessageFlags.IsComponentsV2,
+		});
 
 		await target.Update();
 	},

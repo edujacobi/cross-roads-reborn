@@ -8,13 +8,13 @@ import {
 	ComponentType,
 	Message,
 	MessageComponentInteraction,
+	MessageFlags,
 	User as DUser,
 } from "discord.js";
 import { getPercent, replyInteraction, sendComplexPrivateMessage } from "../utils/logic";
 import { formatMoney, showTime } from "../utils/ui";
 import { CrColors } from "../utils/colors";
 import { EmoteId, EmoteString } from "../utils/emotes";
-import { CustomEmbedBuilder } from "./CustomEmbedBuilder";
 import { getClient } from "../client";
 import { setTimeout as wait } from "timers/promises";
 import { addHours } from "date-fns/addHours";
@@ -28,6 +28,7 @@ import { JobId, JobList } from "../interfaces/Jobs";
 import { LocationList } from "../interfaces/Locations";
 import { ScavengeId, ScavengeList } from "../interfaces/Scavenge";
 import { BundleId } from "../interfaces/Ids";
+import { CustomContainerBuilder } from "../ui/builders/CustomContainerBuilder";
 
 export enum ClashType {
 	User = 1,
@@ -51,9 +52,9 @@ export class Robbery {
 
 	DiscordUser: DUser | undefined;
 
-	Embed = {
-		Private: new CustomEmbedBuilder().setColor(CrColors.Robbery),
-		Channel: new CustomEmbedBuilder().setColor(CrColors.Robbery),
+	Container = {
+		Private: new CustomContainerBuilder().setAccentColor(CrColors.Robbery),
+		Channel: new CustomContainerBuilder().setAccentColor(CrColors.Robbery),
 	};
 
 	constructor(attacker: User, defender: User) {
@@ -210,21 +211,29 @@ export class Robbery {
 
 		const usedGun = `${this.Attacker.BestGun?.Skin[BundleId.Default].String} ${this.Attacker.BestGun?.Description[this.Defender.Language]}`;
 
-		this.Embed.Private
-			.setAuthor({
-				name: sD.hands,
-				iconURL: interaction.user.avatarURL() ?? undefined,
-			})
-			.setDescription(`**${this.Attacker.GetNameWithImage()}** ${sD.tryingToRobYou} **${usedGun}** ${EmoteString.Robbery}
-
--# ${sD.decide}:
-### ${EmoteString.React} **${sD.react}**
-${sD.reactDescription(this.DefenderTimeInHospital)}
-### ${EmoteString.Police} **${sD.callPolice}**
-${sD.callPoliceDescription(this.AttackerAditionalTimeCallPolice)}
-### 🏳️ **${sD.doNothing}**
-${sD.doNothingDescription}`)
-			.setFooter({ text: sD.secondsToRespond });
+		this.Container.Private
+			.addTexts([
+				`${EmoteString.Robbery} ${this.Attacker.Nickname} • ${sD.hands}`,
+			])
+			.addLargeSeparator()
+			.addTexts([
+				`**${this.Attacker.GetNameWithImage()}** ${sD.tryingToRobYou} **${usedGun}**`,
+				``,
+				`-# ${sD.decide}:`,
+				`### ${EmoteString.React} **${sD.react}**`,
+				`${sD.reactDescription(this.DefenderTimeInHospital)}`,
+			])
+			.addLargeSeparator()
+			.addTexts([
+				`### ${EmoteString.Police} **${sD.callPolice}**`,
+				`${sD.callPoliceDescription(this.AttackerAditionalTimeCallPolice)}`,
+			])
+			.addLargeSeparator()
+			.addTexts([
+				`### 🏳️ **${sD.doNothing}**`,
+				`${sD.doNothingDescription}`,
+			])
+			.addLargeSeparator();
 
 		const buttonReact = new ButtonBuilder()
 			.setCustomId("react")
@@ -253,24 +262,27 @@ ${sD.doNothingDescription}`)
 		const defenderRow = new ActionRowBuilder<ButtonBuilder>()
 			.addComponents([buttonReact, buttonPolice, buttonNothing]);
 
+		this.Container.Private
+			.addActionRowComponents(defenderRow)
+			.addFooter({ text: sD.secondsToRespond });
+
 		const defenderMessage = await sendComplexPrivateMessage(this.DiscordUser?.id, {
-			embeds: [this.Embed.Private],
-			components: [defenderRow],
+			components: [this.Container.Private],
+			flags: MessageFlags.IsComponentsV2,
 		});
 
-		this.Embed.Channel
-			.setAuthor({
-				name: sA.robberyInProgress,
-				iconURL: "https://media.discordapp.net/attachments/691019843159326757/791444366727708672/roubar_20201223201323.png",
-			})
-			.setUserFooter({
-				nickname: this.Attacker.Nickname,
-				image: interaction.user.avatarURL(),
+		this.Container.Channel
+			.setUser(this.Attacker)
+			.addTexts([
+				`${EmoteString.Robbery} ${sA.robberyInProgress}`,
+			], 50)
+			.addFooter({
 				text: `${sA.tryingToRob} ${this.Defender.Nickname}`,
 			});
 
 		await replyInteraction(interaction, {
-			embeds: [this.Embed.Channel],
+			components: [this.Container.Channel],
+			flags: MessageFlags.IsComponentsV2,
 		});
 
 		const collectorPrivate = defenderMessage?.createMessageComponentCollector({
@@ -308,13 +320,25 @@ ${sD.doNothingDescription}`)
 				descriptionChannel = `### 🏳️ ${this.Defender.GetNameWithImage()} ${sA.isDoingNothing}!`;
 			}
 
+			this.Container.Private = new CustomContainerBuilder()
+				.setAccentColor(CrColors.Robbery)
+				.addTexts([
+					`${EmoteString.Robbery} ${this.Attacker.Nickname} • ${sD.hands}`,
+				], 1)
+				.addLargeSeparator()
+				.addTexts([
+					descriptionPrivate,
+				], 50)
+				.addFooter({ text: sD.secondsToRespond });
+
+			this.Container.Channel.changeTextFromSectionId(50, descriptionChannel);
+
 			defenderMessage?.edit({
-				embeds: [this.Embed.Private
-					.setDescription(descriptionPrivate)],
-				components: [],
+				components: [this.Container.Private],
 			});
+
 			await replyInteraction(interaction, {
-				embeds: [this.Embed.Channel.setDescription(descriptionChannel)],
+				components: [this.Container.Channel],
 			});
 		});
 
@@ -364,13 +388,10 @@ ${sD.doNothingDescription}`)
 
 			await Notification.RobAgain(this.Attacker);
 
-			this.Embed.Channel
-				.setDescription(`${sA.youRobbed(formatMoney(this.MoneyRobbed, this.Attacker.Language), this.Defender.Nickname)} ${EmoteString.Robbery}${willBeBeatenUp ? `
-${sA.beatenUp(this.Defender.Hospital.Time)} ${EmoteString.Hospital}` : ""}`);
-
-			this.Embed.Private
-				.setDescription(`${sD.wereRobbed(formatMoney(this.MoneyRobbed, this.Defender.Language), this.Attacker.Nickname)} ${EmoteString.Robbery}${willBeBeatenUp ? `
+			this.Container.Private.changeTextFromSectionId(50, `${sD.wereRobbed(formatMoney(this.MoneyRobbed, this.Defender.Language), this.Attacker.Nickname)} ${EmoteString.Robbery}${willBeBeatenUp ? `
 ${sD.beatedUp(this.Defender.Hospital.Time)} ${EmoteString.Hospital}` : ""}`);
+			this.Container.Channel.changeTextFromSectionId(50, `${sA.youRobbed(formatMoney(this.MoneyRobbed, this.Attacker.Language), this.Defender.Nickname)} ${EmoteString.Robbery}${willBeBeatenUp ? `
+${sA.beatenUp(this.Defender.Hospital.Time)} ${EmoteString.Hospital}` : ""}`);
 
 			Log.Success(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) successfully robbed user ${this.Defender.Nickname} (ID: ${this.Defender.Id}) and got ${formatMoney(this.MoneyRobbed, Language.English)}. ${willBeBeatenUp ? "The defender was beaten up." : ""}`);
 		}
@@ -383,41 +404,31 @@ ${sD.beatedUp(this.Defender.Hospital.Time)} ${EmoteString.Hospital}` : ""}`);
 
 			await Notification.Free(this.Attacker);
 
-			this.Embed.Channel
-				.setColor(CrColors.Police)
-				.setDescription(`${sA.youFailed}! ${EmoteString.Police}
--# ${sA.prisonTime(this.Attacker.Prison.Time)}`);
-
-			this.Embed.Private
-				.setColor(CrColors.Police)
-				.setDescription(`**${this.Attacker.GetNameWithImage()}** ${sD.robFailed} ${EmoteString.Police}
+			this.Container.Private
+				.setAccentColor(CrColors.Police)
+				.changeTextFromSectionId(50, `**${this.Attacker.GetNameWithImage()}** ${sD.robFailed} ${EmoteString.Police}
 -# ${sD.prisonUntil(this.Attacker.Prison.Time)}!`);
+
+			this.Container.Channel
+				.setAccentColor(CrColors.Police)
+				.changeTextFromSectionId(50, `${sA.youFailed}! ${EmoteString.Police}
+-# ${sA.prisonTime(this.Attacker.Prison.Time)}`);
 
 			Log.Success(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) failed to rob user ${this.Defender.Nickname} (ID: ${this.Defender.Id}).`);
 		}
 
-		this.Embed.Channel
-			.setAuthor({
-				name: sA.finishedRobberyAttacker(this.Success),
-				iconURL: this.DiscordUser?.avatarURL() ?? undefined,
-			})
-			.setUserFooter({
-				nickname: this.Attacker.Nickname,
-				image: interaction.user.avatarURL(),
-				text: formatMoney(this.Attacker.Money, this.Attacker.Language),
-			});
+		this.Container.Channel
+			.changeTextFromSectionId(1, `${EmoteString.Robbery} ${sA.finishedRobberyAttacker(this.Success)}`)
+			.changeFooterText(formatMoney(this.Attacker.Money, this.Attacker.Language));
 
-		await replyInteraction(interaction, { embeds: [this.Embed.Channel], components: [] });
+		await replyInteraction(interaction, { components: [this.Container.Channel] });
 
 		if (privateMessage) {
-			this.Embed.Private
-				.setAuthor({
-					name: sD.finishedRobberyDefender,
-					iconURL: interaction.user.avatarURL() ?? undefined,
-				})
-				.setFooter({ text: formatMoney(this.Defender.Money, this.Defender.Language) });
+			this.Container.Private
+				.changeTextFromSectionId(1, `${EmoteString.Robbery} ${sD.finishedRobberyDefender}`)
+				.changeFooterText(formatMoney(this.Defender.Money, this.Defender.Language));
 
-			await privateMessage.edit({ embeds: [this.Embed.Private], components: [] });
+			await privateMessage.edit({ components: [this.Container.Private] });
 		}
 
 		this.Attacker.Robbery.IsRobbingId = null;

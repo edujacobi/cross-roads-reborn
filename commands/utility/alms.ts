@@ -1,9 +1,8 @@
-﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+﻿import { ChatInputCommandInteraction, Locale, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { replyInteraction, searchUser, sendPrivateMessage } from "../../utils/logic";
 import { User } from "../../models/User";
 import { Language } from "../../models/Language";
-import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
-import { defaultEmbed, formatMoney } from "../../utils/ui";
+import { defaultComponent, formatMoney } from "../../utils/ui";
 import { EmoteString } from "../../utils/emotes";
 import { CrColors } from "../../utils/colors";
 import { Alms } from "../../models/Alms";
@@ -38,15 +37,16 @@ module.exports = {
 		const { canGive, message } = alms.CanGiveAlms();
 
 		if (!canGive) {
+			const container = defaultComponent({
+				user,
+				color: CrColors.Default,
+				description: message,
+				footer: formatMoney(user.Money, language),
+			});
+
 			return await replyInteraction(interaction, {
-				embeds: [defaultEmbed({
-					nickname: user.Nickname,
-					interaction,
-					color: CrColors.Default,
-					description: message,
-					footer: formatMoney(user.Money, language),
-				})],
-				components: [],
+				components: [container],
+				flags: MessageFlags.IsComponentsV2,
 			});
 		}
 
@@ -56,17 +56,16 @@ module.exports = {
 
 		await sendPrivateMessage(target.Id, privateMessage, CrColors.Default);
 
-		const embed = new CustomEmbedBuilder()
-			.setDescription(`${sG.donated(alms.Value)} **${target.GetNameWithImage()}** ${EmoteString.Alms}`)
-			.setColor(CrColors.Default)
-			.setUserFooter({
-				nickname: user.Nickname,
-				image: interaction.user.avatarURL(),
-				text: formatMoney(user.Money, language),
-			});
+		const container = defaultComponent({
+			user,
+			color: CrColors.Default,
+			description: `${sG.donated(alms.Value)} **${target.GetNameWithImage()}** ${EmoteString.Alms}`,
+			footer: formatMoney(user.Money, language),
+		});
 
-		return replyInteraction(interaction, {
-			embeds: [embed],
+		return await replyInteraction(interaction, {
+			components: [container],
+			flags: MessageFlags.IsComponentsV2,
 		});
 	},
 };

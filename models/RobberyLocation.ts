@@ -108,7 +108,7 @@ export class RobberyLocation extends Robbery {
 
 		Log.Info(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) started a robbery to location ${this.Location.Description[Language.English]} (ID: ${this.Location.Id}).`);
 
-		this.Embed.Channel
+		this.Container.Channel
 			.setAuthor({
 				name: s.robberyInProgress,
 				iconURL: "https://media.discordapp.net/attachments/691019843159326757/791444366727708672/roubar_20201223201323.png",
@@ -119,7 +119,7 @@ export class RobberyLocation extends Robbery {
 				text: `${s.tryingToRob} ${this.Location.Description[this.Attacker.Language]}`,
 			});
 
-		await replyInteraction(interaction, { embeds: [this.Embed.Channel], components: [] });
+		await replyInteraction(interaction, { embeds: [this.Container.Channel], components: [] });
 
 		await wait(10_000 + (5_000 * this.Location.Id));
 
@@ -143,7 +143,7 @@ export class RobberyLocation extends Robbery {
 
 			await Notification.RobAgain(this.Attacker);
 
-			this.Embed.Channel
+			this.Container.Channel
 				.setDescription(`${s.youRobbed(formatMoney(this.MoneyRobbed, this.Attacker.Language), this.Location.Description[this.Attacker.Language])} ${EmoteString.Robbery}`);
 
 			Log.Success(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) successfully robbed location ${this.Location.Description[Language.English]} (ID: ${this.Location.Id}) and got ${formatMoney(this.MoneyRobbed, Language.English)}.`);
@@ -157,7 +157,7 @@ export class RobberyLocation extends Robbery {
 
 			await Notification.Free(this.Attacker);
 
-			this.Embed.Channel
+			this.Container.Channel
 				.setColor(CrColors.Police)
 				.setDescription(`${s.youFailed}! ${EmoteString.Police}
 -# ${s.prisonTime(this.Attacker.Prison.Time)}`);
@@ -165,7 +165,7 @@ export class RobberyLocation extends Robbery {
 			Log.Success(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) failed to rob location ${this.Location.Description[Language.English]} (ID: ${this.Location.Id}).`);
 		}
 
-		this.Embed.Channel
+		this.Container.Channel
 			.setAuthor({
 				name: s.finishedRobberyAttacker(this.Success),
 				iconURL: this.Location.ImageUrl,
@@ -176,7 +176,7 @@ export class RobberyLocation extends Robbery {
 				text: formatMoney(this.Attacker.Money, this.Attacker.Language),
 			});
 
-		await replyInteraction(interaction, { embeds: [this.Embed.Channel], components: [] });
+		await replyInteraction(interaction, { embeds: [this.Container.Channel], components: [] });
 
 		this.Attacker.Robbery.IsRobbingLocationId = null;
 		await this.Attacker.Update();

@@ -1,11 +1,13 @@
-﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+﻿import { ChatInputCommandInteraction, Locale, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { replyInteraction } from "../../utils/logic";
 import path from "node:path";
 import fs from "node:fs";
-import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
 import { Language } from "../../models/Language";
 import { CrColors } from "../../utils/colors";
 import { User } from "../../models/User";
+import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
+
+const environmentFile = process.env.NODE_ENV === "DEV" ? ".ts" : ".js";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -18,7 +20,7 @@ module.exports = {
 
 		const s = Strings[language];
 
-		const commandFiles = fs.readdirSync(__dirname).filter((file: string) => file.endsWith(".js"));
+		const commandFiles = fs.readdirSync(__dirname).filter((file: string) => file.endsWith(environmentFile));
 
 		let text = "";
 		for (const file of commandFiles) {
@@ -34,19 +36,27 @@ module.exports = {
 			}
 		}
 
-		const embed = new CustomEmbedBuilder()
-			.setColor(CrColors.Default)
-			.setTitle(s.title)
-			.setThumbnail(interaction.client.user.avatarURL({ size: 512 }))
-			.setDescription(text)
-			.setUserFooter({
-				nickname: user.Nickname,
-				image: interaction.user.avatarURL(),
-				text: interaction.locale
+		const container = new CustomContainerBuilder()
+			.setUser(user)
+			.setAccentColor(CrColors.Default)
+			.addSectionComponents(section => section
+				.addTextDisplayComponents(
+					title => title
+						.setContent(`# ${s.title}`),
+					description => description
+						.setContent(text),
+				)
+				.setThumbnailAccessory(thumb => thumb
+					.setURL(interaction.client.user.avatarURL({ size: 512 }) ?? ""),
+				),
+			)
+			.addFooter({
+				text: interaction.locale,
 			});
 
 		await replyInteraction(interaction, {
-			embeds: [embed],
+			components: [container],
+			flags: MessageFlags.IsComponentsV2,
 		});
 	},
 };

@@ -1,10 +1,18 @@
-﻿import { ChatInputCommandInteraction, Colors, Locale, SlashCommandBuilder, SlashCommandStringOption } from "discord.js";
+﻿import {
+	ChatInputCommandInteraction,
+	Colors,
+	Locale,
+	MessageFlags,
+	SlashCommandBuilder,
+	SlashCommandStringOption,
+} from "discord.js";
 import { replyInteraction } from "../../utils/logic";
-import { defaultEmbed } from "../../utils/ui";
+import { defaultComponent } from "../../utils/ui";
 import { Users } from "../../database/Users";
 import { User } from "../../models/User";
 import { Language } from "../../models/Language";
 import { Op } from "sequelize";
+import { CrColors } from "../../utils/colors";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -28,34 +36,44 @@ module.exports = {
 		const s = Strings[language];
 
 		if (!/^[A-Za-z]+(?: [A-Za-z]+)*$/.test(newNick)) {
-			return replyInteraction(interaction, {
-				embeds: [defaultEmbed({
-					nickname: s.setting,
-					color: Colors.Red,
-					interaction,
-					description: s.invalidNick(newNick),
-					footer: s.footer,
-				})],
+			const tempUser = new User("0");
+			tempUser.Nickname = s.setting;
+
+			const container = defaultComponent({
+				user: tempUser,
+				color: Colors.Red,
+				description: s.invalidNick(newNick),
+				footer: s.footer,
+			});
+
+			return await replyInteraction(interaction, {
+				components: [container],
+				flags: MessageFlags.IsComponentsV2,
 			});
 		}
 
 		const nickExists = await Users.findOne({
 			where: {
 				nickname: {
-					[Op.like]: newNick
+					[Op.like]: newNick,
 				},
 			},
 		});
 
 		if (nickExists) {
-			return replyInteraction(interaction, {
-				embeds: [defaultEmbed({
-					nickname: s.setting,
-					color: Colors.Red,
-					interaction,
-					description: s.nickInUse(newNick, nickExists.id),
-					footer: s.footer,
-				})],
+			const tempUser = new User("0");
+			tempUser.Nickname = s.setting;
+
+			const container = defaultComponent({
+				user: tempUser,
+				color: Colors.Red,
+				description: s.nickInUse(newNick, nickExists.id),
+				footer: s.footer,
+			});
+
+			return await replyInteraction(interaction, {
+				components: [container],
+				flags: MessageFlags.IsComponentsV2,
 			});
 		}
 
@@ -67,15 +85,17 @@ module.exports = {
 
 		const description = newUser ? s.newPlayer(newNick) : s.nickChanged(oldNick, newNick);
 
-		const embed = defaultEmbed({
-			nickname: user.Nickname,
-			interaction: interaction,
-			thumbnail: interaction.user.avatarURL() ?? undefined,
-			color: Colors.Green,
+		const container = defaultComponent({
+			user,
+			color: CrColors.Default,
 			description,
+			thumbnail: interaction.user.avatarURL() ?? undefined,
 		});
 
-		await replyInteraction(interaction, { embeds: [embed] });
+		await replyInteraction(interaction, {
+			components: [container],
+			flags: MessageFlags.IsComponentsV2,
+		});
 	},
 };
 

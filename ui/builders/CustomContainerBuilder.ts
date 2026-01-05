@@ -34,9 +34,16 @@ export class CustomContainerBuilder extends ContainerBuilder {
 		return `-# ${content}`;
 	}
 
-	addTexts(texts: string[]) {
-		this.addTextDisplayComponents(text => text
-			.setContent(texts.join("\n")));
+	addTexts(texts: string[], id?: number) {
+		this.addTextDisplayComponents(
+			text => {
+				text.setContent(texts.join("\n"));
+				if (id) {
+					text.setId(id);
+				}
+				return text;
+			},
+		);
 
 		return this;
 	}

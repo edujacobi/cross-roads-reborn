@@ -3,14 +3,14 @@ import { EmoteString } from "../utils/emotes";
 import { showTime } from "../utils/ui";
 import { JobList } from "../interfaces/Jobs";
 import { globalStrings, Language } from "./Language";
-import { ChatInputCommandInteraction } from "discord.js";
-import { CustomEmbedBuilder } from "./CustomEmbedBuilder";
+import { ChatInputCommandInteraction, MessageFlags } from "discord.js";
 import { CrColors } from "../utils/colors";
 import { replyInteraction } from "../utils/logic";
 import { ScavengeId, ScavengeList } from "../interfaces/Scavenge";
 import { Users } from "../database/Users";
 import { ClassList } from "../interfaces/Classes";
 import { LocationList } from "../interfaces/Locations";
+import { CustomContainerBuilder } from "../ui/builders/CustomContainerBuilder";
 
 export class Casino {
 	User: User;
@@ -22,16 +22,27 @@ export class Casino {
 	async Start(interaction: ChatInputCommandInteraction) {
 		const s = Strings[this.User.Language];
 
-		const embed = new CustomEmbedBuilder()
-			.setThumbnail("https://media.discordapp.net/attachments/1233604589064818808/1337969966821146695/radar_mafiaCasino.png")
-			.setDescription(s.description)
-			.setColor(CrColors.Casino)
-			.setUserFooter({
-				nickname: this.User.Nickname,
-				image: interaction.user.avatarURL(),
-			});
+		const container = new CustomContainerBuilder()
+			.setUser(this.User)
+			.setAccentColor(CrColors.Casino)
+			.addSectionComponents(section => section
+				.addTextDisplayComponents(header => header
+					.setContent(s.description),
+				)
+				.setThumbnailAccessory(thumb => thumb
+					.setURL("https://media.discordapp.net/attachments/1233604589064818808/1337969966821146695/radar_mafiaCasino.png"),
+				),
+			)
+			.addLargeSeparator()
+			.addTexts([s.headsTails])
+			.addLargeSeparator()
+			.addTexts([s.horseRace])
+			.addFooter();
 
-		await replyInteraction(interaction, { embeds: [embed] });
+		return await replyInteraction(interaction, {
+			components: [container],
+			flags: MessageFlags.IsComponentsV2,
+		});
 	}
 
 	static async CanUserPlayBet(user: User, amount: number) {
@@ -102,12 +113,11 @@ const Strings = {
 	[Language.English]: {
 		description: `# Casino
 Den of iniquity! Bet, win, lose, break the bank!
--# Here you can bet and lose all your money!
-### ${EmoteString.Heads} Heads or Tails
-Bet an amount on a coin that must fall on the same side that you choose. You have a 50% chance of winning. If you win, you get 1.5x the amount bet!
-
-### 🏇 Horse Racing
-Bet on one of the horses in a race. Races are held every 4 hours. If your horse wins, you share the prize pool with other winners. Maximum bet is based on your ATK.
+-# Here you can bet and lose all your money!`,
+		headsTails: `### ${EmoteString.Heads} Heads or Tails
+Bet an amount on a coin that must fall on the same side that you choose. You have a 50% chance of winning. If you win, you get 1.5x the amount bet!`,
+		horseRace: `### 🏇 Horse Racing
+Bet on one of the horses in a race. Races are held every 4 hours. If your horse wins, you share the prize pool with other winners. Maximum bet is based on your ${EmoteString.Attack}ATK.
 Use \`/horserace\` to see the next race and to place your bet.`,
 		noMoney: "You don't have enough money to bet",
 		scavenging: (placeId: ScavengeId) => `You can't bet while scavenging ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.English]}** ${EmoteString.Scavenge}`,
@@ -118,12 +128,11 @@ Use \`/horserace\` to see the next race and to place your bet.`,
 	[Language.Portuguese]: {
 		description: `# Cassino
 Antro da perdição! Aposte, ganhe, perca, quebre a banca!
--# Aqui você pode apostar e perder todo seu dinheiro!
-### ${EmoteString.Heads} Cara ou Coroa
-Aposte um valor em uma moeda que deve cair no mesmo lado que você escolheu. Você tem 50% de chance de vencer. Se vencer, ganha 1.5x o valor apostado!
-
-### 🏇 Corrida de Cavalos
-Aposte em um dos cavalos em uma corrida. As corridas acontecem a cada 4 horas. Se seu cavalo vencer, você divide o prêmio com outros vencedores. A aposta máxima é baseada no seu ATK.
+-# Aqui você pode apostar e perder todo seu dinheiro!`,
+		headsTails: `### ${EmoteString.Heads} Cara ou Coroa
+Aposte um valor em uma moeda que deve cair no mesmo lado que você escolheu. Você tem 50% de chance de vencer. Se vencer, ganha 1.5x o valor apostado!`,
+		horseRace: `### 🏇 Corrida de Cavalos
+Aposte em um dos cavalos em uma corrida. As corridas acontecem a cada 4 horas. Se seu cavalo vencer, você divide o prêmio com outros vencedores. A aposta máxima é baseada no seu ${EmoteString.Attack}ATK.
 Use \`/horserace\` para ver a próxima corrida e para fazer sua aposta.`,
 		noMoney: "Você não possui dinheiro suficiente para apostar",
 		scavenging: (placeId: ScavengeId) => `Você não pode apostar enquanto está vasculhando ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Portuguese]}** ${EmoteString.Scavenge}`,
@@ -134,12 +143,11 @@ Use \`/horserace\` para ver a próxima corrida e para fazer sua aposta.`,
 	[Language.Spanish]: {
 		description: `# Casino
 Den de iniquidad! Apuesta, gana, pierde, rompe el banco!
--# ¡Aquí puedes apostar y perder todo tu dinero!
-### ${EmoteString.Heads} Cara o Cruz
-Apostar una cantidad en una moneda que debe caer del mismo lado que elijas. Tienes un 50% de posibilidades de ganar. ¡Si ganas, obtienes 1.5 veces la cantidad apostada!
-
-### 🏇 Carrera de Caballos
-Apuesta a uno de los caballos en una carrera. Las carreras se celebran cada 4 horas. Si tu caballo gana, compartes el premio con otros ganadores. La apuesta máxima se basa en tu ATK.
+-# ¡Aquí puedes apostar y perder todo tu dinero!`,
+		headsTails: `### ${EmoteString.Heads} Cara o Cruz
+Apostar una cantidad en una moneda que debe caer del mismo lado que elijas. Tienes un 50% de posibilidades de ganar. ¡Si ganas, obtienes 1.5 veces la cantidad apostada!`,
+		horseRace: `### 🏇 Carrera de Caballos
+Apuesta a uno de los caballos en una carrera. Las carreras se celebran cada 4 horas. Si tu caballo gana, compartes el premio con otros ganadores. La apuesta máxima se basa en tu ${EmoteString.Attack}ATK.
 Usa \`/horserace\` para ver la próxima carrera y para hacer tu apuesta.`,
 		noMoney: "No tienes suficiente dinero para apostar",
 		scavenging: (placeId: ScavengeId) => `No puedes apostar mientras estás buscando ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Spanish]}** ${EmoteString.Scavenge}`,

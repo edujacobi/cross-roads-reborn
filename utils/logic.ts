@@ -1,15 +1,16 @@
 ﻿import { User } from "../models/User";
 import {
 	ActionRowBuilder,
-	APIEmbed,
 	ButtonBuilder,
 	ButtonInteraction,
 	CacheType,
 	ChatInputCommandInteraction,
 	ColorResolvable,
+	Colors,
 	CommandInteraction,
 	ComponentType,
 	ContainerBuilder,
+	EmbedBuilder,
 	InteractionEditReplyOptions,
 	InteractionReplyOptions,
 	MessageComponentInteraction,
@@ -20,8 +21,6 @@ import {
 	Snowflake,
 	StringSelectMenuBuilder,
 } from "discord.js";
-import { CustomEmbedBuilder } from "../models/CustomEmbedBuilder";
-import { JSONEncodable } from "@discordjs/util";
 import { Op } from "sequelize";
 import { getClient } from "../client";
 import { Log } from "./log";
@@ -101,12 +100,12 @@ export async function removeAllFromActions() {
 	}
 }
 
-export async function sendPrivateMessage(userId: string, message: string, color?: ColorResolvable, footer: string = "") {
+export async function sendPrivateMessage(userId: string, message: string, color: ColorResolvable = Colors.DarkButNotBlack, footer: string = "") {
 	const client = getClient();
 	const discordUser = await client.users.fetch(userId);
 
 	try {
-		const embed = new CustomEmbedBuilder()
+		const embed = new EmbedBuilder()
 			.setDescription(message);
 
 		if (color) {
@@ -159,22 +158,6 @@ export async function replyUserDontExist(interaction: CommandInteraction, langua
 		content: Strings[language].userDontExist,
 		flags: [MessageFlags.Ephemeral],
 	});
-}
-
-export async function removeEmbedComponents(interaction: CommandInteraction | ButtonInteraction, embeds?: (JSONEncodable<APIEmbed> | APIEmbed)[]) {
-	try {
-		const replyOptions = embeds ? { embeds, components: [] } : { components: [] };
-
-		if (interaction instanceof CommandInteraction) {
-			await replyInteraction(interaction, replyOptions);
-		}
-		else {
-			await interaction.update(replyOptions);
-		}
-	}
-	catch (err) {
-		Log.Warning(`Something went wrong with removing components from interaction ${interaction.id} of user ${interaction.user.displayName} in server ${interaction.guild?.name} (ID: ${interaction.guild?.id}). Error: ${err}`);
-	}
 }
 
 export async function disableButtons(interaction: CommandInteraction | ButtonInteraction, container: ContainerBuilder) {

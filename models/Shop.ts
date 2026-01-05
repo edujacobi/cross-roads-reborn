@@ -1,22 +1,20 @@
 ﻿import { formatMoney, showTime } from "../utils/ui";
 import { User } from "./User";
-import { CustomEmbedBuilder } from "./CustomEmbedBuilder";
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
 	ButtonStyle,
 	ChatInputCommandInteraction,
-	ColorResolvable,
 	Colors,
 	ComponentType,
 	MessageComponentInteraction,
-	StringSelectMenuBuilder,
-	StringSelectMenuOptionBuilder,
+	MessageFlags,
+	RGBTuple,
 } from "discord.js";
 import { globalStrings, Language } from "./Language";
-import { removeEmbedComponents, replyInteraction } from "../utils/logic";
+import { disableButtons, replyInteraction } from "../utils/logic";
 import { EmoteString } from "../utils/emotes";
-import { getItemList, Items, ItemList, ItemType } from "../interfaces/Items";
+import { getItemList, ItemList, Items, ItemType } from "../interfaces/Items";
 import { Users } from "../database/Users";
 import { LocationList } from "../interfaces/Locations";
 import { ClassList } from "../interfaces/Classes";
@@ -25,14 +23,17 @@ import { UserItems } from "../database/UserItems";
 import { addHours } from "date-fns/addHours";
 import { ScavengeId, ScavengeList } from "../interfaces/Scavenge";
 import { BundleId } from "../interfaces/Ids";
+import { CustomContainerBuilder } from "../ui/builders/CustomContainerBuilder";
 
 export class Shop {
 	User: User;
 	Title: string;
 	Description: string;
 	Image: string;
-	Color: ColorResolvable;
+	Color: number | RGBTuple;
 	ItemList: Items[];
+	Container = new CustomContainerBuilder();
+	CurrentPage: number = 0;
 
 	constructor(user: User) {
 		const s = Strings[user.Language];
@@ -45,141 +46,119 @@ export class Shop {
 		this.ItemList = getItemList().filter((item) => item.Shop);
 	}
 
-	GenerateEmbed(interaction: ChatInputCommandInteraction) {
+	AddContainerHeader() {
+		this.Container = new CustomContainerBuilder()
+			.setUser(this.User)
+			.setAccentColor(this.Color)
+			.addSectionComponents(header => header
+				.addTextDisplayComponents(description => description
+					.setContent(this.Description),
+				)
+				.setThumbnailAccessory(thumb => thumb
+					.setURL(this.Image),
+				),
+			)
+			.addLargeSeparator();
+	}
+
+	AddContainerFooter() {
+		this.Container.addFooter({
+			text: formatMoney(this.User.Money, this.User.Language),
+		});
+	}
+
+	GenerateContainer() {
 		const s = Strings[this.User.Language];
 
-		const embed = new CustomEmbedBuilder()
-			.setDescription(this.Description)
-			.setThumbnail(this.Image)
-			.setColor(this.Color)
-			.setUserFooter({
-				nickname: this.User.Nickname,
-				image: interaction.user.avatarURL(),
-				text: formatMoney(this.User.Money, this.User.Language),
-			});
+		this.AddContainerHeader();
 
-		const select = new StringSelectMenuBuilder()
-			.setCustomId("select")
-			.setPlaceholder(s.placeholderSelect);
+		const pages = [];
+		for (let i = 0; i < this.ItemList.length; i += 7) {
+			pages.push(this.ItemList.slice(i, i + 7));
+		}
 
-		this.ItemList.forEach((item: Items) => {
-			let textSelect = "";
+		const currentPageItems = pages[this.CurrentPage];
+
+		for (let i = 0; i < currentPageItems.length; i++) {
+			const item = currentPageItems[i];
+			let value = "";
 
 			if (item.Type == ItemType.Weapon) {
-				embed.addFields({
-					name: `${item.Skin[BundleId.Default].String} ${item.Description[this.User.Language]}`,
-					value: `${formatMoney(item.Price, this.User.Language)}\n-# ${EmoteString.Attack}${item.Attack} ATK\n-# ${EmoteString.Defense}${item.Defense} DEF`,
-					inline: true,
-				});
-				textSelect = ` • ${item.Attack} ATK • ${item.Defense} DEF`;
+				value = `-# ${EmoteString.Attack}${item.Attack} ATK ${EmoteString.Defense}${item.Defense} DEF`;
 			}
 
-			if (item.Type == ItemType.Wearable) {
+			if (item.Type == ItemType.Wearable || item.Type == ItemType.Consumable) {
 				const textField = [];
-				const _textSelect = [];
 
 				if (item.MoreAttack) {
-					textField.push(`-# ${EmoteString.Attack}+${item.MoreAttack} ATK`);
-					_textSelect.push(`+${item.MoreAttack} ATK`);
+					textField.push(`${EmoteString.Attack}+${item.MoreAttack} ATK`);
 				}
 				if (item.MoreDefense) {
-					textField.push(`-# ${EmoteString.Defense}+${item.MoreDefense} DEF`);
-					_textSelect.push(`+${item.MoreDefense} DEF`);
+					textField.push(`${EmoteString.Defense}+${item.MoreDefense} DEF`);
 				}
 				if (item.MoreMoneyATK) {
-					textField.push(`-# ${EmoteString.Attack}+${item.MoreMoneyATK} $ATK$`);
-					_textSelect.push(`+${item.MoreMoneyATK} $ATK$`);
+					textField.push(`${EmoteString.Attack}+${item.MoreMoneyATK} $ATK$`);
 				}
 				if (item.MoreMoneyDEF) {
-					textField.push(`-# ${EmoteString.Defense}+${item.MoreMoneyDEF} $DEF$`);
-					_textSelect.push(`+${item.MoreMoneyDEF} $DEF$`);
+					textField.push(`${EmoteString.Defense}+${item.MoreMoneyDEF} $DEF$`);
 				}
 				if (item.Special.Day) {
-					textField.push(`-# (${s.day})`);
-					_textSelect.push(`(${s.day})`);
+					textField.push(`(${s.day})`);
 				}
 				if (item.Special.Night) {
-					textField.push(`-# (${s.night})`);
-					_textSelect.push(`(${s.night})`);
+					textField.push(`(${s.night})`);
+				}
+				if (item.Type == ItemType.Consumable) {
+					textField.push(`(${s.consumable})`);
 				}
 
-				embed.addFields({
-					name: `${item.Skin[BundleId.Default].String} ${item.Description[this.User.Language]}`,
-					value: `${formatMoney(item.Price, this.User.Language)}\n${textField.join("\n")}`,
-					inline: true,
-				});
-				textSelect = ` • ${_textSelect.join(" • ")}`;
+				value = `-# ${textField.join(" ")}`;
 			}
 
 			if (item.Type == ItemType.Accessory) {
-				embed.addFields({
-					name: `${item.Skin[BundleId.Default].String} ${item.Description[this.User.Language]}`,
-					value: `${formatMoney(item.Price, this.User.Language)}\n-# +30% ${s.escape}`,
-					inline: true,
-				});
-				textSelect = ` • +30% ${s.escape}`;
+				value = `-# +30% ${s.escape}`;
 			}
 
-			if (item.Type == ItemType.Consumable) {
-				const textField = [];
-				const _textSelect = [];
-
-				if (item.MoreAttack) {
-					textField.push(`-# ${EmoteString.Attack}+${item.MoreAttack} ATK`);
-					_textSelect.push(`+${item.MoreAttack} ATK`);
-				}
-				if (item.MoreDefense) {
-					textField.push(`-# ${EmoteString.Defense}+${item.MoreDefense} DEF`);
-					_textSelect.push(`+${item.MoreDefense} DEF`);
-				}
-				if (item.MoreMoneyATK) {
-					textField.push(`-# ${EmoteString.Attack}+${item.MoreMoneyATK} $ATK$`);
-					_textSelect.push(`+${item.MoreMoneyATK} $ATK$`);
-				}
-				if (item.MoreMoneyDEF) {
-					textField.push(`-# ${EmoteString.Defense}+${item.MoreMoneyDEF} $DEF$`);
-					_textSelect.push(`+${item.MoreMoneyDEF} $DEF$`);
-				}
-				if (item.Special.Day) {
-					textField.push(`-# (${s.day})`);
-					_textSelect.push(`(${s.day})`);
-				}
-				if (item.Special.Night) {
-					textField.push(`-# (${s.night})`);
-					_textSelect.push(`(${s.night})`);
-				}
-				embed.addFields({
-					name: `${item.Skin[BundleId.Default].String} ${item.Description[this.User.Language]}`,
-					value: `${formatMoney(item.Price, this.User.Language)}\n${textField.join("\n")}\n-# (${s.consumable})`,
-					inline: true,
-				});
-				textSelect = ` • ${_textSelect.join(" • ")} (${s.consumable})`;
-			}
-
-			select.addOptions(
-				new StringSelectMenuOptionBuilder()
-					.setLabel(item.Description[this.User.Language])
-					.setValue(String(item.Id))
-					.setDescription(`${formatMoney(item.Price, this.User.Language)}${textSelect}`)
-					.setEmoji(item.Skin[BundleId.Default].String),
+			this.Container.addSectionComponents(section => section
+				.addTextDisplayComponents(text => text
+					.setContent([
+						`### ${item.Skin[BundleId.Default].String} ${item.Description[this.User.Language]}`,
+						value,
+					].join("\n")),
+				)
+				.setButtonAccessory(new ButtonBuilder()
+					.setLabel(formatMoney(item.Price, this.User.Language))
+					.setCustomId(`buy${item.Id}`)
+					.setDisabled(item.Price > this.User.Money)
+					.setStyle(ButtonStyle.Secondary)),
 			);
-		});
 
-		const rowSelector = new ActionRowBuilder<StringSelectMenuBuilder>()
-			.setComponents(select);
+			if (i != currentPageItems.length - 1) {
+				this.Container.addLargeSeparator();
+			}
+		}
 
-		const buttonBuyMore = new ButtonBuilder()
-			.setCustomId("buyMore")
-			.setLabel(s.buyMore)
-			.setEmoji("◀")
-			.setStyle(ButtonStyle.Secondary);
+		if (pages.length > 1) {
+			this.Container.addLargeSeparator();
 
-		const rowButton = new ActionRowBuilder<ButtonBuilder>()
-			.addComponents(buttonBuyMore);
+			this.Container.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
+				.addComponents(new ButtonBuilder()
+					.setLabel(s.previous)
+					.setStyle(ButtonStyle.Secondary)
+					.setCustomId("previous")
+					.setEmoji("⬅️")
+					.setDisabled(this.CurrentPage === 0),
+				)
+				.addComponents(new ButtonBuilder()
+					.setLabel(s.next)
+					.setStyle(ButtonStyle.Secondary)
+					.setCustomId("next")
+					.setEmoji("➡️")
+					.setDisabled(this.CurrentPage === pages.length - 1),
+				));
+		}
 
-		const components = rowSelector.components[0].options.length > 0 ? [rowSelector] : [];
-
-		return { embed, components, rowButton };
+		this.AddContainerFooter();
 	}
 
 	async CanUserBuyItem(item: Items) {
@@ -255,14 +234,11 @@ export class Shop {
 	async Start(interaction: ChatInputCommandInteraction) {
 		const s = Strings[this.User.Language];
 
-		const { embed, components, rowButton } = this.GenerateEmbed(interaction);
+		this.GenerateContainer();
 
-		const response = await replyInteraction(interaction, { embeds: [embed], components });
-
-		const collectorSelector = response?.createMessageComponentCollector({
-			filter: (i: MessageComponentInteraction) => i.user.id === interaction.user.id,
-			componentType: ComponentType.StringSelect,
-			idle: 60_000,
+		const response = await replyInteraction(interaction, {
+			components: [this.Container],
+			flags: MessageFlags.IsComponentsV2,
 		});
 
 		const collectorButton = response?.createMessageComponentCollector({
@@ -271,63 +247,70 @@ export class Shop {
 			idle: 60_000,
 		});
 
-		collectorSelector?.on("collect", async select => {
-			await select.deferUpdate();
-			await this.User.GetInfo();
+		collectorButton?.on("collect", async btn => {
+			await btn.deferUpdate({
+				withResponse: true,
+			});
 
-			const embedBought = new CustomEmbedBuilder()
-				// .setThumbnail(this.Image)
-				.setAuthor({
-					name: s.title,
-					iconURL: this.Image,
-				})
-				.setColor(this.Color)
-				.setUserFooter({
-					nickname: this.User.Nickname,
-					image: interaction.user.avatarURL(),
-					text: formatMoney(this.User.Money, this.User.Language),
-				});
-
-			const item = ItemList[Number(select.values[0])];
-
-			const { canBuy, message } = await this.CanUserBuyItem(item);
-
-			if (!canBuy) {
-				return await removeEmbedComponents(interaction, [
-					embedBought.setDescription(message),
-				]);
+			if (btn.customId === "more") {
+				this.GenerateContainer();
+				return await replyInteraction(interaction, { components: [this.Container] });
 			}
 
-			await this.User.BuyItem(item);
+			if (btn.customId.includes("buy")) {
+				await this.User.GetInfo();
 
+				const itemId = Number(btn.customId.replace("buy", ""));
+				const item = ItemList[itemId];
 
-			return await replyInteraction(interaction, {
-				embeds: [
-					embedBought
-						.setDescription(s.itemBought(`${item.Skin[BundleId.Default].String} ${item.Description[this.User.Language]}`))
-						.setUserFooter({
-							nickname: this.User.Nickname,
-							image: interaction.user.avatarURL(),
-							text: formatMoney(this.User.Money, this.User.Language),
-						}),
-				],
-				components: [rowButton],
-			});
-		});
+				const { canBuy, message } = await this.CanUserBuyItem(item);
 
-		collectorSelector?.on("end", async () => {
-			await removeEmbedComponents(interaction);
-		});
+				if (!canBuy) {
+					this.AddContainerHeader();
 
-		collectorButton?.on("collect", async btn => {
-			if (btn.customId === "buyMore") {
-				const { embed } = this.GenerateEmbed(interaction);
-				await btn.update({ embeds: [embed], components });
+					this.Container.addTexts([
+						message,
+					]);
+
+					this.AddContainerFooter();
+
+					return await replyInteraction(interaction, { components: [this.Container] });
+				}
+
+				await this.User.BuyItem(item);
+
+				this.AddContainerHeader();
+
+				this.Container.addSectionComponents(section => section
+					.addTextDisplayComponents(text => text
+						.setContent(s.itemBought(`${item.Skin[BundleId.Default].String} ${item.Description[this.User.Language]}`)),
+					)
+					.setButtonAccessory(btn => btn
+						.setLabel(s.buyMore)
+						.setStyle(ButtonStyle.Secondary)
+						.setCustomId("more"),
+					),
+				);
+
+				this.AddContainerFooter();
+
+				return await replyInteraction(interaction, { components: [this.Container] });
+			}
+
+			if (btn.customId === "previous") {
+				this.CurrentPage -= 1;
+				this.GenerateContainer();
+				return await replyInteraction(interaction, { components: [this.Container] });
+			}
+			else if (btn.customId === "next") {
+				this.CurrentPage += 1;
+				this.GenerateContainer();
+				return await replyInteraction(interaction, { components: [this.Container] });
 			}
 		});
 
 		collectorButton?.on("end", async () => {
-			await removeEmbedComponents(interaction);
+			await disableButtons(interaction, this.Container);
 		});
 	}
 }
@@ -350,6 +333,8 @@ const Strings = {
 		itemBought: (itemName: string) => `You bought **${itemName}**!`,
 		itemPassLimit: (hours: number, itemName: string) => `You can't have more than 360 hours of the same item!\n-# Has ${hours} hours of ${itemName}.`,
 		buyMore: "Buy more!",
+		next: "Next",
+		previous: "Previous",
 	},
 
 	[Language.Portuguese]: {
@@ -368,6 +353,8 @@ const Strings = {
 		itemBought: (itemName: string) => `Você comprou **${itemName}**!`,
 		itemPassLimit: (hours: number, itemName: string) => `Você não pode possuir mais de 360 horas de um mesmo item!\n-# Possui ${hours} horas de ${itemName}.`,
 		buyMore: "Comprar mais!",
+		next: "Próximo",
+		previous: "Anterior",
 	},
 
 	[Language.Spanish]: {
@@ -386,5 +373,7 @@ const Strings = {
 		itemBought: (itemName: string) => `Tú compraste **${itemName}**!`,
 		itemPassLimit: (hours: number, itemName: string) => `¡No puedes tener más de 360 horas del mismo artículo!\n-# Tiene ${hours} horas de ${itemName}.`,
 		buyMore: "¡Comprar más!",
+		next: "Siguiente",
+		previous: "Anterior",
 	},
 } as const;

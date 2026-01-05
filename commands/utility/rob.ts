@@ -4,13 +4,13 @@
 	ComponentType,
 	Locale,
 	MessageComponentInteraction,
+	MessageFlags,
 	SlashCommandBuilder,
 	StringSelectMenuBuilder,
 	StringSelectMenuOptionBuilder,
 } from "discord.js";
-import { removeEmbedComponents, replyInteraction, searchUser } from "../../utils/logic";
-import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
-import { defaultEmbed, formatMoney, showTime } from "../../utils/ui";
+import { disableButtons, replyInteraction, searchUser } from "../../utils/logic";
+import { defaultComponent, formatMoney, showTime } from "../../utils/ui";
 import { EmoteString } from "../../utils/emotes";
 import { CrColors } from "../../utils/colors";
 import { User } from "../../models/User";
@@ -18,6 +18,7 @@ import { Language } from "../../models/Language";
 import { Robbery } from "../../models/Robbery";
 import { getLocationList, LocationList } from "../../interfaces/Locations";
 import { RobberyLocation } from "../../models/RobberyLocation";
+import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -64,15 +65,20 @@ module.exports = {
 		}
 
 		if (!nameOrId) {
-			const instructions = new CustomEmbedBuilder()
-				.setColor(CrColors.Robbery)
-				.setThumbnail("https://media.discordapp.net/attachments/691019843159326757/791444366727708672/roubar_20201223201323.png")
-				.setDescription(`${s.description}
-
--# ${text}`)
-				.setUserFooter({
-					nickname: user.Nickname,
-					image: interaction.user.avatarURL(),
+			const container = new CustomContainerBuilder()
+				.setUser(user)
+				.setAccentColor(CrColors.Robbery)
+				.addSectionComponents(section => section
+					.addTextDisplayComponents(header => header
+						.setContent(s.description),
+					)
+					.setThumbnailAccessory(thumb => thumb
+						.setURL("https://media.discordapp.net/attachments/691019843159326757/791444366727708672/roubar_20201223201323.png"),
+					),
+				)
+				.addLargeSeparator()
+				.addTexts([`-# ${text}`])
+				.addFooter({
 					text: user.Situation.Simple,
 				});
 
@@ -106,8 +112,8 @@ module.exports = {
 			const components = rowSelect.components[0].options.length > 0 ? [rowSelect] : [];
 
 			const response = await replyInteraction(interaction, {
-				embeds: [instructions],
-				components: canUserRob ? components : [],
+				components: canUserRob ? [container, ...components] : [container],
+				flags: MessageFlags.IsComponentsV2,
 			});
 
 			const collector = response?.createMessageComponentCollector({
@@ -127,14 +133,15 @@ module.exports = {
 				const { canRob, message } = await robbery.CanRobLocation();
 
 				if (!canRob) {
+					const container = defaultComponent({
+						user,
+						color: CrColors.Robbery,
+						description: message,
+					});
+
 					return await replyInteraction(interaction, {
-						embeds: [defaultEmbed({
-							nickname: user.Nickname,
-							interaction,
-							color: CrColors.Robbery,
-							description: message,
-						})],
-						components: [],
+						components: [container],
+						flags: MessageFlags.IsComponentsV2,
 					});
 				}
 
@@ -142,7 +149,7 @@ module.exports = {
 			});
 
 			collector?.on("end", async () => {
-				await removeEmbedComponents(interaction);
+				await disableButtons(interaction, container);
 			});
 
 			return;
@@ -157,14 +164,15 @@ module.exports = {
 		const { canRob, message } = await robbery.CanRobUser();
 
 		if (!canRob) {
+			const container = defaultComponent({
+				user,
+				color: CrColors.Robbery,
+				description: message,
+			});
+
 			return await replyInteraction(interaction, {
-				embeds: [defaultEmbed({
-					nickname: user.Nickname,
-					interaction,
-					color: CrColors.Robbery,
-					description: message,
-				})],
-				components: [],
+				components: [container],
+				flags: MessageFlags.IsComponentsV2,
 			});
 		}
 

@@ -1,12 +1,14 @@
 ﻿import {
-	ChatInputCommandInteraction, Colors,
+	ChatInputCommandInteraction,
+	Colors,
 	Locale,
+	MessageFlags,
 	PermissionFlagsBits,
 	SlashCommandBuilder,
 	SlashCommandIntegerOption,
 	SlashCommandStringOption,
 } from "discord.js";
-import { defaultEmbed, formatMoney } from "../../utils/ui";
+import { defaultComponent, formatMoney } from "../../utils/ui";
 import { checkUser, replyInteraction, sendPrivateMessage } from "../../utils/logic";
 import { EmoteString } from "../../utils/emotes";
 import { User } from "../../models/User";
@@ -54,14 +56,15 @@ module.exports = {
 
 		await sendPrivateMessage(userId, messages[target.Language], Colors.Gold);
 
+		const container = defaultComponent({
+			user,
+			color: Colors.Gold,
+			description: `${EmoteString.VIP} ${days} days of VIP and ${EmoteString.SpecialCoinShop}${formatMoney(specialCoins, Language.English, "")} Special Coins added to user **${target.GetNameWithImage()}**`,
+		});
+
 		await replyInteraction(interaction, {
-			embeds: [defaultEmbed({
-				nickname: user.Nickname,
-				color: Colors.Gold,
-				interaction: interaction,
-				description: `${EmoteString.VIP} ${days} days of VIP and ${EmoteString.SpecialCoinShop}${formatMoney(specialCoins, Language.English, "")} Special Coins added to user **${target.GetNameWithImage()}** `
-				,
-			})],
+			components: [container],
+			flags: MessageFlags.IsComponentsV2,
 		});
 	},
 };

@@ -4,20 +4,21 @@ import {
 	ButtonBuilder,
 	ButtonStyle,
 	ChatInputCommandInteraction,
+	Colors,
 	ComponentType,
 	MessageComponentInteraction,
+	MessageFlags,
 	StringSelectMenuBuilder,
 	StringSelectMenuOptionBuilder,
 } from "discord.js";
 import { setTimeout as wait } from "timers/promises";
 import { globalStrings, Language } from "./Language";
-import { CustomEmbedBuilder } from "./CustomEmbedBuilder";
 import { CrColors } from "../utils/colors";
-import { removeEmbedComponents, replyInteraction } from "../utils/logic";
+import { disableButtons, replyInteraction } from "../utils/logic";
 import { IScavenge, ScavengeId, ScavengeList } from "../interfaces/Scavenge";
 import { ItemList, ItemType } from "../interfaces/Items";
 import { EmoteString } from "../utils/emotes";
-import { defaultEmbed, formatMoney, showTime } from "../utils/ui";
+import { defaultComponent, formatMoney, showTime } from "../utils/ui";
 import { LocationList } from "../interfaces/Locations";
 import { JobId, JobList } from "../interfaces/Jobs";
 import { Users } from "../database/Users";
@@ -27,6 +28,7 @@ import { Log } from "../utils/log";
 import { Notification } from "./Notification";
 import { UserItems } from "../database/UserItems";
 import { BundleId } from "../interfaces/Ids";
+import { CustomContainerBuilder } from "../ui/builders/CustomContainerBuilder";
 
 export class Scavenge {
 	User: User;
@@ -37,6 +39,7 @@ export class Scavenge {
 		Prison: 0,
 		Hospital: 0,
 	};
+	Container = new CustomContainerBuilder();
 
 	constructor(user: User, interaction: ChatInputCommandInteraction) {
 		this.User = user;
@@ -49,7 +52,7 @@ export class Scavenge {
 		this.Timer.Hospital = 3 * (this.Place.Id + 1);
 	}
 
-	async GenerateEmbed() {
+	async GenerateContainer() {
 		const s = Strings[this.User.Language];
 
 		const select = new StringSelectMenuBuilder()
@@ -119,16 +122,29 @@ export class Scavenge {
 
 		const defaultDescription = `# ${s.title}\n${s.description}`;
 
-		const embed = new CustomEmbedBuilder()
-			.setThumbnail(this.Thumbnail)
-			.setColor(CrColors.Scavenge)
-			.setDescription(`${defaultDescription}\n${localeInfoSimple}\n-# ${text}`)
-			.setUserFooter({
-				nickname: this.User.Nickname,
-				image: this.Interaction.user.avatarURL(),
+		this.Container = new CustomContainerBuilder()
+			.setUser(this.User)
+			.setAccentColor(CrColors.Scavenge)
+			.addSectionComponents(section => section
+				.setId(1)
+				.addTextDisplayComponents(header => header
+					.setId(2)
+					.setContent(defaultDescription),
+				)
+				.setThumbnailAccessory(thumb => thumb
+					.setURL(this.Thumbnail),
+				),
+			)
+			.addLargeSeparator()
+			.addTextDisplayComponents(description => description
+				.setContent(localeInfoSimple)
+				.setId(3),
+			)
+			.addLargeSeparator()
+			.addTexts([`-# ${text}`])
+			.addFooter({
 				text: s.moreAtk,
 			});
-
 
 		const rowSelect = new ActionRowBuilder<StringSelectMenuBuilder>()
 			.setComponents(select.setDisabled(!canScavenge));
@@ -151,8 +167,8 @@ export class Scavenge {
 		const components = rowSelect.components[0].options.length > 0 ? [rowSelect, rowButtons] : [rowButtons];
 
 		const response = await replyInteraction(this.Interaction, {
-			embeds: [embed],
-			components,
+			components: [this.Container, ...components],
+			flags: MessageFlags.IsComponentsV2,
 		});
 
 		const collectorBtn = response?.createMessageComponentCollector({
@@ -174,14 +190,15 @@ export class Scavenge {
 			const { canScavenge, message } = await this.CanScavenge();
 
 			if (!canScavenge) {
+				this.Container = defaultComponent({
+					user: this.User,
+					color: CrColors.Scavenge,
+					description: message,
+				});
+
 				return await replyInteraction(this.Interaction, {
-					embeds: [defaultEmbed({
-						interaction: this.Interaction,
-						color: CrColors.Scavenge,
-						description: message,
-						nickname: this.User.Nickname,
-					})],
-					components: [],
+					components: [this.Container],
+					flags: MessageFlags.IsComponentsV2,
 				});
 			}
 
@@ -191,24 +208,29 @@ export class Scavenge {
 		});
 
 		collectorSelect?.on("end", async () => {
-			await removeEmbedComponents(this.Interaction);
+			await disableButtons(this.Interaction, this.Container);
 		});
 
 		collectorBtn?.on("collect", async btn => {
 			if (btn.customId === "more") {
-				embed.setDescription(`${defaultDescription}\n${localeInfoDetailed}`);
+				this.Container
+					.changeTextFromSectionId(3, localeInfoDetailed);
 				rowButtons.setComponents(buttonLess);
 			}
 			else if (btn.customId === "less") {
-				embed.setDescription(`${defaultDescription}\n${localeInfoSimple}`);
+				this.Container
+					.changeTextFromSectionId(3, localeInfoSimple);
 				rowButtons.setComponents(buttonMore);
 			}
 
-			await btn.update({ embeds: [embed], components });
+			await btn.update({
+				components: [this.Container, ...components],
+				flags: MessageFlags.IsComponentsV2,
+			});
 		});
 
 		collectorBtn?.on("end", async () => {
-			await removeEmbedComponents(this.Interaction);
+			await disableButtons(this.Interaction, this.Container);
 		});
 	}
 
@@ -289,17 +311,14 @@ export class Scavenge {
 
 		const placeName = `${this.Place.Emote.String} **${this.Place.Description[this.User.Language]}**`;
 
-		const scavengeEmbed = new CustomEmbedBuilder()
-			.setColor(CrColors.Scavenge)
-			.setDescription(`${s.scavenging} ${placeName}...`)
-			.setUserFooter({
-				nickname: this.User.Nickname,
-				image: this.Interaction.user.avatarURL(),
-			});
+		this.Container = new CustomContainerBuilder()
+			.setUser(this.User)
+			.setAccentColor(CrColors.Scavenge)
+			.addTexts([`${s.scavenging} ${placeName}...`])
+			.addFooter();
 
 		await replyInteraction(this.Interaction, {
-			embeds: [scavengeEmbed],
-			components: [],
+			components: [this.Container],
 		});
 
 		this.User.Scavenge.IsScavengingId = this.Place.Id;
@@ -307,10 +326,10 @@ export class Scavenge {
 
 		await wait(10_000 + (2_000 * this.Place.Id));
 
-		await this.EndScavenge(scavengeEmbed);
+		await this.EndScavenge();
 	}
 
-	async EndScavenge(embed: CustomEmbedBuilder) {
+	async EndScavenge() {
 		if (!this.Place) {
 			return;
 		}
@@ -389,7 +408,15 @@ export class Scavenge {
 				}
 			}
 
-			embed.setDescription(`### ${s.success}!\n${s.youFound(rewardDescription)} ${placeName} ${EmoteString.Scavenge}\n-# ${s.willBeAbleAgain} ${showTime(addHours(new Date(), 1).getTime(), true)}`);
+			this.Container = new CustomContainerBuilder()
+				.setUser(this.User)
+				.setAccentColor(Colors.Green)
+				.addTexts([
+					`### ${s.success}!`,
+					`${s.youFound(rewardDescription)} ${placeName} ${EmoteString.Scavenge}`,
+					`-# ${s.willBeAbleAgain} ${showTime(addHours(new Date(), 1).getTime(), true)}`,
+				])
+				.addFooter();
 
 			Log.Info(`User ${this.User.Nickname} (Id: ${this.User.Id}) found ${rewardDescriptionLog} while scavenging at ${this.Place.Description[Language.English]} (Id: ${this.Place.Id})`);
 		}
@@ -420,8 +447,14 @@ export class Scavenge {
 
 				prisonText = `\n-# ${EmoteString.Prison} ${this.Place.Prison.Text[this.User.Language]} ${s.inprisoned} ${showTime(this.User.Prison.Time.getTime(), true)}.`;
 			}
-
-			embed.setDescription(`### ${s.failure}!\n${s.youDidntFound} ${placeName} ${EmoteString.Scavenge}${hospitalText}${prisonText}`);
+			this.Container = new CustomContainerBuilder()
+				.setUser(this.User)
+				.setAccentColor(Colors.Red)
+				.addTexts([
+					`### ${s.failure}!`,
+					`${s.youDidntFound} ${placeName} ${EmoteString.Scavenge}${hospitalText}${prisonText}`,
+				])
+				.addFooter();
 
 			Log.Info(`User ${this.User.Nickname} (Id: ${this.User.Id}) failed to scavenge at ${this.Place.Description[Language.English]} (Id: ${this.Place.Id}). Hospitalized: ${hospitalized} (${this.Timer.Hospital}min) Inprisoned: ${inprisoned} (${this.Timer.Prison}min)`);
 		}
@@ -435,14 +468,14 @@ export class Scavenge {
 		await this.User.Update();
 
 		await replyInteraction(this.Interaction, {
-			embeds: [embed],
+			components: [this.Container],
 		});
 	}
 }
 
 const Strings = {
 	[Language.English]: {
-		moreAtk: "Get more ATK to unlock more places",
+		moreAtk: `Get more ${EmoteString.Attack}ATK to unlock more places`,
 		title: "Scavenge",
 		userFree: "You can scagenge!",
 		userScavengeTime: "You will be able to scagenge again",
@@ -472,7 +505,7 @@ const Strings = {
 
 	},
 	[Language.Portuguese]: {
-		moreAtk: "Tenha mais ATK para liberar mais lugares",
+		moreAtk: `Tenha mais ${EmoteString.Attack}ATK para liberar mais lugares`,
 		title: "Vasculhar",
 		userFree: "Você pode vasculhar!",
 		userScavengeTime: "Você poderá vasculhar novamente",
@@ -502,7 +535,7 @@ const Strings = {
 
 	},
 	[Language.Spanish]: {
-		moreAtk: "Obtén más ATK para desbloquear más lugares",
+		moreAtk: `Obtén más ${EmoteString.Attack}ATK para desbloquear más lugares`,
 		title: "Buscar",
 		userFree: "¡Puedes buscar!",
 		userScavengeTime: "Podrás buscar de nuevo",

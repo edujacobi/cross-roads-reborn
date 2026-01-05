@@ -6,15 +6,13 @@
 	ComponentType,
 	Locale,
 	MessageComponentInteraction,
+	MessageFlags,
 	SlashCommandBuilder,
-	StringSelectMenuBuilder,
-	StringSelectMenuOptionBuilder,
 } from "discord.js";
-import { removeEmbedComponents, replyInteraction } from "../../utils/logic";
-import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
+import { disableButtons, replyInteraction } from "../../utils/logic";
 import { EmoteString } from "../../utils/emotes";
 import { formatMoney, showTime } from "../../utils/ui";
-import { getJobList, JobId, JobList } from "../../interfaces/Jobs";
+import { getJobList, JobId, JobList, Jobs } from "../../interfaces/Jobs";
 import { getItemList, ItemList } from "../../interfaces/Items";
 import { Language } from "../../models/Language";
 import { CrColors } from "../../utils/colors";
@@ -26,6 +24,7 @@ import { ScavengeId, ScavengeList } from "../../interfaces/Scavenge";
 import { Event, EventType } from "../../models/Event";
 import { BlackMarket } from "../../models/BlackMarket";
 import { BundleId } from "../../interfaces/Ids";
+import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -37,24 +36,25 @@ module.exports = {
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 		const s = Strings[language];
 
-		let description = `# ${s.title}\n-# ${s.description}`;
-		if (user.IsWorking()) {
-			description = `${s.workingOn(user.Job.Id!, user.Job.EndsIn)}`;
+		let currentPage = 0;
+
+		function addHeader(container = new CustomContainerBuilder()) {
+			container
+				.setUser(user)
+				.setAccentColor(CrColors.Jobs)
+				.addSectionComponents(header => header
+					.addTextDisplayComponents(text => text
+						.setContent(`# ${s.title}\n${s.description}`),
+					)
+					.setThumbnailAccessory(thumb => thumb
+						.setURL("https://media.discordapp.net/attachments/1233604589064818808/1337166947250602047/Trabalhos2.png"),
+					),
+				);
+
+			container.addLargeSeparator();
+
+			return container;
 		}
-
-		const embed = new CustomEmbedBuilder()
-			.setDescription(description)
-			.setThumbnail(user.IsWorking() ? null : "https://media.discordapp.net/attachments/1233604589064818808/1337166947250602047/Trabalhos2.png")
-			.setColor(CrColors.Jobs)
-			.setUserFooter({
-				nickname: user.Nickname,
-				image: interaction.user.avatarURL(),
-				text: formatMoney(user.Money, language),
-			});
-
-		const select = new StringSelectMenuBuilder()
-			.setCustomId("select")
-			.setPlaceholder(s.placeholderSelect);
 
 		const blackMarket = new BlackMarket(user);
 
@@ -64,156 +64,88 @@ module.exports = {
 
 		const eventActiveValue = await Event.GetActiveFromType(EventType.JOB_TIME_MULTIPLIER);
 
-		for (const job of jobList) {
-			const weaponsNeeded = getItemList().filter(item => job.NeedItem?.includes(item.Id));
-			const jobDuration = job.Duration * eventActiveValue;
-
-			const textSalary = `${s.salary}: ${formatMoney(job.Salary, language)}`;
-			const textDuration = `${s.duration}: ${jobDuration}h`;
-			const textNeeded = weaponsNeeded.length ? `\n-# ${s.necessary}: ${weaponsNeeded.map(weapon => weapon.Skin[BundleId.Default].String).join("")}` : "";
-			const blackMarketEmote = job.Special ? `${EmoteString.BlackMarket} ` : "";
-
-			if (!user.IsWorking()) {
-				embed.addFields({
-					name: `${blackMarketEmote}${job.Description[language]}`,
-					value: `${textSalary}\n${textDuration}${textNeeded}`,
-					inline: true,
-				});
-			}
-
-			let lastWeaponEmote = "▪️";
-
-			if (job.NeedItem) {
-				lastWeaponEmote = ItemList[job.NeedItem[job.NeedItem.length - 1]].Skin[BundleId.Default].String;
-			}
-
-			select.addOptions(
-				new StringSelectMenuOptionBuilder()
-					.setLabel(job.Description[language])
-					.setValue(String(job.Id))
-					.setEmoji(lastWeaponEmote)
-					.setDescription(`${s.salary}: ${formatMoney(job.Salary, language)} • ${s.duration}: ${jobDuration}h`),
-			);
+		const pages: Jobs[][] = [];
+		for (let i = 0; i < jobList.length; i += 5) {
+			pages.push(jobList.slice(i, i + 5));
 		}
 
-		const rowSelect = new ActionRowBuilder<StringSelectMenuBuilder>()
-			.setComponents(select);
-
-		const buttonStop = new ButtonBuilder()
-			.setCustomId("stop")
-			.setLabel(s.stop)
-			.setStyle(ButtonStyle.Danger);
-
-		const rowButton = new ActionRowBuilder<ButtonBuilder>()
-			.setComponents(buttonStop);
-
-		const components = rowSelect.components[0].options.length > 0 ? [rowSelect] : [];
-
-		const response = await replyInteraction(interaction, {
-			embeds: [embed],
-			components: user.IsWorking() ? [rowButton] : components,
-		});
-
-		const collectorSelect = response?.createMessageComponentCollector({
-			filter: (i: MessageComponentInteraction) => i.user.id === interaction.user.id,
-			componentType: ComponentType.StringSelect,
-			time: 60_000,
-		});
-
-		collectorSelect?.on("collect", async select => {
-			embed.setFields([]);
-
+		async function generateDefaultContainer() {
 			await user.GetInfo();
 
-			const job = JobList[Number(select.values[0])];
+			const container = addHeader();
 
-			const userItems = await user.GetItems();
-			const hasAllItems = job.NeedItem?.every(neededItem => userItems.some(userItem => userItem.Id === neededItem));
+			const currentPageJobs = pages[currentPage];
 
 			if (user.IsWorking()) {
-				return await removeEmbedComponents(interaction, [
-					embed
-						.setThumbnail(null)
-						.setDescription(s.workingOn(user.Job.Id!, user.Job.EndsIn)),
-				]);
+				container
+					.addTexts([`${s.workingOn(user.Job.Id!, user.Job.EndsIn)}`])
+					.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
+						.addComponents(new ButtonBuilder()
+							.setCustomId("stop")
+							.setLabel(s.stop)
+							.setStyle(ButtonStyle.Danger),
+						),
+					);
 			}
-			if (user.IsScavenging()) {
-				return await removeEmbedComponents(interaction, [
-					embed
-						.setThumbnail(null)
-						.setDescription(s.userScavenge(user.Scavenge.IsScavengingId!)),
-				]);
-			}
-			if (user.IsInPrison()) {
-				return await removeEmbedComponents(interaction, [
-					embed
-						.setThumbnail(null)
-						.setDescription(s.userPrison(user.Prison.Time)),
-				]);
-			}
-			if (user.IsInHospital()) {
-				return await removeEmbedComponents(interaction, [
-					embed
-						.setThumbnail(null)
-						.setDescription(s.userHospital(user.Hospital.Time)),
-				]);
-			}
-			if (user.Robbery.IsRobbingId) {
-				const u = await Users.findByPk(user.Robbery.IsRobbingId, { attributes: ["class", "nickname"] });
-				return await removeEmbedComponents(interaction, [
-					embed
-						.setThumbnail(null)
-						.setDescription(`${s.userIsRobbingId(`${ClassList[u!.class].Image.Emote.String} ${u!.nickname!}`)} ${EmoteString.Robbery}`),
-				]);
-			}
-			if (user.Robbery.IsBeingRobbedById) {
-				const u = await Users.findByPk(user.Robbery.IsBeingRobbedById, { attributes: ["class", "nickname"] });
-				return await removeEmbedComponents(interaction, [
-					embed
-						.setThumbnail(null)
-						.setDescription(`${s.userIsBeingRobbingId(`${ClassList[u!.class].Image.Emote.String} ${u!.nickname!}`)} ${EmoteString.Robbery}`),
-				]);
-			}
-			if (user.Robbery.IsRobbingLocationId !== null) {
-				const location = LocationList[user.Robbery.IsRobbingLocationId];
-				return await removeEmbedComponents(interaction, [
-					embed
-						.setThumbnail(null)
-						.setDescription(`${s.userIsRobbingId(location.Description[language])} ${EmoteString.Robbery}`),
-				]);
+			else {
+				for (let i = 0; i < currentPageJobs.length; i++) {
+					const job = currentPageJobs[i];
+					const weaponsNeeded = getItemList().filter(item => job.NeedItem?.includes(item.Id));
+					const jobDuration = job.Duration * eventActiveValue;
+
+					const textSalary = `${s.salary}: ${formatMoney(job.Salary, language)}`;
+					const textDuration = `${s.duration}: ${jobDuration}h`;
+					const textNeeded = weaponsNeeded.length ? `\n-# ${s.necessary}:\n# ${weaponsNeeded.map(weapon => weapon.Skin[BundleId.Default].String).join(" ")}` : "";
+					const blackMarketText = job.Special ? ` • ${EmoteString.BlackMarket} ${s.blackMarket}` : "";
+
+					container.addSectionComponents(section => section
+						.addTextDisplayComponents(text => text
+							.setContent(`### ${job.Description[language]}\n${textSalary} • ${textDuration}${blackMarketText}${textNeeded}`),
+						)
+						.setButtonAccessory(btn => btn
+							.setLabel(s.start)
+							.setStyle(ButtonStyle.Secondary)
+							.setCustomId(`start${job.Id}`)),
+					);
+
+					if (i != currentPageJobs.length - 1) {
+						container.addLargeSeparator();
+					}
+				}
+
+				if (pages.length > 1) {
+					container.addLargeSeparator();
+
+					container.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
+						.addComponents(new ButtonBuilder()
+							.setLabel(s.previous)
+							.setStyle(ButtonStyle.Secondary)
+							.setCustomId("previous")
+							.setEmoji("⬅️")
+							.setDisabled(currentPage === 0),
+						)
+						.addComponents(new ButtonBuilder()
+							.setLabel(s.next)
+							.setStyle(ButtonStyle.Secondary)
+							.setCustomId("next")
+							.setEmoji("➡️")
+							.setDisabled(currentPage === pages.length - 1),
+						));
+				}
 			}
 
-			if (job.NeedItem && !hasAllItems) {
-				const neededItems = job.NeedItem
-					.filter(neededItem => !userItems.some(userItem => userItem.Id === neededItem))
-					.map(neededItem => `${ItemList[neededItem].Skin[BundleId.Default].String} ${ItemList[neededItem].Description[language]}`)
-					.join(", ");
-				return await removeEmbedComponents(interaction, [
-					embed
-						.setThumbnail(null)
-						.setDescription(s.withoutItems(neededItems)),
-				]);
-			}
+			container.addFooter({
+				text: formatMoney(user.Money, language),
+			});
 
-			const eventActiveValue = await Event.GetActiveFromType(EventType.JOB_TIME_MULTIPLIER);
-			const jobDuration = job.Duration * eventActiveValue;
+			return container;
+		}
 
-			await user.StartJob(job.Id);
+		let container = await generateDefaultContainer();
 
-			return await removeEmbedComponents(interaction, [
-				embed
-					.setThumbnail(null)
-					.setDescription(s.jobStarted(job.Description[language], user.Job.EndsIn))
-					.setUserFooter({
-						nickname: user.Nickname,
-						image: interaction.user.avatarURL(),
-						text: `${s.salary}: ${formatMoney(job.Salary, language)} • ${s.duration}: ${jobDuration}h`,
-					}),
-			]);
-		});
-
-		collectorSelect?.on("end", async () => {
-			await removeEmbedComponents(interaction);
+		const response = await replyInteraction(interaction, {
+			components: [container],
+			flags: MessageFlags.IsComponentsV2,
 		});
 
 		const collectorButton = response?.createMessageComponentCollector({
@@ -223,29 +155,119 @@ module.exports = {
 		});
 
 		collectorButton?.on("collect", async btn => {
-			embed.setFields([]);
+			await btn.deferUpdate({
+				withResponse: true,
+			});
+
+			if (btn.customId.includes("start")) {
+				const jobId = Number(btn.customId.replace("start", ""));
+				const job = JobList[jobId];
+
+				const userItems = await user.GetItems();
+				const hasAllItems = job.NeedItem?.every(neededItem => userItems.some(userItem => userItem.Id === neededItem));
+
+				let textResponse = "";
+
+				container = addHeader();
+
+				if (user.IsWorking()) {
+					textResponse = s.workingOn(user.Job.Id!, user.Job.EndsIn);
+				}
+				else if (user.IsScavenging()) {
+					textResponse = s.userScavenge(user.Scavenge.IsScavengingId!);
+				}
+				else if (user.IsInPrison()) {
+					textResponse = s.userPrison(user.Prison.Time);
+				}
+				else if (user.IsInHospital()) {
+					textResponse = s.userHospital(user.Hospital.Time);
+				}
+				else if (user.Robbery.IsRobbingId) {
+					const u = await Users.findByPk(user.Robbery.IsRobbingId, { attributes: ["class", "nickname"] });
+					textResponse = `${s.userIsRobbingId(`${ClassList[u!.class].Image.Emote.String} ${u!.nickname!}`)} ${EmoteString.Robbery}`;
+				}
+				else if (user.Robbery.IsBeingRobbedById) {
+					const u = await Users.findByPk(user.Robbery.IsBeingRobbedById, { attributes: ["class", "nickname"] });
+					textResponse = `${s.userIsBeingRobbingId(`${ClassList[u!.class].Image.Emote.String} ${u!.nickname!}`)} ${EmoteString.Robbery}`;
+				}
+				else if (user.Robbery.IsRobbingLocationId !== null) {
+					const location = LocationList[user.Robbery.IsRobbingLocationId];
+					textResponse = `${s.userIsRobbingId(location.Description[language])} ${EmoteString.Robbery}`;
+				}
+				else if (job.NeedItem && !hasAllItems) {
+					const neededItems = job.NeedItem
+						.filter(neededItem => !userItems.some(userItem => userItem.Id === neededItem))
+						.map(neededItem => `${ItemList[neededItem].Skin[BundleId.Default].String} ${ItemList[neededItem].Description[language]}`)
+						.join(", ");
+
+					textResponse = s.withoutItems(neededItems);
+				}
+
+				if (textResponse != "") {
+					container.addTexts([textResponse]);
+					container.addFooter({
+						text: formatMoney(user.Money, language),
+					});
+					return await replyInteraction(interaction, { components: [container] });
+				}
+
+				const eventActiveValue = await Event.GetActiveFromType(EventType.JOB_TIME_MULTIPLIER);
+				const jobDuration = job.Duration * eventActiveValue;
+
+				await user.StartJob(job.Id);
+
+				container.addTexts([
+					s.jobStarted(job.Description[language], user.Job.EndsIn),
+				])
+					.addFooter({
+						text: `${s.salary}: ${formatMoney(job.Salary, language)} • ${s.duration}: ${jobDuration}h`,
+					});
+
+				return await replyInteraction(interaction, { components: [container] });
+			}
 
 			if (btn.customId === "stop") {
 				await user.GetInfo();
+
+				container = addHeader();
+
 				if (user.Job.Id === null) {
-					return await removeEmbedComponents(interaction, [
-						embed.setDescription(s.cannotStop),
-					]);
+					container.addTexts([s.cannotStop]);
+					container.addFooter({
+						text: formatMoney(user.Money, language),
+					});
+
+					return await replyInteraction(interaction, { components: [container] });
 				}
 
 				const job = JobList[user.Job.Id];
 				await user.CancelJob();
 
-				await removeEmbedComponents(interaction, [
-					embed
-						.setThumbnail(null)
-						.setDescription(`${s.stopped} **${job.Description[language]}** ${EmoteString.Jobs}`),
+				container.addTexts([
+					`${s.stopped} **${job.Description[language]}** ${EmoteString.Jobs}`,
 				]);
+
+				container.addFooter({
+					text: formatMoney(user.Money, language),
+				});
+
+				return await replyInteraction(interaction, { components: [container] });
+			}
+
+			if (btn.customId === "previous") {
+				currentPage -= 1;
+				container = await generateDefaultContainer();
+				return await replyInteraction(interaction, { components: [container] });
+			}
+			else if (btn.customId === "next") {
+				currentPage += 1;
+				container = await generateDefaultContainer();
+				return await replyInteraction(interaction, { components: [container] });
 			}
 		});
 
 		collectorButton?.on("end", async () => {
-			await removeEmbedComponents(interaction);
+			await disableButtons(interaction, container);
 		});
 	},
 };
@@ -260,13 +282,16 @@ const Strings = {
 		userIsBeingRobbingId: (nick: string) => `You're being robbed by **${nick}**!`,
 		workingOn: (jobId: JobId, jobTime: Date) => `You are working as **${JobList[jobId].Description[Language.English]}** ${EmoteString.Jobs}\n-# Will finish ${showTime(jobTime.getTime(), true)}`,
 		userScavenge: (placeId: ScavengeId) => `You are scavenging ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.English]}**!`,
-		placeholderSelect: "Select a job",
 		stop: "Stop job",
 		cannotStop: "You can't stop what you didn't start.",
 		stopped: "You stopped your job of",
 		salary: "Salary",
 		duration: "Duration",
 		necessary: "Necessary",
+		next: "Next",
+		previous: "Previous",
+		start: "Start",
+		blackMarket: "Black Market Job",
 		withoutItems: (neededItems: string) => `You don't have the necessary items to start this job ${EmoteString.Jobs}\n-# You need ${neededItems}`,
 		jobStarted: (jobDescription: string, jobTime: Date) => `You started working as **${jobDescription}** ${EmoteString.Jobs}\n-# Will finish ${showTime(jobTime.getTime(), true)}`,
 	},
@@ -279,13 +304,16 @@ const Strings = {
 		userIsBeingRobbingId: (nick: string) => `Você está sendo roubado por **${nick}**!`,
 		workingOn: (jobId: JobId, jobTime: Date) => `Você está trabalhando como **${JobList[jobId].Description[Language.Portuguese]}** ${EmoteString.Jobs}\n-# Terminará ${showTime(jobTime.getTime(), true)}`,
 		userScavenge: (placeId: ScavengeId) => `Você está vasculhando ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Portuguese]}**!`,
-		placeholderSelect: "Selecione um trabalho",
 		stop: "Parar trabalho",
 		cannotStop: "Você não pode parar o que não começou.",
 		stopped: "Você parou seu trabalho de",
 		salary: "Salário",
 		duration: "Duração",
 		necessary: "Necessário",
+		next: "Próximo",
+		previous: "Anterior",
+		start: "Iniciar",
+		blackMarket: "Trabalho do Mercado Negro",
 		withoutItems: (neededItems: string) => `Você não tem os itens necessários para começar este trabalho ${EmoteString.Jobs}\n-# Você precisa de ${neededItems}`,
 		jobStarted: (jobDescription: string, jobTime: Date) => `Você começou a trabalhar como **${jobDescription}** ${EmoteString.Jobs}\n-# Terminará ${showTime(jobTime.getTime(), true)}`,
 	},
@@ -298,13 +326,16 @@ const Strings = {
 		userIsBeingRobbingId: (nick: string) => `¡Estás siendo robado por **${nick}**!`,
 		workingOn: (jobId: JobId, jobTime: Date) => `Usted está trabajando como **${JobList[jobId].Description[Language.Spanish]}** ${EmoteString.Jobs}\n-# Terminará ${showTime(jobTime.getTime(), true)}`,
 		userScavenge: (placeId: ScavengeId) => `¡Estás buscando ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Spanish]}**!`,
-		placeholderSelect: "Seleccione un trabajo",
 		stop: "Detener trabajo",
 		cannotStop: "Usted no puede detener lo que no comenzó.",
 		stopped: "Usted detuvo su trabajo de",
 		salary: "Salario",
 		duration: "Duración",
 		necessary: "Necesario",
+		next: "Siguiente",
+		previous: "Anterior",
+		start: "Comenzar",
+		blackMarket: "Trabajo del Mercado Negro",
 		withoutItems: (neededItems: string) => `Usted no tiene los elementos necesarios para comenzar este trabajo ${EmoteString.Jobs}\n-# Usted necesita ${neededItems}`,
 		jobStarted: (jobDescription: string, jobTime: Date) => `Usted comenzó a trabajar como **${jobDescription}** ${EmoteString.Jobs}\n-# Terminará ${showTime(jobTime.getTime(), true)}.`,
 	},

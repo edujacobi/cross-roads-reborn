@@ -6,13 +6,14 @@ import {
 	ActionRowBuilder,
 	ChatInputCommandInteraction,
 	Colors,
+	ComponentType,
 	MessageComponentInteraction,
+	MessageFlags,
 	StringSelectMenuBuilder,
 	StringSelectMenuOptionBuilder,
 } from "discord.js";
-import { CustomEmbedBuilder } from "./CustomEmbedBuilder";
 import { CrColors } from "../utils/colors";
-import { removeEmbedComponents, replyInteraction, sendPrivateMessage } from "../utils/logic";
+import { disableButtons, replyInteraction, sendPrivateMessage } from "../utils/logic";
 import { HorseRaces } from "../database/HorseRaces";
 import { HorseRaceBets } from "../database/HorseRaceBets";
 import { addHours } from "date-fns/addHours";
@@ -21,6 +22,7 @@ import { Casino } from "./Casino";
 import { Notification, NotificationType } from "./Notification";
 import { Log } from "../utils/log";
 import { ClassList } from "../interfaces/Classes";
+import { CustomContainerBuilder } from "../ui/builders/CustomContainerBuilder";
 
 // Number of horses in each race
 export const HORSE_COUNT = 5;
@@ -134,7 +136,7 @@ export class HorseRacing {
 	}
 
 	// Show the next race information
-	async ShowNextRace(interaction: ChatInputCommandInteraction): Promise<void> {
+	async ShowNextRace(interaction: ChatInputCommandInteraction) {
 		const s = Strings[this.User.Language];
 		const language = this.User.Language;
 
@@ -149,17 +151,25 @@ export class HorseRacing {
 			// Schedule notification for this race
 			await HorseRacing.ScheduleRaceNotification(newRace);
 
-			const embed = new CustomEmbedBuilder()
-				.setThumbnail("https://media.discordapp.net/attachments/1233604589064818808/1370492768803225630/horse-racing_1f3c7.png")
-				.setDescription(s.noRaceScheduled(showTime(newRaceTime.getTime(), true)))
-				.setColor(CrColors.Casino)
-				.setUserFooter({
-					nickname: this.User.Nickname,
-					image: interaction.user.avatarURL(),
+			const container = new CustomContainerBuilder()
+				.setUser(this.User)
+				.setAccentColor(CrColors.Casino)
+				.addSectionComponents(section => section
+					.addTextDisplayComponents(header => header
+						.setContent(s.noRaceScheduled(showTime(newRaceTime.getTime(), true))),
+					)
+					.setThumbnailAccessory(thumb => thumb
+						.setURL("https://media.discordapp.net/attachments/1233604589064818808/1370492768803225630/horse-racing_1f3c7.png"),
+					),
+				)
+				.addFooter({
 					text: formatMoney(this.User.Money, this.User.Language),
 				});
 
-			await replyInteraction(interaction, { embeds: [embed] });
+			await replyInteraction(interaction, {
+				components: [container],
+				flags: MessageFlags.IsComponentsV2,
+			});
 			return;
 		}
 
@@ -201,27 +211,35 @@ export class HorseRacing {
 			}
 		}
 
-		const embed = new CustomEmbedBuilder()
-			.setThumbnail("https://media.discordapp.net/attachments/1233604589064818808/1370492768803225630/horse-racing_1f3c7.png")
-			.setDescription(s.nextRace(
-				race.raceTime,
-				formatMoney(race.totalAmount, this.User.Language),
-				race.totalBets,
-				betInfo,
-				formatMoney(maxBet, this.User.Language),
-				horseList,
-				userBet !== null,
-			))
-			.setColor(CrColors.Casino)
-			.setUserFooter({
-				nickname: this.User.Nickname,
-				image: interaction.user.avatarURL(),
+		const container = new CustomContainerBuilder()
+			.setUser(this.User)
+			.setAccentColor(CrColors.Casino)
+			.addSectionComponents(section => section
+				.addTextDisplayComponents(header => header
+					.setContent(s.nextRace(
+						race.raceTime,
+						formatMoney(race.totalAmount, this.User.Language),
+						race.totalBets,
+						betInfo,
+						formatMoney(maxBet, this.User.Language),
+						horseList,
+						userBet !== null,
+					)),
+				)
+				.setThumbnailAccessory(thumb => thumb
+					.setURL("https://media.discordapp.net/attachments/1233604589064818808/1370492768803225630/horse-racing_1f3c7.png"),
+				),
+			)
+			.addFooter({
 				text: formatMoney(this.User.Money, this.User.Language),
 			});
 
 		// If user already bet or race is closed, don't show betting options
 		if (userBet || race.raceTime.getTime() - Date.now() < 5 * 60 * 1000) {
-			await replyInteraction(interaction, { embeds: [embed] });
+			await replyInteraction(interaction, {
+				components: [container],
+				flags: MessageFlags.IsComponentsV2,
+			});
 			return;
 		}
 
@@ -292,8 +310,8 @@ export class HorseRacing {
 			: [rowHorseSelect];
 
 		const response = await replyInteraction(interaction, {
-			embeds: [embed],
-			components: components,
+			components: [container, ...components],
+			flags: MessageFlags.IsComponentsV2,
 		});
 
 		// Selected values
@@ -303,46 +321,47 @@ export class HorseRacing {
 		// Handle horse selection
 		const collector = response?.createMessageComponentCollector({
 			filter: (i: MessageComponentInteraction) => i.user.id === interaction.user.id,
+			componentType: ComponentType.StringSelect,
 			time: 60_000,
 		});
 
 		// Flag to track if bet has been placed
 		let betPlaced = false;
 
-		collector?.on("collect", async (i) => {
+		collector?.on("collect", async (select) => {
 			// Get fresh user data
 			await this.User.GetInfo();
 
 			// Handle horse selection
-			if (i.customId === "horse_select" && i.isStringSelectMenu()) {
-				selectedHorse = parseInt(i.values[0]);
+			if (select.customId === "horse_select") {
+				selectedHorse = parseInt(select.values[0]);
 
 				// If both horse and amount are selected, place bet
 				if (selectedHorse && selectedAmount && !betPlaced) {
 					betPlaced = true;
-					await this.PlaceBetFromInteraction(i, race.id, selectedHorse, selectedAmount);
+					await this.PlaceBetFromInteraction(select, race.id, selectedHorse, selectedAmount);
 				}
 				else if (!betPlaced) {
 					horseSelect.setDisabled(true);
-					await i.update({
-						components: components.map(row => row),
+					await select.update({
+						components: [container, ...components.map(row => row)],
 					});
 				}
 			}
 
 			// Handle amount selection
-			else if (i.customId === "amount_select" && i.isStringSelectMenu()) {
-				selectedAmount = parseInt(i.values[0]);
+			else if (select.customId === "amount_select") {
+				selectedAmount = parseInt(select.values[0]);
 
 				// If both horse and amount are selected, place bet
 				if (selectedHorse && selectedAmount && !betPlaced) {
 					betPlaced = true;
-					await this.PlaceBetFromInteraction(i, race.id, selectedHorse, selectedAmount);
+					await this.PlaceBetFromInteraction(select, race.id, selectedHorse, selectedAmount);
 				}
 				else if (!betPlaced) {
 					amountSelect.setDisabled(true);
-					await i.update({
-						components: components.map(row => row),
+					await select.update({
+						components: [container, ...components.map(row => row)],
 					});
 				}
 			}
@@ -414,7 +433,7 @@ export class HorseRacing {
 		});
 
 		collector?.on("end", async () => {
-			await removeEmbedComponents(interaction);
+			await disableButtons(interaction, container);
 		});
 	}
 
@@ -422,14 +441,17 @@ export class HorseRacing {
 	async PlaceBetFromInteraction(interaction: MessageComponentInteraction, raceId: number, horseNumber: number, amount: number): Promise<void> {
 		const result = await this.PlaceBet(raceId, horseNumber, amount);
 
+		const s = Strings[this.User.Language];
+
 		const horse = HorseData.find(h => h.id === horseNumber);
 		const horseName = horse ? (this.User.Language === Language.Portuguese ? horse.namePt :
-			(this.User.Language === Language.Spanish ? horse.nameEs : horse.nameEn)) : `${Strings[this.User.Language].horse} ${horseNumber}`;
+			(this.User.Language === Language.Spanish ? horse.nameEs : horse.nameEn)) : `${s.horse} ${horseNumber}`;
 
-		const embed = new CustomEmbedBuilder()
-			.setColor(result.success ? CrColors.Casino : Colors.Red)
-			.setDescription(result.success
-				? Strings[this.User.Language].betPlacedWithName(
+		const container = new CustomContainerBuilder()
+			.setUser(this.User)
+			.setAccentColor(result.success ? CrColors.Casino : Colors.Red)
+			.addTexts([result.success
+				? s.betPlacedWithName(
 					horse?.emoji || "",
 					horseName,
 					formatMoney(amount, this.User.Language),
@@ -438,17 +460,13 @@ export class HorseRacing {
 						true,
 					),
 				)
-				: result.message,
-			)
-			.setUserFooter({
-				nickname: this.User.Nickname,
-				image: interaction.user.avatarURL(),
+				: result.message])
+			.addFooter({
 				text: formatMoney(this.User.Money, this.User.Language),
 			});
 
 		await replyInteraction(interaction, {
-			embeds: [embed],
-			components: [],
+			components: [container],
 		});
 	}
 

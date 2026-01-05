@@ -1,5 +1,5 @@
 ﻿import { Collection, Colors, CommandInteraction, Events, MessageFlags } from "discord.js";
-import { defaultEmbed, showTime } from "../utils/ui";
+import { defaultComponent, showTime } from "../utils/ui";
 import {
 	checkUser,
 	replyInteraction,
@@ -11,6 +11,7 @@ import { getLanguageFromLocale, Language } from "../models/Language";
 import { EmoteString } from "../utils/emotes";
 import { ClassId } from "../interfaces/Classes";
 import { logger } from "../utils/log";
+import { User } from "../models/User";
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const wait = require("node:timers/promises").setTimeout;
@@ -37,24 +38,29 @@ module.exports = {
 		}
 
 		if (!user.Nickname && command.data.name !== "setnick") {
+			const tempUser = new User("0");
+			tempUser.Nickname = s.settingNick;
+
+			const container = defaultComponent({
+				user: tempUser,
+				description: s.settingNickDescription,
+			});
+
 			return await replyInteraction(interaction, {
-				embeds: [defaultEmbed({
-					nickname: s.settingNick,
-					interaction,
-					description: s.settingNickDescription,
-				})],
-				flags: [MessageFlags.Ephemeral],
+				components: [container],
+				flags: [MessageFlags.IsComponentsV2, MessageFlags.Ephemeral],
 			});
 		}
 
 		if (user.Class == ClassId.None && command.data.name !== "setclass" && command.data.name !== "setnick") {
+			const container = defaultComponent({
+				user,
+				description: s.settingClassDescription,
+			});
+
 			return await replyInteraction(interaction, {
-				embeds: [defaultEmbed({
-					nickname: user.Nickname,
-					interaction,
-					description: s.settingClassDescription,
-				})],
-				flags: [MessageFlags.Ephemeral],
+				components: [container],
+				flags: [MessageFlags.IsComponentsV2, MessageFlags.Ephemeral],
 			});
 		}
 
@@ -78,36 +84,37 @@ module.exports = {
 			const expirationTime = timestamps.get(interaction.user.id) + cooldownAmount;
 
 			if (now < expirationTime) {
-
-				await replyInteraction(interaction, {
-					embeds: [defaultEmbed({
-						nickname: user.Nickname,
-						interaction,
-						description: s.willBeAble(command.data.name, expirationTime),
-					})],
-					flags: [MessageFlags.Ephemeral],
+				const container = defaultComponent({
+					user,
+					description: s.willBeAble(command.data.name, expirationTime),
 				});
 
+				await replyInteraction(interaction, {
+					components: [container],
+					flags: [MessageFlags.IsComponentsV2, MessageFlags.Ephemeral],
+				});
+
+				container.changeTextFromSectionId(1, s.canNowUse(command.data.name));
+
 				await wait(cooldownAmount);
-				return replyInteraction(interaction, {
-					embeds: [defaultEmbed({
-						nickname: user.Nickname,
-						interaction,
-						description: s.canNowUse(command.data.name),
-					})],
+
+				return await replyInteraction(interaction, {
+					components: [container],
+					flags: [MessageFlags.IsComponentsV2, MessageFlags.Ephemeral],
 				});
 			}
 		}
 
 		if (command.vip && !user.IsVip()) {
+			const container = defaultComponent({
+				user,
+				color: Colors.Gold,
+				description: s.needVIP,
+			});
+
 			return await replyInteraction(interaction, {
-				embeds: [defaultEmbed({
-					nickname: user.Nickname,
-					interaction,
-					color: Colors.Gold,
-					description: s.needVIP,
-				})],
-				flags: [MessageFlags.Ephemeral],
+				components: [container],
+				flags: [MessageFlags.IsComponentsV2, MessageFlags.Ephemeral],
 			});
 		}
 

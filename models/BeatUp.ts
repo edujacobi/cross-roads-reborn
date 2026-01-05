@@ -8,13 +8,13 @@ import {
 	ComponentType,
 	Message,
 	MessageComponentInteraction,
+	MessageFlags,
 	User as DUser,
 } from "discord.js";
 import { replyInteraction, sendComplexPrivateMessage } from "../utils/logic";
 import { formatMoney, showTime } from "../utils/ui";
 import { CrColors } from "../utils/colors";
 import { EmoteString } from "../utils/emotes";
-import { CustomEmbedBuilder } from "./CustomEmbedBuilder";
 import { getClient } from "../client";
 import { setTimeout as wait } from "timers/promises";
 import { Notification } from "./Notification";
@@ -27,6 +27,7 @@ import { JobId, JobList } from "../interfaces/Jobs";
 import { LocationList } from "../interfaces/Locations";
 import { ScavengeId, ScavengeList } from "../interfaces/Scavenge";
 import { BundleId } from "../interfaces/Ids";
+import { CustomContainerBuilder } from "../ui/builders/CustomContainerBuilder";
 
 export class BeatUp {
 	Id = 0;
@@ -41,9 +42,9 @@ export class BeatUp {
 
 	DiscordUser: DUser | undefined;
 
-	Embed = {
-		Private: new CustomEmbedBuilder().setColor(CrColors.BeatUp),
-		Channel: new CustomEmbedBuilder().setColor(CrColors.BeatUp),
+	Container = {
+		Private: new CustomContainerBuilder().setAccentColor(CrColors.BeatUp),
+		Channel: new CustomContainerBuilder().setAccentColor(CrColors.BeatUp),
 	};
 
 	constructor(attacker: User, defender: User) {
@@ -233,21 +234,29 @@ export class BeatUp {
 
 		const usedGun = `${this.Attacker.BestGun?.Skin[BundleId.Default].String} ${this.Attacker.BestGun?.Description[this.Defender.Language]}`;
 
-		this.Embed.Private
-			.setAuthor({
-				name: sD.hands,
-				iconURL: interaction.user.avatarURL() ?? undefined,
-			})
-			.setDescription(`**${this.Attacker.GetNameWithImage()}** ${sD.tryingToBeatYou} **${usedGun}** ${EmoteString.Beat}
-
--# ${sD.decide}:
-### 💪 **${sD.fight}**
-${sD.fightDescription(this.TimeInHospital.Aditional)}
-### 👟 **${sD.run}**
-${sD.runDescription(this.TimeInHospital.Aditional)}
-### 🏳️ **${sD.doNothing}**
-${sD.doNothingDescription}`)
-			.setFooter({ text: sD.secondsToRespond });
+		this.Container.Private
+			.addTexts([
+				`${EmoteString.Beat} ${this.Attacker.Nickname} • ${sD.hands}`,
+			])
+			.addLargeSeparator()
+			.addTexts([
+				`**${this.Attacker.GetNameWithImage()}** ${sD.tryingToBeatYou} **${usedGun}**`,
+				``,
+				`-# ${sD.decide}:`,
+				`### 💪 **${sD.fight}**`,
+				`${sD.fightDescription(this.TimeInHospital.Aditional)}`,
+			])
+			.addLargeSeparator()
+			.addTexts([
+				`### 👟 **${sD.run}**`,
+				`${sD.runDescription(this.TimeInHospital.Aditional)}`,
+			])
+			.addLargeSeparator()
+			.addTexts([
+				`### 🏳️ **${sD.doNothing}**`,
+				`${sD.doNothingDescription}`,
+			])
+			.addLargeSeparator();
 
 		const buttonFight = new ButtonBuilder()
 			.setCustomId("fight")
@@ -271,24 +280,27 @@ ${sD.doNothingDescription}`)
 		const defenderRow = new ActionRowBuilder<ButtonBuilder>()
 			.addComponents([buttonFight, buttonRun, buttonNothing]);
 
+		this.Container.Private
+			.addActionRowComponents(defenderRow)
+			.addFooter({ text: sD.secondsToRespond });
+
 		const defenderMessage = await sendComplexPrivateMessage(this.DiscordUser?.id, {
-			embeds: [this.Embed.Private],
-			components: [defenderRow],
+			components: [this.Container.Private],
+			flags: MessageFlags.IsComponentsV2,
 		});
 
-		this.Embed.Channel
-			.setAuthor({
-				name: sA.beatingInProgress,
-				iconURL: "https://cdn.discordapp.com/attachments/691019843159326757/820064474995621938/Espancar_20210312194139.png",
-			})
-			.setUserFooter({
-				nickname: this.Attacker.Nickname,
-				image: interaction.user.avatarURL(),
+		this.Container.Channel
+			.setUser(this.Attacker)
+			.addTexts([
+				`${EmoteString.Beat} ${sA.beatingInProgress}`,
+			], 50)
+			.addFooter({
 				text: `${sA.tryingToBeatUp} ${this.Defender.Nickname}`,
 			});
 
 		await replyInteraction(interaction, {
-			embeds: [this.Embed.Channel],
+			components: [this.Container.Channel],
+			flags: MessageFlags.IsComponentsV2,
 		});
 
 		const collectorPrivate = defenderMessage?.createMessageComponentCollector({
@@ -324,13 +336,25 @@ ${sD.doNothingDescription}`)
 				descriptionChannel = `### 🏳️ ${this.Defender.GetNameWithImage()} ${sA.isDoingNothing}!`;
 			}
 
+			this.Container.Private = new CustomContainerBuilder()
+				.setAccentColor(CrColors.BeatUp)
+				.addTexts([
+					`${EmoteString.Beat} ${this.Attacker.Nickname} • ${sD.hands}`,
+				], 1)
+				.addLargeSeparator()
+				.addTexts([
+					descriptionPrivate,
+				], 50)
+				.addFooter({ text: sD.secondsToRespond });
+
+			this.Container.Channel.changeTextFromSectionId(50, descriptionChannel);
+
 			defenderMessage?.edit({
-				embeds: [this.Embed.Private
-					.setDescription(descriptionPrivate)],
-				components: [],
+				components: [this.Container.Private],
 			});
+
 			await replyInteraction(interaction, {
-				embeds: [this.Embed.Channel.setDescription(descriptionChannel)],
+				components: [this.Container.Channel],
 			});
 		});
 
@@ -366,13 +390,10 @@ ${sD.doNothingDescription}`)
 
 			await Notification.BeatAgain(this.Attacker);
 
-			this.Embed.Channel
-				.setDescription(sA.youBeated(this.Defender.Nickname, this.Defender.Hospital.Time));
+			this.Container.Private.changeTextFromSectionId(50, sD.wereBeated(this.Attacker.GetNameWithImage(), this.Defender.Hospital.Time));
+			this.Container.Channel.changeTextFromSectionId(50, sA.youBeated(this.Defender.GetNameWithImage(), this.Defender.Hospital.Time));
 
-			this.Embed.Private
-				.setDescription(sD.wereBeated(this.Attacker.Nickname, this.Defender.Hospital.Time));
-
-			// Log.Success(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) successfully robbed user ${this.Defender.Nickname} (ID: ${this.Defender.Id}) and got ${formatMoney(this.MoneyRobbed, Language.English)}. ${willBeBeatenUp ? "The defender was beaten up." : ""}`);
+			Log.Success(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) successfully beated user ${this.Defender.Nickname} (ID: ${this.Defender.Id})`);
 		}
 		else {
 			this.Attacker.BeatUp.BeatedUpCount += 1;
@@ -387,39 +408,29 @@ ${sD.doNothingDescription}`)
 
 			await Notification.BeatAgain(this.Attacker);
 
-			this.Embed.Channel
-				.setColor(CrColors.BeatUp)
-				.setDescription(sA.youFailed(this.Attacker.Hospital.Time));
+			this.Container.Private
+				.setAccentColor(CrColors.BeatUp)
+				.changeTextFromSectionId(50, sD.youBeated(this.Attacker.GetNameWithImage(), this.Attacker.Hospital.Time));
 
-			this.Embed.Private
-				.setColor(CrColors.BeatUp)
-				.setDescription(sD.youBeated(this.Attacker.GetNameWithImage(), this.Attacker.Hospital.Time));
+			this.Container.Channel
+				.setAccentColor(CrColors.BeatUp)
+				.changeTextFromSectionId(50, sA.youFailed(this.Attacker.Hospital.Time));
 
 			Log.Success(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) failed to beat user ${this.Defender.Nickname} (ID: ${this.Defender.Id}).`);
 		}
 
-		this.Embed.Channel
-			.setAuthor({
-				name: sA.finishedBeatUpAttacker(this.Success),
-				iconURL: this.DiscordUser?.avatarURL() ?? undefined,
-			})
-			.setUserFooter({
-				nickname: this.Attacker.Nickname,
-				image: interaction.user.avatarURL(),
-				text: formatMoney(this.Attacker.Money, this.Attacker.Language),
-			});
+		this.Container.Channel
+			.changeTextFromSectionId(1, `${EmoteString.Beat} ${sA.finishedBeatUpAttacker(this.Success)}`)
+			.changeFooterText(formatMoney(this.Attacker.Money, this.Attacker.Language));
 
-		await replyInteraction(interaction, { embeds: [this.Embed.Channel], components: [] });
+		await replyInteraction(interaction, { components: [this.Container.Channel] });
 
 		if (privateMessage) {
-			this.Embed.Private
-				.setAuthor({
-					name: sD.finishedBeatUpDefender,
-					iconURL: interaction.user.avatarURL() ?? undefined,
-				})
-				.setFooter({ text: formatMoney(this.Defender.Money, this.Defender.Language) });
+			this.Container.Private
+				.changeTextFromSectionId(1, `${EmoteString.Beat} ${sD.finishedBeatUpDefender}`)
+				.changeFooterText(formatMoney(this.Defender.Money, this.Defender.Language));
 
-			await privateMessage.edit({ embeds: [this.Embed.Private], components: [] });
+			await privateMessage.edit({ components: [this.Container.Private] });
 		}
 
 		this.Attacker.BeatUp.IsBeatingId = null;
@@ -464,7 +475,7 @@ const Strings = {
 		doNothingDescription: "No additional effect",
 		doingNothing: "Doing nothing",
 		secondsToRespond: "You have 45 seconds to respond",
-		wereBeated: (attackerNick: string, time: Date) => `You were beaten up by **${attackerNick}** and will stay in the hospital! ${EmoteString.Beat}\n-# Will be healed ${showTime(time.getTime(), true)}!`,
+		wereBeated: (attackerNick: string, time: Date) => `You were beaten up by **${attackerNick}** and will stay in the hospital! ${EmoteString.Hospital}\n-# Will be healed ${showTime(time.getTime(), true)}!`,
 		finishedBeatUpDefender: "Beating finished",
 		// Attacker
 		beatingInProgress: "Beating in progress...",
@@ -491,7 +502,7 @@ const Strings = {
 
 			return `You ${word} **${defenderNick}**! ${EmoteString.Beat}\n-# They will stay in the hospital until ${showTime(time.getTime())}`;
 		},
-		youFailed: (time: Date) => `You tried, but you were the one beaten up! ${EmoteString.Beat}\n-# Will stay in the hospital until ${showTime(time.getTime())}`,
+		youFailed: (time: Date) => `You tried, but you were the one beaten up! ${EmoteString.Hospital}\n-# Will stay in the hospital until ${showTime(time.getTime())}`,
 		finishedBeatUpAttacker: (success: boolean) => `Beating ${success ? "successful" : "unsuccessful"}`,
 	},
 	[Language.Portuguese]: {
@@ -514,7 +525,7 @@ const Strings = {
 		isEscapingA: `Você está tentando escapar da prisão e não pode espancar! ${EmoteString.Escape}\n-# "Foco!"`,
 		isEscapingD: `está tentando escapar da prisão e não pode ser espancado! ${EmoteString.Escape}`,
 		// Defender
-		hands: "Vou quebrar a tura cara!",
+		hands: "Vou quebrar a tua cara!",
 		tryingToBeatYou: "está tentando espancar você utilizando",
 		decide: "Decida o que fazer",
 		fight: "Lutar",

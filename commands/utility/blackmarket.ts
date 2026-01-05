@@ -1,8 +1,7 @@
-﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+﻿import { ChatInputCommandInteraction, Locale, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { replyInteraction } from "../../utils/logic";
 import { BlackMarket } from "../../models/BlackMarket";
-import { defaultEmbed } from "../../utils/ui";
-import { EmoteString } from "../../utils/emotes";
+import { defaultComponent } from "../../utils/ui";
 import { CrColors } from "../../utils/colors";
 import { User } from "../../models/User";
 
@@ -20,13 +19,15 @@ module.exports = {
 		const { isOpen, message } = blackMarket.IsBlackMarketOpen();
 
 		if (!isOpen) {
+			const container = defaultComponent({
+				user,
+				color: CrColors.BlackMarket,
+				description: message,
+			});
+
 			return await replyInteraction(interaction, {
-				embeds: [defaultEmbed({
-					nickname: user.Nickname,
-					interaction,
-					description: `${EmoteString.BlackMarket} _"${message}"_`,
-					color: CrColors.BlackMarket,
-				})],
+				components: [container],
+				flags: MessageFlags.IsComponentsV2,
 			});
 		}
 

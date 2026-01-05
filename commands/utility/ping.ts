@@ -1,5 +1,5 @@
-﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
-import { defaultEmbed } from "../../utils/ui";
+﻿import { ChatInputCommandInteraction, Locale, MessageFlags, SlashCommandBuilder } from "discord.js";
+import { defaultComponent } from "../../utils/ui";
 import { replyInteraction } from "../../utils/logic";
 import { User } from "../../models/User";
 
@@ -14,16 +14,21 @@ module.exports = {
 		const botPing = Math.round(interaction.client.ws.ping);
 		const svPing = new Date().getTime();
 
-		const embed = defaultEmbed({
-			nickname: user.Nickname,
-			interaction,
+		const container = defaultComponent({
+			user,
 			description: `:satellite_orbital: ${botPing}ms API.`,
 		});
 
-		await replyInteraction(interaction, { embeds: [embed] });
+		await replyInteraction(interaction, {
+			components: [container],
+			flags: MessageFlags.IsComponentsV2,
+		});
+
+		container.changeTextFromSectionId(1, `:satellite_orbital: ${botPing}ms API. ${Math.round(new Date().getTime() - svPing)}ms Server.`);
 
 		await replyInteraction(interaction, {
-			embeds: [embed.setDescription(`:satellite_orbital: ${botPing}ms API. ${Math.round(new Date().getTime() - svPing)}ms Server.`)],
+			components: [container],
+			flags: MessageFlags.IsComponentsV2,
 		});
 	},
 };

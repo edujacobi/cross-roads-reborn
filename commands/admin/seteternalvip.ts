@@ -2,11 +2,12 @@
 	ChatInputCommandInteraction,
 	Colors,
 	Locale,
+	MessageFlags,
 	PermissionFlagsBits,
 	SlashCommandBuilder,
 	SlashCommandStringOption,
 } from "discord.js";
-import { defaultEmbed } from "../../utils/ui";
+import { defaultComponent } from "../../utils/ui";
 import { checkUser, replyInteraction, sendPrivateMessage } from "../../utils/logic";
 import { EmoteString } from "../../utils/emotes";
 import { User } from "../../models/User";
@@ -53,29 +54,27 @@ module.exports = {
 			},
 		} as const;
 
+		let description = "";
+
 		if (target.VipEternal) {
 			await sendPrivateMessage(userId, messages[target.Language].VIP, Colors.Gold);
+			description = `${EmoteString.VIP} user **${target.GetNameWithImage()}** is now a Eternal VIP`;
 
-			await replyInteraction(interaction, {
-				embeds: [defaultEmbed({
-					nickname: user.Nickname,
-					interaction: interaction,
-					color: Colors.Gold,
-					description: `${EmoteString.VIP} user <@${userId}> is now a Eternal VIP`,
-				})],
-			});
 		}
 		else {
 			await sendPrivateMessage(userId, messages[target.Language].noVIP, Colors.Gold);
-
-			await replyInteraction(interaction, {
-				embeds: [defaultEmbed({
-					nickname: user.Nickname,
-					interaction: interaction,
-					color: Colors.Gold,
-					description: `${EmoteString.VIP} user **${target.GetNameWithImage()}** is no longer a Eternal VIP`,
-				})],
-			});
+			description = `${EmoteString.VIP} user **${target.GetNameWithImage()}** is no longer a Eternal VIP`;
 		}
+
+		const container = defaultComponent({
+			user,
+			color: Colors.Gold,
+			description,
+		});
+
+		await replyInteraction(interaction, {
+			components: [container],
+			flags: MessageFlags.IsComponentsV2,
+		});
 	},
 };

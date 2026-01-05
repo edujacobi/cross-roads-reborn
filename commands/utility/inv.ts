@@ -22,7 +22,6 @@ import { ItemType } from "../../interfaces/Items";
 import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
 import { GangColor } from "../../utils/colors";
 import { getClient } from "../../client";
-import { BundleId } from "../../interfaces/Ids";
 import { UserImageCanvasBuilder } from "../../ui/builders/UserImageCanvasBuilder";
 
 module.exports = {

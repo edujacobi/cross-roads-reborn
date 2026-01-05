@@ -2,13 +2,11 @@
 	ActionRowBuilder,
 	ActivityType,
 	ButtonBuilder,
-	ButtonInteraction,
 	Client,
 	ColorResolvable,
-	CommandInteraction,
 	RGBTuple,
+	SectionBuilder,
 } from "discord.js";
-import { CustomEmbedBuilder } from "../models/CustomEmbedBuilder";
 import { Language } from "../models/Language";
 import { enUS, es, ptBR } from "date-fns/locale";
 import { formatDistanceToNow } from "date-fns";
@@ -20,50 +18,37 @@ import { GangColor } from "./colors";
 import { CustomContainerBuilder } from "../ui/builders/CustomContainerBuilder";
 import { logger } from "./log";
 
-interface EmbedParams {
-	nickname: string;
-	interaction: CommandInteraction | ButtonInteraction;
-	color?: ColorResolvable;
-	description?: string;
-	footer?: string;
-	thumbnail?: string;
-}
-
-export function defaultEmbed(options: EmbedParams): CustomEmbedBuilder {
-	const embed = new CustomEmbedBuilder()
-		.setUserFooter({
-			nickname: options.nickname,
-			image: options.interaction.user.avatarURL(),
-			text: options.footer,
-		});
-
-	if (options.description) {
-		embed.setDescription(options.description);
-	}
-	if (options.color) {
-		embed.setColor(options.color);
-	}
-	if (options.thumbnail) {
-		embed.setThumbnail(options.thumbnail);
-	}
-
-	return embed;
-}
-
 interface ComponentParams {
 	user: User;
 	color?: ColorResolvable;
 	description: string;
 	footer?: string;
+	thumbnail?: string;
 	buttons?: ActionRowBuilder<ButtonBuilder>;
 }
 
 export function defaultComponent(options: ComponentParams): CustomContainerBuilder {
 	const container = new CustomContainerBuilder()
-		.setUser(options.user)
-		.addTextDisplayComponents(text => text
+		.setUser(options.user);
+
+	if (options.thumbnail) {
+		const section = new SectionBuilder()
+			.setId(1)
+			.addTextDisplayComponents(text => text
+				.setId(2)
+				.setContent(options.description),
+			).setThumbnailAccessory(thumbnail => thumbnail
+				.setURL(options.thumbnail!),
+			);
+
+		container.addSectionComponents(section);
+	}
+	else {
+		container.addTextDisplayComponents(text => text
+			.setId(1)
 			.setContent(options.description),
 		);
+	}
 
 	if (options.buttons) {
 		container.addActionRowComponents(options.buttons);

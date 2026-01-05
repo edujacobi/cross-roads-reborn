@@ -1,12 +1,12 @@
-﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+﻿import { ChatInputCommandInteraction, Locale, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { replyInteraction, searchUser } from "../../utils/logic";
-import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
-import { defaultEmbed, showTime } from "../../utils/ui";
+import { defaultComponent, showTime } from "../../utils/ui";
 import { EmoteString } from "../../utils/emotes";
 import { CrColors } from "../../utils/colors";
 import { User } from "../../models/User";
 import { Language } from "../../models/Language";
 import { BeatUp } from "../../models/BeatUp";
+import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -27,6 +27,8 @@ module.exports = {
 		const target = nameOrId ? await searchUser(nameOrId, interaction) : null;
 
 		const s = Strings[language];
+
+		await interaction.deferReply();
 
 		let text = `${s.userFree}`;
 
@@ -50,20 +52,26 @@ module.exports = {
 		}
 
 		if (!nameOrId) {
-			const instructions = new CustomEmbedBuilder()
-				.setColor(CrColors.BeatUp)
-				.setThumbnail("https://cdn.discordapp.com/attachments/691019843159326757/820064474995621938/Espancar_20210312194139.png")
-				.setDescription(`${s.description}
-
--# ${text}`)
-				.setUserFooter({
-					nickname: user.Nickname,
-					image: interaction.user.avatarURL(),
+			const container = new CustomContainerBuilder()
+				.setUser(user)
+				.setAccentColor(CrColors.BeatUp)
+				.addSectionComponents(section => section
+					.addTextDisplayComponents(header => header
+						.setContent(s.description),
+					)
+					.setThumbnailAccessory(thumb => thumb
+						.setURL("https://cdn.discordapp.com/attachments/691019843159326757/820064474995621938/Espancar_20210312194139.png"),
+					),
+				)
+				.addLargeSeparator()
+				.addTexts([`-# ${text}`])
+				.addFooter({
 					text: user.Situation.Simple,
 				});
 
 			return await replyInteraction(interaction, {
-				embeds: [instructions],
+				components: [container],
+				flags: MessageFlags.IsComponentsV2,
 			});
 		}
 
@@ -76,14 +84,15 @@ module.exports = {
 		const { canBeat, message } = await robbery.CanBeatUser();
 
 		if (!canBeat) {
+			const container = defaultComponent({
+				user,
+				color: CrColors.BeatUp,
+				description: message,
+			});
+
 			return await replyInteraction(interaction, {
-				embeds: [defaultEmbed({
-					nickname: user.Nickname,
-					interaction,
-					color: CrColors.BeatUp,
-					description: message,
-				})],
-				components: [],
+				components: [container],
+				flags: MessageFlags.IsComponentsV2,
 			});
 		}
 

@@ -7,11 +7,12 @@ import {
 	ContainerBuilder,
 	ContainerComponent,
 	Locale,
+	MessageFlags,
 	SectionBuilder,
 	SlashCommandBuilder,
 } from "discord.js";
 import { Op } from "sequelize";
-import { DEFAULT_GANG_IMAGE, defaultEmbed, formatMoney } from "../../utils/ui";
+import { DEFAULT_GANG_IMAGE, defaultComponent, formatMoney } from "../../utils/ui";
 import { Users } from "../../database/Users";
 import { User } from "../../models/User";
 import { Language } from "../../models/Language";
@@ -639,14 +640,16 @@ module.exports = {
 				const { canRob, message } = await robbery.CanRobUser();
 
 				if (!canRob) {
+					const container = defaultComponent({
+						user,
+						color: CrColors.Robbery,
+						description: message,
+						footer: formatMoney(user.Money, language),
+					});
+
 					return await replyInteraction(interaction, {
-						embeds: [defaultEmbed({
-							nickname: user.Nickname,
-							interaction,
-							color: CrColors.Robbery,
-							description: message,
-						})],
-						components: [],
+						components: [container],
+						flags: MessageFlags.IsComponentsV2,
 					});
 				}
 

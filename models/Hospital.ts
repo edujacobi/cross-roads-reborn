@@ -15,7 +15,7 @@ import { EmoteBadgeString } from "../utils/badges";
 import { Users } from "../database/Users";
 import { Op } from "sequelize";
 import { ClassList } from "../interfaces/Classes";
-import { defaultEmbed, formatMoney, showTime } from "../utils/ui";
+import { defaultComponent, formatMoney, showTime } from "../utils/ui";
 import { Language } from "./Language";
 import { differenceInMinutes } from "date-fns";
 import { Notification, NotificationType } from "./Notification";
@@ -135,14 +135,15 @@ ${s.description}
 				const { canPay, message } = await this.CanPayPrivate();
 
 				if (!canPay) {
+					const container = defaultComponent({
+						user: this.User,
+						color: CrColors.Hospital,
+						description: message,
+					});
+
 					return await replyInteraction(this.Interaction, {
-						embeds: [defaultEmbed({
-							interaction: this.Interaction,
-							description: message,
-							color: CrColors.Hospital,
-							nickname: this.User.Nickname,
-						})],
-						components: [],
+						components: [container],
+						flags: MessageFlags.IsComponentsV2,
 					});
 				}
 
@@ -167,14 +168,15 @@ ${s.treatmentCost(this.PrivatePrice)}
 				const { canPay, message } = await this.CanPayPrivate();
 
 				if (!canPay) {
+					const container = defaultComponent({
+						user: this.User,
+						color: CrColors.Hospital,
+						description: message,
+					});
+
 					return await replyInteraction(this.Interaction, {
-						embeds: [defaultEmbed({
-							interaction: this.Interaction,
-							description: message,
-							color: CrColors.Hospital,
-							nickname: this.User.Nickname,
-						})],
-						components: [],
+						components: [container],
+						flags: MessageFlags.IsComponentsV2,
 					});
 				}
 

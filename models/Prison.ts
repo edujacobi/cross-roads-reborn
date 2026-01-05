@@ -13,7 +13,7 @@ import { ItemList } from "../interfaces/Items";
 import { CrColors } from "../utils/colors";
 import { Users } from "../database/Users";
 import { Op } from "sequelize";
-import { defaultEmbed, formatMoney, showTime } from "../utils/ui";
+import { defaultComponent, formatMoney, showTime } from "../utils/ui";
 import { EmoteId, EmoteString } from "../utils/emotes";
 import { disableButtons, replyInteraction } from "../utils/logic";
 import { ClassList } from "../interfaces/Classes";
@@ -164,14 +164,15 @@ ${s.description(this.Escape.BaseChance, this.Escape.BaseJetpackChance + this.Esc
 				const { canEscape, message } = await this.CanEscape();
 
 				if (!canEscape) {
+					const container = defaultComponent({
+						user: this.User,
+						color: CrColors.Police,
+						description: message,
+					});
+
 					return await replyInteraction(this.Interaction, {
-						embeds: [defaultEmbed({
-							interaction: this.Interaction,
-							color: CrColors.Police,
-							description: message,
-							nickname: this.User.Nickname,
-						})],
-						components: [],
+						components: [container],
+						flags: MessageFlags.IsComponentsV2,
 					});
 				}
 
@@ -189,14 +190,15 @@ ${s.description(this.Escape.BaseChance, this.Escape.BaseJetpackChance + this.Esc
 				const { canBribe, message } = await this.CanBribe();
 
 				if (!canBribe) {
+					const container = defaultComponent({
+						user: this.User,
+						color: CrColors.Police,
+						description: message,
+					});
+
 					return await replyInteraction(this.Interaction, {
-						embeds: [defaultEmbed({
-							interaction: this.Interaction,
-							color: CrColors.Police,
-							description: message,
-							nickname: this.User.Nickname,
-						})],
-						components: [],
+						components: [container],
+						flags: MessageFlags.IsComponentsV2,
 					});
 				}
 
@@ -238,14 +240,15 @@ ${s.briberyStart(this.Bribe.Value)}`),
 				const { canBribe, message } = await this.CanBribe();
 
 				if (!canBribe) {
+					const container = defaultComponent({
+						user: this.User,
+						color: CrColors.Police,
+						description: message,
+					});
+
 					return await replyInteraction(this.Interaction, {
-						embeds: [defaultEmbed({
-							interaction: this.Interaction,
-							color: CrColors.Police,
-							description: message,
-							nickname: this.User.Nickname,
-						})],
-						components: [],
+						components: [container],
+						flags: MessageFlags.IsComponentsV2,
 					});
 				}
 

@@ -1,11 +1,11 @@
-﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+﻿import { ChatInputCommandInteraction, Locale, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { replyInteraction } from "../../utils/logic";
 import { formatMoney, showTime } from "../../utils/ui";
 import { addDays } from "date-fns";
 import { Language } from "../../models/Language";
 import { CrColors } from "../../utils/colors";
 import { User } from "../../models/User";
-import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
+import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -16,12 +16,9 @@ module.exports = {
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 		const s = Strings[language];
 
-		const embed = new CustomEmbedBuilder()
-			.setColor(CrColors.Default)
-			.setUserFooter({
-				nickname: user.Nickname,
-				image: interaction.user.avatarURL()
-			});
+		const container = new CustomContainerBuilder()
+			.setUser(user)
+			.setAccentColor(CrColors.Default);
 
 		if (!user.CanReceiveDaily()) {
 
@@ -29,22 +26,32 @@ module.exports = {
 				return;
 			}
 
-			embed.setDescription(s.descriptionReceived(showTime(addDays(user.Daily.LastReceived, 1).getTime(), true)));
+			container
+				.addTexts([
+					s.descriptionReceived(showTime(addDays(user.Daily.LastReceived, 1).getTime(), true)),
+				])
+				.addFooter();
 
-			return await replyInteraction(interaction, { embeds: [embed] });
+			return await replyInteraction(interaction, {
+				components: [container],
+				flags: MessageFlags.IsComponentsV2,
+			});
 		}
 
 		const money = await user.ReceiveDaily();
 
-		embed
-			.setDescription(s.description(money, user.Daily.CurrentStreak))
-			.setUserFooter({
-				nickname: user.Nickname,
-				image: interaction.user.avatarURL(),
-				text: s.footer(user.Daily.MaxStreak)
+		container
+			.addTexts([
+				s.description(money, user.Daily.CurrentStreak),
+			])
+			.addFooter({
+				text: s.footer(user.Daily.MaxStreak),
 			});
 
-		await replyInteraction(interaction, { embeds: [embed] });
+		return await replyInteraction(interaction, {
+			components: [container],
+			flags: MessageFlags.IsComponentsV2,
+		});
 	},
 };
 

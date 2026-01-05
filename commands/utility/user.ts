@@ -1,14 +1,26 @@
-﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
-import { CustomEmbedBuilder } from "../../models/CustomEmbedBuilder";
-import { replyInteraction, searchUser } from "../../utils/logic";
+﻿import {
+	ActionRowBuilder,
+	AttachmentBuilder,
+	ButtonBuilder,
+	ButtonStyle,
+	ChatInputCommandInteraction,
+	ComponentType,
+	Locale,
+	MessageComponentInteraction,
+	MessageFlags,
+	SlashCommandBuilder,
+} from "discord.js";
+import { disableButtons, replyInteraction, searchUser } from "../../utils/logic";
 import { Language } from "../../models/Language";
 import { User } from "../../models/User";
 import { ClassList } from "../../interfaces/Classes";
 import { UserBadge } from "../../models/UserBadge";
 import { formatMoney, showTime } from "../../utils/ui";
-import { EmoteString } from "../../utils/emotes";
-import { addDays } from "date-fns";
+import { EmoteId } from "../../utils/emotes";
 import { getClient } from "../../client";
+import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
+import { UserImageCanvasBuilder } from "../../ui/builders/UserImageCanvasBuilder";
+import { addDays } from "date-fns";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -47,104 +59,223 @@ module.exports = {
 
 		const now = new Date();
 
-		const embed = new CustomEmbedBuilder()
-			// .setThumbnail(_user.avatarURL())
-			.setAuthor({
-				name: `${s.title} ${target.Nickname}`,
-				iconURL: _user.avatarURL() ?? undefined,
-			})
-			.setDescription(`\n${badges.length > 0 ? `### ${badgeText}\n` : ""} ### ${formatMoney(target.Money, language)}`)
-			.setFields([
-				{
-					name: s.className,
-					value: `-# ${ClassList[target.Class].Image.Emote.String} ${ClassList[target.Class].Description[user.Language]}`,
-					inline: true,
-				},
-				{
-					name: s.situation,
-					value: `-# ${target.Situation.SimpleEmote}`,
-					inline: true,
-				},
-				{
-					name: `${EmoteString.Hospital} Hospital`,
-					value: `-# \`${target.Hospital.Count}\` ${s.timesInHospital}
--# \`${formatMoney(target.Hospital.TreatmentSum, user.Language)}\` (\`${target.Hospital.TreatmentCount}\`) ${s.spentInTreatments}`,
-					inline: true,
-				},
-				{
-					// {
-					// 	name: `${EmoteString.InvestmentActive} Investimento`,
-					// 	value: `-# Não implementado`,
-					// 	inline: true,
-					// },
-					name: `${EmoteString.Heads} Daily`,
-					value: `-# ${target.CanReceiveDaily() ? s.available : showTime(addDays(target.Daily.LastReceived!, 1).getTime(), true)}
--# \`${target.Daily.CurrentStreak}\` ${s.currentStreak}
--# \`${target.Daily.MaxStreak}\` ${s.maxStreak}`,
-					inline: true,
-				},
-				{
-					name: `${EmoteString.Prison} ${s.prison}`,
-					value: `-# \`${target.Prison.Count}\` ${s.timesInPrison}
--# \`${target.Escape.Count}\` ${s.escapes}
--# \`${formatMoney(target.Prison.BriberySum, user.Language)}\` (\`${target.Prison.BriberyCount}\`) ${s.inBribery}`,
-					inline: true,
-				},
-				{
-					name: `${EmoteString.Robbery} ${s.robberies}`,
-					value: `-# ${target.Wanted.Time > now ? showTime(target.Wanted.Time.getTime(), true) : s.canRob}
--# \`${formatMoney(target.Robbery.SuccessRobbedSum, user.Language)}\` (\`${target.Robbery.SuccessCount}\`) ${s.robbed}
--# \`${formatMoney(target.Robbery.BeingRobbedSum, user.Language)}\` (\`${target.Robbery.BeingRobbedCount}\`) ${s.robLost}
--# \`${target.Robbery.FailureCount}\` ${s.beatFailure}`,
-					inline: true,
-				},
-				{
-					name: `${EmoteString.Beat} ${s.beatUps}`,
-					value: `-# ${target.BeatUp.Time > now ? showTime(target.BeatUp.Time.getTime(), true) : s.canBeat}
--# \`${target.BeatUp.SuccessCount}\` ${s.beatSuccess}
--# \`${target.BeatUp.FailureCount}\` ${s.beatFailure}
--# \`${target.BeatUp.BeatedUpCount}\` ${s.beatedUp}`,
-					inline: true,
-				},
-				{
-					name: `${EmoteString.Casino} ${s.casino}`,
-					value: `-# \`${target.Casino.WinCount + target.Casino.LoseCount}\` ${s.games}
--# \`${formatMoney(target.Casino.WinSum, user.Language)}\` (\`${target.Casino.WinCount}\`) ${s.won}
--# \`${formatMoney(target.Casino.LoseSum, user.Language)}\` (\`${target.Casino.LoseCount}\`) ${s.lost}
--# \`${(target.Casino.WinCount / (target.Casino.LoseCount + target.Casino.WinCount) * 100).toFixed(2)}%\` win rate`,
-					inline: true,
-				},
-				{
-					name: `${EmoteString.Alms} ${s.alms}`,
-					value: `-# ${target.Alms.ReceiveTime > now ? `${s.almsReceive} ${showTime(target.Alms.ReceiveTime.getTime(), true)}` : s.almsCanReceive}
--# ${target.Alms.GiveTime > now ? `${s.almsGive} ${showTime(target.Alms.GiveTime.getTime(), true)}` : s.almsCanGive}
--# ${formatMoney(target.Alms.ReceivedSum, user.Language)} (\`${target.Alms.ReceivedCount}\`) ${s.almsReceived}
--# ${formatMoney(target.Alms.GivenSum, user.Language)} (\`${target.Alms.GivenCount}\`) ${s.almsGiven}`,
-					inline: true,
-				},
-				{
-					name: `${EmoteString.Scavenge} ${s.scavenge}`,
-					value: `-# ${target.Scavenge.Time > now ? showTime(target.Scavenge.Time.getTime(), true) : s.scavengeCan}
--# \`${target.Scavenge.Found.Items + target.Scavenge.Found.MoneyCount}\` ${s.scavengeFound}
--# \`${target.Scavenge.Found.Failures}\` ${s.scavengeFailures}
--# \`${target.Scavenge.Found.FailureWithHospital}\` ${s.scavengeHospitalizations}
--# \`${target.Scavenge.Found.FailureWithPrison}\` ${s.scavengePrisions}`,
-					inline: true,
-				},
-				{
-					name: `${EmoteString.Bank} ${s.money}`,
-					value: `-# \`${formatMoney(target.Job.ReceivedSum, user.Language)}\` (\`${target.Job.ReceivedCount}\`) ${s.fromJobs}
--# \`${formatMoney(target.Shop.SpentSum, user.Language)}\` (\`${target.Shop.SpentCount}\`) ${s.spent}`,
-					inline: true,
-				},
-			])
-			.setUserFooter({
-				nickname: user.Nickname,
-				image: interaction.user.avatarURL(),
+		const buttonOptions = [{
+			id: "hospital",
+			label: "Hospital",
+			emote: EmoteId.Hospital,
+			texts: [
+				`\`${target.Hospital.Count}\` ${s.timesInHospital}`,
+				`\`${formatMoney(target.Hospital.TreatmentSum, user.Language)}\` (\`${target.Hospital.TreatmentCount}\`) ${s.spentInTreatments}`,
+			],
+		}, {
+			id: "daily",
+			label: "Daily",
+			emote: EmoteId.Heads,
+			texts: [
+				target.CanReceiveDaily() ? s.available : showTime(addDays(target.Daily.LastReceived!, 1).getTime(), true),
+				`\`${target.Daily.CurrentStreak}\` ${s.currentStreak}`,
+				`\`${target.Daily.MaxStreak}\` ${s.maxStreak}`,
+			],
+		}, {
+			id: "prison",
+			label: s.prison,
+			emote: EmoteId.Prison,
+			texts: [
+				`\`${target.Prison.Count}\` ${s.timesInPrison}`,
+				`\`${target.Escape.Count}\` ${s.escapes}`,
+				`\`${formatMoney(target.Prison.BriberySum, user.Language)}\` (\`${target.Prison.BriberyCount}\`) ${s.inBribery}`,
+			],
+		}, {
+			id: "robbery",
+			label: s.robberies,
+			emote: EmoteId.Robbery,
+			texts: [
+				target.Wanted.Time > now ? showTime(target.Wanted.Time.getTime(), true) : s.canRob,
+				`\`${formatMoney(target.Robbery.SuccessRobbedSum, user.Language)}\` (\`${target.Robbery.SuccessCount}\`) ${s.robbed}`,
+				`\`${formatMoney(target.Robbery.BeingRobbedSum, user.Language)}\` (\`${target.Robbery.BeingRobbedCount}\`) ${s.robLost}`,
+				`\`${target.Robbery.FailureCount}\` ${s.beatFailure}`,
+			],
+		}, {
+			id: "beatups",
+			label: s.beatUps,
+			emote: EmoteId.Beat,
+			texts: [
+				target.BeatUp.Time > now ? showTime(target.BeatUp.Time.getTime(), true) : s.canBeat,
+				`\`${target.BeatUp.SuccessCount}\` ${s.beatSuccess}`,
+				`\`${target.BeatUp.FailureCount}\` ${s.beatFailure}`,
+				`\`${target.BeatUp.BeatedUpCount}\` ${s.beatedUp}`,
+			],
+		}, {
+			id: "casino",
+			label: s.casino,
+			emote: EmoteId.Casino,
+			texts: [
+				`\`${target.Casino.WinCount + target.Casino.LoseCount}\` ${s.games}`,
+				`\`${formatMoney(target.Casino.WinSum, user.Language)}\` (\`${target.Casino.WinCount}\`) ${s.won}`,
+				`\`${formatMoney(target.Casino.LoseSum, user.Language)}\` (\`${target.Casino.LoseCount}\`) ${s.lost}`,
+				`\`${(target.Casino.WinCount / (target.Casino.LoseCount + target.Casino.WinCount) * 100).toFixed(2)}%\` win rate`,
+			],
+		}, {
+			id: "alms",
+			label: s.alms,
+			emote: EmoteId.Alms,
+			texts: [
+				target.Alms.ReceiveTime > now ? `${s.almsReceive} ${showTime(target.Alms.ReceiveTime.getTime(), true)}` : s.almsCanReceive,
+				target.Alms.GiveTime > now ? `${s.almsGive} ${showTime(target.Alms.GiveTime.getTime(), true)}` : s.almsCanGive,
+				`${formatMoney(target.Alms.ReceivedSum, user.Language)} (\`${target.Alms.ReceivedCount}\`) ${s.almsReceived}`,
+				`${formatMoney(target.Alms.GivenSum, user.Language)} (\`${target.Alms.GivenCount}\`) ${s.almsGiven}`,
+			],
+		}, {
+			id: "scavenge",
+			label: s.scavenge,
+			emote: EmoteId.Scavenge,
+			texts: [
+				target.Scavenge.Time > now ? showTime(target.Scavenge.Time.getTime(), true) : s.scavengeCan,
+				`\`${target.Scavenge.Found.Items + target.Scavenge.Found.MoneyCount}\` ${s.scavengeFound}`,
+				`\`${target.Scavenge.Found.Failures}\` ${s.scavengeFailures}`,
+				`\`${target.Scavenge.Found.FailureWithHospital}\` ${s.scavengeHospitalizations}`,
+				`\`${target.Scavenge.Found.FailureWithPrison}\` ${s.scavengePrisions}`,
+			],
+		}, {
+			id: "money",
+			label: s.money,
+			emote: EmoteId.Bank,
+			texts: [
+				`\`${formatMoney(target.Job.ReceivedSum, user.Language)}\` (\`${target.Job.ReceivedCount}\`) ${s.fromJobs}`,
+				`\`${formatMoney(target.Shop.SpentSum, user.Language)}\` (\`${target.Shop.SpentCount}\`) ${s.spent}`,
+			],
+		}];
+
+
+		const userImage = await new UserImageCanvasBuilder(target, _user.avatarURL({ size: 256 }))
+			.SetBadges(badges)
+			.GenerateImage();
+
+		const userImageFile = new AttachmentBuilder(userImage, { name: "user.webp" });
+
+		function addHeader(container = new CustomContainerBuilder()) {
+			if (!target) {
+				return container;
+			}
+
+			container.setUser(target)
+				.addSectionComponents(header => header
+					.addTextDisplayComponents(text => text
+						.setContent(`### ${s.title} ${target.Nickname}\n${badges.length > 0 ? `### ${badgeText}\n` : ""} ### ${formatMoney(target.Money, language)}`))
+
+					.setThumbnailAccessory(thumb => thumb
+						.setURL("attachment://user.webp"),
+					),
+				)
+				.addTexts([
+					`### ${ClassList[target.Class].Image.Emote.String} ${ClassList[target.Class].Description[user.Language]} • ${target.Situation.SimpleEmote}`,
+				])
+				.addLargeSeparator();
+
+			return container;
+		}
+
+		async function generateDefaultContainer() {
+			if (!target) {
+				return addHeader();
+			}
+
+			await target.GetInfo();
+
+			// separate options in different arrays with length = 5
+			const buttonOptionsChunks = [];
+			for (let i = 0; i < buttonOptions.length; i += 5) {
+				buttonOptionsChunks.push(buttonOptions.slice(i, i + 5));
+			}
+
+			const container = addHeader();
+
+			for (const chunk of buttonOptionsChunks) {
+				container.addActionRowComponents(row => row
+					.addComponents(
+						chunk.map(option => new ButtonBuilder()
+							.setLabel(option.label)
+							.setEmoji(option.emote)
+							.setStyle(ButtonStyle.Secondary)
+							.setCustomId(option.id),
+						),
+					),
+				);
+			}
+
+			container.addFooter({
 				text: `ID: ${target.Id} • ${s.playingSince}: ${target.CreatedAt.toLocaleDateString(interaction.locale)}`,
 			});
 
-		await replyInteraction(interaction, { embeds: [embed] });
+			return container;
+		}
+
+		const files = [];
+		if (userImageFile) {
+			files.push(userImageFile);
+		}
+
+		let container = await generateDefaultContainer();
+
+		const response = await replyInteraction(interaction, {
+			components: [container],
+			files,
+			flags: MessageFlags.IsComponentsV2,
+		});
+
+		const collectorButton = response?.createMessageComponentCollector({
+			filter: (i: MessageComponentInteraction) => i.user.id === interaction.user.id,
+			componentType: ComponentType.Button,
+			idle: 60_000,
+		});
+
+		collectorButton?.on("end", async () => {
+			await disableButtons(interaction, container);
+		});
+
+		collectorButton?.on("collect", async btn => {
+			await btn.deferUpdate({
+				withResponse: true,
+			});
+
+			if (btn.customId === "back") {
+				container = await generateDefaultContainer();
+
+				await replyInteraction(interaction, {
+					components: [container],
+					flags: MessageFlags.IsComponentsV2,
+				});
+			}
+			else {
+				const info = buttonOptions.find(b => b.id === btn.customId);
+
+				if (!info) {
+					return;
+				}
+
+				const emoji = interaction.client.emojis.cache.get(info.emote);
+
+				container = addHeader()
+					.addTexts([
+						`### ${emoji} ${info.label}`,
+						...info.texts,
+					])
+					.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
+						.addComponents([
+							new ButtonBuilder()
+								.setLabel(s.goBack)
+								.setStyle(ButtonStyle.Secondary)
+								.setCustomId("back"),
+						]),
+					)
+					.addFooter();
+
+				await replyInteraction(interaction, {
+					components: [container],
+					flags: MessageFlags.IsComponentsV2,
+				});
+			}
+		});
 	},
 };
 
@@ -195,6 +326,7 @@ const Strings = {
 		scavengeHospitalizations: "hospitalizations",
 		scavengePrisions: "prisons",
 		playingSince: "Playing since",
+		goBack: "Go back",
 	},
 
 	[Language.Portuguese]: {
@@ -243,6 +375,7 @@ const Strings = {
 		scavengeHospitalizations: "hospitalizações",
 		scavengePrisions: "prisões",
 		playingSince: "Jogando desde",
+		goBack: "Voltar",
 	},
 
 	[Language.Spanish]: {
@@ -291,5 +424,6 @@ const Strings = {
 		scavengeHospitalizations: "hospitalizaciones",
 		scavengePrisions: "prisiones",
 		playingSince: "Jugando desde",
+		goBack: "Volver",
 	},
 } as const;
