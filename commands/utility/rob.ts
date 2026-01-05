@@ -40,6 +40,8 @@ module.exports = {
 
 		const s = Strings[language];
 
+		await interaction.deferReply();
+
 		let text = `${s.userFree}`;
 		let canUserRob = true;
 
