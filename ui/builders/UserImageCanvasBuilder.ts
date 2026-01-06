@@ -6,17 +6,6 @@ import { ClassList } from "../../interfaces/Classes";
 import fs from "node:fs";
 import { UserBadge } from "../../models/UserBadge";
 
-export enum Border {
-	Default,
-	VIP,
-	Developer,
-	Moderator,
-	Helper,
-	Purple,
-	Sunset,
-	Sunrise,
-}
-
 function createLinearGradient(colors: string[], angle = 90) {
 	return (ctx: SKRSContext2D, x: number, y: number, radius: number) => {
 		// Convert angle to radians
@@ -31,7 +20,7 @@ function createLinearGradient(colors: string[], angle = 90) {
 		const gradient = ctx.createLinearGradient(x - dx, y - dy, x + dx, y + dy);
 
 		if (colors.length < 2) {
-			return colors[0] ?? "#FFFFFF";
+			return colors[0] ?? BorderStyles[Border.Default];
 		}
 
 		colors.forEach((color, index) => {
@@ -40,6 +29,36 @@ function createLinearGradient(colors: string[], angle = 90) {
 
 		return gradient;
 	};
+}
+
+function createRadialGradient(colors: string[]) {
+	return (ctx: SKRSContext2D, x: number, y: number, radius: number) => {
+		const gradient = ctx.createRadialGradient(x, y, radius - 10, x, y, radius + 10);
+
+		if (colors.length < 2) {
+			return colors[0] ?? BorderStyles[Border.Default];
+		}
+
+		colors.forEach((color, index) => {
+			gradient.addColorStop(index / (colors.length - 1), color);
+		});
+
+		return gradient;
+	};
+}
+
+export enum Border {
+	Default,
+	VIP,
+	Developer,
+	Moderator,
+	Helper,
+	Purple,
+	Sunset,
+	Sunrise,
+	Cloud,
+	FrutigerAero,
+	Silver,
 }
 
 // Type definition for border styles which can be a solid color string or a function returning a gradient
@@ -54,6 +73,9 @@ const BorderStyles: Record<Border, BorderStyle> = {
 	[Border.Purple]: createLinearGradient(["#7345C4", "#3F1EB7"]),
 	[Border.Sunset]: createLinearGradient(["#FD5949", "#D6249F", "#285AEB"]),
 	[Border.Sunrise]: createLinearGradient(["#FCB045", "#FD1D1D", "#833AB4"]),
+	[Border.Cloud]: createRadialGradient(["#94BBE9", "#EEAECA"]),
+	[Border.FrutigerAero]: createLinearGradient(["#EDDD53", "#57C785", "#2A7B9B"], 115),
+	[Border.Silver]: createLinearGradient(["#d9d9d9", "#ADBBC3", "#656C70"], 115),
 };
 
 export class UserImageCanvasBuilder {
@@ -61,13 +83,18 @@ export class UserImageCanvasBuilder {
 	AvatarUrl: string;
 	Badges: UserBadge[] | null = null;
 	Border: Border | null = null;
+	SecondaryBorder = false;
 
 	constructor(user: User, avatarUrl: string | null) {
 		this.User = user;
 		this.AvatarUrl = avatarUrl ?? ClassList[this.User.Class].Image.Url;
 
 		// debug
-		this.Border = Border.Sunrise;
+		this.Border = Border.Silver;
+		this.SecondaryBorder = [
+			Border.FrutigerAero,
+			Border.Silver,
+		].includes(this.Border);
 	}
 
 	SetBadges(badges: UserBadge[]) {
@@ -183,6 +210,26 @@ export class UserImageCanvasBuilder {
 		userCtx.closePath();
 		userCtx.stroke();
 		userCtx.globalAlpha = 1.0; // Reset alpha
+
+		// Secondary Border
+		if (this.SecondaryBorder) {
+			if (this.Border === Border.FrutigerAero) {
+				userCtx.strokeStyle = "#EDDD53";
+				userCtx.globalAlpha = 0.25;
+			}
+			else if (this.Border === Border.Silver) {
+				const gradient = createLinearGradient(["#000", "#fff"], 115);
+				userCtx.strokeStyle = gradient(userCtx, LAYER_CENTER_X, LAYER_CENTER_Y, AVATAR_RADIUS);
+				userCtx.globalAlpha = 0.35;
+			}
+
+			userCtx.lineWidth = BORDER_WIDTH / 2;
+			userCtx.beginPath();
+			userCtx.arc(LAYER_CENTER_X, LAYER_CENTER_Y, AVATAR_RADIUS - 5, 0, Math.PI * 2);
+			userCtx.closePath();
+			userCtx.stroke();
+			userCtx.globalAlpha = 1.0; // Reset alpha
+		}
 
 		// Draw badge circle and image on the separate canvas
 		if (imageBadge) {
