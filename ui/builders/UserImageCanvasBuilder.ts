@@ -59,7 +59,13 @@ export enum Border {
 	Cloud,
 	FrutigerAero,
 	Silver,
+	Cat,
 }
+
+const CANVAS_SIZE = 512;
+const BORDER_WIDTH = 20;
+const AVATAR_RADIUS = 214; // Radius of the border circle
+const AVATAR_CENTER = { x: 284, y: 228 }; // Center position of the avatar on the canvas - Control padding changing center
 
 // Type definition for border styles which can be a solid color string or a function returning a gradient
 type BorderStyle = string | ((ctx: SKRSContext2D, x: number, y: number, radius: number) => string | CanvasGradient);
@@ -76,6 +82,29 @@ const BorderStyles: Record<Border, BorderStyle> = {
 	[Border.Cloud]: createRadialGradient(["#94BBE9", "#EEAECA"]),
 	[Border.FrutigerAero]: createLinearGradient(["#EDDD53", "#57C785", "#2A7B9B"], 115),
 	[Border.Silver]: createLinearGradient(["#d9d9d9", "#ADBBC3", "#656C70"], 115),
+	[Border.Cat]: "#6A4931",
+};
+
+interface SecondaryBorderDef {
+	style: BorderStyle;
+	alpha: number;
+	lineWidth: number;
+	position: number;
+}
+
+const SecondaryBorderStyles: Partial<Record<Border, SecondaryBorderDef>> = {
+	[Border.FrutigerAero]: {
+		style: "#EDDD53",
+		alpha: 0.25,
+		lineWidth: BORDER_WIDTH / 2,
+		position: BORDER_WIDTH / 4,
+	},
+	[Border.Silver]: {
+		style: createLinearGradient(["#000", "#FFF"], 115),
+		alpha: 0.35,
+		lineWidth: BORDER_WIDTH / 2,
+		position: BORDER_WIDTH / 4,
+	},
 };
 
 export class UserImageCanvasBuilder {
@@ -83,18 +112,13 @@ export class UserImageCanvasBuilder {
 	AvatarUrl: string;
 	Badges: UserBadge[] | null = null;
 	Border: Border | null = null;
-	SecondaryBorder = false;
 
 	constructor(user: User, avatarUrl: string | null) {
 		this.User = user;
 		this.AvatarUrl = avatarUrl ?? ClassList[this.User.Class].Image.Url;
 
 		// debug
-		this.Border = Border.Silver;
-		this.SecondaryBorder = [
-			Border.FrutigerAero,
-			Border.Silver,
-		].includes(this.Border);
+		this.Border = Border.Cat;
 	}
 
 	SetBadges(badges: UserBadge[]) {
@@ -103,11 +127,6 @@ export class UserImageCanvasBuilder {
 	}
 
 	async GenerateImage() {
-		const CANVAS_SIZE = 512;
-		const BORDER_WIDTH = 20;
-		const AVATAR_RADIUS = 214; // Radius of the border circle
-		const AVATAR_CENTER = { x: 284, y: 228 }; // Center position of the avatar on the canvas - Control padding changing center
-
 		// General canvas
 		const canvas = new Canvas(CANVAS_SIZE, CANVAS_SIZE);
 		const ctx = canvas.getContext("2d");
@@ -212,23 +231,28 @@ export class UserImageCanvasBuilder {
 		userCtx.globalAlpha = 1.0; // Reset alpha
 
 		// Secondary Border
-		if (this.SecondaryBorder) {
-			if (this.Border === Border.FrutigerAero) {
-				userCtx.strokeStyle = "#EDDD53";
-				userCtx.globalAlpha = 0.25;
-			}
-			else if (this.Border === Border.Silver) {
-				const gradient = createLinearGradient(["#000", "#fff"], 115);
-				userCtx.strokeStyle = gradient(userCtx, LAYER_CENTER_X, LAYER_CENTER_Y, AVATAR_RADIUS);
-				userCtx.globalAlpha = 0.35;
-			}
+		if (this.Border && this.Border in SecondaryBorderStyles) {
+			const config = SecondaryBorderStyles[this.Border];
+			if (config) {
+				const currentSecondaryStyle = typeof config.style === "function"
+					? config.style(userCtx, LAYER_CENTER_X, LAYER_CENTER_Y, AVATAR_RADIUS)
+					: config.style;
 
-			userCtx.lineWidth = BORDER_WIDTH / 2;
-			userCtx.beginPath();
-			userCtx.arc(LAYER_CENTER_X, LAYER_CENTER_Y, AVATAR_RADIUS - 5, 0, Math.PI * 2);
-			userCtx.closePath();
-			userCtx.stroke();
-			userCtx.globalAlpha = 1.0; // Reset alpha
+				userCtx.strokeStyle = currentSecondaryStyle;
+				userCtx.globalAlpha = config.alpha;
+
+				userCtx.lineWidth = config.lineWidth;
+				userCtx.beginPath();
+				userCtx.arc(LAYER_CENTER_X, LAYER_CENTER_Y, AVATAR_RADIUS - config.position, 0, Math.PI * 2);
+				userCtx.closePath();
+				userCtx.stroke();
+				userCtx.globalAlpha = 1.0; // Reset alpha
+			}
+		}
+
+		// Special case - Cat Ears
+		if (this.Border == Border.Cat) {
+			// load image of cat
 		}
 
 		// Draw badge circle and image on the separate canvas
