@@ -1,5 +1,5 @@
 import { User } from "../../models/User";
-import { Canvas, Image, loadImage } from "@napi-rs/canvas";
+import { Canvas, CanvasGradient, Image, loadImage, SKRSContext2D } from "@napi-rs/canvas";
 import { logger } from "../../utils/log";
 import { DEFAULT_GANG_IMAGE } from "../../utils/ui";
 import { ClassList } from "../../interfaces/Classes";
@@ -11,25 +11,63 @@ export enum Border {
 	VIP,
 	Developer,
 	Moderator,
-	Helper
+	Helper,
+	Purple,
+	Sunset,
+	Sunrise,
 }
 
-const BorderColor = {
+function createLinearGradient(colors: string[], angle = 90) {
+	return (ctx: SKRSContext2D, x: number, y: number, radius: number) => {
+		// Convert angle to radians
+		const radian = (angle * Math.PI) / 180;
+
+		// Calculate start and end points based on the angle
+		// 0deg: Left -> Right
+		// 90deg: Top -> Bottom
+		const dx = Math.cos(radian) * radius;
+		const dy = Math.sin(radian) * radius;
+
+		const gradient = ctx.createLinearGradient(x - dx, y - dy, x + dx, y + dy);
+
+		if (colors.length < 2) {
+			return colors[0] ?? "#FFFFFF";
+		}
+
+		colors.forEach((color, index) => {
+			gradient.addColorStop(index / (colors.length - 1), color);
+		});
+
+		return gradient;
+	};
+}
+
+// Type definition for border styles which can be a solid color string or a function returning a gradient
+type BorderStyle = string | ((ctx: SKRSContext2D, x: number, y: number, radius: number) => string | CanvasGradient);
+
+const BorderStyles: Record<Border, BorderStyle> = {
 	[Border.Default]: "#6C6C93",
-	[Border.VIP]: "#E0BA20",
+	[Border.VIP]: createLinearGradient(["#E0BA20", "#FFA500"], 45),
 	[Border.Developer]: "#00B784",
 	[Border.Moderator]: "#E43950",
 	[Border.Helper]: "#007BFF",
-} as const;
+	[Border.Purple]: createLinearGradient(["#7345C4", "#3F1EB7"]),
+	[Border.Sunset]: createLinearGradient(["#FD5949", "#D6249F", "#285AEB"]),
+	[Border.Sunrise]: createLinearGradient(["#FCB045", "#FD1D1D", "#833AB4"]),
+};
 
 export class UserImageCanvasBuilder {
 	User: User;
 	AvatarUrl: string;
 	Badges: UserBadge[] | null = null;
+	Border: Border | null = null;
 
 	constructor(user: User, avatarUrl: string | null) {
 		this.User = user;
 		this.AvatarUrl = avatarUrl ?? ClassList[this.User.Class].Image.Url;
+
+		// debug
+		this.Border = Border.Sunrise;
 	}
 
 	SetBadges(badges: UserBadge[]) {
@@ -95,28 +133,46 @@ export class UserImageCanvasBuilder {
 		let imageBadge: Image | null = null;
 		const badgePath = "ui/assets/images/badges";
 
-		if (isDeveloper) {
-			imageBadge = await loadImage(`${badgePath}/Developer.png`);
-			userCtx.strokeStyle = BorderColor[Border.Developer];
-			userCtx.fillStyle = BorderColor[Border.Developer];
+		let borderStyle: BorderStyle = BorderStyles[Border.Default];
+		let badgeImageName: string | null = null;
+
+		if (this.Border) {
+			borderStyle = BorderStyles[this.Border];
+		}
+		else if (isDeveloper) {
+			borderStyle = BorderStyles[Border.Developer];
+			badgeImageName = "Developer.png";
 		}
 		else if (isModerator) {
-			imageBadge = await loadImage(`${badgePath}/Moderator.png`);
-			userCtx.strokeStyle = BorderColor[Border.Moderator];
-			userCtx.fillStyle = BorderColor[Border.Moderator];
+			borderStyle = BorderStyles[Border.Moderator];
+			badgeImageName = "Moderator.png";
 		}
 		else if (isHelper) {
-			imageBadge = await loadImage(`${badgePath}/Helper.png`);
-			userCtx.strokeStyle = BorderColor[Border.Helper];
-			userCtx.fillStyle = BorderColor[Border.Helper];
+			borderStyle = BorderStyles[Border.Helper];
+			badgeImageName = "Helper.png";
 		}
 		else if (this.User.IsVip()) {
-			imageBadge = await loadImage(`${badgePath}/vip.png`);
-			userCtx.strokeStyle = BorderColor[Border.VIP];
-			userCtx.fillStyle = BorderColor[Border.VIP];
+			borderStyle = BorderStyles[Border.VIP];
+			badgeImageName = "vip.png";
+		}
+
+		// Resolve the style (string or gradient)
+		const currentStyle = typeof borderStyle === "function"
+			? borderStyle(userCtx, LAYER_CENTER_X, LAYER_CENTER_Y, AVATAR_RADIUS)
+			: borderStyle;
+
+		userCtx.strokeStyle = currentStyle;
+		userCtx.fillStyle = currentStyle;
+
+		if (badgeImageName) {
+			imageBadge = await loadImage(`${badgePath}/${badgeImageName}`);
+		}
+		else if (this.Border) {
+			// Full opacity if Border is defined
+			userCtx.globalAlpha = 1;
 		}
 		else {
-			userCtx.strokeStyle = BorderColor[Border.Default];
+			// Default border transparency
 			userCtx.globalAlpha = 0.25;
 		}
 
