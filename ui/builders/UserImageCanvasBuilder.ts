@@ -17,7 +17,7 @@ export enum Border {
 const BorderColor = {
 	[Border.Default]: "#6C6C93",
 	[Border.VIP]: "#E0BA20",
-	[Border.Developer]: "#80E893",
+	[Border.Developer]: "#00B784",
 	[Border.Moderator]: "#E43950",
 	[Border.Helper]: "#007BFF",
 } as const;
@@ -26,8 +26,6 @@ export class UserImageCanvasBuilder {
 	User: User;
 	AvatarUrl: string;
 	Badges: UserBadge[] | null = null;
-
-	// Border: Border;
 
 	constructor(user: User, avatarUrl: string | null) {
 		this.User = user;
@@ -40,12 +38,19 @@ export class UserImageCanvasBuilder {
 	}
 
 	async GenerateImage() {
-		const canvasSize = 512;
-		const padding = 64;
-		const imageSize = canvasSize - padding * 2;
+		const CANVAS_SIZE = 512;
+		const BORDER_WIDTH = 20;
+		const AVATAR_RADIUS = 214; // Radius of the border circle
+		const AVATAR_CENTER = { x: 284, y: 228 }; // Center position of the avatar on the canvas - Control padding changing center
 
-		const canvas = new Canvas(canvasSize, canvasSize);
+		// General canvas
+		const canvas = new Canvas(CANVAS_SIZE, CANVAS_SIZE);
 		const ctx = canvas.getContext("2d");
+
+		// Create a separate canvas for the user image and border (Layer)
+		const userCanvas = new Canvas(CANVAS_SIZE, CANVAS_SIZE);
+		const userCtx = userCanvas.getContext("2d");
+
 		let image: Image;
 
 		try {
@@ -56,92 +61,93 @@ export class UserImageCanvasBuilder {
 			image = await loadImage(DEFAULT_GANG_IMAGE);
 		}
 
-		const borderWidth = 20;
-		const radius = (canvasSize - borderWidth - padding) / 2; // Radius for the circle, accounting for border thickness
-		const centerX = canvasSize - radius - (borderWidth / 2) - 4;
-		const centerY = radius + (borderWidth / 2);
+		// We draw on the center of the layer (userCanvas)
+		const LAYER_CENTER_X = CANVAS_SIZE / 2;
+		const LAYER_CENTER_Y = CANVAS_SIZE / 2;
 
-		// Cut the image 100% round, centered in X and at the top in Y
-		ctx.save();
-		ctx.beginPath();
-		ctx.arc(centerX, centerY, radius - borderWidth / 2, 0, Math.PI * 2);
-		ctx.closePath();
-		ctx.clip();
+		// Calculate image size based on radius to ensure it covers the clip area
+		// Clip radius is (AVATAR_RADIUS - BORDER_WIDTH / 2)
+		// We multiply by 2 for diameter and add a small buffer (+4)
+		const imageDrawSize = (AVATAR_RADIUS - BORDER_WIDTH / 2) * 2 + 4;
 
-		// Draw the image
-		ctx.drawImage(
+		// Draw the user image on the separate canvas
+		userCtx.save();
+		userCtx.beginPath();
+		userCtx.arc(LAYER_CENTER_X, LAYER_CENTER_Y, AVATAR_RADIUS - BORDER_WIDTH / 2, 0, Math.PI * 2);
+		userCtx.closePath();
+		userCtx.clip();
+
+		userCtx.drawImage(
 			image,
-			canvasSize - imageSize + borderWidth - padding - 4,
-			canvasSize - imageSize + borderWidth - (padding * 2),
-			imageSize + borderWidth + 4,
-			imageSize + borderWidth + 4,
+			LAYER_CENTER_X - imageDrawSize / 2,
+			LAYER_CENTER_Y - imageDrawSize / 2,
+			imageDrawSize,
+			imageDrawSize,
 		);
-		ctx.restore();
+		userCtx.restore();
 
-		// ctx.drawImage(
-		// 	image,
-		// 	canvasSize - imageSize + (borderWidth / 2) - padding,
-		// 	canvasSize - imageSize + (borderWidth / 2) - (padding * 2),
-		// 	imageSize + (borderWidth * 2),
-		// 	imageSize + (borderWidth * 2),
-		// );
-
-		const isDeveloper = await UserBadge.IsDeveloper(this.User.Id);
-		const isModerator = await UserBadge.IsModerator(this.User.Id);
-		const isHelper = await UserBadge.IsHelper(this.User.Id);
+		const [isDeveloper, isModerator, isHelper] = await Promise.all([
+			UserBadge.IsDeveloper(this.User.Id),
+			UserBadge.IsModerator(this.User.Id),
+			UserBadge.IsHelper(this.User.Id),
+		]);
 
 		let imageBadge: Image | null = null;
-		const badgePosition = {
-			x: canvasSize - imageSize / 2 - padding / 2,
-			y: canvasSize - padding - borderWidth / 2,
-		};
+		const badgePath = "ui/assets/images/badges";
 
 		if (isDeveloper) {
-			imageBadge = await loadImage("ui/assets/images/badges/Developer.png");
-			ctx.strokeStyle = BorderColor[Border.Developer];
-			ctx.fillStyle = BorderColor[Border.Developer];
+			imageBadge = await loadImage(`${badgePath}/Developer.png`);
+			userCtx.strokeStyle = BorderColor[Border.Developer];
+			userCtx.fillStyle = BorderColor[Border.Developer];
 		}
 		else if (isModerator) {
-			imageBadge = await loadImage("ui/assets/images/badges/Moderator.png");
-			ctx.strokeStyle = BorderColor[Border.Moderator];
-			ctx.fillStyle = BorderColor[Border.Moderator];
+			imageBadge = await loadImage(`${badgePath}/Moderator.png`);
+			userCtx.strokeStyle = BorderColor[Border.Moderator];
+			userCtx.fillStyle = BorderColor[Border.Moderator];
 		}
 		else if (isHelper) {
-			imageBadge = await loadImage("ui/assets/images/badges/Helper.png");
-			ctx.strokeStyle = BorderColor[Border.Helper];
-			ctx.fillStyle = BorderColor[Border.Helper];
+			imageBadge = await loadImage(`${badgePath}/Helper.png`);
+			userCtx.strokeStyle = BorderColor[Border.Helper];
+			userCtx.fillStyle = BorderColor[Border.Helper];
 		}
 		else if (this.User.IsVip()) {
-			imageBadge = await loadImage("ui/assets/images/badges/vip.png");
-			ctx.strokeStyle = BorderColor[Border.VIP];
-			ctx.fillStyle = BorderColor[Border.VIP];
+			imageBadge = await loadImage(`${badgePath}/vip.png`);
+			userCtx.strokeStyle = BorderColor[Border.VIP];
+			userCtx.fillStyle = BorderColor[Border.VIP];
 		}
 		else {
-			ctx.strokeStyle = BorderColor[Border.Default];
-			ctx.globalAlpha = 0.25;
+			userCtx.strokeStyle = BorderColor[Border.Default];
+			userCtx.globalAlpha = 0.25;
 		}
 
-		drawBorder();
+		// Draw border on the separate canvas
+		userCtx.lineWidth = BORDER_WIDTH;
+		userCtx.beginPath();
+		userCtx.arc(LAYER_CENTER_X, LAYER_CENTER_Y, AVATAR_RADIUS, 0, Math.PI * 2);
+		userCtx.closePath();
+		userCtx.stroke();
+		userCtx.globalAlpha = 1.0; // Reset alpha
+
+		// Draw badge circle and image on the separate canvas
 		if (imageBadge) {
-			drawBadgeCircle();
-			ctx.drawImage(imageBadge, badgePosition.x - 32, badgePosition.y - 32, 64, 64);
+			userCtx.beginPath();
+
+			// Badge position at the bottom center of the circle border
+			const angle = Math.PI / 2; // 90 degrees
+			const badgeCenterX = LAYER_CENTER_X + AVATAR_RADIUS * Math.cos(angle);
+			const badgeCenterY = LAYER_CENTER_Y + AVATAR_RADIUS * Math.sin(angle);
+
+			userCtx.arc(badgeCenterX, badgeCenterY, 36, 0, Math.PI * 2);
+			userCtx.closePath();
+			userCtx.fill();
+			userCtx.drawImage(imageBadge, badgeCenterX - 32, badgeCenterY - 32, 64, 64);
 		}
 
-		function drawBorder() {
-			ctx.lineWidth = borderWidth;
-			ctx.beginPath(); // Start a new path for the border
-			// ctx.globalAlpha = 0.5;
-			ctx.arc(centerX, centerY, radius, 0, Math.PI * 2); // Draw the border circle
-			ctx.closePath(); // Close the path
-			ctx.stroke(); // Apply the stroke
-		}
+		// Draw the user canvas onto the main canvas with repositioning
+		const offsetX = AVATAR_CENTER.x - LAYER_CENTER_X;
+		const offsetY = AVATAR_CENTER.y - LAYER_CENTER_Y;
 
-		function drawBadgeCircle() {
-			ctx.beginPath();
-			ctx.arc(badgePosition.x, badgePosition.y, 36, 0, Math.PI * 2);
-			ctx.closePath();
-			ctx.fill();
-		}
+		ctx.drawImage(userCanvas, offsetX, offsetY);
 
 		return canvas.encode("webp");
 	}
@@ -153,7 +159,7 @@ export async function testImage() {
 		return;
 	}
 
-	const image = await new UserImageCanvasBuilder(user, "https://images-ext-1.discordapp.net/external/FWpt2F_F1LT_wI2IGrL9jyaoc2PwevntyecOzQG6Rbo/https/cdn.discordapp.com/avatars/332228051871989761/1899a95dfb279741a828a87aa47fef93.webp?format=webp").GenerateImage();
+	const image = await new UserImageCanvasBuilder(user, "https://64.media.tumblr.com/e4c4d8cb95b53cb810d7d0cadf1a5fa1/e4a5be77d55d027d-fe/s1280x1920/874f014800947f2327825bc8ba35026e703bf033.jpg").GenerateImage();
 
 	fs.writeFile("image.webp", image, (err) => {
 		logger.error(err);

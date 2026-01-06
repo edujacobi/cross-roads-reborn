@@ -6,8 +6,6 @@ import dotenv from "dotenv";
 import { setClient } from "./client";
 import { Log, logger } from "./utils/log";
 import { GlobalFonts } from "@napi-rs/canvas";
-// import { testImage } from "./ui/builders/UserImageCanvasBuilder";
-// testImage();
 
 const client = setClient();
 
