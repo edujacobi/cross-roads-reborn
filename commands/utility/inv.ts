@@ -51,8 +51,6 @@ module.exports = {
 
 		const s = Strings[language];
 
-		await interaction.deferReply();
-
 		let badges = await UserBadge.GetList(target.Id);
 
 		if (target.IsVip()) {
