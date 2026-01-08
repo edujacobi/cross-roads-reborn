@@ -6,6 +6,7 @@ import { ClassId } from "../interfaces/Classes";
 import { Language } from "../models/Language";
 import { LocationId } from "../interfaces/Locations";
 import { ScavengeId } from "../interfaces/Scavenge";
+import { AvatarDecorationId } from "../interfaces/Ids";
 
 export class Users extends Model<
 	InferAttributes<Users>,
@@ -25,6 +26,7 @@ export class Users extends Model<
 	declare vipEternal: CreationOptional<boolean>;
 
 	declare specialCoin: number;
+	declare avatarDecoration: AvatarDecorationId;
 
 	declare jobId: CreationOptional<JobId | null>;
 	declare jobTime: CreationOptional<Date>;
@@ -149,6 +151,11 @@ Users.init(
 			defaultValue: false,
 		},
 		specialCoin: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0,
+		},
+		avatarDecoration: {
 			type: DataTypes.INTEGER,
 			allowNull: false,
 			defaultValue: 0,

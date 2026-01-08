@@ -32,3 +32,18 @@ export enum ItemId {
 	BrassKnuckles,
 	BaseballBat,
 }
+
+export enum AvatarDecorationId {
+	Default,
+	VIP,
+	Developer,
+	Moderator,
+	Helper,
+	Purple,
+	Sunset,
+	Sunrise,
+	Cloud,
+	FrutigerAero,
+	Silver,
+	Cat,
+}

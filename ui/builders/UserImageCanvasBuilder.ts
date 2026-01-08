@@ -5,6 +5,7 @@ import { DEFAULT_GANG_IMAGE } from "../../utils/ui";
 import { ClassList } from "../../interfaces/Classes";
 import fs from "node:fs";
 import { UserBadge } from "../../models/UserBadge";
+import { AvatarDecorationId } from "../../interfaces/Ids";
 
 function createLinearGradient(colors: string[], angle = 90) {
 	return (ctx: SKRSContext2D, x: number, y: number, radius: number) => {
@@ -20,7 +21,7 @@ function createLinearGradient(colors: string[], angle = 90) {
 		const gradient = ctx.createLinearGradient(x - dx, y - dy, x + dx, y + dy);
 
 		if (colors.length < 2) {
-			return colors[0] ?? BorderStyles[Border.Default];
+			return colors[0] ?? BorderStyles[AvatarDecorationId.Default];
 		}
 
 		colors.forEach((color, index) => {
@@ -36,7 +37,7 @@ function createRadialGradient(colors: string[]) {
 		const gradient = ctx.createRadialGradient(x, y, radius - 10, x, y, radius + 10);
 
 		if (colors.length < 2) {
-			return colors[0] ?? BorderStyles[Border.Default];
+			return colors[0] ?? BorderStyles[AvatarDecorationId.Default];
 		}
 
 		colors.forEach((color, index) => {
@@ -47,21 +48,6 @@ function createRadialGradient(colors: string[]) {
 	};
 }
 
-export enum Border {
-	Default,
-	VIP,
-	Developer,
-	Moderator,
-	Helper,
-	Purple,
-	Sunset,
-	Sunrise,
-	Cloud,
-	FrutigerAero,
-	Silver,
-	Cat,
-}
-
 const CANVAS_SIZE = 512;
 const BORDER_WIDTH = 20;
 const AVATAR_RADIUS = 214; // Radius of the border circle
@@ -70,19 +56,19 @@ const AVATAR_CENTER = { x: 284, y: 228 }; // Center position of the avatar on th
 // Type definition for border styles which can be a solid color string or a function returning a gradient
 type BorderStyle = string | ((ctx: SKRSContext2D, x: number, y: number, radius: number) => string | CanvasGradient);
 
-const BorderStyles: Record<Border, BorderStyle> = {
-	[Border.Default]: "#6C6C93",
-	[Border.VIP]: createLinearGradient(["#E0BA20", "#FFA500"], 45),
-	[Border.Developer]: "#00B784",
-	[Border.Moderator]: "#E43950",
-	[Border.Helper]: "#007BFF",
-	[Border.Purple]: createLinearGradient(["#7345C4", "#3F1EB7"]),
-	[Border.Sunset]: createLinearGradient(["#FD5949", "#D6249F", "#285AEB"]),
-	[Border.Sunrise]: createLinearGradient(["#FCB045", "#FD1D1D", "#833AB4"]),
-	[Border.Cloud]: createRadialGradient(["#94BBE9", "#EEAECA"]),
-	[Border.FrutigerAero]: createLinearGradient(["#EDDD53", "#57C785", "#2A7B9B"], 115),
-	[Border.Silver]: createLinearGradient(["#d9d9d9", "#ADBBC3", "#656C70"], 115),
-	[Border.Cat]: "#6A4931",
+const BorderStyles: Record<AvatarDecorationId, BorderStyle> = {
+	[AvatarDecorationId.Default]: "#6C6C93",
+	[AvatarDecorationId.VIP]: createLinearGradient(["#E0BA20", "#FFA500"], 45),
+	[AvatarDecorationId.Developer]: "#00B784",
+	[AvatarDecorationId.Moderator]: "#E43950",
+	[AvatarDecorationId.Helper]: "#007BFF",
+	[AvatarDecorationId.Purple]: createLinearGradient(["#7345C4", "#3F1EB7"]),
+	[AvatarDecorationId.Sunset]: createLinearGradient(["#FD5949", "#D6249F", "#285AEB"]),
+	[AvatarDecorationId.Sunrise]: createLinearGradient(["#FCB045", "#FD1D1D", "#833AB4"]),
+	[AvatarDecorationId.Cloud]: createRadialGradient(["#94BBE9", "#EEAECA"]),
+	[AvatarDecorationId.FrutigerAero]: createLinearGradient(["#EDDD53", "#57C785", "#2A7B9B"], 115),
+	[AvatarDecorationId.Silver]: createLinearGradient(["#d9d9d9", "#ADBBC3", "#656C70"], 115),
+	[AvatarDecorationId.Cat]: "#6A4931",
 };
 
 interface SecondaryBorderDef {
@@ -92,14 +78,14 @@ interface SecondaryBorderDef {
 	position: number;
 }
 
-const SecondaryBorderStyles: Partial<Record<Border, SecondaryBorderDef>> = {
-	[Border.FrutigerAero]: {
+const SecondaryBorderStyles: Partial<Record<AvatarDecorationId, SecondaryBorderDef>> = {
+	[AvatarDecorationId.FrutigerAero]: {
 		style: "#EDDD53",
 		alpha: 0.25,
 		lineWidth: BORDER_WIDTH / 2,
 		position: BORDER_WIDTH / 4,
 	},
-	[Border.Silver]: {
+	[AvatarDecorationId.Silver]: {
 		style: createLinearGradient(["#000", "#FFF"], 115),
 		alpha: 0.35,
 		lineWidth: BORDER_WIDTH / 2,
@@ -111,14 +97,16 @@ export class UserImageCanvasBuilder {
 	User: User;
 	AvatarUrl: string;
 	Badges: UserBadge[] | null = null;
-	Border: Border | null = null;
+	Decoration: AvatarDecorationId = AvatarDecorationId.Default;
 
 	constructor(user: User, avatarUrl: string | null) {
 		this.User = user;
 		this.AvatarUrl = avatarUrl ?? ClassList[this.User.Class].Image.Url;
+	}
 
-		// debug
-		this.Border = Border.Cat;
+	SetDecoration(decoration: AvatarDecorationId) {
+		this.Decoration = decoration;
+		return this;
 	}
 
 	SetBadges(badges: UserBadge[]) {
@@ -170,37 +158,20 @@ export class UserImageCanvasBuilder {
 		);
 		userCtx.restore();
 
-		const [isDeveloper, isModerator, isHelper] = await Promise.all([
-			UserBadge.IsDeveloper(this.User.Id),
-			UserBadge.IsModerator(this.User.Id),
-			UserBadge.IsHelper(this.User.Id),
-		]);
-
 		let imageBadge: Image | null = null;
 		const badgePath = "ui/assets/images/badges";
 
-		let borderStyle: BorderStyle = BorderStyles[Border.Default];
-		let badgeImageName: string | null = null;
+		const borderStyle = BorderStyles[this.Decoration];
+		console.log(this.Decoration, borderStyle);
 
-		if (this.Border) {
-			borderStyle = BorderStyles[this.Border];
-		}
-		else if (isDeveloper) {
-			borderStyle = BorderStyles[Border.Developer];
-			badgeImageName = "Developer.png";
-		}
-		else if (isModerator) {
-			borderStyle = BorderStyles[Border.Moderator];
-			badgeImageName = "Moderator.png";
-		}
-		else if (isHelper) {
-			borderStyle = BorderStyles[Border.Helper];
-			badgeImageName = "Helper.png";
-		}
-		else if (this.User.IsVip()) {
-			borderStyle = BorderStyles[Border.VIP];
-			badgeImageName = "vip.png";
-		}
+		const badgeMap: Partial<Record<AvatarDecorationId, string>> = {
+			[AvatarDecorationId.Developer]: "Developer.png",
+			[AvatarDecorationId.Moderator]: "Moderator.png",
+			[AvatarDecorationId.Helper]: "Helper.png",
+			[AvatarDecorationId.VIP]: "vip.png",
+		};
+
+		const badgeImageName = badgeMap[this.Decoration] ?? null;
 
 		// Resolve the style (string or gradient)
 		const currentStyle = typeof borderStyle === "function"
@@ -213,7 +184,7 @@ export class UserImageCanvasBuilder {
 		if (badgeImageName) {
 			imageBadge = await loadImage(`${badgePath}/${badgeImageName}`);
 		}
-		else if (this.Border) {
+		else if (this.Decoration) {
 			// Full opacity if Border is defined
 			userCtx.globalAlpha = 1;
 		}
@@ -231,8 +202,8 @@ export class UserImageCanvasBuilder {
 		userCtx.globalAlpha = 1.0; // Reset alpha
 
 		// Secondary Border
-		if (this.Border && this.Border in SecondaryBorderStyles) {
-			const config = SecondaryBorderStyles[this.Border];
+		if (this.Decoration && this.Decoration in SecondaryBorderStyles) {
+			const config = SecondaryBorderStyles[this.Decoration];
 			if (config) {
 				const currentSecondaryStyle = typeof config.style === "function"
 					? config.style(userCtx, LAYER_CENTER_X, LAYER_CENTER_Y, AVATAR_RADIUS)
@@ -251,7 +222,7 @@ export class UserImageCanvasBuilder {
 		}
 
 		// Special case - Cat Ears
-		if (this.Border == Border.Cat) {
+		if (this.Decoration == AvatarDecorationId.Cat) {
 			// load image of cat
 		}
 
@@ -286,7 +257,12 @@ export async function testImage() {
 		return;
 	}
 
-	const image = await new UserImageCanvasBuilder(user, "https://64.media.tumblr.com/e4c4d8cb95b53cb810d7d0cadf1a5fa1/e4a5be77d55d027d-fe/s1280x1920/874f014800947f2327825bc8ba35026e703bf033.jpg").GenerateImage();
+	const image = await new UserImageCanvasBuilder(
+		user,
+		"https://64.media.tumblr.com/e4c4d8cb95b53cb810d7d0cadf1a5fa1/e4a5be77d55d027d-fe/s1280x1920/874f014800947f2327825bc8ba35026e703bf033.jpg",
+	)
+		.SetDecoration(AvatarDecorationId.Purple)
+		.GenerateImage();
 
 	fs.writeFile("image.webp", image, (err) => {
 		logger.error(err);

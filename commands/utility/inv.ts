@@ -59,8 +59,9 @@ module.exports = {
 			badges = UserBadge.AddVIPBadgeInList(badges, target, language);
 		}
 
-		const userImage = await new UserImageCanvasBuilder(target, _user.avatarURL({ size: 256 }))
+		const userImage = await new UserImageCanvasBuilder(target, _user.avatarURL({ size: 512 }))
 			.SetBadges(badges)
+			.SetDecoration(user.AvatarDecoration.Id)
 			.GenerateImage();
 
 		const userImageFile = new AttachmentBuilder(userImage, { name: "user.webp" });

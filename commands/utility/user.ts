@@ -38,6 +38,9 @@ module.exports = {
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 		const nameOrId = interaction.options.getString("target");
+
+		await interaction.deferReply();
+
 		const target = nameOrId ? await searchUser(nameOrId, interaction) : user;
 		const _user = target ? await getClient().users.fetch(target.Id) : interaction.user;
 
@@ -147,8 +150,9 @@ module.exports = {
 		}];
 
 
-		const userImage = await new UserImageCanvasBuilder(target, _user.avatarURL({ size: 256 }))
+		const userImage = await new UserImageCanvasBuilder(target, _user.avatarURL({ size: 512 }))
 			.SetBadges(badges)
+			.SetDecoration(user.AvatarDecoration.Id)
 			.GenerateImage();
 
 		const userImageFile = new AttachmentBuilder(userImage, { name: "user.webp" });

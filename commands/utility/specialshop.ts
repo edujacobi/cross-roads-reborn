@@ -1,5 +1,6 @@
 ﻿import {
 	ActionRowBuilder,
+	AttachmentBuilder,
 	ButtonBuilder,
 	ButtonStyle,
 	ChatInputCommandInteraction,
@@ -19,6 +20,9 @@ import { formatMoney } from "../../utils/ui";
 import { ItemList } from "../../interfaces/Items";
 import { UserBundle } from "../../models/UserBundle";
 import { CrColors } from "../../utils/colors";
+import { AvatarDecorationList, getAvatarDecorationList } from "../../interfaces/AvatarDecorations";
+import { UserImageCanvasBuilder } from "../../ui/builders/UserImageCanvasBuilder";
+import { UserAvatarDecoration } from "../../models/UserAvatarDecoration";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -29,15 +33,21 @@ module.exports = {
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 
+		await interaction.deferReply();
+
 		const s = Strings[language];
 
 		function addHeader(container = new CustomContainerBuilder()) {
 			container.setUser(user)
 				.setAccentColor(CrColors.SpecialShop)
-				.addTexts([
-					`# ${s.title}`,
-					s.permanent,
-				])
+				.addSectionComponents(section => section
+					.addTextDisplayComponents(text => text
+						.setContent(`# ${s.title}\n${s.permanent}`),
+					)
+					.setThumbnailAccessory(thumb => thumb
+						.setURL("https://media.discordapp.net/attachments/1233604589064818808/1458922510782431507/SpecialCoinShop.png"),
+					),
+				)
 				.addLargeSeparator();
 
 			return container;
@@ -55,6 +65,8 @@ module.exports = {
 
 		async function generateDefaultContainer() {
 			await user.GetInfo();
+
+			// --- Pacotes de Skins
 
 			let container = addHeader()
 				.addTexts([`## ${s.skinBundles}`]);
@@ -96,32 +108,74 @@ module.exports = {
 					);
 
 					if (idx !== skinBundles.length - 1) {
-						container.addSmallSeparator();
+						container.addLargeSeparator();
 					}
 				}
 			}
 
+			// --- VIP
+
 			container
 				.addLargeSeparator()
-				.addTexts([
-					`## ${EmoteString.VIP} VIP`,
-					s.vipDescription,
-					`-# ${s.vipMoreInfo}`,
-				]);
+				.addSectionComponents(section => section
+					.addTextDisplayComponents(text => text
+						.setContent(`# VIP\n${s.vipDescription}\n-# ${s.vipMoreInfo}`),
+					)
+					.setThumbnailAccessory(thumb => thumb
+						.setURL("https://media.discordapp.net/attachments/531174573463306240/799060089503875072/VIP.png"),
+					),
+				);
 
-			const row = new ActionRowBuilder<ButtonBuilder>();
+			const rowVIP = new ActionRowBuilder<ButtonBuilder>();
 
 			for (let idx = 1; idx <= 3; idx++) {
-				row.addComponents(new ButtonBuilder()
+				rowVIP.addComponents(new ButtonBuilder()
 					.setLabel(`${s.months(idx)}: ${formatMoney(idx * VIP_BASE_PRICE, language, "")}`)
 					.setEmoji(EmoteId.SpecialCoinShop)
 					.setStyle(ButtonStyle.Secondary)
 					.setCustomId("vip" + idx));
 			}
 
+			container.addActionRowComponents(rowVIP);
+
+			// --- Decoração de Avatar
 			container
-				.addActionRowComponents(row)
 				.addLargeSeparator()
+				.addSectionComponents(section => section
+					.addTextDisplayComponents(text => text
+						.setContent(`# ${s.avatarDecoration}\n${s.defeatDecoration}\n-# ${s.testDecoration}`),
+					)
+					.setThumbnailAccessory(thumb => thumb
+						.setURL("https://media.discordapp.net/attachments/1455628323848851639/1458923128968445983/preview.webp"),
+					),
+				);
+
+			const avatarDecorations = getAvatarDecorationList().filter(decoration => decoration.Shop);
+
+			const avatarDecorationsChunks = [];
+			for (let i = 0; i < avatarDecorations.length; i += 5) {
+				avatarDecorationsChunks.push(avatarDecorations.slice(i, i + 5));
+			}
+
+			for (const chunk of avatarDecorationsChunks) {
+				const rowDecorations = new ActionRowBuilder<ButtonBuilder>();
+
+				const buttons = await Promise.all(chunk.map(async decoration => new ButtonBuilder()
+					.setLabel(`${decoration.Description[language]}: ${formatMoney(decoration.Price, language, "")}`)
+					.setEmoji(EmoteId.SpecialCoinShop)
+					.setStyle(ButtonStyle.Secondary)
+					.setDisabled(await UserAvatarDecoration.HasAvatarDecoration(user.Id, decoration.Id))
+					.setCustomId("decoration" + decoration.Id),
+				));
+
+				rowDecorations.setComponents(buttons);
+
+				container.addActionRowComponents(rowDecorations);
+			}
+
+			// --- Footer
+
+			container.addLargeSeparator()
 				.addTexts([
 					`### ${s.howToAcquireTitle}`,
 					`-# ${s.howToAcquireDescription}`,
@@ -173,7 +227,7 @@ module.exports = {
 				if (userHasBundle) {
 					container = addHeader()
 						.addTexts([
-							`${s.alreadyHave} **${bundle.Description[language]}**!`,
+							`${s.alreadyHaveBundle} **${bundle.Description[language]}**!`,
 						]);
 
 					container = addFooter(container);
@@ -322,6 +376,115 @@ module.exports = {
 					flags: MessageFlags.IsComponentsV2,
 				});
 			}
+
+			else if (btn.customId.includes("confirmdecoration")) {
+				const decorationId = Number(btn.customId.replace("confirmdecoration", ""));
+				const decoration = AvatarDecorationList[decorationId];
+				await user.GetInfo();
+
+				const userHasDecoration = await UserAvatarDecoration.HasAvatarDecoration(user.Id, decoration.Id);
+
+				if (userHasDecoration) {
+					container = addHeader()
+						.addTexts([
+							`${s.alreadyHaveDecoration} **${decoration.Description[language]}**!`,
+						]);
+
+					container = addFooter(container);
+
+					return replyInteraction(interaction, {
+						components: [container],
+					});
+				}
+
+				if (user.SpecialCoin < decoration.Price) {
+					container = addHeader()
+						.addTexts([
+							s.dontHaveCoins(decoration.Price),
+						]);
+
+					container = addFooter(container);
+
+					return replyInteraction(interaction, {
+						components: [container],
+					});
+				}
+
+				const success = await user.BuyAvatarDecoration(decorationId);
+
+				if (!success) {
+					container = addHeader()
+						.addTexts([
+							`${s.error} **${decoration.Description[language]}**`,
+						]);
+
+					container = addFooter(container);
+
+					return replyInteraction(interaction, {
+						components: [container],
+					});
+				}
+
+				container = addHeader()
+					.addTexts([
+						`${s.decorationBought} **${decoration.Description[language]}**!`,
+						`-# ${s.activateDecoration}`,
+					]);
+
+				container = addFooter(container);
+
+				return replyInteraction(interaction, {
+					components: [container],
+				});
+			}
+
+			else if (btn.customId.includes("decoration")) {
+				const decorationId = Number(btn.customId.replace("decoration", ""));
+				const decoration = AvatarDecorationList[decorationId];
+
+				const canBuy = decoration.Price <= user.SpecialCoin;
+
+				const previewImage = await new UserImageCanvasBuilder(user, interaction.user.avatarURL({ size: 512 }))
+					.SetDecoration(decoration.Id)
+					.GenerateImage();
+
+				const previewImageFile = new AttachmentBuilder(previewImage, { name: "preview.webp" });
+
+				container = addHeader(new CustomContainerBuilder())
+					.addSectionComponents(section => section
+						.addTextDisplayComponents(text => text
+							.setContent(
+								[
+									`## ${s.avatarDecoration} - ${decoration.Description[language]}`,
+									`${s.price}: ${EmoteString.SpecialCoinShop}${formatMoney(decoration.Price, language, "")}`,
+								].join("\n"),
+							),
+						)
+						.setThumbnailAccessory(preview => preview
+							.setURL("attachment://preview.webp")),
+					)
+					.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
+						.addComponents([
+							new ButtonBuilder()
+								.setLabel(s.goBack)
+								.setStyle(ButtonStyle.Secondary)
+								.setCustomId("back"),
+							new ButtonBuilder()
+								.setLabel(s.buy)
+								.setStyle(ButtonStyle.Success)
+								.setDisabled(!canBuy)
+								.setCustomId("confirmdecoration" + decoration.Id),
+						]),
+					);
+
+				container = addFooter(container);
+
+				await replyInteraction(interaction, {
+					components: [container],
+					files: [previewImageFile],
+					flags: MessageFlags.IsComponentsV2,
+				});
+			}
 		});
 	},
 };
@@ -333,10 +496,13 @@ const Strings = {
 		youHaveCoins: (coins: number) => `You have ${EmoteString.SpecialCoinShop}${formatMoney(coins, Language.English, "")} Special Coins`,
 		skinBundles: "Skin Bundles",
 		howManyItems: (itemArray: string[]) => `${itemArray.length} ${itemArray.length === 1 ? "item" : "items"}`,
-		alreadyHave: "You already own the skin bundle",
-		dontHaveCoins: (price: number) => `You don't have ${EmoteString.SpecialCoinShop}${formatMoney(price, Language.English, "")} to buy this skin bundle`,
-		error: "An error occurred while trying to buy the skin bundle",
+		alreadyHaveBundle: "You already own the skin bundle",
+		alreadyHaveDecoration: "You already own the avatar decoration",
+		dontHaveCoins: (price: number) => `You don't have ${EmoteString.SpecialCoinShop}${formatMoney(price, Language.English, "")} to buy this item`,
+		error: "An error occurred while trying to buy this item",
 		bundleBought: "You bought the skin bundle",
+		decorationBought: "You bought the avatar decoration",
+		activateDecoration: "Activate in `/decorations`",
 		skinBundleUnit: "Skin Bundle",
 		price: "Price",
 		content: "Content",
@@ -346,6 +512,9 @@ const Strings = {
 		vipMoreInfo: `For more information, see \`/vip\``,
 		vipBought: (months: number) => `You bought **${Strings[Language.English].months(months)}** of ${EmoteString.VIP} VIP!`,
 		buy: "Buy",
+		avatarDecoration: "Avatar decorations",
+		defeatDecoration: "Defeat your opponents in style",
+		testDecoration: "You can preview the decor before you buy",
 		howToAcquireTitle: "How to acquire",
 		howToAcquireDescription: "On the official server, in the #vip-special-coins channel",
 	},
@@ -355,10 +524,13 @@ const Strings = {
 		youHaveCoins: (coins: number) => `Você possui ${EmoteString.SpecialCoinShop}${formatMoney(coins, Language.Portuguese, "")} Moedas Especiais`,
 		skinBundles: "Pacotes de skins",
 		howManyItems: (itemArray: string[]) => `${itemArray.length} ${itemArray.length === 1 ? "item" : "itens"}`,
-		alreadyHave: "Você já possui o pacote de skins",
-		dontHaveCoins: (price: number) => `Você não possui ${EmoteString.SpecialCoinShop}${formatMoney(price, Language.Portuguese, "")} para comprar este pacote de skins`,
-		error: "Ocorreu um erro ao tentar comprar o pacote de skins",
+		alreadyHaveBundle: "Você já possui o pacote de skins",
+		alreadyHaveDecoration: "Você já possui a decoração de avatar",
+		dontHaveCoins: (price: number) => `Você não possui ${EmoteString.SpecialCoinShop}${formatMoney(price, Language.Portuguese, "")} para comprar este item`,
+		error: "Ocorreu um erro ao tentar comprar este item",
 		bundleBought: "Você comprou o pacote de skins",
+		decorationBought: "Você comprou a decoração de avatar",
+		activateDecoration: "Ative em `/decorações`",
 		skinBundleUnit: "Pacote de skins",
 		price: "Preço",
 		content: "Conteúdo",
@@ -368,6 +540,9 @@ const Strings = {
 		vipMoreInfo: `Para mais informações, veja \`/vip\``,
 		vipBought: (months: number) => `Você comprou **${Strings[Language.Portuguese].months(months)}** de ${EmoteString.VIP} VIP!`,
 		buy: "Comprar",
+		avatarDecoration: "Decorações de avatar",
+		defeatDecoration: "Derrote seus oponentes com estilo",
+		testDecoration: "Você pode pré visualizar a decoração antes de comprar",
 		howToAcquireTitle: "Como adquirir",
 		howToAcquireDescription: "No servidor oficial, no canal #vip-moedas-especiais",
 	},
@@ -377,10 +552,13 @@ const Strings = {
 		youHaveCoins: (coins: number) => `Tienes ${EmoteString.SpecialCoinShop}${formatMoney(coins, Language.Spanish, "")} Monedas Especiales`,
 		skinBundles: "Paquetes de skins",
 		howManyItems: (itemArray: string[]) => `${itemArray.length} ${itemArray.length === 1 ? "artículo" : "artículos"}`,
-		alreadyHave: "Ya tienes el paquete de skins",
-		dontHaveCoins: (price: number) => `No tienes ${EmoteString.SpecialCoinShop}${formatMoney(price, Language.Spanish, "")} para comprar este paquete de skins`,
-		error: "Ocurrió un error al intentar comprar el paquete de skins",
+		alreadyHaveBundle: "Ya tienes el paquete de skins",
+		alreadyHaveDecoration: "Ya tienes la decoración del avatar",
+		dontHaveCoins: (price: number) => `No tienes ${EmoteString.SpecialCoinShop}${formatMoney(price, Language.Spanish, "")} para comprar este artículo`,
+		error: "Ocurrió un error al intentar comprar este artículo",
 		bundleBought: "Compraste el paquete de skins",
+		decorationBought: "Compraste la decoración del avatar",
+		activateDecoration: "Activar en `/decorations`",
 		skinBundleUnit: "Paquete de skins",
 		price: "Precio",
 		content: "Contenido",
@@ -390,6 +568,9 @@ const Strings = {
 		vipMoreInfo: `Para obtener más información, consulte \`/vip\``,
 		vipBought: (months: number) => `Compraste **${Strings[Language.English].months(months)}** de ${EmoteString.VIP} VIP!`,
 		buy: "Comprar",
+		avatarDecoration: "Decoraciones de avatar",
+		defeatDecoration: "Derrota a tus oponentes con estilo",
+		testDecoration: "Puedes obtener una vista previa de la decoración antes de comprarla",
 		howToAcquireTitle: "Cómo adquirir",
 		howToAcquireDescription: "En el servidor oficial, en el canal #vip-special-coins.",
 	},

@@ -17,9 +17,11 @@ import { Gang } from "./Gang";
 import { GangMembers } from "../database/GangMembers";
 import { Event, EventType } from "./Event";
 import { GangColorId } from "../utils/colors";
-import { BundleId } from "../interfaces/Ids";
+import { AvatarDecorationId, BundleId } from "../interfaces/Ids";
 import { UserBundle } from "./UserBundle";
 import { BundleList, SkinBundles } from "../interfaces/Skins";
+import { UserAvatarDecoration } from "./UserAvatarDecoration";
+import { AvatarDecorationList, AvatarDecorations } from "../interfaces/AvatarDecorations";
 
 export enum SituationId {
 	Idling,
@@ -45,6 +47,7 @@ export class User {
 	Class = ClassId.None;
 	GangId: number | null = null;
 	SpecialCoin = 0;
+	AvatarDecoration = AvatarDecorationList[AvatarDecorationId.Default];
 	Daily = {
 		CurrentStreak: 0,
 		MaxStreak: 0,
@@ -166,6 +169,7 @@ export class User {
 				maxDailyStreak: this.Daily.MaxStreak,
 				lastDailyReceived: this.Daily.LastReceived,
 				specialCoin: 0,
+				avatarDecoration: AvatarDecorationId.Default,
 				casinoLoseCount: 0,
 				casinoLoseSum: 0,
 				casinoWinCount: 0,
@@ -243,6 +247,7 @@ export class User {
 		this.Money = user.money;
 		this.Class = user.class;
 		this.SpecialCoin = user.specialCoin;
+		this.AvatarDecoration = AvatarDecorationList[user.avatarDecoration];
 
 		// Verificar se o usuário está em uma gangue
 		const gangMember = await GangMembers.findOne({
@@ -658,6 +663,13 @@ export class User {
 		Log.Info(`User ${this.Nickname} (ID: ${this.Id}) has set skin ${bundle.Description[Language.English]} (ID: ${bundle.Id}) for all items in bundle.`);
 	}
 
+	async SetAvatarDecoration(decoration: AvatarDecorations) {
+		this.AvatarDecoration = decoration;
+		await this.Update();
+
+		Log.Info(`User ${this.Nickname} (ID: ${this.Id}) has set avatar decoration ${decoration.Description[Language.English]} (ID: ${decoration.Id}).`);
+	}
+
 	async GetAttributes(isBeatUp = false) {
 		const items = await UserItems.findAll({
 			where: {
@@ -936,6 +948,21 @@ export class User {
 		return success;
 	}
 
+	async BuyAvatarDecoration(avatarDecorationId: AvatarDecorationId) {
+		const success = await UserAvatarDecoration.Create(this.Id, avatarDecorationId);
+
+		if (success) {
+			this.SpecialCoin -= AvatarDecorationList[avatarDecorationId].Price;
+			await this.Update();
+			Log.Success(`User ${this.Nickname} (ID: ${this.Id}) bought avatar decoration ${AvatarDecorationList[avatarDecorationId].Description[Language.English]} (ID: ${avatarDecorationId}) for ${formatMoney(AvatarDecorationList[avatarDecorationId].Price, Language.English, "")}.`);
+		}
+		else {
+			Log.Warning(`User ${this.Nickname} (ID: ${this.Id}) tried to buy avatar decoration ${AvatarDecorationList[avatarDecorationId].Description[Language.English]} (ID: ${avatarDecorationId}), but failed.`);
+		}
+
+		return success;
+	}
+
 	async Update() {
 		try {
 			await Users.update({
@@ -950,6 +977,7 @@ export class User {
 				vipTime: this.VipTime,
 				vipEternal: this.VipEternal,
 				specialCoin: this.SpecialCoin,
+				avatarDecoration: this.AvatarDecoration.Id,
 
 				jobId: this.Job.Id,
 				jobTime: this.Job.EndsIn,
