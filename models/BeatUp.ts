@@ -340,11 +340,11 @@ export class BeatUp {
 				.setAccentColor(CrColors.BeatUp)
 				.addTexts([
 					`${EmoteString.Beat} ${this.Attacker.Nickname} • ${sD.hands}`,
-				], 1)
+				])
 				.addLargeSeparator()
 				.addTexts([
 					descriptionPrivate,
-				], 50)
+				])
 				.addFooter({ text: sD.secondsToRespond });
 
 			this.Container.Channel.changeTextFromSectionId(50, descriptionChannel);
@@ -374,6 +374,13 @@ export class BeatUp {
 		const sA = Strings[this.Attacker.Language];
 		const sD = Strings[this.Defender.Language];
 
+		this.Container.Private = new CustomContainerBuilder()
+			.setAccentColor(CrColors.BeatUp)
+			.addTexts([
+				`${EmoteString.Beat} ${sD.finishedBeatUpDefender}`,
+			])
+			.addLargeSeparator();
+
 		if (this.Success) {
 
 			this.Attacker.BeatUp.SuccessCount += 1;
@@ -390,7 +397,11 @@ export class BeatUp {
 
 			await Notification.BeatAgain(this.Attacker);
 
-			this.Container.Private.changeTextFromSectionId(50, sD.wereBeated(this.Attacker.GetNameWithImage(), this.Defender.Hospital.Time));
+			this.Container.Private
+				.addTexts([
+					sD.wereBeated(this.Attacker.GetNameWithImage(), this.Defender.Hospital.Time),
+				]);
+
 			this.Container.Channel.changeTextFromSectionId(50, sA.youBeated(this.Defender.GetNameWithImage(), this.Defender.Hospital.Time));
 
 			Log.Success(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) successfully beated user ${this.Defender.Nickname} (ID: ${this.Defender.Id})`);
@@ -409,11 +420,11 @@ export class BeatUp {
 			await Notification.BeatAgain(this.Attacker);
 
 			this.Container.Private
-				.setAccentColor(CrColors.BeatUp)
-				.changeTextFromSectionId(50, sD.youBeated(this.Attacker.GetNameWithImage(), this.Attacker.Hospital.Time));
+				.addTexts([
+					sD.youBeated(this.Attacker.GetNameWithImage(), this.Attacker.Hospital.Time),
+				]);
 
 			this.Container.Channel
-				.setAccentColor(CrColors.BeatUp)
 				.changeTextFromSectionId(50, sA.youFailed(this.Attacker.Hospital.Time));
 
 			Log.Success(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) failed to beat user ${this.Defender.Nickname} (ID: ${this.Defender.Id}).`);
@@ -427,8 +438,9 @@ export class BeatUp {
 
 		if (privateMessage) {
 			this.Container.Private
-				.changeTextFromSectionId(1, `${EmoteString.Beat} ${sD.finishedBeatUpDefender}`)
-				.changeFooterText(formatMoney(this.Defender.Money, this.Defender.Language));
+				.addFooter({
+					text: formatMoney(this.Defender.Money, this.Defender.Language),
+				});
 
 			await privateMessage.edit({ components: [this.Container.Private] });
 		}

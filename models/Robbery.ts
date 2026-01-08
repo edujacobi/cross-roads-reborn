@@ -324,11 +324,11 @@ export class Robbery {
 				.setAccentColor(CrColors.Robbery)
 				.addTexts([
 					`${EmoteString.Robbery} ${this.Attacker.Nickname} • ${sD.hands}`,
-				], 1)
+				])
 				.addLargeSeparator()
 				.addTexts([
 					descriptionPrivate,
-				], 50)
+				])
 				.addFooter({ text: sD.secondsToRespond });
 
 			this.Container.Channel.changeTextFromSectionId(50, descriptionChannel);
@@ -357,6 +357,12 @@ export class Robbery {
 
 		const sA = Strings[this.Attacker.Language];
 		const sD = Strings[this.Defender.Language];
+
+		this.Container.Private = new CustomContainerBuilder()
+			.addTexts([
+				`${EmoteString.Robbery} ${sD.finishedRobberyDefender}`,
+			])
+			.addLargeSeparator();
 
 		if (this.Success) {
 			if (this.Defender.Attributes.Defense > 0) {
@@ -388,8 +394,13 @@ export class Robbery {
 
 			await Notification.RobAgain(this.Attacker);
 
-			this.Container.Private.changeTextFromSectionId(50, `${sD.wereRobbed(formatMoney(this.MoneyRobbed, this.Defender.Language), this.Attacker.Nickname)} ${EmoteString.Robbery}${willBeBeatenUp ? `
-${sD.beatedUp(this.Defender.Hospital.Time)} ${EmoteString.Hospital}` : ""}`);
+			this.Container.Private
+				.setAccentColor(CrColors.Robbery)
+				.addTexts([
+					`${sD.wereRobbed(formatMoney(this.MoneyRobbed, this.Defender.Language), this.Attacker.Nickname)} ${EmoteString.Robbery}${willBeBeatenUp ? `
+${sD.beatedUp(this.Defender.Hospital.Time)} ${EmoteString.Hospital}` : ""}`,
+				]);
+
 			this.Container.Channel.changeTextFromSectionId(50, `${sA.youRobbed(formatMoney(this.MoneyRobbed, this.Attacker.Language), this.Defender.Nickname)} ${EmoteString.Robbery}${willBeBeatenUp ? `
 ${sA.beatenUp(this.Defender.Hospital.Time)} ${EmoteString.Hospital}` : ""}`);
 
@@ -406,8 +417,10 @@ ${sA.beatenUp(this.Defender.Hospital.Time)} ${EmoteString.Hospital}` : ""}`);
 
 			this.Container.Private
 				.setAccentColor(CrColors.Police)
-				.changeTextFromSectionId(50, `**${this.Attacker.GetNameWithImage()}** ${sD.robFailed} ${EmoteString.Police}
--# ${sD.prisonUntil(this.Attacker.Prison.Time)}!`);
+				.addTexts([
+					`**${this.Attacker.GetNameWithImage()}** ${sD.robFailed} ${EmoteString.Police}
+-# ${sD.prisonUntil(this.Attacker.Prison.Time)}!`,
+				]);
 
 			this.Container.Channel
 				.setAccentColor(CrColors.Police)
@@ -425,9 +438,9 @@ ${sA.beatenUp(this.Defender.Hospital.Time)} ${EmoteString.Hospital}` : ""}`);
 
 		if (privateMessage) {
 			this.Container.Private
-				.changeTextFromSectionId(1, `${EmoteString.Robbery} ${sD.finishedRobberyDefender}`)
-				.changeFooterText(formatMoney(this.Defender.Money, this.Defender.Language));
-
+				.addFooter({
+					text: formatMoney(this.Defender.Money, this.Defender.Language),
+				});
 			await privateMessage.edit({ components: [this.Container.Private] });
 		}
 
