@@ -1,4 +1,5 @@
 ﻿import {
+	ActionRowBuilder,
 	ButtonBuilder,
 	ButtonStyle,
 	ChatInputCommandInteraction,
@@ -121,7 +122,7 @@ module.exports = {
 				`## ${EmoteString.Attack}${item.Attack} ATK ${EmoteString.Defense}${item.Defense} DEF`,
 			])
 			.addLargeSeparator()
-			.addActionRowComponents(row => row
+			.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
 				.addComponents(
 					button({
 						label: `${s.type}: ${itemMapper[item.Type].type}`,

@@ -1,4 +1,5 @@
 import {
+	ActionRowBuilder,
 	ButtonBuilder,
 	ButtonStyle,
 	ChatInputCommandInteraction,
@@ -599,7 +600,7 @@ module.exports = {
 
 				const newContainer = new ContainerBuilder()
 					.addSectionComponents(selectedSection)
-					.addActionRowComponents(row => row
+					.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
 						.addComponents([
 							new ButtonBuilder()
 								.setLabel("Inventário")

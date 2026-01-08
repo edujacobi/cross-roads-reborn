@@ -191,7 +191,7 @@ module.exports = {
 			const container = addHeader();
 
 			for (const chunk of buttonOptionsChunks) {
-				container.addActionRowComponents(row => row
+				container.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
 					.addComponents(
 						chunk.map(option => new ButtonBuilder()
 							.setLabel(option.label)

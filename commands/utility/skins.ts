@@ -75,7 +75,7 @@ module.exports = {
 			]);
 
 			for (const chunk of itemsWithSkinsChunks) {
-				container.addActionRowComponents(row => row
+				container.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
 					.addComponents(
 						chunk.map(item => new ButtonBuilder()
 							.setLabel(item.Description[language])
@@ -105,7 +105,7 @@ module.exports = {
 			}
 
 			for (const chunk of bundlesChunks) {
-				container.addActionRowComponents(row => row
+				container.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
 					.addComponents(
 						chunk.map(bundle => new ButtonBuilder()
 							.setLabel(bundle.Description[language])
