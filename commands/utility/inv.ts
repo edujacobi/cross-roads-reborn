@@ -39,6 +39,9 @@ module.exports = {
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 		const nameOrId = interaction.options.getString("target");
+
+		await interaction.deferReply();
+
 		const target = nameOrId ? await searchUser(nameOrId, interaction) : user;
 		const _user = target ? await getClient().users.fetch(target.Id) : interaction.user;
 
@@ -77,10 +80,10 @@ module.exports = {
 
 		const gang = await target.GetGang();
 
-		const gangImage = gang ? await createUserGangImage(target, gang, language) : null;
-		const gangImageFile = gangImage ? new AttachmentBuilder(gangImage, { name: "gang.webp" }) : null;
+		let gangImage: Buffer<ArrayBufferLike> | null = null;
+		let gangImageFile: AttachmentBuilder | null = null;
 
-		function generateContainer(isClosed: boolean, target: User) {
+		async function generateContainer(isClosed: boolean, target: User) {
 			const inv = new CustomContainerBuilder()
 				.setUser(user);
 
@@ -126,6 +129,11 @@ module.exports = {
 			}
 			else {
 				if (gang) {
+					if (!gangImageFile) {
+						gangImage = await createUserGangImage(target, gang, language);
+						gangImageFile = new AttachmentBuilder(gangImage, { name: "gang.webp" });
+					}
+
 					inv
 						.addMediaGalleryComponents(gallery => gallery
 							.addItems(galleryItem => galleryItem
@@ -182,12 +190,9 @@ module.exports = {
 			return inv;
 		}
 
-		let container = generateContainer(true, target);
+		let container = await generateContainer(true, target);
 
-		const files = [];
-		if (gangImageFile) {
-			files.push(gangImageFile);
-		}
+		const files: AttachmentBuilder[] = [];
 		if (userImageFile) {
 			files.push(userImageFile);
 		}
@@ -207,14 +212,20 @@ module.exports = {
 
 		collector?.on("collect", async btn => {
 			if (btn.customId === "moreInfo") {
-				container = generateContainer(false, target);
-				await btn.update({
+				await btn.deferUpdate();
+
+				container = await generateContainer(false, target);
+				if (gangImageFile && !files.includes(gangImageFile)) {
+					files.push(gangImageFile);
+				}
+				await replyInteraction(interaction, {
 					components: [container],
+					files,
 				});
 			}
 			else if (btn.customId === "lessInfo") {
-				container = generateContainer(true, target);
-				await btn.update({
+				container = await generateContainer(true, target);
+				await replyInteraction(interaction, {
 					components: [container],
 				});
 			}
