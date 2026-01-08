@@ -397,6 +397,9 @@ export class User {
 		if (this.VipTime == null || this.VipTime < new Date()) {
 			this.VipTime = new Date();
 		}
+		if (this.AvatarDecoration.Id === AvatarDecorationId.Default) {
+			this.AvatarDecoration = AvatarDecorationList[AvatarDecorationId.VIP];
+		}
 
 		this.VipTime = addDays(this.VipTime, days);
 

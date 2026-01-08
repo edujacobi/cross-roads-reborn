@@ -106,6 +106,9 @@ export class UserImageCanvasBuilder {
 
 	SetDecoration(decoration: AvatarDecorationId) {
 		this.Decoration = decoration;
+		if (decoration === AvatarDecorationId.VIP && !this.User.IsVip()) {
+			this.Decoration = AvatarDecorationId.Default;
+		}
 		return this;
 	}
 
@@ -162,7 +165,6 @@ export class UserImageCanvasBuilder {
 		const badgePath = "ui/assets/images/badges";
 
 		const borderStyle = BorderStyles[this.Decoration];
-		console.log(this.Decoration, borderStyle);
 
 		const badgeMap: Partial<Record<AvatarDecorationId, string>> = {
 			[AvatarDecorationId.Developer]: "Developer.png",
