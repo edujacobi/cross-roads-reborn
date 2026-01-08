@@ -1,5 +1,6 @@
 import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model } from "sequelize";
 import { sequelize } from "./Database";
+import { BundleId } from "../interfaces/Ids";
 
 export class UserBundles extends Model<
 	InferAttributes<UserBundles>,
@@ -7,7 +8,7 @@ export class UserBundles extends Model<
 > {
 	declare id: CreationOptional<number>;
 	declare userId: string;
-	declare bundleId: number;
+	declare bundleId: BundleId;
 }
 
 UserBundles.init(
