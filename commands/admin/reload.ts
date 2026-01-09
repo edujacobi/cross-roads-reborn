@@ -1,8 +1,11 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, Colors, MessageFlags, SlashCommandBuilder } from "discord.js";
 import path from "node:path";
 import fs from "node:fs";
 import { SlashCommand } from "../../types";
 import { logger } from "../../utils/log";
+import { defaultComponent } from "../../utils/ui";
+import { User } from "../../models/User";
+import { replyInteraction } from "../../utils/logic";
 
 /**
  * @INFO: DONT FORGET TO RUN 'tsc --watch' FOR /RELOAD TO WORK PROPERLY
@@ -17,14 +20,23 @@ module.exports = {
 				.setDescription("The command to reload.")
 				.setRequired(true)),
 
-	async execute(interaction: ChatInputCommandInteraction) {
+	async execute(interaction: ChatInputCommandInteraction, user: User) {
 		const commandName = interaction.options.getString("command", true).toLowerCase();
 		const command = interaction.client.commands.get(commandName);
 
 		await interaction.deferReply();
 
 		if (!command) {
-			return interaction.editReply(`There is no command with name \`${commandName}\`!`);
+			const container = defaultComponent({
+				description: `There is no command with name \`${commandName}\`!`,
+				color: Colors.Orange,
+				user,
+			});
+
+			return replyInteraction(interaction, {
+				components: [container],
+				flags: MessageFlags.IsComponentsV2,
+			});
 		}
 
 		const foldersPath = path.join(__dirname, "..");
@@ -46,15 +58,44 @@ module.exports = {
 			if ("data" in newCommand && "execute" in newCommand) {
 
 				interaction.client.commands.set(newCommand.data.name, newCommand);
-				logger.info(`Command ${file} reloaded`);
-				return await interaction.editReply(`Command \`${newCommand.data.name}\` was reloaded!`);
+				logger.info(`Command /${file} reloaded`);
+
+				const container = defaultComponent({
+					description: `Command \`/${newCommand.data.name}\` was reloaded!`,
+					color: Colors.Green,
+					user,
+				});
+
+				return replyInteraction(interaction, {
+					components: [container],
+					flags: MessageFlags.IsComponentsV2,
+				});
 
 			}
 			else {
-				return await interaction.editReply(`The command is missing a required "data" or "execute" property.`);
+				const container = defaultComponent({
+					description: `The command \`/${commandName}\` is missing a required "data" or "execute" property`,
+					color: Colors.Orange,
+					user,
+				});
+
+				return replyInteraction(interaction, {
+					components: [container],
+					flags: MessageFlags.IsComponentsV2,
+				});
 			}
 		}
 
-		return await interaction.editReply(`There was an error while reloading command \`${command.data.name}\``);
+		const container = defaultComponent({
+			description: `There was an error while reloading command \`/${command.data.name}\``,
+			color: Colors.Red,
+			user,
+		});
+
+		return replyInteraction(interaction, {
+			components: [container],
+			flags: MessageFlags.IsComponentsV2,
+		});
+
 	},
 };
