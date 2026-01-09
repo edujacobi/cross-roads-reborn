@@ -32,16 +32,6 @@ module.exports = {
 				.setName("coins")
 				.setDescription("How many coins to add")
 				.setDescriptionLocalization(Locale.PortugueseBR, "Quantas moedas adicionar")
-				.addChoices([{
-					name: "Pacotinho (2500)",
-					value: 2_500,
-				}, {
-					name: "Pacote (5500)",
-					value: 5_500,
-				}, {
-					name: "Pacotão (18000)",
-					value: 18_000,
-				}])
 				.setRequired(true),
 		),
 
