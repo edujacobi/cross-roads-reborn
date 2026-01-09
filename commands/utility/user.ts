@@ -238,9 +238,7 @@ module.exports = {
 		});
 
 		collectorButton?.on("collect", async btn => {
-			await btn.deferUpdate({
-				withResponse: true,
-			});
+			await btn.deferUpdate();
 
 			if (btn.customId === "back") {
 				container = await generateDefaultContainer();

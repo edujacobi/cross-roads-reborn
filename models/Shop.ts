@@ -248,9 +248,7 @@ export class Shop {
 		});
 
 		collectorButton?.on("collect", async btn => {
-			await btn.deferUpdate({
-				withResponse: true,
-			});
+			await btn.deferUpdate();
 
 			if (btn.customId === "more") {
 				this.GenerateContainer();
