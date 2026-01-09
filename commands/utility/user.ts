@@ -42,7 +42,7 @@ module.exports = {
 
 		await interaction.deferReply();
 
-		const target = nameOrId ? await searchUser(nameOrId, interaction) : user;
+		const target = nameOrId ? await searchUser(nameOrId, interaction, language) : user;
 		const _user = target ? await getClient().users.fetch(target.Id) : interaction.user;
 
 		if (!target) {

@@ -47,8 +47,8 @@ export async function checkUser(userId: string, interaction: CommandInteraction)
 	}
 }
 
-export async function searchUser(nameOrId: string, interaction: CommandInteraction) {
-	const user = await User.Search(nameOrId);
+export async function searchUser(nameOrId: string, interaction: CommandInteraction, language?: Language) {
+	const user = await User.Search(nameOrId, language);
 
 	if (!user) {
 		await replyUserDontExist(interaction, getLanguageFromLocale(interaction.locale));

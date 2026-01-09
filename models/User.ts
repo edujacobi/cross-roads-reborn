@@ -220,7 +220,7 @@ export class User {
 		}
 	}
 
-	async GetInfo(fromUser?: Users) {
+	async GetInfo(fromUser?: Users, language?: Language) {
 		let user: Users | null;
 
 		if (fromUser) {
@@ -352,7 +352,7 @@ export class User {
 		this.Drink.DrunkCount = user.drunkCount;
 
 		await this.GetAttributes();
-		await this.GetSituation();
+		await this.GetSituation(language);
 
 		this.Language = user.language;
 
@@ -729,8 +729,8 @@ export class User {
 		}
 	}
 
-	async GetSituation() {
-		const s = Strings[this.Language];
+	async GetSituation(language?: Language) {
+		const s = Strings[language ?? this.Language];
 		this.Situation = {
 			Id: SituationId.Idling,
 			Simple: s.idling,
@@ -1147,7 +1147,7 @@ export class User {
 		return success;
 	}
 
-	static async Search(nameOrId: string): Promise<User | null> {
+	static async Search(nameOrId: string, language?: Language): Promise<User | null> {
 		const user = await Users.findOne({
 			where: {
 				[Op.or]: {
@@ -1163,7 +1163,7 @@ export class User {
 			return null;
 		}
 
-		return await new User(user.id).GetInfo(user);
+		return await new User(user.id).GetInfo(user, language);
 	}
 }
 

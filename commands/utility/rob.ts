@@ -36,7 +36,7 @@ module.exports = {
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 		const nameOrId = interaction.options.getString("target");
-		const target = nameOrId ? await searchUser(nameOrId, interaction) : null;
+		const target = nameOrId ? await searchUser(nameOrId, interaction, language) : null;
 
 		const s = Strings[language];
 
