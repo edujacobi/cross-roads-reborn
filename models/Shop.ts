@@ -250,7 +250,7 @@ export class Shop {
 		collectorButton?.on("collect", async btn => {
 			await btn.deferUpdate();
 
-			if (btn.customId === "more") {
+			if (btn.customId === "back") {
 				this.GenerateContainer();
 				return await replyInteraction(interaction, { components: [this.Container] });
 			}
@@ -266,9 +266,18 @@ export class Shop {
 				if (!canBuy) {
 					this.AddContainerHeader();
 
-					this.Container.addTexts([
-						message,
-					]);
+					this.Container
+						.addTexts([
+							message,
+						])
+						.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
+							.addComponents(
+								new ButtonBuilder()
+									.setLabel(s.back)
+									.setStyle(ButtonStyle.Secondary)
+									.setCustomId("back"),
+							),
+						);
 
 					this.AddContainerFooter();
 
@@ -279,16 +288,23 @@ export class Shop {
 
 				this.AddContainerHeader();
 
-				this.Container.addSectionComponents(section => section
-					.addTextDisplayComponents(text => text
-						.setContent(s.itemBought(`${item.Skin[BundleId.Default].String} ${item.Description[this.User.Language]}`)),
-					)
-					.setButtonAccessory(btn => btn
-						.setLabel(s.buyMore)
-						.setStyle(ButtonStyle.Secondary)
-						.setCustomId("more"),
-					),
-				);
+				this.Container
+					.addTexts([
+						s.itemBought(`${item.Skin[BundleId.Default].String} ${item.Description[this.User.Language]}`),
+					])
+					.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
+						.addComponents(
+							new ButtonBuilder()
+								.setLabel(s.back)
+								.setStyle(ButtonStyle.Secondary)
+								.setCustomId("back"),
+							new ButtonBuilder()
+								.setLabel(s.buyMore(item.Price))
+								.setStyle(ButtonStyle.Success)
+								.setCustomId(`buy${itemId}`,
+								),
+						),
+					);
 
 				this.AddContainerFooter();
 
@@ -330,7 +346,8 @@ const Strings = {
 		consumable: "consumable",
 		itemBought: (itemName: string) => `You bought **${itemName}**!`,
 		itemPassLimit: (hours: number, itemName: string) => `You can't have more than 360 hours of the same item!\n-# Has ${hours} hours of ${itemName}.`,
-		buyMore: "Buy more!",
+		buyMore: (price: number) => `Buy more! ${formatMoney(price, Language.English)}`,
+		back: "Go back",
 		next: "Next",
 		previous: "Previous",
 	},
@@ -350,7 +367,8 @@ const Strings = {
 		consumable: "consumível",
 		itemBought: (itemName: string) => `Você comprou **${itemName}**!`,
 		itemPassLimit: (hours: number, itemName: string) => `Você não pode possuir mais de 360 horas de um mesmo item!\n-# Possui ${hours} horas de ${itemName}.`,
-		buyMore: "Comprar mais!",
+		buyMore: (price: number) => `Comprar mais! ${formatMoney(price, Language.Portuguese)}`,
+		back: "Voltar",
 		next: "Próximo",
 		previous: "Anterior",
 	},
@@ -370,7 +388,8 @@ const Strings = {
 		consumable: "consumible",
 		itemBought: (itemName: string) => `Tú compraste **${itemName}**!`,
 		itemPassLimit: (hours: number, itemName: string) => `¡No puedes tener más de 360 horas del mismo artículo!\n-# Tiene ${hours} horas de ${itemName}.`,
-		buyMore: "¡Comprar más!",
+		buyMore: (price: number) => `¡Comprar más! ${formatMoney(price, Language.Spanish)}`,
+		back: "Volver",
 		next: "Siguiente",
 		previous: "Anterior",
 	},
