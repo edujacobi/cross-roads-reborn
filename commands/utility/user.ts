@@ -21,6 +21,7 @@ import { getClient } from "../../client";
 import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
 import { UserImageCanvasBuilder } from "../../ui/builders/UserImageCanvasBuilder";
 import { addDays } from "date-fns";
+import { BadgeId, BadgeList } from "../../interfaces/Badges";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -61,6 +62,8 @@ module.exports = {
 		badges.forEach(badge => badgeText += `${badge.Emoji} `);
 
 		const now = new Date();
+
+		let currentOption: string | null = null;
 
 		const buttonOptions = [{
 			id: "hospital",
@@ -147,6 +150,11 @@ module.exports = {
 				`\`${formatMoney(target.Job.ReceivedSum, user.Language)}\` (\`${target.Job.ReceivedCount}\`) ${s.fromJobs}`,
 				`\`${formatMoney(target.Shop.SpentSum, user.Language)}\` (\`${target.Shop.SpentCount}\`) ${s.spent}`,
 			],
+		}, {
+			id: "badges",
+			label: s.badges,
+			emote: BadgeList[BadgeId.S1Top1Money].Emoji.Id,
+			texts: badgeText === "" ? s.noBadges : badges.map(badge => `**${BadgeList[badge.BadgeId].Emoji.String} ${BadgeList[badge.BadgeId].Name[language]}**\n-# ${BadgeList[badge.BadgeId].Description[language]}`),
 		}];
 
 
@@ -201,10 +209,28 @@ module.exports = {
 							.setLabel(option.label)
 							.setEmoji(option.emote)
 							.setStyle(ButtonStyle.Secondary)
+							.setDisabled(option.id === currentOption)
 							.setCustomId(option.id),
 						),
 					),
 				);
+			}
+
+			if (currentOption != null) {
+				const info = buttonOptions.find(b => b.id === currentOption);
+
+				if (!info) {
+					return container;
+				}
+
+				const emoji = interaction.client.emojis.cache.get(info.emote);
+
+				container
+					.addLargeSeparator()
+					.addTexts([
+						`### ${emoji} ${info.label}`,
+						...info.texts,
+					]);
 			}
 
 			container.addFooter({
@@ -240,43 +266,14 @@ module.exports = {
 		collectorButton?.on("collect", async btn => {
 			await btn.deferUpdate();
 
-			if (btn.customId === "back") {
-				container = await generateDefaultContainer();
+			currentOption = btn.customId;
 
-				await replyInteraction(interaction, {
-					components: [container],
-					flags: MessageFlags.IsComponentsV2,
-				});
-			}
-			else {
-				const info = buttonOptions.find(b => b.id === btn.customId);
+			container = await generateDefaultContainer();
 
-				if (!info) {
-					return;
-				}
-
-				const emoji = interaction.client.emojis.cache.get(info.emote);
-
-				container = addHeader()
-					.addTexts([
-						`### ${emoji} ${info.label}`,
-						...info.texts,
-					])
-					.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
-						.addComponents([
-							new ButtonBuilder()
-								.setLabel(s.goBack)
-								.setStyle(ButtonStyle.Secondary)
-								.setCustomId("back"),
-						]),
-					)
-					.addFooter();
-
-				await replyInteraction(interaction, {
-					components: [container],
-					flags: MessageFlags.IsComponentsV2,
-				});
-			}
+			await replyInteraction(interaction, {
+				components: [container],
+				flags: MessageFlags.IsComponentsV2,
+			});
 		});
 	},
 };
@@ -327,6 +324,8 @@ const Strings = {
 		scavengeFailures: "failures",
 		scavengeHospitalizations: "hospitalizations",
 		scavengePrisions: "prisons",
+		badges: "Badges",
+		noBadges: "No badges",
 		playingSince: "Playing since",
 		goBack: "Go back",
 	},
@@ -376,6 +375,8 @@ const Strings = {
 		scavengeFailures: "falhas",
 		scavengeHospitalizations: "hospitalizações",
 		scavengePrisions: "prisões",
+		badges: "Insígnias",
+		noBadges: "Sem insígnias",
 		playingSince: "Jogando desde",
 		goBack: "Voltar",
 	},
@@ -425,6 +426,8 @@ const Strings = {
 		scavengeFailures: "fallos",
 		scavengeHospitalizations: "hospitalizaciones",
 		scavengePrisions: "prisiones",
+		badges: "Insignia",
+		noBadges: "Sin insignia",
 		playingSince: "Jugando desde",
 		goBack: "Volver",
 	},

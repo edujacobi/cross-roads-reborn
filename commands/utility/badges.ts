@@ -119,9 +119,9 @@ const Strings = {
 		your: "Suas insígnias"
 	},
 	[Language.Spanish]: {
-		badges: "Insingas",
-		special: "Insingas especiales",
-		seasonal: "Insingas de temporada",
-		your: "Tus insingas"
+		badges: "Insignia",
+		special: "Insignia especiales",
+		seasonal: "Insignia de temporada",
+		your: "Tus insignias"
 	},
 } as const;
