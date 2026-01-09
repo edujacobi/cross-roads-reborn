@@ -187,12 +187,10 @@ module.exports = {
 			return container;
 		}
 
-		async function generateDefaultContainer() {
+		function generateDefaultContainer() {
 			if (!target) {
 				return addHeader();
 			}
-
-			await target.GetInfo();
 
 			// separate options in different arrays with length = 5
 			const buttonOptionsChunks = [];
@@ -245,7 +243,7 @@ module.exports = {
 			files.push(userImageFile);
 		}
 
-		let container = await generateDefaultContainer();
+		let container = generateDefaultContainer();
 
 		const response = await replyInteraction(interaction, {
 			components: [container],
@@ -268,7 +266,7 @@ module.exports = {
 
 			currentOption = btn.customId;
 
-			container = await generateDefaultContainer();
+			container = generateDefaultContainer();
 
 			await replyInteraction(interaction, {
 				components: [container],
