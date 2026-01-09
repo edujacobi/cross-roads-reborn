@@ -22,6 +22,7 @@ import { RobHistories } from "../../database/RobHistories";
 import { Notifications } from "../../database/Notifications";
 import GangMembers from "../../database/GangMembers";
 import GangRoles from "../../database/GangRoles";
+import { EmoteString } from "../../utils/emotes";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -125,6 +126,7 @@ module.exports = {
 					topHospital,
 					topBriber,
 					topEscaper,
+					topDrunk,
 					topGang,
 				] = await Promise.all([
 					getFromRanking("money", 3),
@@ -137,6 +139,7 @@ module.exports = {
 					getFromRanking("hospitalTreatmentSum"),
 					getFromRanking("prisonBriberySum"),
 					getFromRanking("escapeCount"),
+					getFromRanking("drinkHappyHour"),
 					getTopGang(),
 				]);
 
@@ -180,6 +183,10 @@ module.exports = {
 					`## ${EmoteBadgeString.Season6.Escapist} Top Escaper`,
 					`-# Times escaped from prison`,
 					topEscaper.map(user => getUserRow(user, user.escapeCount)).join("\n"),
+					``,
+					`## ${EmoteString.Idle} Top Drunk`,
+					`-# Max beers drank before getting drunk during Happy Hour `,
+					topDrunk.map(user => getUserRow(user, user.drinkHappyHour)).join("\n"),
 					``,
 					`## ${EmoteBadgeString.Season6.TopGang} Top Gang`,
 					`-# Greater level`,
