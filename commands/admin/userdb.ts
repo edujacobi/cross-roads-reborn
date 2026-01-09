@@ -42,8 +42,7 @@ module.exports = {
 		});
 
 		if (!user) {
-			await replyUserDontExist(interaction, getLanguageFromLocale(interaction.locale));
-			return null;
+			return replyUserDontExist(interaction, getLanguageFromLocale(interaction.locale));
 		}
 
 		const codeblock = codeBlock("json", JSON.stringify(user, null, 4));
