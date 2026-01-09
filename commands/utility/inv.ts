@@ -51,7 +51,12 @@ module.exports = {
 
 		const s = Strings[language];
 
-		let badges = await UserBadge.GetList(target.Id);
+		// eslint-disable-next-line prefer-const
+		let [badges, userItems, gang] = await Promise.all([
+			UserBadge.GetList(target.Id),
+			target.GetItems(),
+			target.GetGang(),
+		]);
 
 		if (target.IsVip()) {
 			badges = UserBadge.AddVIPBadgeInList(badges, target, language);
@@ -68,16 +73,13 @@ module.exports = {
 
 		badges.forEach(badge => badgeText += `${badge.Emoji} `);
 
-		const userItems = await target.GetItems();
-		const emoteItems = userItems.map(weapon => weapon.Skin[weapon.SelectedSkin].String);
+		const emoteItems = userItems.sort((a, b) => a.Id - b.Id).map(weapon => weapon.Skin[weapon.SelectedSkin].String);
 
 		const lastCommand = interaction.client.userLastCommand.get(target.Id) || 0;
 
 		const online = new Date(lastCommand) > subMinutes(new Date(), 15);
 		const emoteOnline = online ? EmoteString.Online : EmoteString.Offline;
 		const textOnline = online ? `${EmoteString.Online} Online` : `${EmoteString.Offline} Offline`;
-
-		const gang = await target.GetGang();
 
 		let gangImage: Buffer<ArrayBufferLike> | null = null;
 		let gangImageFile: AttachmentBuilder | null = null;
@@ -217,14 +219,14 @@ module.exports = {
 				if (gangImageFile && !files.includes(gangImageFile)) {
 					files.push(gangImageFile);
 				}
-				await replyInteraction(interaction, {
+				return replyInteraction(interaction, {
 					components: [container],
 					files,
 				});
 			}
 			else if (btn.customId === "lessInfo") {
 				container = await generateContainer(true, target);
-				await replyInteraction(interaction, {
+				return replyInteraction(interaction, {
 					components: [container],
 				});
 			}
