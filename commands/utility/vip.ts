@@ -41,7 +41,7 @@ const Strings = {
 	[Language.English]: {
 		title: "VIP",
 		benefits: `## Benefits
-- Exclusive badge in \`/user\`
+- Exclusive badge and avatar decoration in \`/user\` and \`/inv\`
 - 50% bonus in \`/daily\`
 - Access to development channel
 - Nickname change recharge
@@ -49,7 +49,6 @@ const Strings = {
 - 50% larger alms delivery
 - ~~25% discount on Class change~~
 - ~~Exclusive Prize Ticket draws~~
-- Can select Skins for weapons
 - Access to VIP category in Cross Roads Reborn server
 - VIP role in Cross Roads Reborn server
 - Many more to come!`,
@@ -59,7 +58,7 @@ In \`/specialshop\`, using the ${EmoteString.SpecialCoinShop}Special Coins!`,
 	[Language.Portuguese]: {
 		title: "VIP",
 		benefits: `## Benefícios
-- Insígnia exclusiva no \`/inv\`
+- Insígnia e decoração de avatar exclusivas no \`/usuario\` e \`/inv\`
 - 50% de bônus no \`/daily\`
 - Acesso ao canal de desenvolvimento
 - Recarga na alteração de nick
@@ -67,7 +66,6 @@ In \`/specialshop\`, using the ${EmoteString.SpecialCoinShop}Special Coins!`,
 - Entrega esmolas 50% maiores
 - ~~25% de desconto na troca de Classe~~
 - ~~Sorteios do Bilhete premiado exclusivos~~
-- Pode selecionar Skins para armas
 - Acesso à categoria VIP no servidor Cross Roads Reborn
 - Cargo VIP no servidor Cross Roads Reborn
 - Muitos mais por vir!`,
@@ -77,7 +75,7 @@ Na \`/lojaespecial\`, utilizando as ${EmoteString.SpecialCoinShop}Moedas Especia
 	[Language.Spanish]: {
 		title: "VIP",
 		benefits: `## Beneficios
-- Insignia exclusiva en \`/user\`
+- Insignia y decoración de avatar exclusivas en \`/user\` y \`/inv\`
 - 50% de bonificación en \`/daily\`
 - Acceso al canal de desarrollo
 - Recarga en el cambio de apodo
@@ -85,7 +83,6 @@ Na \`/lojaespecial\`, utilizando as ${EmoteString.SpecialCoinShop}Moedas Especia
 - ~~Entrega de limosnas 50% mayores~~
 - ~~25% de descuento en el cambio de Clase~~
 - Sorteos exclusivos del Billete premiado
-- Puede seleccionar Skins para armas
 - Acceso a la categoría VIP en el servidor Cross Roads Reborn
 - Rol VIP en el servidor Cross Roads Reborn
 - ¡Muchos más por venir!`,
