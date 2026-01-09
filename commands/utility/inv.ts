@@ -64,7 +64,7 @@ module.exports = {
 
 		const userImage = await new UserImageCanvasBuilder(target, _user.avatarURL({ size: 512 }))
 			.SetBadges(badges)
-			.SetDecoration(user.AvatarDecoration.Id)
+			.SetDecoration(target.AvatarDecoration.Id)
 			.GenerateImage();
 
 		const userImageFile = new AttachmentBuilder(userImage, { name: "user.webp" });
