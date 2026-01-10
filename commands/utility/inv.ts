@@ -10,7 +10,7 @@
 	MessageFlags,
 	SlashCommandBuilder,
 } from "discord.js";
-import { disableButtons, replyInteraction, searchUser } from "../../utils/logic";
+import { deferReply, disableButtons, replyInteraction, searchUser } from "../../utils/logic";
 import { Language } from "../../models/Language";
 import { EmoteId, EmoteString } from "../../utils/emotes";
 import { differenceInHours, subMinutes } from "date-fns";
@@ -40,7 +40,7 @@ module.exports = {
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 		const nameOrId = interaction.options.getString("target");
 
-		await interaction.deferReply();
+		await deferReply(interaction);
 
 		const target = nameOrId ? await searchUser(nameOrId, interaction, language) : user;
 		const _user = target ? await getClient().users.fetch(target.Id) : interaction.user;

@@ -1,9 +1,9 @@
 import {
-	ActionRowBuilder,
+	ActionRowBuilder, ApplicationCommandOptionType,
 	ButtonBuilder,
 	ButtonStyle,
 	ChatInputCommandInteraction,
-	Colors,
+	Colors, CommandInteractionOption, CommandInteractionOptionResolver,
 	ComponentType,
 	ContainerBuilder,
 	ContainerComponent,
@@ -598,7 +598,9 @@ module.exports = {
 						.setCustomId("goback"),
 				);
 
-				const newContainer = new ContainerBuilder()
+				const newContainer = new CustomContainerBuilder()
+					.setUser(user)
+					.setAccentColor(CrColors.Default)
 					.addSectionComponents(selectedSection)
 					.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
 						.addComponents([
@@ -623,11 +625,42 @@ module.exports = {
 								.setCustomId("invite")
 								.setStyle(ButtonStyle.Secondary),
 						]),
-					);
+					)
+					.addFooter();
 
-				await interaction.editReply({
+				await replyInteraction(interaction, {
 					components: [newContainer],
 				});
+			}
+
+			else if (btn.customId === "inv") {
+				const target = await searchUser(users[position].id, interaction);
+				if (!target) {
+					return;
+				}
+
+				const command = interaction.client.commands.get(interaction.commandName);
+				if (!command) {
+					return;
+				}
+
+				// @ts-ignore
+				const invInteraction = new ChatInputCommandInteraction();
+				invInteraction.type = interaction.type;
+				invInteraction.guild = interaction.guild;
+				invInteraction.client = interaction.client;
+				invInteraction.user = interaction.user;
+
+				const options: CommandInteractionOption[] = [{
+					name: "target",
+					type: ApplicationCommandOptionType.String,
+					value: target.Id,
+				}];
+
+				// @ts-ignore
+				invInteraction.options = new CommandInteractionOptionResolver(interaction.client, options, interaction.options.resolved);
+
+				command.execute(invInteraction, user, language);
 			}
 
 			else if (btn.customId === "rob") {
@@ -661,8 +694,9 @@ module.exports = {
 			}
 
 			else if (btn.customId === "goback") {
-				await interaction.editReply({
-					components: [await pagination.CustomizeContainer(), pagination.GenerateRow()],
+				const container = await pagination.CustomizeContainer();
+				await replyInteraction(interaction, {
+					components: [container, pagination.GenerateRow()],
 				});
 			}
 

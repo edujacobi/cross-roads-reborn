@@ -153,6 +153,18 @@ export async function replyInteraction(interaction: CommandInteraction | ButtonI
 	}
 }
 
+export async function deferReply(interaction: CommandInteraction | ButtonInteraction | MessageComponentInteraction<CacheType>) {
+	try {
+		if (interaction.deferred) {
+			return;
+		}
+		await interaction.deferReply();
+	}
+	catch (err) {
+		Log.Warning(`Something went wrong with deferring interaction ${interaction.id} of user ${interaction.user.displayName} in server ${interaction.guild?.name} (ID: ${interaction.guild?.id}). Error: ${err}`);
+	}
+}
+
 export async function replyUserDontExist(interaction: CommandInteraction, language: Language) {
 	return await replyInteraction(interaction, {
 		content: Strings[language].userDontExist,
