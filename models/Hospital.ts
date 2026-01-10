@@ -10,7 +10,7 @@ import {
 import { User } from "./User";
 import { CrColors } from "../utils/colors";
 import { EmoteString } from "../utils/emotes";
-import { replyInteraction } from "../utils/logic";
+import { disableButtons, replyInteraction } from "../utils/logic";
 import { EmoteBadgeString } from "../utils/badges";
 import { Users } from "../database/Users";
 import { Op } from "sequelize";
@@ -28,6 +28,7 @@ export class Hospital {
 	Interaction: ChatInputCommandInteraction;
 	PrivatePrice: number;
 	PrivateBasePrice = 3_000;
+	Container = new CustomContainerBuilder();
 
 	constructor(user: User, interaction: ChatInputCommandInteraction) {
 		this.User = user;
@@ -39,6 +40,31 @@ export class Hospital {
 		this.PrivatePrice = Math.floor(this.PrivateBasePrice + defFactor + moneyFactor);
 	}
 
+	AddContainerHeader() {
+		const s = Strings[this.User.Language];
+
+		this.Container = new CustomContainerBuilder()
+			.setUser(this.User)
+			.setAccentColor(CrColors.Hospital)
+			.addSectionComponents(header => header
+				.addTextDisplayComponents(content => content
+					.setContent(`# Hospital\n${s.subtitle}`),
+				)
+				.setThumbnailAccessory(thumb => thumb
+					.setURL("https://media.discordapp.net/attachments/1233604589064818808/1352830745340805202/Hospital7.png"),
+				),
+			)
+			.addLargeSeparator();
+	}
+
+	// AddContainerFooter() {
+	// 	const s = Strings[this.User.Language];
+	// 	this.Container
+	// 		.addFooter({
+	// 			text: s.moreAtk,
+	// 		});
+	// }
+
 	async GenerateContainer() {
 		const s = Strings[this.User.Language];
 
@@ -46,24 +72,6 @@ export class Hospital {
 		if (this.User.IsInHospital()) {
 			text = s.userInHospital(this.User.Hospital.Time);
 		}
-
-		const container = new CustomContainerBuilder()
-			.setUser(this.User)
-			.setAccentColor(CrColors.Hospital)
-			.addSectionComponents(header => header
-				.setId(1)
-				.addTextDisplayComponents(content => content
-					.setId(2)
-					.setContent(`# Hospital
-${s.description}
-
--# ${text}`),
-				)
-				.setThumbnailAccessory(thumb => thumb
-					.setURL("https://media.discordapp.net/attachments/1233604589064818808/1352830745340805202/Hospital7.png"),
-				),
-			)
-			.addFooter();
 
 		const hospitalized = await this.GetHospitalized();
 
@@ -77,27 +85,48 @@ ${s.description}
 			.setCustomId("private")
 			.setLabel(s.payPrivateCare)
 			.setEmoji(EmoteBadgeString.Season6.Hypochondriac)
+			.setDisabled(!this.User.IsInHospital())
 			.setStyle(ButtonStyle.Secondary);
 
-		const row = new ActionRowBuilder<ButtonBuilder>()
-			.addComponents(buttonHospitalized);
+		this.AddContainerHeader();
 
-		if (this.User.IsInHospital()) {
-			row.addComponents(buttonPrivate);
-		}
+		this.Container
+			.addTexts([
+				s.descriptionPublic,
+			])
+			.addLargeSeparator()
+			.addSectionComponents(section => section
+				.addTextDisplayComponents(text => text
+					.setContent(s.descriptionPrivate),
+				)
+				.setButtonAccessory(buttonPrivate),
+			)
+			.addLargeSeparator()
+			.addTexts([
+				`-# ${text}`,
+			])
+			.addFooter({
+				button: buttonHospitalized,
+			});
 
 		const response = await replyInteraction(this.Interaction, {
-			components: [container, row],
+			components: [this.Container],
 			flags: MessageFlags.IsComponentsV2,
 		});
 
 		const collector = response?.createMessageComponentCollector({
 			filter: (i: MessageComponentInteraction) => i.user.id === this.Interaction.user.id,
 			componentType: ComponentType.Button,
-			time: 60_000,
+			idle: 60_000,
+		});
+
+		collector?.on("end", async () => {
+			await disableButtons(this.Interaction, this.Container);
 		});
 
 		collector?.on("collect", async btn => {
+			await btn.deferUpdate();
+
 			if (btn.customId === "hospitalized") {
 				buttonHospitalized.setDisabled(true);
 
@@ -108,25 +137,32 @@ ${s.description}
 
 				const containerHospitalized = new CustomContainerBuilder()
 					.setUser(this.User)
-					.addTextDisplayComponents(title => title
-						.setContent(s.hospitalized),
-					);
+					.addTexts([
+						`# ${s.hospitalized}`,
+					])
+					.addLargeSeparator();
 
 				pagination.CustomizeContainer = async () => {
 					const users = hospitalized.slice(pagination.Offset, pagination.Offset + pagination.Limit);
 
-					users.forEach(user => {
-						containerHospitalized.addTextDisplayComponents(name => name
-							.setContent(`### ${ClassList[user.class].Image.Emote.String} ${user.nickname}`));
-						containerHospitalized.addTextDisplayComponents(value => value
-							.setContent(`${s.healed} ${showTime(new Date(user.hospitalTime).getTime(), true)}\n${s.howManyTimes(user.hospitalCount)}`));
-					});
+					for (let i = 0; i < users.length; i++) {
+						const user = users[i];
+						containerHospitalized.addTexts([
+							`### ${ClassList[user.class].Image.Emote.String} ${user.nickname}`,
+							`${s.healed} ${showTime(new Date(user.hospitalTime).getTime(), true)} • ${s.howManyTimes(user.hospitalCount)}`,
+						]);
+
+						if (i !== users.length - 1) {
+							containerHospitalized.addSmallSeparator();
+						}
+					}
 
 					return containerHospitalized;
 				};
 
-				await pagination.GenerateContainer(container);
+				await pagination.GenerateContainer(this.Container);
 			}
+
 			else if (btn.customId === "private") {
 				buttonPrivate.setDisabled(true);
 
@@ -135,59 +171,72 @@ ${s.description}
 				const { canPay, message } = await this.CanPayPrivate();
 
 				if (!canPay) {
-					const container = defaultComponent({
+					this.Container = defaultComponent({
 						user: this.User,
 						color: CrColors.Hospital,
-						description: message,
+						description: `${message} ${EmoteString.Hospital}`,
 					});
 
-					return await replyInteraction(this.Interaction, {
-						components: [container],
-						flags: MessageFlags.IsComponentsV2,
+					return replyInteraction(this.Interaction, {
+						components: [this.Container],
 					});
 				}
 
-				container
-					.changeFooterText(formatMoney(this.User.Money, this.User.Language))
-					.changeTextFromSectionId(1, `## ${s.privateCare}
-${s.treatmentCost(this.PrivatePrice)}
--# ${s.confirmPayment}`);
+				this.AddContainerHeader();
 
-				const buttonConfirm = new ButtonBuilder()
-					.setCustomId("confirm")
-					.setLabel(s.confirm)
-					.setStyle(ButtonStyle.Success);
+				this.Container
+					.addTexts([
+						`### ${EmoteBadgeString.Season6.Hypochondriac} ${s.privateCare}`,
+						`${s.treatmentCost(this.PrivatePrice)}`,
+						`-# ${s.confirmPayment}`,
+					])
+					.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
+						.addComponents(new ButtonBuilder()
+							.setCustomId("confirm")
+							.setLabel(s.confirm)
+							.setStyle(ButtonStyle.Success),
+						),
+					)
+					.addFooter({
+						text: formatMoney(this.User.Money, this.User.Language),
+					});
 
-				row.setComponents([buttonConfirm]);
-
-				await replyInteraction(this.Interaction, { components: [container, row] });
+				await replyInteraction(this.Interaction, { components: [this.Container] });
 			}
+
 			else if (btn.customId === "confirm") {
 				await this.User.GetInfo();
 
 				const { canPay, message } = await this.CanPayPrivate();
 
 				if (!canPay) {
-					const container = defaultComponent({
+					this.Container = defaultComponent({
 						user: this.User,
 						color: CrColors.Hospital,
-						description: message,
+						description: `${message} ${EmoteString.Hospital}`,
 					});
 
-					return await replyInteraction(this.Interaction, {
-						components: [container],
+					return replyInteraction(this.Interaction, {
+						components: [this.Container],
 						flags: MessageFlags.IsComponentsV2,
 					});
 				}
 
 				await this.PayPrivate();
 
-				container
-					.changeFooterText(formatMoney(this.User.Money, this.User.Language))
-					.changeTextFromSectionId(1, `## ${s.privateCare}\n### ${s.privateHealed}`);
+				this.AddContainerHeader();
+
+				this.Container
+					.addTexts([
+						`### ${EmoteBadgeString.Season6.Hypochondriac} ${s.privateCare}`,
+						`${s.privateHealed}`,
+					])
+					.addFooter({
+						text: formatMoney(this.User.Money, this.User.Language),
+					});
 
 				await replyInteraction(this.Interaction, {
-					components: [container],
+					components: [this.Container],
 				});
 			}
 		});
@@ -227,7 +276,6 @@ ${s.treatmentCost(this.PrivatePrice)}
 	}
 
 	private async GetHospitalized() {
-		// Todo melhorar sistema de paginação
 		return await Users.findAll({
 			attributes: ["nickname", "class", "hospitalTime", "hospitalCount"],
 			order: [["hospitalTime", "DESC"]],
@@ -244,13 +292,9 @@ const Strings = {
 	[Language.English]: {
 		userFree: "You are not hospitalized! Want a little injection?",
 		userInHospital: (time: Date) => `You are hospitalized! You will be treated ${showTime(time.getTime(), true)}!`,
-		description: `_Public, Free and Quality!_
-
--# Hospitalized users have ${EmoteString.Defense}-5 DEF and ${EmoteString.Defense}-5% $DEF!.
-### Public service
-Unfortunately we have no more free beds, so you will have to wait in the hallway until you are seen.
-### ${EmoteBadgeString.Season6.Hypochondriac} Private care
-If you pay a certain amount, we will be able to treat you faster!`,
+		subtitle: `_Public, Free and Quality!_\n\n-# Hospitalized users have ${EmoteString.Defense}-5 DEF and ${EmoteString.Defense}-5% $DEF!.`,
+		descriptionPublic: `### Public service\nUnfortunately we have no more free beds, so you will have to wait in the hallway until you are seen.`,
+		descriptionPrivate: `### ${EmoteBadgeString.Season6.Hypochondriac} Private care\nIf you pay a certain amount, we will be able to treat you faster!`,
 		hospitalized: "Hospitalized",
 		healed: "Healed",
 		privateCare: "Private care",
@@ -266,13 +310,9 @@ If you pay a certain amount, we will be able to treat you faster!`,
 	[Language.Portuguese]: {
 		userFree: "Você não está hospitalizado! Quer uma injeçãozinha?",
 		userInHospital: (time: Date) => `Você está hospitalizado! Será atendido ${showTime(time.getTime(), true)}!`,
-		description: `_Público, Gratuito e de Qualidade!_
-
--#	Usuários hospitalizados possuem ${EmoteString.Defense}-5 DEF e ${EmoteString.Defense}-5% $DEF!.
-###	Serviço público
-Infelizmente não temos mais leitos livres, então você precisará esperar no corredor até ser atendido.
-### ${EmoteBadgeString.Season6.Hypochondriac} Atendimento particular
-Caso você pague uma certa quantia, poderemos tratá-lo mais rapidamente!`,
+		subtitle: `_Público, Gratuito e de Qualidade!_\n\n-#	Usuários hospitalizados possuem ${EmoteString.Defense}-5 DEF e ${EmoteString.Defense}-5% $DEF!.`,
+		descriptionPublic: `###	Serviço público\nInfelizmente não temos mais leitos livres, então você precisará esperar no corredor até ser atendido.`,
+		descriptionPrivate: `### ${EmoteBadgeString.Season6.Hypochondriac} Atendimento particular\nCaso você pague uma certa quantia, poderemos tratá-lo mais rapidamente!`,
 		hospitalized: "Hospitalizados",
 		healed: "Curado",
 		privateCare: "Atendimento particular",
@@ -288,13 +328,9 @@ Caso você pague uma certa quantia, poderemos tratá-lo mais rapidamente!`,
 	[Language.Spanish]: {
 		userFree: "No estás hospitalizado! ¿Quieres una pequeña inyección?",
 		userInHospital: (time: Date) => `¡Estás hospitalizado! ¡Se servirá ${showTime(time.getTime(), true)}!`,
-		description: `_¡Público, gratuito y de calidad!_
-
--# Los usuarios hospitalizados tienen ${EmoteString.Defense}-5 DEF y ${EmoteString.Defense}-5% $DEF!.
-### Servicio público
-Lamentablemente, no tenemos más camas libres, por lo que deberá esperar en el pasillo hasta que le atiendan.
-### ${EmoteBadgeString.Season6.Hypochondriac} Atención privada
-¡Si pagas una cierta cantidad, podemos atenderte más rápido!`,
+		subtitle: `_¡Público, gratuito y de calidad!_\n\n-# Los usuarios hospitalizados tienen ${EmoteString.Defense}-5 DEF y ${EmoteString.Defense}-5% $DEF!.`,
+		descriptionPublic: `### Servicio público\nLamentablemente, no tenemos más camas libres, por lo que deberá esperar en el pasillo hasta que le atiendan.`,
+		descriptionPrivate: `### ${EmoteBadgeString.Season6.Hypochondriac} Atención privada\n¡Si pagas una cierta cantidad, podemos atenderte más rápido!`,
 		hospitalized: "Hospitalizados",
 		healed: "Curado",
 		privateCare: "Atención privada",

@@ -67,18 +67,18 @@ export class Pagination {
 			components.push(row);
 		}
 
-		const response = await this.Interaction.editReply({
+		const response = await replyInteraction(this.Interaction, {
 			components,
 			flags: MessageFlags.IsComponentsV2,
 		});
 
-		const collector = response.createMessageComponentCollector({
+		const collector = response?.createMessageComponentCollector({
 			filter: (i: MessageComponentInteraction) => i.user.id === this.Interaction.user.id,
 			componentType: ComponentType.Button,
 			idle: 30_000,
 		});
 
-		collector.on("collect", async btn => {
+		collector?.on("collect", async btn => {
 			await btn.deferUpdate();
 
 			if (!["next", "prev"].includes(btn.customId)) {
@@ -101,7 +101,7 @@ export class Pagination {
 			});
 		});
 
-		collector.on("end", async () => {
+		collector?.on("end", async () => {
 			await disableButtons(this.Interaction, mainContainer ?? container);
 		});
 
