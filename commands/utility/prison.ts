@@ -12,6 +12,6 @@ module.exports = {
 	async execute(interaction: ChatInputCommandInteraction, user: User) {
 		const prison = new Prison(user, interaction);
 
-		return await prison.GenerateEmbed();
+		return await prison.GenerateContainer();
 	},
 };

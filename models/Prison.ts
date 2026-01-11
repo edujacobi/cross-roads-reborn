@@ -50,9 +50,25 @@ export class Prison {
 		this.Interaction = interaction;
 	}
 
-	async GenerateEmbed() {
+	AddContainerHeader() {
 		const s = Strings[this.User.Language];
 
+		this.Container = new CustomContainerBuilder()
+			.setUser(this.User)
+			.setAccentColor(CrColors.Police)
+			.addSectionComponents(header => header
+				.addTextDisplayComponents(content => content
+					.setContent(`# ${s.title}\n${s.subtitle}`),
+				)
+				.setThumbnailAccessory(thumb => thumb
+					.setURL("https://media.discordapp.net/attachments/1233604589064818808/1339946455913205871/Prison.png"),
+				),
+			)
+			.addLargeSeparator();
+	}
+
+	async GenerateDefaultContainer() {
+		const s = Strings[this.User.Language];
 		this.Escape.HasJetpack = await this.User.GetItems()
 			.then(items => items.some(item => item.Id === ItemId.Jetpack));
 
@@ -67,23 +83,6 @@ export class Prison {
 			text = s.userPrison(this.User.Prison.Time);
 		}
 
-		this.Container = new CustomContainerBuilder()
-			.setUser(this.User)
-			.setAccentColor(CrColors.Police)
-			.addSectionComponents(header => header
-				.setId(1)
-				.addTextDisplayComponents(content => content
-					.setId(2)
-					.setContent(`# ${s.title}
-${s.description(this.Escape.BaseChance, this.Escape.BaseJetpackChance + this.Escape.BaseChance, text)}`),
-				)
-				.setThumbnailAccessory(thumb => thumb
-					.setURL("https://media.discordapp.net/attachments/1233604589064818808/1339946455913205871/Prison.png"),
-				),
-			)
-			.addFooter({ text: `${s.currentChance}: ${this.Escape.TotalChance}%` });
-
-
 		const prisoners = await this.GetPrisoners();
 
 		const buttonPrisoners = new ButtonBuilder()
@@ -96,25 +95,54 @@ ${s.description(this.Escape.BaseChance, this.Escape.BaseJetpackChance + this.Esc
 			.setCustomId("escape")
 			.setLabel(s.escape)
 			.setEmoji(this.Escape.HasJetpack ? ItemList[ItemId.Jetpack].Skin[BundleId.Default].Id : EmoteId.Escape)
-			.setDisabled(this.User.Escape.HasTried)
+			.setDisabled(!this.User.IsInPrison() || this.User.Escape.HasTried)
 			.setStyle(ButtonStyle.Secondary);
 
 		const buttonBribe = new ButtonBuilder()
 			.setCustomId("bribe")
 			.setLabel(s.bribe)
 			.setEmoji(EmoteBadgeString.Season6.Politician)
-			.setDisabled(this.User.Prison.HasPaidBribe)
+			.setDisabled(!this.User.IsInPrison() || this.User.Prison.HasPaidBribe)
 			.setStyle(ButtonStyle.Secondary);
 
-		const row = new ActionRowBuilder<ButtonBuilder>()
-			.addComponents(buttonPrisoners);
+		this.AddContainerHeader();
 
-		if (this.User.IsInPrison()) {
-			row.addComponents(buttonEscape, buttonBribe);
-		}
+		this.Container
+			.addSectionComponents(escape => escape
+				.addTextDisplayComponents(text => text
+					.setContent(s.descriptionEscape(this.Escape.BaseChance, this.Escape.BaseJetpackChance + this.Escape.BaseChance)),
+				)
+				.setButtonAccessory(buttonEscape),
+			)
+			.addLargeSeparator()
+			.addSectionComponents(bribe => bribe
+				.addTextDisplayComponents(text => text
+					.setContent(s.descriptionBribe),
+				)
+				.setButtonAccessory(buttonBribe),
+			)
+			.addLargeSeparator()
+			.addTexts([
+				`-# ${text}`,
+			])
+			.addFooter({
+				text: `${s.currentChance}: ${this.Escape.TotalChance}%`,
+				button: buttonPrisoners,
+			});
+
+		return {
+			prisoners,
+			buttonPrisoners,
+		};
+	}
+
+	async GenerateContainer() {
+		const s = Strings[this.User.Language];
+
+		const { prisoners, buttonPrisoners } = await this.GenerateDefaultContainer();
 
 		const response = await replyInteraction(this.Interaction, {
-			components: [this.Container, row],
+			components: [this.Container],
 			flags: MessageFlags.IsComponentsV2,
 		});
 
@@ -125,7 +153,17 @@ ${s.description(this.Escape.BaseChance, this.Escape.BaseJetpackChance + this.Esc
 		});
 
 		collector?.on("collect", async btn => {
-			if (btn.customId === "prisoners") {
+			await btn.deferUpdate();
+
+			if (btn.customId === "back") {
+				await this.GenerateDefaultContainer();
+
+				return replyInteraction(this.Interaction, {
+					components: [this.Container],
+				});
+			}
+
+			else if (btn.customId === "prisoners") {
 				buttonPrisoners.setDisabled(true);
 
 				const pagination = new Pagination(this.Interaction, this.User.Language);
@@ -135,44 +173,46 @@ ${s.description(this.Escape.BaseChance, this.Escape.BaseJetpackChance + this.Esc
 
 				const containerPrisoners = new CustomContainerBuilder()
 					.setUser(this.User)
-					.addTextDisplayComponents(title => title
-						.setContent(s.prisoners),
-					);
+					.addTexts([
+						`# ${s.prisoners}`,
+					])
+					.addLargeSeparator();
 
 				pagination.CustomizeContainer = async () => {
 					const users = prisoners.slice(pagination.Offset, pagination.Offset + pagination.Limit);
 
-					users.forEach(prisoner => {
-						containerPrisoners.addTextDisplayComponents(name => name
-							.setContent(`### ${ClassList[prisoner.class].Image.Emote.String} ${prisoner.nickname}`));
-						containerPrisoners.addTextDisplayComponents(value => value
-							.setContent(`${s.free} ${showTime(new Date(prisoner.prisonTime).getTime(), true)}
--# ${s.howManyTimesPrison(prisoner.robberyFailureCount)}
--# ${s.howManyTimesEscape(prisoner.escapeCount)}`));
-					});
+					for (let i = 0; i < users.length; i++) {
+						const prisoner = users[i];
+						containerPrisoners.addTexts([
+							`### ${ClassList[prisoner.class].Image.Emote.String} ${prisoner.nickname}`,
+							`${s.free} ${showTime(new Date(prisoner.prisonTime).getTime(), true)} • ${s.howManyTimesPrison(prisoner.robberyFailureCount)} • ${s.howManyTimesEscape(prisoner.escapeCount)}`,
+						]);
+
+						if (i !== users.length - 1) {
+							containerPrisoners.addSmallSeparator();
+						}
+					}
 
 					return containerPrisoners;
 				};
 
 				await pagination.GenerateContainer(this.Container);
 			}
-			else if (btn.customId === "escape") {
-				buttonEscape.setDisabled(true);
 
+			else if (btn.customId === "escape") {
 				await this.User.GetInfo();
 
 				const { canEscape, message } = await this.CanEscape();
 
 				if (!canEscape) {
-					const container = defaultComponent({
+					this.Container = defaultComponent({
 						user: this.User,
 						color: CrColors.Police,
-						description: message,
+						description: `${message} ${EmoteString.Prison}`,
 					});
 
-					return await replyInteraction(this.Interaction, {
-						components: [container],
-						flags: MessageFlags.IsComponentsV2,
+					return replyInteraction(this.Interaction, {
+						components: [this.Container],
 					});
 				}
 
@@ -182,23 +222,21 @@ ${s.description(this.Escape.BaseChance, this.Escape.BaseJetpackChance + this.Esc
 
 				await this.EndEscape();
 			}
-			else if (btn.customId === "bribe") {
-				buttonBribe.setDisabled(true);
 
+			else if (btn.customId === "bribe") {
 				await this.User.GetInfo();
 
 				const { canBribe, message } = await this.CanBribe();
 
 				if (!canBribe) {
-					const container = defaultComponent({
+					this.Container = defaultComponent({
 						user: this.User,
 						color: CrColors.Police,
-						description: message,
+						description: `${message} ${EmoteString.Prison}`,
 					});
 
-					return await replyInteraction(this.Interaction, {
-						components: [container],
-						flags: MessageFlags.IsComponentsV2,
+					return replyInteraction(this.Interaction, {
+						components: [this.Container],
 					});
 				}
 
@@ -206,72 +244,72 @@ ${s.description(this.Escape.BaseChance, this.Escape.BaseJetpackChance + this.Esc
 				const moneyFactor = this.User.Money * (this.User.Escape.HasTried ? 0.1 : 0.05);
 				this.Bribe.Value = Math.floor(this.Bribe.BaseValue + atkFactor + moneyFactor);
 
-				const bribery = new CustomContainerBuilder()
-					.setUser(this.User)
-					.setAccentColor(CrColors.Police)
-					.addSectionComponents(header => header
-						.setId(1)
-						.addTextDisplayComponents(content => content
-							.setId(2)
-							.setContent(`# ${s.title}
-### ${EmoteString.Police} ${s.bribe}
+				this.AddContainerHeader();
 
-${s.briberyStart(this.Bribe.Value)}`),
-						)
-						.setThumbnailAccessory(thumb => thumb
-							.setURL("https://media.discordapp.net/attachments/1233604589064818808/1339946455913205871/Prison.png"),
+				this.Container
+					.addTexts([
+						`### ${EmoteBadgeString.Season6.Politician} ${s.bribe}`,
+						`${s.briberyStart(this.Bribe.Value)}`,
+					])
+					.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
+						.addComponents(
+							new ButtonBuilder()
+								.setCustomId("back")
+								.setLabel(s.back)
+								.setStyle(ButtonStyle.Secondary),
+							new ButtonBuilder()
+								.setCustomId("confirmBribe")
+								.setLabel(s.confirm)
+								.setDisabled(this.User.Money < this.Bribe.Value)
+								.setStyle(ButtonStyle.Success),
 						),
 					)
-					.addFooter({ text: formatMoney(this.User.Money, this.User.Language) });
+					.addFooter({
+						text: formatMoney(this.User.Money, this.User.Language),
+					});
 
-				const buttonConfirm = new ButtonBuilder()
-					.setStyle(ButtonStyle.Success)
-					.setLabel(s.confirm)
-					.setDisabled(this.User.Money < this.Bribe.Value)
-					.setCustomId("confirmBribe");
-
-				row.setComponents(buttonConfirm);
-
-				await replyInteraction(this.Interaction, { components: [bribery, row] });
+				await replyInteraction(this.Interaction, { components: [this.Container] });
 			}
+
 			else if (btn.customId === "confirmBribe") {
 				await this.User.GetInfo();
 
 				const { canBribe, message } = await this.CanBribe();
 
 				if (!canBribe) {
-					const container = defaultComponent({
+					this.Container = defaultComponent({
 						user: this.User,
 						color: CrColors.Police,
-						description: message,
+						description: `${message} ${EmoteString.Prison}`,
 					});
 
-					return await replyInteraction(this.Interaction, {
-						components: [container],
-						flags: MessageFlags.IsComponentsV2,
+					return replyInteraction(this.Interaction, {
+						components: [this.Container],
 					});
 				}
 
 				const success = await this.PayBribery(this.Bribe.Value);
 
-				const responseContainer = new CustomContainerBuilder()
-					.setUser(this.User)
-					.setAccentColor(CrColors.Police);
+				this.AddContainerHeader();
 
 				if (success) {
-					responseContainer
-						.addTextDisplayComponents(description => description
-							.setContent(`### ${EmoteString.Police} ${s.briberyAccepted}\n${s.briberyAcceptedDescription}`))
+					this.Container
+						.addTexts([
+							`### ${EmoteString.Police} ${s.briberyAccepted}`,
+							s.briberyAcceptedDescription,
+						])
 						.addFooter({ text: s.briberyAcceptedFooter });
 				}
 				else {
-					responseContainer
-						.addTextDisplayComponents(description => description
-							.setContent(`### ${EmoteString.Police} ${s.briberyRejected}\n${s.briberyRejectedDescription}`))
+					this.Container
+						.addTexts([
+							`### ${EmoteString.Police} ${s.briberyRejected}`,
+							s.briberyRejectedDescription,
+						])
 						.addFooter({ text: s.briberyRejectedFooter });
 				}
 
-				return await replyInteraction(this.Interaction, { components: [responseContainer] });
+				return replyInteraction(this.Interaction, { components: [this.Container] });
 			}
 		});
 
@@ -332,20 +370,11 @@ ${s.briberyStart(this.Bribe.Value)}`),
 		const s = Strings[this.User.Language];
 		const emote = this.Escape.HasJetpack ? ItemList[ItemId.Jetpack].Skin[BundleId.Default].String : EmoteString.Escape;
 
-		this.Container = new CustomContainerBuilder()
-			.setAccentColor(CrColors.Police)
-			.setUser(this.User)
-			.addSectionComponents(header => header
-				.setId(1)
-				.addTextDisplayComponents(content => content
-					.setId(2)
-					.setContent(`# ${s.title}
-### ${emote} ${s.escapeInProgress}`),
-				)
-				.setThumbnailAccessory(thumb => thumb
-					.setURL("https://media.discordapp.net/attachments/1233604589064818808/1339946455913205871/Prison.png"),
-				),
-			)
+		this.AddContainerHeader();
+		this.Container
+			.addTexts([
+				`### ${emote} ${s.escapeInProgress}`,
+			], 1)
 			.addFooter();
 
 		await replyInteraction(this.Interaction, { components: [this.Container] });
@@ -505,7 +534,7 @@ ${s.briberyStart(this.Bribe.Value)}`),
 			const textWanted = wantedTexts[this.User.Language][Math.floor(Math.random() * wantedTexts[this.User.Language].length)];
 
 			this.Container
-				.changeTextFromSectionId(1, `# ${s.title}\n### ${emote} ${s.escapeSuccess}\n${textSuccess}\n-# ${textWanted}`)
+				.changeTextFromSectionId(1, `### ${emote} ${s.escapeSuccess}\n${textSuccess}\n-# ${textWanted}`)
 				.changeFooterText(s.escapeWaitMinutes(this.Escape.TimeInMinutesWanted));
 		}
 		else {
@@ -518,7 +547,7 @@ ${s.briberyStart(this.Bribe.Value)}`),
 			const textFailure = arrayFailure[this.User.Language][Math.floor(Math.random() * arrayFailure[this.User.Language].length)];
 
 			this.Container
-				.changeTextFromSectionId(1, `# ${s.title}\n### ${emote} ${s.escapeFailure}\n${textFailure}. ${s.escapeWillBeInPrison(totalTime)}\n-# ${s.free} ${showTime(this.User.Prison.Time.getTime(), true)}`);
+				.changeTextFromSectionId(1, `### ${emote} ${s.escapeFailure}\n${textFailure}. ${s.escapeWillBeInPrison(totalTime)}\n-# ${s.free} ${showTime(this.User.Prison.Time.getTime(), true)}`);
 		}
 
 		await this.User.Update();
@@ -594,15 +623,11 @@ const Strings = {
 		userWanted: (timerEscape: Date) => `You are being wanted by the police! You can rob again ${showTime(timerEscape.getTime(), true)} ${EmoteString.Police}`,
 		userPrison: (timerPrison: Date) => `You are in prison! You will be released ${showTime(timerPrison.getTime(), true)} ${EmoteString.Prison}`,
 		title: "Prison",
-		description: (chance: number, jetpackChance: number, text: string) => `When trying to rob someone and failing, you will be imprisoned for a time determined by your ${EmoteString.Attack}ATK.
+		subtitle: `When trying to rob someone and failing, you will be imprisoned for a time determined by your ${EmoteString.Attack}ATK.
 
--# Being imprisoned limits many of your actions in the game, such as working, investing, betting, scavenging, and of course, stealing.
-### ${EmoteString.Escape} Escape
-You have a ${chance}% (${jetpackChance}% if you have a ${ItemList[ItemId.Jetpack].Skin[BundleId.Default].String} **${ItemList[ItemId.Jetpack].Description[Language.English]}**) chance of escaping from prison!
-### ${EmoteBadgeString.Season6.Politician} Bribe
-The guards are greedy, and the higher your ${EmoteString.Attack}ATK, the more they will ask for! They can also refuse your bribe, but they will keep your money.
-
--# ${text}`,
+-# Being imprisoned limits many of your actions in the game, such as working, investing, betting, scavenging, and of course, stealing.`,
+		descriptionEscape: (chance: number, jetpackChance: number) => `### ${EmoteString.Escape} Escape\nYou have a ${chance}% (${jetpackChance}% if you have a ${ItemList[ItemId.Jetpack].Skin[BundleId.Default].String} **${ItemList[ItemId.Jetpack].Description[Language.English]}**) chance of escaping from prison!`,
+		descriptionBribe: `### ${EmoteBadgeString.Season6.Politician} Bribe\nThe guards are greedy, and the higher your ${EmoteString.Attack}ATK, the more they will ask for! They can also refuse your bribe, but they will keep your money.`,
 		currentChance: "Current chance",
 		prisoners: "Prisoners",
 		escape: "Escape",
@@ -616,6 +641,7 @@ The guards are greedy, and the higher your ${EmoteString.Attack}ATK, the more th
 		briberyRejectedFooter: "You will remain imprisoned",
 		free: "Free",
 		confirm: "Confirm",
+		back: "Go back",
 		howManyTimesPrison: (times: number) => `Imprisoned \`${times}\` times`,
 		howManyTimesEscape: (times: number) => `Escaped \`${times}\` times`,
 		escapeHasTried: `The police are watching you! ${EmoteString.Police}\n-# You won't be able to escape`,
@@ -634,15 +660,11 @@ The guards are greedy, and the higher your ${EmoteString.Attack}ATK, the more th
 		userWanted: (timerEscape: Date) => `Você está sendo procurado pela polícia! Poderá roubar novamente ${showTime(timerEscape.getTime(), true)} ${EmoteString.Police}`,
 		userPrison: (timerPrison: Date) => `Você está preso! Será solto ${showTime(timerPrison.getTime(), true)} ${EmoteString.Prison}`,
 		title: "Prisão",
-		description: (chance: number, jetpackChance: number, text: string) => `Ao tentar roubar alguém e falhar, você será preso por um tempo determinado pelo seu ${EmoteString.Attack}ATK.
+		subtitle: `Ao tentar roubar alguém e falhar, você será preso por um tempo determinado pelo seu ${EmoteString.Attack}ATK.
 
--# Estar preso limita muitas de suas ações no jogo, como trabalhar, investir, apostar, vasculhar, e claro, roubar.
-### ${EmoteString.Escape} Fugir
-Você tem ${chance}% (${jetpackChance}% se possuir uma ${ItemList[ItemId.Jetpack].Skin[BundleId.Default].String} **${ItemList[ItemId.Jetpack].Description[Language.Portuguese]}**) de chance de fugir da prisão!
-### ${EmoteBadgeString.Season6.Politician} Subornar
-Os guardas são gananciosos, e quanto maior o seu ${EmoteString.Attack}ATK, mais eles pedirão! Eles também podem recusar seu suborno, mas ficarão com seu dinheiro.
-
--# ${text}`,
+-# Estar preso limita muitas de suas ações no jogo, como trabalhar, investir, apostar, vasculhar, e claro, roubar.`,
+		descriptionEscape: (chance: number, jetpackChance: number) => `### ${EmoteString.Escape} Fugir\nVocê tem ${chance}% (${jetpackChance}% se possuir uma ${ItemList[ItemId.Jetpack].Skin[BundleId.Default].String} **${ItemList[ItemId.Jetpack].Description[Language.Portuguese]}**) de chance de fugir da prisão!`,
+		descriptionBribe: `### ${EmoteBadgeString.Season6.Politician} Subornar\nOs guardas são gananciosos, e quanto maior o seu ${EmoteString.Attack}ATK, mais eles pedirão! Eles também podem recusar seu suborno, mas ficarão com seu dinheiro.`,
 		currentChance: "Chance atual",
 		prisoners: "Prisioneiros",
 		escape: "Fugir",
@@ -656,6 +678,7 @@ Os guardas são gananciosos, e quanto maior o seu ${EmoteString.Attack}ATK, mais
 		briberyRejectedFooter: "Você continuará preso",
 		free: "Livre",
 		confirm: "Confirmar",
+		back: "Voltar",
 		howManyTimesPrison: (times: number) => `Preso \`${times}\` vezes`,
 		howManyTimesEscape: (times: number) => `Fugiu \`${times}\` vezes`,
 		escapeHasTried: `Os policiais estão te observando! ${EmoteString.Police}\n-# Você não conseguirá fugir`,
@@ -674,15 +697,11 @@ Os guardas são gananciosos, e quanto maior o seu ${EmoteString.Attack}ATK, mais
 		userWanted: (timerEscape: Date) => `¡Estás siendo buscado por la policía! ¡Puedes robar de nuevo ${showTime(timerEscape.getTime(), true)} ${EmoteString.Police}`,
 		userPrison: (timerPrison: Date) => `¡Estás preso! ¡Serás liberado ${showTime(timerPrison.getTime(), true)} ${EmoteString.Prison}`,
 		title: "Prisión",
-		description: (chance: number, jetpackChance: number, text: string) => `Al intentar robar a alguien y fallar, serás encarcelado por un tiempo determinado por tu ${EmoteString.Attack}ATK.
+		subtitle: `Al intentar robar a alguien y fallar, serás encarcelado por un tiempo determinado por tu ${EmoteString.Attack}ATK.
 
--# Estar encarcelado limita muchas de tus acciones en el juego, como trabajar, invertir, apostar, buscar, y por supuesto, robar.
-### ${EmoteString.Escape} Escapar
-Tienes un ${chance}% (${jetpackChance}% si tienes un ${ItemList[ItemId.Jetpack].Skin[BundleId.Default].String} **${ItemList[ItemId.Jetpack].Description[Language.Spanish]}**) de escapar de la prisión!
-### ${EmoteBadgeString.Season6.Politician} Sobornar
-Los guardias son codiciosos, y cuanto mayor sea tu ${EmoteString.Attack}ATK, más te pedirán! También pueden rechazar tu soborno, pero se quedarán con tu dinero.
-
--# ${text}`,
+-# Estar encarcelado limita muchas de tus acciones en el juego, como trabajar, invertir, apostar, buscar, y por supuesto, robar.`,
+		descriptionEscape: (chance: number, jetpackChance: number) => `### ${EmoteString.Escape} Escapar\nTienes un ${chance}% (${jetpackChance}% si tienes un ${ItemList[ItemId.Jetpack].Skin[BundleId.Default].String} **${ItemList[ItemId.Jetpack].Description[Language.Spanish]}**) de escapar de la prisión!`,
+		descriptionBribe: `### ${EmoteBadgeString.Season6.Politician} Sobornar\nLos guardias son codiciosos, y cuanto mayor sea tu ${EmoteString.Attack}ATK, más te pedirán! También pueden rechazar tu soborno, pero se quedarán con tu dinero.`,
 		currentChance: "Chance actual",
 		prisoners: "Prisioneros",
 		escape: "Escapar",
@@ -696,6 +715,7 @@ Los guardias son codiciosos, y cuanto mayor sea tu ${EmoteString.Attack}ATK, má
 		briberyRejectedFooter: "Permanecerás encarcelado",
 		free: "Libre",
 		confirm: "Confirmar",
+		back: "Volver",
 		howManyTimesPrison: (times: number) => `Encarcelado \`${times}\` veces`,
 		howManyTimesEscape: (times: number) => `Huyó \`${times}\` veces`,
 		escapeHasTried: `¡La policía te está observando! ${EmoteString.Police}\n-# No podrás escapar`,

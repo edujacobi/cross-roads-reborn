@@ -57,14 +57,6 @@ export class Hospital {
 			.addLargeSeparator();
 	}
 
-	// AddContainerFooter() {
-	// 	const s = Strings[this.User.Language];
-	// 	this.Container
-	// 		.addFooter({
-	// 			text: s.moreAtk,
-	// 		});
-	// }
-
 	async GenerateContainer() {
 		const s = Strings[this.User.Language];
 
