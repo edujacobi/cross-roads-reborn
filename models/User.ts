@@ -366,15 +366,22 @@ export class User {
 		Log.Success(`User ${oldNickname} (ID: ${this.Id}) changed nickname to ${nickname}.`);
 	}
 
-	async SetClass(classId: ClassId) {
+	async SetClass(classId: ClassId, cost?: number) {
 		const oldClass = this.Class;
 		this.Class = classId;
+		if (cost) {
+			if (this.Money < cost) {
+				return false;
+			}
+			this.Money -= cost;
+		}
 		await this.Update();
-		Log.Success(`User ${this.Nickname} (ID: ${this.Id}) changed class from ${ClassList[oldClass].Description[Language.English]} to ${ClassList[classId].Description[Language.English]}.`);
+		Log.Success(`User ${this.Nickname} (ID: ${this.Id}) changed class from ${ClassList[oldClass].Name[Language.English]} to ${ClassList[classId].Name[Language.English]}.`);
+		return true;
 	}
 
 	GetClassText() {
-		return ClassList[this.Class].Description[this.Language];
+		return ClassList[this.Class].Name[this.Language];
 	}
 
 	GetNameWithImage() {

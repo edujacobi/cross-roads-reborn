@@ -29,6 +29,7 @@ export interface ClassModifier {
 
 export interface Class {
 	Id: ClassId;
+	Name: IDescription;
 	Description: IDescription;
 	Image: {
 		Url: string,
@@ -44,6 +45,11 @@ export interface ClassListType {
 export const ClassList: ClassListType = {
 	[ClassId.None]: {
 		Id: ClassId.None,
+		Name: {
+			[Language.English]: "Without class",
+			[Language.Portuguese]: "Sem classe",
+			[Language.Spanish]: "Sin clase",
+		},
 		Description: {
 			[Language.English]: "Without class",
 			[Language.Portuguese]: "Sem classe",
@@ -59,10 +65,15 @@ export const ClassList: ClassListType = {
 	},
 	[ClassId.Thief]: {
 		Id: ClassId.Thief,
-		Description: {
+		Name: {
 			[Language.English]: "Thief",
 			[Language.Portuguese]: "Ladrão",
 			[Language.Spanish]: "Ladrón",
+		},
+		Description: {
+			[Language.English]: "Skilled with his hands, he learned the art of stealing from a young age. It's a shame he has no luck with the Fortune Tiger.",
+			[Language.Portuguese]: "Habilidoso com as mãos, aprendeu desde cedo a arte de roubar. Uma pena que não possui sorte no tigrinho.",
+			[Language.Spanish]: "Hábil con las manos, aprendió el arte del robo desde muy joven. Es una pena que no tenga suerte con el Tigre de la Fortuna.",
 		},
 		Image: {
 			Url: "https://media.discordapp.net/attachments/1233604589064818808/1339670907752550490/Classe_Ladrao_New2.png",
@@ -85,6 +96,11 @@ export const ClassList: ClassListType = {
 	},
 	[ClassId.Assassin]: {
 		Id: ClassId.Assassin,
+		Name: {
+			[Language.English]: "Assassin",
+			[Language.Portuguese]: "Assassino",
+			[Language.Spanish]: "Asesino",
+		},
 		Description: {
 			[Language.English]: "Assassin",
 			[Language.Portuguese]: "Assassino",
@@ -100,10 +116,15 @@ export const ClassList: ClassListType = {
 	},
 	[ClassId.Entrepreneur]: {
 		Id: ClassId.Entrepreneur,
-		Description: {
+		Name: {
 			[Language.English]: "Entrepreneur",
 			[Language.Portuguese]: "Empresário",
 			[Language.Spanish]: "Empresario",
+		},
+		Description: {
+			[Language.English]: "He grew up with a silver spoon in his mouth, networking with his father's colleagues, but he lacks a bit of mischief.",
+			[Language.Portuguese]: "Cresceu em berço de ouro, fazendo networking com os colegas de seu pai, mas lhe falta um pouco de malícia.",
+			[Language.Spanish]: "Creció con una cuchara de plata en la boca, relacionándose con los colegas de su padre, pero le falta un poco de malicia.",
 		},
 		Image: {
 			Url: "https://media.discordapp.net/attachments/1233604589064818808/1339670907328663662/Classe_Empresario_New.png",
@@ -114,7 +135,7 @@ export const ClassList: ClassListType = {
 		},
 		Modifier: {
 			Job: {
-				Positive: 1.5,
+				Positive: 1.25,
 			},
 			Robbery: {
 				Negative: 0.75,
@@ -123,10 +144,15 @@ export const ClassList: ClassListType = {
 	},
 	[ClassId.Hobo]: {
 		Id: ClassId.Hobo,
-		Description: {
+		Name: {
 			[Language.English]: "Hobo",
 			[Language.Portuguese]: "Mendigo",
 			[Language.Spanish]: "Vagabundo",
+		},
+		Description: {
+			[Language.English]: "Invisible to most of the population, it takes advantage of this to gain maximum benefit.",
+			[Language.Portuguese]: "Invisível para a maioria da população, aproveita disto para tirar o máximo de vantagem.",
+			[Language.Spanish]: "Invisible para la mayor parte de la población, se aprovecha de ello para sacar el máximo beneficio.",
 		},
 		Image: {
 			Url: "https://media.discordapp.net/attachments/1233604589064818808/1339670908591145040/Classe_Mendigo_New.png",
@@ -149,6 +175,11 @@ export const ClassList: ClassListType = {
 	},
 	[ClassId.Mafioso]: {
 		Id: ClassId.Mafioso,
+		Name: {
+			[Language.English]: "Mafioso",
+			[Language.Portuguese]: "Mafioso",
+			[Language.Spanish]: "Mafioso",
+		},
 		Description: {
 			[Language.English]: "Mafioso",
 			[Language.Portuguese]: "Mafioso",
@@ -164,10 +195,15 @@ export const ClassList: ClassListType = {
 	},
 	[ClassId.Attorney]: {
 		Id: ClassId.Attorney,
-		Description: {
+		Name: {
 			[Language.English]: "Attorney",
 			[Language.Portuguese]: "Advogado",
 			[Language.Spanish]: "Abogado",
+		},
+		Description: {
+			[Language.English]: "He knows the loopholes in all the laws and uses them to his advantage, but he doesn't like to get his suit dirty.",
+			[Language.Portuguese]: "Conhece as brechas de todas as leis e usa isso ao seu favor, mas não gosta de sujar seu traje.",
+			[Language.Spanish]: "Él conoce los vacíos de todas las leyes y los utiliza para su beneficio, pero no le gusta ensuciarse el traje.",
 		},
 		Image: {
 			Url: "https://media.discordapp.net/attachments/1233604589064818808/1339670906573820004/Classe_Advogado_New3.png",

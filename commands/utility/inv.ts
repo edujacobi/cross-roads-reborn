@@ -147,7 +147,7 @@ module.exports = {
 					.addSectionComponents(headerSection => headerSection
 						.addTextDisplayComponents(
 							header => header
-								.setContent(`### ${s.inventoryOf} ${target.GetNameWithImage()}, ${ClassList[target.Class].Description[language]}\n-# ${textOnline}`),
+								.setContent(`### ${s.inventoryOf} ${target.GetNameWithImage()}, ${ClassList[target.Class].Name[language]}\n-# ${textOnline}`),
 							badges => badges
 								.setContent(badgeText ? `### ${badgeText}` : "\u200b"),
 							money => money

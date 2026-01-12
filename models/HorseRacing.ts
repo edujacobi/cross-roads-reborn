@@ -630,7 +630,7 @@ export class HorseRacing {
 				winners.push({
 					userId: user.Id,
 					nickname: user.Nickname,
-					className: ClassList[user.Class].Description[user.Language],
+					className: ClassList[user.Class].Name[user.Language],
 					classEmoji: ClassList[user.Class].Image.Emote.String,
 					proportionalPrize,
 					bet,

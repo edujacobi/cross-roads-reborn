@@ -180,7 +180,7 @@ module.exports = {
 					),
 				)
 				.addTexts([
-					`### ${ClassList[target.Class].Image.Emote.String} ${ClassList[target.Class].Description[user.Language]} • ${target.Situation.SimpleEmote}`,
+					`### ${ClassList[target.Class].Image.Emote.String} ${ClassList[target.Class].Name[user.Language]} • ${target.Situation.SimpleEmote}`,
 				])
 				.addLargeSeparator();
 
