@@ -133,7 +133,8 @@ module.exports = {
 			.setAccentColor(win ? Colors.Green : Colors.Red)
 			.changeTextFromSectionId(1, `### ${s.result(firstResult)}
 ${win ? s.won : s.lose} ${formatMoney(win ? prize : value, user.Language)}!
--# ${s.bet} ${formatMoney(value, user.Language)} ${s.at} ${userBet}`);
+-# ${s.bet} ${formatMoney(value, user.Language)} ${s.at} ${userBet}`)
+			.changeFooterText(formatMoney(user.Money, language));
 
 		await replyInteraction(interaction, {
 			components: [container],
