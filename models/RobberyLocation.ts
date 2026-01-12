@@ -15,7 +15,7 @@ import { Users } from "../database/Users";
 import { JobId, JobList } from "../interfaces/Jobs";
 import { ClashType, Robbery } from "./Robbery";
 import { Location, LocationList } from "../interfaces/Locations";
-import { ClassList } from "../interfaces/Classes";
+import { ClassList, getRobberyClassModifier } from "../interfaces/Classes";
 import { ScavengeId, ScavengeList } from "../interfaces/Scavenge";
 
 export class RobberyLocation extends Robbery {
@@ -27,6 +27,11 @@ export class RobberyLocation extends Robbery {
 		this.Location = location;
 		this.Type = ClashType.Location;
 		this.Date = new Date();
+
+		const userClassModifier = getRobberyClassModifier(this.Attacker.Class);
+
+		this.Location.Reward.Min *= userClassModifier;
+		this.Location.Reward.Max += userClassModifier;
 	}
 
 	async CanRobLocation() {

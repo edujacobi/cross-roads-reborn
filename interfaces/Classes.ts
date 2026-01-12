@@ -1,5 +1,5 @@
 import { Language } from "../models/Language";
-import { IDescription } from "./Interfaces";
+import { IDescription, IEmote } from "./Interfaces";
 import { EmoteId, EmoteString } from "../utils/emotes";
 
 export enum ClassId {
@@ -12,16 +12,29 @@ export enum ClassId {
 	Attorney
 }
 
+export interface IModifier {
+	Positive?: number,
+	Negative?: number,
+}
+
+export interface ClassModifier {
+	Casino?: IModifier, // multiplicative
+	Job?: IModifier, // multiplicative
+	PrisonBribe?: IModifier, // additive
+	PrisonEscape?: IModifier, // additive
+	Robbery?: IModifier, // multiplicative
+	ScavengeChance?: IModifier, // additive
+	ScavengeDuration?: IModifier, // multiplicative
+}
+
 export interface Class {
 	Id: ClassId;
 	Description: IDescription;
 	Image: {
 		Url: string,
-		Emote: {
-			Id: string,
-			String: string,
-		}
+		Emote: IEmote,
 	};
+	Modifier?: ClassModifier;
 }
 
 export interface ClassListType {
@@ -58,6 +71,17 @@ export const ClassList: ClassListType = {
 				String: EmoteString.Thief,
 			},
 		},
+		Modifier: {
+			Robbery: {
+				Positive: 1.2,
+			},
+			PrisonEscape: {
+				Positive: 5,
+			},
+			Casino: {
+				Negative: 0.75,
+			},
+		},
 	},
 	[ClassId.Assassin]: {
 		Id: ClassId.Assassin,
@@ -85,7 +109,15 @@ export const ClassList: ClassListType = {
 			Url: "https://media.discordapp.net/attachments/1233604589064818808/1339670907328663662/Classe_Empresario_New.png",
 			Emote: {
 				Id: EmoteId.Entrepreneur,
-				String: EmoteString.Entrepreneur
+				String: EmoteString.Entrepreneur,
+			},
+		},
+		Modifier: {
+			Job: {
+				Positive: 1.5,
+			},
+			Robbery: {
+				Negative: 0.75,
 			},
 		},
 	},
@@ -101,6 +133,17 @@ export const ClassList: ClassListType = {
 			Emote: {
 				Id: EmoteId.Hobo,
 				String: EmoteString.Hobo,
+			},
+		},
+		Modifier: {
+			ScavengeDuration: {
+				Positive: 1.2,
+			},
+			ScavengeChance: {
+				Positive: 5,
+			},
+			Job: {
+				Negative: 0.75,
 			},
 		},
 	},
@@ -133,5 +176,44 @@ export const ClassList: ClassListType = {
 				String: EmoteString.Attorney,
 			},
 		},
+		Modifier: {
+			Casino: {
+				Positive: 1.2,
+			},
+			PrisonBribe: {
+				Positive: 5,
+			},
+			ScavengeDuration: {
+				Negative: 0.75,
+			},
+		},
 	},
 };
+
+export function getCasinoClassModifier(classId: ClassId) {
+	return ClassList[classId].Modifier?.Casino?.Positive || ClassList[classId].Modifier?.Casino?.Negative || 1;
+}
+
+export function getJobClassModifier(classId: ClassId) {
+	return ClassList[classId].Modifier?.Job?.Positive || ClassList[classId].Modifier?.Job?.Negative || 1;
+}
+
+export function getPrisonBribeClassModifier(classId: ClassId) {
+	return ClassList[classId].Modifier?.PrisonBribe?.Positive || ClassList[classId].Modifier?.PrisonBribe?.Negative || 0;
+}
+
+export function getPrisonEscapeClassModifier(classId: ClassId) {
+	return ClassList[classId].Modifier?.PrisonEscape?.Positive || ClassList[classId].Modifier?.PrisonEscape?.Negative || 0;
+}
+
+export function getRobberyClassModifier(classId: ClassId) {
+	return ClassList[classId].Modifier?.Robbery?.Positive || ClassList[classId].Modifier?.Robbery?.Negative || 1;
+}
+
+export function getScavengeChanceClassModifier(classId: ClassId) {
+	return ClassList[classId].Modifier?.ScavengeChance?.Positive || ClassList[classId].Modifier?.ScavengeChance?.Negative || 0;
+}
+
+export function getScavengeDurationClassModifier(classId: ClassId) {
+	return ClassList[classId].Modifier?.ScavengeDuration?.Positive || ClassList[classId].Modifier?.ScavengeDuration?.Negative || 0;
+}

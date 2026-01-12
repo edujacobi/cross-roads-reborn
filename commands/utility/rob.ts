@@ -19,6 +19,7 @@ import { Robbery } from "../../models/Robbery";
 import { getLocationList, LocationList } from "../../interfaces/Locations";
 import { RobberyLocation } from "../../models/RobberyLocation";
 import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
+import { getRobberyClassModifier } from "../../interfaces/Classes";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -98,7 +99,12 @@ module.exports = {
 					continue;
 				}
 
-				const textMinToMax = `${formatMoney(location.Reward.Min, language)} - ${formatMoney(location.Reward.Max, language)}`;
+				const userClassModifier = getRobberyClassModifier(user.Class);
+
+				const rewardMin = location.Reward.Min * userClassModifier;
+				const rewardMax = location.Reward.Max * userClassModifier;
+
+				const textMinToMax = `${formatMoney(rewardMin, language)} - ${formatMoney(rewardMax, language)}`;
 				const textSuccess = `${s.success}: ${location.SuccessChance}%`;
 				const textNeedAtk = `${location.NeedAttack} ATK`;
 

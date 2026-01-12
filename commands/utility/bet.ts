@@ -16,6 +16,7 @@ import { setTimeout as wait } from "timers/promises";
 import { User } from "../../models/User";
 import { Casino } from "../../models/Casino";
 import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
+import { getCasinoClassModifier } from "../../interfaces/Classes";
 
 const enum CoinSide {
 	Heads = 0,
@@ -85,10 +86,9 @@ module.exports = {
 		const container = new CustomContainerBuilder()
 			.setUser(user)
 			.setAccentColor(CrColors.Casino)
-			.addTextDisplayComponents(description => description
-				.setContent(s.flipping)
-				.setId(1),
-			)
+			.addTexts([
+				s.flipping,
+			], 1)
 			.addFooter({
 				text: formatMoney(user.Money, language),
 			});
@@ -106,7 +106,9 @@ module.exports = {
 
 		const win = side === coinFlip;
 
-		const prize = Math.round(value * 0.5);
+		const userClassModifier = getCasinoClassModifier(user.Class);
+
+		const prize = Math.round(value * 0.5 * userClassModifier);
 
 		if (win) {
 			user.Money += prize;
@@ -138,7 +140,6 @@ ${win ? s.won : s.lose} ${formatMoney(win ? prize : value, user.Language)}!
 
 		await replyInteraction(interaction, {
 			components: [container],
-			flags: MessageFlags.IsComponentsV2,
 		});
 	},
 };

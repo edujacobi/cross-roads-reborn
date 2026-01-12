@@ -16,7 +16,7 @@ import { Op } from "sequelize";
 import { defaultComponent, formatMoney, showTime } from "../utils/ui";
 import { EmoteId, EmoteString } from "../utils/emotes";
 import { disableButtons, replyInteraction } from "../utils/logic";
-import { ClassList } from "../interfaces/Classes";
+import { ClassList, getPrisonBribeClassModifier, getPrisonEscapeClassModifier } from "../interfaces/Classes";
 import { setTimeout as wait } from "timers/promises";
 import { addMinutes, addSeconds } from "date-fns";
 import { Log } from "../utils/log";
@@ -72,8 +72,10 @@ export class Prison {
 		this.Escape.HasJetpack = await this.User.GetItems()
 			.then(items => items.some(item => item.Id === ItemId.Jetpack));
 
+		const userClassModifier = getPrisonEscapeClassModifier(this.User.Class);
+
 		this.Escape.UserChance = this.Escape.HasJetpack ? this.Escape.BaseJetpackChance : 0;
-		this.Escape.TotalChance = this.Escape.BaseChance + this.Escape.UserChance;
+		this.Escape.TotalChance = this.Escape.BaseChance + this.Escape.UserChance + userClassModifier;
 
 		let text = `${s.userFree}`;
 		if (this.User.IsWanted()) {
@@ -110,7 +112,7 @@ export class Prison {
 		this.Container
 			.addSectionComponents(escape => escape
 				.addTextDisplayComponents(text => text
-					.setContent(s.descriptionEscape(this.Escape.BaseChance, this.Escape.BaseJetpackChance + this.Escape.BaseChance)),
+					.setContent(s.descriptionEscape(this.Escape.BaseChance + userClassModifier, this.Escape.BaseJetpackChance + this.Escape.BaseChance + userClassModifier)),
 				)
 				.setButtonAccessory(buttonEscape),
 			)
@@ -399,7 +401,9 @@ export class Prison {
 		const jetpack = `${ItemList[ItemId.Jetpack].Skin[BundleId.Default].String} ${ItemList[ItemId.Jetpack].Description[this.User.Language]}`;
 
 		const chance = Math.floor(Math.random() * 101);
-		const success = chance < this.Escape.TotalChance;
+		const userClassModifier = getPrisonEscapeClassModifier(this.User.Class);
+		const ESCAPE_CHANCE = this.Escape.TotalChance + userClassModifier;
+		const success = chance < ESCAPE_CHANCE;
 
 		const successTexts = {
 			[Language.English]: [
@@ -593,7 +597,9 @@ export class Prison {
 
 	async PayBribery(bribeValue: number) {
 		const chance = Math.floor(Math.random() * 101);
-		const success = chance < 75;
+		const userClassModifier = getPrisonBribeClassModifier(this.User.Class);
+		const BRIBE_CHANCE = 75 + userClassModifier;
+		const success = chance < BRIBE_CHANCE;
 
 		this.User.Money -= bribeValue;
 		this.User.Prison.HasPaidBribe = true;

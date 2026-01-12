@@ -10,7 +10,7 @@ import { JobId, JobList } from "../interfaces/Jobs";
 import { Notification, NotificationType } from "./Notification";
 import { formatDate, formatMoney, showTime } from "../utils/ui";
 import { EmoteId, EmoteString } from "../utils/emotes";
-import { ClassId, ClassList } from "../interfaces/Classes";
+import { ClassId, ClassList, getJobClassModifier } from "../interfaces/Classes";
 import { LocationId, LocationList } from "../interfaces/Locations";
 import { ScavengeId, ScavengeList } from "../interfaces/Scavenge";
 import { Gang } from "./Gang";
@@ -927,13 +927,15 @@ export class User {
 			return;
 		}
 		const job = JobList[this.Job.Id];
-		this.Money += job.Salary;
+		const userClassModifier = getJobClassModifier(this.Class);
+		const salary = job.Salary *= userClassModifier;
+		this.Money += salary;
 		this.Job.Id = null;
 		this.Job.ReceivedCount += 1;
-		this.Job.ReceivedSum += job.Salary;
+		this.Job.ReceivedSum += salary;
 
 		await this.Update();
-		Log.Success(`User ${this.Nickname} (ID: ${this.Id}) finished his job ${job.Description[this.Language]} and received ${formatMoney(job.Salary, Language.English)}.`);
+		Log.Success(`User ${this.Nickname} (ID: ${this.Id}) finished his job ${job.Description[this.Language]} and received ${formatMoney(salary, Language.English)}.`);
 	}
 
 	async BuySkinBundle(bundleId: BundleId) {

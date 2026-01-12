@@ -20,7 +20,12 @@ import { defaultComponent, formatMoney, showTime } from "../utils/ui";
 import { LocationList } from "../interfaces/Locations";
 import { JobId, JobList } from "../interfaces/Jobs";
 import { Users } from "../database/Users";
-import { ClassList } from "../interfaces/Classes";
+import {
+	ClassList,
+	getJobClassModifier,
+	getScavengeChanceClassModifier,
+	getScavengeDurationClassModifier,
+} from "../interfaces/Classes";
 import { addHours, addMinutes } from "date-fns";
 import { Log } from "../utils/log";
 import { Notification } from "./Notification";
@@ -48,6 +53,19 @@ export class Scavenge {
 		this.Place = place;
 		this.Timer.Prison = 5 * (this.Place.Id + 1);
 		this.Timer.Hospital = 3 * (this.Place.Id + 1);
+
+		// Check here and not in constructor, because user can change class between openning the command and executing the action
+		const userClassChanceModifier = getScavengeChanceClassModifier(this.User.Class);
+		this.Place.SuccessChance += userClassChanceModifier;
+
+		const userClassDurationModifier = getScavengeDurationClassModifier(this.User.Class);
+		this.Place.Reward.Money.Min *= userClassDurationModifier;
+		this.Place.Reward.Money.Max *= userClassDurationModifier;
+		this.Place.Reward.Items.forEach(item => {
+			const data = ItemList[item.Id];
+			item.Duration.Min = data.Type === ItemType.Consumable ? item.Duration.Min + 1 : (item.Duration.Min * userClassDurationModifier);
+			item.Duration.Max = data.Type === ItemType.Consumable ? item.Duration.Max + 1 : (item.Duration.Max * userClassDurationModifier);
+		});
 	}
 
 	AddContainerHeader() {
@@ -162,26 +180,35 @@ export class Scavenge {
 				const placeId = Number(btn.customId.replace("scavenge", ""));
 				const place = ScavengeList[placeId];
 
-				const textNeedAtk = `${place.NeedAttack} ATK`;
 				const hospitalChance = place.Hospital.Chance > 0 ? `${EmoteString.Hospital} ${s.hospitalizationChance}: ${place.Hospital.Chance}%` : "";
 				const prisonChance = place.Prison.Chance > 0 ? ` • ${EmoteString.Prison} ${s.prisonChance}: ${place.Prison.Chance}%` : "";
 
-				const textMinToMax = `- ${formatMoney(place.Reward.Money.Min, this.User.Language)} - ${formatMoney(place.Reward.Money.Max, this.User.Language)}`;
+				const userClassDurationModifier = getScavengeDurationClassModifier(this.User.Class);
+
+				const rewardMoneyMin = place.Reward.Money.Min * userClassDurationModifier;
+				const rewardMoneyMax = place.Reward.Money.Max * userClassDurationModifier;
+
+				const textMinToMax = `- ${formatMoney(rewardMoneyMin, this.User.Language)} - ${formatMoney(rewardMoneyMax, this.User.Language)}`;
 
 				const textItems = place.Reward.Items.map(item => {
 					const data = ItemList[item.Id];
 					const emote = data.Skin[BundleId.Default].String;
 					const hoursOrUnits = data.Type === ItemType.Consumable ? "un" : "h";
+					const durationMin = data.Type === ItemType.Consumable ? item.Duration.Min + 1 : (item.Duration.Min * userClassDurationModifier).toFixed(1);
+					const durationMax = data.Type === ItemType.Consumable ? item.Duration.Max + 1 : (item.Duration.Max * userClassDurationModifier).toFixed(1);
 
-					return `- ${emote} ${data.Description[this.User.Language]}: ${item.Duration.Min}${hoursOrUnits} - ${item.Duration.Max}${hoursOrUnits}`;
+					return `- ${emote} ${data.Description[this.User.Language]}: ${durationMin}${hoursOrUnits} - ${durationMax}${hoursOrUnits}`;
 				}).join("\n");
+
+				const userClassChanceModifier = getScavengeChanceClassModifier(this.User.Class);
+				const successChance = place.SuccessChance + userClassChanceModifier;
 
 				const textChances = place.Hospital.Chance > 0 || place.Prison.Chance > 0 ? `### ${s.chances}: \n${hospitalChance}${prisonChance}` : "";
 
 				const localeInfoDetailed = [
 					`## ${place.Emote.String} ${place.Description[this.User.Language]}`,
 					`${s.need} ${EmoteString.Attack}${place.NeedAttack} ATK`,
-					`${place.SuccessChance}% ${s.success}`,
+					`${successChance}% ${s.success}`,
 					`### ${s.canFind}`,
 					`${textMinToMax}`,
 					`${textItems}`,
@@ -355,6 +382,8 @@ export class Scavenge {
 		const s = Strings[this.User.Language];
 
 		const placeName = `${this.Place.Emote.String} **${this.Place.Description[this.User.Language]}**`;
+
+		console.log(this.Place);
 
 		const success = Math.random() * 100 < this.Place.SuccessChance;
 

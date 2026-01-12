@@ -18,7 +18,7 @@ import { Language } from "../../models/Language";
 import { CrColors } from "../../utils/colors";
 import { User } from "../../models/User";
 import { Users } from "../../database/Users";
-import { ClassList } from "../../interfaces/Classes";
+import { ClassList, getJobClassModifier } from "../../interfaces/Classes";
 import { LocationList } from "../../interfaces/Locations";
 import { ScavengeId, ScavengeList } from "../../interfaces/Scavenge";
 import { Event, EventType } from "../../models/Event";
@@ -78,9 +78,12 @@ module.exports = {
 
 			const currentPageJobs = pages[currentPage];
 
+			const userClassModifier = getJobClassModifier(user.Class);
+
 			if (user.IsWorking()) {
 				const job = JobList[user.Job.Id!];
 				const jobDuration = job.Duration * eventActiveValue;
+				const jobSalary = job.Salary * userClassModifier;
 
 				container
 					.addTexts([
@@ -94,7 +97,7 @@ module.exports = {
 						),
 					)
 					.addFooter({
-						text: `${s.salary}: ${formatMoney(job.Salary, language)} • ${s.duration}: ${jobDuration}h`,
+						text: `${s.salary}: ${formatMoney(jobSalary, language)} • ${s.duration}: ${jobDuration}h`,
 					});
 
 				return container;
@@ -104,8 +107,9 @@ module.exports = {
 					const job = currentPageJobs[i];
 					const weaponsNeeded = getItemList().filter(item => job.NeedItem?.includes(item.Id));
 					const jobDuration = job.Duration * eventActiveValue;
+					const jobSalary = job.Salary * userClassModifier;
 
-					const textSalary = `${s.salary}: ${formatMoney(job.Salary, language)}`;
+					const textSalary = `${s.salary}: ${formatMoney(jobSalary, language)}`;
 					const textDuration = `${s.duration}: ${jobDuration}h`;
 					const textNeeded = weaponsNeeded.length ? `\n-# ${s.necessary}:\n## ${weaponsNeeded.map(weapon => weapon.Skin[BundleId.Default].String).join(" ")}` : "";
 					const blackMarketText = job.Special ? ` • ${EmoteString.BlackMarket} ${s.blackMarket}` : "";
@@ -169,7 +173,11 @@ module.exports = {
 		collectorButton?.on("collect", async btn => {
 			await btn.deferUpdate();
 
+
 			if (btn.customId.includes("start")) {
+				await user.GetInfo();
+				const userClassModifier = getJobClassModifier(user.Class);
+
 				const jobId = Number(btn.customId.replace("start", ""));
 				const job = JobList[jobId];
 
@@ -233,6 +241,7 @@ module.exports = {
 				}
 
 				const jobDuration = job.Duration * eventActiveValue;
+				const jobSalary = job.Salary * userClassModifier;
 
 				await user.StartJob(job.Id);
 
@@ -248,7 +257,7 @@ module.exports = {
 						),
 					)
 					.addFooter({
-						text: `${s.salary}: ${formatMoney(job.Salary, language)} • ${s.duration}: ${jobDuration}h`,
+						text: `${s.salary}: ${formatMoney(jobSalary, language)} • ${s.duration}: ${jobDuration}h`,
 					});
 
 				return replyInteraction(interaction, { components: [container] });

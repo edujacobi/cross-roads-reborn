@@ -23,7 +23,7 @@ import { addMinutes } from "date-fns";
 import { globalStrings, Language } from "./Language";
 import { RobHistories } from "../database/RobHistories";
 import { Users } from "../database/Users";
-import { ClassId, ClassList } from "../interfaces/Classes";
+import { ClassId, ClassList, getRobberyClassModifier } from "../interfaces/Classes";
 import { JobId, JobList } from "../interfaces/Jobs";
 import { LocationList } from "../interfaces/Locations";
 import { ScavengeId, ScavengeList } from "../interfaces/Scavenge";
@@ -370,6 +370,11 @@ export class Robbery {
 			}
 
 			this.MoneyRobbed = Math.floor(getPercent(this.Attacker.Attributes.MoneyAttack, this.Defender.Money));
+
+			const userClassModifier = getRobberyClassModifier(this.Attacker.Class);
+
+			this.MoneyRobbed *= userClassModifier;
+
 			this.Attacker.Money += this.MoneyRobbed;
 			this.Attacker.Robbery.SuccessCount += 1;
 			this.Attacker.Robbery.SuccessRobbedSum += this.MoneyRobbed;
