@@ -76,7 +76,7 @@ export const ClassList: ClassListType = {
 			[Language.Spanish]: "Hábil con las manos, aprendió el arte del robo desde muy joven. Es una pena que no tenga suerte con el Tigre de la Fortuna.",
 		},
 		Image: {
-			Url: "https://media.discordapp.net/attachments/1233604589064818808/1339670907752550490/Classe_Ladrao_New2.png",
+			Url: "https://media.discordapp.net/attachments/1233604589064818808/1460375095670472887/Class_Thief.png",
 			Emote: {
 				Id: EmoteId.Thief,
 				String: EmoteString.Thief,
@@ -127,7 +127,7 @@ export const ClassList: ClassListType = {
 			[Language.Spanish]: "Creció con una cuchara de plata en la boca, relacionándose con los colegas de su padre, pero le falta un poco de malicia.",
 		},
 		Image: {
-			Url: "https://media.discordapp.net/attachments/1233604589064818808/1339670907328663662/Classe_Empresario_New.png",
+			Url: "https://media.discordapp.net/attachments/1233604589064818808/1460375094416248999/Class_Entrepeneur.png",
 			Emote: {
 				Id: EmoteId.Entrepreneur,
 				String: EmoteString.Entrepreneur,
@@ -155,7 +155,7 @@ export const ClassList: ClassListType = {
 			[Language.Spanish]: "Invisible para la mayor parte de la población, se aprovecha de ello para sacar el máximo beneficio.",
 		},
 		Image: {
-			Url: "https://media.discordapp.net/attachments/1233604589064818808/1339670908591145040/Classe_Mendigo_New.png",
+			Url: "https://media.discordapp.net/attachments/1233604589064818808/1460375095100051560/Class_Hobo.png",
 			Emote: {
 				Id: EmoteId.Hobo,
 				String: EmoteString.Hobo,
@@ -206,7 +206,7 @@ export const ClassList: ClassListType = {
 			[Language.Spanish]: "Él conoce los vacíos de todas las leyes y los utiliza para su beneficio, pero no le gusta ensuciarse el traje.",
 		},
 		Image: {
-			Url: "https://media.discordapp.net/attachments/1233604589064818808/1339670906573820004/Classe_Advogado_New3.png",
+			Url: "https://media.discordapp.net/attachments/1233604589064818808/1460375094114255031/Class_Attorney.png",
 			Emote: {
 				Id: EmoteId.Attorney,
 				String: EmoteString.Attorney,
