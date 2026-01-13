@@ -83,7 +83,7 @@ module.exports = {
 			if (user.IsWorking()) {
 				const job = JobList[user.Job.Id!];
 				const jobDuration = job.Duration * eventActiveValue;
-				const jobSalary = job.Salary * userClassModifier;
+				const jobSalary = Math.floor(job.Salary * userClassModifier);
 
 				container
 					.addTexts([

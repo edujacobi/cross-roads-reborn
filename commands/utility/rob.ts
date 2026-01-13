@@ -101,8 +101,8 @@ module.exports = {
 
 				const userClassModifier = getRobberyClassModifier(user.Class);
 
-				const rewardMin = location.Reward.Min * userClassModifier;
-				const rewardMax = location.Reward.Max * userClassModifier;
+				const rewardMin = Math.floor(location.Reward.Min * userClassModifier);
+				const rewardMax = Math.floor(location.Reward.Max * userClassModifier);
 
 				const textMinToMax = `${formatMoney(rewardMin, language)} - ${formatMoney(rewardMax, language)}`;
 				const textSuccess = `${s.success}: ${location.SuccessChance}%`;

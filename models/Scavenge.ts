@@ -180,8 +180,8 @@ export class Scavenge {
 
 				const userClassDurationModifier = getScavengeDurationClassModifier(this.User.Class);
 
-				const rewardMoneyMin = place.Reward.Money.Min * userClassDurationModifier;
-				const rewardMoneyMax = place.Reward.Money.Max * userClassDurationModifier;
+				const rewardMoneyMin = Math.floor(place.Reward.Money.Min * userClassDurationModifier);
+				const rewardMoneyMax = Math.floor(place.Reward.Money.Max * userClassDurationModifier);
 
 				const textMinToMax = `- ${formatMoney(rewardMoneyMin, this.User.Language)} - ${formatMoney(rewardMoneyMax, this.User.Language)}`;
 
