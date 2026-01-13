@@ -51,7 +51,7 @@ export class Hospital {
 					.setContent(`# Hospital\n${s.subtitle}`),
 				)
 				.setThumbnailAccessory(thumb => thumb
-					.setURL("https://media.discordapp.net/attachments/1233604589064818808/1352830745340805202/Hospital7.png"),
+					.setURL("https://media.discordapp.net/attachments/1233604589064818808/1460599175900168388/Hospital_New.png"),
 				),
 			)
 			.addLargeSeparator();
