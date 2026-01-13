@@ -30,7 +30,7 @@ export class Casino {
 					.setContent(s.description),
 				)
 				.setThumbnailAccessory(thumb => thumb
-					.setURL("https://media.discordapp.net/attachments/1233604589064818808/1337969966821146695/radar_mafiaCasino.png"),
+					.setURL("https://media.discordapp.net/attachments/1233604589064818808/1460598163546312857/Casino_New.png"),
 				),
 			)
 			.addLargeSeparator()
@@ -133,7 +133,7 @@ Antro da perdição! Aposte, ganhe, perca, quebre a banca!
 Aposte um valor em uma moeda que deve cair no mesmo lado que você escolheu. Você tem 50% de chance de vencer. Se vencer, ganha 1.5x o valor apostado!`,
 		horseRace: `### 🏇 Corrida de Cavalos
 Aposte em um dos cavalos em uma corrida. As corridas acontecem a cada 4 horas. Se seu cavalo vencer, você divide o prêmio com outros vencedores. A aposta máxima é baseada no seu ${EmoteString.Attack}ATK.
-Use \`/horserace\` para ver a próxima corrida e para fazer sua aposta.`,
+Use \`/corridadecavalos\` para ver a próxima corrida e para fazer sua aposta.`,
 		noMoney: "Você não possui dinheiro suficiente para apostar",
 		scavenging: (placeId: ScavengeId) => `Você não pode apostar enquanto está vasculhando ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Portuguese]}** ${EmoteString.Scavenge}`,
 		working: (job: string, time: Date) => `Você está trabalhando como **${job}** e não pode apostar no cassino ${EmoteString.Jobs}\n-# Terminará ${showTime(time.getTime(), true)}`,
