@@ -9,7 +9,7 @@
 	MessageFlags,
 	SlashCommandBuilder,
 } from "discord.js";
-import { disableButtons, replyInteraction } from "../../utils/logic";
+import { disableButtons, isUserBoosterInOfficialServer, replyInteraction } from "../../utils/logic";
 import { formatMoney } from "../../utils/ui";
 import { User } from "../../models/User";
 import { Language } from "../../models/Language";
@@ -36,7 +36,7 @@ module.exports = {
 			ClassList[ClassId.Thief],
 		];
 
-		const CHANGE_COST = 1_000_000;
+		const CHANGE_COST = user.IsVip() ? 75_000 : 100_000;
 
 		function getModifierText(modifier?: ClassModifier) {
 			const text = [];
