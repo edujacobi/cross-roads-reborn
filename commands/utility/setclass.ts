@@ -225,7 +225,9 @@ module.exports = {
 					return disableButtons(interaction, container);
 				}
 
-				const success = await user.SetClass(newClass, CHANGE_COST);
+				const hasClass = user.Class !== ClassId.None;
+
+				const success = await user.SetClass(newClass, hasClass ? CHANGE_COST : undefined);
 
 				container = addContainerHeader()
 					.addTexts([
