@@ -1,14 +1,18 @@
 ﻿import {
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonStyle,
 	ChatInputCommandInteraction,
-	Colors,
+	ComponentType,
 	Locale,
+	MessageComponentInteraction,
 	MessageFlags,
 	SlashCommandBuilder,
 	SlashCommandIntegerOption,
 	SlashCommandNumberOption,
 } from "discord.js";
-import { replyInteraction } from "../../utils/logic";
-import { defaultComponent, formatMoney, showTime } from "../../utils/ui";
+import { disableButtons, replyInteraction } from "../../utils/logic";
+import { formatMoney } from "../../utils/ui";
 import { CrColors } from "../../utils/colors";
 import { EmoteString } from "../../utils/emotes";
 import { Language } from "../../models/Language";
@@ -66,88 +70,174 @@ module.exports = {
 		const side = interaction.options.getInteger("side", true) as CoinSide;
 		const value = interaction.options.getNumber("value", true);
 
+		let currentBet = value;
+		let currentBalance = 0;
+		let winStreak = 0;
+
 		const s = Strings[language];
 
-		const { canPlay, message } = await Casino.CanUserPlayBet(user, value);
+		let container: CustomContainerBuilder;
 
-		if (!canPlay) {
-			const container = defaultComponent({
-				user,
-				color: CrColors.Casino,
-				description: message,
-			});
+		function addContainerHeader() {
+			return new CustomContainerBuilder()
+				.setUser(user)
+				.setAccentColor(CrColors.Casino)
+				.addTexts([
+					`-# ${EmoteString.Casino} ${s.casino} • ${s.betting} ${formatMoney(currentBet, language)}`,
+				])
+				.addLargeSeparator();
+		}
 
-			return await replyInteraction(interaction, {
+		async function playBet(value: number) {
+			container = addContainerHeader()
+				.addTexts([
+					`${s.flipping} ${EmoteString.Waiting}`,
+				])
+				.addFooter({
+					text: formatMoney(user.Money, language),
+				});
+
+			await replyInteraction(interaction, {
 				components: [container],
 				flags: MessageFlags.IsComponentsV2,
 			});
-		}
 
-		const container = new CustomContainerBuilder()
-			.setUser(user)
-			.setAccentColor(CrColors.Casino)
-			.addTexts([
-				s.flipping,
-			], 1)
-			.addFooter({
-				text: formatMoney(user.Money, language),
+			// Generate numbers between 2000 and 3000 (2s and 3s)
+			const range = () => Math.floor(Math.random() * 1001) + 2000;
+
+			await wait(range());
+			const coinFlip = Math.floor(Math.random() * 2);
+
+			const win = side === coinFlip;
+
+			const userClassModifier = getCasinoClassModifier(user.Class);
+
+			const prize = Math.round(value * 0.5 * userClassModifier);
+
+			if (win) {
+				user.Money += prize;
+				user.Casino.WinCount += 1;
+				user.Casino.WinSum += prize;
+				currentBalance += prize;
+				winStreak += 1;
+
+			}
+			else {
+				user.Money -= value;
+				user.Casino.LoseCount += 1;
+				user.Casino.LoseSum += value;
+				currentBalance -= value;
+				winStreak = 0;
+			}
+
+			await user.Update();
+
+			const heads = `${EmoteString.Heads} ${s.heads}`;
+			const tails = `${EmoteString.Tails} ${s.tails}`;
+
+			const firstResult = coinFlip === CoinSide.Heads ? heads : tails;
+
+			const userBet = side == CoinSide.Heads ? heads : tails;
+
+			container = addContainerHeader()
+				.addTexts([
+					`### ${s.result(firstResult)}`,
+					`${win ? `${EmoteString.Victory} ${s.won}` : `${EmoteString.Defeat} ${s.lose}`} ${formatMoney(win ? prize : value, language)}!`,
+					`-# ${s.bet} ${formatMoney(value, language)} ${s.at} ${userBet}`,
+				])
+				.addLargeSeparator()
+				.addTexts([
+					`-# ${s.currentBalance}: ${formatMoney(currentBalance, language)}`,
+					winStreak > 1 ? `-# ${s.winStreak(winStreak)}` : false,
+				].filter(Boolean) as string[])
+				.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
+					.addComponents(
+						new ButtonBuilder()
+							.setCustomId("playsamevalue")
+							.setLabel(s.betAgain)
+							.setDisabled(user.Money < value)
+							.setStyle(ButtonStyle.Secondary),
+						new ButtonBuilder()
+							.setCustomId("playdouble")
+							.setLabel(s.betDouble)
+							.setDisabled(user.Money < value * 2)
+							.setStyle(ButtonStyle.Success),
+					),
+				)
+				.addFooter({
+					text: formatMoney(user.Money, language),
+				});
+
+			return replyInteraction(interaction, {
+				components: [container],
 			});
-
-		await replyInteraction(interaction, {
-			components: [container],
-			flags: MessageFlags.IsComponentsV2,
-		});
-
-		// Generate numbers between 1400 and 2000 (1.4s and 2s)
-		const range = () => Math.floor(Math.random() * 601) + 1400;
-
-		await wait(range());
-		const coinFlip = Math.floor(Math.random() * 2);
-
-		const win = side === coinFlip;
-
-		const userClassModifier = getCasinoClassModifier(user.Class);
-
-		const prize = Math.round(value * 0.5 * userClassModifier);
-
-		if (win) {
-			user.Money += prize;
-			user.Casino.WinCount += 1;
-			user.Casino.WinSum += prize;
-
-		}
-		else {
-			user.Money -= value;
-			user.Casino.LoseCount += 1;
-			user.Casino.LoseSum += value;
 		}
 
-		await user.Update();
+		async function checkIfCanPlay(value: number) {
+			const { canPlay, message } = await Casino.CanUserPlayBet(user, value);
 
-		const heads = `${EmoteString.Heads} ${s.heads}`;
-		const tails = `${EmoteString.Tails} ${s.tails}`;
+			if (!canPlay) {
+				container = addContainerHeader()
+					.addTexts([
+						message,
+					]);
 
-		const firstResult = coinFlip === CoinSide.Heads ? heads : tails;
+				if (currentBalance !== 0) {
+					container.addTexts([
+						`-# ${s.totalBalance}: ${formatMoney(currentBalance, language)}`,
+					]);
+				}
 
-		const userBet = side == CoinSide.Heads ? heads : tails;
+				container.addFooter({
+					text: formatMoney(user.Money, language),
+				});
 
-		container
-			.setAccentColor(win ? Colors.Green : Colors.Red)
-			.changeTextFromSectionId(1, `### ${s.result(firstResult)}
-${win ? s.won : s.lose} ${formatMoney(win ? prize : value, user.Language)}!
--# ${s.bet} ${formatMoney(value, user.Language)} ${s.at} ${userBet}`)
-			.changeFooterText(formatMoney(user.Money, language));
+				await replyInteraction(interaction, {
+					components: [container],
+					flags: MessageFlags.IsComponentsV2,
+				});
+				return false;
+			}
+			return true;
+		}
 
-		await replyInteraction(interaction, {
-			components: [container],
+		if (!await checkIfCanPlay(value)) return;
+
+		const response = await playBet(value);
+
+		const collector = response?.createMessageComponentCollector({
+			filter: (i: MessageComponentInteraction) => i.user.id === interaction.user.id,
+			componentType: ComponentType.Button,
+			idle: 60_000,
 		});
+
+		collector?.on("end", async () => {
+			await disableButtons(interaction, container);
+		});
+
+		collector?.on("collect", async btn => {
+			await btn.deferUpdate();
+
+			if (btn.customId === "playsamevalue") {
+				if (!await checkIfCanPlay(currentBet)) return;
+				await playBet(currentBet);
+			}
+
+			else if (btn.customId === "playdouble") {
+				currentBet *= 2;
+				if (!await checkIfCanPlay(currentBet)) return;
+				await playBet(currentBet);
+			}
+		});
+
 	},
 };
 
 const Strings = {
 	[Language.English]: {
+		casino: "Casino",
 		title: "Coin Flip",
-		flipping: "Flipping the coin...",
+		flipping: "Flipping the coin",
 		heads: "Heads",
 		tails: "Tails",
 		won: "You **won**",
@@ -156,11 +246,17 @@ const Strings = {
 		at: "at",
 		result: (result: string) => `The result was ${result}`,
 		noMoney: "You don't have enough money to bet.",
-		working: (job: string, time: Date) => `You are working as ${job} and can't do this. Will end ${showTime(time.getTime(), true)}`,
+		betting: "Betting",
+		betAgain: "Bet again!",
+		betDouble: "Double bet!",
+		currentBalance: "Current balance",
+		totalBalance: "Total balance",
+		winStreak: (value: number) => `You won ${value} times in a row`,
 	},
 	[Language.Portuguese]: {
+		casino: "Cassino",
 		title: "Cara ou Coroa",
-		flipping: "Jogando a moeda...",
+		flipping: "Jogando a moeda",
 		heads: "Cara",
 		tails: "Coroa",
 		won: "Você **ganhou**",
@@ -169,11 +265,17 @@ const Strings = {
 		at: "em",
 		result: (result: string) => `O resultado foi ${result}`,
 		noMoney: "Você não possui dinheiro suficiente para apostar.",
-		working: (job: string, time: Date) => `Você está trabalhando como ${job} e não pode fazer isto. Terminará ${showTime(time.getTime(), true)}`,
+		betting: "Apostando",
+		betAgain: "Apostar novamente!",
+		betDouble: "Dobrar aposta!",
+		currentBalance: "Balanço atual",
+		totalBalance: "Balanço total",
+		winStreak: (value: number) => `Você ganhou ${value} seguidas`,
 	},
 	[Language.Spanish]: {
+		casino: "Casino",
 		title: "Cara o Cruz",
-		flipping: "Lanzando la moneda...",
+		flipping: "Lanzando la moneda",
 		heads: "Cara",
 		tails: "Cruz",
 		won: "¡**Ganaste**",
@@ -182,6 +284,11 @@ const Strings = {
 		at: "en",
 		result: (result: string) => `El resultado fue ${result}`,
 		noMoney: "No tienes suficiente dinero para apostar.",
-		working: (job: string, time: Date) => `Estás trabajando como ${job} y no puedes hacer esto. Terminará ${showTime(time.getTime(), true)}`,
+		betting: "Apostando",
+		betAgain: "Apostar de nuevo!",
+		betDouble: "Doblar la apuesta!",
+		currentBalance: "Balanco actual",
+		totalBalance: "Balanco total",
+		winStreak: (value: number) => `Ganaste ${value} seguidas`,
 	},
 } as const;
