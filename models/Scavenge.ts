@@ -20,12 +20,7 @@ import { defaultComponent, formatMoney, showTime } from "../utils/ui";
 import { LocationList } from "../interfaces/Locations";
 import { JobId, JobList } from "../interfaces/Jobs";
 import { Users } from "../database/Users";
-import {
-	ClassList,
-	getJobClassModifier,
-	getScavengeChanceClassModifier,
-	getScavengeDurationClassModifier,
-} from "../interfaces/Classes";
+import { ClassList, getScavengeChanceClassModifier, getScavengeDurationClassModifier } from "../interfaces/Classes";
 import { addHours, addMinutes } from "date-fns";
 import { Log } from "../utils/log";
 import { Notification } from "./Notification";

@@ -567,139 +567,139 @@ module.exports = {
 
 		const { response, collector } = await pagination.GenerateContainer();
 
-		let position: number;
+		// let position: number;
+		//
+		// collector?.on("collect", async btn => {
 
-		collector.on("collect", async btn => {
+		// if (btn.customId.includes("position")) {
+		// 	position = (Number(btn.customId.replace("position", "")) % 6) - 1;
+		//
+		// 	const originalContainer = response?.components[0] as ContainerComponent;
+		//
+		// 	if (!originalContainer) {
+		// 		return;
+		// 	}
+		//
+		// 	const oldContainer = new ContainerBuilder(originalContainer.toJSON());
+		//
+		// 	const sections = oldContainer.components.filter(component => component.data.type === ComponentType.Section);
+		//
+		// 	const selectedSection = sections[position] as SectionBuilder;
+		//
+		// 	const button = selectedSection.accessory as ButtonBuilder;
+		//
+		// 	if (!button) {
+		// 		return;
+		// 	}
+		//
+		// 	selectedSection.setButtonAccessory(
+		// 		button
+		// 			.setLabel("Voltar")
+		// 			.setCustomId("goback"),
+		// 	);
+		//
+		// 	const newContainer = new CustomContainerBuilder()
+		// 		.setUser(user)
+		// 		.setAccentColor(CrColors.Default)
+		// 		.addSectionComponents(selectedSection)
+		// 		.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
+		// 			.addComponents([
+		// 				new ButtonBuilder()
+		// 					.setLabel("Inventário")
+		// 					.setEmoji(EmoteId.OpenInv)
+		// 					.setCustomId("inv")
+		// 					.setStyle(ButtonStyle.Secondary),
+		// 				new ButtonBuilder()
+		// 					.setLabel("Roubar")
+		// 					.setEmoji(EmoteId.Robbery)
+		// 					.setCustomId("rob")
+		// 					.setStyle(ButtonStyle.Secondary),
+		// 				new ButtonBuilder()
+		// 					.setLabel("Espancar")
+		// 					.setEmoji(EmoteId.Beat)
+		// 					.setCustomId("beat")
+		// 					.setStyle(ButtonStyle.Secondary),
+		// 				new ButtonBuilder()
+		// 					.setLabel("Convidar para gangue")
+		// 					.setEmoji(EmoteId.Gang)
+		// 					.setCustomId("invite")
+		// 					.setStyle(ButtonStyle.Secondary),
+		// 			]),
+		// 		)
+		// 		.addFooter();
+		//
+		// 	await replyInteraction(interaction, {
+		// 		components: [newContainer],
+		// 	});
+		// }
 
-			if (btn.customId.includes("position")) {
-				position = (Number(btn.customId.replace("position", "")) % 6) - 1;
+		// else if (btn.customId === "inv") {
+		// 	const target = await searchUser(users[position].id, interaction);
+		// 	if (!target) {
+		// 		return;
+		// 	}
+		//
+		// 	const command = interaction.client.commands.get(interaction.commandName);
+		// 	if (!command) {
+		// 		return;
+		// 	}
+		//
+		// 	// @ts-ignore
+		// 	const invInteraction = new ChatInputCommandInteraction();
+		// 	invInteraction.type = interaction.type;
+		// 	invInteraction.guild = interaction.guild;
+		// 	invInteraction.client = interaction.client;
+		// 	invInteraction.user = interaction.user;
+		//
+		// 	const options: CommandInteractionOption[] = [{
+		// 		name: "target",
+		// 		type: ApplicationCommandOptionType.String,
+		// 		value: target.Id,
+		// 	}];
+		//
+		// 	// @ts-ignore
+		// 	invInteraction.options = new CommandInteractionOptionResolver(interaction.client, options, interaction.options.resolved);
+		//
+		// 	command.execute(invInteraction, user, language);
+		// }
 
-				const originalContainer = response.components[0] as ContainerComponent;
+		// else if (btn.customId === "rob") {
+		// 	const target = await searchUser(users[position].id, interaction);
+		// 	if (!target) {
+		// 		return;
+		// 	}
+		//
+		// 	const robbery = new Robbery(user, target);
+		//
+		// 	const { canRob, message } = await robbery.CanRobUser();
+		//
+		// 	if (!canRob) {
+		// 		const container = defaultComponent({
+		// 			user,
+		// 			color: CrColors.Robbery,
+		// 			description: message,
+		// 			footer: formatMoney(user.Money, language),
+		// 		});
+		//
+		// 		return await replyInteraction(interaction, {
+		// 			components: [container],
+		// 			flags: MessageFlags.IsComponentsV2,
+		// 		});
+		// 	}
+		//
+		// 	await robbery.GetDiscordUser();
+		//
+		// 	await robbery.StartRobbery(interaction);
+		//
+		// }
+		//
+		// else if (btn.customId === "goback") {
+		// 	const container = await pagination.CustomizeContainer();
+		// 	await replyInteraction(interaction, {
+		// 		components: [container, pagination.GenerateRow()],
+		// 	});
+		// }
 
-				if (!originalContainer) {
-					return;
-				}
-
-				const oldContainer = new ContainerBuilder(originalContainer.toJSON());
-
-				const sections = oldContainer.components.filter(component => component.data.type === ComponentType.Section);
-
-				const selectedSection = sections[position] as SectionBuilder;
-
-				const button = selectedSection.accessory as ButtonBuilder;
-
-				if (!button) {
-					return;
-				}
-
-				selectedSection.setButtonAccessory(
-					button
-						.setLabel("Voltar")
-						.setCustomId("goback"),
-				);
-
-				const newContainer = new CustomContainerBuilder()
-					.setUser(user)
-					.setAccentColor(CrColors.Default)
-					.addSectionComponents(selectedSection)
-					.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
-						.addComponents([
-							new ButtonBuilder()
-								.setLabel("Inventário")
-								.setEmoji(EmoteId.OpenInv)
-								.setCustomId("inv")
-								.setStyle(ButtonStyle.Secondary),
-							new ButtonBuilder()
-								.setLabel("Roubar")
-								.setEmoji(EmoteId.Robbery)
-								.setCustomId("rob")
-								.setStyle(ButtonStyle.Secondary),
-							new ButtonBuilder()
-								.setLabel("Espancar")
-								.setEmoji(EmoteId.Beat)
-								.setCustomId("beat")
-								.setStyle(ButtonStyle.Secondary),
-							new ButtonBuilder()
-								.setLabel("Convidar para gangue")
-								.setEmoji(EmoteId.Gang)
-								.setCustomId("invite")
-								.setStyle(ButtonStyle.Secondary),
-						]),
-					)
-					.addFooter();
-
-				await replyInteraction(interaction, {
-					components: [newContainer],
-				});
-			}
-
-			else if (btn.customId === "inv") {
-				const target = await searchUser(users[position].id, interaction);
-				if (!target) {
-					return;
-				}
-
-				const command = interaction.client.commands.get(interaction.commandName);
-				if (!command) {
-					return;
-				}
-
-				// @ts-ignore
-				const invInteraction = new ChatInputCommandInteraction();
-				invInteraction.type = interaction.type;
-				invInteraction.guild = interaction.guild;
-				invInteraction.client = interaction.client;
-				invInteraction.user = interaction.user;
-
-				const options: CommandInteractionOption[] = [{
-					name: "target",
-					type: ApplicationCommandOptionType.String,
-					value: target.Id,
-				}];
-
-				// @ts-ignore
-				invInteraction.options = new CommandInteractionOptionResolver(interaction.client, options, interaction.options.resolved);
-
-				command.execute(invInteraction, user, language);
-			}
-
-			else if (btn.customId === "rob") {
-				const target = await searchUser(users[position].id, interaction);
-				if (!target) {
-					return;
-				}
-
-				const robbery = new Robbery(user, target);
-
-				const { canRob, message } = await robbery.CanRobUser();
-
-				if (!canRob) {
-					const container = defaultComponent({
-						user,
-						color: CrColors.Robbery,
-						description: message,
-						footer: formatMoney(user.Money, language),
-					});
-
-					return await replyInteraction(interaction, {
-						components: [container],
-						flags: MessageFlags.IsComponentsV2,
-					});
-				}
-
-				await robbery.GetDiscordUser();
-
-				await robbery.StartRobbery(interaction);
-
-			}
-
-			else if (btn.customId === "goback") {
-				const container = await pagination.CustomizeContainer();
-				await replyInteraction(interaction, {
-					components: [container, pagination.GenerateRow()],
-				});
-			}
-
-		});
+		// });
 	},
 };
