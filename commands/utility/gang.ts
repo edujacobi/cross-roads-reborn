@@ -439,7 +439,7 @@ module.exports = {
 					filter: (i: MessageComponentInteraction) => i.user.id === user.Id,
 					max: 1,
 					componentType: ComponentType.Button,
-					time: 60_000,
+					idle: 60_000,
 				});
 
 				collector?.on("collect", async btn => {
@@ -725,7 +725,7 @@ module.exports = {
 				filter: (i: MessageComponentInteraction) => i.user.id === user.Id,
 				max: 1,
 				componentType: ComponentType.Button,
-				time: 60_000,
+				idle: 60_000,
 			});
 
 			let responded = false;
@@ -826,7 +826,7 @@ module.exports = {
 				filter: (i: MessageComponentInteraction) => i.user.id === user.Id,
 				max: 1,
 				componentType: ComponentType.Button,
-				time: 60_000,
+				idle: 60_000,
 			});
 
 			let responded = false;

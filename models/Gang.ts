@@ -557,7 +557,7 @@ export class Gang {
 			filter: (i: MessageComponentInteraction) => i.user.id === targetUser.Id,
 			max: 1,
 			componentType: ComponentType.Button,
-			time: COOLDOWN_INVITE,
+			idle: COOLDOWN_INVITE,
 		});
 
 		let responded = false;

@@ -202,13 +202,12 @@ module.exports = {
 			components: [container],
 			files,
 			flags: MessageFlags.IsComponentsV2,
-			withResponse: true,
 		});
 
 		const collector = response?.createMessageComponentCollector({
 			filter: (i: MessageComponentInteraction) => i.user.id === interaction.user.id,
 			componentType: ComponentType.Button,
-			time: 60_000,
+			idle: 60_000,
 		});
 
 		collector?.on("collect", async btn => {

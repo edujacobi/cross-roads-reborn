@@ -322,7 +322,7 @@ export class HorseRacing {
 		const collector = response?.createMessageComponentCollector({
 			filter: (i: MessageComponentInteraction) => i.user.id === interaction.user.id,
 			componentType: ComponentType.StringSelect,
-			time: 60_000,
+			idle: 60_000,
 		});
 
 		// Flag to track if bet has been placed
