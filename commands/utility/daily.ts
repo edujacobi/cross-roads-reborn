@@ -1,5 +1,5 @@
 ﻿import { ChatInputCommandInteraction, Locale, MessageFlags, SlashCommandBuilder } from "discord.js";
-import { replyInteraction } from "../../utils/logic";
+import { isUserBoosterInOfficialServer, replyInteraction } from "../../utils/logic";
 import { formatMoney, showTime } from "../../utils/ui";
 import { addDays } from "date-fns";
 import { Language } from "../../models/Language";
@@ -38,7 +38,9 @@ module.exports = {
 			});
 		}
 
-		const money = await user.ReceiveDaily();
+		const isBooster = await isUserBoosterInOfficialServer(interaction);
+
+		const money = await user.ReceiveDaily({ isBooster });
 
 		container
 			.addTexts([

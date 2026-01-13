@@ -305,6 +305,10 @@ export async function setPlayerNicknameInOfficialServer(interaction: ChatInputCo
 		return;
 	}
 
+	if (user.Id === process.env.JACOBI_ID) {
+		return;
+	}
+
 	const isInOfficialServer = interaction.guild?.id === process.env.SERVER_ID;
 
 	if (!isInOfficialServer) {
@@ -328,6 +332,34 @@ export async function setPlayerNicknameInOfficialServer(interaction: ChatInputCo
 	catch (err) {
 		Log.Warning(`Something went wrong with adding Nickname in server to user ${interaction.user.displayName} (ID: ${interaction.user.id}).`);
 	}
+}
+
+export async function isUserBoosterInOfficialServer(interaction: ChatInputCommandInteraction) {
+	if (process.env.NODE_ENV !== "PROD") {
+		return false;
+	}
+
+	const boosterRoleId = "758691633544953936";
+
+	const isInOfficialServer = interaction.guild?.id === process.env.SERVER_ID;
+
+	if (!isInOfficialServer) {
+		return false;
+	}
+
+	const boosterRole = interaction.guild.roles.cache.get(boosterRoleId);
+
+	if (!boosterRole) {
+		return false;
+	}
+
+	const user = interaction.guild.members.cache.get(interaction.user.id);
+
+	if (!user) {
+		return false;
+	}
+
+	return user.roles.cache.some(role => role.id === boosterRoleId);
 }
 
 /**

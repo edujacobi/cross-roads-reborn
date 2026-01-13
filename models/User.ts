@@ -359,11 +359,18 @@ export class User {
 		return this;
 	}
 
-	async SetNickname(nickname: string) {
+	async SetNickname(nickname: string, cost?: number) {
 		const oldNickname = this.Nickname;
 		this.Nickname = nickname;
+		if (cost) {
+			if (this.Money < cost) {
+				return false;
+			}
+			this.Money -= cost;
+		}
 		await this.Update();
 		Log.Success(`User ${oldNickname} (ID: ${this.Id}) changed nickname to ${nickname}.`);
+		return true;
 	}
 
 	async SetClass(classId: ClassId, cost?: number) {
@@ -434,7 +441,7 @@ export class User {
 		return this.Daily.LastReceived == null || differenceInHours(today, this.Daily.LastReceived) > 23;
 	}
 
-	async ReceiveDaily() {
+	async ReceiveDaily({ isBooster }: { isBooster: boolean }) {
 		const today = new Date();
 
 		if (this.Daily.LastReceived != null && differenceInHours(today, this.Daily.LastReceived) > 48) {
@@ -452,7 +459,7 @@ export class User {
 
 		let baseValue = 300;
 
-		if (this.IsVip()) {
+		if (this.IsVip() || isBooster) {
 			baseValue *= 1.5;
 		}
 

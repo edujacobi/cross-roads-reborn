@@ -1,7 +1,7 @@
 ﻿import { Collection, Colors, CommandInteraction, Events, MessageFlags } from "discord.js";
 import { defaultComponent, showTime } from "../utils/ui";
 import {
-	checkUser,
+	checkUser, isUserBoosterInOfficialServer,
 	replyInteraction,
 	setPlayerNicknameInOfficialServer,
 	setPlayerRoleInOfficialServer,
@@ -31,7 +31,10 @@ module.exports = {
 			return console.error(s.noCommand(interaction.commandName));
 		}
 
-		const user = await checkUser(interaction.user.id, interaction);
+		const [user, isBooster] = await Promise.all([
+			checkUser(interaction.user.id, interaction),
+			isUserBoosterInOfficialServer(interaction),
+		]);
 
 		if (!user) {
 			return;
@@ -72,7 +75,7 @@ module.exports = {
 
 		const now = Date.now();
 		const timestamps = cooldowns.get(command.data.name);
-		const defaultCooldownDuration = user.IsVip() ? 2.5 : 5;
+		const defaultCooldownDuration = user.IsVip() || isBooster ? 1 : 5;
 		const cooldownAmount = (command.cooldown ?? defaultCooldownDuration) * 1000;
 
 		if (!timestamps) {
