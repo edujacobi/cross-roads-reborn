@@ -373,7 +373,7 @@ export class Robbery {
 
 			const userClassModifier = getRobberyClassModifier(this.Attacker.Class);
 
-			this.MoneyRobbed *= userClassModifier;
+			this.MoneyRobbed = Math.floor(this.MoneyRobbed * userClassModifier);
 
 			this.Attacker.Money += this.MoneyRobbed;
 			this.Attacker.Robbery.SuccessCount += 1;

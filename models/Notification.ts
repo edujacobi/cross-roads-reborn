@@ -9,6 +9,7 @@ import { EmoteString } from "../utils/emotes";
 import { formatMoney } from "../utils/ui";
 import { sendPrivateMessage } from "../utils/logic";
 import { CrColors } from "../utils/colors";
+import { getJobClassModifier } from "../interfaces/Classes";
 
 export enum NotificationType {
 	Daily = 1,
@@ -251,8 +252,10 @@ export class Notification {
 			else if (notification.Type == NotificationType.Job) {
 				if (user.Job.Id !== null) {
 					const job = JobList[user.Job.Id];
+					const userClassModifier = getJobClassModifier(user.Class);
+					const salary = Math.floor(job.Salary * userClassModifier);
 					await user.EndJob();
-					await sendPrivateMessage(user.Id, s.job(job.Description[user.Language], job.Salary), CrColors.Jobs, formatMoney(user.Money, user.Language));
+					await sendPrivateMessage(user.Id, s.job(job.Description[user.Language], salary), CrColors.Jobs, formatMoney(user.Money, user.Language));
 				}
 			}
 

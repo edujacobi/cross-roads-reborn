@@ -935,7 +935,7 @@ export class User {
 		}
 		const job = JobList[this.Job.Id];
 		const userClassModifier = getJobClassModifier(this.Class);
-		const salary = job.Salary *= userClassModifier;
+		const salary = Math.floor(job.Salary * userClassModifier);
 		this.Money += salary;
 		this.Job.Id = null;
 		this.Job.ReceivedCount += 1;

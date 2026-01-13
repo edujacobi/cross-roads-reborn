@@ -107,7 +107,7 @@ module.exports = {
 					const job = currentPageJobs[i];
 					const weaponsNeeded = getItemList().filter(item => job.NeedItem?.includes(item.Id));
 					const jobDuration = job.Duration * eventActiveValue;
-					const jobSalary = job.Salary * userClassModifier;
+					const jobSalary = Math.floor(job.Salary * userClassModifier);
 
 					const textSalary = `${s.salary}: ${formatMoney(jobSalary, language)}`;
 					const textDuration = `${s.duration}: ${jobDuration}h`;
@@ -172,7 +172,6 @@ module.exports = {
 
 		collectorButton?.on("collect", async btn => {
 			await btn.deferUpdate();
-
 
 			if (btn.customId.includes("start")) {
 				await user.GetInfo();
@@ -241,7 +240,7 @@ module.exports = {
 				}
 
 				const jobDuration = job.Duration * eventActiveValue;
-				const jobSalary = job.Salary * userClassModifier;
+				const jobSalary = Math.floor(job.Salary * userClassModifier);
 
 				await user.StartJob(job.Id);
 
