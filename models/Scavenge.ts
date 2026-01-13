@@ -220,7 +220,7 @@ export class Scavenge {
 						.setButtonAccessory(btn => btn
 							.setLabel(s.title)
 							.setStyle(ButtonStyle.Success)
-							.setDisabled(!canScavenge)
+							.setDisabled(!canScavenge || this.User.Attributes.Attack < place.NeedAttack)
 							.setCustomId(`confirm${place.Id}`),
 						),
 					)

@@ -251,5 +251,5 @@ export function getScavengeChanceClassModifier(classId: ClassId) {
 }
 
 export function getScavengeDurationClassModifier(classId: ClassId) {
-	return ClassList[classId].Modifier?.ScavengeDuration?.Positive || ClassList[classId].Modifier?.ScavengeDuration?.Negative || 0;
+	return ClassList[classId].Modifier?.ScavengeDuration?.Positive || ClassList[classId].Modifier?.ScavengeDuration?.Negative || 1;
 }
