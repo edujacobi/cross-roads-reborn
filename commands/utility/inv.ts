@@ -73,7 +73,7 @@ module.exports = {
 
 		badges.forEach(badge => badgeText += `${badge.Emoji} `);
 
-		const emoteItems = userItems.sort((a, b) => a.Id - b.Id).map(weapon => weapon.Skin[weapon.SelectedSkin].String);
+		const emoteItems = userItems.toSorted((a, b) => a.Id - b.Id).map(weapon => weapon.Skin[weapon.SelectedSkin].String);
 
 		const lastCommand = interaction.client.userLastCommand.get(target.Id) || 0;
 

@@ -30,8 +30,8 @@ export class RobberyLocation extends Robbery {
 
 		const userClassModifier = getRobberyClassModifier(this.Attacker.Class);
 
-		this.Location.Reward.Min *= userClassModifier;
-		this.Location.Reward.Max += userClassModifier;
+		this.Location.Reward.Min = Math.floor(this.Location.Reward.Min * userClassModifier);
+		this.Location.Reward.Max = Math.floor(this.Location.Reward.Max * userClassModifier);
 	}
 
 	async CanRobLocation() {
