@@ -320,7 +320,7 @@ export class BeatUp {
 				this.Defender.Attributes.Attack += 5;
 				this.TimeInHospital.Base += this.TimeInHospital.Aditional;
 
-				descriptionPrivate = `### 💪 ${sD.fighting}...`;
+				descriptionPrivate = `### 💪 ${sD.fighting} ${EmoteString.Waiting}`;
 				descriptionChannel = `### 💪 ${this.Defender.GetNameWithImage()} ${sA.isFighting}!`;
 			}
 			else if (btn.customId === "run") {
@@ -328,11 +328,11 @@ export class BeatUp {
 				this.Defender.Attributes.Attack -= 5;
 				this.TimeInHospital.Base -= this.TimeInHospital.Aditional;
 
-				descriptionPrivate = `### 👟 ${sD.running}...`;
+				descriptionPrivate = `### 👟 ${sD.running} ${EmoteString.Waiting}`;
 				descriptionChannel = `### 👟 ${this.Defender.GetNameWithImage()} ${sA.isRunning}!`;
 			}
 			else if (btn.customId === "nothing") {
-				descriptionPrivate = `### 🏳️ ${sD.doingNothing}...`;
+				descriptionPrivate = `### 🏳️ ${sD.doingNothing} ${EmoteString.Waiting}`;
 				descriptionChannel = `### 🏳️ ${this.Defender.GetNameWithImage()} ${sA.isDoingNothing}!`;
 			}
 
@@ -490,7 +490,7 @@ const Strings = {
 		wereBeated: (attackerNick: string, time: Date) => `You were beaten up by **${attackerNick}** and will stay in the hospital! ${EmoteString.Hospital}\n-# Will be healed ${showTime(time.getTime(), true)}!`,
 		finishedBeatUpDefender: "Beating finished",
 		// Attacker
-		beatingInProgress: "Beating in progress...",
+		beatingInProgress: `Beating in progress ${EmoteString.Waiting}`,
 		tryingToBeatUp: "Trying to beat up",
 		isFighting: "wants to fight",
 		isRunning: "wants to run",
@@ -553,7 +553,7 @@ const Strings = {
 		wereBeated: (attackerNick: string, time: Date) => `Você foi espancado por **${attackerNick}** e ficará hospitalizado! ${EmoteString.Beat}\n-# Será curado ${showTime(time.getTime(), true)}!`,
 		finishedBeatUpDefender: "Espancamento finalizado",
 		// Attacker
-		beatingInProgress: "Espancamento em andamento...",
+		beatingInProgress: `Espancamento em andamento ${EmoteString.Waiting}`,
 		tryingToBeatUp: "Tentando espancar",
 		isFighting: "quer brigar",
 		isRunning: "quer correr",
@@ -616,7 +616,7 @@ const Strings = {
 		wereBeated: (attackerNick: string, time: Date) => `¡Fuiste golpeado por **${attackerNick}** y permanecerás en el hospital! ${EmoteString.Beat}\n-# Serás curado ${showTime(time.getTime(), true)}!`,
 		finishedBeatUpDefender: "Golpiza terminada",
 		// Attacker
-		beatingInProgress: "Golpiza en progreso...",
+		beatingInProgress: `Golpiza en progreso ${EmoteString.Waiting}`,
 		tryingToBeatUp: "Intentando golpear a",
 		isFighting: "quiere luchar",
 		isRunning: "quiere correr",

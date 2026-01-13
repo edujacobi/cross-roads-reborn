@@ -302,7 +302,7 @@ export class Robbery {
 				this.Defender.Attributes.Defense += 5;
 				this.BeatUpChance = 1;
 
-				descriptionPrivate = `### ${EmoteString.React} ${sD.reacting}...`;
+				descriptionPrivate = `### ${EmoteString.React} ${sD.reacting} ${EmoteString.Waiting}`;
 				descriptionChannel = `### ${EmoteString.React} ${this.Defender.GetNameWithImage()} ${sA.isReacting}!`;
 				// this.Defender.Robbery.ReactedCount += 1;
 			}
@@ -311,12 +311,12 @@ export class Robbery {
 				this.Defender.Attributes.Defense -= 5;
 				this.AttackerTimeInPrison += this.AttackerAditionalTimeCallPolice;
 
-				descriptionPrivate = `### ${EmoteString.Police} ${sD.callingPolice}...`;
+				descriptionPrivate = `### ${EmoteString.Police} ${sD.callingPolice} ${EmoteString.Waiting}`;
 				descriptionChannel = `### ${EmoteString.Police} ${this.Defender.GetNameWithImage()} ${sA.isCallingPolice}!`;
 				// this.Defender.Robbery.CallPoliceCount += 1;
 			}
 			else if (btn.customId === "nothing") {
-				descriptionPrivate = `### 🏳️ ${sD.doingNothing}...`;
+				descriptionPrivate = `### 🏳️ ${sD.doingNothing} ${EmoteString.Waiting}`;
 				descriptionChannel = `### 🏳️ ${this.Defender.GetNameWithImage()} ${sA.isDoingNothing}!`;
 			}
 
@@ -491,7 +491,7 @@ const Strings = {
 		prisonUntil: (time: Date) => `He will be in prison until ${showTime(time.getTime())}`,
 		finishedRobberyDefender: "Robbery finished",
 		// Attacker
-		robberyInProgress: "Robbery in progress...",
+		robberyInProgress: `Robbery in progress ${EmoteString.Waiting}`,
 		tryingToRob: "Trying to rob",
 		isReacting: "is reacting",
 		isCallingPolice: "is calling the police",
@@ -535,7 +535,7 @@ const Strings = {
 		prisonUntil: (time: Date) => `Ele ficará preso até ${showTime(time.getTime())}`,
 		finishedRobberyDefender: "Roubo finalizado",
 		// Attacker
-		robberyInProgress: "Roubo em andamento...",
+		robberyInProgress: `Roubo em andamento ${EmoteString.Waiting}`,
 		tryingToRob: "Tentando roubar",
 		isReacting: "está reagindo",
 		isCallingPolice: "está chamando a polícia",
@@ -579,7 +579,7 @@ const Strings = {
 		prisonUntil: (time: Date) => `Estará en prisión hasta ${showTime(time.getTime())}`,
 		finishedRobberyDefender: "Robo finalizado",
 		// Attacker
-		robberyInProgress: "Robo en progreso...",
+		robberyInProgress: `Robo en progreso ${EmoteString.Waiting}`,
 		tryingToRob: "Intentando robar",
 		isReacting: "está reaccionando",
 		isCallingPolice: "está llamando a la policía",

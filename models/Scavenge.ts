@@ -352,7 +352,7 @@ export class Scavenge {
 		this.Container = new CustomContainerBuilder()
 			.setUser(this.User)
 			.setAccentColor(CrColors.Scavenge)
-			.addTexts([`${s.scavenging} ${placeName}...`])
+			.addTexts([`${s.scavenging} ${placeName} ${EmoteString.Waiting}`])
 			.addFooter();
 
 		await replyInteraction(this.Interaction, {
@@ -377,8 +377,6 @@ export class Scavenge {
 		const s = Strings[this.User.Language];
 
 		const placeName = `${this.Place.Emote.String} **${this.Place.Description[this.User.Language]}**`;
-
-		console.log(this.Place);
 
 		const success = Math.random() * 100 < this.Place.SuccessChance;
 

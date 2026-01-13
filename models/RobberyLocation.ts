@@ -197,7 +197,7 @@ const Strings = {
 		isWanted: (wantedTime: Date) => `You can't rob while you're wanted by the police! ${EmoteString.Police}\n-# Will be able to rob again ${showTime(wantedTime.getTime(), true)}!`,
 		isInHospital: (hospitalTime: Date) => `You can't rob while you're hospitalized! ${EmoteString.Hospital}\n-# Will be healed ${showTime(hospitalTime.getTime(), true)}!`,
 		// Attacker
-		robberyInProgress: "Robbery in progress...",
+		robberyInProgress: `Robbery in progress ${EmoteString.Waiting}`,
 		tryingToRob: "Trying to rob",
 		youRobbed: (formattedMoney: string, defenderNick: string) => `You robbed ${formattedMoney} from **${defenderNick}**!`,
 		youFailed: "You failed in your attempt",
@@ -213,7 +213,7 @@ const Strings = {
 		isWanted: (wantedTime: Date) => `Você não pode roubar enquanto está sendo procurado pela polícia! ${EmoteString.Police}\n-# Poderá roubar novamente ${showTime(wantedTime.getTime(), true)}!`,
 		isInHospital: (hospitalTime: Date) => `Você não pode roubar enquanto está hospitalizado! ${EmoteString.Hospital}\n-# Será curado ${showTime(hospitalTime.getTime(), true)}!`,
 		// Attacker
-		robberyInProgress: "Roubo em andamento...",
+		robberyInProgress: `Roubo em andamento ${EmoteString.Waiting}`,
 		tryingToRob: "Tentando roubar",
 		youRobbed: (formattedMoney: string, defenderNick: string) => `Você roubou ${formattedMoney} de **${defenderNick}**!`,
 		youFailed: "Você falhou na sua tentativa",
@@ -229,7 +229,7 @@ const Strings = {
 		isWanted: (wantedTime: Date) => `¡No puedes robar mientras estás siendo buscado por la policía! ${EmoteString.Police}\n-# Podrá robar nuevamente ${showTime(wantedTime.getTime(), true)}!`,
 		isInHospital: (hospitalTime: Date) => `¡No puedes robar mientras estás hospitalizado! ${EmoteString.Hospital}\n-# ¡Será curado ${showTime(hospitalTime.getTime(), true)}!`,
 		// Attacker
-		robberyInProgress: "Robo en progreso...",
+		robberyInProgress: `Robo en progreso ${EmoteString.Waiting}`,
 		tryingToRob: "Intentando robar",
 		youRobbed: (formattedMoney: string, defenderNick: string) => `¡Robaste ${formattedMoney} de **${defenderNick}**!`,
 		youFailed: `Fallaste en tu intento`,
