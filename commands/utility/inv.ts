@@ -17,12 +17,13 @@ import { differenceInHours, subMinutes } from "date-fns";
 import { User } from "../../models/User";
 import { UserBadge } from "../../models/UserBadge";
 import { ClassList } from "../../interfaces/Classes";
-import { convertHexNumberToString, createUserGangImage, formatMoney, hexToRGB, showTime } from "../../utils/ui";
+import { convertHexNumberToString, formatMoney, hexToRGB, showTime } from "../../utils/ui";
 import { ItemType } from "../../interfaces/Items";
 import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
 import { GangColor } from "../../utils/colors";
 import { getClient } from "../../client";
 import { UserImageCanvasBuilder } from "../../ui/builders/UserImageCanvasBuilder";
+import { GangImageCanvasBuilder } from "../../ui/builders/GangImageCanvasBuilder";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -131,7 +132,7 @@ module.exports = {
 			else {
 				if (gang) {
 					if (!gangImageFile) {
-						gangImage = await createUserGangImage(target, gang, language);
+						gangImage = await new GangImageCanvasBuilder(target, gang, language).GenerateImage();
 						gangImageFile = new AttachmentBuilder(gangImage, { name: "gang.webp" });
 					}
 

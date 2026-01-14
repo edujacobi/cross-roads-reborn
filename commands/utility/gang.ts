@@ -16,7 +16,6 @@ import { User } from "../../models/User";
 import { Gang } from "../../models/Gang";
 import {
 	convertHexNumberToString,
-	DEFAULT_GANG_IMAGE,
 	defaultComponent,
 	formatMoney,
 	hexToRGB,
@@ -26,6 +25,7 @@ import { disableButtons, replyInteraction, searchUser } from "../../utils/logic"
 import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
 import { GangColor, IGangColor } from "../../utils/colors";
 import { EmoteString } from "../../utils/emotes";
+import { DEFAULT_GANG_IMAGE } from "../../ui/builders/GangImageCanvasBuilder";
 
 enum CommandOption {
 	Info = "info",

@@ -1,11 +1,11 @@
 import { User } from "../../models/User";
 import { Canvas, CanvasGradient, Image, loadImage, SKRSContext2D } from "@napi-rs/canvas";
 import { logger } from "../../utils/log";
-import { DEFAULT_GANG_IMAGE } from "../../utils/ui";
 import { ClassList } from "../../interfaces/Classes";
 import fs from "node:fs";
 import { UserBadge } from "../../models/UserBadge";
 import { AvatarDecorationId } from "../../interfaces/Ids";
+import { DEFAULT_GANG_IMAGE } from "./GangImageCanvasBuilder";
 
 function createLinearGradient(colors: string[], angle = 90) {
 	return (ctx: SKRSContext2D, x: number, y: number, radius: number) => {
@@ -92,6 +92,9 @@ const SecondaryBorderStyles: Partial<Record<AvatarDecorationId, SecondaryBorderD
 		position: BORDER_WIDTH / 4,
 	},
 };
+
+// Cache for badge images
+const badgeImageCache: Map<string, Image> = new Map();
 
 export class UserImageCanvasBuilder {
 	User: User;
@@ -184,7 +187,19 @@ export class UserImageCanvasBuilder {
 		userCtx.fillStyle = currentStyle;
 
 		if (badgeImageName) {
-			imageBadge = await loadImage(`${badgePath}/${badgeImageName}`);
+			const badgeFullPath = `${badgePath}/${badgeImageName}`;
+			if (badgeImageCache.has(badgeFullPath)) {
+				imageBadge = badgeImageCache.get(badgeFullPath)!;
+			}
+			else {
+				try {
+					imageBadge = await loadImage(badgeFullPath);
+					badgeImageCache.set(badgeFullPath, imageBadge);
+				}
+				catch (error) {
+					logger.error(`Error loading badge image: ${badgeFullPath}`, error);
+				}
+			}
 		}
 		else if (this.Decoration) {
 			// Full opacity if Border is defined

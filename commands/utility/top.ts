@@ -1,6 +1,6 @@
 import { ButtonStyle, ChatInputCommandInteraction, Colors, Locale, SlashCommandBuilder } from "discord.js";
 import { Op } from "sequelize";
-import { DEFAULT_GANG_IMAGE, formatMoney } from "../../utils/ui";
+import { formatMoney } from "../../utils/ui";
 import { Users } from "../../database/Users";
 import { User } from "../../models/User";
 import { Language } from "../../models/Language";
@@ -15,6 +15,7 @@ import Gangs from "../../database/Gangs";
 import { Gang } from "../../models/Gang";
 import { sequelize } from "../../database/Database";
 import GangMembers from "../../database/GangMembers";
+import { DEFAULT_GANG_IMAGE } from "../../ui/builders/GangImageCanvasBuilder";
 
 enum TopSubcommand {
 	Money = "money",
