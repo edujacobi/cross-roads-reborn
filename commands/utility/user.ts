@@ -152,7 +152,7 @@ module.exports = {
 			id: "badges",
 			label: s.badges,
 			emote: BadgeList[BadgeId.S1Top1Money].Emoji.Id,
-			texts: badgeText === "" ? s.noBadges : badges.map(badge => `**${BadgeList[badge.BadgeId].Emoji.String} ${BadgeList[badge.BadgeId].Name[language]}**\n-# ${BadgeList[badge.BadgeId].Description[language]}`),
+			texts: badgeText === "" ? [s.noBadges] : badges.map(badge => `**${BadgeList[badge.BadgeId].Emoji.String} ${BadgeList[badge.BadgeId].Name[language]}**\n-# ${BadgeList[badge.BadgeId].Description[language]}`),
 		}];
 
 
