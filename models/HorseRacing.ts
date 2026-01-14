@@ -12,7 +12,13 @@ import {
 	StringSelectMenuOptionBuilder,
 } from "discord.js";
 import { CrColors } from "../utils/colors";
-import { createStringSelectCollector, disableButtons, replyInteraction, sendPrivateMessage } from "../utils/logic";
+import {
+	createStringSelectCollector,
+	disableButtons,
+	replyInteraction,
+	replyWithContainer,
+	sendPrivateMessage,
+} from "../utils/logic";
 import { HorseRaces } from "../database/HorseRaces";
 import { HorseRaceBets } from "../database/HorseRaceBets";
 import { addHours } from "date-fns/addHours";
@@ -165,11 +171,7 @@ export class HorseRacing {
 					text: formatMoney(this.User.Money, this.User.Language),
 				});
 
-			await replyInteraction(interaction, {
-				components: [container],
-				flags: MessageFlags.IsComponentsV2,
-			});
-			return;
+			return replyWithContainer(interaction, container);
 		}
 
 		// Check if user has already bet on this race
@@ -235,11 +237,7 @@ export class HorseRacing {
 
 		// If user already bet or race is closed, don't show betting options
 		if (userBet || race.raceTime.getTime() - Date.now() < 5 * 60 * 1000) {
-			await replyInteraction(interaction, {
-				components: [container],
-				flags: MessageFlags.IsComponentsV2,
-			});
-			return;
+			return replyWithContainer(interaction, container);
 		}
 
 		// Create bet amount options
@@ -460,9 +458,7 @@ export class HorseRacing {
 				text: formatMoney(this.User.Money, this.User.Language),
 			});
 
-		await replyInteraction(interaction, {
-			components: [container],
-		});
+		await replyWithContainer(interaction, container);
 	}
 
 	// Schedule a notification for a race

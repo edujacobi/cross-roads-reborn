@@ -1,5 +1,5 @@
-﻿import { ChatInputCommandInteraction, Locale, MessageFlags, SlashCommandBuilder } from "discord.js";
-import { replyInteraction, searchUser, sendPrivateMessage } from "../../utils/logic";
+﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+import { replyWithContainer, searchUser, sendPrivateMessage } from "../../utils/logic";
 import { User } from "../../models/User";
 import { Language } from "../../models/Language";
 import { defaultComponent, formatMoney } from "../../utils/ui";
@@ -44,10 +44,7 @@ module.exports = {
 				footer: formatMoney(user.Money, language),
 			});
 
-			return await replyInteraction(interaction, {
-				components: [container],
-				flags: MessageFlags.IsComponentsV2,
-			});
+			return replyWithContainer(interaction, container);
 		}
 
 		await alms.GiveAlms();
@@ -63,10 +60,7 @@ module.exports = {
 			footer: formatMoney(user.Money, language),
 		});
 
-		return await replyInteraction(interaction, {
-			components: [container],
-			flags: MessageFlags.IsComponentsV2,
-		});
+		return replyWithContainer(interaction, container);
 	},
 };
 

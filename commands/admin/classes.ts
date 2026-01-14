@@ -1,17 +1,11 @@
-﻿import {
-	ChatInputCommandInteraction,
-	Locale,
-	MessageFlags,
-	PermissionFlagsBits,
-	SlashCommandBuilder,
-} from "discord.js";
+﻿import { ChatInputCommandInteraction, Locale, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
 import { Users } from "../../database/Users";
 import { Op } from "sequelize";
 import { Language } from "../../models/Language";
 import { User } from "../../models/User";
 import { ClassId, ClassList } from "../../interfaces/Classes";
 import { defaultComponent } from "../../utils/ui";
-import { replyInteraction } from "../../utils/logic";
+import { deferReply, replyWithContainer } from "../../utils/logic";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -20,9 +14,8 @@ module.exports = {
 		.setDescriptionLocalization(Locale.PortugueseBR, "Veja todos as Classes dos usuários")
 		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
-	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
-
-		await interaction.deferReply();
+	async execute(interaction: ChatInputCommandInteraction, user: User) {
+		await deferReply(interaction);
 
 		const groupedCountResultItems = await Users.count({
 			attributes: ["class"],
@@ -47,9 +40,6 @@ module.exports = {
 			description: text,
 		});
 
-		await replyInteraction(interaction, {
-			components: [container],
-			flags: MessageFlags.IsComponentsV2,
-		});
+		return replyWithContainer(interaction, container);
 	},
 };

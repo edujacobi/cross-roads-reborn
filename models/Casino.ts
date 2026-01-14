@@ -3,9 +3,9 @@ import { EmoteString } from "../utils/emotes";
 import { showTime } from "../utils/ui";
 import { JobList } from "../interfaces/Jobs";
 import { globalStrings, Language } from "./Language";
-import { ChatInputCommandInteraction, MessageFlags } from "discord.js";
+import { ChatInputCommandInteraction } from "discord.js";
 import { CrColors } from "../utils/colors";
-import { replyInteraction } from "../utils/logic";
+import { replyWithContainer } from "../utils/logic";
 import { ScavengeId, ScavengeList } from "../interfaces/Scavenge";
 import { Users } from "../database/Users";
 import { ClassList } from "../interfaces/Classes";
@@ -39,10 +39,7 @@ export class Casino {
 			.addTexts([s.horseRace])
 			.addFooter();
 
-		return await replyInteraction(interaction, {
-			components: [container],
-			flags: MessageFlags.IsComponentsV2,
-		});
+		return replyWithContainer(interaction, container);
 	}
 
 	static async CanUserPlayBet(user: User, amount: number) {

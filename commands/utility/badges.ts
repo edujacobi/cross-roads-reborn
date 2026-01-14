@@ -1,10 +1,10 @@
-import { ChatInputCommandInteraction, Locale, MessageFlags, SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
 import { User } from "../../models/User";
 import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
 import { BadgeId, getBadgeList } from "../../interfaces/Badges";
 import { Language } from "../../models/Language";
 import { UserBadge } from "../../models/UserBadge";
-import { replyInteraction } from "../../utils/logic";
+import { deferReply, replyWithContainer } from "../../utils/logic";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -14,8 +14,7 @@ module.exports = {
 		.setDescriptionLocalization(Locale.PortugueseBR, "Conheça todas as insígnias existentes"),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
-
-		await interaction.deferReply();
+		await deferReply(interaction);
 
 		const specialBadges = [
 			BadgeId.VIP,
@@ -95,10 +94,7 @@ module.exports = {
 			])
 			.addFooter({ text: userBadgeText.length ? `${s.your}: ${userBadgeText}` : undefined });
 
-		return replyInteraction(interaction, {
-			components: [container],
-			flags: MessageFlags.IsComponentsV2,
-		});
+		return replyWithContainer(interaction, container);
 	},
 };
 

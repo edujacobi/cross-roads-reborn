@@ -13,7 +13,13 @@ import { Language } from "../../models/Language";
 import { User } from "../../models/User";
 import { Gang } from "../../models/Gang";
 import { convertHexNumberToString, defaultComponent, formatMoney, hexToRGB, showTime } from "../../utils/ui";
-import { createButtonCollector, disableButtons, replyInteraction, searchUser } from "../../utils/logic";
+import {
+	createButtonCollector, deferReply,
+	disableButtons,
+	replyInteraction,
+	replyWithContainer,
+	searchUser,
+} from "../../utils/logic";
 import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
 import { GangColor, IGangColor } from "../../utils/colors";
 import { EmoteString } from "../../utils/emotes";
@@ -353,7 +359,7 @@ module.exports = {
 
 		switch (subCommand) {
 		case CommandOption.Info: {
-			await interaction.deferReply();
+			await deferReply(interaction);
 
 			const searchName = interaction.options.getString("name");
 
@@ -365,10 +371,7 @@ module.exports = {
 					gang = await Gang.GetByUserId(user.Id);
 
 					if (!gang) {
-						return replyInteraction(interaction, {
-							components: [containerInfo],
-							flags: MessageFlags.IsComponentsV2,
-						});
+						return replyWithContainer(interaction, containerInfo, true);
 					}
 				}
 				else {
@@ -450,7 +453,7 @@ module.exports = {
 		}
 
 		case CommandOption.Create: {
-			await interaction.deferReply();
+			await deferReply(interaction);
 
 			// Verificar se o usuário já está em uma gangue
 			if (user.IsInGang()) {
@@ -515,14 +518,11 @@ module.exports = {
 
 			container.addFooter();
 
-			return replyInteraction(interaction, {
-				components: [container],
-				flags: MessageFlags.IsComponentsV2,
-			});
+			return replyWithContainer(interaction, container);
 		}
 
 		case CommandOption.Edit: {
-			await interaction.deferReply();
+			await deferReply(interaction);
 
 			// Obter os parâmetros da gangue
 			const name = interaction.options.getString("name");
@@ -616,14 +616,11 @@ module.exports = {
 
 			container.addFooter();
 
-			return replyInteraction(interaction, {
-				components: [container],
-				flags: MessageFlags.IsComponentsV2,
-			});
+			return replyWithContainer(interaction, container);
 		}
 
 		case CommandOption.Invite: {
-			await interaction.deferReply();
+			await deferReply(interaction);
 
 			const gang = await Gang.GetByUserId(user.Id);
 			if (!gang) {
@@ -664,14 +661,11 @@ module.exports = {
 				user,
 			});
 
-			return replyInteraction(interaction, {
-				components: [container],
-				flags: MessageFlags.IsComponentsV2,
-			});
+			return replyWithContainer(interaction, container);
 		}
 
 		case CommandOption.Leave: {
-			await interaction.deferReply();
+			await deferReply(interaction);
 
 			const gang = await Gang.GetByUserId(user.Id);
 			if (!gang) {
@@ -697,10 +691,7 @@ module.exports = {
 				buttons: row,
 			});
 
-			const response = await replyInteraction(interaction, {
-				components: [container],
-				flags: MessageFlags.IsComponentsV2,
-			});
+			const response = await replyWithContainer(interaction, container);
 
 			const collector = createButtonCollector(interaction, response);
 
@@ -726,10 +717,7 @@ module.exports = {
 						user,
 					});
 
-					return replyInteraction(interaction, {
-						components: [container],
-						flags: MessageFlags.IsComponentsV2,
-					});
+					return replyWithContainer(interaction, container);
 				}
 			});
 
@@ -749,7 +737,7 @@ module.exports = {
 		}
 
 		case CommandOption.Kick: {
-			await interaction.deferReply();
+			await deferReply(interaction);
 
 			const gang = await Gang.GetByUserId(user.Id);
 			if (!gang) {
@@ -793,10 +781,7 @@ module.exports = {
 				buttons: row,
 			});
 
-			const response = await replyInteraction(interaction, {
-				components: [container],
-				flags: MessageFlags.IsComponentsV2,
-			});
+			const response = await replyWithContainer(interaction, container);
 
 			const collector = createButtonCollector(interaction, response);
 
@@ -822,10 +807,7 @@ module.exports = {
 						user,
 					});
 
-					return replyInteraction(interaction, {
-						components: [container],
-						flags: MessageFlags.IsComponentsV2,
-					});
+					return replyWithContainer(interaction, container);
 				}
 			});
 
@@ -845,7 +827,7 @@ module.exports = {
 		}
 
 		case CommandOption.Communicate: {
-			await interaction.deferReply();
+			await deferReply(interaction);
 
 			const gang = await Gang.GetByUserId(user.Id);
 			if (!gang) {
@@ -868,10 +850,7 @@ module.exports = {
 				user,
 			});
 
-			return replyInteraction(interaction, {
-				components: [container],
-				flags: MessageFlags.IsComponentsV2,
-			});
+			return replyWithContainer(interaction, container);
 		}
 		}
 
@@ -918,10 +897,7 @@ module.exports = {
 				user,
 			});
 
-			return replyInteraction(interaction, {
-				components: [container],
-				flags: MessageFlags.IsComponentsV2,
-			});
+			return replyWithContainer(interaction, container, true);
 		}
 	},
 };

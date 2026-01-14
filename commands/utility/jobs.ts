@@ -4,10 +4,9 @@
 	ButtonStyle,
 	ChatInputCommandInteraction,
 	Locale,
-	MessageFlags,
 	SlashCommandBuilder,
 } from "discord.js";
-import { createButtonCollector, disableButtons, replyInteraction } from "../../utils/logic";
+import { createButtonCollector, deferReply, disableButtons, replyWithContainer } from "../../utils/logic";
 import { EmoteString } from "../../utils/emotes";
 import { formatMoney, showTime } from "../../utils/ui";
 import { getJobList, JobId, JobList, Jobs } from "../../interfaces/Jobs";
@@ -32,6 +31,8 @@ module.exports = {
 		.setDescriptionLocalization(Locale.PortugueseBR, "Abra a lista de trabalhos para ter um emprego"),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
+		await deferReply(interaction);
+
 		const s = Strings[language];
 
 		let currentPage = 0;
@@ -54,8 +55,6 @@ module.exports = {
 
 			return container;
 		}
-
-		await interaction.deferReply();
 
 		const blackMarket = new BlackMarket(user);
 
@@ -159,10 +158,7 @@ module.exports = {
 
 		let container = await generateDefaultContainer();
 
-		const response = await replyInteraction(interaction, {
-			components: [container],
-			flags: MessageFlags.IsComponentsV2,
-		});
+		const response = await replyWithContainer(interaction, container);
 
 		const collector = createButtonCollector(interaction, response);
 
@@ -232,7 +228,7 @@ module.exports = {
 						});
 
 
-					return replyInteraction(interaction, { components: [container] });
+					return replyWithContainer(interaction, container);
 				}
 
 				const jobDuration = job.Duration * eventActiveValue;
@@ -255,7 +251,7 @@ module.exports = {
 						text: `${s.salary}: ${formatMoney(jobSalary, language)} • ${s.duration}: ${jobDuration}h`,
 					});
 
-				return replyInteraction(interaction, { components: [container] });
+				return replyWithContainer(interaction, container);
 			}
 
 			else if (btn.customId === "stop") {
@@ -277,7 +273,7 @@ module.exports = {
 							text: formatMoney(user.Money, language),
 						});
 
-					return replyInteraction(interaction, { components: [container] });
+					return replyWithContainer(interaction, container);
 				}
 
 				const job = JobList[user.Job.Id];
@@ -298,22 +294,22 @@ module.exports = {
 						text: formatMoney(user.Money, language),
 					});
 
-				return replyInteraction(interaction, { components: [container] });
+				return replyWithContainer(interaction, container);
 			}
 
 			else if (btn.customId === "previous") {
 				currentPage -= 1;
 				container = await generateDefaultContainer();
-				return replyInteraction(interaction, { components: [container] });
+				return replyWithContainer(interaction, container);
 			}
 			else if (btn.customId === "next") {
 				currentPage += 1;
 				container = await generateDefaultContainer();
-				return replyInteraction(interaction, { components: [container] });
+				return replyWithContainer(interaction, container);
 			}
 			else if (btn.customId === "back") {
 				container = await generateDefaultContainer();
-				return replyInteraction(interaction, { components: [container] });
+				return replyWithContainer(interaction, container);
 			}
 		});
 

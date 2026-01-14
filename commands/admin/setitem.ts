@@ -6,7 +6,7 @@ import { UserItems } from "../../database/UserItems";
 import { ItemList, ItemType, UserItem } from "../../interfaces/Items";
 import { Log } from "../../utils/log";
 import { EmoteString } from "../../utils/emotes";
-import { replyInteraction, sendPrivateMessage } from "../../utils/logic";
+import { deferReply, replyInteraction, sendPrivateMessage } from "../../utils/logic";
 import { CrColors } from "../../utils/colors";
 import { BundleId } from "../../interfaces/Ids";
 
@@ -52,7 +52,7 @@ module.exports = {
 		),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User) {
-		await interaction.deferReply();
+		await deferReply(interaction);
 
 		const targetUserId = interaction.options.getString("user_id", true);
 		const itemId = interaction.options.getInteger("item", true);

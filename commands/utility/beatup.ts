@@ -1,5 +1,5 @@
-﻿import { ChatInputCommandInteraction, Locale, MessageFlags, SlashCommandBuilder } from "discord.js";
-import { replyInteraction, searchUser } from "../../utils/logic";
+﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+import { deferReply, replyWithContainer, searchUser } from "../../utils/logic";
 import { defaultComponent, showTime } from "../../utils/ui";
 import { EmoteString } from "../../utils/emotes";
 import { CrColors } from "../../utils/colors";
@@ -24,11 +24,12 @@ module.exports = {
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 		const nameOrId = interaction.options.getString("target");
+
+		await deferReply(interaction);
+
 		const target = nameOrId ? await searchUser(nameOrId, interaction, language) : null;
 
 		const s = Strings[language];
-
-		await interaction.deferReply();
 
 		let text = `${s.userFree}`;
 
@@ -71,10 +72,7 @@ module.exports = {
 					text: user.Situation.Simple,
 				});
 
-			return await replyInteraction(interaction, {
-				components: [container],
-				flags: MessageFlags.IsComponentsV2,
-			});
+			return replyWithContainer(interaction, container);
 		}
 
 		if (!target) {
@@ -92,10 +90,7 @@ module.exports = {
 				description: message,
 			});
 
-			return await replyInteraction(interaction, {
-				components: [container],
-				flags: MessageFlags.IsComponentsV2,
-			});
+			return replyWithContainer(interaction, container);
 		}
 
 		await robbery.GetDiscordUser();

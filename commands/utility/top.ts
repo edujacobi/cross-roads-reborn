@@ -16,6 +16,7 @@ import { Gang } from "../../models/Gang";
 import { sequelize } from "../../database/Database";
 import GangMembers from "../../database/GangMembers";
 import { DEFAULT_GANG_IMAGE } from "../../ui/builders/GangImageCanvasBuilder";
+import { deferReply } from "../../utils/logic";
 
 enum TopSubcommand {
 	Money = "money",
@@ -133,7 +134,7 @@ module.exports = {
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 		const subcommand = interaction.options.getSubcommand();
 
-		await interaction.deferReply();
+		await deferReply(interaction);
 
 		const defaultAttributes = ["nickname", "id", "class"];
 

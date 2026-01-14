@@ -1,6 +1,6 @@
-﻿import { ChatInputCommandInteraction, Locale, MessageFlags, SlashCommandBuilder } from "discord.js";
+﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
 import { defaultComponent } from "../../utils/ui";
-import { replyInteraction } from "../../utils/logic";
+import { replyWithContainer } from "../../utils/logic";
 import { User } from "../../models/User";
 
 module.exports = {
@@ -19,16 +19,10 @@ module.exports = {
 			description: `:satellite_orbital: ${botPing}ms API.`,
 		});
 
-		await replyInteraction(interaction, {
-			components: [container],
-			flags: MessageFlags.IsComponentsV2,
-		});
+		await replyWithContainer(interaction, container);
 
 		container.changeTextFromSectionId(1, `:satellite_orbital: ${botPing}ms API. ${Math.round(new Date().getTime() - svPing)}ms Server.`);
 
-		await replyInteraction(interaction, {
-			components: [container],
-			flags: MessageFlags.IsComponentsV2,
-		});
+		return replyWithContainer(interaction, container);
 	},
 };

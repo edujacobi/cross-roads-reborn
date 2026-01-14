@@ -4,7 +4,6 @@
 	ButtonStyle,
 	ChatInputCommandInteraction,
 	Locale,
-	MessageFlags,
 	SlashCommandBuilder,
 	StringSelectMenuBuilder,
 	StringSelectMenuOptionBuilder,
@@ -13,7 +12,6 @@ import {
 	createButtonCollector,
 	createStringSelectCollector,
 	disableButtons,
-	replyInteraction,
 	replyWithContainer,
 } from "../../utils/logic";
 import { User } from "../../models/User";
@@ -149,10 +147,7 @@ module.exports = {
 
 				selectedItem = null;
 
-				await replyInteraction(interaction, {
-					components: [container],
-					flags: MessageFlags.IsComponentsV2,
-				});
+				return replyWithContainer(interaction, container);
 			}
 
 			else if (btn.customId.includes("change-item")) {
@@ -192,10 +187,7 @@ module.exports = {
 
 				container.addFooter();
 
-				await replyInteraction(interaction, {
-					components: [container],
-					flags: MessageFlags.IsComponentsV2,
-				});
+				return replyWithContainer(interaction, container);
 			}
 
 			else if (btn.customId.includes("change-bundle")) {
@@ -224,10 +216,7 @@ module.exports = {
 
 				container.addFooter();
 
-				await replyInteraction(interaction, {
-					components: [container],
-					flags: MessageFlags.IsComponentsV2,
-				});
+				return replyWithContainer(interaction, container);
 			}
 			else if (btn.customId.includes("confirm")) {
 				const bundleId = Number(btn.customId.replace("confirm", ""));
@@ -252,10 +241,7 @@ module.exports = {
 
 				container.addFooter();
 
-				await replyInteraction(interaction, {
-					components: [container],
-					flags: MessageFlags.IsComponentsV2,
-				});
+				return replyWithContainer(interaction, container);
 			}
 		});
 
@@ -288,11 +274,7 @@ module.exports = {
 
 			container.addFooter();
 
-			await replyInteraction(interaction, {
-				components: [container],
-				flags: MessageFlags.IsComponentsV2,
-			});
-
+			return replyWithContainer(interaction, container);
 		});
 	},
 };

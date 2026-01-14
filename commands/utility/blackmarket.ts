@@ -1,5 +1,5 @@
-﻿import { ChatInputCommandInteraction, Locale, MessageFlags, SlashCommandBuilder } from "discord.js";
-import { replyInteraction } from "../../utils/logic";
+﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+import { replyWithContainer } from "../../utils/logic";
 import { BlackMarket } from "../../models/BlackMarket";
 import { defaultComponent } from "../../utils/ui";
 import { CrColors } from "../../utils/colors";
@@ -25,10 +25,7 @@ module.exports = {
 				description: message,
 			});
 
-			return await replyInteraction(interaction, {
-				components: [container],
-				flags: MessageFlags.IsComponentsV2,
-			});
+			return replyWithContainer(interaction, container);
 		}
 
 		await blackMarket.Start(interaction);

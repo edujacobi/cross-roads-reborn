@@ -8,7 +8,13 @@
 	MessageFlags,
 	SlashCommandBuilder,
 } from "discord.js";
-import { createButtonCollector, disableButtons, replyInteraction, replyWithContainer } from "../../utils/logic";
+import {
+	createButtonCollector,
+	deferReply,
+	disableButtons,
+	replyInteraction,
+	replyWithContainer,
+} from "../../utils/logic";
 import { User } from "../../models/User";
 import { Language } from "../../models/Language";
 import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
@@ -30,8 +36,7 @@ module.exports = {
 		.setDescriptionLocalization(Locale.PortugueseBR, "Compre customizações permanentes utilizando a moeda especial"),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
-
-		await interaction.deferReply();
+		await deferReply(interaction);
 
 		const s = Strings[language];
 
@@ -207,10 +212,7 @@ module.exports = {
 			if (btn.customId === "back") {
 				container = await generateDefaultContainer();
 
-				await replyInteraction(interaction, {
-					components: [container],
-					flags: MessageFlags.IsComponentsV2,
-				});
+				return replyWithContainer(interaction, container);
 			}
 
 			else if (btn.customId.includes("confirmbuy")) {
@@ -228,9 +230,7 @@ module.exports = {
 
 					container = addFooter(container);
 
-					return replyInteraction(interaction, {
-						components: [container],
-					});
+					return replyWithContainer(interaction, container);
 				}
 
 				if (user.SpecialCoin < bundle.Price) {
@@ -241,9 +241,7 @@ module.exports = {
 
 					container = addFooter(container);
 
-					return replyInteraction(interaction, {
-						components: [container],
-					});
+					return replyWithContainer(interaction, container);
 				}
 
 				const success = await user.BuySkinBundle(bundleId);
@@ -256,9 +254,7 @@ module.exports = {
 
 					container = addFooter(container);
 
-					return replyInteraction(interaction, {
-						components: [container],
-					});
+					return replyWithContainer(interaction, container);
 				}
 
 				container = addHeader()
@@ -268,9 +264,7 @@ module.exports = {
 
 				container = addFooter(container);
 
-				return replyInteraction(interaction, {
-					components: [container],
-				});
+				return replyWithContainer(interaction, container);
 			}
 
 			else if (btn.customId.includes("buy")) {
@@ -303,10 +297,7 @@ module.exports = {
 
 				container = addFooter(container);
 
-				await replyInteraction(interaction, {
-					components: [container],
-					flags: MessageFlags.IsComponentsV2,
-				});
+				return replyWithContainer(interaction, container);
 			}
 
 			else if (btn.customId.includes("confirmvip")) {
@@ -322,9 +313,7 @@ module.exports = {
 
 					container = addFooter(container);
 
-					return replyInteraction(interaction, {
-						components: [container],
-					});
+					return replyWithContainer(interaction, container);
 				}
 
 				await user.AddVip(vipMonths * 30);
@@ -336,9 +325,7 @@ module.exports = {
 
 				container = addFooter(container);
 
-				return replyInteraction(interaction, {
-					components: [container],
-				});
+				return replyWithContainer(interaction, container);
 			}
 
 			else if (btn.customId.includes("vip")) {
@@ -367,10 +354,7 @@ module.exports = {
 
 				container = addFooter(container);
 
-				await replyInteraction(interaction, {
-					components: [container],
-					flags: MessageFlags.IsComponentsV2,
-				});
+				return replyWithContainer(interaction, container);
 			}
 
 			else if (btn.customId.includes("confirmdecoration")) {
@@ -388,9 +372,7 @@ module.exports = {
 
 					container = addFooter(container);
 
-					return replyInteraction(interaction, {
-						components: [container],
-					});
+					return replyWithContainer(interaction, container);
 				}
 
 				if (user.SpecialCoin < decoration.Price) {
@@ -401,9 +383,7 @@ module.exports = {
 
 					container = addFooter(container);
 
-					return replyInteraction(interaction, {
-						components: [container],
-					});
+					return replyWithContainer(interaction, container);
 				}
 
 				const success = await user.BuyAvatarDecoration(decorationId);
@@ -416,9 +396,7 @@ module.exports = {
 
 					container = addFooter(container);
 
-					return replyInteraction(interaction, {
-						components: [container],
-					});
+					return replyWithContainer(interaction, container);
 				}
 
 				container = addHeader()
@@ -429,9 +407,7 @@ module.exports = {
 
 				container = addFooter(container);
 
-				return replyInteraction(interaction, {
-					components: [container],
-				});
+				return replyWithContainer(interaction, container);
 			}
 
 			else if (btn.customId.includes("decoration")) {

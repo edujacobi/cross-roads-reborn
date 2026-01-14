@@ -1,5 +1,5 @@
 ﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
-import { searchUser } from "../../utils/logic";
+import { deferReply, searchUser } from "../../utils/logic";
 import { formatDate, formatMoney } from "../../utils/ui";
 import { User } from "../../models/User";
 import { RobHistories } from "../../database/RobHistories";
@@ -29,6 +29,9 @@ module.exports = {
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 		const nameOrId = interaction.options.getString("target");
+
+		await deferReply(interaction);
+
 		const target = nameOrId ? await searchUser(nameOrId, interaction) : user;
 
 		if (!target) {
@@ -36,8 +39,6 @@ module.exports = {
 		}
 
 		const s = Strings[language];
-
-		await interaction.deferReply();
 
 		const pagination = new Pagination(interaction, language);
 

@@ -6,7 +6,7 @@
 	Locale,
 	SlashCommandBuilder,
 } from "discord.js";
-import { createButtonCollector, disableButtons, replyInteraction, replyWithContainer } from "../../utils/logic";
+import { createButtonCollector, disableButtons, replyWithContainer } from "../../utils/logic";
 import { formatMoney } from "../../utils/ui";
 import { User } from "../../models/User";
 import { Language } from "../../models/Language";
@@ -154,9 +154,7 @@ module.exports = {
 				let container = addContainerHeader();
 				container = addContainerBody(container);
 
-				await replyInteraction(interaction, {
-					components: [container],
-				});
+				return replyWithContainer(interaction, container);
 			}
 
 			else if (btn.customId.includes("class")) {
@@ -199,9 +197,7 @@ module.exports = {
 						text: formatMoney(user.Money, language),
 					});
 
-				await replyInteraction(interaction, {
-					components: [container],
-				});
+				return replyWithContainer(interaction, container);
 			}
 
 			else if (btn.customId.includes("confirm")) {
@@ -227,9 +223,7 @@ module.exports = {
 						text: formatMoney(user.Money, language),
 					});
 
-				await replyInteraction(interaction, {
-					components: [container],
-				});
+				return replyWithContainer(interaction, container);
 			}
 
 		});

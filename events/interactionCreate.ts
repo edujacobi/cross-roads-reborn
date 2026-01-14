@@ -2,7 +2,7 @@
 import { defaultComponent, showTime } from "../utils/ui";
 import {
 	checkUser, isUserBoosterInOfficialServer,
-	replyInteraction,
+	replyInteraction, replyWithContainer,
 	setPlayerNicknameInOfficialServer,
 	setPlayerRoleInOfficialServer,
 	setVIPRoleInOfficialServer,
@@ -49,10 +49,7 @@ module.exports = {
 				description: s.settingNickDescription,
 			});
 
-			return await replyInteraction(interaction, {
-				components: [container],
-				flags: [MessageFlags.IsComponentsV2, MessageFlags.Ephemeral],
-			});
+			return replyWithContainer(interaction, container, true);
 		}
 
 		if (user.Class == ClassId.None && command.data.name !== "setclass" && command.data.name !== "setnick") {
@@ -61,10 +58,7 @@ module.exports = {
 				description: s.settingClassDescription,
 			});
 
-			return await replyInteraction(interaction, {
-				components: [container],
-				flags: [MessageFlags.IsComponentsV2, MessageFlags.Ephemeral],
-			});
+			return replyWithContainer(interaction, container, true);
 		}
 
 		const cooldowns = interaction.client.cooldowns;
@@ -92,19 +86,13 @@ module.exports = {
 					description: s.willBeAble(command.data.name, expirationTime),
 				});
 
-				await replyInteraction(interaction, {
-					components: [container],
-					flags: [MessageFlags.IsComponentsV2, MessageFlags.Ephemeral],
-				});
+				await replyWithContainer(interaction, container, true);
 
 				container.changeTextFromSectionId(1, s.canNowUse(command.data.name));
 
 				await wait(cooldownAmount);
 
-				return await replyInteraction(interaction, {
-					components: [container],
-					flags: [MessageFlags.IsComponentsV2, MessageFlags.Ephemeral],
-				});
+				return replyWithContainer(interaction, container, true);
 			}
 		}
 
@@ -115,10 +103,7 @@ module.exports = {
 				description: s.needVIP,
 			});
 
-			return await replyInteraction(interaction, {
-				components: [container],
-				flags: [MessageFlags.IsComponentsV2, MessageFlags.Ephemeral],
-			});
+			return replyWithContainer(interaction, container, true);
 		}
 
 		timestamps.set(interaction.user.id, now);

@@ -8,7 +8,14 @@
 	MessageFlags,
 	SlashCommandBuilder,
 } from "discord.js";
-import { createButtonCollector, deferReply, disableButtons, replyInteraction, searchUser } from "../../utils/logic";
+import {
+	createButtonCollector,
+	deferReply,
+	disableButtons,
+	replyInteraction,
+	replyWithContainer,
+	searchUser,
+} from "../../utils/logic";
 import { Language } from "../../models/Language";
 import { EmoteId, EmoteString } from "../../utils/emotes";
 import { differenceInHours, subMinutes } from "date-fns";
@@ -214,9 +221,7 @@ module.exports = {
 			}
 			else if (btn.customId === "lessInfo") {
 				container = await generateContainer(true, target);
-				return replyInteraction(interaction, {
-					components: [container],
-				});
+				return replyWithContainer(interaction, container);
 			}
 		});
 

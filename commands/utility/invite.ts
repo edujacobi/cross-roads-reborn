@@ -4,11 +4,10 @@
 	ButtonStyle,
 	ChatInputCommandInteraction,
 	Locale,
-	MessageFlags,
 	SlashCommandBuilder,
 } from "discord.js";
 import { defaultComponent } from "../../utils/ui";
-import { replyInteraction } from "../../utils/logic";
+import { replyWithContainer } from "../../utils/logic";
 import { CrColors } from "../../utils/colors";
 import { User } from "../../models/User";
 import { Language } from "../../models/Language";
@@ -24,14 +23,6 @@ module.exports = {
 
 		const s = Strings[language];
 
-		const container = defaultComponent({
-			user,
-			color: CrColors.Default,
-			thumbnail: interaction.client.user.avatarURL({ size: 512 }) ?? undefined,
-			footer: s.footer,
-			description: s.description,
-		});
-
 		const buttonInvite = new ButtonBuilder()
 			.setLabel(s.addTo)
 			.setStyle(ButtonStyle.Link)
@@ -45,10 +36,16 @@ module.exports = {
 		const row = new ActionRowBuilder<ButtonBuilder>()
 			.setComponents([buttonInvite, buttonServer]);
 
-		await replyInteraction(interaction, {
-			components: [container, row],
-			flags: MessageFlags.IsComponentsV2,
+		const container = defaultComponent({
+			user,
+			color: CrColors.Default,
+			thumbnail: interaction.client.user.avatarURL({ size: 512 }) ?? undefined,
+			footer: s.footer,
+			description: s.description,
+			buttons: row,
 		});
+
+		return replyWithContainer(interaction, container);
 	},
 };
 

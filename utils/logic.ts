@@ -155,10 +155,10 @@ export async function replyInteraction(interaction: CommandInteraction | ButtonI
 	}
 }
 
-export async function replyWithContainer(interaction: CommandInteraction | ButtonInteraction | MessageComponentInteraction, container: CustomContainerBuilder) {
+export async function replyWithContainer(interaction: CommandInteraction | ButtonInteraction | MessageComponentInteraction, container: CustomContainerBuilder | ContainerBuilder, ephemeral = false) {
 	return await replyInteraction(interaction, {
 		components: [container],
-		flags: MessageFlags.IsComponentsV2,
+		flags: ephemeral ? [MessageFlags.IsComponentsV2, MessageFlags.Ephemeral] : MessageFlags.IsComponentsV2,
 	});
 }
 
@@ -228,7 +228,7 @@ export async function disableButtons(interaction: CommandInteraction | ButtonInt
 			}
 		}
 
-		await replyInteraction(interaction, { components: [container] });
+		await replyWithContainer(interaction, container);
 	}
 	catch (err) {
 		Log.Warning(`Something went wrong with disabling buttons from container ${container.data.id} of user ${interaction.user.displayName} in server ${interaction.guild?.name} (ID: ${interaction.guild?.id}). Error: ${err}`);

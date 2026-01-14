@@ -7,7 +7,13 @@
 	StringSelectMenuBuilder,
 	StringSelectMenuOptionBuilder,
 } from "discord.js";
-import { createStringSelectCollector, disableButtons, replyInteraction, searchUser } from "../../utils/logic";
+import {
+	createStringSelectCollector, deferReply,
+	disableButtons,
+	replyInteraction,
+	replyWithContainer,
+	searchUser,
+} from "../../utils/logic";
 import { defaultComponent, formatMoney, showTime } from "../../utils/ui";
 import { EmoteString } from "../../utils/emotes";
 import { CrColors } from "../../utils/colors";
@@ -34,12 +40,12 @@ module.exports = {
 		),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
+		await deferReply(interaction);
+
 		const nameOrId = interaction.options.getString("target");
 		const target = nameOrId ? await searchUser(nameOrId, interaction, language) : null;
 
 		const s = Strings[language];
-
-		await interaction.deferReply();
 
 		let text = `${s.userFree}`;
 		let canUserRob = true;
@@ -144,10 +150,7 @@ module.exports = {
 						description: message,
 					});
 
-					return await replyInteraction(interaction, {
-						components: [container],
-						flags: MessageFlags.IsComponentsV2,
-					});
+					return replyWithContainer(interaction, container);
 				}
 
 				robLocationStarted = true;
@@ -179,10 +182,7 @@ module.exports = {
 				description: message,
 			});
 
-			return await replyInteraction(interaction, {
-				components: [container],
-				flags: MessageFlags.IsComponentsV2,
-			});
+			return replyWithContainer(interaction, container);
 		}
 
 		await robbery.GetDiscordUser();

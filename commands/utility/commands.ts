@@ -1,5 +1,5 @@
-﻿import { ChatInputCommandInteraction, Locale, MessageFlags, SlashCommandBuilder } from "discord.js";
-import { replyInteraction } from "../../utils/logic";
+﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+import { replyWithContainer } from "../../utils/logic";
 import path from "node:path";
 import fs from "node:fs";
 import { Language } from "../../models/Language";
@@ -52,10 +52,7 @@ module.exports = {
 				text: interaction.locale,
 			});
 
-		return replyInteraction(interaction, {
-			components: [container],
-			flags: MessageFlags.IsComponentsV2,
-		});
+		return replyWithContainer(interaction, container);
 	},
 };
 

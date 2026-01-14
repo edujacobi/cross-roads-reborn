@@ -128,10 +128,7 @@ module.exports = {
 			if (btn.customId === "back") {
 				container = await generateDefaultContainer();
 
-				await replyInteraction(interaction, {
-					components: [container],
-					flags: MessageFlags.IsComponentsV2,
-				});
+				return replyWithContainer(interaction, container);
 			}
 
 			else if (btn.customId.includes("change-decoration")) {
@@ -197,10 +194,7 @@ module.exports = {
 
 				container.addFooter();
 
-				await replyInteraction(interaction, {
-					components: [container],
-					flags: MessageFlags.IsComponentsV2,
-				});
+				return replyWithContainer(interaction, container);
 			}
 		});
 	},

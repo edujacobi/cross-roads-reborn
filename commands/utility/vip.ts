@@ -1,5 +1,5 @@
-﻿import { ChatInputCommandInteraction, Colors, Locale, MessageFlags, SlashCommandBuilder } from "discord.js";
-import { replyInteraction } from "../../utils/logic";
+﻿import { ChatInputCommandInteraction, Colors, Locale, SlashCommandBuilder } from "discord.js";
+import { replyWithContainer } from "../../utils/logic";
 import { EmoteString } from "../../utils/emotes";
 import { User } from "../../models/User";
 import { Language } from "../../models/Language";
@@ -24,7 +24,8 @@ module.exports = {
 					s.benefits,
 				])
 				.setThumbnailAccessory(thumb => thumb
-					.setURL("https://media.discordapp.net/attachments/531174573463306240/799060089503875072/VIP.png")),
+					.setURL("https://media.discordapp.net/attachments/531174573463306240/799060089503875072/VIP.png")
+				),
 			)
 			.addLargeSeparator()
 			.addTexts([
@@ -32,10 +33,7 @@ module.exports = {
 			])
 			.addFooter();
 
-		return await replyInteraction(interaction, {
-			components: [container],
-			flags: MessageFlags.IsComponentsV2,
-		});
+		return replyWithContainer(interaction, container);
 	},
 };
 
@@ -46,10 +44,9 @@ const Strings = {
 - Exclusive badge and avatar decoration in \`/user\` and \`/inv\`
 - 50% bonus in \`/daily\`
 - Access to development channel
-- Nickname change recharge
 - Less cooldown between commands
 - 50% larger alms delivery
-- ~~25% discount on Class change~~
+- 25% discount on Class and Nickname change
 - ~~Exclusive Prize Ticket draws~~
 - Access to VIP category in Cross Roads Reborn server
 - VIP role in Cross Roads Reborn server
@@ -63,10 +60,9 @@ In \`/specialshop\`, using the ${EmoteString.SpecialCoinShop}Special Coins!`,
 - Insígnia e decoração de avatar exclusivas no \`/usuario\` e \`/inv\`
 - 50% de bônus no \`/daily\`
 - Acesso ao canal de desenvolvimento
-- Recarga na alteração de nick
 - Menos cooldown entre comandos
 - Entrega esmolas 50% maiores
-- ~~25% de desconto na troca de Classe~~
+- 25% de desconto na troca de Classe e Nickname
 - ~~Sorteios do Bilhete premiado exclusivos~~
 - Acesso à categoria VIP no servidor Cross Roads Reborn
 - Cargo VIP no servidor Cross Roads Reborn
@@ -80,11 +76,10 @@ Na \`/lojaespecial\`, utilizando as ${EmoteString.SpecialCoinShop}Moedas Especia
 - Insignia y decoración de avatar exclusivas en \`/user\` y \`/inv\`
 - 50% de bonificación en \`/daily\`
 - Acceso al canal de desarrollo
-- Recarga en el cambio de apodo
 - Menos tiempo de espera entre comandos
-- ~~Entrega de limosnas 50% mayores~~
-- ~~25% de descuento en el cambio de Clase~~
-- Sorteos exclusivos del Billete premiado
+- Entrega de limosnas 50% mayores
+- 25% de descuento en el cambio de Clase y Nickname
+- ~~Sorteos exclusivos del Billete premiado~~
 - Acceso a la categoría VIP en el servidor Cross Roads Reborn
 - Rol VIP en el servidor Cross Roads Reborn
 - ¡Muchos más por venir!`,

@@ -9,7 +9,7 @@ import {
 	RGBTuple,
 } from "discord.js";
 import { globalStrings, Language } from "./Language";
-import { createButtonCollector, disableButtons, replyInteraction, replyWithContainer } from "../utils/logic";
+import { createButtonCollector, disableButtons, replyWithContainer } from "../utils/logic";
 import { EmoteString } from "../utils/emotes";
 import { getItemList, ItemList, Items, ItemType } from "../interfaces/Items";
 import { Users } from "../database/Users";
@@ -240,7 +240,7 @@ export class Shop {
 
 			if (btn.customId === "back") {
 				this.GenerateContainer();
-				return await replyInteraction(interaction, { components: [this.Container] });
+				return replyWithContainer(interaction, this.Container);
 			}
 
 			if (btn.customId.includes("buy")) {
@@ -269,7 +269,7 @@ export class Shop {
 
 					this.AddContainerFooter();
 
-					return await replyInteraction(interaction, { components: [this.Container] });
+					return replyWithContainer(interaction, this.Container);
 				}
 
 				await this.User.BuyItem(item);
@@ -296,18 +296,18 @@ export class Shop {
 
 				this.AddContainerFooter();
 
-				return await replyInteraction(interaction, { components: [this.Container] });
+				return replyWithContainer(interaction, this.Container);
 			}
 
 			if (btn.customId === "previous") {
 				this.CurrentPage -= 1;
 				this.GenerateContainer();
-				return await replyInteraction(interaction, { components: [this.Container] });
+				return replyWithContainer(interaction, this.Container);
 			}
 			else if (btn.customId === "next") {
 				this.CurrentPage += 1;
 				this.GenerateContainer();
-				return await replyInteraction(interaction, { components: [this.Container] });
+				return replyWithContainer(interaction, this.Container);
 			}
 		});
 

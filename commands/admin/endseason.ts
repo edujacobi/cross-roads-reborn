@@ -7,7 +7,7 @@
 	PermissionFlagsBits,
 	SlashCommandBuilder,
 } from "discord.js";
-import { createButtonCollector, disableButtons, replyInteraction, replyWithContainer } from "../../utils/logic";
+import { createButtonCollector, disableButtons, replyWithContainer } from "../../utils/logic";
 import { CrColors } from "../../utils/colors";
 import { Users } from "../../database/Users";
 import { Op } from "sequelize";
@@ -32,7 +32,7 @@ module.exports = {
 		.setDescriptionLocalization(Locale.PortugueseBR, "Termina a temporada atual")
 		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
-	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
+	async execute(interaction: ChatInputCommandInteraction, user: User) {
 		let container = defaultComponent({
 			user,
 			description: "Confirm end of current season?",
@@ -105,9 +105,7 @@ module.exports = {
 				texts.push("Getting top ranking values...");
 				container.changeTextFromSectionId(10, texts.join("\n"));
 
-				await replyInteraction(interaction, {
-					components: [container],
-				});
+				await replyWithContainer(interaction, container);
 
 				const [
 					topMoney,
@@ -197,18 +195,14 @@ module.exports = {
 						),
 					);
 
-				await replyInteraction(interaction, {
-					components: [container],
-				});
+				return replyWithContainer(interaction, container);
 			}
 
 			else if (btn.customId === "confirmCheckValues") {
 
 				container.changeTextFromSectionId(10, "Getting current values...");
 
-				await replyInteraction(interaction, {
-					components: [container],
-				});
+				await replyWithContainer(interaction, container);
 
 				const [
 					activeUsers,
@@ -252,18 +246,14 @@ module.exports = {
 						),
 					);
 
-				await replyInteraction(interaction, {
-					components: [container],
-				});
+				return replyWithContainer(interaction, container);
 			}
 
 			else if (btn.customId === "clearValues") {
 
 				container.changeTextFromSectionId(10, "Clearing values...");
 
-				await replyInteraction(interaction, {
-					components: [container],
-				});
+				await replyWithContainer(interaction, container);
 
 				await Promise.all([
 					GangMembers.destroy({ where: {} }),
@@ -355,9 +345,7 @@ module.exports = {
 
 				container.changeTextFromSectionId(10, texts.join("\n"));
 
-				await replyInteraction(interaction, {
-					components: [container],
-				});
+				return replyWithContainer(interaction, container);
 			}
 		});
 	},

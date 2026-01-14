@@ -3,13 +3,13 @@
 	ButtonBuilder,
 	ButtonStyle,
 	ChatInputCommandInteraction,
-	Colors, ComponentEmojiResolvable,
+	Colors,
+	ComponentEmojiResolvable,
 	Locale,
-	MessageFlags,
 	SlashCommandBuilder,
 	SlashCommandIntegerOption,
 } from "discord.js";
-import { replyInteraction } from "../../utils/logic";
+import { replyWithContainer } from "../../utils/logic";
 import { formatMoney } from "../../utils/ui";
 import { Language } from "../../models/Language";
 import { User } from "../../models/User";
@@ -187,10 +187,7 @@ module.exports = {
 				text: `Id: ${item.Id.toString()} • ${s.usersWithItem}: ${usersWithItem}`,
 			});
 
-		await replyInteraction(interaction, {
-			components: [container],
-			flags: MessageFlags.IsComponentsV2,
-		});
+		return replyWithContainer(interaction, container);
 	},
 };
 

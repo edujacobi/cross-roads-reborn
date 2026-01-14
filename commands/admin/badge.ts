@@ -1,8 +1,8 @@
-import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { UserBadge } from "../../models/UserBadge";
 import { BadgeList, getBadgeList } from "../../interfaces/Badges";
 import { Language } from "../../models/Language";
-import { checkUser, replyInteraction, replyUserDontExist } from "../../utils/logic";
+import { checkUser, deferReply, replyInteraction, replyUserDontExist, replyWithContainer } from "../../utils/logic";
 import { User } from "../../models/User";
 import { Pagination } from "../../models/Pagination";
 import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
@@ -67,7 +67,7 @@ module.exports = {
 
 		switch (subcommand) {
 		case CommandOption.Types: {
-			await interaction.deferReply();
+			await deferReply(interaction);
 
 			const badgeList = getBadgeList();
 
@@ -99,14 +99,15 @@ module.exports = {
 		case CommandOption.Add: {
 			const badgeId = interaction.options.getInteger("badge", true);
 			const _user = interaction.options.getUser("user", true);
+
+			await deferReply(interaction);
+
 			const target = await checkUser(_user.id, interaction);
 			let targetName = `ID: ${_user.id}`;
 
 			if (target) {
 				targetName = target.GetNameWithImage();
 			}
-
-			await interaction.deferReply();
 
 			const success = await UserBadge.Create(_user.id, badgeId);
 
@@ -128,14 +129,15 @@ module.exports = {
 		case CommandOption.Remove: {
 			const badgeId = interaction.options.getInteger("badge", true);
 			const _user = interaction.options.getUser("user", true);
+
+			await deferReply(interaction);
+
 			const target = await checkUser(_user.id, interaction);
 			let targetName = `ID: ${_user.id}`;
 
 			if (target) {
 				targetName = target.GetNameWithImage();
 			}
-
-			await interaction.deferReply();
 
 			const success = await UserBadge.Delete(_user.id, badgeId);
 
@@ -156,13 +158,14 @@ module.exports = {
 
 		case CommandOption.List: {
 			const _user = interaction.options.getUser("user", true);
+
+			await deferReply(interaction);
+
 			const target = await checkUser(_user.id, interaction);
 
 			if (!target) {
 				return await replyUserDontExist(interaction, language);
 			}
-
-			await interaction.deferReply();
 
 			let badges = await UserBadge.GetList(_user.id, language);
 
@@ -176,19 +179,18 @@ module.exports = {
 				});
 			}
 
-			const embed = new EmbedBuilder()
-				.setTitle(s.badgesTitle(target.GetNameWithImage()))
-				.setThumbnail(_user.displayAvatarURL())
-				.setDescription(
-					badges.map(badge => {
-						return `### ${badge.Emoji || "▫️"} ${badge.Name}\n-# ${badge.Description}`;
-					}).join("\n"),
-				)
-				.setFooter({ text: s.badgesFooter(badges.length) });
+			const container = new CustomContainerBuilder()
+				.setUser(user)
+				.addTexts([
+					s.badgesTitle(target.GetNameWithImage()),
+				])
+				.addLargeSeparator()
+				.addTexts(badges.map(badge => `### ${badge.Emoji || "▫️"} ${badge.Name}\n-# ${badge.Description}`))
+				.addFooter({
+					text: s.badgesFooter(badges.length),
+				});
 
-			return replyInteraction(interaction, {
-				embeds: [embed],
-			});
+			return replyWithContainer(interaction, container);
 		}
 		}
 	},

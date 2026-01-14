@@ -1,5 +1,5 @@
-﻿import { ChatInputCommandInteraction, Locale, MessageFlags, SlashCommandBuilder } from "discord.js";
-import { isUserBoosterInOfficialServer, replyInteraction } from "../../utils/logic";
+﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+import { isUserBoosterInOfficialServer, replyWithContainer } from "../../utils/logic";
 import { formatMoney, showTime } from "../../utils/ui";
 import { addDays } from "date-fns";
 import { Language } from "../../models/Language";
@@ -32,10 +32,7 @@ module.exports = {
 				])
 				.addFooter();
 
-			return await replyInteraction(interaction, {
-				components: [container],
-				flags: MessageFlags.IsComponentsV2,
-			});
+			return replyWithContainer(interaction, container);
 		}
 
 		const isBooster = await isUserBoosterInOfficialServer(interaction);
@@ -50,10 +47,7 @@ module.exports = {
 				text: s.footer(user.Daily.MaxStreak),
 			});
 
-		return await replyInteraction(interaction, {
-			components: [container],
-			flags: MessageFlags.IsComponentsV2,
-		});
+		return replyWithContainer(interaction, container);
 	},
 };
 

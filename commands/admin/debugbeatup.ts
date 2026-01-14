@@ -1,9 +1,8 @@
-﻿import { ChatInputCommandInteraction, Locale, MessageFlags, SlashCommandBuilder } from "discord.js";
-import { replyInteraction, searchUser } from "../../utils/logic";
+﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+import { deferReply, replyWithContainer, searchUser } from "../../utils/logic";
 import { defaultComponent } from "../../utils/ui";
 import { CrColors } from "../../utils/colors";
 import { User } from "../../models/User";
-import { Language } from "../../models/Language";
 import { BeatUp } from "../../models/BeatUp";
 
 module.exports = {
@@ -20,11 +19,12 @@ module.exports = {
 			.setDescriptionLocalization(Locale.PortugueseBR, "O usuário para te espancar"),
 		),
 
-	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
+	async execute(interaction: ChatInputCommandInteraction, user: User) {
 		const nameOrId = interaction.options.getString("target", true);
-		const target = await searchUser(nameOrId, interaction);
 
-		await interaction.deferReply();
+		await deferReply(interaction);
+
+		const target = await searchUser(nameOrId, interaction);
 
 		if (!target) {
 			return;
@@ -41,10 +41,7 @@ module.exports = {
 				description: message,
 			});
 
-			return await replyInteraction(interaction, {
-				components: [container],
-				flags: MessageFlags.IsComponentsV2,
-			});
+			return replyWithContainer(interaction, container);
 		}
 
 		await robbery.GetDiscordUser();

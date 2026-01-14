@@ -1,6 +1,6 @@
-import { ChatInputCommandInteraction, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
 import { Event } from "../../models/Event";
-import { replyInteraction } from "../../utils/logic";
+import { replyInteraction, replyWithContainer } from "../../utils/logic";
 import { CrColors } from "../../utils/colors";
 import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
 
@@ -31,10 +31,6 @@ module.exports = {
 				description,
 			]);
 
-		await replyInteraction(interaction, {
-			components: [container],
-			flags: MessageFlags.IsComponentsV2,
-		});
-
+		return replyWithContainer(interaction, container);
 	},
 };

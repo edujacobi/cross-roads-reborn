@@ -8,6 +8,7 @@ import { User } from "../../models/User";
 import { ClassList } from "../../interfaces/Classes";
 import { showTime } from "../../utils/ui";
 import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
+import { deferReply } from "../../utils/logic";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -17,8 +18,7 @@ module.exports = {
 		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
-
-		await interaction.deferReply();
+		await deferReply(interaction);
 
 		let users: Users[] = [];
 		const pagination = new Pagination(interaction, language);

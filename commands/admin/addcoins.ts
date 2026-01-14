@@ -1,14 +1,13 @@
 ﻿import {
 	ChatInputCommandInteraction,
 	Locale,
-	MessageFlags,
 	PermissionFlagsBits,
 	SlashCommandBuilder,
 	SlashCommandIntegerOption,
 	SlashCommandStringOption,
 } from "discord.js";
 import { defaultComponent, formatMoney } from "../../utils/ui";
-import { checkUser, replyInteraction, sendPrivateMessage } from "../../utils/logic";
+import { checkUser, replyWithContainer, sendPrivateMessage } from "../../utils/logic";
 import { EmoteString } from "../../utils/emotes";
 import { User } from "../../models/User";
 import { Language } from "../../models/Language";
@@ -62,9 +61,6 @@ module.exports = {
 			description: `${EmoteString.SpecialCoinShop}${formatMoney(coins, Language.English, "")} Special Coins added to user **${target.GetNameWithImage()}**`,
 		});
 
-		await replyInteraction(interaction, {
-			components: [container],
-			flags: MessageFlags.IsComponentsV2,
-		});
+		return replyWithContainer(interaction, container);
 	},
 };

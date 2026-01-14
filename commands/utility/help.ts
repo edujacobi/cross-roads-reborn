@@ -1,5 +1,5 @@
-﻿import { ChatInputCommandInteraction, Locale, MessageFlags, SlashCommandBuilder } from "discord.js";
-import { replyInteraction } from "../../utils/logic";
+﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+import { replyWithContainer } from "../../utils/logic";
 import { Language } from "../../models/Language";
 import { CrColors } from "../../utils/colors";
 import { User } from "../../models/User";
@@ -40,10 +40,7 @@ module.exports = {
 			.addTexts([s.description7])
 			.addFooter();
 
-		return await replyInteraction(interaction, {
-			components: [container],
-			flags: MessageFlags.IsComponentsV2,
-		});
+		return replyWithContainer(interaction, container);
 	},
 };
 

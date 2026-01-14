@@ -1,13 +1,13 @@
 ﻿import {
 	ChatInputCommandInteraction,
 	Locale,
-	MessageFlags,
 	PermissionFlagsBits,
 	SlashCommandBuilder,
-	SlashCommandIntegerOption, SlashCommandStringOption,
+	SlashCommandIntegerOption,
+	SlashCommandStringOption,
 } from "discord.js";
 import { defaultComponent } from "../../utils/ui";
-import { checkUser, replyInteraction, sendPrivateMessage } from "../../utils/logic";
+import { checkUser, replyInteraction, replyWithContainer, sendPrivateMessage } from "../../utils/logic";
 import { User } from "../../models/User";
 import { Language } from "../../models/Language";
 import { ClassId, ClassList } from "../../interfaces/Classes";
@@ -47,7 +47,7 @@ module.exports = {
 				}]),
 		),
 
-	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
+	async execute(interaction: ChatInputCommandInteraction, user: User) {
 
 		const userId = interaction.options.getString("userid", true);
 		const classId = interaction.options.getInteger("class", true);
@@ -74,9 +74,6 @@ module.exports = {
 			description: `User **${target.GetNameWithImage()}** is now ${ClassList[classId].Name[Language.English]}`,
 		});
 
-		await replyInteraction(interaction, {
-			components: [container],
-			flags: MessageFlags.IsComponentsV2,
-		});
+		return replyWithContainer(interaction, container);
 	},
 };

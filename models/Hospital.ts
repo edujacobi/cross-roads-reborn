@@ -1,8 +1,8 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, MessageFlags } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction } from "discord.js";
 import { User } from "./User";
 import { CrColors } from "../utils/colors";
 import { EmoteString } from "../utils/emotes";
-import { createButtonCollector, disableButtons, replyInteraction, replyWithContainer } from "../utils/logic";
+import { createButtonCollector, disableButtons, replyWithContainer } from "../utils/logic";
 import { EmoteBadgeString } from "../utils/badges";
 import { Users } from "../database/Users";
 import { Op } from "sequelize";
@@ -155,9 +155,7 @@ export class Hospital {
 						description: `${message} ${EmoteString.Hospital}`,
 					});
 
-					return replyInteraction(this.Interaction, {
-						components: [this.Container],
-					});
+					return replyWithContainer(this.Interaction, this.Container);
 				}
 
 				this.AddContainerHeader();
@@ -179,7 +177,7 @@ export class Hospital {
 						text: formatMoney(this.User.Money, this.User.Language),
 					});
 
-				await replyInteraction(this.Interaction, { components: [this.Container] });
+				return replyWithContainer(this.Interaction, this.Container);
 			}
 
 			else if (btn.customId === "confirm") {
@@ -194,10 +192,7 @@ export class Hospital {
 						description: `${message} ${EmoteString.Hospital}`,
 					});
 
-					return replyInteraction(this.Interaction, {
-						components: [this.Container],
-						flags: MessageFlags.IsComponentsV2,
-					});
+					return replyWithContainer(this.Interaction, this.Container);
 				}
 
 				await this.PayPrivate();
@@ -213,9 +208,7 @@ export class Hospital {
 						text: formatMoney(this.User.Money, this.User.Language),
 					});
 
-				await replyInteraction(this.Interaction, {
-					components: [this.Container],
-				});
+				return replyWithContainer(this.Interaction, this.Container);
 			}
 		});
 	}

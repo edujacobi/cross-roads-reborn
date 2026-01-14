@@ -1,12 +1,6 @@
-﻿import {
-	ChatInputCommandInteraction,
-	Locale,
-	MessageFlags,
-	PermissionFlagsBits,
-	SlashCommandBuilder,
-} from "discord.js";
+﻿import { ChatInputCommandInteraction, Locale, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
 import { getClient } from "../../client";
-import { replyInteraction } from "../../utils/logic";
+import { replyWithContainer } from "../../utils/logic";
 import { CrColors } from "../../utils/colors";
 import { Users } from "../../database/Users";
 import { Op } from "sequelize";
@@ -58,7 +52,7 @@ module.exports = {
 			)
 			.addFooter();
 
-		await replyInteraction(interaction, { components: [container], flags: MessageFlags.IsComponentsV2 });
+		return replyWithContainer(interaction, container);
 	},
 };
 

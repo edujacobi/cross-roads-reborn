@@ -8,7 +8,13 @@
 	MessageFlags,
 	SlashCommandBuilder,
 } from "discord.js";
-import { createButtonCollector, disableButtons, replyInteraction, searchUser } from "../../utils/logic";
+import {
+	createButtonCollector, deferReply,
+	disableButtons,
+	replyInteraction,
+	replyWithContainer,
+	searchUser,
+} from "../../utils/logic";
 import { Language } from "../../models/Language";
 import { User } from "../../models/User";
 import { ClassList } from "../../interfaces/Classes";
@@ -38,7 +44,7 @@ module.exports = {
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 		const nameOrId = interaction.options.getString("target");
 
-		await interaction.deferReply();
+		await deferReply(interaction);
 
 		const target = nameOrId ? await searchUser(nameOrId, interaction, language) : user;
 		const _user = target ? await getClient().users.fetch(target.Id) : interaction.user;
@@ -264,10 +270,7 @@ module.exports = {
 
 			container = generateDefaultContainer();
 
-			await replyInteraction(interaction, {
-				components: [container],
-				flags: MessageFlags.IsComponentsV2,
-			});
+			return replyWithContainer(interaction, container);
 		});
 	},
 };

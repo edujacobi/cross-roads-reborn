@@ -4,12 +4,11 @@
 	ButtonStyle,
 	ChatInputCommandInteraction,
 	Locale,
-	MessageFlags,
 	SlashCommandBuilder,
 	SlashCommandIntegerOption,
 	SlashCommandNumberOption,
 } from "discord.js";
-import { createButtonCollector, disableButtons, replyInteraction } from "../../utils/logic";
+import { createButtonCollector, disableButtons, replyWithContainer } from "../../utils/logic";
 import { formatMoney } from "../../utils/ui";
 import { CrColors } from "../../utils/colors";
 import { EmoteString } from "../../utils/emotes";
@@ -95,10 +94,7 @@ module.exports = {
 					text: formatMoney(user.Money, language),
 				});
 
-			await replyInteraction(interaction, {
-				components: [container],
-				flags: MessageFlags.IsComponentsV2,
-			});
+			await replyWithContainer(interaction, container);
 
 			// Generate numbers between 2000 and 3000 (2s and 3s)
 			const range = () => Math.floor(Math.random() * 1001) + 2000;
@@ -166,9 +162,7 @@ module.exports = {
 					text: formatMoney(user.Money, language),
 				});
 
-			return replyInteraction(interaction, {
-				components: [container],
-			});
+			return replyWithContainer(interaction, container);
 		}
 
 		async function checkIfCanPlay(value: number) {
@@ -190,10 +184,7 @@ module.exports = {
 					text: formatMoney(user.Money, language),
 				});
 
-				await replyInteraction(interaction, {
-					components: [container],
-					flags: MessageFlags.IsComponentsV2,
-				});
+				await replyWithContainer(interaction, container);
 				return false;
 			}
 			return true;

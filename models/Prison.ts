@@ -7,7 +7,7 @@ import { Users } from "../database/Users";
 import { Op } from "sequelize";
 import { defaultComponent, formatMoney, showTime } from "../utils/ui";
 import { EmoteId, EmoteString } from "../utils/emotes";
-import { createButtonCollector, disableButtons, replyInteraction, replyWithContainer } from "../utils/logic";
+import { createButtonCollector, disableButtons, replyWithContainer } from "../utils/logic";
 import { ClassList, getPrisonBribeClassModifier, getPrisonEscapeClassModifier } from "../interfaces/Classes";
 import { setTimeout as wait } from "timers/promises";
 import { addMinutes, addSeconds } from "date-fns";
@@ -147,9 +147,7 @@ export class Prison {
 			if (btn.customId === "back") {
 				await this.GenerateDefaultContainer();
 
-				return replyInteraction(this.Interaction, {
-					components: [this.Container],
-				});
+				return replyWithContainer(this.Interaction, this.Container);
 			}
 
 			else if (btn.customId === "prisoners") {
@@ -200,9 +198,7 @@ export class Prison {
 						description: `${message} ${EmoteString.Prison}`,
 					});
 
-					return replyInteraction(this.Interaction, {
-						components: [this.Container],
-					});
+					return replyWithContainer(this.Interaction, this.Container);
 				}
 
 				await this.StartEscape();
@@ -224,9 +220,7 @@ export class Prison {
 						description: `${message} ${EmoteString.Prison}`,
 					});
 
-					return replyInteraction(this.Interaction, {
-						components: [this.Container],
-					});
+					return replyWithContainer(this.Interaction, this.Container);
 				}
 
 				const atkFactor = (this.User.Attributes.Attack * (this.User.Attributes.Attack / 20)) ** 2;
@@ -257,7 +251,7 @@ export class Prison {
 						text: formatMoney(this.User.Money, this.User.Language),
 					});
 
-				await replyInteraction(this.Interaction, { components: [this.Container] });
+				return replyWithContainer(this.Interaction, this.Container);
 			}
 
 			else if (btn.customId === "confirmBribe") {
@@ -272,9 +266,7 @@ export class Prison {
 						description: `${message} ${EmoteString.Prison}`,
 					});
 
-					return replyInteraction(this.Interaction, {
-						components: [this.Container],
-					});
+					return replyWithContainer(this.Interaction, this.Container);
 				}
 
 				const success = await this.PayBribery(this.Bribe.Value);
@@ -298,7 +290,7 @@ export class Prison {
 						.addFooter({ text: s.briberyRejectedFooter });
 				}
 
-				return replyInteraction(this.Interaction, { components: [this.Container] });
+				return replyWithContainer(this.Interaction, this.Container);
 			}
 		});
 
@@ -366,7 +358,7 @@ export class Prison {
 			], 1)
 			.addFooter();
 
-		await replyInteraction(this.Interaction, { components: [this.Container] });
+		await replyWithContainer(this.Interaction, this.Container);
 
 		this.User.Escape.HasTried = true;
 		this.User.Escape.Time = addSeconds(new Date(), this.Escape.DefaultDuration);
@@ -543,7 +535,7 @@ export class Prison {
 
 		await this.User.Update();
 
-		await replyInteraction(this.Interaction, { components: [this.Container] });
+		return replyWithContainer(this.Interaction, this.Container);
 	}
 
 	async CanBribe() {

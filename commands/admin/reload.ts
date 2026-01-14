@@ -1,11 +1,11 @@
-import { ChatInputCommandInteraction, Colors, MessageFlags, SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, Colors, SlashCommandBuilder } from "discord.js";
 import path from "node:path";
 import fs from "node:fs";
 import { SlashCommand } from "../../types";
 import { logger } from "../../utils/log";
 import { defaultComponent } from "../../utils/ui";
 import { User } from "../../models/User";
-import { replyInteraction } from "../../utils/logic";
+import { deferReply, replyWithContainer } from "../../utils/logic";
 
 /**
  * @INFO: DONT FORGET TO RUN 'tsc --watch' FOR /RELOAD TO WORK PROPERLY
@@ -24,19 +24,16 @@ module.exports = {
 		const commandName = interaction.options.getString("command", true).toLowerCase();
 		const command = interaction.client.commands.get(commandName);
 
-		await interaction.deferReply();
+		await deferReply(interaction);
 
 		if (!command) {
 			const container = defaultComponent({
-				description: `There is no command with name \`${commandName}\`!`,
+				description: `There is no command with name \`/${commandName}\`!`,
 				color: Colors.Orange,
 				user,
 			});
 
-			return replyInteraction(interaction, {
-				components: [container],
-				flags: MessageFlags.IsComponentsV2,
-			});
+			return replyWithContainer(interaction, container);
 		}
 
 		const foldersPath = path.join(__dirname, "..");
@@ -66,10 +63,7 @@ module.exports = {
 					user,
 				});
 
-				return replyInteraction(interaction, {
-					components: [container],
-					flags: MessageFlags.IsComponentsV2,
-				});
+				return replyWithContainer(interaction, container);
 
 			}
 			else {
@@ -79,10 +73,7 @@ module.exports = {
 					user,
 				});
 
-				return replyInteraction(interaction, {
-					components: [container],
-					flags: MessageFlags.IsComponentsV2,
-				});
+				return replyWithContainer(interaction, container);
 			}
 		}
 
@@ -92,10 +83,6 @@ module.exports = {
 			user,
 		});
 
-		return replyInteraction(interaction, {
-			components: [container],
-			flags: MessageFlags.IsComponentsV2,
-		});
-
+		return replyWithContainer(interaction, container);
 	},
 };

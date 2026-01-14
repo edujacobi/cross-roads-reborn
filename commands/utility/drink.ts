@@ -8,9 +8,9 @@
 } from "discord.js";
 import {
 	createButtonCollector,
+	deferReply,
 	disableButtons,
 	getRandomItemFromArray,
-	replyInteraction,
 	replyWithContainer,
 } from "../../utils/logic";
 import { Language } from "../../models/Language";
@@ -31,7 +31,7 @@ module.exports = {
 		.setDescriptionLocalization(Locale.PortugueseBR, "Bebe uma refrescante bebida!"),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
-		await interaction.deferReply();
+		await deferReply(interaction);
 		const s = Strings[language];
 
 		const now = addHours(new Date(), -3);
@@ -106,9 +106,7 @@ module.exports = {
 
 				if (cantDrink) {
 					drinkButton.setDisabled(true);
-					return replyInteraction(interaction, {
-						components: [container],
-					});
+					return replyWithContainer(interaction, container);
 				}
 
 				const beverages = {
@@ -248,9 +246,7 @@ module.exports = {
 					container.setAccentColor(CrColors.Hospital);
 				}
 
-				await replyInteraction(interaction, {
-					components: [container],
-				});
+				return replyWithContainer(interaction, container);
 			}
 		});
 

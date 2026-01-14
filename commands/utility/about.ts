@@ -4,10 +4,9 @@
 	ChatInputCommandInteraction,
 	Colors,
 	Locale,
-	MessageFlags,
 	SlashCommandBuilder,
 } from "discord.js";
-import { replyInteraction } from "../../utils/logic";
+import { replyWithContainer } from "../../utils/logic";
 import { Language } from "../../models/Language";
 import { User } from "../../models/User";
 import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
@@ -67,10 +66,7 @@ module.exports = {
 				`-# ${s.others}: Quantum, nadalao, CassadorEterno`,
 			]);
 
-		return replyInteraction(interaction, {
-			components: [container],
-			flags: MessageFlags.IsComponentsV2,
-		});
+		return replyWithContainer(interaction, container);
 	},
 };
 

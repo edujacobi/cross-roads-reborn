@@ -1,14 +1,13 @@
 ﻿import {
 	ChatInputCommandInteraction,
 	Locale,
-	MessageFlags,
 	PermissionFlagsBits,
 	SlashCommandBuilder,
 	SlashCommandIntegerOption,
 	SlashCommandStringOption,
 } from "discord.js";
 import { defaultComponent, formatMoney } from "../../utils/ui";
-import { checkUser, replyInteraction, sendPrivateMessage } from "../../utils/logic";
+import { checkUser, replyInteraction, replyWithContainer, sendPrivateMessage } from "../../utils/logic";
 import { User } from "../../models/User";
 import { CrColors } from "../../utils/colors";
 
@@ -87,11 +86,8 @@ module.exports = {
 			description,
 		});
 
-		await replyInteraction(interaction, {
-			components: [container],
-			flags: MessageFlags.IsComponentsV2,
-		});
-
 		await target.Update();
+
+		await replyWithContainer(interaction, container);
 	},
 };
