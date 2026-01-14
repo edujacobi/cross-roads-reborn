@@ -19,15 +19,17 @@ module.exports = {
 			.setUser(user)
 			.setAccentColor(Colors.Gold)
 			.addSectionComponents(section => section
-				.addTextDisplayComponents(text => text
-					.setContent(`# ${EmoteString.VIP} ${s.title}
-${s.benefits}`),
-				)
+				.addTexts([
+					`# ${EmoteString.VIP} ${s.title}`,
+					s.benefits,
+				])
 				.setThumbnailAccessory(thumb => thumb
 					.setURL("https://media.discordapp.net/attachments/531174573463306240/799060089503875072/VIP.png")),
 			)
 			.addLargeSeparator()
-			.addTexts([s.howToAcquire])
+			.addTexts([
+				s.howToAcquire,
+			])
 			.addFooter();
 
 		return await replyInteraction(interaction, {

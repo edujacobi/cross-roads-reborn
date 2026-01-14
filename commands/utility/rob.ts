@@ -75,9 +75,9 @@ module.exports = {
 				.setUser(user)
 				.setAccentColor(CrColors.Robbery)
 				.addSectionComponents(section => section
-					.addTextDisplayComponents(header => header
-						.setContent(s.description),
-					)
+					.addTexts([
+						s.description
+					])
 					.setThumbnailAccessory(thumb => thumb
 						.setURL("https://media.discordapp.net/attachments/691019843159326757/791444366727708672/roubar_20201223201323.png"),
 					),

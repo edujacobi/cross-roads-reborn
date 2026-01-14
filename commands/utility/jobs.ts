@@ -43,9 +43,10 @@ module.exports = {
 				.setUser(user)
 				.setAccentColor(CrColors.Jobs)
 				.addSectionComponents(header => header
-					.addTextDisplayComponents(text => text
-						.setContent(`# ${s.title}\n${s.description}`),
-					)
+					.addTexts([
+						`# ${s.title}`,
+						s.description
+					])
 					.setThumbnailAccessory(thumb => thumb
 						.setURL("https://media.discordapp.net/attachments/1233604589064818808/1337166947250602047/Trabalhos2.png"),
 					),
@@ -115,9 +116,10 @@ module.exports = {
 					const blackMarketText = job.Special ? ` • ${EmoteString.BlackMarket} ${s.blackMarket}` : "";
 
 					container.addSectionComponents(section => section
-						.addTextDisplayComponents(text => text
-							.setContent(`### ${job.Description[language]}\n${textSalary} • ${textDuration}${blackMarketText}${textNeeded}`),
-						)
+						.addTexts([
+							`### ${job.Description[language]}`,
+							`${textSalary} • ${textDuration}${blackMarketText}${textNeeded}`
+						])
 						.setButtonAccessory(btn => btn
 							.setLabel(s.start)
 							.setStyle(ButtonStyle.Secondary)

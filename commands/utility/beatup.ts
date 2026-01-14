@@ -56,15 +56,17 @@ module.exports = {
 				.setUser(user)
 				.setAccentColor(CrColors.BeatUp)
 				.addSectionComponents(section => section
-					.addTextDisplayComponents(header => header
-						.setContent(s.description),
-					)
+					.addTexts([
+						s.description,
+					])
 					.setThumbnailAccessory(thumb => thumb
 						.setURL("https://cdn.discordapp.com/attachments/691019843159326757/820064474995621938/Espancar_20210312194139.png"),
 					),
 				)
 				.addLargeSeparator()
-				.addTexts([`-# ${text}`])
+				.addTexts([
+					`-# ${text}`,
+				])
 				.addFooter({
 					text: user.Situation.Simple,
 				});

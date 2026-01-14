@@ -62,11 +62,13 @@ module.exports = {
 			return new CustomContainerBuilder()
 				.setUser(user)
 				.setAccentColor(Colors.Gold)
-				.addTextDisplayComponents(title => title
-					.setContent(`# ${EmoteString.VIP} VIP Users`))
+				.addTexts([
+					`# ${EmoteString.VIP} VIP Users`,
+				])
 				.addLargeSeparator()
-				.addTextDisplayComponents(content => content
-					.setContent(text))
+				.addTexts([
+					text,
+				])
 				.addFooter({
 					text: pagination.Showing(),
 				});

@@ -26,9 +26,9 @@ export class Casino {
 			.setUser(this.User)
 			.setAccentColor(CrColors.Casino)
 			.addSectionComponents(section => section
-				.addTextDisplayComponents(header => header
-					.setContent(s.description),
-				)
+				.addTexts([
+					s.description
+				])
 				.setThumbnailAccessory(thumb => thumb
 					.setURL("https://media.discordapp.net/attachments/1233604589064818808/1460598163546312857/Casino_New.png"),
 				),

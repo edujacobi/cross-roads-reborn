@@ -4,6 +4,7 @@ import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder
 import { BadgeId, getBadgeList } from "../../interfaces/Badges";
 import { Language } from "../../models/Language";
 import { UserBadge } from "../../models/UserBadge";
+import { replyInteraction } from "../../utils/logic";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -79,26 +80,22 @@ module.exports = {
 
 		const container = new CustomContainerBuilder()
 			.setUser(user)
-			.addTextDisplayComponents(header => header
-				.setContent(`# ${s.badges}`),
-			)
+			.addTexts([
+				`# ${s.badges}`
+			])
 			.addLargeSeparator()
-			.addTextDisplayComponents(content => content
-				.setContent(`## ${s.special}`),
-			)
-			.addTextDisplayComponents(content => content
-				.setContent(textSpecial.join("\n")),
-			)
+			.addTexts([
+				`## ${s.special}`,
+				textSpecial.join("\n")
+			])
 			.addLargeSeparator()
-			.addTextDisplayComponents(content => content
-				.setContent(`## ${s.seasonal}`),
-			)
-			.addTextDisplayComponents(content => content
-				.setContent(textSeasonal.join("\n")),
-			)
+			.addTexts([
+				`## ${s.seasonal}`,
+				textSeasonal.join("\n")
+			])
 			.addFooter({ text: userBadgeText.length ? `${s.your}: ${userBadgeText}` : undefined });
 
-		await interaction.editReply({
+		return replyInteraction(interaction, {
 			components: [container],
 			flags: MessageFlags.IsComponentsV2,
 		});
@@ -110,18 +107,18 @@ const Strings = {
 		badges: "Badges",
 		special: "Special badges",
 		seasonal: "Seasonal badges",
-		your: "Your badges"
+		your: "Your badges",
 	},
 	[Language.Portuguese]: {
 		badges: "Insígnias",
 		special: "Insígnias especiais",
 		seasonal: "Insígnias da temporada",
-		your: "Suas insígnias"
+		your: "Suas insígnias",
 	},
 	[Language.Spanish]: {
 		badges: "Insignia",
 		special: "Insignia especiales",
 		seasonal: "Insignia de temporada",
-		your: "Tus insignias"
+		your: "Tus insignias",
 	},
 } as const;

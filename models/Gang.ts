@@ -995,13 +995,13 @@ export class Gang {
 	async ComunicateMember(sender: User, member: GangMember, message: string, specialMessage?: string) {
 		const container = new CustomContainerBuilder()
 			.setAccentColor(GangColor[this.Color].Color)
-			.addTextDisplayComponents(content => content
-				.setContent(message),
-			)
+			.addTexts([
+				message
+			])
 			.addLargeSeparator()
-			.addTextDisplayComponents(footer => footer
-				.setContent(`-# ${sender.GetNameWithImage()} • ${EmoteString.Gang} ${this.Name} (${this.Acronym})${specialMessage ? ` • **${specialMessage}**` : ""}`),
-			);
+			.addTexts([
+				`-# ${sender.GetNameWithImage()} • ${EmoteString.Gang} ${this.Name} (${this.Acronym})${specialMessage ? ` • **${specialMessage}**` : ""}`
+			]);
 
 		return await sendComplexPrivateMessage(member.UserId, {
 			components: [container],

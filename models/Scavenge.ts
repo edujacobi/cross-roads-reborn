@@ -84,9 +84,9 @@ export class Scavenge {
 			.setUser(this.User)
 			.setAccentColor(CrColors.Scavenge)
 			.addSectionComponents(section => section
-				.addTextDisplayComponents(header => header
-					.setContent(defaultDescription),
-				)
+				.addTexts([
+					defaultDescription,
+				])
 				.setThumbnailAccessory(thumb => thumb
 					.setURL(this.Thumbnail),
 				),
@@ -132,9 +132,10 @@ export class Scavenge {
 
 			this.Container
 				.addSectionComponents(section => section
-					.addTextDisplayComponents(description => description
-						.setContent(`### ${place.Emote.String} ${place.Description[this.User.Language]}\n${place.Subtitle[this.User.Language]}`),
-					)
+					.addTexts([
+						`### ${place.Emote.String} ${place.Description[this.User.Language]}`,
+						place.Subtitle[this.User.Language],
+					])
 					.setButtonAccessory(new ButtonBuilder()
 						.setLabel(s.title)
 						.setEmoji(place.Emote.Id)
@@ -226,9 +227,9 @@ export class Scavenge {
 
 				this.Container
 					.addSectionComponents(section => section
-						.addTextDisplayComponents(text => text
-							.setContent(localeInfoDetailed),
-						)
+						.addTexts([
+							localeInfoDetailed,
+						])
 						.setButtonAccessory(btn => btn
 							.setLabel(s.title)
 							.setStyle(ButtonStyle.Success)

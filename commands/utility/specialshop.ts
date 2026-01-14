@@ -41,9 +41,10 @@ module.exports = {
 			container.setUser(user)
 				.setAccentColor(CrColors.SpecialShop)
 				.addSectionComponents(section => section
-					.addTextDisplayComponents(text => text
-						.setContent(`# ${s.title}\n${s.permanent}`),
-					)
+					.addTexts([
+						`# ${s.title}`,
+						s.permanent,
+					])
 					.setThumbnailAccessory(thumb => thumb
 						.setURL("https://media.discordapp.net/attachments/1233604589064818808/1458922510782431507/SpecialCoinShop.png"),
 					),
@@ -96,9 +97,11 @@ module.exports = {
 					}
 
 					container.addSectionComponents(section => section
-						.addTextDisplayComponents(title => title
-							.setContent(`### ${rarityEmote}${bundle.Description[language]}\n-# ${s.howManyItems(itemEmotes)}\n# ${itemEmotes.join(" ")}`),
-						)
+						.addTexts([
+							`### ${rarityEmote}${bundle.Description[language]}`,
+							`-# ${s.howManyItems(itemEmotes)}`,
+							`# ${itemEmotes.join(" ")}`,
+						])
 						.setButtonAccessory(new ButtonBuilder()
 							.setLabel(formatMoney(bundle.Price, language, ""))
 							.setEmoji(EmoteId.SpecialCoinShop)
@@ -118,9 +121,11 @@ module.exports = {
 			container
 				.addLargeSeparator()
 				.addSectionComponents(section => section
-					.addTextDisplayComponents(text => text
-						.setContent(`# VIP\n${s.vipDescription}\n-# ${s.vipMoreInfo}`),
-					)
+					.addTexts([
+						`# VIP`,
+						s.vipDescription,
+						`-# ${s.vipMoreInfo}`,
+					])
 					.setThumbnailAccessory(thumb => thumb
 						.setURL("https://media.discordapp.net/attachments/531174573463306240/799060089503875072/VIP.png"),
 					),
@@ -142,9 +147,11 @@ module.exports = {
 			container
 				.addLargeSeparator()
 				.addSectionComponents(section => section
-					.addTextDisplayComponents(text => text
-						.setContent(`# ${s.avatarDecoration}\n${s.defeatDecoration}\n-# ${s.testDecoration}`),
-					)
+					.addTexts([
+						`# ${s.avatarDecoration}`,
+						s.defeatDecoration,
+						`-# ${s.testDecoration}`
+					])
 					.setThumbnailAccessory(thumb => thumb
 						.setURL("https://media.discordapp.net/attachments/1455628323848851639/1458923128968445983/preview.webp"),
 					),
@@ -450,14 +457,10 @@ module.exports = {
 
 				container = addHeader(new CustomContainerBuilder())
 					.addSectionComponents(section => section
-						.addTextDisplayComponents(text => text
-							.setContent(
-								[
-									`## ${s.avatarDecoration} - ${decoration.Description[language]}`,
-									`${s.price}: ${EmoteString.SpecialCoinShop}${formatMoney(decoration.Price, language, "")}`,
-								].join("\n"),
-							),
-						)
+						.addTexts([
+							`## ${s.avatarDecoration} - ${decoration.Description[language]}`,
+							`${s.price}: ${EmoteString.SpecialCoinShop}${formatMoney(decoration.Price, language, "")}`,
+						])
 						.setThumbnailAccessory(preview => preview
 							.setURL("attachment://preview.webp")),
 					)

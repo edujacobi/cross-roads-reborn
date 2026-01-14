@@ -1,17 +1,9 @@
-﻿import {
-	ActionRowBuilder,
-	ActivityType,
-	ButtonBuilder,
-	Client,
-	ColorResolvable,
-	RGBTuple,
-	SectionBuilder,
-} from "discord.js";
+﻿import { ActionRowBuilder, ActivityType, ButtonBuilder, Client, ColorResolvable, RGBTuple } from "discord.js";
 import { Language } from "../models/Language";
 import { enUS, es, ptBR } from "date-fns/locale";
 import { formatDistanceToNow } from "date-fns";
 import { User } from "../models/User";
-import { CustomContainerBuilder } from "../ui/builders/CustomContainerBuilder";
+import { CustomContainerBuilder, CustomSectionBuilder } from "../ui/builders/CustomContainerBuilder";
 
 interface ComponentParams {
 	user: User;
@@ -27,22 +19,21 @@ export function defaultComponent(options: ComponentParams): CustomContainerBuild
 		.setUser(options.user);
 
 	if (options.thumbnail) {
-		const section = new SectionBuilder()
+		const section = new CustomSectionBuilder()
 			.setId(1)
-			.addTextDisplayComponents(text => text
-				.setId(2)
-				.setContent(options.description),
-			).setThumbnailAccessory(thumbnail => thumbnail
+			.addTexts([
+				options.description,
+			], 2)
+			.setThumbnailAccessory(thumbnail => thumbnail
 				.setURL(options.thumbnail!),
 			);
 
 		container.addSectionComponents(section);
 	}
 	else {
-		container.addTextDisplayComponents(text => text
-			.setId(1)
-			.setContent(options.description),
-		);
+		container.addTexts([
+			options.description,
+		], 1);
 	}
 
 	if (options.buttons) {
@@ -97,7 +88,7 @@ interface ClientActivity {
 
 export const clientActivities: ClientActivity[] = [{
 	type: ActivityType.Playing,
-	label: "Battle Roosters Arena",
+	label: "Playing 🐓 Battle Roosters Arena",
 }, {
 	type: ActivityType.Custom,
 	label: "🪙 Betting in Casino",

@@ -27,6 +27,7 @@ import { Log } from "./log";
 import { Users } from "../database/Users";
 import { EmoteString } from "./emotes";
 import { getLanguageFromLocale, Language } from "../models/Language";
+import { CustomContainerBuilder } from "../ui/builders/CustomContainerBuilder";
 
 export async function checkUser(userId: string, interaction: CommandInteraction) {
 	const lang = getLanguageFromLocale(interaction.locale);
@@ -172,7 +173,7 @@ export async function replyUserDontExist(interaction: CommandInteraction, langua
 	});
 }
 
-export async function disableButtons(interaction: CommandInteraction | ButtonInteraction, container: ContainerBuilder) {
+export async function disableButtons(interaction: CommandInteraction | ButtonInteraction, container: ContainerBuilder | CustomContainerBuilder) {
 	try {
 		for (const component of container.components) {
 			if (component instanceof SectionBuilder) {

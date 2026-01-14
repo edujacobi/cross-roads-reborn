@@ -106,9 +106,9 @@ module.exports = {
 			.setUser(user)
 			.setAccentColor(CrColors.Default)
 			.addSectionComponents(section => section
-				.addTextDisplayComponents(text => text
-					.setContent(s.costToChange(CHANGE_COST, newNick, oldNick)),
-				)
+				.addTexts([
+					s.costToChange(CHANGE_COST, newNick, oldNick),
+				])
 				.setButtonAccessory(btn => btn
 					.setCustomId(`confirm`)
 					.setDisabled(user.Money < CHANGE_COST)

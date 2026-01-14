@@ -77,16 +77,17 @@ module.exports = {
 
 			pagination.CustomizeContainer = async () => {
 				return new CustomContainerBuilder()
-					.addTextDisplayComponents(title => title
-						.setContent(`## Badge Types`))
+					.addTexts([
+						`## Badge Types`,
+					])
 					.addLargeSeparator()
-					.addTextDisplayComponents(content => content
-						.setContent(badgeList
+					.addTexts(
+						badgeList
 							.slice(pagination.Offset, pagination.Offset + pagination.Limit)
 							.map(badge => {
 								return `### ${badge.Emoji.String} ${badge.Name[language]} \`${badge.Id}\`\n-# ${badge.Description[language]}`;
-							})
-							.join("\n")))
+							}),
+					)
 					.addFooter({
 						text: pagination.Showing(),
 					});

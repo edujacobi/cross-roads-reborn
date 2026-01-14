@@ -1,6 +1,7 @@
-﻿import { ChannelType, ColorResolvable, Colors, ContainerBuilder, MessageFlags } from "discord.js";
+﻿import { ChannelType, ColorResolvable, Colors, MessageFlags } from "discord.js";
 import { getClient } from "../client";
 import pino from "pino";
+import { CustomContainerBuilder } from "../ui/builders/CustomContainerBuilder";
 
 export const logger = pino({
 	transport: {
@@ -63,16 +64,13 @@ export class Log {
 			break;
 		}
 
-		const container = new ContainerBuilder()
+		const container = new CustomContainerBuilder()
 			.setAccentColor(this.Color)
-			.addTextDisplayComponents(
-				title => title
-					.setContent(`### ${this.Title}`),
-				description => description
-					.setContent(this.Message),
-				footer => footer
-					.setContent(`-# Cross Roads Reborn`),
-			);
+			.addTexts([
+				`### ${this.Title}`,
+				this.Message,
+				`-# Cross Roads Reborn`,
+			]);
 
 		try {
 			if (process.env.NODE_ENV !== "PROD") {

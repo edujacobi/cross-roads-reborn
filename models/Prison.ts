@@ -57,9 +57,10 @@ export class Prison {
 			.setUser(this.User)
 			.setAccentColor(CrColors.Police)
 			.addSectionComponents(header => header
-				.addTextDisplayComponents(content => content
-					.setContent(`# ${s.title}\n${s.subtitle}`),
-				)
+				.addTexts([
+					`# ${s.title}`,
+					s.subtitle,
+				])
 				.setThumbnailAccessory(thumb => thumb
 					.setURL("https://media.discordapp.net/attachments/1233604589064818808/1339946455913205871/Prison.png"),
 				),
@@ -111,16 +112,17 @@ export class Prison {
 
 		this.Container
 			.addSectionComponents(escape => escape
-				.addTextDisplayComponents(text => text
-					.setContent(s.descriptionEscape(this.Escape.BaseChance + userClassModifier, this.Escape.BaseJetpackChance + this.Escape.BaseChance + userClassModifier)),
-				)
+				.addTexts([
+					s.descriptionEscape(this.Escape.BaseChance + userClassModifier, this.Escape.BaseJetpackChance + this.Escape.BaseChance + userClassModifier),
+				])
 				.setButtonAccessory(buttonEscape),
 			)
 			.addLargeSeparator()
 			.addSectionComponents(bribe => bribe
-				.addTextDisplayComponents(text => text
-					.setContent(s.descriptionBribe),
-				)
+				.addTexts([
+					s.descriptionBribe,
+				])
+
 				.setButtonAccessory(buttonBribe),
 			)
 			.addLargeSeparator()

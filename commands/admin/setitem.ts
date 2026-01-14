@@ -6,7 +6,7 @@ import { UserItems } from "../../database/UserItems";
 import { ItemList, ItemType, UserItem } from "../../interfaces/Items";
 import { Log } from "../../utils/log";
 import { EmoteString } from "../../utils/emotes";
-import { sendPrivateMessage } from "../../utils/logic";
+import { replyInteraction, sendPrivateMessage } from "../../utils/logic";
 import { CrColors } from "../../utils/colors";
 import { BundleId } from "../../interfaces/Ids";
 
@@ -62,14 +62,14 @@ module.exports = {
 		// 1. Validate Inputs
 		const itemData = ItemList[itemId] as UserItem;
 		if (!itemData) {
-			return await interaction.editReply(`${EmoteString.LessThan12Hours} Item with ID \`${itemId}\` was not found.`);
+			return replyInteraction(interaction, `${EmoteString.LessThan12Hours} Item with ID \`${itemId}\` was not found.`);
 		}
 
 		// 2. Fetch the target user from the database
 		const targetUser = new User(targetUserId);
 		const userExists = await targetUser.GetInfo();
 		if (!userExists) {
-			return await interaction.editReply(`${EmoteString.LessThan12Hours} User with ID \`${targetUserId}\` was not found in the database.`);
+			return replyInteraction(interaction, `${EmoteString.LessThan12Hours} User with ID \`${targetUserId}\` was not found in the database.`);
 		}
 
 		// 3. Find the existing item directly in the database
@@ -155,6 +155,6 @@ module.exports = {
 
 		Log.Success(`Admin ${user.Nickname} (${user.Id}) used setitem on ${targetUser.Nickname} (Id: ${targetUser.Id}) for item ${itemData.Description[Language.English]} (Id: ${itemData.Id}). Mode: ${mode === Mode.Set ? "set" : "add"}, ${itemData.Type == ItemType.Consumable ? "Quantity" : "Hours"}: ${hoursOrQuantity}`);
 		await sendPrivateMessage(targetUserId, `You ${mode === Mode.Set ? "now have" : "received"} ${hoursOrQuantity} ${itemData.Type == ItemType.Consumable ? "" : "hours"} of ${itemData.Skin[BundleId.Default].String} ${itemData.Description[Language.English]}!`, CrColors.Admin);
-		await interaction.editReply(replyMessage);
+		await replyInteraction(interaction, replyMessage);
 	},
 };

@@ -6,7 +6,6 @@
 	Locale,
 	MessageComponentInteraction,
 	MessageFlags,
-	SeparatorSpacingSize,
 	SlashCommandBuilder,
 	TextDisplayBuilder,
 } from "discord.js";
@@ -71,18 +70,18 @@ module.exports = {
 		const container = new CustomContainerBuilder()
 			.setUser(user)
 			.setAccentColor(CrColors.Bar)
-			.addTextDisplayComponents(header => header
-				.setContent(isHappyHour ? `-# ${s.happyHour}` : `-# Happy Hour ${s.happyHourPeriods}`))
-			.addSeparatorComponents(separator => separator.setSpacing(SeparatorSpacingSize.Small))
-			.addTextDisplayComponents(
-				title => title
-					.setContent(`# ${EmoteString.Idle} ${s.barOf} ${channelName}`),
-				description => description
-					.setContent(s.barmanDescription(chosenAdjective)))
+			.addTexts([
+				isHappyHour ? `-# ${s.happyHour}` : `-# Happy Hour ${s.happyHourPeriods}`,
+			])
+			.addSmallSeparator()
+			.addTexts([
+				`# ${EmoteString.Idle} ${s.barOf} ${channelName}`,
+				s.barmanDescription(chosenAdjective),
+			])
 			.addLargeSeparator(false)
-			.addTextDisplayComponents(history => history
-				.setId(1)
-				.setContent(`-# ${s.drankNothing}`))
+			.addTexts([
+				`-# ${s.drankNothing}`,
+			], 1)
 			.addFooter({
 				button: drinkButton,
 			});
@@ -90,7 +89,6 @@ module.exports = {
 		const response = await replyInteraction(interaction, {
 			components: [container],
 			flags: MessageFlags.IsComponentsV2,
-			withResponse: true,
 		});
 
 		const collector = response?.createMessageComponentCollector({
@@ -104,13 +102,15 @@ module.exports = {
 		const anotherAdjective = getRandomItemFromArray(adjectives[language]);
 
 		collector?.on("collect", async btn => {
+			await btn.deferUpdate();
+
 			if (btn.customId === "drink") {
 				await user.GetInfo();
 				const cantDrink = user.IsInPrison() || user.IsInHospital() || user.IsWorking() || user.IsInBeatUp() || user.IsInRobbery();
 
 				if (cantDrink) {
 					drinkButton.setDisabled(true);
-					return await btn.update({
+					return replyInteraction(interaction, {
 						components: [container],
 					});
 				}
@@ -252,7 +252,7 @@ module.exports = {
 					container.setAccentColor(CrColors.Hospital);
 				}
 
-				await btn.update({
+				await replyInteraction(interaction, {
 					components: [container],
 				});
 			}

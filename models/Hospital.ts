@@ -47,9 +47,10 @@ export class Hospital {
 			.setUser(this.User)
 			.setAccentColor(CrColors.Hospital)
 			.addSectionComponents(header => header
-				.addTextDisplayComponents(content => content
-					.setContent(`# Hospital\n${s.subtitle}`),
-				)
+				.addTexts([
+					`# Hospital`,
+					s.subtitle,
+				])
 				.setThumbnailAccessory(thumb => thumb
 					.setURL("https://media.discordapp.net/attachments/1233604589064818808/1460599175900168388/Hospital_New.png"),
 				),
@@ -88,9 +89,9 @@ export class Hospital {
 			])
 			.addLargeSeparator()
 			.addSectionComponents(section => section
-				.addTextDisplayComponents(text => text
-					.setContent(s.descriptionPrivate),
-				)
+				.addTexts([
+					s.descriptionPrivate
+				])
 				.setButtonAccessory(buttonPrivate),
 			)
 			.addLargeSeparator()

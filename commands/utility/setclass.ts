@@ -118,9 +118,9 @@ module.exports = {
 				const classData = availableClasses[i];
 
 				container.addSectionComponents(section => section
-					.addTextDisplayComponents(description => description
-						.setContent(getClassDataText(classData)),
-					)
+					.addTexts([
+						getClassDataText(classData)
+					])
 					.setButtonAccessory(new ButtonBuilder()
 						.setLabel(s.select)
 						.setDisabled(classData.Id === user.Class)

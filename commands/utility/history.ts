@@ -91,11 +91,13 @@ module.exports = {
 
 			return new CustomContainerBuilder()
 				.setUser(user)
-				.addTextDisplayComponents(title => title
-					.setContent(`-# ${s.title} ${target.GetNameWithImage()}`))
+				.addTexts([
+					`-# ${s.title} ${target.GetNameWithImage()}`,
+				])
 				.addLargeSeparator()
-				.addTextDisplayComponents(content => content
-					.setContent(historyList))
+				.addTexts([
+					historyList,
+				])
 				.addFooter({
 					text: pagination.Showing(),
 				});

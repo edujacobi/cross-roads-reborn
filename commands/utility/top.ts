@@ -425,8 +425,9 @@ module.exports = {
 				const container = new CustomContainerBuilder()
 					.setUser(user)
 					.setAccentColor(Colors.Green)
-					.addTextDisplayComponents(header => header
-						.setContent(`# Ranking ${title}`))
+					.addTexts([
+						`# Ranking ${title}`
+					])
 					.addLargeSeparator();
 
 				for (let i = 0; i < gangs.length; i++) {
@@ -456,9 +457,11 @@ module.exports = {
 
 					container
 						.addSectionComponents(list => list
-							.addTextDisplayComponents(text => text
-								.setContent(`### ${positionText} ${underscore}[${gang.Acronym}] ${gang.Name}${underscore}${GangColor[gang.Color].Emote.String}\n${description}\n`),
-							)
+							.addTexts([
+								`### ${positionText} ${underscore}[${gang.Acronym}] ${gang.Name}${underscore}${GangColor[gang.Color].Emote.String}`,
+								description,
+								``,
+							])
 							.setThumbnailAccessory(thumb => thumb
 								.setURL(gang.Image || DEFAULT_GANG_IMAGE),
 							),
@@ -485,8 +488,9 @@ module.exports = {
 				const container = new CustomContainerBuilder()
 					.setUser(user)
 					.setAccentColor(Colors.Green)
-					.addTextDisplayComponents(header => header
-						.setContent(`# Ranking ${title}`))
+					.addTexts([
+						`# Ranking ${title}`,
+					])
 					.addLargeSeparator();
 
 				for (let i = 0; i < users.length; i++) {
@@ -525,9 +529,12 @@ module.exports = {
 
 					container
 						.addSectionComponents(list => list
-							.addTextDisplayComponents(text => text
-								.setContent(`### ${positionText} ${gPrefix} ${emoteClass} ${underscore}${user.nickname}${underscore}${gSufix}\n${vPrefix}${valueModified}${vSufix}${count}\n-# \`ID: ${user.id}\`\n`),
-							)
+							.addTexts([
+								`### ${positionText} ${gPrefix} ${emoteClass} ${underscore}${user.nickname}${underscore}${gSufix}`,
+								`${vPrefix}${valueModified}${vSufix}${count}`,
+								`-# \`ID: ${user.id}\``,
+								``,
+							])
 							.setButtonAccessory(btn => btn
 								.setLabel("Opções")
 								.setCustomId("position" + position)

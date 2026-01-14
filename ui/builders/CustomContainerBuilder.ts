@@ -8,6 +8,22 @@ interface FooterOptions {
 	id?: number;
 }
 
+export class CustomSectionBuilder extends SectionBuilder {
+	addTexts(texts: string[], id?: number) {
+		this.addTextDisplayComponents(
+			text => {
+				text.setContent(texts.join("\n"));
+				if (id) {
+					text.setId(id);
+				}
+				return text;
+			},
+		);
+
+		return this;
+	}
+}
+
 export class CustomContainerBuilder extends ContainerBuilder {
 	User?: User;
 
@@ -17,6 +33,26 @@ export class CustomContainerBuilder extends ContainerBuilder {
 
 	setUser(user: User) {
 		this.User = user;
+		return this;
+	}
+
+	// @ts-expect-error: Override with narrower type for CustomSectionBuilder
+	override addSectionComponents(...input: (CustomSectionBuilder | ((builder: CustomSectionBuilder) => CustomSectionBuilder))[]) {
+		const sections: CustomSectionBuilder[] = [];
+
+		input.forEach(builder => {
+			if (builder instanceof CustomSectionBuilder) {
+				sections.push(builder as CustomSectionBuilder);
+			}
+			else {
+				const section = new CustomSectionBuilder();
+				builder(section);
+				sections.push(section);
+			}
+		});
+
+		super.addSectionComponents(...sections);
+
 		return this;
 	}
 

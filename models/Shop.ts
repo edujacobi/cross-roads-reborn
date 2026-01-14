@@ -51,9 +51,9 @@ export class Shop {
 			.setUser(this.User)
 			.setAccentColor(this.Color)
 			.addSectionComponents(header => header
-				.addTextDisplayComponents(description => description
-					.setContent(this.Description),
-				)
+				.addTexts([
+					this.Description
+				])
 				.setThumbnailAccessory(thumb => thumb
 					.setURL(this.Image),
 				),
@@ -120,12 +120,10 @@ export class Shop {
 			}
 
 			this.Container.addSectionComponents(section => section
-				.addTextDisplayComponents(text => text
-					.setContent([
-						`### ${item.Skin[BundleId.Default].String} ${item.Description[this.User.Language]}`,
-						value,
-					].join("\n")),
-				)
+				.addTexts([
+					`### ${item.Skin[BundleId.Default].String} ${item.Description[this.User.Language]}`,
+					value,
+				])
 				.setButtonAccessory(new ButtonBuilder()
 					.setLabel(formatMoney(item.Price, this.User.Language))
 					.setCustomId(`buy${item.Id}`)

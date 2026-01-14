@@ -155,11 +155,9 @@ module.exports = {
 
 				container = addHeader()
 					.addSectionComponents(section => section
-						.addTextDisplayComponents(text => text
-							.setContent(
-								`## ${decoration.Description[language]}`,
-							),
-						)
+						.addTexts([
+							`## ${decoration.Description[language]}`,
+						])
 						.setThumbnailAccessory(preview => preview
 							.setURL("attachment://preview.webp")),
 					)

@@ -172,9 +172,11 @@ module.exports = {
 
 			container.setUser(target)
 				.addSectionComponents(header => header
-					.addTextDisplayComponents(text => text
-						.setContent(`### ${s.title} ${target.Nickname}\n${badges.length > 0 ? `### ${badgeText}\n` : ""} ### ${formatMoney(target.Money, language)}`))
-
+					.addTexts([
+						`### ${s.title} ${target.Nickname}`,
+						badges.length > 0 ? `### ${badgeText}` : "",
+						`### ${formatMoney(target.Money, language)}`,
+					].filter(Boolean))
 					.setThumbnailAccessory(thumb => thumb
 						.setURL("attachment://user.webp"),
 					),

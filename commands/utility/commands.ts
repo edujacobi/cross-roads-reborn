@@ -40,12 +40,10 @@ module.exports = {
 			.setUser(user)
 			.setAccentColor(CrColors.Default)
 			.addSectionComponents(section => section
-				.addTextDisplayComponents(
-					title => title
-						.setContent(`# ${s.title}`),
-					description => description
-						.setContent(text),
-				)
+				.addTexts([
+					`# ${s.title}`,
+					text
+				])
 				.setThumbnailAccessory(thumb => thumb
 					.setURL(interaction.client.user.avatarURL({ size: 512 }) ?? ""),
 				),
@@ -54,7 +52,7 @@ module.exports = {
 				text: interaction.locale,
 			});
 
-		await replyInteraction(interaction, {
+		return replyInteraction(interaction, {
 			components: [container],
 			flags: MessageFlags.IsComponentsV2,
 		});

@@ -4,12 +4,12 @@ import {
 	ButtonStyle,
 	ChatInputCommandInteraction,
 	ComponentType,
-	ContainerBuilder,
 	MessageComponentInteraction,
 	MessageFlags,
 } from "discord.js";
 import { disableButtons, replyInteraction } from "../utils/logic";
 import { Language } from "./Language";
+import { CustomContainerBuilder } from "../ui/builders/CustomContainerBuilder";
 
 export class Pagination {
 	Interaction: ChatInputCommandInteraction;
@@ -17,14 +17,14 @@ export class Pagination {
 	Offset: number = 0;
 	Limit = 5;
 	HowManyRecords: number = 0;
-	CustomizeContainer: (() => Promise<ContainerBuilder>);
+	CustomizeContainer: (() => Promise<CustomContainerBuilder>);
 
 	constructor(interaction: ChatInputCommandInteraction, language: Language) {
 		this.Interaction = interaction;
 		this.Language = language;
 
 		this.CustomizeContainer = () => {
-			return Promise.resolve(new ContainerBuilder());
+			return Promise.resolve(new CustomContainerBuilder());
 		};
 	}
 
@@ -58,11 +58,11 @@ export class Pagination {
 		return Strings[this.Language].showing(this.Offset, this.Limit, this.HowManyRecords);
 	}
 
-	async GenerateContainer(mainContainer?: ContainerBuilder) {
+	async GenerateContainer(mainContainer?: CustomContainerBuilder) {
 		let row = this.GenerateRow();
 		let container = await this.CustomizeContainer();
 
-		const components: (ContainerBuilder | ActionRowBuilder<ButtonBuilder>)[] = mainContainer ? [mainContainer, container] : [container];
+		const components: (CustomContainerBuilder | ActionRowBuilder<ButtonBuilder>)[] = mainContainer ? [mainContainer, container] : [container];
 		if (row.components.length > 0) {
 			components.push(row);
 		}

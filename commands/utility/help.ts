@@ -21,9 +21,9 @@ module.exports = {
 		const container = new CustomContainerBuilder()
 			.setUser(user)
 			.setAccentColor(CrColors.Default)
-			.addTextDisplayComponents(title => title
-				.setContent(`# ${s.title}`),
-			)
+			.addTexts([
+				`# ${s.title}`
+			])
 			.addLargeSeparator()
 			.addTexts([s.description1])
 			.addLargeSeparator()

@@ -347,12 +347,10 @@ module.exports = {
 			.setUser(user)
 			.setAccentColor(Colors.Green)
 			.addSectionComponents(main => main
-				.addTextDisplayComponents(
-					title => title
-						.setContent(`# ${s.gangTitle}`),
-					description => description
-						.setContent(s.gangDescription),
-				)
+				.addTexts([
+					`# ${s.gangTitle}`,
+					s.gangDescription,
+				])
 				.setThumbnailAccessory(thumb => thumb
 					.setURL("https://cdn.discordapp.com/attachments/1233604589064818808/1457724304383938611/GangImage.png"),
 				),
@@ -410,12 +408,11 @@ module.exports = {
 					.setUser(user)
 					.setAccentColor(hexToRGB(convertHexNumberToString(GangColor[gang.Color].Color)))
 					.addSectionComponents(header => header
-						.addTextDisplayComponents(
-							headerText => headerText
-								.setContent(`# [${gang!.Acronym}] ${gang!.Name}${GangColor[gang!.Color].Emote.String}\n_${gang!.Description}_`),
-							levelBar => levelBar
-								.setContent(`-# ${s.level} ${gang!.Level} ${gang!.GetExpBar(6)}`),
-						)
+						.addTexts([
+							`# [${gang!.Acronym}] ${gang!.Name}${GangColor[gang!.Color].Emote.String}`,
+							`_${gang!.Description}_`,
+							`-# ${s.level} ${gang!.Level} ${gang!.GetExpBar(6)}`,
+						])
 						.setThumbnailAccessory(image => image
 							.setURL(gang!.Image || DEFAULT_GANG_IMAGE),
 						),
@@ -509,13 +506,9 @@ module.exports = {
 			const container = new CustomContainerBuilder()
 				.setUser(user)
 				.setAccentColor(GangColor[gang.Color].Color)
-				.addTextDisplayComponents(
-					title => title
-						.setContent(s.gangCreated),
-					description => description
-						.setContent(s.gangCreatedDetails(gang.Name, formatMoney(Gang.CREATION_COST, language))),
-				)
 				.addTexts([
+					s.gangCreated,
+					s.gangCreatedDetails(gang.Name, formatMoney(Gang.CREATION_COST, language)),
 					`### ${s.name}`,
 					`${gang.Name}`,
 					`### ${s.acronym}`,
@@ -527,9 +520,10 @@ module.exports = {
 				]);
 
 			if (image) {
-				container.addTextDisplayComponents(Image => Image
-					.setContent(`### ${s.image}\n${gang.Image}`),
-				);
+				container.addTexts([
+					`### ${s.image}`,
+					`${gang.Image}`,
+				]);
 			}
 
 			container.addFooter();
@@ -592,9 +586,9 @@ module.exports = {
 			const container = new CustomContainerBuilder()
 				.setUser(user)
 				.setAccentColor(GangColor[gang.Color].Color)
-				.addTextDisplayComponents(title => title
-					.setContent(`-# ${s.gangEditted}`),
-				)
+				.addTexts([
+					`-# ${s.gangEditted}`,
+				])
 				.addLargeSeparator();
 
 			if (name) {

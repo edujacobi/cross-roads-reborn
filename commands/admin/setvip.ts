@@ -43,7 +43,7 @@ module.exports = {
 		const target = await checkUser(userId, interaction);
 
 		if (!target) {
-			return await interaction.reply("Didn't find this user");
+			return replyInteraction(interaction, "Didn't find this user");
 		}
 
 		await target?.AddVip(days);

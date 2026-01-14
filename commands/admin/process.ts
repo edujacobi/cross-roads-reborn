@@ -47,16 +47,14 @@ module.exports = {
 				.setThumbnailAccessory(thumb => thumb
 					.setURL(client.user?.avatarURL() ?? ""),
 				)
-				.addTextDisplayComponents(text => text
-					.setContent([
-						`-# ${s.uptime}`,
-						`# ${uptime} min`,
-						`-# ${s.memoryUsage}`,
-						`# ${memoryUsage.toFixed(1)} MB`,
-						`-# ${s.activePlayers}`,
-						`# ${playerCount} (${EmoteString.Online}${onlineUsers} online)`,
-					].join("\n")),
-				),
+				.addTexts([
+					`-# ${s.uptime}`,
+					`# ${uptime} min`,
+					`-# ${s.memoryUsage}`,
+					`# ${memoryUsage.toFixed(1)} MB`,
+					`-# ${s.activePlayers}`,
+					`# ${playerCount} (${EmoteString.Online}${onlineUsers} online)`,
+				]),
 			)
 			.addFooter();
 

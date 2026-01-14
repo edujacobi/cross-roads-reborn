@@ -155,9 +155,9 @@ export class HorseRacing {
 				.setUser(this.User)
 				.setAccentColor(CrColors.Casino)
 				.addSectionComponents(section => section
-					.addTextDisplayComponents(header => header
-						.setContent(s.noRaceScheduled(showTime(newRaceTime.getTime(), true))),
-					)
+					.addTexts([
+						s.noRaceScheduled(showTime(newRaceTime.getTime(), true)),
+					])
 					.setThumbnailAccessory(thumb => thumb
 						.setURL("https://media.discordapp.net/attachments/1233604589064818808/1370492768803225630/horse-racing_1f3c7.png"),
 					),
@@ -215,8 +215,8 @@ export class HorseRacing {
 			.setUser(this.User)
 			.setAccentColor(CrColors.Casino)
 			.addSectionComponents(section => section
-				.addTextDisplayComponents(header => header
-					.setContent(s.nextRace(
+				.addTexts([
+					s.nextRace(
 						race.raceTime,
 						formatMoney(race.totalAmount, this.User.Language),
 						race.totalBets,
@@ -224,8 +224,8 @@ export class HorseRacing {
 						formatMoney(maxBet, this.User.Language),
 						horseList,
 						userBet !== null,
-					)),
-				)
+					),
+				])
 				.setThumbnailAccessory(thumb => thumb
 					.setURL("https://media.discordapp.net/attachments/1233604589064818808/1370492768803225630/horse-racing_1f3c7.png"),
 				),

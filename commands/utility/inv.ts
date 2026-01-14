@@ -86,41 +86,38 @@ module.exports = {
 		let gangImageFile: AttachmentBuilder | null = null;
 
 		async function generateContainer(isClosed: boolean, target: User) {
-			const inv = new CustomContainerBuilder()
+			const container = new CustomContainerBuilder()
 				.setUser(user);
 
 			if (target.IsVip()) {
-				inv.setAccentColor(Colors.Gold);
+				container.setAccentColor(Colors.Gold);
 			}
 
 			if (gang) {
-				inv.setAccentColor(hexToRGB(convertHexNumberToString(GangColor[gang.Color].Color)));
+				container.setAccentColor(hexToRGB(convertHexNumberToString(GangColor[gang.Color].Color)));
 			}
 
 			const gangAcronym = gang ? `[${gang.Acronym}] ` : "";
 
 			if (isClosed) {
-				inv
+				container
 					.addSectionComponents(headerSection => headerSection
-						.addTextDisplayComponents(
-							header => header
-								.setContent(`### ${emoteOnline} ${s.inventoryOf} ${gangAcronym}${target.GetNameWithImage()}`),
-							badges => badges
-								.setContent(badgeText ? `### -# ${badgeText}` : "\u200b"),
-							money => money
-								.setContent(`# ${formatMoney(target.Money, language)}`),
-						)
+						.addTexts([
+							`### ${emoteOnline} ${s.inventoryOf} ${gangAcronym}${target.GetNameWithImage()}`,
+							badgeText ? `### -# ${badgeText}` : "\u200b",
+							`# ${formatMoney(target.Money, language)}`
+						])
 						.setThumbnailAccessory(avatar => avatar
 							.setURL("attachment://user.webp"),
 						),
 					)
-					.addTextDisplayComponents(situation => situation
-						.setContent(`-# ${target.Situation.SimpleEmote}`),
-					)
+					.addTexts([
+						`-# ${target.Situation.SimpleEmote}`
+					])
 					.addLargeSeparator()
-					.addTextDisplayComponents(items => items
-						.setContent(emoteItems.length ? `# ${emoteItems.join("\u0009")}` : `-# ${s.emptyInventory}`),
-					)
+					.addTexts([
+						emoteItems.length ? `# ${emoteItems.join("\u0009")}` : `-# ${s.emptyInventory}`
+					])
 					.addFooter({
 						button: new ButtonBuilder()
 							.setCustomId("moreInfo")
@@ -136,7 +133,7 @@ module.exports = {
 						gangImageFile = new AttachmentBuilder(gangImage, { name: "gang.webp" });
 					}
 
-					inv
+					container
 						.addMediaGalleryComponents(gallery => gallery
 							.addItems(galleryItem => galleryItem
 								.setURL("attachment://gang.webp"),
@@ -144,42 +141,39 @@ module.exports = {
 						)
 						.addSeparatorComponents(separator => separator.setDivider(false));
 				}
-				inv
+
+				const textItems = userItems.map(userItem => {
+					const name = `${userItem.Skin[userItem.SelectedSkin].String} ${userItem.Description[language]}`;
+					const consumable = userItem.Type === ItemType.Consumable;
+					const value = consumable ? String(userItem.Quantity) : showTime(userItem.RemainingTime.getTime(), true);
+					const isLessThan24Hours = consumable ? userItem.Quantity <= 2 : differenceInHours(userItem.RemainingTime, Date.now()) < 24;
+					const isLessThan12Hours = consumable ? userItem.Quantity <= 1 : differenceInHours(userItem.RemainingTime, Date.now()) < 12;
+					const emote = isLessThan12Hours ? EmoteString.LessThan12Hours : isLessThan24Hours ? EmoteString.LessThan24Hours : "";
+
+					return `**${name}** ${value}${emote}`;
+				}).join("\n");
+
+				container
 					.addSectionComponents(headerSection => headerSection
-						.addTextDisplayComponents(
-							header => header
-								.setContent(`### ${s.inventoryOf} ${target.GetNameWithImage()}, ${ClassList[target.Class].Name[language]}\n-# ${textOnline}`),
-							badges => badges
-								.setContent(badgeText ? `### ${badgeText}` : "\u200b"),
-							money => money
-								.setContent(`# ${formatMoney(target.Money, language)}`),
-						)
+						.addTexts([
+							`### ${s.inventoryOf} ${target.GetNameWithImage()}, ${ClassList[target.Class].Name[language]}`,
+							`-# ${textOnline}`,
+							badgeText ? `### ${badgeText}` : "\u200b",
+							`# ${formatMoney(target.Money, language)}`
+						])
 						.setThumbnailAccessory(avatar => avatar
 							.setURL("attachment://user.webp"),
 						),
 					)
-					.addTextDisplayComponents(situation => situation
-						.setContent(`${target.Situation.Complex} • ${EmoteString.Attack}${target.Attributes.Attack} ATK • ${EmoteString.Defense}${target.Attributes.Defense} DEF`),
-					)
+					.addTexts([
+						`${target.Situation.Complex} • ${EmoteString.Attack}${target.Attributes.Attack} ATK • ${EmoteString.Defense}${target.Attributes.Defense} DEF`,
+					])
 					.addLargeSeparator()
-					.addTextDisplayComponents(
-						label => label
-							.setContent(`-# ${s.inventoryItems}`),
-						items => {
-							const text = userItems.map(userItem => {
-								const name = `${userItem.Skin[userItem.SelectedSkin].String} ${userItem.Description[language]}`;
-								const consumable = userItem.Type === ItemType.Consumable;
-								const value = consumable ? String(userItem.Quantity) : showTime(userItem.RemainingTime.getTime(), true);
-								const isLessThan24Hours = consumable ? userItem.Quantity <= 2 : differenceInHours(userItem.RemainingTime, Date.now()) < 24;
-								const isLessThan12Hours = consumable ? userItem.Quantity <= 1 : differenceInHours(userItem.RemainingTime, Date.now()) < 12;
-								const emote = isLessThan12Hours ? EmoteString.LessThan12Hours : isLessThan24Hours ? EmoteString.LessThan24Hours : "";
+					.addTexts([
+						`-# ${s.inventoryItems}`,
+						textItems || `-# ${s.emptyInventory}`,
 
-								return `**${name}** ${value}${emote}`;
-							}).join("\n");
-							items.setContent(text || `-# ${s.emptyInventory}`);
-							return items;
-						},
-					)
+					])
 					.addFooter({
 						button: new ButtonBuilder()
 							.setCustomId("lessInfo")
@@ -189,7 +183,7 @@ module.exports = {
 					});
 			}
 
-			return inv;
+			return container;
 		}
 
 		let container = await generateContainer(true, target);
