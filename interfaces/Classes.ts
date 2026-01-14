@@ -84,7 +84,7 @@ export const ClassList: ClassListType = {
 		},
 		Modifier: {
 			Robbery: {
-				Positive: 1.2,
+				Positive: 1.15,
 			},
 			PrisonEscape: {
 				Positive: 5,
@@ -166,10 +166,10 @@ export const ClassList: ClassListType = {
 				Positive: 1.2,
 			},
 			ScavengeChance: {
-				Positive: 5,
+				Positive: 10,
 			},
 			Job: {
-				Negative: 0.75,
+				Negative: 0.8,
 			},
 		},
 	},

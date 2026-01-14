@@ -40,7 +40,7 @@ module.exports = {
 
 		function getModifierText(modifier?: ClassModifier) {
 			const text = [];
-			const getMultiplicative = (value: number) => (value * 100) - 100;
+			const getMultiplicative = (value: number) => Math.round(value * 100) - 100;
 
 			if (!modifier) {
 				return s.noModifier;
