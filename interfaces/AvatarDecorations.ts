@@ -3,10 +3,10 @@ import { defaultSkinDescription, IDescription } from "./Interfaces";
 import { Language } from "../models/Language";
 
 export interface AvatarDecorations {
-	Id: AvatarDecorationId,
-	Description: IDescription,
-	Shop: boolean;
-	Price: number;
+	readonly Id: AvatarDecorationId,
+	readonly Description: IDescription,
+	readonly Shop: boolean;
+	readonly Price: number;
 }
 
 interface AvatarDecorationListType {
@@ -120,7 +120,7 @@ export const AvatarDecorationList: AvatarDecorationListType = {
 		Shop: true,
 		Price: 1500,
 	},
-};
+} as const;
 
 export function getAvatarDecorationList(): AvatarDecorations[] {
 	return Object.values(AvatarDecorationList);

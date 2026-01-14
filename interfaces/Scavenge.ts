@@ -15,34 +15,36 @@ export enum ScavengeId {
 	MilitaryBase,
 }
 
+export interface ItemRewardScavenge {
+	readonly Id: ItemId;
+	readonly Duration: {
+		Min: number,
+		Max: number,
+	};
+}
+
 export interface IScavenge {
-	Id: ScavengeId,
-	Description: IDescription,
-	Subtitle: IDescription,
-	Emote: IEmote,
-	Reward: {
-		Items: {
-			Id: ItemId;
-			Duration: {
-				Min: number,
-				Max: number,
-			}
-		}[],
-		Money: {
-			Min: number,
-			Max: number,
+	readonly Id: ScavengeId,
+	readonly Description: IDescription,
+	readonly Subtitle: IDescription,
+	readonly Emote: IEmote,
+	readonly Reward: {
+		readonly Items: ItemRewardScavenge[],
+		readonly Money: {
+			readonly Min: number,
+			readonly Max: number,
 		},
 	},
-	SuccessChance: number,
-	NeedAttack: number,
-	Special: boolean,
-	Prison: {
-		Chance: number,
-		Text: IDescription,
+	readonly SuccessChance: number,
+	readonly NeedAttack: number,
+	readonly Special: boolean,
+	readonly Prison: {
+		readonly Chance: number,
+		readonly Text: IDescription,
 	},
-	Hospital: {
-		Chance: number
-		Text: IDescription,
+	readonly Hospital: {
+		readonly Chance: number
+		readonly Text: IDescription,
 	},
 }
 
@@ -624,4 +626,4 @@ export const ScavengeList: ScavengeListType = {
 			},
 		},
 	},
-};
+} as const;

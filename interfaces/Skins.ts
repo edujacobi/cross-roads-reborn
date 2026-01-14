@@ -3,11 +3,11 @@ import { defaultSkinDescription, IDescription } from "./Interfaces";
 import { Language } from "../models/Language";
 
 export interface SkinBundles {
-	Id: BundleId,
-	Description: IDescription,
-	Items: ItemId[],
-	Shop: boolean;
-	Price: number;
+	readonly Id: BundleId,
+	readonly Description: IDescription,
+	readonly Items: ItemId[],
+	readonly Shop: boolean;
+	readonly Price: number;
 }
 
 interface SkinBundleListType {
@@ -114,7 +114,7 @@ export const BundleList: SkinBundleListType = {
 		Shop: false,
 		Price: 5000,
 	},
-};
+} as const;
 
 export function getSkinBundleList(): SkinBundles[] {
 	return Object.values(BundleList);

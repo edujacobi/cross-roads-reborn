@@ -15,6 +15,7 @@ import { Log } from "../utils/log";
 import { RobberyLocation } from "../models/RobberyLocation";
 import { Language } from "../models/Language";
 import { BeatUp } from "../models/BeatUp";
+import { LocationList } from "../interfaces/Locations";
 
 export class RobHistories extends Model<
 	InferAttributes<RobHistories>,
@@ -71,16 +72,16 @@ export class RobHistories extends Model<
 		try {
 			await RobHistories.create({
 				attackerId: robbery.Attacker.Id,
-				locationId: robbery.Location.Id,
+				locationId: robbery.LocationId,
 				success: robbery.Success,
 				money: robbery.MoneyRobbed,
 				type: robbery.Type,
 			});
 
-			Log.Success(`Robbery History for ${robbery.Attacker.Nickname} (ID: ${robbery.Attacker.Id}) and ${robbery.Location.Description[Language.English]} (ID: ${robbery.Location.Id}) added successfully.`);
+			Log.Success(`Robbery History for ${robbery.Attacker.Nickname} (ID: ${robbery.Attacker.Id}) and ${LocationList[robbery.LocationId].Description[Language.English]} (ID: ${robbery.LocationId}) added successfully.`);
 		}
 		catch (err) {
-			Log.Warning(`Something went wrong with adding Robbery History for ${robbery.Attacker.Nickname} (ID: ${robbery.Attacker.Id}) and ${robbery.Location.Description[Language.English]} (ID: ${robbery.Location.Id}).`);
+			Log.Warning(`Something went wrong with adding Robbery History for ${robbery.Attacker.Nickname} (ID: ${robbery.Attacker.Id}) and ${LocationList[robbery.LocationId].Description[Language.English]} (ID: ${robbery.LocationId}).`);
 		}
 	}
 

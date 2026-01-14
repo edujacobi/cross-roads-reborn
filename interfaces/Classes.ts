@@ -28,14 +28,14 @@ export interface ClassModifier {
 }
 
 export interface Class {
-	Id: ClassId;
-	Name: IDescription;
-	Description: IDescription;
-	Image: {
-		Url: string,
-		Emote: IEmote,
+	readonly Id: ClassId;
+	readonly Name: IDescription;
+	readonly Description: IDescription;
+	readonly Image: {
+		readonly Url: string,
+		readonly Emote: IEmote,
 	};
-	Modifier?: ClassModifier;
+	readonly Modifier?: ClassModifier;
 }
 
 export interface ClassListType {
@@ -224,7 +224,7 @@ export const ClassList: ClassListType = {
 			},
 		},
 	},
-};
+} as const;
 
 export function getCasinoClassModifier(classId: ClassId) {
 	return ClassList[classId].Modifier?.Casino?.Positive || ClassList[classId].Modifier?.Casino?.Negative || 1;

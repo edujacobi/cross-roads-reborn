@@ -13,7 +13,7 @@ import { setTimeout as wait } from "timers/promises";
 import { globalStrings, Language } from "./Language";
 import { CrColors } from "../utils/colors";
 import { disableButtons, replyInteraction } from "../utils/logic";
-import { IScavenge, ScavengeId, ScavengeList } from "../interfaces/Scavenge";
+import { IScavenge, ItemRewardScavenge, ScavengeId, ScavengeList } from "../interfaces/Scavenge";
 import { ItemList, ItemType } from "../interfaces/Items";
 import { EmoteString } from "../utils/emotes";
 import { defaultComponent, formatMoney, showTime } from "../utils/ui";
@@ -32,7 +32,11 @@ export class Scavenge {
 	User: User;
 	Interaction: ChatInputCommandInteraction;
 	Thumbnail = "https://media.discordapp.net/attachments/1233604589064818808/1353866194473582592/XeroqueHolmes.png";
-	Place: IScavenge | undefined;
+	PlaceId: ScavengeId | undefined;
+	RewardMoneyMin = 0;
+	RewardMoneyMax = 0;
+	RewardItems: ItemRewardScavenge[] = [];
+	SuccessChance = 0;
 	Timer = {
 		Prison: 0,
 		Hospital: 0,
@@ -44,19 +48,27 @@ export class Scavenge {
 		this.Interaction = interaction;
 	}
 
-	SetPlace(place: IScavenge) {
-		this.Place = place;
-		this.Timer.Prison = 5 * (this.Place.Id + 1);
-		this.Timer.Hospital = 3 * (this.Place.Id + 1);
+	SetPlace(placeId: ScavengeId) {
+		this.PlaceId = placeId;
+		const place = ScavengeList[this.PlaceId];
+		this.RewardItems = place.Reward.Items.map(item => ({
+			...item,
+			Duration: {
+				...item.Duration,
+			},
+		}));
+
+		this.Timer.Prison = 5 * (this.PlaceId + 1);
+		this.Timer.Hospital = 3 * (this.PlaceId + 1);
 
 		// Check here and not in constructor, because user can change class between openning the command and executing the action
 		const userClassChanceModifier = getScavengeChanceClassModifier(this.User.Class);
-		this.Place.SuccessChance += userClassChanceModifier;
+		this.SuccessChance = place.SuccessChance + userClassChanceModifier;
 
 		const userClassDurationModifier = getScavengeDurationClassModifier(this.User.Class);
-		this.Place.Reward.Money.Min *= userClassDurationModifier;
-		this.Place.Reward.Money.Max *= userClassDurationModifier;
-		this.Place.Reward.Items.forEach(item => {
+		this.RewardMoneyMin = Math.floor(place.Reward.Money.Min * userClassDurationModifier);
+		this.RewardMoneyMax = Math.floor(place.Reward.Money.Max * userClassDurationModifier);
+		this.RewardItems.forEach(item => {
 			const data = ItemList[item.Id];
 			item.Duration.Min = data.Type === ItemType.Consumable ? item.Duration.Min + 1 : (item.Duration.Min * userClassDurationModifier);
 			item.Duration.Max = data.Type === ItemType.Consumable ? item.Duration.Max + 1 : (item.Duration.Max * userClassDurationModifier);
@@ -244,7 +256,6 @@ export class Scavenge {
 				await this.User.GetInfo();
 
 				const placeId = Number(btn.customId.replace("confirm", ""));
-				const place = ScavengeList[placeId];
 
 				const { canScavenge, message } = await this.CanScavenge();
 
@@ -261,7 +272,7 @@ export class Scavenge {
 					});
 				}
 
-				this.SetPlace(place);
+				this.SetPlace(placeId);
 
 				await this.StartScavenge();
 			}
@@ -341,13 +352,15 @@ export class Scavenge {
 	}
 
 	async StartScavenge() {
-		if (!this.Place) {
+		if (!this.PlaceId) {
 			return;
 		}
 
+		const place = ScavengeList[this.PlaceId];
+
 		const s = Strings[this.User.Language];
 
-		const placeName = `${this.Place.Emote.String} **${this.Place.Description[this.User.Language]}**`;
+		const placeName = `${place.Emote.String} **${place.Description[this.User.Language]}**`;
 
 		this.Container = new CustomContainerBuilder()
 			.setUser(this.User)
@@ -359,26 +372,28 @@ export class Scavenge {
 			components: [this.Container],
 		});
 
-		this.User.Scavenge.IsScavengingId = this.Place.Id;
+		this.User.Scavenge.IsScavengingId = this.PlaceId;
 		await this.User.Update();
 
-		await wait(10_000 + (2_000 * this.Place.Id));
+		await wait(10_000 + (2_000 * this.PlaceId));
 
 		await this.EndScavenge();
 	}
 
 	async EndScavenge() {
-		if (!this.Place) {
+		if (!this.PlaceId) {
 			return;
 		}
+
+		const place = ScavengeList[this.PlaceId];
 
 		await this.User.GetInfo();
 
 		const s = Strings[this.User.Language];
 
-		const placeName = `${this.Place.Emote.String} **${this.Place.Description[this.User.Language]}**`;
+		const placeName = `${place.Emote.String} **${place.Description[this.User.Language]}**`;
 
-		const success = Math.random() * 100 < this.Place.SuccessChance;
+		const success = Math.random() * 100 < this.SuccessChance;
 
 		if (success) {
 			const rewardMoney = Math.random() < 0.25;
@@ -388,7 +403,7 @@ export class Scavenge {
 			this.User.Scavenge.Found.Total += 1;
 
 			if (rewardMoney) {
-				const reward = this.Place.Reward.Money.Min + Math.floor(Math.random() * (this.Place.Reward.Money.Max - this.Place.Reward.Money.Min));
+				const reward = this.RewardMoneyMin + Math.floor(Math.random() * (this.RewardMoneyMax - this.RewardMoneyMin));
 
 				this.User.Money += reward;
 				this.User.Scavenge.Found.MoneyCount += 1;
@@ -398,7 +413,7 @@ export class Scavenge {
 				rewardDescriptionLog = formatMoney(reward, Language.English);
 			}
 			else {
-				const item = this.Place.Reward.Items[Math.floor(Math.random() * this.Place.Reward.Items.length)];
+				const item = this.RewardItems[Math.floor(Math.random() * this.RewardItems.length)];
 				const data = ItemList[item.Id];
 
 				const existingItem = await UserItems.findOne({
@@ -456,11 +471,11 @@ export class Scavenge {
 				])
 				.addFooter();
 
-			Log.Info(`User ${this.User.Nickname} (Id: ${this.User.Id}) found ${rewardDescriptionLog} while scavenging at ${this.Place.Description[Language.English]} (Id: ${this.Place.Id})`);
+			Log.Info(`User ${this.User.Nickname} (Id: ${this.User.Id}) found ${rewardDescriptionLog} while scavenging at ${place.Description[Language.English]} (Id: ${place.Id})`);
 		}
 		else {
-			const hospitalized = Math.random() * 100 < this.Place.Hospital.Chance;
-			const inprisoned = Math.random() * 100 < this.Place.Prison.Chance;
+			const hospitalized = Math.random() * 100 < place.Hospital.Chance;
+			const inprisoned = Math.random() * 100 < place.Prison.Chance;
 
 			this.User.Scavenge.Found.Failures += 1;
 
@@ -473,7 +488,7 @@ export class Scavenge {
 				this.User.Scavenge.Found.FailureWithHospital += 1;
 				await Notification.Hospital(this.User);
 
-				hospitalText = `\n-# ${EmoteString.Hospital} ${this.Place.Hospital.Text[this.User.Language]} ${s.hospitalized} ${showTime(this.User.Hospital.Time.getTime(), true)}.`;
+				hospitalText = `\n-# ${EmoteString.Hospital} ${place.Hospital.Text[this.User.Language]} ${s.hospitalized} ${showTime(this.User.Hospital.Time.getTime(), true)}.`;
 			}
 			else if (inprisoned) {
 				this.User.Prison.Time = addMinutes(new Date(), this.Timer.Prison);
@@ -483,7 +498,7 @@ export class Scavenge {
 				this.User.Scavenge.Found.FailureWithPrison += 1;
 				await Notification.Free(this.User);
 
-				prisonText = `\n-# ${EmoteString.Prison} ${this.Place.Prison.Text[this.User.Language]} ${s.inprisoned} ${showTime(this.User.Prison.Time.getTime(), true)}.`;
+				prisonText = `\n-# ${EmoteString.Prison} ${place.Prison.Text[this.User.Language]} ${s.inprisoned} ${showTime(this.User.Prison.Time.getTime(), true)}.`;
 			}
 			this.Container = new CustomContainerBuilder()
 				.setUser(this.User)
@@ -494,7 +509,7 @@ export class Scavenge {
 				])
 				.addFooter();
 
-			Log.Info(`User ${this.User.Nickname} (Id: ${this.User.Id}) failed to scavenge at ${this.Place.Description[Language.English]} (Id: ${this.Place.Id}). Hospitalized: ${hospitalized} (${this.Timer.Hospital}min) Inprisoned: ${inprisoned} (${this.Timer.Prison}min)`);
+			Log.Info(`User ${this.User.Nickname} (Id: ${this.User.Id}) failed to scavenge at ${place.Description[Language.English]} (Id: ${place.Id}). Hospitalized: ${hospitalized} (${this.Timer.Hospital}min) Inprisoned: ${inprisoned} (${this.Timer.Prison}min)`);
 		}
 
 		this.User.Scavenge.Count += 1;

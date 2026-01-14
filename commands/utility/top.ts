@@ -1,19 +1,6 @@
-import {
-	ActionRowBuilder, ApplicationCommandOptionType,
-	ButtonBuilder,
-	ButtonStyle,
-	ChatInputCommandInteraction,
-	Colors, CommandInteractionOption, CommandInteractionOptionResolver,
-	ComponentType,
-	ContainerBuilder,
-	ContainerComponent,
-	Locale,
-	MessageFlags,
-	SectionBuilder,
-	SlashCommandBuilder,
-} from "discord.js";
+import { ButtonStyle, ChatInputCommandInteraction, Colors, Locale, SlashCommandBuilder } from "discord.js";
 import { Op } from "sequelize";
-import { DEFAULT_GANG_IMAGE, defaultComponent, formatMoney } from "../../utils/ui";
+import { DEFAULT_GANG_IMAGE, formatMoney } from "../../utils/ui";
 import { Users } from "../../database/Users";
 import { User } from "../../models/User";
 import { Language } from "../../models/Language";
@@ -21,11 +8,9 @@ import { ClassList } from "../../interfaces/Classes";
 import { EmoteBadgeString } from "../../utils/badges";
 import { Pagination } from "../../models/Pagination";
 import { IDescription } from "../../interfaces/Interfaces";
-import { EmoteId, EmoteString } from "../../utils/emotes";
+import { EmoteString } from "../../utils/emotes";
 import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
-import { Robbery } from "../../models/Robbery";
-import { replyInteraction, searchUser } from "../../utils/logic";
-import { CrColors, GangColor } from "../../utils/colors";
+import { GangColor } from "../../utils/colors";
 import Gangs from "../../database/Gangs";
 import { Gang } from "../../models/Gang";
 import { sequelize } from "../../database/Database";

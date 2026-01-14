@@ -131,12 +131,12 @@ export enum BadgeId {
 }
 
 export interface IBadge {
-	Id: BadgeId,
-	Name: IDescription;
-	Description: IDescription;
-	Emoji: {
-		Id: string,
-		String: string
+	readonly Id: BadgeId,
+	readonly Name: IDescription;
+	readonly Description: IDescription;
+	readonly Emoji: {
+		readonly Id: string,
+		readonly String: string
 	};
 }
 
@@ -2102,7 +2102,7 @@ export const BadgeList: BadgeListType = {
 			String: EmoteBadgeString.Season6.TopGang,
 		},
 	},
-};
+} as const;
 
 export function getBadgeList(): IBadge[] {
 	return Object.values(BadgeList);

@@ -71,7 +71,7 @@ module.exports = {
 		const container = defaultComponent({
 			user,
 			color: CrColors.Default,
-			description: `User **${target.GetNameWithImage()}** is now ${ClassList[classId].Name[language]}`,
+			description: `User **${target.GetNameWithImage()}** is now ${ClassList[classId].Name[Language.English]}`,
 		});
 
 		await replyInteraction(interaction, {

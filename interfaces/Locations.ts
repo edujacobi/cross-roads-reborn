@@ -13,17 +13,17 @@ export enum LocationId {
 }
 
 export interface Location {
-	Id: LocationId,
-	Description: IDescription,
-	Emote: IEmote,
-	ImageUrl: string,
-	Reward: {
-		Min: number,
-		Max: number,
+	readonly Id: LocationId,
+	readonly Description: IDescription,
+	readonly Emote: IEmote,
+	readonly ImageUrl: string,
+	readonly Reward: {
+		readonly Min: number,
+		readonly Max: number,
 	},
-	SuccessChance: number,
-	NeedAttack: number,
-	Special: boolean,
+	readonly SuccessChance: number,
+	readonly NeedAttack: number,
+	readonly Special: boolean,
 }
 
 interface LocationListType {
@@ -191,7 +191,7 @@ export const LocationList: LocationListType = {
 		NeedAttack: 90,
 		Special: true,
 	},
-};
+} as const;
 
 export function getLocationList(): Location[] {
 	return Object.values(LocationList);

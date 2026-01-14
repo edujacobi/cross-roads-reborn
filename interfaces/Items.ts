@@ -12,26 +12,26 @@ export enum ItemType {
 }
 
 export interface Items {
-	Id: ItemId,
-	Type: ItemType,
-	Description: IDescription;
-	Skin: {
-		[bundleId: number]: IEmote;
+	readonly Id: ItemId,
+	readonly Type: ItemType,
+	readonly Description: IDescription;
+	readonly Skin: {
+		readonly [bundleId: number]: IEmote;
 	};
-	Price: number;
-	Shop: boolean;
-	BlackMarket: boolean;
-	Attack: number;
-	Defense: number;
-	MoneyAttack: number;
-	MoneyDefense: number;
-	MoreAttack: number,
-	MoreDefense: number,
-	MoreMoneyATK: number,
-	MoreMoneyDEF: number,
-	Special: {
-		Day: boolean,
-		Night: boolean,
+	readonly Price: number;
+	readonly Shop: boolean;
+	readonly BlackMarket: boolean;
+	readonly Attack: number;
+	readonly Defense: number;
+	readonly MoneyAttack: number;
+	readonly MoneyDefense: number;
+	readonly MoreAttack: number,
+	readonly MoreDefense: number,
+	readonly MoreMoneyATK: number,
+	readonly MoreMoneyDEF: number,
+	readonly Special: {
+		readonly Day: boolean,
+		readonly Night: boolean,
 	}
 }
 
@@ -916,7 +916,7 @@ export const ItemList: ItemListType = {
 			Night: false,
 		},
 	},
-};
+} as const;
 
 export function getItemList(): Items[] {
 	return Object.values(ItemList);

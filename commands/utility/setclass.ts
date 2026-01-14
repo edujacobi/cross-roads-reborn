@@ -9,7 +9,7 @@
 	MessageFlags,
 	SlashCommandBuilder,
 } from "discord.js";
-import { disableButtons, isUserBoosterInOfficialServer, replyInteraction } from "../../utils/logic";
+import { disableButtons, replyInteraction } from "../../utils/logic";
 import { formatMoney } from "../../utils/ui";
 import { User } from "../../models/User";
 import { Language } from "../../models/Language";

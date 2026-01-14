@@ -16,7 +16,7 @@ import { CrColors } from "../../utils/colors";
 import { User } from "../../models/User";
 import { Language } from "../../models/Language";
 import { Robbery } from "../../models/Robbery";
-import { getLocationList, LocationList } from "../../interfaces/Locations";
+import { getLocationList } from "../../interfaces/Locations";
 import { RobberyLocation } from "../../models/RobberyLocation";
 import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
 import { getRobberyClassModifier } from "../../interfaces/Classes";
@@ -137,9 +137,9 @@ module.exports = {
 				await select.deferUpdate();
 				await user.GetInfo();
 
-				const location = LocationList[Number(select.values[0])];
+				const locationId = Number(select.values[0]);
 
-				const robbery = new RobberyLocation(user, location);
+				const robbery = new RobberyLocation(user, locationId);
 
 				const { canRob, message } = await robbery.CanRobLocation();
 

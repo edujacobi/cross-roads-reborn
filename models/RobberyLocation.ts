@@ -14,24 +14,28 @@ import { RobHistories } from "../database/RobHistories";
 import { Users } from "../database/Users";
 import { JobId, JobList } from "../interfaces/Jobs";
 import { ClashType, Robbery } from "./Robbery";
-import { Location, LocationList } from "../interfaces/Locations";
+import { LocationId, LocationList } from "../interfaces/Locations";
 import { ClassList, getRobberyClassModifier } from "../interfaces/Classes";
 import { ScavengeId, ScavengeList } from "../interfaces/Scavenge";
 
 export class RobberyLocation extends Robbery {
-	Location: Location;
+	LocationId: LocationId;
+	RewardMin: number;
+	RewardMax: number;
 
-	constructor(attacker: User, location: Location) {
+	constructor(attacker: User, locationId: LocationId) {
 		super(attacker, new User("0", Language.English)); // defender will not be used
 		this.Attacker = attacker;
-		this.Location = location;
+		this.LocationId = locationId;
 		this.Type = ClashType.Location;
 		this.Date = new Date();
 
 		const userClassModifier = getRobberyClassModifier(this.Attacker.Class);
 
-		this.Location.Reward.Min = Math.floor(this.Location.Reward.Min * userClassModifier);
-		this.Location.Reward.Max = Math.floor(this.Location.Reward.Max * userClassModifier);
+		const location = LocationList[this.LocationId];
+
+		this.RewardMin = Math.floor(location.Reward.Min * userClassModifier);
+		this.RewardMax = Math.floor(location.Reward.Max * userClassModifier);
 	}
 
 	async CanRobLocation() {
@@ -39,7 +43,9 @@ export class RobberyLocation extends Robbery {
 		let canRob = true;
 		let message = "";
 
-		if (this.Attacker.Attributes.Attack < this.Location.NeedAttack) {
+		const location = LocationList[this.LocationId];
+
+		if (this.Attacker.Attributes.Attack < location.NeedAttack) {
 			message = `${s.needMoreAttack} ${EmoteString.Robbery}`;
 			canRob = false;
 		}
@@ -105,13 +111,13 @@ export class RobberyLocation extends Robbery {
 	async StartRobbery(interaction: ChatInputCommandInteraction) {
 		const s = Strings[this.Attacker.Language];
 
-		this.AttackerTimeInPrison = 20 * (this.Location.Id + 1);
+		this.AttackerTimeInPrison = 20 * (this.LocationId + 1);
 
-		this.Attacker.Robbery.IsRobbingLocationId = this.Location.Id;
+		this.Attacker.Robbery.IsRobbingLocationId = this.LocationId;
 
 		await this.Attacker.Update();
 
-		Log.Info(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) started a robbery to location ${this.Location.Description[Language.English]} (ID: ${this.Location.Id}).`);
+		Log.Info(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) started a robbery to location ${LocationList[this.LocationId].Description[Language.English]} (ID: ${LocationList[this.LocationId].Id}).`);
 
 		this.Container.Channel
 			.setUser(this.Attacker)
@@ -120,7 +126,7 @@ export class RobberyLocation extends Robbery {
 			], 1)
 			.addLargeSeparator()
 			.addTexts([
-				`${s.tryingToRob} ${this.Location.Emote.String} **${this.Location.Description[this.Attacker.Language]}**`,
+				`${s.tryingToRob} ${LocationList[this.LocationId].Emote.String} **${LocationList[this.LocationId].Description[this.Attacker.Language]}**`,
 			], 50)
 			.addFooter();
 
@@ -129,10 +135,10 @@ export class RobberyLocation extends Robbery {
 			flags: MessageFlags.IsComponentsV2,
 		});
 
-		await wait(10_000 + (5_000 * this.Location.Id));
+		await wait(10_000 + (5_000 * this.LocationId));
 
 		this.Chance = Math.random() * 100;
-		this.Success = this.Chance < this.Location.SuccessChance;
+		this.Success = this.Chance < LocationList[this.LocationId].SuccessChance;
 
 		await this.EndRobbery(interaction);
 	}
@@ -143,7 +149,7 @@ export class RobberyLocation extends Robbery {
 		const s = Strings[this.Attacker.Language];
 
 		if (this.Success) {
-			this.MoneyRobbed = Math.floor(Math.random() * (this.Location.Reward.Max - this.Location.Reward.Min + 1)) + this.Location.Reward.Min;
+			this.MoneyRobbed = Math.floor(Math.random() * (this.RewardMax - this.RewardMin + 1)) + this.RewardMin;
 			this.Attacker.Money += this.MoneyRobbed;
 			this.Attacker.Robbery.SuccessCount += 1;
 			this.Attacker.Robbery.SuccessRobbedSum += this.MoneyRobbed;
@@ -151,9 +157,9 @@ export class RobberyLocation extends Robbery {
 
 			await Notification.RobAgain(this.Attacker);
 
-			this.Container.Channel.changeTextFromSectionId(50, `${s.youRobbed(formatMoney(this.MoneyRobbed, this.Attacker.Language), this.Location.Description[this.Attacker.Language])} ${EmoteString.Robbery}`);
+			this.Container.Channel.changeTextFromSectionId(50, `${s.youRobbed(formatMoney(this.MoneyRobbed, this.Attacker.Language), LocationList[this.LocationId].Description[this.Attacker.Language])} ${EmoteString.Robbery}`);
 
-			Log.Success(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) successfully robbed location ${this.Location.Description[Language.English]} (ID: ${this.Location.Id}) and got ${formatMoney(this.MoneyRobbed, Language.English)}.`);
+			Log.Success(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) successfully robbed location ${LocationList[this.LocationId].Description[Language.English]} (ID: ${LocationList[this.LocationId].Id}) and got ${formatMoney(this.MoneyRobbed, Language.English)}.`);
 		}
 		else {
 			this.Attacker.Prison.Time = addMinutes(new Date(), this.AttackerTimeInPrison);
@@ -169,7 +175,7 @@ export class RobberyLocation extends Robbery {
 				.changeTextFromSectionId(50, `${s.youFailed}! ${EmoteString.Police}
 -# ${s.prisonTime(this.Attacker.Prison.Time)}`);
 
-			Log.Success(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) failed to rob location ${this.Location.Description[Language.English]} (ID: ${this.Location.Id}).`);
+			Log.Success(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) failed to rob location ${LocationList[this.LocationId].Description[Language.English]} (ID: ${LocationList[this.LocationId].Id}).`);
 		}
 
 		this.Container.Channel

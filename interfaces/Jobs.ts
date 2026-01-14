@@ -24,12 +24,12 @@ export enum JobId {
 }
 
 export interface Jobs {
-	Id: JobId,
-	Description: IDescription;
-	Duration: number,
-	Salary: number,
-	NeedItem: ItemId[] | null,
-	Special: boolean,
+	readonly Id: JobId,
+	readonly Description: IDescription;
+	readonly Duration: number,
+	readonly Salary: number,
+	readonly NeedItem: ItemId[] | null,
+	readonly Special: boolean,
 }
 
 interface JobType {
@@ -253,7 +253,7 @@ export const JobList: JobType = {
 		NeedItem: [ItemId.Bazooka, ItemId.Minigun, ItemId.Exoskeleton, ItemId.Jetpack],
 		Special: true,
 	},
-};
+} as const;
 
 export function getJobList(): Jobs[] {
 	return Object.values(JobList);
