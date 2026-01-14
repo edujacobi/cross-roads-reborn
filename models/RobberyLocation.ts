@@ -3,7 +3,6 @@ import { Log } from "../utils/log";
 import { ChatInputCommandInteraction } from "discord.js";
 import { replyWithContainer } from "../utils/logic";
 import { formatMoney, showTime } from "../utils/ui";
-import { CrColors } from "../utils/colors";
 import { EmoteString } from "../utils/emotes";
 import { setTimeout as wait } from "timers/promises";
 import { addHours } from "date-fns/addHours";

@@ -86,8 +86,6 @@ export class Scavenge {
 	}
 
 	AddActionHeader(text: string) {
-		const s = Strings[this.User.Language];
-
 		this.Container = new CustomContainerBuilder()
 			.setUser(this.User)
 			.setAccentColor(CrColors.Scavenge)
