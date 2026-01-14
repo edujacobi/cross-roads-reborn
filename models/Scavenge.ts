@@ -1,16 +1,9 @@
 import { User } from "./User";
-import {
-	ActionRowBuilder,
-	ButtonBuilder,
-	ButtonStyle,
-	ChatInputCommandInteraction,
-	Colors,
-	MessageFlags,
-} from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction } from "discord.js";
 import { setTimeout as wait } from "timers/promises";
 import { globalStrings, Language } from "./Language";
 import { CrColors } from "../utils/colors";
-import { createButtonCollector, disableButtons, replyInteraction, replyWithContainer } from "../utils/logic";
+import { createButtonCollector, disableButtons, replyWithContainer } from "../utils/logic";
 import { IScavenge, ItemRewardScavenge, ScavengeId, ScavengeList } from "../interfaces/Scavenge";
 import { ItemList, ItemType } from "../interfaces/Items";
 import { EmoteString } from "../utils/emotes";
@@ -73,7 +66,7 @@ export class Scavenge {
 		});
 	}
 
-	AddContainerHeader() {
+	AddMainHeader() {
 		const s = Strings[this.User.Language];
 
 		const defaultDescription = `# ${s.title}\n${s.description}`;
@@ -92,6 +85,18 @@ export class Scavenge {
 			.addLargeSeparator();
 	}
 
+	AddActionHeader(text: string) {
+		const s = Strings[this.User.Language];
+
+		this.Container = new CustomContainerBuilder()
+			.setUser(this.User)
+			.setAccentColor(CrColors.Scavenge)
+			.addTexts([
+				`${EmoteString.Scavenge} ${text}`,
+			])
+			.addLargeSeparator();
+	}
+
 	AddContainerFooter() {
 		const s = Strings[this.User.Language];
 		this.Container
@@ -105,7 +110,7 @@ export class Scavenge {
 
 		const places = Object.values(ScavengeList) as IScavenge[];
 
-		this.AddContainerHeader();
+		this.AddMainHeader();
 
 		let text = `${s.userFree}`;
 
@@ -168,9 +173,7 @@ export class Scavenge {
 			if (btn.customId === "back") {
 				this.GenerateDefaultContainer();
 
-				await replyInteraction(this.Interaction, {
-					components: [this.Container],
-				});
+				return replyWithContainer(this.Interaction, this.Container);
 			}
 
 			else if (btn.customId.includes("scavenge")) {
@@ -214,7 +217,7 @@ export class Scavenge {
 					`${textChances}`,
 				].join("\n");
 
-				this.AddContainerHeader();
+				this.AddMainHeader();
 
 				this.Container
 					.addSectionComponents(section => section
@@ -239,9 +242,7 @@ export class Scavenge {
 
 				this.AddContainerFooter();
 
-				await replyInteraction(this.Interaction, {
-					components: [this.Container],
-				});
+				return replyWithContainer(this.Interaction, this.Container);
 			}
 
 			else if (btn.customId.includes("confirm")) {
@@ -258,10 +259,7 @@ export class Scavenge {
 						description: message,
 					});
 
-					return await replyInteraction(this.Interaction, {
-						components: [this.Container],
-						flags: MessageFlags.IsComponentsV2,
-					});
+					return replyWithContainer(this.Interaction, this.Container);
 				}
 
 				this.SetPlace(placeId);
@@ -354,15 +352,15 @@ export class Scavenge {
 
 		const placeName = `${place.Emote.String} **${place.Description[this.User.Language]}**`;
 
-		this.Container = new CustomContainerBuilder()
-			.setUser(this.User)
-			.setAccentColor(CrColors.Scavenge)
-			.addTexts([`${s.scavenging} ${placeName} ${EmoteString.Waiting}`])
+		this.AddActionHeader(s.scavengeStart);
+
+		this.Container
+			.addTexts([
+				`${s.scavenging} ${placeName} ${EmoteString.Waiting}`,
+			])
 			.addFooter();
 
-		await replyInteraction(this.Interaction, {
-			components: [this.Container],
-		});
+		await replyWithContainer(this.Interaction, this.Container);
 
 		this.User.Scavenge.IsScavengingId = this.PlaceId;
 		await this.User.Update();
@@ -453,11 +451,11 @@ export class Scavenge {
 				}
 			}
 
-			this.Container = new CustomContainerBuilder()
-				.setUser(this.User)
-				.setAccentColor(Colors.Green)
+			this.AddActionHeader(s.scavengeEndSuccess);
+
+			this.Container
 				.addTexts([
-					`### ${s.success}!`,
+					`### ${EmoteString.Victory} ${s.success}!`,
 					`${s.youFound(rewardDescription)} ${placeName} ${EmoteString.Scavenge}`,
 					`-# ${s.willBeAbleAgain} ${showTime(addHours(new Date(), 1).getTime(), true)}`,
 				])
@@ -492,11 +490,12 @@ export class Scavenge {
 
 				prisonText = `\n-# ${EmoteString.Prison} ${place.Prison.Text[this.User.Language]} ${s.inprisoned} ${showTime(this.User.Prison.Time.getTime(), true)}.`;
 			}
-			this.Container = new CustomContainerBuilder()
-				.setUser(this.User)
-				.setAccentColor(Colors.Red)
+
+			this.AddActionHeader(s.scavengeEndFailure);
+
+			this.Container
 				.addTexts([
-					`### ${s.failure}!`,
+					`### ${EmoteString.Defeat} ${s.failure}!`,
 					`${s.youDidntFound} ${placeName} ${EmoteString.Scavenge}${hospitalText}${prisonText}`,
 				])
 				.addFooter();
@@ -512,9 +511,7 @@ export class Scavenge {
 
 		await this.User.Update();
 
-		await replyInteraction(this.Interaction, {
-			components: [this.Container],
-		});
+		return replyWithContainer(this.Interaction, this.Container);
 	}
 }
 
@@ -545,6 +542,9 @@ const Strings = {
 		isWanted: (scavengeTime: Date) => `You cannot scavenge while wanted by the police! ${EmoteString.Police}\n-# You can scavenge again ${showTime(scavengeTime.getTime(), true)}!`,
 		hospital: (hospitalTime: Date) => `You cannot scavenge while hospitalized! ${EmoteString.Hospital}\n-# Will be healed ${showTime(hospitalTime.getTime(), true)}!`,
 		scavenging: "Scavenging",
+		scavengeStart: "Scavenge in progress",
+		scavengeEndSuccess: "Scavenge successful",
+		scavengeEndFailure: "Scavenge unsuccessful",
 		youFound: (item: string) => `You found **${item}** while scavenging`,
 		youDidntFound: "You didn't find anything while scavenging",
 		willBeAbleAgain: "Will be able to scavenge again",
@@ -578,6 +578,9 @@ const Strings = {
 		isWanted: (scavengeTime: Date) => `Você não pode vasculhar enquanto está sendo procurado pela polícia! ${EmoteString.Police}\n-# Poderá vasculhar novamente ${showTime(scavengeTime.getTime(), true)}!`,
 		hospital: (hospitalTime: Date) => `Você não pode vasculhar enquanto está hospitalizado! ${EmoteString.Hospital}\n-# Será curado ${showTime(hospitalTime.getTime(), true)}!`,
 		scavenging: "Vasculhando",
+		scavengeStart: "Vasculho em andamento",
+		scavengeEndSuccess: "Vasculho bem-sucedido",
+		scavengeEndFailure: "Vasculho mal-sucedido",
 		youFound: (item: string) => `Você encontrou **${item}** enquanto vasculhava`,
 		youDidntFound: "Você não encontrou nada enquanto vasculhava",
 		willBeAbleAgain: "Poderá vasculhar novamente",
@@ -611,6 +614,9 @@ const Strings = {
 		isWanted: (scavengeTime: Date) => `¡No puedes buscar mientras eres buscado por la policía! ${EmoteString.Police}\n-# ¡Podrás buscar de nuevo ${showTime(scavengeTime.getTime(), true)}!`,
 		hospital: (hospitalTime: Date) => `¡No puedes buscar mientras estás hospitalizado! ${EmoteString.Hospital}\n-# ¡Serás curado ${showTime(hospitalTime.getTime(), true)}!`,
 		scavenging: "Buscando",
+		scavengeStart: "Búsqueda en curso",
+		scavengeEndSuccess: "Búsqueda exitosa",
+		scavengeEndFailure: "Búsqueda fallida",
 		youFound: (item: string) => `Encontraste **${item}** mientras buscabas`,
 		youDidntFound: "No encontraste nada mientras buscabas",
 		willBeAbleAgain: "Podrás buscar de nuevo",

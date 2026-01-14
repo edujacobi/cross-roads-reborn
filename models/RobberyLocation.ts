@@ -1,7 +1,7 @@
 import { User } from "./User";
 import { Log } from "../utils/log";
-import { ChatInputCommandInteraction, MessageFlags } from "discord.js";
-import { replyInteraction } from "../utils/logic";
+import { ChatInputCommandInteraction } from "discord.js";
+import { replyWithContainer } from "../utils/logic";
 import { formatMoney, showTime } from "../utils/ui";
 import { CrColors } from "../utils/colors";
 import { EmoteString } from "../utils/emotes";
@@ -126,14 +126,11 @@ export class RobberyLocation extends Robbery {
 			], 1)
 			.addLargeSeparator()
 			.addTexts([
-				`${s.tryingToRob} ${LocationList[this.LocationId].Emote.String} **${LocationList[this.LocationId].Description[this.Attacker.Language]}**`,
+				`${s.tryingToRob} ${LocationList[this.LocationId].Emote.String} **${LocationList[this.LocationId].Description[this.Attacker.Language]}** ${EmoteString.Waiting}`,
 			], 50)
 			.addFooter();
 
-		await replyInteraction(interaction, {
-			components: [this.Container.Channel],
-			flags: MessageFlags.IsComponentsV2,
-		});
+		await replyWithContainer(interaction, this.Container.Channel);
 
 		await wait(10_000 + (5_000 * this.LocationId));
 
@@ -148,6 +145,9 @@ export class RobberyLocation extends Robbery {
 
 		const s = Strings[this.Attacker.Language];
 
+		const locationEmote = LocationList[this.LocationId].Emote.String;
+		const locationName = LocationList[this.LocationId].Description[this.Attacker.Language];
+
 		if (this.Success) {
 			this.MoneyRobbed = Math.floor(Math.random() * (this.RewardMax - this.RewardMin + 1)) + this.RewardMin;
 			this.Attacker.Money += this.MoneyRobbed;
@@ -157,7 +157,13 @@ export class RobberyLocation extends Robbery {
 
 			await Notification.RobAgain(this.Attacker);
 
-			this.Container.Channel.changeTextFromSectionId(50, `${s.youRobbed(formatMoney(this.MoneyRobbed, this.Attacker.Language), LocationList[this.LocationId].Description[this.Attacker.Language])} ${EmoteString.Robbery}`);
+			const texts = [
+				`### ${EmoteString.Victory} ${s.success}!`,
+				s.youRobbed(formatMoney(this.MoneyRobbed, this.Attacker.Language), `${locationEmote} ${locationName}`),
+				`-# ${s.willBeAbleAgain} ${showTime(this.Attacker.Wanted.Time.getTime(), true)}`,
+			].join("\n");
+
+			this.Container.Channel.changeTextFromSectionId(50, texts);
 
 			Log.Success(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) successfully robbed location ${LocationList[this.LocationId].Description[Language.English]} (ID: ${LocationList[this.LocationId].Id}) and got ${formatMoney(this.MoneyRobbed, Language.English)}.`);
 		}
@@ -170,10 +176,13 @@ export class RobberyLocation extends Robbery {
 
 			await Notification.Free(this.Attacker);
 
-			this.Container.Channel
-				.setAccentColor(CrColors.Police)
-				.changeTextFromSectionId(50, `${s.youFailed}! ${EmoteString.Police}
--# ${s.prisonTime(this.Attacker.Prison.Time)}`);
+			const texts = [
+				`### ${EmoteString.Defeat} ${s.failure}!`,
+				`${s.youFailed(`${locationEmote} ${locationName}`)}!`,
+				`-# ${EmoteString.Prison} ${s.prisonTime(this.Attacker.Prison.Time)}`,
+			].join("\n");
+
+			this.Container.Channel.changeTextFromSectionId(50, texts);
 
 			Log.Success(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) failed to rob location ${LocationList[this.LocationId].Description[Language.English]} (ID: ${LocationList[this.LocationId].Id}).`);
 		}
@@ -182,9 +191,7 @@ export class RobberyLocation extends Robbery {
 			.changeTextFromSectionId(1, `${EmoteString.Robbery} ${s.finishedRobberyAttacker(this.Success)}`)
 			.changeFooterText(formatMoney(this.Attacker.Money, this.Attacker.Language));
 
-		await replyInteraction(interaction, {
-			components: [this.Container.Channel],
-		});
+		await replyWithContainer(interaction, this.Container.Channel);
 
 		this.Attacker.Robbery.IsRobbingLocationId = null;
 		await this.Attacker.Update();
@@ -203,12 +210,15 @@ const Strings = {
 		isWanted: (wantedTime: Date) => `You can't rob while you're wanted by the police! ${EmoteString.Police}\n-# Will be able to rob again ${showTime(wantedTime.getTime(), true)}!`,
 		isInHospital: (hospitalTime: Date) => `You can't rob while you're hospitalized! ${EmoteString.Hospital}\n-# Will be healed ${showTime(hospitalTime.getTime(), true)}!`,
 		// Attacker
-		robberyInProgress: `Robbery in progress ${EmoteString.Waiting}`,
+		robberyInProgress: `Robbery in progress`,
 		tryingToRob: "Trying to rob",
-		youRobbed: (formattedMoney: string, defenderNick: string) => `You robbed ${formattedMoney} from **${defenderNick}**!`,
-		youFailed: "You failed in your attempt",
+		youRobbed: (formattedMoney: string, placeName: string) => `You robbed ${formattedMoney} from **${placeName}**!`,
+		youFailed: (placeName: string) => `You failed in your attempt to rob **${placeName}**`,
 		prisonTime: (time: Date) => `Will be in prison until ${showTime(time.getTime())}`,
 		finishedRobberyAttacker: (success: boolean) => `Robbery ${success ? "successful" : "unsuccessful"}`,
+		willBeAbleAgain: "Will be able to rob again",
+		success: "Success",
+		failure: "Failure",
 	},
 	[Language.Portuguese]: {
 		// CanRob
@@ -219,12 +229,15 @@ const Strings = {
 		isWanted: (wantedTime: Date) => `Você não pode roubar enquanto está sendo procurado pela polícia! ${EmoteString.Police}\n-# Poderá roubar novamente ${showTime(wantedTime.getTime(), true)}!`,
 		isInHospital: (hospitalTime: Date) => `Você não pode roubar enquanto está hospitalizado! ${EmoteString.Hospital}\n-# Será curado ${showTime(hospitalTime.getTime(), true)}!`,
 		// Attacker
-		robberyInProgress: `Roubo em andamento ${EmoteString.Waiting}`,
+		robberyInProgress: `Roubo em andamento`,
 		tryingToRob: "Tentando roubar",
-		youRobbed: (formattedMoney: string, defenderNick: string) => `Você roubou ${formattedMoney} de **${defenderNick}**!`,
-		youFailed: "Você falhou na sua tentativa",
+		youRobbed: (formattedMoney: string, placeName: string) => `Você roubou ${formattedMoney} de **${placeName}**!`,
+		youFailed: (placeName: string) => `Você falhou na sua tentativa de roubar **${placeName}**`,
 		prisonTime: (time: Date) => `Ficará preso até ${showTime(time.getTime())}`,
 		finishedRobberyAttacker: (success: boolean) => `Roubo ${success ? "bem" : "mal"}-sucedido`,
+		willBeAbleAgain: "Poderá roubar novamente",
+		success: "Sucesso",
+		failure: "Falha",
 	},
 	[Language.Spanish]: {
 		// CanRob
@@ -235,11 +248,14 @@ const Strings = {
 		isWanted: (wantedTime: Date) => `¡No puedes robar mientras estás siendo buscado por la policía! ${EmoteString.Police}\n-# Podrá robar nuevamente ${showTime(wantedTime.getTime(), true)}!`,
 		isInHospital: (hospitalTime: Date) => `¡No puedes robar mientras estás hospitalizado! ${EmoteString.Hospital}\n-# ¡Será curado ${showTime(hospitalTime.getTime(), true)}!`,
 		// Attacker
-		robberyInProgress: `Robo en progreso ${EmoteString.Waiting}`,
+		robberyInProgress: `Robo en progreso`,
 		tryingToRob: "Intentando robar",
-		youRobbed: (formattedMoney: string, defenderNick: string) => `¡Robaste ${formattedMoney} de **${defenderNick}**!`,
-		youFailed: `Fallaste en tu intento`,
+		youRobbed: (formattedMoney: string, placeName: string) => `¡Robaste ${formattedMoney} de **${placeName}**!`,
+		youFailed: (placeName: string) => `Fallaste en tu intento de robar **${placeName}**`,
 		prisonTime: (time: Date) => `Estará en prisión hasta ${showTime(time.getTime())}`,
 		finishedRobberyAttacker: (success: boolean) => `Robo ${success ? "exitoso" : "fallido"}`,
+		willBeAbleAgain: "Podrás robar de nuevo",
+		success: "Éxito",
+		failure: "Fracaso",
 	},
 } as const;
