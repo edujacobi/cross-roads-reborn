@@ -1,15 +1,13 @@
 ﻿import {
 	ActionRowBuilder,
 	ChatInputCommandInteraction,
-	ComponentType,
 	Locale,
-	MessageComponentInteraction,
 	MessageFlags,
 	SlashCommandBuilder,
 	StringSelectMenuBuilder,
 	StringSelectMenuOptionBuilder,
 } from "discord.js";
-import { disableButtons, replyInteraction, searchUser } from "../../utils/logic";
+import { createStringSelectCollector, disableButtons, replyInteraction, searchUser } from "../../utils/logic";
 import { defaultComponent, formatMoney, showTime } from "../../utils/ui";
 import { EmoteString } from "../../utils/emotes";
 import { CrColors } from "../../utils/colors";
@@ -76,7 +74,7 @@ module.exports = {
 				.setAccentColor(CrColors.Robbery)
 				.addSectionComponents(section => section
 					.addTexts([
-						s.description
+						s.description,
 					])
 					.setThumbnailAccessory(thumb => thumb
 						.setURL("https://media.discordapp.net/attachments/691019843159326757/791444366727708672/roubar_20201223201323.png"),
@@ -127,11 +125,7 @@ module.exports = {
 				flags: MessageFlags.IsComponentsV2,
 			});
 
-			const collector = response?.createMessageComponentCollector({
-				filter: (i: MessageComponentInteraction) => i.user.id === interaction.user.id,
-				componentType: ComponentType.StringSelect,
-				idle: 60_000,
-			});
+			const collector = createStringSelectCollector(interaction, response);
 
 			collector?.on("collect", async select => {
 				await select.deferUpdate();

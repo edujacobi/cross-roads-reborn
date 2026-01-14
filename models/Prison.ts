@@ -1,21 +1,13 @@
 import { User } from "./User";
 import { globalStrings, Language } from "./Language";
-import {
-	ActionRowBuilder,
-	ButtonBuilder,
-	ButtonStyle,
-	ChatInputCommandInteraction,
-	ComponentType,
-	MessageComponentInteraction,
-	MessageFlags,
-} from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction } from "discord.js";
 import { ItemList } from "../interfaces/Items";
 import { CrColors } from "../utils/colors";
 import { Users } from "../database/Users";
 import { Op } from "sequelize";
 import { defaultComponent, formatMoney, showTime } from "../utils/ui";
 import { EmoteId, EmoteString } from "../utils/emotes";
-import { disableButtons, replyInteraction } from "../utils/logic";
+import { createButtonCollector, disableButtons, replyInteraction, replyWithContainer } from "../utils/logic";
 import { ClassList, getPrisonBribeClassModifier, getPrisonEscapeClassModifier } from "../interfaces/Classes";
 import { setTimeout as wait } from "timers/promises";
 import { addMinutes, addSeconds } from "date-fns";
@@ -145,16 +137,9 @@ export class Prison {
 
 		const { prisoners, buttonPrisoners } = await this.GenerateDefaultContainer();
 
-		const response = await replyInteraction(this.Interaction, {
-			components: [this.Container],
-			flags: MessageFlags.IsComponentsV2,
-		});
+		const response = await replyWithContainer(this.Interaction, this.Container);
 
-		const collector = response?.createMessageComponentCollector({
-			filter: (i: MessageComponentInteraction) => i.user.id === this.Interaction.user.id,
-			componentType: ComponentType.Button,
-			idle: 30_000,
-		});
+		const collector = createButtonCollector(this.Interaction, response, 30_000);
 
 		collector?.on("collect", async btn => {
 			await btn.deferUpdate();

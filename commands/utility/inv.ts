@@ -4,13 +4,11 @@
 	ButtonStyle,
 	ChatInputCommandInteraction,
 	Colors,
-	ComponentType,
 	Locale,
-	MessageComponentInteraction,
 	MessageFlags,
 	SlashCommandBuilder,
 } from "discord.js";
-import { deferReply, disableButtons, replyInteraction, searchUser } from "../../utils/logic";
+import { createButtonCollector, deferReply, disableButtons, replyInteraction, searchUser } from "../../utils/logic";
 import { Language } from "../../models/Language";
 import { EmoteId, EmoteString } from "../../utils/emotes";
 import { differenceInHours, subMinutes } from "date-fns";
@@ -199,11 +197,7 @@ module.exports = {
 			flags: MessageFlags.IsComponentsV2,
 		});
 
-		const collector = response?.createMessageComponentCollector({
-			filter: (i: MessageComponentInteraction) => i.user.id === interaction.user.id,
-			componentType: ComponentType.Button,
-			idle: 60_000,
-		});
+		const collector = createButtonCollector(interaction, response);
 
 		collector?.on("collect", async btn => {
 			if (btn.customId === "moreInfo") {

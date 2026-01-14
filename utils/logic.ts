@@ -3,7 +3,6 @@ import {
 	ActionRowBuilder,
 	ButtonBuilder,
 	ButtonInteraction,
-	CacheType,
 	ChatInputCommandInteraction,
 	ColorResolvable,
 	Colors,
@@ -13,6 +12,8 @@ import {
 	EmbedBuilder,
 	InteractionEditReplyOptions,
 	InteractionReplyOptions,
+	InteractionResponse,
+	Message,
 	MessageComponentInteraction,
 	MessageCreateOptions,
 	MessageFlags,
@@ -138,7 +139,7 @@ export async function sendComplexPrivateMessage(userId: Snowflake | undefined, o
 	}
 }
 
-export async function replyInteraction(interaction: CommandInteraction | ButtonInteraction | MessageComponentInteraction<CacheType>, options: string | MessagePayload | InteractionReplyOptions | InteractionEditReplyOptions) {
+export async function replyInteraction(interaction: CommandInteraction | ButtonInteraction | MessageComponentInteraction, options: string | MessagePayload | InteractionReplyOptions | InteractionEditReplyOptions) {
 	try {
 		if (interaction.replied || interaction.deferred) {
 			return await interaction.editReply(options as InteractionEditReplyOptions);
@@ -154,7 +155,38 @@ export async function replyInteraction(interaction: CommandInteraction | ButtonI
 	}
 }
 
-export async function deferReply(interaction: CommandInteraction | ButtonInteraction | MessageComponentInteraction<CacheType>) {
+export async function replyWithContainer(interaction: CommandInteraction | ButtonInteraction | MessageComponentInteraction, container: CustomContainerBuilder) {
+	return await replyInteraction(interaction, {
+		components: [container],
+		flags: MessageFlags.IsComponentsV2,
+	});
+}
+
+export function createButtonCollector(interaction: CommandInteraction | ButtonInteraction | MessageComponentInteraction, response: Message | InteractionResponse | undefined, idleTime = 60_000) {
+	if (!response) {
+		return;
+	}
+
+	return response.createMessageComponentCollector({
+		filter: (i: MessageComponentInteraction) => i.user.id === interaction.user.id,
+		componentType: ComponentType.Button,
+		idle: idleTime,
+	});
+}
+
+export function createStringSelectCollector(interaction: CommandInteraction | ButtonInteraction | MessageComponentInteraction, response: Message | InteractionResponse | undefined, idleTime = 60_000) {
+	if (!response) {
+		return;
+	}
+
+	return response.createMessageComponentCollector({
+		filter: (i: MessageComponentInteraction) => i.user.id === interaction.user.id,
+		componentType: ComponentType.StringSelect,
+		idle: idleTime,
+	});
+}
+
+export async function deferReply(interaction: CommandInteraction | ButtonInteraction | MessageComponentInteraction) {
 	try {
 		if (interaction.deferred) {
 			return;

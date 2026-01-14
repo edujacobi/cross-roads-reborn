@@ -1,13 +1,5 @@
-import {
-	ActionRowBuilder,
-	ButtonBuilder,
-	ButtonStyle,
-	ChatInputCommandInteraction,
-	ComponentType,
-	MessageComponentInteraction,
-	MessageFlags,
-} from "discord.js";
-import { disableButtons, replyInteraction } from "../utils/logic";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, MessageFlags } from "discord.js";
+import { createButtonCollector, disableButtons, replyInteraction } from "../utils/logic";
 import { Language } from "./Language";
 import { CustomContainerBuilder } from "../ui/builders/CustomContainerBuilder";
 
@@ -72,11 +64,7 @@ export class Pagination {
 			flags: MessageFlags.IsComponentsV2,
 		});
 
-		const collector = response?.createMessageComponentCollector({
-			filter: (i: MessageComponentInteraction) => i.user.id === this.Interaction.user.id,
-			componentType: ComponentType.Button,
-			idle: 30_000,
-		});
+		const collector = createButtonCollector(this.Interaction, response, 30_000);
 
 		collector?.on("collect", async btn => {
 			await btn.deferUpdate();

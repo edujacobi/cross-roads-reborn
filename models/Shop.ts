@@ -6,13 +6,10 @@ import {
 	ButtonStyle,
 	ChatInputCommandInteraction,
 	Colors,
-	ComponentType,
-	MessageComponentInteraction,
-	MessageFlags,
 	RGBTuple,
 } from "discord.js";
 import { globalStrings, Language } from "./Language";
-import { disableButtons, replyInteraction } from "../utils/logic";
+import { createButtonCollector, disableButtons, replyInteraction, replyWithContainer } from "../utils/logic";
 import { EmoteString } from "../utils/emotes";
 import { getItemList, ItemList, Items, ItemType } from "../interfaces/Items";
 import { Users } from "../database/Users";
@@ -234,18 +231,11 @@ export class Shop {
 
 		this.GenerateContainer();
 
-		const response = await replyInteraction(interaction, {
-			components: [this.Container],
-			flags: MessageFlags.IsComponentsV2,
-		});
+		const response = await replyWithContainer(interaction, this.Container);
 
-		const collectorButton = response?.createMessageComponentCollector({
-			filter: (i: MessageComponentInteraction) => i.user.id === interaction.user.id,
-			componentType: ComponentType.Button,
-			idle: 60_000,
-		});
+		const collector = createButtonCollector(interaction, response);
 
-		collectorButton?.on("collect", async btn => {
+		collector?.on("collect", async btn => {
 			await btn.deferUpdate();
 
 			if (btn.customId === "back") {
@@ -321,7 +311,7 @@ export class Shop {
 			}
 		});
 
-		collectorButton?.on("end", async () => {
+		collector?.on("end", async () => {
 			await disableButtons(interaction, this.Container);
 		});
 	}

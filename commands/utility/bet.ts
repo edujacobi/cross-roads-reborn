@@ -3,15 +3,13 @@
 	ButtonBuilder,
 	ButtonStyle,
 	ChatInputCommandInteraction,
-	ComponentType,
 	Locale,
-	MessageComponentInteraction,
 	MessageFlags,
 	SlashCommandBuilder,
 	SlashCommandIntegerOption,
 	SlashCommandNumberOption,
 } from "discord.js";
-import { disableButtons, replyInteraction } from "../../utils/logic";
+import { createButtonCollector, disableButtons, replyInteraction } from "../../utils/logic";
 import { formatMoney } from "../../utils/ui";
 import { CrColors } from "../../utils/colors";
 import { EmoteString } from "../../utils/emotes";
@@ -205,11 +203,7 @@ module.exports = {
 
 		const response = await playBet(value);
 
-		const collector = response?.createMessageComponentCollector({
-			filter: (i: MessageComponentInteraction) => i.user.id === interaction.user.id,
-			componentType: ComponentType.Button,
-			idle: 60_000,
-		});
+		const collector = createButtonCollector(interaction, response);
 
 		collector?.on("end", async () => {
 			await disableButtons(interaction, container);

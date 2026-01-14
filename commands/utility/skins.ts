@@ -3,15 +3,19 @@
 	ButtonBuilder,
 	ButtonStyle,
 	ChatInputCommandInteraction,
-	ComponentType,
 	Locale,
-	MessageComponentInteraction,
 	MessageFlags,
 	SlashCommandBuilder,
 	StringSelectMenuBuilder,
 	StringSelectMenuOptionBuilder,
 } from "discord.js";
-import { disableButtons, replyInteraction } from "../../utils/logic";
+import {
+	createButtonCollector,
+	createStringSelectCollector,
+	disableButtons,
+	replyInteraction,
+	replyWithContainer,
+} from "../../utils/logic";
 import { User } from "../../models/User";
 import { Language } from "../../models/Language";
 import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
@@ -125,22 +129,11 @@ module.exports = {
 
 		let container = await generateDefaultContainer();
 
-		const response = await replyInteraction(interaction, {
-			components: [container],
-			flags: MessageFlags.IsComponentsV2,
-		});
+		const response = await replyWithContainer(interaction, container);
 
-		const collectorButton = response?.createMessageComponentCollector({
-			filter: (i: MessageComponentInteraction) => i.user.id === interaction.user.id,
-			componentType: ComponentType.Button,
-			idle: 60_000,
-		});
+		const collectorButton = createButtonCollector(interaction, response);
 
-		const collectorSelect = response?.createMessageComponentCollector({
-			filter: (i: MessageComponentInteraction) => i.user.id === interaction.user.id,
-			componentType: ComponentType.StringSelect,
-			idle: 60_000,
-		});
+		const collectorSelect = createStringSelectCollector(interaction, response);
 
 		let selectedItem: Items | null = null;
 

@@ -6,14 +6,13 @@ import {
 	ActionRowBuilder,
 	ChatInputCommandInteraction,
 	Colors,
-	ComponentType,
 	MessageComponentInteraction,
 	MessageFlags,
 	StringSelectMenuBuilder,
 	StringSelectMenuOptionBuilder,
 } from "discord.js";
 import { CrColors } from "../utils/colors";
-import { disableButtons, replyInteraction, sendPrivateMessage } from "../utils/logic";
+import { createStringSelectCollector, disableButtons, replyInteraction, sendPrivateMessage } from "../utils/logic";
 import { HorseRaces } from "../database/HorseRaces";
 import { HorseRaceBets } from "../database/HorseRaceBets";
 import { addHours } from "date-fns/addHours";
@@ -319,11 +318,7 @@ export class HorseRacing {
 		let selectedAmount: number | null = null;
 
 		// Handle horse selection
-		const collector = response?.createMessageComponentCollector({
-			filter: (i: MessageComponentInteraction) => i.user.id === interaction.user.id,
-			componentType: ComponentType.StringSelect,
-			idle: 60_000,
-		});
+		const collector = createStringSelectCollector(interaction, response);
 
 		// Flag to track if bet has been placed
 		let betPlaced = false;

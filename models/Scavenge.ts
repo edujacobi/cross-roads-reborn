@@ -5,14 +5,12 @@ import {
 	ButtonStyle,
 	ChatInputCommandInteraction,
 	Colors,
-	ComponentType,
-	MessageComponentInteraction,
 	MessageFlags,
 } from "discord.js";
 import { setTimeout as wait } from "timers/promises";
 import { globalStrings, Language } from "./Language";
 import { CrColors } from "../utils/colors";
-import { disableButtons, replyInteraction } from "../utils/logic";
+import { createButtonCollector, disableButtons, replyInteraction, replyWithContainer } from "../utils/logic";
 import { IScavenge, ItemRewardScavenge, ScavengeId, ScavengeList } from "../interfaces/Scavenge";
 import { ItemList, ItemType } from "../interfaces/Items";
 import { EmoteString } from "../utils/emotes";
@@ -160,18 +158,11 @@ export class Scavenge {
 
 		this.GenerateDefaultContainer();
 
-		const response = await replyInteraction(this.Interaction, {
-			components: [this.Container],
-			flags: MessageFlags.IsComponentsV2,
-		});
+		const response = await replyWithContainer(this.Interaction, this.Container);
 
-		const collectorBtn = response?.createMessageComponentCollector({
-			filter: (i: MessageComponentInteraction) => i.user.id === this.Interaction.user.id,
-			componentType: ComponentType.Button,
-			idle: 60_000,
-		});
+		const collector = createButtonCollector(this.Interaction, response);
 
-		collectorBtn?.on("collect", async btn => {
+		collector?.on("collect", async btn => {
 			await btn.deferUpdate();
 
 			if (btn.customId === "back") {
@@ -279,7 +270,7 @@ export class Scavenge {
 			}
 		});
 
-		collectorBtn?.on("end", async () => {
+		collector?.on("end", async () => {
 			await disableButtons(this.Interaction, this.Container);
 		});
 	}

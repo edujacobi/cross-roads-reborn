@@ -2,14 +2,17 @@
 	ButtonBuilder,
 	ButtonStyle,
 	ChatInputCommandInteraction,
-	ComponentType,
 	Locale,
-	MessageComponentInteraction,
-	MessageFlags,
 	SlashCommandBuilder,
 	TextDisplayBuilder,
 } from "discord.js";
-import { disableButtons, getRandomItemFromArray, replyInteraction } from "../../utils/logic";
+import {
+	createButtonCollector,
+	disableButtons,
+	getRandomItemFromArray,
+	replyInteraction,
+	replyWithContainer,
+} from "../../utils/logic";
 import { Language } from "../../models/Language";
 import { User } from "../../models/User";
 import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
@@ -86,16 +89,9 @@ module.exports = {
 				button: drinkButton,
 			});
 
-		const response = await replyInteraction(interaction, {
-			components: [container],
-			flags: MessageFlags.IsComponentsV2,
-		});
+		const response = await replyWithContainer(interaction, container);
 
-		const collector = response?.createMessageComponentCollector({
-			filter: (i: MessageComponentInteraction) => i.user.id === interaction.user.id,
-			componentType: ComponentType.Button,
-			idle: 60_000,
-		});
+		const collector = createButtonCollector(interaction, response);
 
 		let count = 1;
 

@@ -1,16 +1,8 @@
-import {
-	ActionRowBuilder,
-	ButtonBuilder,
-	ButtonStyle,
-	ChatInputCommandInteraction,
-	ComponentType,
-	MessageComponentInteraction,
-	MessageFlags,
-} from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, MessageFlags } from "discord.js";
 import { User } from "./User";
 import { CrColors } from "../utils/colors";
 import { EmoteString } from "../utils/emotes";
-import { disableButtons, replyInteraction } from "../utils/logic";
+import { createButtonCollector, disableButtons, replyInteraction, replyWithContainer } from "../utils/logic";
 import { EmoteBadgeString } from "../utils/badges";
 import { Users } from "../database/Users";
 import { Op } from "sequelize";
@@ -102,16 +94,9 @@ export class Hospital {
 				button: buttonHospitalized,
 			});
 
-		const response = await replyInteraction(this.Interaction, {
-			components: [this.Container],
-			flags: MessageFlags.IsComponentsV2,
-		});
+		const response = await replyWithContainer(this.Interaction, this.Container);
 
-		const collector = response?.createMessageComponentCollector({
-			filter: (i: MessageComponentInteraction) => i.user.id === this.Interaction.user.id,
-			componentType: ComponentType.Button,
-			idle: 60_000,
-		});
+		const collector = createButtonCollector(this.Interaction, response);
 
 		collector?.on("end", async () => {
 			await disableButtons(this.Interaction, this.Container);

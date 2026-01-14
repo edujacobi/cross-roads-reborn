@@ -4,13 +4,11 @@
 	ButtonBuilder,
 	ButtonStyle,
 	ChatInputCommandInteraction,
-	ComponentType,
 	Locale,
-	MessageComponentInteraction,
 	MessageFlags,
 	SlashCommandBuilder,
 } from "discord.js";
-import { disableButtons, replyInteraction } from "../../utils/logic";
+import { createButtonCollector, disableButtons, replyInteraction, replyWithContainer } from "../../utils/logic";
 import { User } from "../../models/User";
 import { Language } from "../../models/Language";
 import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
@@ -195,22 +193,15 @@ module.exports = {
 
 		let container = await generateDefaultContainer();
 
-		const response = await replyInteraction(interaction, {
-			components: [container],
-			flags: MessageFlags.IsComponentsV2,
-		});
+		const response = await replyWithContainer(interaction, container);
 
-		const collectorButton = response?.createMessageComponentCollector({
-			filter: (i: MessageComponentInteraction) => i.user.id === interaction.user.id,
-			componentType: ComponentType.Button,
-			idle: 60_000,
-		});
+		const collector = createButtonCollector(interaction, response);
 
-		collectorButton?.on("end", async () => {
+		collector?.on("end", async () => {
 			await disableButtons(interaction, container);
 		});
 
-		collectorButton?.on("collect", async btn => {
+		collector?.on("collect", async btn => {
 			await btn.deferUpdate();
 
 			if (btn.customId === "back") {

@@ -5,23 +5,15 @@ import {
 	ChatInputCommandInteraction,
 	ColorResolvable,
 	Colors,
-	ComponentType,
 	Locale,
-	MessageComponentInteraction,
 	MessageFlags,
 	SlashCommandBuilder,
 } from "discord.js";
 import { Language } from "../../models/Language";
 import { User } from "../../models/User";
 import { Gang } from "../../models/Gang";
-import {
-	convertHexNumberToString,
-	defaultComponent,
-	formatMoney,
-	hexToRGB,
-	showTime,
-} from "../../utils/ui";
-import { disableButtons, replyInteraction, searchUser } from "../../utils/logic";
+import { convertHexNumberToString, defaultComponent, formatMoney, hexToRGB, showTime } from "../../utils/ui";
+import { createButtonCollector, disableButtons, replyInteraction, searchUser } from "../../utils/logic";
 import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
 import { GangColor, IGangColor } from "../../utils/colors";
 import { EmoteString } from "../../utils/emotes";
@@ -432,12 +424,7 @@ module.exports = {
 					flags: MessageFlags.IsComponentsV2,
 				});
 
-				const collector = response?.createMessageComponentCollector({
-					filter: (i: MessageComponentInteraction) => i.user.id === user.Id,
-					max: 1,
-					componentType: ComponentType.Button,
-					idle: 60_000,
-				});
+				const collector = createButtonCollector(interaction, response);
 
 				collector?.on("collect", async btn => {
 					if (btn.customId === "info") {
@@ -715,12 +702,7 @@ module.exports = {
 				flags: MessageFlags.IsComponentsV2,
 			});
 
-			const collector = response?.createMessageComponentCollector({
-				filter: (i: MessageComponentInteraction) => i.user.id === user.Id,
-				max: 1,
-				componentType: ComponentType.Button,
-				idle: 60_000,
-			});
+			const collector = createButtonCollector(interaction, response);
 
 			let responded = false;
 
@@ -816,12 +798,7 @@ module.exports = {
 				flags: MessageFlags.IsComponentsV2,
 			});
 
-			const collector = response?.createMessageComponentCollector({
-				filter: (i: MessageComponentInteraction) => i.user.id === user.Id,
-				max: 1,
-				componentType: ComponentType.Button,
-				idle: 60_000,
-			});
+			const collector = createButtonCollector(interaction, response);
 
 			let responded = false;
 
