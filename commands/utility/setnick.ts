@@ -1,18 +1,22 @@
 ﻿import {
+	ButtonStyle,
 	ChatInputCommandInteraction,
 	Colors,
+	ComponentType,
 	Locale,
+	MessageComponentInteraction,
 	MessageFlags,
 	SlashCommandBuilder,
 	SlashCommandStringOption,
 } from "discord.js";
-import { replyInteraction } from "../../utils/logic";
-import { defaultComponent } from "../../utils/ui";
+import { disableButtons, replyInteraction } from "../../utils/logic";
+import { defaultComponent, formatMoney } from "../../utils/ui";
 import { Users } from "../../database/Users";
 import { User } from "../../models/User";
 import { Language } from "../../models/Language";
 import { Op } from "sequelize";
 import { CrColors } from "../../utils/colors";
+import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -35,6 +39,8 @@ module.exports = {
 
 		const s = Strings[language];
 
+		const CHANGE_COST = user.IsVip() ? 75_000 : 100_000;
+
 		if (!/^[A-Za-z]+(?: [A-Za-z]+)*$/.test(newNick)) {
 			const tempUser = new User("0");
 			tempUser.Nickname = s.setting;
@@ -46,7 +52,7 @@ module.exports = {
 				footer: s.footer,
 			});
 
-			return await replyInteraction(interaction, {
+			return replyInteraction(interaction, {
 				components: [container],
 				flags: MessageFlags.IsComponentsV2,
 			});
@@ -71,7 +77,7 @@ module.exports = {
 				footer: s.footer,
 			});
 
-			return await replyInteraction(interaction, {
+			return replyInteraction(interaction, {
 				components: [container],
 				flags: MessageFlags.IsComponentsV2,
 			});
@@ -79,22 +85,78 @@ module.exports = {
 
 		const newUser = user.Nickname === "";
 
+		if (newUser) {
+			await user.SetNickname(newNick);
+
+			const container = defaultComponent({
+				user,
+				color: CrColors.Default,
+				description: s.newPlayer(newNick),
+			});
+
+			return replyInteraction(interaction, {
+				components: [container],
+				flags: MessageFlags.IsComponentsV2,
+			});
+		}
+
 		const oldNick = user.Nickname || interaction.user.displayName;
 
-		await user.SetNickname(newNick);
+		let container = new CustomContainerBuilder()
+			.setUser(user)
+			.setAccentColor(CrColors.Default)
+			.addSectionComponents(section => section
+				.addTextDisplayComponents(text => text
+					.setContent(s.costToChange(CHANGE_COST, newNick, oldNick)),
+				)
+				.setButtonAccessory(btn => btn
+					.setCustomId(`confirm`)
+					.setDisabled(user.Money < CHANGE_COST)
+					.setLabel(formatMoney(CHANGE_COST, language))
+					.setStyle(ButtonStyle.Success),
+				),
+			)
+			.addFooter({
+				text: formatMoney(user.Money, language),
+			});
 
-		const description = newUser ? s.newPlayer(newNick) : s.nickChanged(oldNick, newNick);
-
-		const container = defaultComponent({
-			user,
-			color: CrColors.Default,
-			description,
-			thumbnail: interaction.user.avatarURL() ?? undefined,
-		});
-
-		await replyInteraction(interaction, {
+		const response = await replyInteraction(interaction, {
 			components: [container],
 			flags: MessageFlags.IsComponentsV2,
+		});
+
+		const collectorButton = response?.createMessageComponentCollector({
+			filter: (i: MessageComponentInteraction) => i.user.id === interaction.user.id,
+			componentType: ComponentType.Button,
+			idle: 60_000,
+		});
+
+		collectorButton?.on("end", async () => {
+			await disableButtons(interaction, container);
+		});
+
+		collectorButton?.on("collect", async btn => {
+			await btn.deferUpdate();
+
+			if (btn.customId === "confirm") {
+				await user.GetInfo();
+
+				const success = await user.SetNickname(newNick, CHANGE_COST);
+
+				const description = success ? s.nickChanged(oldNick, newNick) : s.errorChange;
+
+				container = defaultComponent({
+					user,
+					color: CrColors.Default,
+					description,
+					footer: formatMoney(user.Money, language),
+				});
+
+				return replyInteraction(interaction, {
+					components: [container],
+					flags: MessageFlags.IsComponentsV2,
+				});
+			}
 		});
 	},
 };
@@ -107,6 +169,8 @@ const Strings = {
 		newPlayer: (newNick: string) => `-# A new player arrives!\n## Welcome **${newNick}**!\n-# Now, choose your class: \`/setclass\``,
 		nickChanged: (oldNick: string, newNick: string) => `**${oldNick}** now has the nickname **${newNick}**!`,
 		footer: "Please, choose another nickname!",
+		costToChange: (cost: number, newNick: string, oldNick: string) => `The cost for you to change your nickname is ${formatMoney(cost, Language.English)}.\n-# Confirm the change from **${oldNick}** to **${newNick}**?`,
+		errorChange: "You don't have enough money to change your nickname.",
 	},
 	[Language.Portuguese]: {
 		setting: "Configurando nickname",
@@ -115,6 +179,8 @@ const Strings = {
 		newPlayer: (newNick: string) => `-# Um novo jogador chegou!\n## Bem-vindo **${newNick}**!\n-# Agora, escolha sua classe: \`/mudaclasse\``,
 		nickChanged: (oldNick: string, newNick: string) => `**${oldNick}** agora tem o nickname **${newNick}**!`,
 		footer: "Por favor, escolha outro nickname!",
+		costToChange: (cost: number, newNick: string, oldNick: string) => `O custo para você alterar seu nickname é ${formatMoney(cost, Language.Portuguese)}.\n-# Confirmar troca de **${oldNick}** para **${newNick}**?`,
+		errorChange: "Você não possui dinheiro suficiente para alterar seu nickname.",
 	},
 	[Language.Spanish]: {
 		setting: "Configurando nickname",
@@ -123,5 +189,7 @@ const Strings = {
 		newPlayer: (newNick: string) => `-# ¡Un nuevo jugador ha llegado!\n## Bienvenido **${newNick}**!\n-# Ahora, elige tu clase: \`/setclass\``,
 		nickChanged: (oldNick: string, newNick: string) => `**${oldNick}** ahora tiene el nickname **${newNick}**!`,
 		footer: "¡Por favor, elige otro nickname!",
+		costToChange: (cost: number, newNick: string, oldNick: string) => `El costo para que usted cambie su nickname es ${formatMoney(cost, Language.Spanish)}.\n-# ¿Confirmar el cambio de **${oldNick}** a **${newNick}**?`,
+		errorChange: "No tienes suficiente dinero para cambiar su nickname.",
 	},
 } as const;
