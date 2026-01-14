@@ -148,7 +148,7 @@ export class HorseRacing {
 		const race = await HorseRacing.GetNextRace();
 		if (!race) {
 			// No race scheduled, create one
-			const newRaceTime = addHours(new Date(), 4);
+			const newRaceTime = addHours(new Date(), 6);
 			const newRace = await HorseRaces.create({
 				raceTime: newRaceTime,
 			});
