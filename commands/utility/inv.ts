@@ -110,18 +110,18 @@ module.exports = {
 						.addTexts([
 							`### ${emoteOnline} ${s.inventoryOf} ${gangAcronym}${target.GetNameWithImage()}`,
 							badgeText ? `### -# ${badgeText}` : "\u200b",
-							`# ${formatMoney(target.Money, language)}`
+							`# ${formatMoney(target.Money, language)}`,
 						])
 						.setThumbnailAccessory(avatar => avatar
 							.setURL("attachment://user.webp"),
 						),
 					)
 					.addTexts([
-						`-# ${target.Situation.SimpleEmote}`
+						`-# ${target.Situation.SimpleEmote}`,
 					])
 					.addLargeSeparator()
 					.addTexts([
-						emoteItems.length ? `# ${emoteItems.join("\u0009")}` : `-# ${s.emptyInventory}`
+						emoteItems.length ? `# ${emoteItems.join("\u0009")}` : `-# ${s.emptyInventory}`,
 					])
 					.addFooter({
 						button: new ButtonBuilder()
@@ -164,7 +164,7 @@ module.exports = {
 							`### ${s.inventoryOf} ${target.GetNameWithImage()}, ${ClassList[target.Class].Name[language]}`,
 							`-# ${textOnline}`,
 							badgeText ? `### ${badgeText}` : "\u200b",
-							`# ${formatMoney(target.Money, language)}`
+							`# ${formatMoney(target.Money, language)}`,
 						])
 						.setThumbnailAccessory(avatar => avatar
 							.setURL("attachment://user.webp"),
@@ -207,9 +207,9 @@ module.exports = {
 		const collector = createButtonCollector(interaction, response);
 
 		collector?.on("collect", async btn => {
-			if (btn.customId === "moreInfo") {
-				await btn.deferUpdate();
+			await btn.deferUpdate();
 
+			if (btn.customId === "moreInfo") {
 				container = await generateContainer(false, target);
 				if (gangImageFile && !files.includes(gangImageFile)) {
 					files.push(gangImageFile);
@@ -219,6 +219,7 @@ module.exports = {
 					files,
 				});
 			}
+
 			else if (btn.customId === "lessInfo") {
 				container = await generateContainer(true, target);
 				return replyWithContainer(interaction, container);
