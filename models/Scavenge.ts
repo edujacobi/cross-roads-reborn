@@ -140,7 +140,7 @@ export class Scavenge {
 					.setButtonAccessory(new ButtonBuilder()
 						.setLabel(s.title)
 						.setEmoji(place.Emote.Id)
-						.setStyle(ButtonStyle.Secondary)
+						.setStyle(this.User.Attributes.Attack < place.NeedAttack ? ButtonStyle.Secondary : ButtonStyle.Success)
 						.setCustomId(`scavenge${place.Id}`),
 					),
 				);
@@ -340,7 +340,7 @@ export class Scavenge {
 	}
 
 	async StartScavenge() {
-		if (!this.PlaceId) {
+		if (this.PlaceId === undefined) {
 			return;
 		}
 
@@ -369,7 +369,7 @@ export class Scavenge {
 	}
 
 	async EndScavenge() {
-		if (!this.PlaceId) {
+		if (this.PlaceId === undefined) {
 			return;
 		}
 
