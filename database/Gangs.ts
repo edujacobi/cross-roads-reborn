@@ -9,6 +9,7 @@ export class Gangs extends Model<
 	declare id: CreationOptional<number>;
 	declare name: string;
 	declare acronym: string;
+	declare money: number;
 	declare baseId: CreationOptional<number>;
 	declare color: GangColorId;
 	declare image: string | null;
@@ -36,6 +37,11 @@ Gangs.init(
 			type: DataTypes.STRING(4),
 			allowNull: false,
 			unique: true,
+		},
+		money: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0,
 		},
 		baseId: {
 			type: DataTypes.INTEGER,

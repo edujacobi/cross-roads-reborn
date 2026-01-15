@@ -50,6 +50,7 @@ export class Gang {
 	Id = 0;
 	Name = "";
 	Acronym = "";
+	Money = 0;
 	BaseId = GangBaseId.None;
 	Color = GangColorId.Grey;
 	Image: string | null = null;
@@ -141,6 +142,7 @@ export class Gang {
 				image,
 				level: 1,
 				experience: 0,
+				money: 0,
 				leaderId: user.Id,
 			});
 
@@ -190,6 +192,7 @@ export class Gang {
 			newGang.Id = gang.id;
 			newGang.Name = gang.name;
 			newGang.Acronym = gang.acronym;
+			newGang.Money = gang.money;
 			newGang.BaseId = gang.baseId;
 			newGang.Color = gang.color;
 			newGang.Image = gang.image;
@@ -219,8 +222,9 @@ export class Gang {
 
 			const result = new Gang();
 			result.Id = gang.id;
-			result.Acronym = gang.acronym.toUpperCase();
 			result.Name = gang.name;
+			result.Acronym = gang.acronym.toUpperCase();
+			result.Money = gang.money;
 			result.BaseId = gang.baseId;
 			result.Color = gang.color;
 			result.Image = gang.image;
@@ -732,6 +736,7 @@ export class Gang {
 				{
 					name: this.Name,
 					acronym: this.Acronym,
+					money: this.Money,
 					baseId: this.BaseId,
 					color: this.Color,
 					image: this.Image,

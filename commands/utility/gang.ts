@@ -385,35 +385,61 @@ module.exports = {
 					}
 				}
 
+				if (!gang) {
+					return;
+				}
+
 				const membersList = gang.Members.map(member => {
 					const underscore = member.UserId == interaction.user.id ? "__" : "";
-					const emote = gang!.GetMemberEmote(member);
+					const emote = gang.GetMemberEmote(member);
 
 					return `${emote} ${underscore}${member.Nickname}${underscore} - ${member.RoleName}`;
 				}).join("\n");
 
 				const adminIdText = user.Id === process.env.JACOBI_ID ? ` • ${s.gangId(gang.Id)}` : "";
 
+				const gangBase = GangBases[gang.BaseId];
+
 				const container = new CustomContainerBuilder()
 					.setUser(user)
 					.setAccentColor(hexToRGB(convertHexNumberToString(GangColor[gang.Color].Color)))
 					.addSectionComponents(header => header
 						.addTexts([
-							`# [${gang!.Acronym}] ${gang!.Name}${GangColor[gang!.Color].Emote.String}`,
-							`_${gang!.Description}_`,
+							`# [${gang.Acronym}] ${gang.Name}${GangColor[gang.Color].Emote.String}`,
+							`_${gang.Description}_`,
+							`## ${formatMoney(gang.Money, language)}`,
+							// `-# ${s.totalInBalance}`,
 						])
 						.setThumbnailAccessory(image => image
-							.setURL(gang!.Image || DEFAULT_GANG_IMAGE),
+							.setURL(gang.Image || DEFAULT_GANG_IMAGE),
 						),
 					)
-					.addLargeSeparator()
+					.addLargeSeparator();
+
+				if (gang.BaseId !== GangBaseId.None) {
+					container
+						.addSectionComponents(section => section
+							.addTexts([
+								`### ${gangBase.Name[language]}`,
+								`-# ${s.level} ${gang.Level} ${gang.GetExpBar(6)}`,
+							])
+							.setThumbnailAccessory(thumb => thumb
+								.setURL(gangBase.ImageUrl!),
+							),
+						)
+						.addLargeSeparator();
+				}
+				else {
+					container
+						.addTexts([
+							`### ${gangBase.Name[language]}`,
+						])
+						.addLargeSeparator();
+				}
+
+				container
 					.addTexts([
-						`### ${GangBases[gang!.BaseId].Name[language]}`,
-						`-# ${s.level} ${gang!.Level} ${gang!.GetExpBar(6)}`,
-					])
-					.addLargeSeparator()
-					.addTexts([
-						`### ${s.members} (${gang!.Members.length}/${gang!.GetMaxMembers()})`,
+						`### ${s.members} (${gang.Members.length}/${gang.GetMaxMembers()})`,
 						`${membersList}`,
 					])
 					.addFooter({
@@ -988,6 +1014,7 @@ const Strings = {
 		base: `Base`,
 		leader: `Leader`,
 		level: `Level`,
+		totalInBalance: "Total in balance",
 		members: `Members`,
 		created: `Created`,
 		updated: `Last Updated`,
@@ -1046,6 +1073,7 @@ const Strings = {
 		base: `Base`,
 		leader: `Líder`,
 		level: `Nível`,
+		totalInBalance: "Total em caixa",
 		members: `Membros`,
 		created: `Criada em`,
 		updated: `Atualizada em`,
@@ -1104,6 +1132,7 @@ const Strings = {
 		base: `Base`,
 		leader: `Líder`,
 		level: `Nivel`,
+		totalInBalance: "Total en el balance",
 		members: `Miembros`,
 		created: `Creada`,
 		updated: `Actualizada`,
