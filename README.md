@@ -16,57 +16,71 @@ Players can earn money, fight other users, work jobs, manage inventory, and much
 - **Leaderboards**: Compete with other players to reach the top of various leaderboards
 - **VIP System**: Get exclusive benefits by becoming a VIP
 - **Multi-language Support**: Available in English, Portuguese, and Spanish
+- **Gang System**: Create or join gangs, manage members, and compete with other gangs
+- **Cosmetics**: Customize your profile with avatar decorations and item skins
 
 ## Commands
 
 ### Utility Commands
 
-| Command        | Description                               |
-|----------------|-------------------------------------------|
-| `/about`       | Information about the bot                 |
-| `/alms`        | Receive or give alms to other players     |
-| `/avatar`      | View a user's avatar                      |
-| `/beatup`      | Fight other players                       |
-| `/bet`         | Gamble your money                         |
-| `/blackmarket` | Access the black market for special items |
-| `/casino`      | Access the casino                         |
-| `/commands`    | List all available commands               |
-| `/daily`       | Claim your daily reward                   |
-| `/help`        | Get help with bot commands                |
-| `/history`     | View your transaction history             |
-| `/hospital`    | Visit the hospital to heal                |
-| `/inv`         | View your inventory                       |
-| `/invite`      | Get an invite link for the bot            |
-| `/item`        | View information about an item            |
-| `/jobs`        | Work jobs to earn money                   |
-| `/ping`        | Check the bot's latency                   |
-| `/prison`      | Visit the prison                          |
-| `/rob`         | Rob other players                         |
-| `/scavenge`    | Scavenge for items and money              |
-| `/setclass`    | Change your character class               |
-| `/setnick`     | Set your nickname                         |
-| `/shop`        | Visit the shop to buy items               |
-| `/topgamblers` | View the top gamblers                     |
-| `/topmoney`    | View the richest players                  |
-| `/topspenders` | View the top spenders                     |
-| `/topthieves`  | View the top thieves                      |
-| `/topworkers`  | View the top workers                      |
-| `/user`        | View your or another user's profile       |
-| `/vip`         | Information about VIP benefits            |
+| Command          | Description                               |
+|------------------|-------------------------------------------|
+| `/about`         | Information about the bot                 |
+| `/alms`          | Receive or give alms to other players     |
+| `/avatar`        | View a user's avatar                      |
+| `/badges`        | Check all the existing badges             |
+| `/beatup`        | Fight other players                       |
+| `/bet`           | Gamble your money                         |
+| `/blackmarket`   | Access the black market for special items |
+| `/casino`        | Access the casino                         |
+| `/commands`      | List all available commands               |
+| `/daily`         | Claim your daily reward                   |
+| `/decorations`   | Choose the decoration for your avatar     |
+| `/drink`         | Drinks a refreshing beverage!             |
+| `/gang`          | View information about gangs              |
+| `/help`          | Get help with bot commands                |
+| `/history`       | View your transaction history             |
+| `/horserace`     | View and bet on horse races               |
+| `/hospital`      | Visit the hospital to heal                |
+| `/inv`           | View your inventory                       |
+| `/invite`        | Get an invite link for the bot            |
+| `/item`          | View information about an item            |
+| `/jobs`          | Work jobs to earn money                   |
+| `/ping`          | Check the bot's latency                   |
+| `/prison`        | Visit the prison                          |
+| `/rob`           | Rob other players                         |
+| `/scavenge`      | Scavenge for items and money              |
+| `/setclass`      | Change your character class               |
+| `/setnick`       | Set your nickname                         |
+| `/shop`          | Visit the shop to buy items               |
+| `/skins`         | Choose the skins for your items           |
+| `/specialshop`   | Buy permanent customizations              |
+| `/top`           | View various top rankings                 |
+| `/user`          | View your or another user's profile       |
+| `/vip`           | Information about VIP benefits            |
 
 ### Admin Commands
 
 | Command           | Description                       |
 |-------------------|-----------------------------------|
+| `/addcoins`       | Add coins to a user               |
 | `/badge`          | Manage user badges                |
+| `/classes`        | Manage classes                    |
 | `/createevent`    | Create a new event                |
+| `/debugbeatup`    | Debug beatup mechanics            |
+| `/debugrobbery`   | Debug robbery mechanics           |
+| `/endseason`      | End the current season            |
 | `/process`        | Manage system processes           |
+| `/reload`         | Reloads a command                 |
+| `/setclassadm`    | Set a user's class (Admin)        |
 | `/seteternalvip`  | Set a user as eternal VIP         |
+| `/setitem`        | Give items to a user              |
 | `/setmoney`       | Set a user's money                |
 | `/setvip`         | Set a user as VIP                 |
 | `/upcomingevents` | View upcoming events              |
 | `/updateevent`    | Update an existing event          |
 | `/userdb`         | View the tabular data of the user |
+| `/vips`           | See all VIPs and Remaining time   |
 
 
 ## Installation
@@ -119,10 +133,16 @@ Players can earn money, fight other users, work jobs, manage inventory, and much
 - `npm run deploy` - Deploy slash commands to Discord
 - `npm run start` - Start the bot with PM2
 - `npm run stop` - Stop the bot
-- `npm run start-dev` - Start the bot in development mode
+- `npm run start-dev` - Start the bot in development mode (watch mode)
 - `npm run deploy-dev` - Deploy slash commands to the development bot
 - `npm run lint` - Run ESLint
 - `npm run lint-fix` - Run ESLint and fix issues
+
+### Hot Reload
+
+When running in development mode (`npm run start-dev`), the bot uses `tsx` in watch mode, which automatically restarts the bot when files are changed.
+
+Additionally, you can use the `/reload` command (Admin only) to reload a specific command without restarting the entire bot. This is useful for testing changes to command logic quickly.
 
 ## Technical Information
 
