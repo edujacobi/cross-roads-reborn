@@ -6,24 +6,18 @@ import {
 	ColorResolvable,
 	Colors,
 	Locale,
-	MessageFlags,
 	SlashCommandBuilder,
 } from "discord.js";
 import { Language } from "../../models/Language";
 import { User } from "../../models/User";
 import { Gang } from "../../models/Gang";
 import { convertHexNumberToString, defaultComponent, formatMoney, hexToRGB, showTime } from "../../utils/ui";
-import {
-	createButtonCollector, deferReply,
-	disableButtons,
-	replyInteraction,
-	replyWithContainer,
-	searchUser,
-} from "../../utils/logic";
+import { createButtonCollector, deferReply, disableButtons, replyWithContainer, searchUser } from "../../utils/logic";
 import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
 import { GangColor, IGangColor } from "../../utils/colors";
 import { EmoteString } from "../../utils/emotes";
 import { DEFAULT_GANG_IMAGE } from "../../ui/builders/GangImageCanvasBuilder";
+import { GangBaseId, GangBases, GangModifier, getGangBases } from "../../interfaces/GangBases";
 
 enum CommandOption {
 	Info = "info",
@@ -33,6 +27,7 @@ enum CommandOption {
 	Leave = "leave",
 	Kick = "kick",
 	Communicate = "communicate",
+	Base = "base"
 }
 
 module.exports = {
@@ -336,6 +331,14 @@ module.exports = {
 				.setMaxLength(1024)
 				.setRequired(true),
 			),
+		)
+		.addSubcommand(base => base
+			.setName(CommandOption.Base)
+			.setDescription("Buy a base for your gang")
+			.setDescriptionLocalizations({
+				[Locale.PortugueseBR]: "Compre uma base para sua gangue",
+				[Locale.SpanishES]: "Compra una base para tu cuadrilla",
+			}),
 		),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
@@ -382,14 +385,6 @@ module.exports = {
 					}
 				}
 
-				const buttonInfo = new ButtonBuilder()
-					.setLabel("Info")
-					.setCustomId("info")
-					.setStyle(ButtonStyle.Secondary);
-
-				const row = new ActionRowBuilder<ButtonBuilder>()
-					.addComponents([buttonInfo]);
-
 				const membersList = gang.Members.map(member => {
 					const underscore = member.UserId == interaction.user.id ? "__" : "";
 					const emote = gang!.GetMemberEmote(member);
@@ -406,7 +401,6 @@ module.exports = {
 						.addTexts([
 							`# [${gang!.Acronym}] ${gang!.Name}${GangColor[gang!.Color].Emote.String}`,
 							`_${gang!.Description}_`,
-							`-# ${s.level} ${gang!.Level} ${gang!.GetExpBar(6)}`,
 						])
 						.setThumbnailAccessory(image => image
 							.setURL(gang!.Image || DEFAULT_GANG_IMAGE),
@@ -414,29 +408,32 @@ module.exports = {
 					)
 					.addLargeSeparator()
 					.addTexts([
+						`### ${GangBases[gang!.BaseId].Name[language]}`,
+						`-# ${s.level} ${gang!.Level} ${gang!.GetExpBar(6)}`,
+					])
+					.addLargeSeparator()
+					.addTexts([
 						`### ${s.members} (${gang!.Members.length}/${gang!.GetMaxMembers()})`,
 						`${membersList}`,
 					])
 					.addFooter({
 						text: `${s.created} ${showTime(gang.CreatedAt.getTime())}${adminIdText}`,
+						button: new ButtonBuilder()
+							.setLabel("Info")
+							.setCustomId("info")
+							.setStyle(ButtonStyle.Secondary),
 					});
 
 				let responded = false;
-				const response = await replyInteraction(interaction, {
-					components: user.GangId === gang.Id ? [container, row] : [container],
-					flags: MessageFlags.IsComponentsV2,
-				});
+				const response = await replyWithContainer(interaction, container);
 
 				const collector = createButtonCollector(interaction, response);
 
 				collector?.on("collect", async btn => {
+					await btn.deferUpdate();
 					if (btn.customId === "info") {
 						responded = true;
-
-						await replyInteraction(interaction, {
-							components: [containerInfo],
-							flags: MessageFlags.IsComponentsV2,
-						});
+						await replyWithContainer(interaction, containerInfo);
 					}
 				});
 
@@ -497,7 +494,10 @@ module.exports = {
 				.setUser(user)
 				.setAccentColor(GangColor[gang.Color].Color)
 				.addTexts([
-					s.gangCreated,
+					`-# ${s.gangCreated}`,
+				])
+				.addLargeSeparator()
+				.addTexts([
 					s.gangCreatedDetails(gang.Name, formatMoney(Gang.CREATION_COST, language)),
 					`### ${s.name}`,
 					`${gang.Name}`,
@@ -852,6 +852,78 @@ module.exports = {
 
 			return replyWithContainer(interaction, container);
 		}
+
+		case CommandOption.Base: {
+			await deferReply(interaction);
+
+			const gang = await Gang.GetByUserId(user.Id);
+			if (!gang) {
+				return warn(s.notInGang);
+			}
+
+			function getModifierText(modifier?: GangModifier) {
+				const text = [];
+
+				if (!modifier) {
+					return "";
+				}
+
+				if (modifier.PrisonEscape?.Positive) {
+					text.push(`${EmoteString.Victory} +${modifier.PrisonEscape?.Positive}% ${s.prisonModifier} ${s.perLevelModifier} ${EmoteString.Escape}`);
+				}
+				if (modifier.Attack?.Positive) {
+					text.push(`${EmoteString.Victory}${EmoteString.Attack}+${modifier.Attack?.Positive} ATK ${s.perLevelModifier}`);
+				}
+				if (modifier.Defense?.Positive) {
+					text.push(`${EmoteString.Victory}${EmoteString.Defense}+${modifier.Defense?.Positive} DEF ${s.perLevelModifier}`);
+				}
+				return text.join("\n");
+			}
+
+			const BASE_COST = 1_000_000;
+
+			const container = new CustomContainerBuilder()
+				.setUser(user)
+				.setAccentColor(GangColor[gang.Color].Color)
+				.addTexts([
+					`# Bases de gangue`,
+					`Bases custam ${formatMoney(BASE_COST, language)} do caixa da gangue`,
+				])
+				.addLargeSeparator();
+
+			const bases = getGangBases().filter(base => base.Id !== GangBaseId.None);
+
+			for (let i = 0; i < bases.length; i++) {
+				const base = bases[i];
+				container
+					.addSectionComponents(section => section
+						.addTexts([
+							`### ${base.Name[language]}`,
+							base.Description[language],
+						])
+						.setThumbnailAccessory(thumb => thumb
+							.setURL(base.ImageUrl!)),
+					)
+					.addSectionComponents(section => section
+						.addTexts([
+							getModifierText(base.Modifier),
+						])
+						.setButtonAccessory(btn => btn
+							.setStyle(ButtonStyle.Secondary)
+							.setLabel("Comprar")
+							.setCustomId(`buy${base.Id}`),
+						),
+					);
+
+				if (i < bases.length - 1) {
+					container.addLargeSeparator();
+				}
+			}
+
+			container.addFooter();
+
+			return replyWithContainer(interaction, container);
+		}
 		}
 
 		async function checkGangExists(name: string | null, acronym: string | null) {
@@ -908,7 +980,7 @@ const Strings = {
 		gangDescription: `Create your gang and work as a team! Participate in ~~group robberies and gang fights~~!\n\n**Cost to create a gang: ${formatMoney(Gang.CREATION_COST, Language.English)}**`,
 		gangNotFound: `Gang not found with this Id ${EmoteString.Gang}`,
 		gangNotFoundByName: (name: string) => `No gang found with name or acronym **${name}** ${EmoteString.Gang}`,
-		notInGang: `You are not in a gang! To see a specific gang, use the \`name\` parameter ${EmoteString.Gang}`,
+		notInGang: `You are not in a gang! To see a specific gang, use the \`gang info\` command ${EmoteString.Gang}`,
 		errorGettingGang: `Error retrieving gang information ${EmoteString.Gang}`,
 		errorSearchingGang: `Error while searching for gang ${EmoteString.Gang}`,
 		name: `Name`,
@@ -958,13 +1030,15 @@ const Strings = {
 		noResponseKickGang: (nickname: string, gangName: string) => `You took too long to respond and did not kick **${nickname}** from the gang **${gangName}** ${EmoteString.Gang}`,
 		errorCommunicateGangPermission: `You don't have permission to communicate with gang members ${EmoteString.Gang}`,
 		messageSent: `Message sent to gang members! ${EmoteString.Gang}`,
+		prisonModifier: `chance of escaping from prison`,
+		perLevelModifier: "per gang level",
 	},
 	[Language.Portuguese]: {
 		gangTitle: `Gangues`,
 		gangDescription: `Crie sua gangue e trabalhe em equipe! Participe de ~~assaltos em grupo e lutas generalizadas~~!\n\n**Custo para criar uma gangue: ${formatMoney(Gang.CREATION_COST, Language.Portuguese)}**`,
 		gangNotFound: `Gangue não encontrada com este Id ${EmoteString.Gang}`,
 		gangNotFoundByName: (name: string) => `Nenhuma gangue encontrada com o nome ou acrônimo **${name}** ${EmoteString.Gang}`,
-		notInGang: `Você não está em uma gangue! Para ver uma gangue específica, use o parâmetro \`name\` ${EmoteString.Gang}`,
+		notInGang: `Você não está em uma gangue! Para ver uma gangue específica, use o comando \`gangue info\` ${EmoteString.Gang}`,
 		errorGettingGang: `Erro ao buscar informações da gangue ${EmoteString.Gang}`,
 		errorSearchingGang: `Erro ao procurar pela gangue ${EmoteString.Gang}`,
 		name: `Nome`,
@@ -1014,13 +1088,15 @@ const Strings = {
 		noResponseKickGang: (nickname: string, gangName: string) => `Você demorou para responder e não expulsou **${nickname}** da gangue **${gangName}** ${EmoteString.Gang}`,
 		errorCommunicateGangPermission: `Você não possui permissão para comunicar com os membros da gangue ${EmoteString.Gang}`,
 		messageSent: `Mensagem enviada para os membros da gangue! ${EmoteString.Gang}`,
+		prisonModifier: `chance de fugir da prisão`,
+		perLevelModifier: "por nível da gangue",
 	},
 	[Language.Spanish]: {
 		gangTitle: `Cuadrillas`,
 		gangDescription: `¡Crea tu cuadrilla y trabaja en equipo! ¡Participa en ~~atracos grupales y peleas de cuadrillas~~!\n\n**Costo para crear una cuadrilla: ${formatMoney(Gang.CREATION_COST, Language.Spanish)}**`,
 		gangNotFound: `¡Cuadrilla no encontrada con este Id ${EmoteString.Gang}`,
 		gangNotFoundByName: (name: string) => `¡No se encontró ninguna quadrilla con el nombre o acrónimo **${name}** ${EmoteString.Gang}`,
-		notInGang: `¡No estás en una quadrilla! Para ver una cuadrilla específica, usa el parámetro \`name\` ${EmoteString.Gang}`,
+		notInGang: `¡No estás en una quadrilla! Para ver una cuadrilla específica, usa el comando \`cuadrilla info\` ${EmoteString.Gang}`,
 		errorGettingGang: `Error al obtener información de la cuadrilla ${EmoteString.Gang}`,
 		errorSearchingGang: `Error al buscar la cuadrilla ${EmoteString.Gang}`,
 		name: `Nombre`,
@@ -1070,5 +1146,7 @@ const Strings = {
 		noResponseKickGang: (nickname: string, gangName: string) => `Te demoraste en responder y no expulsaste a **${nickname}** de la cuadrilla **${gangName}** ${EmoteString.Gang}`,
 		errorCommunicateGangPermission: `No tienes permiso para comunicarte con los miembros de la cuadrilla ${EmoteString.Gang}`,
 		messageSent: `¡Mensaje enviado a los miembros de la cuadrilla! ${EmoteString.Gang}`,
+		prisonModifier: `probabilidad de escapar de la cárcel`,
+		perLevelModifier: "por nivel de cuadrilla",
 	},
 } as const;

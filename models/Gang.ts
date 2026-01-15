@@ -7,7 +7,6 @@ import { Language } from "./Language";
 import { defaultComponent, formatMoney } from "../utils/ui";
 import { Users } from "../database/Users";
 import { Op } from "sequelize";
-import { IDescription } from "../interfaces/Interfaces";
 import { GangColor, GangColorId } from "../utils/colors";
 import { sendComplexPrivateMessage } from "../utils/logic";
 import {
@@ -23,6 +22,8 @@ import {
 import { getClient } from "../client";
 import { EmoteString } from "../utils/emotes";
 import { CustomContainerBuilder } from "../ui/builders/CustomContainerBuilder";
+import { GangBaseId } from "../interfaces/GangBases";
+import { IDescription } from "../interfaces/Interfaces";
 
 export enum GangPermission {
 	Invite,
@@ -44,84 +45,6 @@ export interface GangRole {
 	Name: string;
 	Permissions: GangPermission[];
 }
-
-interface LocalizedString {
-	[Language.English]: string;
-	[Language.Portuguese]: string;
-	[Language.Spanish]: string;
-}
-
-export enum GangBaseId {
-	None,
-	Airport,
-	Bunker,
-	BikeClub
-}
-
-export interface IGangBase {
-	Id: GangBaseId,
-	Name: IDescription,
-	Description: IDescription,
-}
-
-interface GangBaseType {
-	[key: number]: IGangBase,
-}
-
-export const GangBases: GangBaseType = {
-	[GangBaseId.None]: {
-		Id: GangBaseId.None,
-		Name: {
-			[Language.English]: "Without base",
-			[Language.Portuguese]: "Sem base",
-			[Language.Spanish]: "Sin base",
-		},
-		Description: {
-			[Language.English]: "-",
-			[Language.Portuguese]: "-",
-			[Language.Spanish]: "-",
-		},
-	},
-	[GangBaseId.Airport]: {
-		Id: GangBaseId.Airport,
-		Name: {
-			[Language.English]: "Abandoned Airport",
-			[Language.Portuguese]: "Aeroporto Abandonado",
-			[Language.Spanish]: "Aeropuerto Abandonado",
-		},
-		Description: {
-			[Language.English]: "-",
-			[Language.Portuguese]: "-",
-			[Language.Spanish]: "-",
-		},
-	},
-	[GangBaseId.Bunker]: {
-		Id: GangBaseId.Bunker,
-		Name: {
-			[Language.English]: "Subterranean Bunker",
-			[Language.Portuguese]: "Bunker Subterrâneo",
-			[Language.Spanish]: "Bunker Subterráneo",
-		},
-		Description: {
-			[Language.English]: "-",
-			[Language.Portuguese]: "-",
-			[Language.Spanish]: "-",
-		},
-	},
-	[GangBaseId.BikeClub]: {
-		Id: GangBaseId.BikeClub,
-		Name: {
-			[Language.English]: "Anarchist Bikeclub",
-			[Language.Portuguese]: "Motoclube Anarquista",
-			[Language.Spanish]: "Club de Motociclistas Anarquistas",
-		},
-		Description: {
-			[Language.English]: "-",
-			[Language.Portuguese]: "-",
-			[Language.Spanish]: "-",
-		},
-	},
-};
 
 export class Gang {
 	Id = 0;
@@ -981,7 +904,7 @@ export class Gang {
 		return role.Permissions.includes(GangPermission.EditGang);
 	}
 
-	async OfficialCommunication(sender: User, message: LocalizedString | string) {
+	async OfficialCommunication(sender: User, message: IDescription | string) {
 
 		Log.Info(`Gang ${this.Name} (Id: ${this.Id}) official communication from ${sender.Nickname} (Id: ${sender.Id}): ${message}`);
 
@@ -996,11 +919,11 @@ export class Gang {
 		const container = new CustomContainerBuilder()
 			.setAccentColor(GangColor[this.Color].Color)
 			.addTexts([
-				message
+				message,
 			])
 			.addLargeSeparator()
 			.addTexts([
-				`-# ${sender.GetNameWithImage()} • ${EmoteString.Gang} ${this.Name} (${this.Acronym})${specialMessage ? ` • **${specialMessage}**` : ""}`
+				`-# ${sender.GetNameWithImage()} • ${EmoteString.Gang} ${this.Name} (${this.Acronym})${specialMessage ? ` • **${specialMessage}**` : ""}`,
 			]);
 
 		return await sendComplexPrivateMessage(member.UserId, {
@@ -1009,7 +932,7 @@ export class Gang {
 		});
 	}
 
-	async ComunicateAllMembers(sender: User, message: LocalizedString | string, specialMessage?: LocalizedString) {
+	async ComunicateAllMembers(sender: User, message: IDescription | string, specialMessage?: IDescription) {
 		const promises: Promise<Message<false> | undefined>[] = [];
 
 		for (const member of this.Members) {
