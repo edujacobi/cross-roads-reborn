@@ -70,6 +70,7 @@ module.exports = {
 		let currentBet = value;
 		let currentBalance = 0;
 		let winStreak = 0;
+		let isAllIn = false;
 
 		const s = Strings[language];
 
@@ -80,7 +81,7 @@ module.exports = {
 				.setUser(user)
 				.setAccentColor(CrColors.Casino)
 				.addTexts([
-					`-# ${EmoteString.Casino} ${s.casino} • ${s.betting} ${formatMoney(currentBet, language)}`,
+					`-# ${EmoteString.Casino} ${s.casino} • ${s.betting} ${formatMoney(currentBet, language)} ${isAllIn ? `• **ALL IN!**` : ""}`,
 				])
 				.addLargeSeparator();
 		}
@@ -156,6 +157,11 @@ module.exports = {
 							.setLabel(s.betDouble)
 							.setDisabled(user.Money < value * 2)
 							.setStyle(ButtonStyle.Success),
+						new ButtonBuilder()
+							.setCustomId("allin")
+							.setLabel("ALL IN!")
+							.setDisabled(user.Money === 0)
+							.setStyle(ButtonStyle.Danger),
 					),
 				)
 				.addFooter({
@@ -202,14 +208,24 @@ module.exports = {
 
 		collector?.on("collect", async btn => {
 			await btn.deferUpdate();
+			await user.GetInfo();
 
 			if (btn.customId === "playsamevalue") {
+				isAllIn = false;
 				if (!await checkIfCanPlay(currentBet)) return;
 				await playBet(currentBet);
 			}
 
 			else if (btn.customId === "playdouble") {
 				currentBet *= 2;
+				isAllIn = false;
+				if (!await checkIfCanPlay(currentBet)) return;
+				await playBet(currentBet);
+			}
+
+			else if (btn.customId === "allin") {
+				currentBet = user.Money;
+				isAllIn = true;
 				if (!await checkIfCanPlay(currentBet)) return;
 				await playBet(currentBet);
 			}
