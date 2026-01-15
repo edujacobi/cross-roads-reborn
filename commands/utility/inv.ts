@@ -81,6 +81,17 @@ module.exports = {
 
 		const emoteItems = [...userItems].sort((a, b) => a.Id - b.Id).map(weapon => weapon.Skin[weapon.SelectedSkin].String);
 
+		const textItems = userItems.map(userItem => {
+			const name = `${userItem.Skin[userItem.SelectedSkin].String} ${userItem.Description[language]}`;
+			const consumable = userItem.Type === ItemType.Consumable;
+			const value = consumable ? String(userItem.Quantity) : showTime(userItem.RemainingTime.getTime(), true);
+			const isLessThan24Hours = consumable ? userItem.Quantity <= 2 : differenceInHours(userItem.RemainingTime, Date.now()) < 24;
+			const isLessThan12Hours = consumable ? userItem.Quantity <= 1 : differenceInHours(userItem.RemainingTime, Date.now()) < 12;
+			const emote = isLessThan12Hours ? EmoteString.LessThan12Hours : isLessThan24Hours ? EmoteString.LessThan24Hours : "";
+
+			return `**${name}** ${value}${emote}`;
+		}).join("\n");
+
 		const lastCommand = interaction.client.userLastCommand.get(target.Id) || 0;
 
 		const online = new Date(lastCommand) > subMinutes(new Date(), 15);
@@ -113,11 +124,12 @@ module.exports = {
 							`# ${formatMoney(target.Money, language)}`,
 						])
 						.setThumbnailAccessory(avatar => avatar
+							.setDescription(`Image of ${user.Nickname}`)
 							.setURL("attachment://user.webp"),
 						),
 					)
 					.addTexts([
-						`-# ${target.Situation.SimpleEmote}`,
+						`-# ${target.Situation.SimpleEmote} •${EmoteString.Attack}${target.Attributes.Attack}${EmoteString.Defense}${target.Attributes.Defense}`,
 					])
 					.addLargeSeparator()
 					.addTexts([
@@ -143,17 +155,6 @@ module.exports = {
 						.addSmallSeparator(false);
 				}
 
-				const textItems = userItems.map(userItem => {
-					const name = `${userItem.Skin[userItem.SelectedSkin].String} ${userItem.Description[language]}`;
-					const consumable = userItem.Type === ItemType.Consumable;
-					const value = consumable ? String(userItem.Quantity) : showTime(userItem.RemainingTime.getTime(), true);
-					const isLessThan24Hours = consumable ? userItem.Quantity <= 2 : differenceInHours(userItem.RemainingTime, Date.now()) < 24;
-					const isLessThan12Hours = consumable ? userItem.Quantity <= 1 : differenceInHours(userItem.RemainingTime, Date.now()) < 12;
-					const emote = isLessThan12Hours ? EmoteString.LessThan12Hours : isLessThan24Hours ? EmoteString.LessThan24Hours : "";
-
-					return `**${name}** ${value}${emote}`;
-				}).join("\n");
-
 				container
 					.addSectionComponents(headerSection => headerSection
 						.addTexts([
@@ -163,6 +164,7 @@ module.exports = {
 							`# ${formatMoney(target.Money, language)}`,
 						])
 						.setThumbnailAccessory(avatar => avatar
+							.setDescription(`Image of ${user.Nickname}`)
 							.setURL("attachment://user.webp"),
 						),
 					)
