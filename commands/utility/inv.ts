@@ -139,12 +139,8 @@ module.exports = {
 					}
 
 					container
-						.addMediaGalleryComponents(gallery => gallery
-							.addItems(galleryItem => galleryItem
-								.setURL("attachment://gang.webp"),
-							),
-						)
-						.addSeparatorComponents(separator => separator.setDivider(false));
+						.addImage("attachment://gang.webp")
+						.addSmallSeparator(false);
 				}
 
 				const textItems = userItems.map(userItem => {

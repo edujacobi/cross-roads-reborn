@@ -154,4 +154,13 @@ export class CustomContainerBuilder extends ContainerBuilder {
 			.setDivider(visible));
 		return this;
 	}
+
+	addImage(url: string) {
+		this.addMediaGalleryComponents(gallery => gallery
+			.addItems(galleryItem => galleryItem
+				.setURL(url),
+			),
+		);
+		return this;
+	}
 }

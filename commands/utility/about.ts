@@ -26,11 +26,7 @@ module.exports = {
 			.addTexts([
 				`# ${s.title}`,
 			])
-			.addMediaGalleryComponents(gallery => gallery
-				.addItems(image => image
-					.setURL("https://media.discordapp.net/attachments/1233604589064818808/1374807950438170675/Header_About.png?ex=682f652e&is=682e13ae&hm=c96de10ef200a0502bf105d6a00a0b182d683ba4313cbb59820990401169f3a8&=&format=webp&quality=lossless"),
-				),
-			)
+			.addImage("https://media.discordapp.net/attachments/1233604589064818808/1374807950438170675/Header_About.png")
 			.addTexts([
 				`### ${s.direction}`,
 				`Jacobi`,
