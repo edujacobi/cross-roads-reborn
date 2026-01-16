@@ -732,7 +732,7 @@ export class HorseRacing {
 
 	// Schedule the next race
 	static async ScheduleNextRace(): Promise<void> {
-		const nextRaceTime = addHours(new Date(), 4);
+		const nextRaceTime = addHours(new Date(), 6);
 		const newRace = await HorseRaces.create({
 			raceTime: nextRaceTime,
 		});
