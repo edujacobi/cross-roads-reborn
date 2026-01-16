@@ -448,7 +448,7 @@ module.exports = {
 						.addSectionComponents(section => section
 							.addTexts([
 								`### ${gangBase.Name[language]}`,
-								`-# ${s.level} ${gang.Level} ${gang.GetExpBar(6)}`,
+								`-# ${s.level} ${gang.Level} ${gang.GetExpBar(6, language)}`,
 							])
 							.setThumbnailAccessory(thumb => thumb
 								.setURL(gangBase.ImageUrl!),

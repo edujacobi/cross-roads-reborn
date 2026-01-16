@@ -453,7 +453,7 @@ module.exports = {
 					const description = [
 						`${gang.Members.length}/${gang.GetMaxMembers()} ${members}`,
 						`-# ${leader}: **${leaderUser.GetNameWithImage()}**`,
-						`-# ${gang.GetExpBar(6)}`,
+						`-# ${gang.GetExpBar(6, language)}`,
 					].join("\n");
 
 					container
