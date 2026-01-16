@@ -40,7 +40,10 @@ export interface GangMember {
 	PermissionCount: number;
 	RoleId: number;
 	RoleName: string;
-	LastDeposit: Date;
+	Deposit: {
+		Time: Date;
+		Amount: number;
+	};
 }
 
 export interface GangRole {
@@ -193,6 +196,7 @@ export class Gang {
 				gangId: gang.id,
 				userId: user.Id,
 				roleId: leaderRole.id,
+				depositTime: addHours(new Date(), Gang.TIME_BETWEEN_DEPOSITS * 2),
 			});
 
 			Log.Success(`User ${user.Nickname} (Id: ${user.Id}) created gang '${name}' (Id: ${gang.id}) for ${formatMoney(Gang.CREATION_COST, Language.English)}.`);
@@ -366,7 +370,10 @@ export class Gang {
 						RoleId: member.roleId,
 						PermissionCount: howManyPermissions,
 						RoleName: role ? role.name : "???",
-						LastDeposit: member.lastDeposit,
+						Deposit: {
+							Time: member.depositTime,
+							Amount: member.depositAmount,
+						},
 					});
 				}
 			}
@@ -621,7 +628,7 @@ export class Gang {
 					gangId: this.Id,
 					userId: user.Id,
 					roleId: memberRole.Id,
-					lastDeposit: addHours(new Date(), Gang.TIME_BETWEEN_DEPOSITS * 2),
+					depositTime: addHours(new Date(), Gang.TIME_BETWEEN_DEPOSITS * 2),
 				}),
 			]);
 
@@ -1019,8 +1026,8 @@ export class Gang {
 		}
 		else {
 			const now = new Date();
-			const lastDeposit = member.lastDeposit || new Date(0);
-			const nextDepositTime = addHours(lastDeposit, Gang.TIME_BETWEEN_DEPOSITS);
+			const depositTime = member.depositTime || new Date(0);
+			const nextDepositTime = addHours(depositTime, Gang.TIME_BETWEEN_DEPOSITS);
 
 			if (now < nextDepositTime) {
 				text = `${s.depositCooldown} ${showTime(nextDepositTime.getTime(), true)}`;
@@ -1053,7 +1060,8 @@ export class Gang {
 		});
 
 		if (member) {
-			member.lastDeposit = new Date();
+			member.depositTime = new Date();
+			member.depositAmount += amount;
 			await member.save();
 			await Notification.GangDepositAgain(user, addHours(new Date(), Gang.TIME_BETWEEN_DEPOSITS));
 		}

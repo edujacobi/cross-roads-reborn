@@ -12,7 +12,8 @@ export class GangMembers extends Model<
 	declare userId: ForeignKey<Users["id"]>;
 	declare roleId: number;
 	declare joinedAt: CreationOptional<Date>;
-	declare lastDeposit: CreationOptional<Date>;
+	declare depositTime: CreationOptional<Date>;
+	declare depositAmount: CreationOptional<number>;
 }
 
 GangMembers.init(
@@ -49,9 +50,14 @@ GangMembers.init(
 			allowNull: false,
 			defaultValue: DataTypes.NOW,
 		},
-		lastDeposit: {
+		depositTime: {
 			type: DataTypes.DATE,
 			allowNull: true,
+		},
+		depositAmount: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0,
 		},
 	},
 	{
