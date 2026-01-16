@@ -744,7 +744,8 @@ export class User {
 	}
 
 	async GetSituation(language?: Language) {
-		const s = Strings[language ?? this.Language];
+		const lang = language ?? this.Language;
+		const s = Strings[lang];
 		this.Situation = {
 			Id: SituationId.Idling,
 			Simple: s.idling,
@@ -759,8 +760,8 @@ export class User {
 				Id: SituationId.Job,
 				Simple: s.workingSimple,
 				SimpleEmote: `${EmoteString.Jobs} ${s.workingSimple}`,
-				Complex: `${EmoteString.Jobs} ${s.workingComplex(JobList[this.Job.Id].Description[this.Language], this.Job.EndsIn)}`,
-				ComplexUI: s.workingComplexUI(JobList[this.Job.Id].Description[this.Language], this.Job.EndsIn),
+				Complex: `${EmoteString.Jobs} ${s.workingComplex(JobList[this.Job.Id].Description[lang], this.Job.EndsIn)}`,
+				ComplexUI: s.workingComplexUI(JobList[this.Job.Id].Description[lang], this.Job.EndsIn),
 				EmoteId: EmoteId.Jobs,
 			};
 		}
@@ -781,8 +782,8 @@ export class User {
 				Id: SituationId.Robbery,
 				Simple: s.robbing,
 				SimpleEmote: `${EmoteString.Robbery} ${s.robbing}`,
-				Complex: `${EmoteString.Robbery} ${s.robbing} ${location.Description[this.Language]}`,
-				ComplexUI: `${s.robbing} ${location.Description[this.Language]}`,
+				Complex: `${EmoteString.Robbery} ${s.robbing} ${location.Description[lang]}`,
+				ComplexUI: `${s.robbing} ${location.Description[lang]}`,
 				EmoteId: EmoteId.Robbery,
 			};
 		}
@@ -826,7 +827,7 @@ export class User {
 				SimpleEmote: `${EmoteString.Prison} ${s.imprisonedSimple}`,
 				Complex: `${EmoteString.Prison} ${s.imprisonedComplex} ${showTime(this.Prison.Time.getTime())}`,
 				ComplexUI: `${s.imprisonedComplex} ${formatDistanceToNow(this.Prison.Time, {
-					locale: getLocaleFromLanguage(this.Language),
+					locale: getLocaleFromLanguage(lang),
 					includeSeconds: true,
 				})}`,
 				EmoteId: EmoteId.Prison,
@@ -839,7 +840,7 @@ export class User {
 				SimpleEmote: `${EmoteString.Hospital} ${s.hospitalSimple}`,
 				Complex: `${EmoteString.Hospital} ${s.hospitalComplex} ${showTime(this.Hospital.Time.getTime())}`,
 				ComplexUI: `${s.hospitalComplex} ${formatDistanceToNow(this.Hospital.Time, {
-					locale: getLocaleFromLanguage(this.Language),
+					locale: getLocaleFromLanguage(lang),
 					includeSeconds: true,
 				})}`,
 				EmoteId: EmoteId.Hospital,
@@ -860,8 +861,8 @@ export class User {
 				Id: SituationId.Scavenging,
 				Simple: s.scavenging,
 				SimpleEmote: `${EmoteString.Scavenge} ${s.scavenging}`,
-				Complex: `${EmoteString.Scavenge} ${s.scavenging} ${ScavengeList[this.Scavenge.IsScavengingId!].Emote.String} ${ScavengeList[this.Scavenge.IsScavengingId!].Description[this.Language]}`,
-				ComplexUI: `${s.scavenging} ${ScavengeList[this.Scavenge.IsScavengingId!].Description[this.Language]}`,
+				Complex: `${EmoteString.Scavenge} ${s.scavenging} ${ScavengeList[this.Scavenge.IsScavengingId!].Emote.String} ${ScavengeList[this.Scavenge.IsScavengingId!].Description[lang]}`,
+				ComplexUI: `${s.scavenging} ${ScavengeList[this.Scavenge.IsScavengingId!].Description[lang]}`,
 				EmoteId: EmoteId.Scavenge,
 			};
 		}
@@ -872,7 +873,7 @@ export class User {
 				SimpleEmote: this.Situation.SimpleEmote + ` ${s.wantedSimpleEmote}`,
 				Complex: this.Situation.Complex + ` ${s.wantedComplex} ${showTime(this.Wanted.Time.getTime())}`,
 				ComplexUI: this.Situation.ComplexUI + `${s.wantedComplexUI} ${formatDistanceToNow(this.Wanted.Time, {
-					locale: getLocaleFromLanguage(this.Language),
+					locale: getLocaleFromLanguage(lang),
 					includeSeconds: true,
 				})}`,
 				EmoteId: this.Situation.EmoteId,
