@@ -4,7 +4,7 @@ import { GangRoles } from "../database/GangRoles";
 import { Log } from "../utils/log";
 import { User } from "./User";
 import { Language } from "./Language";
-import { defaultComponent, formatMoney } from "../utils/ui";
+import { defaultComponent, formatMoney, showTime } from "../utils/ui";
 import { Users } from "../database/Users";
 import { Op } from "sequelize";
 import { GangColor, GangColorId } from "../utils/colors";
@@ -24,6 +24,8 @@ import { EmoteString } from "../utils/emotes";
 import { CustomContainerBuilder } from "../ui/builders/CustomContainerBuilder";
 import { GangBaseId } from "../interfaces/GangBases";
 import { IDescription } from "../interfaces/Interfaces";
+import { addHours } from "date-fns";
+import { Notification, NotificationType } from "./Notification";
 
 export enum GangPermission {
 	Invite,
@@ -38,6 +40,7 @@ export interface GangMember {
 	PermissionCount: number;
 	RoleId: number;
 	RoleName: string;
+	LastDeposit: Date;
 }
 
 export interface GangRole {
@@ -65,6 +68,7 @@ export class Gang {
 
 	static CREATION_COST = 1_000_000;
 	static JOIN_COST = 100_000;
+	static TIME_BETWEEN_DEPOSITS = 12;
 
 
 	// Calcula o número máximo de membros com base no nível da gangue
@@ -79,7 +83,11 @@ export class Gang {
 
 	// Experiência necessária para o próximo nível
 	static GetXpForNextLevel(level: number): number {
-		return level * 1000; // 1000 XP para o nível 1, 2000 para o nível 2, etc.
+		if (level === 1) {
+			return level * 1_000;
+		}
+
+		return level * 1000 ** (1 + ((level - 1) / 10));
 	}
 
 	// Adiciona XP à gangue e verifica se subiu de nível
@@ -89,7 +97,7 @@ export class Gang {
 		const xpNeeded = Gang.GetXpForNextLevel(this.Level);
 		let leveledUp = false;
 
-		if (this.Experience >= xpNeeded && this.Level < 6) { // Máximo nível 6
+		if (this.Experience >= xpNeeded && this.Level < 10) { // Máximo nível 10
 			this.Level += 1;
 			this.Experience -= xpNeeded;
 			leveledUp = true;
@@ -357,6 +365,7 @@ export class Gang {
 						RoleId: member.roleId,
 						PermissionCount: howManyPermissions,
 						RoleName: role ? role.name : "???",
+						LastDeposit: member.lastDeposit,
 					});
 				}
 			}
@@ -542,6 +551,7 @@ export class Gang {
 					defaultComponent({
 						user: inviter,
 						description: descriptionChannel,
+						footer: this.Name,
 					}),
 				],
 				flags: [MessageFlags.IsComponentsV2],
@@ -563,6 +573,7 @@ export class Gang {
 					defaultComponent({
 						user: inviter,
 						description: sI.timeout.channel(targetUser.GetNameWithImage(), this.Name, this.Acronym),
+						footer: this.Name,
 					}),
 				],
 				flags: [MessageFlags.IsComponentsV2],
@@ -609,7 +620,8 @@ export class Gang {
 					gangId: this.Id,
 					userId: user.Id,
 					roleId: memberRole.Id,
-				})
+					lastDeposit: addHours(new Date(), Gang.TIME_BETWEEN_DEPOSITS * 2),
+				}),
 			]);
 
 			await this.LoadMembers();
@@ -672,6 +684,7 @@ export class Gang {
 						[Language.Portuguese]: `**${kicker.GetNameWithImage()}** expulsou você da gangue.`,
 						[Language.Spanish]: `**${kicker.GetNameWithImage()}** te expulsó de la cuadrilla.`,
 					}[targetUser.Language]),
+					Notification.Dismiss(targetUser.Id, NotificationType.GangDepositAgain),
 				]);
 			}
 
@@ -828,11 +841,14 @@ export class Gang {
 			if (deleted) {
 				Log.Success(`User ${user.Nickname} (Id: ${user.Id}) left gang ${this.Name} (Id: ${this.Id})`);
 
-				await this.ComunicateAllMembers(user, {
-					[Language.English]: `**${user.GetNameWithImage()}** left the gang.`,
-					[Language.Portuguese]: `**${user.GetNameWithImage()}** saiu da gangue.`,
-					[Language.Spanish]: `**${user.GetNameWithImage()}** dejó la cuadrilla.`,
-				});
+				await Promise.all([
+					this.ComunicateAllMembers(user, {
+						[Language.English]: `**${user.GetNameWithImage()}** left the gang.`,
+						[Language.Portuguese]: `**${user.GetNameWithImage()}** saiu da gangue.`,
+						[Language.Spanish]: `**${user.GetNameWithImage()}** dejó la cuadrilla.`,
+					}),
+					Notification.Dismiss(user.Id, NotificationType.GangDepositAgain),
+				]);
 
 				return true;
 			}
@@ -874,8 +890,9 @@ export class Gang {
 		}
 	}
 
-	GetExpBar(emoteCount: number) {
-		const ratio = this.Experience / Gang.GetXpForNextLevel(this.Level);
+	GetExpBar(emoteCount: number, language: Language) {
+		const exp = Gang.GetXpForNextLevel(this.Level);
+		const ratio = this.Experience / exp;
 
 		const color = {
 			left: EmoteString.ExpBarLeftFull,
@@ -891,7 +908,13 @@ export class Gang {
 		let emptyBars = Math.ceil((1 - ratio) * (emoteCount));
 		emptyBars = Math.max(0, Math.min(emptyBars, emoteCount));
 
-		return `${color.left + color.center.repeat(emoteCount - emptyBars) + EmoteString.ExpBarMidEmpty.repeat(emptyBars) + color.right} ${this.Experience} / ${Gang.GetXpForNextLevel(this.Level)} (${Math.round(ratio * 100)}%)`;
+		const bars = color.left + color.center.repeat(emoteCount - emptyBars) + EmoteString.ExpBarMidEmpty.repeat(emptyBars) + color.right;
+
+		if (this.Level === 10) {
+			return `${bars} MAX`;
+		}
+
+		return `${bars} ${this.Experience} / ${formatMoney(exp, language, "")} (${Math.round(ratio * 100)}%)`;
 	}
 
 	CanCommunicate(senderId: string): boolean {
@@ -981,6 +1004,67 @@ export class Gang {
 		return emote;
 	}
 
+	async CanDeposit(user: User, amount: number) {
+		const s = this.Strings[user.Language];
+		let canDeposit = true;
+		let text = "";
+
+		const member = await GangMembers.findOne({
+			where: { userId: user.Id, gangId: this.Id },
+		});
+
+		if (!member) {
+			canDeposit = false;
+		}
+		else {
+			const now = new Date();
+			const lastDeposit = member.lastDeposit || new Date(0);
+			const nextDepositTime = addHours(lastDeposit, Gang.TIME_BETWEEN_DEPOSITS);
+
+			if (now < nextDepositTime) {
+				text = `${s.depositCooldown} ${showTime(nextDepositTime.getTime(), true)}`;
+				canDeposit = false;
+			}
+		}
+
+		const maxDeposit = 100_000 * this.Level;
+
+		if (amount > maxDeposit) {
+			text = s.maxDepositReached(formatMoney(maxDeposit, user.Language));
+			canDeposit = false;
+		}
+
+		if (user.Money < amount) {
+			text = s.notEnoughMoneyDeposit(formatMoney(amount, user.Language));
+			canDeposit = false;
+		}
+
+		return { canDeposit, text };
+	}
+
+	async Deposit(user: User, amount: number) {
+		user.Money -= amount;
+		this.Money += amount;
+		await this.AddExperience(Math.floor(amount * 0.001));
+
+		const member = await GangMembers.findOne({
+			where: { userId: user.Id, gangId: this.Id },
+		});
+
+		if (member) {
+			member.lastDeposit = new Date();
+			await member.save();
+			await Notification.GangDepositAgain(user, addHours(new Date(), Gang.TIME_BETWEEN_DEPOSITS));
+		}
+
+		Log.Success(`User ${user.Nickname} (Id: ${user.Id}) deposited ${formatMoney(amount, user.Language)} in gang ${this.Name} (Id: ${this.Id})`);
+
+		await Promise.all([
+			user.Update(),
+			this.Update(),
+		]);
+	}
+
 	Strings = {
 		[Language.English]: {
 			acceptText: "Accept",
@@ -1009,6 +1093,9 @@ export class Gang {
 				private: (gangName: string, gangAcronym: string) => `I've invited you to join the gang **${gangName}** (${gangAcronym}), but you didn't respond in time.`,
 				channel: (name: string, gangName: string, gangAcronym: string) => `**${name}** did not respond to the invitation to join the gang **${gangName}** (${gangAcronym}).`,
 			},
+			depositCooldown: `You can deposit again`,
+			notEnoughMoneyDeposit: (amount: string) => `You don't have **${amount}** to deposit`,
+			maxDepositReached: (max: string) => `You can only deposit up to **${max}**`,
 		},
 		[Language.Portuguese]: {
 			acceptText: "Aceitar",
@@ -1037,6 +1124,9 @@ export class Gang {
 				private: (gangName: string, gangAcronym: string) => `Eu te convidei para entrar na gangue **${gangName}** (${gangAcronym}), mas você não respondeu a tempo.`,
 				channel: (name: string, gangName: string, gangAcronym: string) => `**${name}** não respondeu ao convite para entrar na gangue **${gangName}** (${gangAcronym}).`,
 			},
+			depositCooldown: `Você pode depositar novamente`,
+			notEnoughMoneyDeposit: (amount: string) => `Você não tem **${amount}** para depositar`,
+			maxDepositReached: (max: string) => `Você só pode depositar até **${max}**`,
 		},
 		[Language.Spanish]: {
 			acceptText: "Aceptar",
@@ -1065,6 +1155,9 @@ export class Gang {
 				private: (gangName: string, gangAcronym: string) => `Te invité a unirte a la cuadrilla **${gangName}** (${gangAcronym}), pero no respondiste a tiempo.`,
 				channel: (name: string, gangName: string, gangAcronym: string) => `**${name}** no respondió a la invitación para unirse a la cuadrilla **${gangName}** (${gangAcronym}).`,
 			},
+			depositCooldown: `Puedes depositar de nuevo`,
+			notEnoughMoneyDeposit: (amount: string) => `No tienes **${amount}** para depositar`,
+			maxDepositReached: (max: string) => `Solo puedes depositar hasta **${max}**`,
 		},
 	} as const;
 }

@@ -22,6 +22,7 @@ export enum NotificationType {
 	Scavenge,
 	BeatAgain,
 	HorseRace,
+	GangDepositAgain,
 }
 
 const NotificationMapper = {
@@ -35,6 +36,7 @@ const NotificationMapper = {
 	[NotificationType.Scavenge]: "scavenge",
 	[NotificationType.BeatAgain]: "beatAgain",
 	[NotificationType.HorseRace]: "horseRace",
+	[NotificationType.GangDepositAgain]: "gangDepositAgain",
 };
 
 export class Notification {
@@ -138,6 +140,14 @@ export class Notification {
 		notification.UserId = user.Id;
 		notification.Type = NotificationType.BeatAgain;
 		notification.Date = user.BeatUp.Time;
+		await notification.Create();
+	}
+
+	static async GangDepositAgain(user: User, nextDeposit: Date) {
+		const notification = new Notification();
+		notification.UserId = user.Id;
+		notification.Type = NotificationType.GangDepositAgain;
+		notification.Date = nextDeposit;
 		await notification.Create();
 	}
 
@@ -282,12 +292,21 @@ export class Notification {
 			else if (notification.Type == NotificationType.Scavenge) {
 				await sendPrivateMessage(user.Id, s.scavenge, CrColors.Scavenge);
 			}
+
 			else if (notification.Type == NotificationType.BeatAgain) {
 				await sendPrivateMessage(user.Id, s.beatAgain, CrColors.BeatUp);
 			}
+
 			else if (notification.Type == NotificationType.HorseRace) {
 				await sendPrivateMessage(user.Id, s.horseRace, CrColors.Casino);
 			}
+
+			else if (notification.Type == NotificationType.GangDepositAgain) {
+				if (user.GangId !== null) {
+					await sendPrivateMessage(user.Id, s.gangDepositAgain);
+				}
+			}
+
 			else {
 				Log.Warning(`Notification type ${notification.Type} not implemented.`);
 			}
@@ -314,6 +333,7 @@ const Strings = {
 		scavenge: `You can scavenge again! ${EmoteString.Scavenge}`,
 		beatAgain: `You can beat up again! ${EmoteString.Beat}`,
 		horseRace: `A horse race is starting soon! Place your bets now! ${EmoteString.Casino}`,
+		gangDepositAgain: `You can deposit again in the gang! ${EmoteString.Gang}`,
 	},
 	[Language.Portuguese]: {
 		daily: `Você pode receber sua grana diária novamente! ${EmoteString.Experience}`,
@@ -326,6 +346,7 @@ const Strings = {
 		scavenge: `Você pode vasculhar novamente! ${EmoteString.Scavenge}`,
 		beatAgain: `Você pode espancar novamente! ${EmoteString.Beat}`,
 		horseRace: `Uma corrida de cavalos está começando em breve! Faça suas apostas agora! ${EmoteString.Casino}`,
+		gangDepositAgain: `Você pode depositar novamente na gangue! ${EmoteString.Gang}`,
 	},
 	[Language.Spanish]: {
 		daily: `¡Puedes recibir tu dinero diario de nuevo! ${EmoteString.Experience}`,
@@ -338,5 +359,6 @@ const Strings = {
 		scavenge: `¡Puedes buscar de nuevo! ${EmoteString.Scavenge}`,
 		beatAgain: `¡Puedes golpear de nuevo! ${EmoteString.Beat}`,
 		horseRace: `¡Una carrera de caballos está comenzando pronto! ¡Haz tus apuestas ahora! ${EmoteString.Casino}`,
+		gangDepositAgain: `¡Puedes depositar de nuevo en la gangue! ${EmoteString.Gang}`,
 	},
 } as const;

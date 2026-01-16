@@ -12,6 +12,7 @@ export class GangMembers extends Model<
 	declare userId: ForeignKey<Users["id"]>;
 	declare roleId: number;
 	declare joinedAt: CreationOptional<Date>;
+	declare lastDeposit: CreationOptional<Date>;
 }
 
 GangMembers.init(
@@ -47,6 +48,10 @@ GangMembers.init(
 			type: DataTypes.DATE,
 			allowNull: false,
 			defaultValue: DataTypes.NOW,
+		},
+		lastDeposit: {
+			type: DataTypes.DATE,
+			allowNull: true,
 		},
 	},
 	{

@@ -27,7 +27,8 @@ enum CommandOption {
 	Leave = "leave",
 	Kick = "kick",
 	Communicate = "communicate",
-	Base = "base"
+	Base = "base",
+	Deposit = "deposit"
 }
 
 module.exports = {
@@ -339,6 +340,32 @@ module.exports = {
 				[Locale.PortugueseBR]: "Compre uma base para sua gangue",
 				[Locale.SpanishES]: "Compra una base para tu cuadrilla",
 			}),
+		)
+		.addSubcommand(deposit => deposit
+			.setName(CommandOption.Deposit)
+			.setNameLocalizations({
+				[Locale.PortugueseBR]: "depositar",
+				[Locale.SpanishES]: "depositar",
+			})
+			.setDescription("Deposit money into your gang")
+			.setDescriptionLocalizations({
+				[Locale.PortugueseBR]: "Deposite dinheiro na sua gangue",
+				[Locale.SpanishES]: "Deposita dinero en tu cuadrilla",
+			})
+			.addIntegerOption(amount => amount
+				.setName("amount")
+				.setNameLocalizations({
+					[Locale.PortugueseBR]: "quantidade",
+					[Locale.SpanishES]: "cantidad",
+				})
+				.setDescription("Amount to deposit")
+				.setDescriptionLocalizations({
+					[Locale.PortugueseBR]: "Quantidade para depositar",
+					[Locale.SpanishES]: "Cantidad para depositar",
+				})
+				.setRequired(true)
+				.setMinValue(1),
+			),
 		),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
@@ -1057,6 +1084,35 @@ module.exports = {
 					return replyWithContainer(interaction, container);
 				}
 			});
+			return;
+		}
+
+		case CommandOption.Deposit: {
+			await deferReply(interaction);
+
+			const gang = await Gang.GetByUserId(user.Id);
+			if (!gang) {
+				return warn(s.notInGang);
+			}
+
+			const amount = interaction.options.getInteger("amount", true);
+
+			const { canDeposit, text } = await gang.CanDeposit(user, amount);
+
+			if (!canDeposit) {
+				return warn(`${text} ${EmoteString.Gang}`);
+			}
+
+			await gang.Deposit(user, amount);
+
+
+			const container = defaultComponent({
+				color: GangColor[gang.Color].Color as ColorResolvable,
+				description: s.depositSuccess(formatMoney(amount, language), gang.Name),
+				user,
+			});
+
+			return replyWithContainer(interaction, container);
 		}
 		}
 
@@ -1173,6 +1229,7 @@ const Strings = {
 		buy: `Buy`,
 		back: `Back`,
 		baseBought: (baseName: string, gangName: string) => `You bought the base **${baseName}** for the gang **${gangName}** ${EmoteString.Gang}`,
+		depositSuccess: (amount: string, gangName: string) => `You deposited **${amount}** into the gang **${gangName}** ${EmoteString.Gang}`,
 	},
 	[Language.Portuguese]: {
 		gangTitle: `Gangues`,
@@ -1238,6 +1295,7 @@ const Strings = {
 		buy: `Comprar`,
 		back: `Voltar`,
 		baseBought: (baseName: string, gangName: string) => `Você comprou a base **${baseName}** para a gangue **${gangName}** ${EmoteString.Gang}`,
+		depositSuccess: (amount: string, gangName: string) => `Você depositou **${amount}** na gangue **${gangName}** ${EmoteString.Gang}`,
 	},
 	[Language.Spanish]: {
 		gangTitle: `Cuadrillas`,
@@ -1303,5 +1361,6 @@ const Strings = {
 		buy: `Comprar`,
 		back: `Volver`,
 		baseBought: (baseName: string, gangName: string) => `Compraste la base **${baseName}** para la cuadrilla **${gangName}** ${EmoteString.Gang}`,
+		depositSuccess: (amount: string, gangName: string) => `Depositaste **${amount}** en la cuadrilla **${gangName}** ${EmoteString.Gang}`,
 	},
 } as const;
