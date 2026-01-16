@@ -600,13 +600,17 @@ export class Gang {
 			}
 
 			user.Money -= Gang.JOIN_COST;
-			await user.Update();
+			this.Money += Gang.JOIN_COST;
 
-			await GangMembers.create({
-				gangId: this.Id,
-				userId: user.Id,
-				roleId: memberRole.Id,
-			});
+			await Promise.all([
+				user.Update(),
+				this.Update(),
+				GangMembers.create({
+					gangId: this.Id,
+					userId: user.Id,
+					roleId: memberRole.Id,
+				})
+			]);
 
 			await this.LoadMembers();
 

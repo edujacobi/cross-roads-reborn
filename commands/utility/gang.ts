@@ -485,7 +485,7 @@ module.exports = {
 
 			// Verificar se o usuário tem dinheiro suficiente
 			if (user.Money < Gang.CREATION_COST) {
-				return warn(s.notEnoughMoney(formatMoney(Gang.CREATION_COST, language)));
+				return warn(s.notEnoughMoneyCreate(formatMoney(Gang.CREATION_COST, language)));
 			}
 
 			// Obter os parâmetros da gangue
@@ -882,9 +882,15 @@ module.exports = {
 		case CommandOption.Base: {
 			await deferReply(interaction);
 
-			const gang = await Gang.GetByUserId(user.Id);
+			let gang = await Gang.GetByUserId(user.Id);
 			if (!gang) {
 				return warn(s.notInGang);
+			}
+
+			const canEdit = gang.CanEdit(user.Id);
+
+			if (!canEdit) {
+				return warn(s.errorEdittingGangPermission);
 			}
 
 			function getModifierText(modifier?: GangModifier) {
@@ -908,47 +914,149 @@ module.exports = {
 
 			const BASE_COST = 1_000_000;
 
-			const container = new CustomContainerBuilder()
-				.setUser(user)
-				.setAccentColor(GangColor[gang.Color].Color)
-				.addTexts([
-					`# Bases de gangue`,
-					`Bases custam ${formatMoney(BASE_COST, language)} do caixa da gangue`,
-				])
-				.addLargeSeparator();
+			function addBaseHeader() {
+				return new CustomContainerBuilder()
+					.setAccentColor(GangColor[gang!.Color].Color)
+					.addTexts([
+						`# ${s.gangBasesTitle}`,
+						s.gangBasesCost(formatMoney(BASE_COST, language)),
+					])
+					.addLargeSeparator();
+			}
 
-			const bases = getGangBases().filter(base => base.Id !== GangBaseId.None);
+			function generateDefaultContainer() {
+				const container = addBaseHeader();
+				const bases = getGangBases().filter(base => base.Id !== GangBaseId.None);
 
-			for (let i = 0; i < bases.length; i++) {
-				const base = bases[i];
-				container
-					.addSectionComponents(section => section
-						.addTexts([
-							`### ${base.Name[language]}`,
-							base.Description[language],
-						])
-						.setThumbnailAccessory(thumb => thumb
-							.setURL(base.ImageUrl!)),
-					)
-					.addSectionComponents(section => section
+				for (let i = 0; i < bases.length; i++) {
+					const base = bases[i];
+					container
+						.addSectionComponents(section => section
+							.addTexts([
+								`### ${base.Name[language]}`,
+								base.Description[language],
+							])
+							.setThumbnailAccessory(thumb => thumb
+								.setURL(base.ImageUrl!),
+							),
+						)
+						.addSectionComponents(section => section
+							.addTexts([
+								getModifierText(base.Modifier),
+							])
+							.setButtonAccessory(btn => btn
+								.setStyle(ButtonStyle.Secondary)
+								.setLabel(s.buy)
+								.setDisabled(gang!.BaseId !== GangBaseId.None)
+								.setCustomId(`buy${base.Id}`),
+							),
+						);
+
+					if (i < bases.length - 1) {
+						container.addLargeSeparator();
+					}
+				}
+
+				container.addFooter({
+					text: `${gang!.Name} • ${formatMoney(gang!.Money, language)}`,
+				});
+
+				return container;
+			}
+
+			let container = generateDefaultContainer();
+
+			const response = await replyWithContainer(interaction, container);
+
+			const collector = createButtonCollector(interaction, response);
+
+			collector?.on("end", async () => {
+				await disableButtons(interaction, container);
+			});
+
+			collector?.on("collect", async btn => {
+				await btn.deferUpdate();
+
+				if (btn.customId === "back") {
+					container = generateDefaultContainer();
+					return replyWithContainer(interaction, container);
+				}
+
+				else if (btn.customId.startsWith("buy")) {
+					const baseId = Number(btn.customId.replace("buy", "")) as GangBaseId;
+					const base = GangBases[baseId];
+
+					if (!gang) {
+						return;
+					}
+
+					container = addBaseHeader()
+						.addSectionComponents(section => section
+							.addTexts([
+								`### ${base.Name[language]}`,
+								base.Description[language],
+							])
+							.setThumbnailAccessory(thumb => thumb
+								.setURL(base.ImageUrl!),
+							),
+						)
 						.addTexts([
 							getModifierText(base.Modifier),
 						])
-						.setButtonAccessory(btn => btn
-							.setStyle(ButtonStyle.Secondary)
-							.setLabel("Comprar")
-							.setCustomId(`buy${base.Id}`),
-						),
-					);
+						.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
+							.addComponents(
+								new ButtonBuilder()
+									.setLabel(s.back)
+									.setCustomId("back")
+									.setStyle(ButtonStyle.Secondary),
+								new ButtonBuilder()
+									.setStyle(ButtonStyle.Success)
+									.setLabel(s.confirm)
+									.setDisabled(gang.Money < BASE_COST)
+									.setCustomId(`confirm${base.Id}`),
+							),
+						)
+						.addFooter({
+							text: `${gang.Name} • ${formatMoney(gang.Money, language)}`,
+						});
 
-				if (i < bases.length - 1) {
-					container.addLargeSeparator();
+					return replyWithContainer(interaction, container);
 				}
-			}
 
-			container.addFooter();
+				else if (btn.customId.startsWith("confirm")) {
+					const baseId = Number(btn.customId.replace("confirm", "")) as GangBaseId;
+					const base = GangBases[baseId];
 
-			return replyWithContainer(interaction, container);
+					gang = await Gang.GetById(gang!.Id);
+
+					if (!gang) {
+						return;
+					}
+
+					if (gang.Money < BASE_COST) {
+						return warn(s.notEnoughMoneyBase(formatMoney(BASE_COST, language)));
+					}
+
+					gang.Money -= BASE_COST;
+					gang.BaseId = base.Id;
+					await gang.Update();
+
+					container = addBaseHeader()
+						.addSectionComponents(section => section
+							.addTexts([
+								s.baseBought(base.Name[language], gang!.Name),
+							])
+							.setThumbnailAccessory(thumb => thumb
+								.setURL(base.ImageUrl!),
+							),
+						)
+						.addFooter({
+							text: `${gang.Name} • ${formatMoney(gang.Money, language)}`,
+						});
+
+					return replyWithContainer(interaction, container);
+				}
+			});
 		}
 		}
 
@@ -1029,7 +1137,8 @@ const Strings = {
 		gangAlreadyExistsAcronym: (acronym: string) => `A gang with the acronym **${acronym}** already exists ${EmoteString.Gang}`,
 		alreadyInGang: `You are already in a gang! You need to leave your current gang before creating a new one ${EmoteString.Gang}`,
 		userAlreadyInGang: (user: User) => `**${user.GetNameWithImage()}** is already in a gang ${EmoteString.Gang}`,
-		notEnoughMoney: (cost: string) => `You don't have enough money to create a gang! It costs ${cost} ${EmoteString.Gang}`,
+		notEnoughMoneyCreate: (cost: string) => `You don't have enough money to create a gang! It costs ${cost} ${EmoteString.Gang}`,
+		notEnoughMoneyBase: (cost: string) => `Your gang don't have enough money balance to buy a base! It costs ${cost} ${EmoteString.Gang}`,
 		lettersAndNumbers: `Gang name can only contain letters and numbers ${EmoteString.Gang}`,
 		invalidURLImage: `Invalid image URL! Please provide a valid image URL ending with .jpg, .jpeg, .webp or .png ${EmoteString.Gang}`,
 		errorCreatingGang: `Error while creating the gang. Try again later ${EmoteString.Gang}`,
@@ -1059,6 +1168,11 @@ const Strings = {
 		messageSent: `Message sent to gang members! ${EmoteString.Gang}`,
 		prisonModifier: `chance of escaping from prison`,
 		perLevelModifier: "per gang level",
+		gangBasesTitle: `Gang Bases`,
+		gangBasesCost: (cost: string) => `Bases cost ${cost} from the gang balance`,
+		buy: `Buy`,
+		back: `Back`,
+		baseBought: (baseName: string, gangName: string) => `You bought the base **${baseName}** for the gang **${gangName}** ${EmoteString.Gang}`,
 	},
 	[Language.Portuguese]: {
 		gangTitle: `Gangues`,
@@ -1088,7 +1202,8 @@ const Strings = {
 		gangAlreadyExistsAcronym: (acronym: string) => `Uma gangue com o acrônimo **${acronym}** já existe ${EmoteString.Gang}`,
 		alreadyInGang: `Você já está em uma gangue! Você precisa sair da sua gangue atual antes de criar uma nova ${EmoteString.Gang}`,
 		userAlreadyInGang: (user: User) => `**${user.GetNameWithImage()}** já está em uma gangue ${EmoteString.Gang}`,
-		notEnoughMoney: (cost: string) => `Você não tem dinheiro suficiente para criar uma gangue! Custa ${cost} ${EmoteString.Gang}`,
+		notEnoughMoneyCreate: (cost: string) => `Você não tem dinheiro suficiente para criar uma gangue! Custa ${cost} ${EmoteString.Gang}`,
+		notEnoughMoneyBase: (cost: string) => `Sua gangue não tem dinheiro suficiente no caixa para comprar uma base! Custa ${cost} ${EmoteString.Gang}`,
 		lettersAndNumbers: `Nome da gangue só pode conter letras e números ${EmoteString.Gang}`,
 		invalidURLImage: `URL de imagem inválida! Por favor, forneça uma URL de imagem válida terminando com .jpg, .jpeg, .webp ou .png. ${EmoteString.Gang}`,
 		errorCreatingGang: `Erro ao criar a gangue. Tente novamente mais tarde. ${EmoteString.Gang}`,
@@ -1118,6 +1233,11 @@ const Strings = {
 		messageSent: `Mensagem enviada para os membros da gangue! ${EmoteString.Gang}`,
 		prisonModifier: `chance de fugir da prisão`,
 		perLevelModifier: "por nível da gangue",
+		gangBasesTitle: `Bases de Gangue`,
+		gangBasesCost: (cost: string) => `Bases custam ${cost} do caixa da gangue`,
+		buy: `Comprar`,
+		back: `Voltar`,
+		baseBought: (baseName: string, gangName: string) => `Você comprou a base **${baseName}** para a gangue **${gangName}** ${EmoteString.Gang}`,
 	},
 	[Language.Spanish]: {
 		gangTitle: `Cuadrillas`,
@@ -1147,7 +1267,8 @@ const Strings = {
 		gangAlreadyExistsAcronym: (acronym: string) => `¡Una cuadrilla con el acrónimo **${acronym}** ya existe ${EmoteString.Gang}`,
 		alreadyInGang: `¡Ya estás en una cuadrilla! Necesitas salir de tu cuadrilla actual antes de crear una nueva ${EmoteString.Gang}`,
 		userAlreadyInGang: (user: User) => `**${user.GetNameWithImage()}** ya está en una cuadrilla ${EmoteString.Gang}`,
-		notEnoughMoney: (cost: string) => `¡No tienes suficiente dinero para crear una cuadrilla! Cuesta ${cost} ${EmoteString.Gang}`,
+		notEnoughMoneyCreate: (cost: string) => `¡No tienes suficiente dinero para crear una cuadrilla! Cuesta ${cost} ${EmoteString.Gang}`,
+		notEnoughMoneyBase: (cost: string) => `¡Tu cuadrilla no tiene suficiente dinero en el balance para comprar una base! Cuesta ${cost} ${EmoteString.Gang}`,
 		lettersAndNumbers: `El nombre de la cuadrilla solo puede contener letras y números ${EmoteString.Gang}`,
 		invalidURLImage: `¡URL de imagen inválida! Por favor, proporciona una URL de imagen válida que termine en .jpg, .jpeg, .webp o .png ${EmoteString.Gang}`,
 		errorCreatingGang: `Error al crear la cuadrilla. Inténtalo de nuevo más tarde ${EmoteString.Gang}`,
@@ -1177,5 +1298,10 @@ const Strings = {
 		messageSent: `¡Mensaje enviado a los miembros de la cuadrilla! ${EmoteString.Gang}`,
 		prisonModifier: `probabilidad de escapar de la cárcel`,
 		perLevelModifier: "por nivel de cuadrilla",
+		gangBasesTitle: `Bases de Cuadrilla`,
+		gangBasesCost: (cost: string) => `Las bases cuestan ${cost} del saldo de la cuadrilla`,
+		buy: `Comprar`,
+		back: `Volver`,
+		baseBought: (baseName: string, gangName: string) => `Compraste la base **${baseName}** para la cuadrilla **${gangName}** ${EmoteString.Gang}`,
 	},
 } as const;
