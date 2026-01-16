@@ -22,6 +22,7 @@ import { UserBundle } from "./UserBundle";
 import { BundleList, SkinBundles } from "../interfaces/Skins";
 import { UserAvatarDecoration } from "./UserAvatarDecoration";
 import { AvatarDecorationList, AvatarDecorations } from "../interfaces/AvatarDecorations";
+import { GangBases } from "../interfaces/GangBases";
 
 export enum SituationId {
 	Idling,
@@ -598,8 +599,8 @@ export class User {
 		});
 
 		const foundWeapon = ItemList[itemId] as UserItem;
-		foundWeapon.RemainingTime = new Date();
-		foundWeapon.Quantity = 0;
+		foundWeapon.RemainingTime = <Date>item?.remainingTime ?? 0;
+		foundWeapon.Quantity = item?.quantity ?? 0;
 		foundWeapon.SelectedSkin = item?.skin ?? BundleId.Default;
 
 		return foundWeapon;
@@ -740,6 +741,16 @@ export class User {
 
 		if (this.IsInHospital()) {
 			this.Attributes.Defense -= 5;
+		}
+
+		// Gang Modifiers
+		if (this.GangId) {
+			const gang = await Gang.GetById(this.GangId);
+
+			if (gang) {
+				this.Attributes.Attack += (GangBases[gang.BaseId].Modifier?.Attack?.Positive || 0) * gang.Level;
+				this.Attributes.Defense += (GangBases[gang.BaseId].Modifier?.Defense?.Positive || 0) * gang.Level;
+			}
 		}
 	}
 

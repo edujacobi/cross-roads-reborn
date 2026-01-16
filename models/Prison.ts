@@ -17,6 +17,8 @@ import { EmoteBadgeString } from "../utils/badges";
 import { Pagination } from "./Pagination";
 import { CustomContainerBuilder } from "../ui/builders/CustomContainerBuilder";
 import { BundleId, ItemId } from "../interfaces/Ids";
+import { GangBases } from "../interfaces/GangBases";
+import { Gang } from "./Gang";
 
 export class Prison {
 	User: User;
@@ -62,13 +64,22 @@ export class Prison {
 
 	async GenerateDefaultContainer() {
 		const s = Strings[this.User.Language];
-		this.Escape.HasJetpack = await this.User.GetItems()
-			.then(items => items.some(item => item.Id === ItemId.Jetpack));
+		const jetpack = await this.User.GetSpecificItem(ItemId.Jetpack);
+		this.Escape.HasJetpack = jetpack.RemainingTime > new Date();
 
 		const userClassModifier = getPrisonEscapeClassModifier(this.User.Class);
 
+		// Gang Modifiers
+		let gangModifier = 0;
+		if (this.User.GangId) {
+			const gang = await Gang.GetById(this.User.GangId);
+			if (gang) {
+				gangModifier = (GangBases[gang.BaseId].Modifier?.PrisonEscape?.Positive || 0) * gang.Level;
+			}
+		}
+
 		this.Escape.UserChance = this.Escape.HasJetpack ? this.Escape.BaseJetpackChance : 0;
-		this.Escape.TotalChance = this.Escape.BaseChance + this.Escape.UserChance + userClassModifier;
+		this.Escape.TotalChance = this.Escape.BaseChance + this.Escape.UserChance + userClassModifier + gangModifier;
 
 		let text = `${s.userFree}`;
 		if (this.User.IsWanted()) {
@@ -105,7 +116,7 @@ export class Prison {
 		this.Container
 			.addSectionComponents(escape => escape
 				.addTexts([
-					s.descriptionEscape(this.Escape.BaseChance + userClassModifier, this.Escape.BaseJetpackChance + this.Escape.BaseChance + userClassModifier),
+					s.descriptionEscape(this.Escape.BaseChance + userClassModifier + gangModifier, this.Escape.BaseJetpackChance + this.Escape.BaseChance + userClassModifier + gangModifier),
 				])
 				.setButtonAccessory(buttonEscape),
 			)
@@ -114,7 +125,6 @@ export class Prison {
 				.addTexts([
 					s.descriptionBribe,
 				])
-
 				.setButtonAccessory(buttonBribe),
 			)
 			.addLargeSeparator()
@@ -381,7 +391,15 @@ export class Prison {
 
 		const chance = Math.floor(Math.random() * 101);
 		const userClassModifier = getPrisonEscapeClassModifier(this.User.Class);
-		const ESCAPE_CHANCE = this.Escape.TotalChance + userClassModifier;
+		// Gang Modifiers
+		let gangModifier = 0;
+		if (this.User.GangId) {
+			const gang = await Gang.GetById(this.User.GangId);
+			if (gang) {
+				gangModifier = (GangBases[gang.BaseId].Modifier?.PrisonEscape?.Positive || 0) * gang.Level;
+			}
+		}
+		const ESCAPE_CHANCE = this.Escape.TotalChance + userClassModifier + gangModifier;
 		const success = chance < ESCAPE_CHANCE;
 
 		const successTexts = {

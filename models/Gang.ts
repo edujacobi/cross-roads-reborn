@@ -69,11 +69,12 @@ export class Gang {
 	static CREATION_COST = 1_000_000;
 	static JOIN_COST = 100_000;
 	static TIME_BETWEEN_DEPOSITS = 12;
+	static MAX_DEPOSIT_PER_DAY = 100_000;
 
 
 	// Calcula o número máximo de membros com base no nível da gangue
 	GetMaxMembers(): number {
-		return 10 + (this.Level - 1) * 2; // Nível 1: 10 membros, e +2 por nível adicional (máx 20 no nível 6)
+		return 9 + this.Level; // Nível 1: 10 membros, e +1 por nível adicional (máx 19 no nível 10)
 	}
 
 	// Verificar se um usuário pode entrar na gangue
@@ -84,10 +85,10 @@ export class Gang {
 	// Experiência necessária para o próximo nível
 	static GetXpForNextLevel(level: number): number {
 		if (level === 1) {
-			return level * 1_000;
+			return Math.floor(level * 1_000);
 		}
 
-		return level * 1000 ** (1 + ((level - 1) / 10));
+		return Math.floor(level * 1000 ** (1 + ((level - 1) / 10)));
 	}
 
 	// Adiciona XP à gangue e verifica se subiu de nível
@@ -422,8 +423,8 @@ export class Gang {
 	// Convida um usuário para a gangue
 	async InviteUser(inviter: User, targetUser: User): Promise<boolean> {
 		const COOLDOWN_INVITE = 3 * 60_000;
-		const sI = this.Strings[inviter.Language];
-		const sT = this.Strings[targetUser.Language];
+		const sI = Strings[inviter.Language];
+		const sT = Strings[targetUser.Language];
 
 		// Verificar se o alvo já está em uma gangue
 		const existingMembership = await GangMembers.findOne({
@@ -1005,7 +1006,7 @@ export class Gang {
 	}
 
 	async CanDeposit(user: User, amount: number) {
-		const s = this.Strings[user.Language];
+		const s = Strings[user.Language];
 		let canDeposit = true;
 		let text = "";
 
@@ -1027,7 +1028,7 @@ export class Gang {
 			}
 		}
 
-		const maxDeposit = 100_000 * this.Level;
+		const maxDeposit = Gang.MAX_DEPOSIT_PER_DAY * this.Level;
 
 		if (amount > maxDeposit) {
 			text = s.maxDepositReached(formatMoney(maxDeposit, user.Language));
@@ -1064,100 +1065,100 @@ export class Gang {
 			this.Update(),
 		]);
 	}
-
-	Strings = {
-		[Language.English]: {
-			acceptText: "Accept",
-			declineText: "Decline",
-			invitation: {
-				description: (gangName: string, gangAcronym: string) => `I'm inviting you to join the gang **${gangName}** (${gangAcronym})!\n-# Accepting this invite will cost you **${formatMoney(Gang.JOIN_COST, Language.English)}**.`,
-				footer: "You have 3 minutes to accept or decline the invitation.",
-			},
-			notEnoughMoney: {
-				private: (gangName: string, gangAcronym: string) => `You don't have enough money to accept the invitation of **${gangName}** (${gangAcronym}). You need **${formatMoney(Gang.JOIN_COST, Language.English)}**.`,
-				channel: (name: string) => `**${name}** tried to accept the invitation, but doesn't have enough money.`,
-			},
-			success: {
-				private: (gangName: string, gangAcronym: string) => `You have successfully joined the gang **${gangName}** (${gangAcronym})!`,
-				channel: (name: string) => `**${name}** has successfully joined the gang!`,
-			},
-			notSuccess: {
-				private: (gangName: string, gangAcronym: string) => `Failed to accept the invitation of **${gangName}** (${gangAcronym}). Maybe you are already in a gang?`,
-				channel: (name: string) => `**${name}** failed to accept the invitation.`,
-			},
-			decline: {
-				private: (gangName: string, gangAcronym: string) => `You declined the invitation of **${gangName}** (${gangAcronym})!`,
-				channel: (name: string) => `**${name}** has declined the invitation!`,
-			},
-			timeout: {
-				private: (gangName: string, gangAcronym: string) => `I've invited you to join the gang **${gangName}** (${gangAcronym}), but you didn't respond in time.`,
-				channel: (name: string, gangName: string, gangAcronym: string) => `**${name}** did not respond to the invitation to join the gang **${gangName}** (${gangAcronym}).`,
-			},
-			depositCooldown: `You can deposit again`,
-			notEnoughMoneyDeposit: (amount: string) => `You don't have **${amount}** to deposit`,
-			maxDepositReached: (max: string) => `You can only deposit up to **${max}**`,
-		},
-		[Language.Portuguese]: {
-			acceptText: "Aceitar",
-			declineText: "Recusar",
-			invitation: {
-				description: (gangName: string, gangAcronym: string) => `Estou convidando você para entrar na gangue **${gangName}** (${gangAcronym})!\n-# Aceitar este convite custará **${formatMoney(Gang.JOIN_COST, Language.Portuguese)}**.`,
-				footer: "Você tem 3 minutos para aceitar ou recusar o convite.",
-			},
-			notEnoughMoney: {
-				private: (gangName: string, gangAcronym: string) => `Você não tem dinheiro suficiente para aceitar o convite da gangue **${gangName}** (${gangAcronym}). Você precisa de **${formatMoney(Gang.JOIN_COST, Language.Portuguese)}**.`,
-				channel: (name: string) => `**${name}** tentou aceitar o convite, mas não tem dinheiro suficiente.`,
-			},
-			success: {
-				private: (gangName: string, gangAcronym: string) => `Você entrou com sucesso na gangue **${gangName}** (${gangAcronym})!`,
-				channel: (name: string) => `**${name}** entrou com sucesso na gangue!`,
-			},
-			notSuccess: {
-				private: (gangName: string, gangAcronym: string) => `Falha ao aceitar o convite da gangue **${gangName}** (${gangAcronym}). Talvez você já esteja em uma gangue?`,
-				channel: (name: string) => `**${name}** falhou ao aceitar o convite.`,
-			},
-			decline: {
-				private: (gangName: string, gangAcronym: string) => `Você recusou o convite da gangue **${gangName}** (${gangAcronym})!`,
-				channel: (name: string) => `**${name}** recusou o convite!`,
-			},
-			timeout: {
-				private: (gangName: string, gangAcronym: string) => `Eu te convidei para entrar na gangue **${gangName}** (${gangAcronym}), mas você não respondeu a tempo.`,
-				channel: (name: string, gangName: string, gangAcronym: string) => `**${name}** não respondeu ao convite para entrar na gangue **${gangName}** (${gangAcronym}).`,
-			},
-			depositCooldown: `Você pode depositar novamente`,
-			notEnoughMoneyDeposit: (amount: string) => `Você não tem **${amount}** para depositar`,
-			maxDepositReached: (max: string) => `Você só pode depositar até **${max}**`,
-		},
-		[Language.Spanish]: {
-			acceptText: "Aceptar",
-			declineText: "Rechazar",
-			invitation: {
-				description: (gangName: string, gangAcronym: string) => `Te estoy invitando a unirte a la cuadrilla **${gangName}** (${gangAcronym})!\n-# Aceptar esta invitación te costará **${formatMoney(Gang.JOIN_COST, Language.Spanish)}**.`,
-				footer: "Tienes 3 minutos para aceptar o rechazar la invitación.",
-			},
-			notEnoughMoney: {
-				private: (gangName: string, gangAcronym: string) => `No tienes suficiente dinero para aceptar la invitación de **${gangName}** (${gangAcronym}). Necesitas **${formatMoney(Gang.JOIN_COST, Language.Spanish)}**.`,
-				channel: (name: string) => `**${name}** intentó aceptar la invitación, pero no tiene suficiente dinero.`,
-			},
-			success: {
-				private: (gangName: string, gangAcronym: string) => `¡Has aceptado con éxito unirte a la cuadrilla **${gangName}** (${gangAcronym})!`,
-				channel: (name: string) => `**${name}** ha aceptado con éxito unirse a la cuadrilla!`,
-			},
-			notSuccess: {
-				private: (gangName: string, gangAcronym: string) => `No se pudo aceptar la invitación de **${gangName}** (${gangAcronym}). ¿Quizás ya estás en una cuadrilla?`,
-				channel: (name: string) => `**${name}** falló al aceptar la invitación.`,
-			},
-			decline: {
-				private: (gangName: string, gangAcronym: string) => `¡Has rechazado la invitación de **${gangName}** (${gangAcronym})!`,
-				channel: (name: string) => `**${name}** rechazó la invitación!`,
-			},
-			timeout: {
-				private: (gangName: string, gangAcronym: string) => `Te invité a unirte a la cuadrilla **${gangName}** (${gangAcronym}), pero no respondiste a tiempo.`,
-				channel: (name: string, gangName: string, gangAcronym: string) => `**${name}** no respondió a la invitación para unirse a la cuadrilla **${gangName}** (${gangAcronym}).`,
-			},
-			depositCooldown: `Puedes depositar de nuevo`,
-			notEnoughMoneyDeposit: (amount: string) => `No tienes **${amount}** para depositar`,
-			maxDepositReached: (max: string) => `Solo puedes depositar hasta **${max}**`,
-		},
-	} as const;
 }
+
+const Strings = {
+	[Language.English]: {
+		acceptText: "Accept",
+		declineText: "Decline",
+		invitation: {
+			description: (gangName: string, gangAcronym: string) => `I'm inviting you to join the gang **${gangName}** (${gangAcronym})!\n-# Accepting this invite will cost you **${formatMoney(Gang.JOIN_COST, Language.English)}**.`,
+			footer: "You have 3 minutes to accept or decline the invitation.",
+		},
+		notEnoughMoney: {
+			private: (gangName: string, gangAcronym: string) => `You don't have enough money to accept the invitation of **${gangName}** (${gangAcronym}). You need **${formatMoney(Gang.JOIN_COST, Language.English)}**.`,
+			channel: (name: string) => `**${name}** tried to accept the invitation, but doesn't have enough money.`,
+		},
+		success: {
+			private: (gangName: string, gangAcronym: string) => `You have successfully joined the gang **${gangName}** (${gangAcronym})!`,
+			channel: (name: string) => `**${name}** has successfully joined the gang!`,
+		},
+		notSuccess: {
+			private: (gangName: string, gangAcronym: string) => `Failed to accept the invitation of **${gangName}** (${gangAcronym}). Maybe you are already in a gang?`,
+			channel: (name: string) => `**${name}** failed to accept the invitation.`,
+		},
+		decline: {
+			private: (gangName: string, gangAcronym: string) => `You declined the invitation of **${gangName}** (${gangAcronym})!`,
+			channel: (name: string) => `**${name}** has declined the invitation!`,
+		},
+		timeout: {
+			private: (gangName: string, gangAcronym: string) => `I've invited you to join the gang **${gangName}** (${gangAcronym}), but you didn't respond in time.`,
+			channel: (name: string, gangName: string, gangAcronym: string) => `**${name}** did not respond to the invitation to join the gang **${gangName}** (${gangAcronym}).`,
+		},
+		depositCooldown: `You can deposit again`,
+		notEnoughMoneyDeposit: (amount: string) => `You don't have **${amount}** to deposit`,
+		maxDepositReached: (max: string) => `You can only deposit up to **${max}**`,
+	},
+	[Language.Portuguese]: {
+		acceptText: "Aceitar",
+		declineText: "Recusar",
+		invitation: {
+			description: (gangName: string, gangAcronym: string) => `Estou convidando você para entrar na gangue **${gangName}** (${gangAcronym})!\n-# Aceitar este convite custará **${formatMoney(Gang.JOIN_COST, Language.Portuguese)}**.`,
+			footer: "Você tem 3 minutos para aceitar ou recusar o convite.",
+		},
+		notEnoughMoney: {
+			private: (gangName: string, gangAcronym: string) => `Você não tem dinheiro suficiente para aceitar o convite da gangue **${gangName}** (${gangAcronym}). Você precisa de **${formatMoney(Gang.JOIN_COST, Language.Portuguese)}**.`,
+			channel: (name: string) => `**${name}** tentou aceitar o convite, mas não tem dinheiro suficiente.`,
+		},
+		success: {
+			private: (gangName: string, gangAcronym: string) => `Você entrou com sucesso na gangue **${gangName}** (${gangAcronym})!`,
+			channel: (name: string) => `**${name}** entrou com sucesso na gangue!`,
+		},
+		notSuccess: {
+			private: (gangName: string, gangAcronym: string) => `Falha ao aceitar o convite da gangue **${gangName}** (${gangAcronym}). Talvez você já esteja em uma gangue?`,
+			channel: (name: string) => `**${name}** falhou ao aceitar o convite.`,
+		},
+		decline: {
+			private: (gangName: string, gangAcronym: string) => `Você recusou o convite da gangue **${gangName}** (${gangAcronym})!`,
+			channel: (name: string) => `**${name}** recusou o convite!`,
+		},
+		timeout: {
+			private: (gangName: string, gangAcronym: string) => `Eu te convidei para entrar na gangue **${gangName}** (${gangAcronym}), mas você não respondeu a tempo.`,
+			channel: (name: string, gangName: string, gangAcronym: string) => `**${name}** não respondeu ao convite para entrar na gangue **${gangName}** (${gangAcronym}).`,
+		},
+		depositCooldown: `Você pode depositar novamente`,
+		notEnoughMoneyDeposit: (amount: string) => `Você não tem **${amount}** para depositar`,
+		maxDepositReached: (max: string) => `Você só pode depositar até **${max}**`,
+	},
+	[Language.Spanish]: {
+		acceptText: "Aceptar",
+		declineText: "Rechazar",
+		invitation: {
+			description: (gangName: string, gangAcronym: string) => `Te estoy invitando a unirte a la cuadrilla **${gangName}** (${gangAcronym})!\n-# Aceptar esta invitación te costará **${formatMoney(Gang.JOIN_COST, Language.Spanish)}**.`,
+			footer: "Tienes 3 minutos para aceptar o rechazar la invitación.",
+		},
+		notEnoughMoney: {
+			private: (gangName: string, gangAcronym: string) => `No tienes suficiente dinero para aceptar la invitación de **${gangName}** (${gangAcronym}). Necesitas **${formatMoney(Gang.JOIN_COST, Language.Spanish)}**.`,
+			channel: (name: string) => `**${name}** intentó aceptar la invitación, pero no tiene suficiente dinero.`,
+		},
+		success: {
+			private: (gangName: string, gangAcronym: string) => `¡Has aceptado con éxito unirte a la cuadrilla **${gangName}** (${gangAcronym})!`,
+			channel: (name: string) => `**${name}** ha aceptado con éxito unirse a la cuadrilla!`,
+		},
+		notSuccess: {
+			private: (gangName: string, gangAcronym: string) => `No se pudo aceptar la invitación de **${gangName}** (${gangAcronym}). ¿Quizás ya estás en una cuadrilla?`,
+			channel: (name: string) => `**${name}** falló al aceptar la invitación.`,
+		},
+		decline: {
+			private: (gangName: string, gangAcronym: string) => `¡Has rechazado la invitación de **${gangName}** (${gangAcronym})!`,
+			channel: (name: string) => `**${name}** rechazó la invitación!`,
+		},
+		timeout: {
+			private: (gangName: string, gangAcronym: string) => `Te invité a unirte a la cuadrilla **${gangName}** (${gangAcronym}), pero no respondiste a tiempo.`,
+			channel: (name: string, gangName: string, gangAcronym: string) => `**${name}** no respondió a la invitación para unirse a la cuadrilla **${gangName}** (${gangAcronym}).`,
+		},
+		depositCooldown: `Puedes depositar de nuevo`,
+		notEnoughMoneyDeposit: (amount: string) => `No tienes **${amount}** para depositar`,
+		maxDepositReached: (max: string) => `Solo puedes depositar hasta **${max}**`,
+	},
+} as const;
