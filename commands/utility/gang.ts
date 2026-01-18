@@ -18,7 +18,6 @@ import { GangColor, IGangColor } from "../../utils/colors";
 import { EmoteString } from "../../utils/emotes";
 import { DEFAULT_GANG_IMAGE } from "../../ui/builders/GangImageCanvasBuilder";
 import { GangBaseId, GangBases, GangModifier, getGangBases } from "../../interfaces/GangBases";
-import { addHours } from "date-fns/addHours";
 
 enum CommandOption {
 	Info = "info",

@@ -44,7 +44,7 @@ module.exports = {
 				.addSectionComponents(header => header
 					.addTexts([
 						`# ${s.title}`,
-						s.description
+						s.description,
 					])
 					.setThumbnailAccessory(thumb => thumb
 						.setURL("https://media.discordapp.net/attachments/1233604589064818808/1337166947250602047/Trabalhos2.png"),
@@ -101,11 +101,14 @@ module.exports = {
 				return container;
 			}
 			else {
+				const userItems = await user.GetItems();
+
 				for (let i = 0; i < currentPageJobs.length; i++) {
 					const job = currentPageJobs[i];
 					const weaponsNeeded = getItemList().filter(item => job.NeedItem?.includes(item.Id));
 					const jobDuration = job.Duration * eventActiveValue;
 					const jobSalary = Math.floor(job.Salary * userClassModifier);
+					const hasAllItems = job.NeedItem?.every(neededItem => userItems.some(userItem => userItem.Id === neededItem));
 
 					const textSalary = `${s.salary}: ${formatMoney(jobSalary, language)}`;
 					const textDuration = `${s.duration}: ${jobDuration}h`;
@@ -115,11 +118,11 @@ module.exports = {
 					container.addSectionComponents(section => section
 						.addTexts([
 							`### ${job.Description[language]}`,
-							`${textSalary} • ${textDuration}${blackMarketText}${textNeeded}`
+							`${textSalary} • ${textDuration}${blackMarketText}${textNeeded}`,
 						])
 						.setButtonAccessory(btn => btn
 							.setLabel(s.start)
-							.setStyle(ButtonStyle.Secondary)
+							.setStyle(job.NeedItem && !hasAllItems ? ButtonStyle.Secondary : ButtonStyle.Success)
 							.setCustomId(`start${job.Id}`)),
 					);
 
