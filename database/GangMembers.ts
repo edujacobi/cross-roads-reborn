@@ -52,7 +52,8 @@ GangMembers.init(
 		},
 		depositTime: {
 			type: DataTypes.DATE,
-			allowNull: true,
+			allowNull: false,
+			defaultValue: DataTypes.NOW,
 		},
 		depositAmount: {
 			type: DataTypes.INTEGER,

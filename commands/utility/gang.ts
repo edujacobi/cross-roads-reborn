@@ -18,6 +18,7 @@ import { GangColor, IGangColor } from "../../utils/colors";
 import { EmoteString } from "../../utils/emotes";
 import { DEFAULT_GANG_IMAGE } from "../../ui/builders/GangImageCanvasBuilder";
 import { GangBaseId, GangBases, GangModifier, getGangBases } from "../../interfaces/GangBases";
+import { addHours } from "date-fns/addHours";
 
 enum CommandOption {
 	Info = "info",
@@ -416,11 +417,36 @@ module.exports = {
 					return;
 				}
 
-				const membersList = gang.Members.map(member => {
+				enum MemberListType {
+					Nickname = "nickname",
+					Id = "id",
+					Deposit = "deposit",
+				}
+
+				let currentType: string = MemberListType.Nickname;
+
+				const membersList = (type: string) => gang.Members.map(member => {
 					const underscore = member.UserId == interaction.user.id ? "__" : "";
 					const emote = gang.GetMemberEmote(member);
 
-					return `${emote} ${underscore}${member.Nickname}${underscore} - ${member.RoleName}`;
+					let info = "";
+					let deposit = "";
+					if (type === MemberListType.Nickname) {
+						info = member.Nickname;
+					}
+					else if (type === MemberListType.Id) {
+						info = member.UserId;
+					}
+					else if (type === MemberListType.Deposit) {
+						info = member.Nickname;
+						let textDeposit = s.canDeposit as string;
+						if (member.Deposit.Time > new Date()) {
+							textDeposit = `${s.canDepositAgain} ${showTime(member.Deposit.Time.getTime(), true)}`;
+						}
+						deposit = `\n-# ${formatMoney(member.Deposit.Amount, language)}. ${textDeposit}`;
+					}
+
+					return `${emote} ${underscore}${info}${underscore} - ${member.RoleName}${deposit}`;
 				}).join("\n");
 
 				const adminIdText = user.Id === process.env.JACOBI_ID ? ` • ${s.gangId(gang.Id)}` : "";
@@ -464,11 +490,33 @@ module.exports = {
 						.addLargeSeparator();
 				}
 
+				const nickBtn = new ButtonBuilder()
+					.setLabel("Nicknames")
+					.setCustomId(MemberListType.Nickname)
+					.setDisabled(true)
+					.setStyle(ButtonStyle.Secondary);
+
+				const idBtn = new ButtonBuilder()
+					.setLabel("IDs")
+					.setCustomId(MemberListType.Id)
+					.setStyle(ButtonStyle.Secondary);
+
+				const depositBtn = new ButtonBuilder()
+					.setLabel(s.deposits)
+					.setCustomId(MemberListType.Deposit)
+					.setDisabled(user.GangId !== gang.Id)
+					.setStyle(ButtonStyle.Secondary);
+
 				container
 					.addTexts([
 						`### ${s.members} (${gang.Members.length}/${gang.GetMaxMembers()})`,
-						`${membersList}`,
 					])
+					.addTexts([
+						`${membersList(currentType)}`,
+					], 10)
+					.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
+						.addComponents(nickBtn, idBtn, depositBtn),
+					)
 					.addFooter({
 						text: `${s.created} ${showTime(gang.CreatedAt.getTime())}${adminIdText}`,
 						button: new ButtonBuilder()
@@ -477,22 +525,50 @@ module.exports = {
 							.setStyle(ButtonStyle.Secondary),
 					});
 
-				let responded = false;
+				let gotToInfo = false;
 				const response = await replyWithContainer(interaction, container);
 
 				const collector = createButtonCollector(interaction, response);
 
-				collector?.on("collect", async btn => {
-					await btn.deferUpdate();
-					if (btn.customId === "info") {
-						responded = true;
-						await replyWithContainer(interaction, containerInfo);
-					}
+				collector?.on("end", async () => {
+					if (gotToInfo) return;
+					await disableButtons(interaction, container);
 				});
 
-				collector?.on("end", async () => {
-					if (responded) return;
-					await disableButtons(interaction, container);
+				collector?.on("collect", async btn => {
+					await btn.deferUpdate();
+
+					if (btn.customId === "info") {
+						gotToInfo = true;
+						return replyWithContainer(interaction, containerInfo);
+					}
+
+					else if (btn.customId === MemberListType.Nickname) {
+						currentType = btn.customId as MemberListType;
+						container.changeTextFromSectionId(10, `${membersList(currentType)}`);
+						nickBtn.setDisabled(true);
+						idBtn.setDisabled(false);
+						depositBtn.setDisabled(user.GangId !== gang.Id);
+						return replyWithContainer(interaction, container);
+					}
+
+					else if (btn.customId === MemberListType.Id) {
+						currentType = btn.customId as MemberListType;
+						container.changeTextFromSectionId(10, `${membersList(currentType)}`);
+						nickBtn.setDisabled(false);
+						idBtn.setDisabled(true);
+						depositBtn.setDisabled(user.GangId !== gang.Id);
+						return replyWithContainer(interaction, container);
+					}
+
+					else if (btn.customId === MemberListType.Deposit) {
+						currentType = btn.customId as MemberListType;
+						container.changeTextFromSectionId(10, `${membersList(currentType)}`);
+						nickBtn.setDisabled(false);
+						idBtn.setDisabled(false);
+						depositBtn.setDisabled(true);
+						return replyWithContainer(interaction, container);
+					}
 				});
 
 				return;
@@ -1230,6 +1306,9 @@ const Strings = {
 		back: `Back`,
 		baseBought: (baseName: string, gangName: string) => `You bought the base **${baseName}** for the gang **${gangName}** ${EmoteString.Gang}`,
 		depositSuccess: (amount: string, gangName: string) => `You deposited **${amount}** into the gang **${gangName}** ${EmoteString.Gang}`,
+		deposits: "Deposits",
+		canDeposit: "Can deposit",
+		canDepositAgain: "Can deposit again",
 	},
 	[Language.Portuguese]: {
 		gangTitle: `Gangues`,
@@ -1296,6 +1375,9 @@ const Strings = {
 		back: `Voltar`,
 		baseBought: (baseName: string, gangName: string) => `Você comprou a base **${baseName}** para a gangue **${gangName}** ${EmoteString.Gang}`,
 		depositSuccess: (amount: string, gangName: string) => `Você depositou **${amount}** na gangue **${gangName}** ${EmoteString.Gang}`,
+		deposits: "Depósitos",
+		canDeposit: "Pode depositar",
+		canDepositAgain: "Pode depositar novamente",
 	},
 	[Language.Spanish]: {
 		gangTitle: `Cuadrillas`,
@@ -1362,5 +1444,8 @@ const Strings = {
 		back: `Volver`,
 		baseBought: (baseName: string, gangName: string) => `Compraste la base **${baseName}** para la cuadrilla **${gangName}** ${EmoteString.Gang}`,
 		depositSuccess: (amount: string, gangName: string) => `Depositaste **${amount}** en la cuadrilla **${gangName}** ${EmoteString.Gang}`,
+		deposits: "Depositos",
+		canDeposit: "Puede depositar",
+		canDepositAgain: "Puede depositar nuevamente",
 	},
 } as const;

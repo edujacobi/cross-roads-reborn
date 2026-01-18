@@ -1024,15 +1024,9 @@ export class Gang {
 		if (!member) {
 			canDeposit = false;
 		}
-		else {
-			const now = new Date();
-			const depositTime = member.depositTime || new Date(0);
-			const nextDepositTime = addHours(depositTime, Gang.TIME_BETWEEN_DEPOSITS);
-
-			if (now < nextDepositTime) {
-				text = `${s.depositCooldown} ${showTime(nextDepositTime.getTime(), true)}`;
-				canDeposit = false;
-			}
+		else if (member.depositTime > new Date()) {
+			text = `${s.depositCooldown} ${showTime(member.depositTime.getTime(), true)}`;
+			canDeposit = false;
 		}
 
 		const maxDeposit = Gang.MAX_DEPOSIT_PER_DAY * this.Level;
@@ -1060,18 +1054,21 @@ export class Gang {
 		});
 
 		if (member) {
-			member.depositTime = new Date();
+			member.depositTime = addHours(new Date(), Gang.TIME_BETWEEN_DEPOSITS);
 			member.depositAmount += amount;
-			await member.save();
-			await Notification.GangDepositAgain(user, addHours(new Date(), Gang.TIME_BETWEEN_DEPOSITS));
+
+			Log.Success(`User ${user.Nickname} (Id: ${user.Id}) deposited ${formatMoney(amount, user.Language)} in gang ${this.Name} (Id: ${this.Id})`);
+
+			await Promise.all([
+				member.save(),
+				Notification.GangDepositAgain(user, member.depositTime),
+				user.Update(),
+				this.Update(),
+			]);
 		}
-
-		Log.Success(`User ${user.Nickname} (Id: ${user.Id}) deposited ${formatMoney(amount, user.Language)} in gang ${this.Name} (Id: ${this.Id})`);
-
-		await Promise.all([
-			user.Update(),
-			this.Update(),
-		]);
+		else {
+			Log.Warning(`User ${user.Nickname} (Id: ${user.Id}) tried to deposit ${formatMoney(amount, user.Language)} but an error occurred (not member)`);
+		}
 	}
 }
 
