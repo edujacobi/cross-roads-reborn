@@ -64,8 +64,8 @@ export const LocationList: LocationListType = {
 		},
 		ImageUrl: "https://media.discordapp.net/attachments/1349187098653233184/1349193675376300072/GroceryStore.png",
 		Reward: {
-			Min: 625,
-			Max: 1_725,
+			Min: 650,
+			Max: 2_000,
 		},
 		SuccessChance: 64,
 		NeedAttack: 20,
@@ -85,7 +85,7 @@ export const LocationList: LocationListType = {
 		ImageUrl: "https://media.discordapp.net/attachments/1349187098653233184/1349193675594531017/GasStation.png",
 		Reward: {
 			Min: 3_125,
-			Max: 8_000,
+			Max: 7_500,
 		},
 		SuccessChance: 58,
 		NeedAttack: 25,
@@ -104,8 +104,8 @@ export const LocationList: LocationListType = {
 		},
 		ImageUrl: "https://media.discordapp.net/attachments/1349187098653233184/1349193675854315641/Jewelry.png",
 		Reward: {
-			Min: 9_700,
-			Max: 16_000,
+			Min: 9_200,
+			Max: 15_000,
 		},
 		SuccessChance: 52,
 		NeedAttack: 35,
