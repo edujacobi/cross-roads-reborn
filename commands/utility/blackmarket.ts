@@ -4,6 +4,9 @@ import { BlackMarket } from "../../models/BlackMarket";
 import { defaultComponent } from "../../utils/ui";
 import { CrColors } from "../../utils/colors";
 import { User } from "../../models/User";
+import { Language } from "../../models/Language";
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const shopCommand = require("./shop");
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -12,7 +15,7 @@ module.exports = {
 		.setNameLocalization(Locale.PortugueseBR, "mercadonegro")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Abra o Mercado negro para comprar alguma coisa"),
 
-	async execute(interaction: ChatInputCommandInteraction, user: User) {
+	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 
 		const blackMarket = new BlackMarket(user);
 
@@ -28,6 +31,6 @@ module.exports = {
 			return replyWithContainer(interaction, container);
 		}
 
-		await blackMarket.Start(interaction);
+		await shopCommand.execute(interaction, user, language, blackMarket);
 	},
 };

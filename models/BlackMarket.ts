@@ -11,7 +11,7 @@ export class BlackMarket extends Shop {
 		const s = Strings[user.Language];
 
 		this.Title = s.title;
-		this.Description = `# ${this.Title}\n_"${s.description}"_`;
+		this.Description = `_"${s.description}"_`;
 		this.Image = "https://media.discordapp.net/attachments/937437946024435794/1335709252962091040/MercadoNegro.png";
 		this.Color = CrColors.BlackMarket;
 		this.ItemList = getItemList().filter((item) => item.BlackMarket);

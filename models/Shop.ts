@@ -1,159 +1,35 @@
-﻿import { formatMoney, showTime } from "../utils/ui";
-import { User } from "./User";
-import {
-	ActionRowBuilder,
-	ButtonBuilder,
-	ButtonStyle,
-	ChatInputCommandInteraction,
-	Colors,
-	RGBTuple,
-} from "discord.js";
-import { globalStrings, Language } from "./Language";
-import { createButtonCollector, disableButtons, replyWithContainer } from "../utils/logic";
-import { EmoteString } from "../utils/emotes";
-import { getItemList, ItemList, Items, ItemType } from "../interfaces/Items";
+﻿import { User } from "./User";
+import { getItemList, Items } from "../interfaces/Items";
 import { Users } from "../database/Users";
-import { LocationList } from "../interfaces/Locations";
-import { ClassList } from "../interfaces/Classes";
 import { differenceInHours } from "date-fns";
 import { UserItems } from "../database/UserItems";
 import { addHours } from "date-fns/addHours";
+import { globalStrings, Language } from "./Language";
 import { ScavengeId, ScavengeList } from "../interfaces/Scavenge";
+import { EmoteString } from "../utils/emotes";
+import { showTime } from "../utils/ui";
+import { ClassList } from "../interfaces/Classes";
+import { LocationList } from "../interfaces/Locations";
 import { BundleId } from "../interfaces/Ids";
-import { CustomContainerBuilder } from "../ui/builders/CustomContainerBuilder";
+import { Colors } from "discord.js";
 
 export class Shop {
 	User: User;
+	ItemList: Items[];
 	Title: string;
 	Description: string;
 	Image: string;
-	Color: number | RGBTuple;
-	ItemList: Items[];
-	Container = new CustomContainerBuilder();
-	CurrentPage: number = 0;
+	Color: number;
+	Strings: typeof Strings[Language.English | Language.Portuguese | Language.Spanish];
 
 	constructor(user: User) {
-		const s = Strings[user.Language];
-
 		this.User = user;
-		this.Title = s.title;
-		this.Description = `# ${this.Title}\n${s.description}`;
+		this.ItemList = getItemList().filter((item) => item.Shop);
+		this.Strings = Strings[user.Language];
+		this.Title = this.Strings.title;
+		this.Description = this.Strings.description;
 		this.Image = "https://media.discordapp.net/attachments/531174573463306240/854876910885797909/Loja.png";
 		this.Color = Colors.Green;
-		this.ItemList = getItemList().filter((item) => item.Shop);
-	}
-
-	AddContainerHeader() {
-		this.Container = new CustomContainerBuilder()
-			.setUser(this.User)
-			.setAccentColor(this.Color)
-			.addSectionComponents(header => header
-				.addTexts([
-					this.Description
-				])
-				.setThumbnailAccessory(thumb => thumb
-					.setURL(this.Image),
-				),
-			)
-			.addLargeSeparator();
-	}
-
-	AddContainerFooter() {
-		this.Container.addFooter({
-			text: formatMoney(this.User.Money, this.User.Language),
-		});
-	}
-
-	GenerateContainer() {
-		const s = Strings[this.User.Language];
-
-		this.AddContainerHeader();
-
-		const pages = [];
-		for (let i = 0; i < this.ItemList.length; i += 7) {
-			pages.push(this.ItemList.slice(i, i + 7));
-		}
-
-		const currentPageItems = pages[this.CurrentPage];
-
-		for (let i = 0; i < currentPageItems.length; i++) {
-			const item = currentPageItems[i];
-			let value = "";
-
-			if (item.Type == ItemType.Weapon) {
-				value = `-# ${EmoteString.Attack}${item.Attack} ATK ${EmoteString.Defense}${item.Defense} DEF`;
-			}
-
-			if (item.Type == ItemType.Wearable || item.Type == ItemType.Consumable) {
-				const textField = [];
-
-				if (item.MoreAttack) {
-					textField.push(`${EmoteString.Attack}+${item.MoreAttack} ATK`);
-				}
-				if (item.MoreDefense) {
-					textField.push(`${EmoteString.Defense}+${item.MoreDefense} DEF`);
-				}
-				if (item.MoreMoneyATK) {
-					textField.push(`${EmoteString.Attack}+${item.MoreMoneyATK} $ATK$`);
-				}
-				if (item.MoreMoneyDEF) {
-					textField.push(`${EmoteString.Defense}+${item.MoreMoneyDEF} $DEF$`);
-				}
-				if (item.Special.Day) {
-					textField.push(`(${s.day})`);
-				}
-				if (item.Special.Night) {
-					textField.push(`(${s.night})`);
-				}
-				if (item.Type == ItemType.Consumable) {
-					textField.push(`(${s.consumable})`);
-				}
-
-				value = `-# ${textField.join(" ")}`;
-			}
-
-			if (item.Type == ItemType.Accessory) {
-				value = `-# +30% ${s.escape}`;
-			}
-
-			this.Container.addSectionComponents(section => section
-				.addTexts([
-					`### ${item.Skin[BundleId.Default].String} ${item.Description[this.User.Language]}`,
-					value,
-				])
-				.setButtonAccessory(new ButtonBuilder()
-					.setLabel(formatMoney(item.Price, this.User.Language))
-					.setCustomId(`buy${item.Id}`)
-					.setDisabled(item.Price > this.User.Money)
-					.setStyle(ButtonStyle.Secondary)),
-			);
-
-			if (i != currentPageItems.length - 1) {
-				this.Container.addLargeSeparator();
-			}
-		}
-
-		if (pages.length > 1) {
-			this.Container.addLargeSeparator();
-
-			this.Container.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
-				.addComponents(new ButtonBuilder()
-					.setLabel(s.previous)
-					.setStyle(ButtonStyle.Secondary)
-					.setCustomId("previous")
-					.setEmoji("⬅️")
-					.setDisabled(this.CurrentPage === 0),
-				)
-				.addComponents(new ButtonBuilder()
-					.setLabel(s.next)
-					.setStyle(ButtonStyle.Secondary)
-					.setCustomId("next")
-					.setEmoji("➡️")
-					.setDisabled(this.CurrentPage === pages.length - 1),
-				));
-		}
-
-		this.AddContainerFooter();
 	}
 
 	async CanUserBuyItem(item: Items) {
@@ -225,98 +101,7 @@ export class Shop {
 
 		return { canBuy, message };
 	}
-
-	async Start(interaction: ChatInputCommandInteraction) {
-		const s = Strings[this.User.Language];
-
-		this.GenerateContainer();
-
-		const response = await replyWithContainer(interaction, this.Container);
-
-		const collector = createButtonCollector(interaction, response);
-
-		collector?.on("collect", async btn => {
-			await btn.deferUpdate();
-
-			if (btn.customId === "back") {
-				this.GenerateContainer();
-				return replyWithContainer(interaction, this.Container);
-			}
-
-			if (btn.customId.includes("buy")) {
-				await this.User.GetInfo();
-
-				const itemId = Number(btn.customId.replace("buy", ""));
-				const item = ItemList[itemId];
-
-				const { canBuy, message } = await this.CanUserBuyItem(item);
-
-				if (!canBuy) {
-					this.AddContainerHeader();
-
-					this.Container
-						.addTexts([
-							message,
-						])
-						.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
-							.addComponents(
-								new ButtonBuilder()
-									.setLabel(s.back)
-									.setStyle(ButtonStyle.Secondary)
-									.setCustomId("back"),
-							),
-						);
-
-					this.AddContainerFooter();
-
-					return replyWithContainer(interaction, this.Container);
-				}
-
-				await this.User.BuyItem(item);
-
-				this.AddContainerHeader();
-
-				this.Container
-					.addTexts([
-						s.itemBought(`${item.Skin[BundleId.Default].String} ${item.Description[this.User.Language]}`),
-					])
-					.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
-						.addComponents(
-							new ButtonBuilder()
-								.setLabel(s.back)
-								.setStyle(ButtonStyle.Secondary)
-								.setCustomId("back"),
-							new ButtonBuilder()
-								.setLabel(s.buyMore(item.Price))
-								.setStyle(ButtonStyle.Success)
-								.setCustomId(`buy${itemId}`,
-								),
-						),
-					);
-
-				this.AddContainerFooter();
-
-				return replyWithContainer(interaction, this.Container);
-			}
-
-			if (btn.customId === "previous") {
-				this.CurrentPage -= 1;
-				this.GenerateContainer();
-				return replyWithContainer(interaction, this.Container);
-			}
-			else if (btn.customId === "next") {
-				this.CurrentPage += 1;
-				this.GenerateContainer();
-				return replyWithContainer(interaction, this.Container);
-			}
-		});
-
-		collector?.on("end", async () => {
-			await disableButtons(interaction, this.Container);
-		});
-	}
 }
-
 
 const Strings = {
 	[Language.English]: {
@@ -328,16 +113,7 @@ const Strings = {
 		scavenging: (placeId: ScavengeId) => `You can't buy items while scavenging ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.English]}** ${EmoteString.Scavenge}`,
 		inPrison: (prisonTime: Date) => `You can't buy items while in prison! ${EmoteString.Prison}\n-# Will be released ${showTime(prisonTime.getTime(), true)}!`,
 		inHospital: (hospitalTime: Date) => `You can't buy items while in the hospital! ${EmoteString.Hospital}\n-# Will be healed ${showTime(hospitalTime.getTime(), true)}!`,
-		day: "day",
-		night: "night",
-		escape: "escape",
-		consumable: "consumable",
-		itemBought: (itemName: string) => `You bought **${itemName}**!`,
 		itemPassLimit: (hours: number, itemName: string) => `You can't have more than 360 hours of the same item!\n-# Has ${hours} hours of ${itemName}.`,
-		buyMore: (price: number) => `Buy more! ${formatMoney(price, Language.English)}`,
-		back: "Go back",
-		next: "Next",
-		previous: "Previous",
 	},
 
 	[Language.Portuguese]: {
@@ -349,16 +125,7 @@ const Strings = {
 		scavenging: (placeId: ScavengeId) => `Você não pode comprar itens enquanto está vasculhando ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Portuguese]}** ${EmoteString.Scavenge}`,
 		inPrison: (prisonTime: Date) => `Você não pode comprar itens enquanto está preso! ${EmoteString.Prison}\n-# Será solto ${showTime(prisonTime.getTime(), true)}!`,
 		inHospital: (hospitalTime: Date) => `Você não pode comprar itens enqunato está hospitalizado! ${EmoteString.Hospital}\n-# Será curado ${showTime(hospitalTime.getTime(), true)}!`,
-		day: "dia",
-		night: "noite",
-		escape: "fuga",
-		consumable: "consumível",
-		itemBought: (itemName: string) => `Você comprou **${itemName}**!`,
 		itemPassLimit: (hours: number, itemName: string) => `Você não pode possuir mais de 360 horas de um mesmo item!\n-# Possui ${hours} horas de ${itemName}.`,
-		buyMore: (price: number) => `Comprar mais! ${formatMoney(price, Language.Portuguese)}`,
-		back: "Voltar",
-		next: "Próximo",
-		previous: "Anterior",
 	},
 
 	[Language.Spanish]: {
@@ -370,15 +137,6 @@ const Strings = {
 		scavenging: (placeId: ScavengeId) => `¡No puedes comprar artículos mientras estás buscando en ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Spanish]}** ${EmoteString.Scavenge}`,
 		inPrison: (prisonTime: Date) => `¡No puedes comprar artículos mientras estás en prisión! ${EmoteString.Prison}\n-# Serás liberado ${showTime(prisonTime.getTime(), true)}!`,
 		inHospital: (hospitalTime: Date) => `¡No puedes comprar artículos mientras estás en el hospital! ${EmoteString.Hospital}\n-# Serás curado ${showTime(hospitalTime.getTime(), true)}!`,
-		day: "día",
-		night: "noche",
-		escape: "fuga",
-		consumable: "consumible",
-		itemBought: (itemName: string) => `Tú compraste **${itemName}**!`,
 		itemPassLimit: (hours: number, itemName: string) => `¡No puedes tener más de 360 horas del mismo artículo!\n-# Tiene ${hours} horas de ${itemName}.`,
-		buyMore: (price: number) => `¡Comprar más! ${formatMoney(price, Language.Spanish)}`,
-		back: "Volver",
-		next: "Siguiente",
-		previous: "Anterior",
 	},
 } as const;
