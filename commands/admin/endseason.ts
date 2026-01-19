@@ -187,12 +187,10 @@ module.exports = {
 
 				container
 					.changeTextFromSectionId(10, texts.join("\n"))
-					.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
-						.addComponents(new ButtonBuilder()
-							.setLabel("Continue")
-							.setStyle(ButtonStyle.Primary)
-							.setCustomId("confirmCheckValues"),
-						),
+					.addButtonRow(btn => btn
+						.setLabel("Continue")
+						.setStyle(ButtonStyle.Primary)
+						.setCustomId("confirmCheckValues"),
 					);
 
 				return replyWithContainer(interaction, container);
@@ -238,12 +236,10 @@ module.exports = {
 
 				container
 					.changeTextFromSectionId(10, texts.join("\n"))
-					.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
-						.addComponents(new ButtonBuilder()
-							.setLabel("END SEASON")
-							.setStyle(ButtonStyle.Danger)
-							.setCustomId("clearValues"),
-						),
+					.addButtonRow(btn => btn
+						.setLabel("END SEASON")
+						.setStyle(ButtonStyle.Danger)
+						.setCustomId("clearValues"),
 					);
 
 				return replyWithContainer(interaction, container);

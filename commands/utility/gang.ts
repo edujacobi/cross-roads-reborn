@@ -513,8 +513,10 @@ module.exports = {
 					.addTexts([
 						`${membersList(currentType)}`,
 					], 10)
-					.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
-						.addComponents(nickBtn, idBtn, depositBtn),
+					.addButtonRow(
+						() => nickBtn,
+						() => idBtn,
+						() => depositBtn,
 					)
 					.addFooter({
 						text: `${s.created} ${showTime(gang.CreatedAt.getTime())}${adminIdText}`,
@@ -1105,18 +1107,16 @@ module.exports = {
 						.addTexts([
 							getModifierText(base.Modifier),
 						])
-						.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
-							.addComponents(
-								new ButtonBuilder()
-									.setLabel(s.back)
-									.setCustomId("back")
-									.setStyle(ButtonStyle.Secondary),
-								new ButtonBuilder()
-									.setStyle(ButtonStyle.Success)
-									.setLabel(s.confirm)
-									.setDisabled(gang.Money < BASE_COST)
-									.setCustomId(`confirm${base.Id}`),
-							),
+						.addButtonRow(
+							btn => btn
+								.setLabel(s.back)
+								.setCustomId("back")
+								.setStyle(ButtonStyle.Secondary),
+							btn => btn
+								.setStyle(ButtonStyle.Success)
+								.setLabel(s.confirm)
+								.setDisabled(gang!.Money < BASE_COST)
+								.setCustomId(`confirm${base.Id}`),
 						)
 						.addFooter({
 							text: `${gang.Name} • ${formatMoney(gang.Money, language)}`,

@@ -122,61 +122,55 @@ module.exports = {
 				`## ${EmoteString.Attack}${item.Attack} ATK ${EmoteString.Defense}${item.Defense} DEF`,
 			])
 			.addLargeSeparator()
-			.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
-				.addComponents(
-					button({
-						label: `${s.type}: ${itemMapper[item.Type].type}`,
-						customId: "type",
-						emoji: itemMapper[item.Type].emoji,
-					}),
-					button({
-						label: `${s.price}: ${formatMoney(item.Price, language)}`,
-						customId: "price",
-					}),
-					button({
-						label: `+${item.MoreAttack} ATK `,
-						emoji: EmoteId.Attack,
-						customId: "modifierAttack",
-					}),
-					button({
-						label: `+${item.MoreDefense} DEF `,
-						emoji: EmoteId.Defense,
-						customId: "modifierDefense",
-					}),
-				),
+			.addButtonRow(
+				() => button({
+					label: `${s.type}: ${itemMapper[item.Type].type}`,
+					customId: "type",
+					emoji: itemMapper[item.Type].emoji,
+				}),
+				() => button({
+					label: `${s.price}: ${formatMoney(item.Price, language)}`,
+					customId: "price",
+				}),
+				() => button({
+					label: `+${item.MoreAttack} ATK `,
+					emoji: EmoteId.Attack,
+					customId: "modifierAttack",
+				}),
+				() => button({
+					label: `+${item.MoreDefense} DEF `,
+					emoji: EmoteId.Defense,
+					customId: "modifierDefense",
+				}),
 			)
-			.addActionRowComponents(row2 => row2
-				.addComponents(
-					button({
-						label: `${s.percentRobbed} ${item.MoneyAttack} (+${item.MoreMoneyATK})%`,
-						customId: "percentRobbed",
-					}),
-					button({
-						label: `${s.percentDefended} ${item.MoneyDefense} (+${item.MoreMoneyDEF})%`,
-						customId: "percentDefended",
-					}),
-					button({
-						label: `${s.special}: ${item.Special.Day ? `☀️ ${s.specialDay}` : item.Special.Night ? `🌙 ${s.specialNight}` : s.no}`,
-						customId: "special",
-						style: item.Special.Day || item.Special.Night ? ButtonStyle.Primary : ButtonStyle.Secondary,
-					}),
-				),
+			.addButtonRow(
+				() => button({
+					label: `${s.percentRobbed} ${item.MoneyAttack} (+${item.MoreMoneyATK})%`,
+					customId: "percentRobbed",
+				}),
+				() => button({
+					label: `${s.percentDefended} ${item.MoneyDefense} (+${item.MoreMoneyDEF})%`,
+					customId: "percentDefended",
+				}),
+				() => button({
+					label: `${s.special}: ${item.Special.Day ? `☀️ ${s.specialDay}` : item.Special.Night ? `🌙 ${s.specialNight}` : s.no}`,
+					customId: "special",
+					style: item.Special.Day || item.Special.Night ? ButtonStyle.Primary : ButtonStyle.Secondary,
+				}),
 			)
-			.addActionRowComponents(row3 => row3
-				.addComponents(
-					button({
-						label: `${s.shop}: ${item.Shop ? s.yes : s.no}`,
-						emoji: EmoteId.Shop,
-						customId: "shop",
-						style: item.Shop ? ButtonStyle.Success : ButtonStyle.Secondary,
-					}),
-					button({
-						label: `${s.blackMarket}: ${item.BlackMarket ? s.yes : s.no}`,
-						emoji: EmoteId.BlackMarket,
-						customId: "blackmarket",
-						style: item.BlackMarket ? ButtonStyle.Success : ButtonStyle.Secondary,
-					}),
-				),
+			.addButtonRow(
+				() => button({
+					label: `${s.shop}: ${item.Shop ? s.yes : s.no}`,
+					emoji: EmoteId.Shop,
+					customId: "shop",
+					style: item.Shop ? ButtonStyle.Success : ButtonStyle.Secondary,
+				}),
+				() => button({
+					label: `${s.blackMarket}: ${item.BlackMarket ? s.yes : s.no}`,
+					emoji: EmoteId.BlackMarket,
+					customId: "blackmarket",
+					style: item.BlackMarket ? ButtonStyle.Success : ButtonStyle.Secondary,
+				}),
 			)
 			.addLargeSeparator()
 			.addTexts([

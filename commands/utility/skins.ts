@@ -77,14 +77,12 @@ module.exports = {
 			]);
 
 			for (const chunk of itemsWithSkinsChunks) {
-				container.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
-					.addComponents(
-						chunk.map(item => new ButtonBuilder()
-							.setLabel(item.Description[language])
-							.setEmoji(item.Skin[BundleId.Default].Id)
-							.setStyle(ButtonStyle.Secondary)
-							.setCustomId("change-item" + item.Id),
-						),
+				container.addButtonRow(
+					...chunk.map(item => (btn: ButtonBuilder) => btn
+						.setLabel(item.Description[language])
+						.setEmoji(item.Skin[BundleId.Default].Id)
+						.setStyle(ButtonStyle.Secondary)
+						.setCustomId("change-item" + item.Id),
 					),
 				);
 			}
@@ -107,15 +105,13 @@ module.exports = {
 			}
 
 			for (const chunk of bundlesChunks) {
-				container.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
-					.addComponents(
-						chunk.map(bundle => new ButtonBuilder()
-							.setLabel(bundle.Description[language])
-							.setEmoji(ItemList[bundle.Items[0]].Skin[bundle.Id].Id)
-							.setStyle(ButtonStyle.Secondary)
-							.setDisabled(userOwnedBundles.length === 1)
-							.setCustomId("change-bundle" + bundle.Id),
-						),
+				container.addButtonRow(
+					...chunk.map(bundle => (btn: ButtonBuilder) => btn
+						.setLabel(bundle.Description[language])
+						.setEmoji(ItemList[bundle.Items[0]].Skin[bundle.Id].Id)
+						.setStyle(ButtonStyle.Secondary)
+						.setDisabled(userOwnedBundles.length === 1)
+						.setCustomId("change-bundle" + bundle.Id),
 					),
 				);
 			}
@@ -176,13 +172,10 @@ module.exports = {
 								)),
 						]),
 					)
-					.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
-						.addComponents([
-							new ButtonBuilder()
-								.setLabel(s.goBack)
-								.setStyle(ButtonStyle.Secondary)
-								.setCustomId("back"),
-						]),
+					.addButtonRow(btn => btn
+						.setLabel(s.goBack)
+						.setStyle(ButtonStyle.Secondary)
+						.setCustomId("back"),
 					);
 
 				container.addFooter();
@@ -201,17 +194,15 @@ module.exports = {
 						`## ${ItemList[bundle.Items[0]].Skin[bundle.Id].String} ${bundle.Description[language]}`,
 						`-# ${s.willApplyTo}:\n${itemData.join("\n")}`,
 					])
-					.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
-						.addComponents([
-							new ButtonBuilder()
-								.setLabel(s.goBack)
-								.setStyle(ButtonStyle.Secondary)
-								.setCustomId("back"),
-							new ButtonBuilder()
-								.setLabel(s.select)
-								.setStyle(ButtonStyle.Primary)
-								.setCustomId("confirm" + bundle.Id),
-						]),
+					.addButtonRow(
+						btn => btn
+							.setLabel(s.goBack)
+							.setStyle(ButtonStyle.Secondary)
+							.setCustomId("back"),
+						btn => btn
+							.setLabel(s.select)
+							.setStyle(ButtonStyle.Primary)
+							.setCustomId("confirm" + bundle.Id),
 					);
 
 				container.addFooter();
@@ -230,13 +221,10 @@ module.exports = {
 						`## ${ItemList[bundle.Items[0]].Skin[bundle.Id].String} ${bundle.Description[language]}`,
 						`-# ${s.applied}`,
 					])
-					.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
-						.addComponents([
-							new ButtonBuilder()
-								.setLabel(s.goBack)
-								.setStyle(ButtonStyle.Secondary)
-								.setCustomId("back"),
-						]),
+					.addButtonRow(btn => btn
+						.setLabel(s.goBack)
+						.setStyle(ButtonStyle.Secondary)
+						.setCustomId("back"),
 					);
 
 				container.addFooter();
@@ -263,13 +251,10 @@ module.exports = {
 					`## ${selectedItem.Skin[skin.Id].String} ${selectedItem.Description[language]} - ${skin.Description[language]}`,
 					`-# ${s.selectedSkin}`,
 				])
-				.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
-					.addComponents([
-						new ButtonBuilder()
-							.setLabel(s.goBack)
-							.setStyle(ButtonStyle.Secondary)
-							.setCustomId("back"),
-					]),
+				.addButtonRow(btn => btn
+					.setLabel(s.goBack)
+					.setStyle(ButtonStyle.Secondary)
+					.setCustomId("back"),
 				);
 
 			container.addFooter();

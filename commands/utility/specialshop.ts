@@ -134,17 +134,16 @@ module.exports = {
 					),
 				);
 
-			const rowVIP = new ActionRowBuilder<ButtonBuilder>();
-
+			const vipButtons = [];
 			for (let idx = 1; idx <= 3; idx++) {
-				rowVIP.addComponents(new ButtonBuilder()
+				vipButtons.push((btn: ButtonBuilder) => btn
 					.setLabel(`${s.months(idx)}: ${formatMoney(idx * VIP_BASE_PRICE, language, "")}`)
 					.setEmoji(EmoteId.SpecialCoinShop)
 					.setStyle(ButtonStyle.Secondary)
 					.setCustomId("vip" + idx));
 			}
 
-			container.addActionRowComponents(rowVIP);
+			container.addButtonRow(...vipButtons);
 
 			// --- Decoração de Avatar
 			container
@@ -168,19 +167,17 @@ module.exports = {
 			}
 
 			for (const chunk of avatarDecorationsChunks) {
-				const rowDecorations = new ActionRowBuilder<ButtonBuilder>();
+				const buttons = await Promise.all(chunk.map(async decoration => {
+					const disabled = await UserAvatarDecoration.HasAvatarDecoration(user.Id, decoration.Id);
+					return (btn: ButtonBuilder) => btn
+						.setLabel(`${decoration.Description[language]}: ${formatMoney(decoration.Price, language, "")}`)
+						.setEmoji(EmoteId.SpecialCoinShop)
+						.setStyle(ButtonStyle.Secondary)
+						.setDisabled(disabled)
+						.setCustomId("decoration" + decoration.Id);
+				}));
 
-				const buttons = await Promise.all(chunk.map(async decoration => new ButtonBuilder()
-					.setLabel(`${decoration.Description[language]}: ${formatMoney(decoration.Price, language, "")}`)
-					.setEmoji(EmoteId.SpecialCoinShop)
-					.setStyle(ButtonStyle.Secondary)
-					.setDisabled(await UserAvatarDecoration.HasAvatarDecoration(user.Id, decoration.Id))
-					.setCustomId("decoration" + decoration.Id),
-				));
-
-				rowDecorations.setComponents(buttons);
-
-				container.addActionRowComponents(rowDecorations);
+				container.addButtonRow(...buttons);
 			}
 
 			// --- Footer
@@ -281,18 +278,16 @@ module.exports = {
 						`${s.price}: ${EmoteString.SpecialCoinShop}${formatMoney(bundle.Price, language, "")}`,
 						`-# ${s.content}:\n${itemData.join("\n")}`,
 					])
-					.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
-						.addComponents([
-							new ButtonBuilder()
-								.setLabel(s.goBack)
-								.setStyle(ButtonStyle.Secondary)
-								.setCustomId("back"),
-							new ButtonBuilder()
-								.setLabel(s.buy)
-								.setStyle(ButtonStyle.Success)
-								.setDisabled(!canBuy)
-								.setCustomId("confirmbuy" + bundle.Id),
-						]),
+					.addButtonRow(
+						btn => btn
+							.setLabel(s.goBack)
+							.setStyle(ButtonStyle.Secondary)
+							.setCustomId("back"),
+						btn => btn
+							.setLabel(s.buy)
+							.setStyle(ButtonStyle.Success)
+							.setDisabled(!canBuy)
+							.setCustomId("confirmbuy" + bundle.Id),
 					);
 
 				container = addFooter(container);
@@ -338,18 +333,16 @@ module.exports = {
 						`## ${EmoteString.VIP} VIP - ${s.months(vipMonths)}`,
 						`${s.price}: ${EmoteString.SpecialCoinShop}${formatMoney(price, language, "")}`,
 					])
-					.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
-						.addComponents([
-							new ButtonBuilder()
-								.setLabel(s.goBack)
-								.setStyle(ButtonStyle.Secondary)
-								.setCustomId("back"),
-							new ButtonBuilder()
-								.setLabel(s.buy)
-								.setStyle(ButtonStyle.Success)
-								.setDisabled(!canBuy)
-								.setCustomId("confirmvip" + vipMonths),
-						]),
+					.addButtonRow(
+						btn => btn
+							.setLabel(s.goBack)
+							.setStyle(ButtonStyle.Secondary)
+							.setCustomId("back"),
+						btn => btn
+							.setLabel(s.buy)
+							.setStyle(ButtonStyle.Success)
+							.setDisabled(!canBuy)
+							.setCustomId("confirmvip" + vipMonths),
 					);
 
 				container = addFooter(container);
@@ -431,18 +424,16 @@ module.exports = {
 						.setThumbnailAccessory(preview => preview
 							.setURL("attachment://preview.webp")),
 					)
-					.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
-						.addComponents([
-							new ButtonBuilder()
-								.setLabel(s.goBack)
-								.setStyle(ButtonStyle.Secondary)
-								.setCustomId("back"),
-							new ButtonBuilder()
-								.setLabel(s.buy)
-								.setStyle(ButtonStyle.Success)
-								.setDisabled(!canBuy)
-								.setCustomId("confirmdecoration" + decoration.Id),
-						]),
+					.addButtonRow(
+						btn => btn
+							.setLabel(s.goBack)
+							.setStyle(ButtonStyle.Secondary)
+							.setCustomId("back"),
+						btn => btn
+							.setLabel(s.buy)
+							.setStyle(ButtonStyle.Success)
+							.setDisabled(!canBuy)
+							.setCustomId("confirmdecoration" + decoration.Id),
 					);
 
 				container = addFooter(container);

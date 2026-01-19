@@ -145,24 +145,22 @@ module.exports = {
 					`-# ${s.currentBalance}: ${formatMoney(currentBalance, language)}`,
 					winStreak > 1 ? `-# ${s.winStreak(winStreak)}` : false,
 				].filter(Boolean) as string[])
-				.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
-					.addComponents(
-						new ButtonBuilder()
-							.setCustomId("playsamevalue")
-							.setLabel(s.betAgain)
-							.setDisabled(user.Money < value)
-							.setStyle(ButtonStyle.Secondary),
-						new ButtonBuilder()
-							.setCustomId("playdouble")
-							.setLabel(s.betDouble)
-							.setDisabled(user.Money < value * 2)
-							.setStyle(ButtonStyle.Success),
-						new ButtonBuilder()
-							.setCustomId("allin")
-							.setLabel("ALL IN!")
-							.setDisabled(user.Money === 0)
-							.setStyle(ButtonStyle.Danger),
-					),
+				.addButtonRow(
+					btn => btn
+						.setCustomId("playsamevalue")
+						.setLabel(s.betAgain)
+						.setDisabled(user.Money < value)
+						.setStyle(ButtonStyle.Secondary),
+					btn => btn
+						.setCustomId("playdouble")
+						.setLabel(s.betDouble)
+						.setDisabled(user.Money < value * 2)
+						.setStyle(ButtonStyle.Success),
+					btn => btn
+						.setCustomId("allin")
+						.setLabel("ALL IN!")
+						.setDisabled(user.Money === 0)
+						.setStyle(ButtonStyle.Danger),
 				)
 				.addFooter({
 					text: formatMoney(user.Money, language),

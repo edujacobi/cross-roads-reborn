@@ -207,15 +207,13 @@ module.exports = {
 			const container = addHeader();
 
 			for (const chunk of buttonOptionsChunks) {
-				container.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
-					.addComponents(
-						chunk.map(option => new ButtonBuilder()
-							.setLabel(option.label)
-							.setEmoji(option.emote)
-							.setStyle(ButtonStyle.Secondary)
-							.setDisabled(option.id === currentOption)
-							.setCustomId(option.id),
-						),
+				container.addButtonRow(
+					...chunk.map(option => (btn: ButtonBuilder) => btn
+						.setLabel(option.label)
+						.setEmoji(option.emote)
+						.setStyle(ButtonStyle.Secondary)
+						.setDisabled(option.id === currentOption)
+						.setCustomId(option.id),
 					),
 				);
 			}

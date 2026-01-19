@@ -1,4 +1,11 @@
-import { ButtonBuilder, ContainerBuilder, SectionBuilder, SeparatorSpacingSize, TextDisplayBuilder } from "discord.js";
+import {
+	ActionRowBuilder,
+	ButtonBuilder,
+	ContainerBuilder,
+	SectionBuilder,
+	SeparatorSpacingSize,
+	TextDisplayBuilder,
+} from "discord.js";
 import { User } from "../../models/User";
 import { EmoteBadgeString } from "../../utils/badges";
 
@@ -155,12 +162,26 @@ export class CustomContainerBuilder extends ContainerBuilder {
 		return this;
 	}
 
+	/**
+	 * Add an image to the container.
+	 * @param url
+	 */
 	addImage(url: string) {
 		this.addMediaGalleryComponents(gallery => gallery
 			.addItems(galleryItem => galleryItem
 				.setURL(url),
 			),
 		);
+		return this;
+	}
+
+	/**
+	 * Add a button row to the container.
+	 * @param buttons
+	 */
+	addButtonRow(...buttons: ((builder: ButtonBuilder) => ButtonBuilder)[]) {
+		this.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
+			.setComponents(...buttons.map(builder => builder(new ButtonBuilder()))));
 		return this;
 	}
 }

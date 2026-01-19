@@ -92,15 +92,13 @@ module.exports = {
 			]);
 
 			for (const chunk of availableDecorationsChunks) {
-				container.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
-					.addComponents(
-						chunk.map(decoration => new ButtonBuilder()
-							.setLabel(decoration.Description)
-							.setStyle(ButtonStyle.Secondary)
-							.setEmoji(getEmoteDecoration(decoration.AvatarDecorationId))
-							.setDisabled(user.AvatarDecoration.Id === decoration.AvatarDecorationId)
-							.setCustomId("change-decoration" + decoration.AvatarDecorationId),
-						),
+				container.addButtonRow(
+					...chunk.map(decoration => (btn: ButtonBuilder) => btn
+						.setLabel(decoration.Description)
+						.setStyle(ButtonStyle.Secondary)
+						.setEmoji(getEmoteDecoration(decoration.AvatarDecorationId))
+						.setDisabled(user.AvatarDecoration.Id === decoration.AvatarDecorationId)
+						.setCustomId("change-decoration" + decoration.AvatarDecorationId),
 					),
 				);
 			}
@@ -149,17 +147,15 @@ module.exports = {
 						.setThumbnailAccessory(preview => preview
 							.setURL("attachment://preview.webp")),
 					)
-					.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
-						.addComponents([
-							new ButtonBuilder()
-								.setLabel(s.goBack)
-								.setStyle(ButtonStyle.Secondary)
-								.setCustomId("back"),
-							new ButtonBuilder()
-								.setLabel(s.confirm)
-								.setStyle(ButtonStyle.Success)
-								.setCustomId("confirm" + decoration.Id),
-						]),
+					.addButtonRow(
+						btn => btn
+							.setLabel(s.goBack)
+							.setStyle(ButtonStyle.Secondary)
+							.setCustomId("back"),
+						btn => btn
+							.setLabel(s.confirm)
+							.setStyle(ButtonStyle.Success)
+							.setCustomId("confirm" + decoration.Id),
 					);
 
 				container.addFooter();
@@ -183,13 +179,10 @@ module.exports = {
 						`## ${decoration.Description[language]}`,
 						`-# ${s.applied}`,
 					])
-					.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
-						.addComponents([
-							new ButtonBuilder()
-								.setLabel(s.goBack)
-								.setStyle(ButtonStyle.Secondary)
-								.setCustomId("back"),
-						]),
+					.addButtonRow(btn => btn
+						.setLabel(s.goBack)
+						.setStyle(ButtonStyle.Secondary)
+						.setCustomId("back"),
 					);
 
 				container.addFooter();

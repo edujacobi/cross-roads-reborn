@@ -596,29 +596,27 @@ module.exports = {
 		// 		.setUser(user)
 		// 		.setAccentColor(CrColors.Default)
 		// 		.addSectionComponents(selectedSection)
-		// 		.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
-		// 			.addComponents([
-		// 				new ButtonBuilder()
-		// 					.setLabel("Inventário")
-		// 					.setEmoji(EmoteId.OpenInv)
-		// 					.setCustomId("inv")
-		// 					.setStyle(ButtonStyle.Secondary),
-		// 				new ButtonBuilder()
-		// 					.setLabel("Roubar")
-		// 					.setEmoji(EmoteId.Robbery)
-		// 					.setCustomId("rob")
-		// 					.setStyle(ButtonStyle.Secondary),
-		// 				new ButtonBuilder()
-		// 					.setLabel("Espancar")
-		// 					.setEmoji(EmoteId.Beat)
-		// 					.setCustomId("beat")
-		// 					.setStyle(ButtonStyle.Secondary),
-		// 				new ButtonBuilder()
-		// 					.setLabel("Convidar para gangue")
-		// 					.setEmoji(EmoteId.Gang)
-		// 					.setCustomId("invite")
-		// 					.setStyle(ButtonStyle.Secondary),
-		// 			]),
+		// 		.addButtonRow(
+		// 			btn => btn
+		// 				.setLabel("Inventário")
+		// 				.setEmoji(EmoteId.OpenInv)
+		// 				.setCustomId("inv")
+		// 				.setStyle(ButtonStyle.Secondary),
+		// 			btn => btn
+		// 				.setLabel("Roubar")
+		// 				.setEmoji(EmoteId.Robbery)
+		// 				.setCustomId("rob")
+		// 				.setStyle(ButtonStyle.Secondary),
+		// 			btn => btn
+		// 				.setLabel("Espancar")
+		// 				.setEmoji(EmoteId.Beat)
+		// 				.setCustomId("beat")
+		// 				.setStyle(ButtonStyle.Secondary),
+		// 			btn => btn
+		// 				.setLabel("Convidar para gangue")
+		// 				.setEmoji(EmoteId.Gang)
+		// 				.setCustomId("invite")
+		// 				.setStyle(ButtonStyle.Secondary),
 		// 		)
 		// 		.addFooter();
 		//

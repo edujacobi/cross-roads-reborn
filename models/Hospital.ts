@@ -82,7 +82,7 @@ export class Hospital {
 			.addLargeSeparator()
 			.addSectionComponents(section => section
 				.addTexts([
-					s.descriptionPrivate
+					s.descriptionPrivate,
 				])
 				.setButtonAccessory(buttonPrivate),
 			)
@@ -166,12 +166,10 @@ export class Hospital {
 						`${s.treatmentCost(this.PrivatePrice)}`,
 						`-# ${s.confirmPayment}`,
 					])
-					.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
-						.addComponents(new ButtonBuilder()
-							.setCustomId("confirm")
-							.setLabel(s.confirm)
-							.setStyle(ButtonStyle.Success),
-						),
+					.addButtonRow(btn => btn
+						.setCustomId("confirm")
+						.setLabel(s.confirm)
+						.setStyle(ButtonStyle.Success),
 					)
 					.addFooter({
 						text: formatMoney(this.User.Money, this.User.Language),

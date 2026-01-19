@@ -1,11 +1,4 @@
-﻿import {
-	ActionRowBuilder,
-	ButtonBuilder,
-	ButtonStyle,
-	ChatInputCommandInteraction,
-	Locale,
-	SlashCommandBuilder,
-} from "discord.js";
+﻿import { ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
 import { createButtonCollector, disableButtons, replyWithContainer } from "../../utils/logic";
 import { formatMoney } from "../../utils/ui";
 import { User } from "../../models/User";
@@ -116,7 +109,7 @@ module.exports = {
 
 				container.addSectionComponents(section => section
 					.addTexts([
-						getClassDataText(classData)
+						getClassDataText(classData),
 					])
 					.setButtonAccessory(new ButtonBuilder()
 						.setLabel(s.select)
@@ -180,18 +173,16 @@ module.exports = {
 					.addTexts([
 						hasClass ? s.costToChange(CHANGE_COST) : s.firstFree,
 					])
-					.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
-						.addComponents(
-							new ButtonBuilder()
-								.setCustomId("back")
-								.setLabel(s.back)
-								.setStyle(ButtonStyle.Secondary),
-							new ButtonBuilder()
-								.setCustomId(`confirm${classId}`)
-								.setDisabled(hasClass && user.Money < CHANGE_COST)
-								.setLabel(hasClass ? formatMoney(CHANGE_COST, language) : s.confirm)
-								.setStyle(ButtonStyle.Success),
-						),
+					.addButtonRow(
+						btn => btn
+							.setCustomId("back")
+							.setLabel(s.back)
+							.setStyle(ButtonStyle.Secondary),
+						btn => btn
+							.setCustomId(`confirm${classId}`)
+							.setDisabled(hasClass && user.Money < CHANGE_COST)
+							.setLabel(hasClass ? formatMoney(CHANGE_COST, language) : s.confirm)
+							.setStyle(ButtonStyle.Success),
 					)
 					.addFooter({
 						text: formatMoney(user.Money, language),

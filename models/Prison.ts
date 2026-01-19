@@ -244,18 +244,16 @@ export class Prison {
 						`### ${EmoteBadgeString.Season6.Politician} ${s.bribe}`,
 						`${s.briberyStart(this.Bribe.Value)}`,
 					])
-					.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
-						.addComponents(
-							new ButtonBuilder()
-								.setCustomId("back")
-								.setLabel(s.back)
-								.setStyle(ButtonStyle.Secondary),
-							new ButtonBuilder()
-								.setCustomId("confirmBribe")
-								.setLabel(s.confirm)
-								.setDisabled(this.User.Money < this.Bribe.Value)
-								.setStyle(ButtonStyle.Success),
-						),
+					.addButtonRow(
+						btn => btn
+							.setCustomId("back")
+							.setLabel(s.back)
+							.setStyle(ButtonStyle.Secondary),
+						btn => btn
+							.setCustomId("confirmBribe")
+							.setLabel(s.confirm)
+							.setDisabled(this.User.Money < this.Bribe.Value)
+							.setStyle(ButtonStyle.Success),
 					)
 					.addFooter({
 						text: formatMoney(this.User.Money, this.User.Language),

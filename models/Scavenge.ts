@@ -230,12 +230,10 @@ export class Scavenge {
 						),
 					)
 					.addLargeSeparator()
-					.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
-						.addComponents(new ButtonBuilder()
-							.setLabel(s.back)
-							.setStyle(ButtonStyle.Secondary)
-							.setCustomId("back"),
-						),
+					.addButtonRow(btn => btn
+						.setLabel(s.back)
+						.setStyle(ButtonStyle.Secondary)
+						.setCustomId("back"),
 					);
 
 				this.AddContainerFooter();

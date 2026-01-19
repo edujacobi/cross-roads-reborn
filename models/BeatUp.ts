@@ -277,11 +277,12 @@ export class BeatUp {
 			.setStyle(ButtonStyle.Secondary)
 			.setEmoji("🏳️");
 
-		const defenderRow = new ActionRowBuilder<ButtonBuilder>()
-			.addComponents([buttonFight, buttonRun, buttonNothing]);
-
 		this.Container.Private
-			.addActionRowComponents(defenderRow)
+			.addButtonRow(
+				() => buttonFight,
+				() => buttonRun,
+				() => buttonNothing,
+			)
 			.addFooter({ text: sD.secondsToRespond });
 
 		const defenderMessage = await sendComplexPrivateMessage(this.DiscordUser?.id, {

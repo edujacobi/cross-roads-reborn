@@ -121,21 +121,20 @@ module.exports = {
 			if (pages.length > 1) {
 				container.addLargeSeparator();
 
-				container.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
-					.addComponents(new ButtonBuilder()
+				container.addButtonRow(
+					btn => btn
 						.setLabel(s.previous)
 						.setStyle(ButtonStyle.Secondary)
 						.setCustomId("previous")
 						.setEmoji("⬅️")
 						.setDisabled(currentPage === 0),
-					)
-					.addComponents(new ButtonBuilder()
+					btn => btn
 						.setLabel(s.next)
 						.setStyle(ButtonStyle.Secondary)
 						.setCustomId("next")
 						.setEmoji("➡️")
 						.setDisabled(currentPage === pages.length - 1),
-					));
+				);
 			}
 
 			addContainerFooter(container);
@@ -171,13 +170,10 @@ module.exports = {
 						.addTexts([
 							message,
 						])
-						.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
-							.addComponents(
-								new ButtonBuilder()
-									.setLabel(s.back)
-									.setStyle(ButtonStyle.Secondary)
-									.setCustomId("back"),
-							),
+						.addButtonRow(btn => btn
+							.setLabel(s.back)
+							.setStyle(ButtonStyle.Secondary)
+							.setCustomId("back"),
 						);
 
 					addContainerFooter(container);
@@ -193,18 +189,15 @@ module.exports = {
 					.addTexts([
 						s.itemBought(`${item.Skin[BundleId.Default].String} ${item.Description[user.Language]}`),
 					])
-					.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
-						.addComponents(
-							new ButtonBuilder()
-								.setLabel(s.back)
-								.setStyle(ButtonStyle.Secondary)
-								.setCustomId("back"),
-							new ButtonBuilder()
-								.setLabel(s.buyMore(item.Price))
-								.setStyle(ButtonStyle.Success)
-								.setCustomId(`buy${itemId}`,
-								),
-						),
+					.addButtonRow(
+						btn => btn
+							.setLabel(s.back)
+							.setStyle(ButtonStyle.Secondary)
+							.setCustomId("back"),
+						btn => btn
+							.setLabel(s.buyMore(item.Price))
+							.setStyle(ButtonStyle.Success)
+							.setCustomId(`buy${itemId}`),
 					);
 
 				addContainerFooter(container);

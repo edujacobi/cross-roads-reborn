@@ -87,12 +87,10 @@ module.exports = {
 					.addTexts([
 						s.workingOn(user.Job.Id!, user.Job.EndsIn),
 					])
-					.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
-						.addComponents(new ButtonBuilder()
-							.setCustomId("stop")
-							.setLabel(s.stop)
-							.setStyle(ButtonStyle.Danger),
-						),
+					.addButtonRow(btn => btn
+						.setCustomId("stop")
+						.setLabel(s.stop)
+						.setStyle(ButtonStyle.Danger),
 					)
 					.addFooter({
 						text: `${s.salary}: ${formatMoney(jobSalary, language)} • ${s.duration}: ${jobDuration}h`,
@@ -132,23 +130,22 @@ module.exports = {
 				}
 
 				if (pages.length > 1) {
-					container.addLargeSeparator();
-
-					container.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
-						.addComponents(new ButtonBuilder()
-							.setLabel(s.previous)
-							.setStyle(ButtonStyle.Secondary)
-							.setCustomId("previous")
-							.setEmoji("⬅️")
-							.setDisabled(currentPage === 0),
-						)
-						.addComponents(new ButtonBuilder()
-							.setLabel(s.next)
-							.setStyle(ButtonStyle.Secondary)
-							.setCustomId("next")
-							.setEmoji("➡️")
-							.setDisabled(currentPage === pages.length - 1),
-						));
+					container
+						.addLargeSeparator()
+						.addButtonRow(
+							btn => btn
+								.setLabel(s.previous)
+								.setStyle(ButtonStyle.Secondary)
+								.setCustomId("previous")
+								.setEmoji("⬅️")
+								.setDisabled(currentPage === 0),
+							btn => btn
+								.setLabel(s.next)
+								.setStyle(ButtonStyle.Secondary)
+								.setCustomId("next")
+								.setEmoji("➡️")
+								.setDisabled(currentPage === pages.length - 1),
+						);
 				}
 
 				container.addFooter({
@@ -218,13 +215,10 @@ module.exports = {
 				if (textResponse != "") {
 					container
 						.addTexts([textResponse])
-						.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
-							.addComponents(
-								new ButtonBuilder()
-									.setLabel(s.back)
-									.setStyle(ButtonStyle.Secondary)
-									.setCustomId("back"),
-							),
+						.addButtonRow(btn => btn
+							.setLabel(s.back)
+							.setStyle(ButtonStyle.Secondary)
+							.setCustomId("back"),
 						)
 						.addFooter({
 							text: formatMoney(user.Money, language),
@@ -243,12 +237,10 @@ module.exports = {
 					.addTexts([
 						s.jobStarted(job.Description[language], user.Job.EndsIn),
 					])
-					.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
-						.addComponents(new ButtonBuilder()
-							.setCustomId("stop")
-							.setLabel(s.stop)
-							.setStyle(ButtonStyle.Danger),
-						),
+					.addButtonRow(btn => btn
+						.setCustomId("stop")
+						.setLabel(s.stop)
+						.setStyle(ButtonStyle.Danger),
 					)
 					.addFooter({
 						text: `${s.salary}: ${formatMoney(jobSalary, language)} • ${s.duration}: ${jobDuration}h`,
@@ -265,12 +257,10 @@ module.exports = {
 				if (user.Job.Id === null) {
 					container
 						.addTexts([s.cannotStop])
-						.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
-							.addComponents(new ButtonBuilder()
-								.setCustomId("back")
-								.setLabel(s.viewJobs)
-								.setStyle(ButtonStyle.Secondary),
-							),
+						.addButtonRow(btn => btn
+							.setCustomId("back")
+							.setLabel(s.viewJobs)
+							.setStyle(ButtonStyle.Secondary),
 						)
 						.addFooter({
 							text: formatMoney(user.Money, language),
@@ -286,12 +276,10 @@ module.exports = {
 					.addTexts([
 						`${s.stopped} **${job.Description[language]}**`,
 					])
-					.addActionRowComponents(new ActionRowBuilder<ButtonBuilder>()
-						.addComponents(new ButtonBuilder()
-							.setCustomId("back")
-							.setLabel(s.viewJobs)
-							.setStyle(ButtonStyle.Secondary),
-						),
+					.addButtonRow(btn => btn
+						.setCustomId("back")
+						.setLabel(s.viewJobs)
+						.setStyle(ButtonStyle.Secondary),
 					)
 					.addFooter({
 						text: formatMoney(user.Money, language),

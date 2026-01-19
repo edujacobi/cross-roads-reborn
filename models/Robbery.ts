@@ -259,11 +259,12 @@ export class Robbery {
 			.setStyle(ButtonStyle.Secondary)
 			.setEmoji("🏳️");
 
-		const defenderRow = new ActionRowBuilder<ButtonBuilder>()
-			.addComponents([buttonReact, buttonPolice, buttonNothing]);
-
 		this.Container.Private
-			.addActionRowComponents(defenderRow)
+			.addButtonRow(
+				() => buttonReact,
+				() => buttonPolice,
+				() => buttonNothing,
+			)
 			.addFooter({ text: sD.secondsToRespond });
 
 		const defenderMessage = await sendComplexPrivateMessage(this.DiscordUser?.id, {
