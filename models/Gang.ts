@@ -233,32 +233,36 @@ export class Gang {
 				return null;
 			}
 
-			const result = new Gang();
-			result.Id = gang.id;
-			result.Name = gang.name;
-			result.Acronym = gang.acronym.toUpperCase();
-			result.Money = gang.money;
-			result.BaseId = gang.baseId;
-			result.Color = gang.color;
-			result.Image = gang.image;
-			result.Description = gang.description;
-			result.Experience = gang.experience;
-			result.Level = gang.level;
-			result.LeaderId = gang.leaderId;
-			result.CreatedAt = gang.createdAt;
-			result.UpdatedAt = gang.updatedAt;
-
-			await Promise.all([
-				result.LoadMembers(),
-				result.LoadRoles(),
-			]);
-
-			return result;
+			return Gang.GetInfo(gang);
 		}
 		catch (err) {
 			Log.Warning(`Failed to get gang by Id ${gangId}: ${err}`);
 			return null;
 		}
+	}
+
+	static async GetInfo(gang: Gangs) {
+		const result = new Gang();
+		result.Id = gang.id;
+		result.Name = gang.name;
+		result.Acronym = gang.acronym.toUpperCase();
+		result.Money = gang.money;
+		result.BaseId = gang.baseId;
+		result.Color = gang.color;
+		result.Image = gang.image;
+		result.Description = gang.description;
+		result.Experience = gang.experience;
+		result.Level = gang.level;
+		result.LeaderId = gang.leaderId;
+		result.CreatedAt = gang.createdAt;
+		result.UpdatedAt = gang.updatedAt;
+
+		await Promise.all([
+			result.LoadMembers(),
+			result.LoadRoles(),
+		]);
+
+		return result;
 	}
 
 	// Obtém a gangue de um usuário
@@ -336,7 +340,7 @@ export class Gang {
 				return null;
 			}
 
-			return await Gang.GetById(gang.id);
+			return Gang.GetInfo(gang);
 		}
 		catch (err) {
 			Log.Warning(`Failed to find gang by name '${name}': ${err}`);
