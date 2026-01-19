@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction } from "discord.js";
+import { ButtonBuilder, ButtonStyle, ChatInputCommandInteraction } from "discord.js";
 import { User } from "./User";
 import { CrColors } from "../utils/colors";
 import { EmoteString } from "../utils/emotes";

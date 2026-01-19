@@ -1,6 +1,4 @@
 ﻿import {
-	ActionRowBuilder,
-	ButtonBuilder,
 	ButtonStyle,
 	ChatInputCommandInteraction,
 	Locale,

@@ -1,5 +1,5 @@
 import { User } from "./User";
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction } from "discord.js";
+import { ButtonBuilder, ButtonStyle, ChatInputCommandInteraction } from "discord.js";
 import { setTimeout as wait } from "timers/promises";
 import { globalStrings, Language } from "./Language";
 import { CrColors } from "../utils/colors";

@@ -1,5 +1,4 @@
 ﻿import {
-	ActionRowBuilder,
 	ButtonBuilder,
 	ButtonStyle,
 	ChatInputCommandInteraction,

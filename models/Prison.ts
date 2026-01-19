@@ -1,6 +1,6 @@
 import { User } from "./User";
 import { globalStrings, Language } from "./Language";
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction } from "discord.js";
+import { ButtonBuilder, ButtonStyle, ChatInputCommandInteraction } from "discord.js";
 import { ItemList } from "../interfaces/Items";
 import { CrColors } from "../utils/colors";
 import { Users } from "../database/Users";
