@@ -30,6 +30,14 @@ import { EmoteString } from "./emotes";
 import { getLanguageFromLocale, Language } from "../models/Language";
 import { CustomContainerBuilder } from "../ui/builders/CustomContainerBuilder";
 
+/**
+ * Checks if the user exists in the database. If the user is the one who invoked the interaction,
+ * it creates a new user if they don't exist, or updates their language if it has changed.
+ *
+ * @param userId - The ID of the user to check.
+ * @param interaction - The interaction that triggered this check.
+ * @returns The user object if found or created, otherwise undefined.
+ */
 export async function checkUser(userId: string, interaction: CommandInteraction) {
 	const lang = getLanguageFromLocale(interaction.locale);
 	const user = new User(userId, lang);
@@ -49,6 +57,14 @@ export async function checkUser(userId: string, interaction: CommandInteraction)
 	}
 }
 
+/**
+ * Searches for a user by name or ID.
+ *
+ * @param nameOrId - The name or ID of the user to search for.
+ * @param interaction - The interaction to reply to if the user is not found.
+ * @param language - The language to use for the reply message.
+ * @returns The user object if found, otherwise null.
+ */
 export async function searchUser(nameOrId: string, interaction: CommandInteraction, language?: Language) {
 	const user = await User.Search(nameOrId, language);
 
@@ -60,6 +76,10 @@ export async function searchUser(nameOrId: string, interaction: CommandInteracti
 	return user;
 }
 
+/**
+ * Removes all users from any active actions (robbing, scavenging, beating, etc.) in the database.
+ * This is typically used to reset states.
+ */
 export async function removeAllFromActions() {
 	try {
 		const [affectedCount] = await Users.update({
@@ -102,6 +122,14 @@ export async function removeAllFromActions() {
 	}
 }
 
+/**
+ * Sends a private message (DM) to a user with a simple embed.
+ *
+ * @param userId - The ID of the user to send the message to.
+ * @param message - The content of the message description.
+ * @param color - The color of the embed (default: DarkButNotBlack).
+ * @param footer - Optional footer text for the embed.
+ */
 export async function sendPrivateMessage(userId: string, message: string, color: ColorResolvable = Colors.DarkButNotBlack, footer: string = "") {
 	const client = getClient();
 	const discordUser = await client.users.fetch(userId);
@@ -124,6 +152,13 @@ export async function sendPrivateMessage(userId: string, message: string, color:
 	}
 }
 
+/**
+ * Sends a complex private message (DM) to a user.
+ *
+ * @param userId - The ID of the user to send the message to.
+ * @param options - The message options (string, payload, or create options).
+ * @returns The sent message or undefined if the user ID is missing or an error occurs.
+ */
 export async function sendComplexPrivateMessage(userId: Snowflake | undefined, options: string | MessagePayload | MessageCreateOptions) {
 	if (!userId) {
 		return;
@@ -139,6 +174,13 @@ export async function sendComplexPrivateMessage(userId: Snowflake | undefined, o
 	}
 }
 
+/**
+ * Replies to an interaction, handling deferred or already replied states.
+ *
+ * @param interaction - The interaction to reply to.
+ * @param options - The reply options.
+ * @returns The reply message or undefined if an error occurs.
+ */
 export async function replyInteraction(interaction: CommandInteraction | ButtonInteraction | MessageComponentInteraction, options: string | MessagePayload | InteractionReplyOptions | InteractionEditReplyOptions) {
 	try {
 		if (interaction.replied || interaction.deferred) {
@@ -155,6 +197,14 @@ export async function replyInteraction(interaction: CommandInteraction | ButtonI
 	}
 }
 
+/**
+ * Replies to an interaction with a custom container (UI).
+ *
+ * @param interaction - The interaction to reply to.
+ * @param container - The container builder with components.
+ * @param ephemeral - Whether the reply should be ephemeral (default: false).
+ * @returns The reply message.
+ */
 export async function replyWithContainer(interaction: CommandInteraction | ButtonInteraction | MessageComponentInteraction, container: CustomContainerBuilder | ContainerBuilder, ephemeral = false) {
 	return await replyInteraction(interaction, {
 		components: [container],
@@ -162,6 +212,14 @@ export async function replyWithContainer(interaction: CommandInteraction | Butto
 	});
 }
 
+/**
+ * Creates a button interaction collector for a message.
+ *
+ * @param interaction - The original interaction.
+ * @param response - The message or interaction response to collect from.
+ * @param idleTime - The idle time in milliseconds before the collector stops (default: 60000).
+ * @returns The collector or undefined if response is missing.
+ */
 export function createButtonCollector(interaction: CommandInteraction | ButtonInteraction | MessageComponentInteraction, response: Message | InteractionResponse | undefined, idleTime = 60_000) {
 	if (!response) {
 		return;
@@ -174,6 +232,14 @@ export function createButtonCollector(interaction: CommandInteraction | ButtonIn
 	});
 }
 
+/**
+ * Creates a string select menu interaction collector for a message.
+ *
+ * @param interaction - The original interaction.
+ * @param response - The message or interaction response to collect from.
+ * @param idleTime - The idle time in milliseconds before the collector stops (default: 60000).
+ * @returns The collector or undefined if response is missing.
+ */
 export function createStringSelectCollector(interaction: CommandInteraction | ButtonInteraction | MessageComponentInteraction, response: Message | InteractionResponse | undefined, idleTime = 60_000) {
 	if (!response) {
 		return;
@@ -186,6 +252,11 @@ export function createStringSelectCollector(interaction: CommandInteraction | Bu
 	});
 }
 
+/**
+ * Defers the reply to an interaction if it hasn't been deferred already.
+ *
+ * @param interaction - The interaction to defer.
+ */
 export async function deferReply(interaction: CommandInteraction | ButtonInteraction | MessageComponentInteraction) {
 	try {
 		if (interaction.deferred) {
@@ -198,6 +269,13 @@ export async function deferReply(interaction: CommandInteraction | ButtonInterac
 	}
 }
 
+/**
+ * Replies to an interaction indicating that the user does not exist.
+ *
+ * @param interaction - The interaction to reply to.
+ * @param language - The language for the error message.
+ * @returns The reply message.
+ */
 export async function replyUserDontExist(interaction: CommandInteraction, language: Language) {
 	return await replyInteraction(interaction, {
 		content: Strings[language].userDontExist,
@@ -205,6 +283,12 @@ export async function replyUserDontExist(interaction: CommandInteraction, langua
 	});
 }
 
+/**
+ * Disables all buttons and select menus in a container and updates the interaction.
+ *
+ * @param interaction - The interaction to update.
+ * @param container - The container with components to disable.
+ */
 export async function disableButtons(interaction: CommandInteraction | ButtonInteraction, container: ContainerBuilder | CustomContainerBuilder) {
 	try {
 		for (const component of container.components) {
@@ -235,6 +319,12 @@ export async function disableButtons(interaction: CommandInteraction | ButtonInt
 	}
 }
 
+/**
+ * Assigns the 'Player' role to the user in the official server if they don't have it.
+ * Only works in the production environment and official server.
+ *
+ * @param interaction - The interaction triggering the check.
+ */
 export async function setPlayerRoleInOfficialServer(interaction: ChatInputCommandInteraction) {
 	if (process.env.NODE_ENV !== "PROD") {
 		return;
@@ -275,6 +365,12 @@ export async function setPlayerRoleInOfficialServer(interaction: ChatInputComman
 	}
 }
 
+/**
+ * Synchronizes the 'VIP' role for the user in the official server based on their VIP status.
+ * Only works in the production environment and official server.
+ *
+ * @param interaction - The interaction triggering the check.
+ */
 export async function setVIPRoleInOfficialServer(interaction: ChatInputCommandInteraction) {
 	if (process.env.NODE_ENV !== "PROD") {
 		return;
@@ -333,6 +429,13 @@ export async function setVIPRoleInOfficialServer(interaction: ChatInputCommandIn
 	}
 }
 
+/**
+ * Sets the user's nickname in the official server to match their game nickname.
+ * Only works in the production environment and official server.
+ *
+ * @param interaction - The interaction triggering the check.
+ * @param user - The user object containing the nickname.
+ */
 export async function setPlayerNicknameInOfficialServer(interaction: ChatInputCommandInteraction, user: User) {
 	if (process.env.NODE_ENV !== "PROD") {
 		return;
@@ -367,6 +470,13 @@ export async function setPlayerNicknameInOfficialServer(interaction: ChatInputCo
 	}
 }
 
+/**
+ * Checks if the user is a server booster in the official server.
+ * Only works in the production environment and official server.
+ *
+ * @param interaction - The interaction triggering the check.
+ * @returns True if the user is a booster, false otherwise.
+ */
 export async function isUserBoosterInOfficialServer(interaction: ChatInputCommandInteraction) {
 	if (process.env.NODE_ENV !== "PROD") {
 		return false;
@@ -465,15 +575,31 @@ async function setAllVIPRolesInOfficialServer() {
 	}
 }
 
+/**
+ * Starts the procedure to periodically synchronize VIP roles in the official server.
+ */
 export async function startVIPProcedure() {
 	await setAllVIPRolesInOfficialServer();
 	setInterval(setAllVIPRolesInOfficialServer, 6 * 60 * 1_000);
 }
 
+/**
+ * Calculates the value of a percentage of a number.
+ *
+ * @param percent - The percentage to calculate.
+ * @param from - The base number.
+ * @returns The calculated value.
+ */
 export function getPercent(percent: number, from: number) {
 	return (from / 100) * percent;
 }
 
+/**
+ * Returns a random item from an array.
+ *
+ * @param array - The array to pick from.
+ * @returns A random element from the array.
+ */
 export function getRandomItemFromArray<T>(array: T[]): T {
 	return array[Math.round(Math.random() * (array.length - 1))];
 }
@@ -489,7 +615,7 @@ ${EmoteString.CloseInv} See your inventory using \`/inv\`.
 
 ${EmoteString.AssaultRifle} You can receive a little bit of money each day using \`/daily\`.
 
-${EmoteString.Jobs} To start working, use \`/job\`.
+${EmoteString.Jobs} To start working, use \`/jobs\`.
 
 -# Hope you enjoy the game!`,
 		userDontExist: "This user doesn't exist in the database.",
