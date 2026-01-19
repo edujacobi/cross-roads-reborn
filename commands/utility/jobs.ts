@@ -199,7 +199,7 @@ module.exports = {
 				}
 				else if (user.Robbery.IsRobbingLocationId !== null) {
 					const location = LocationList[user.Robbery.IsRobbingLocationId];
-					textResponse = `${s.userIsRobbingId(location.Description[language])} ${EmoteString.Robbery}`;
+					textResponse = `${s.userIsRobbingId(location.Name[language])} ${EmoteString.Robbery}`;
 				}
 				else if (job.NeedItem && !hasAllItems) {
 					const neededItems = job.NeedItem

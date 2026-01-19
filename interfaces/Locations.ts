@@ -14,6 +14,7 @@ export enum LocationId {
 
 export interface Location {
 	readonly Id: LocationId,
+	readonly Name: IDescription,
 	readonly Description: IDescription,
 	readonly Emote: IEmote,
 	readonly ImageUrl: string,
@@ -33,10 +34,15 @@ interface LocationListType {
 export const LocationList: LocationListType = {
 	[LocationId.OldLady]: {
 		Id: LocationId.OldLady,
-		Description: {
+		Name: {
 			[Language.English]: "Old lady on the corner",
 			[Language.Portuguese]: "Velhinha na esquina",
 			[Language.Spanish]: "Vieja en la esquina",
+		},
+		Description: {
+			[Language.English]: `An defenseless old lady unable to scream for help`,
+			[Language.Portuguese]: "Uma senhora indefesa e incapaz de gritar por ajuda",
+			[Language.Spanish]: `Una anciana indefensa e incapaz de pedir ayuda`,
 		},
 		Emote: {
 			Id: "1349193564881555499",
@@ -53,10 +59,15 @@ export const LocationList: LocationListType = {
 	},
 	[LocationId.GroceryStore]: {
 		Id: LocationId.GroceryStore,
-		Description: {
+		Name: {
 			[Language.English]: "Joe's Grocery Store",
 			[Language.Portuguese]: "Mercearia do Zé",
 			[Language.Spanish]: "Tienda de Pepe",
+		},
+		Description: {
+			[Language.English]: `Joe is already used to the violence of the streets`,
+			[Language.Portuguese]: "Seu Zé já está acostumado com a violência das ruas",
+			[Language.Spanish]: `Joe ya está acostumbrado a la violencia de las calles`,
 		},
 		Emote: {
 			Id: "1349193566517198890",
@@ -73,10 +84,15 @@ export const LocationList: LocationListType = {
 	},
 	[LocationId.GasStation]: {
 		Id: LocationId.GasStation,
-		Description: {
+		Name: {
 			[Language.English]: "Gas station",
 			[Language.Portuguese]: "Posto de gasolina",
 			[Language.Spanish]: "Gasolinera",
+		},
+		Description: {
+			[Language.English]: `So much corruption that even being robbed every week, it still makes a profit`,
+			[Language.Portuguese]: "É tanta corrupção que mesmo sendo roubado toda semana, ainda dá lucro",
+			[Language.Spanish]: `Tanta corrupción que, aunque la roben todas las semanas, sigue dando ganancias`,
 		},
 		Emote: {
 			Id: "1349193568149049384",
@@ -93,10 +109,15 @@ export const LocationList: LocationListType = {
 	},
 	[LocationId.JewelryStore]: {
 		Id: LocationId.JewelryStore,
-		Description: {
+		Name: {
 			[Language.English]: "Jewelry store",
 			[Language.Portuguese]: "Joalheria",
 			[Language.Spanish]: "Joyería",
+		},
+		Description: {
+			[Language.English]: `The finest jewelry and watches, made with all possible care`,
+			[Language.Portuguese]: "As mais finas joias e relógios, feitas com todo o esmero possível",
+			[Language.Spanish]: `Las joyas y relojes más finos, hechos con todo el cuidado posible`,
 		},
 		Emote: {
 			Id: "1349193569658863666",
@@ -113,10 +134,15 @@ export const LocationList: LocationListType = {
 	},
 	[LocationId.SmallBank]: {
 		Id: LocationId.SmallBank,
-		Description: {
+		Name: {
 			[Language.English]: "Small bank",
 			[Language.Portuguese]: "Banco pequeno",
 			[Language.Spanish]: "Banco pequeño",
+		},
+		Description: {
+			[Language.English]: `A small bank with exorbitant interest rates on the outskirts of the city`,
+			[Language.Portuguese]: "Um pequeno banco com juros exorbitantes nos arredores da cidade",
+			[Language.Spanish]: `Un pequeño banco con tasas de interés exorbitantes en las afueras de la ciudad`,
 		},
 		Emote: {
 			Id: "1349193571390984202",
@@ -133,10 +159,15 @@ export const LocationList: LocationListType = {
 	},
 	[LocationId.ItalianMafia]: {
 		Id: LocationId.ItalianMafia,
-		Description: {
+		Name: {
 			[Language.English]: "Italian Mafia",
 			[Language.Portuguese]: "Máfia Italiana",
 			[Language.Spanish]: "Mafia italiana",
+		},
+		Description: {
+			[Language.English]: `The gangs may rule the streets, but the Mafia is rooted in the city`,
+			[Language.Portuguese]: "As gangues podem dominar as ruas, mas a Mafia está enraizada na cidade",
+			[Language.Spanish]: `La pandilla puede gobernar las calles, pero la Mafia está arraigada en la ciudad`,
 		},
 		Emote: {
 			Id: "1349193561068929144",
@@ -153,10 +184,15 @@ export const LocationList: LocationListType = {
 	},
 	[LocationId.ArmyDepot]: {
 		Id: LocationId.ArmyDepot,
-		Description: {
+		Name: {
 			[Language.English]: "Army Depot",
 			[Language.Portuguese]: "Depósito do Exército",
 			[Language.Spanish]: "Depósito del ejército",
+		},
+		Description: {
+			[Language.English]: `Its location is very well protected, as are the items stored there`,
+			[Language.Portuguese]: "Sua localização é muito bem protegida, bem como os itens guardados lá",
+			[Language.Spanish]: `Su ubicación está muy bien protegida, al igual que los artículos allí guardados`,
 		},
 		Emote: {
 			Id: "1349193559315845190",
@@ -173,10 +209,15 @@ export const LocationList: LocationListType = {
 	},
 	[LocationId.JacobiPalace]: {
 		Id: LocationId.JacobiPalace,
-		Description: {
+		Name: {
 			[Language.English]: "Jacobi Palace",
 			[Language.Portuguese]: "Palácio do Jacobi",
 			[Language.Spanish]: "Palacio de Jacobi",
+		},
+		Description: {
+			[Language.English]: `The most protected place in the city could not be other than the Mayor's house`,
+			[Language.Portuguese]: "O lugar mais protegido da cidade não poderia ser outro a não ser a casa do senhor Prefeito",
+			[Language.Spanish]: `El lugar más protegido de la ciudad no podría ser otro que la casa del alcalde`,
 		},
 		Emote: {
 			Id: "1349193562738130964",

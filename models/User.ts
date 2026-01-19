@@ -793,8 +793,8 @@ export class User {
 				Id: SituationId.Robbery,
 				Simple: s.robbing,
 				SimpleEmote: `${EmoteString.Robbery} ${s.robbing}`,
-				Complex: `${EmoteString.Robbery} ${s.robbing} ${location.Description[lang]}`,
-				ComplexUI: `${s.robbing} ${location.Description[lang]}`,
+				Complex: `${EmoteString.Robbery} ${s.robbing} ${location.Name[lang]}`,
+				ComplexUI: `${s.robbing} ${location.Name[lang]}`,
 				EmoteId: EmoteId.Robbery,
 			};
 		}

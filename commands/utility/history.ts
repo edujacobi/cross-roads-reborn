@@ -80,7 +80,7 @@ module.exports = {
 					opponentName = `${ClassList[defender.class].Image.Emote.String} ${boldOs}${defender.nickname}${boldOe}`;
 				}
 				if (rob.type == ClashType.Location && location) {
-					opponentName = `${location.Emote.String} ${location.Description[user.Language]}`;
+					opponentName = `${location.Emote.String} ${location.Name[user.Language]}`;
 				}
 
 				const emoteShow = rob.type == ClashType.BeatUp ? EmoteString.BaseballBat : EmoteString.React;

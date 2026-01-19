@@ -65,7 +65,7 @@ export class Casino {
 
 		if (user.Robbery.IsRobbingLocationId !== null) {
 			const location = LocationList[user.Robbery.IsRobbingLocationId];
-			message = globalStrings[user.Language].attackerIsRobbingId(location.Description[user.Language]);
+			message = globalStrings[user.Language].attackerIsRobbingId(location.Name[user.Language]);
 			canPlay = false;
 		}
 

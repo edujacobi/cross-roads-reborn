@@ -189,13 +189,13 @@ export class BeatUp {
 
 		if (this.Attacker.Robbery.IsRobbingLocationId !== null) {
 			const location = LocationList[this.Attacker.Robbery.IsRobbingLocationId];
-			message = globalStrings[this.Attacker.Language].attackerIsRobbingId(location.Description[this.Attacker.Language]);
+			message = globalStrings[this.Attacker.Language].attackerIsRobbingId(location.Name[this.Attacker.Language]);
 			canBeat = false;
 		}
 
 		if (this.Defender.Robbery.IsRobbingLocationId !== null) {
 			const location = LocationList[this.Defender.Robbery.IsRobbingLocationId];
-			message = `**${this.Defender.GetNameWithImage()}** ${globalStrings[this.Attacker.Language].defenderIsRobbingId(location.Description[this.Attacker.Language])}`;
+			message = `**${this.Defender.GetNameWithImage()}** ${globalStrings[this.Attacker.Language].defenderIsRobbingId(location.Name[this.Attacker.Language])}`;
 			canBeat = false;
 		}
 

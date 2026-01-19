@@ -78,10 +78,10 @@ export class RobHistories extends Model<
 				type: robbery.Type,
 			});
 
-			Log.Success(`Robbery History for ${robbery.Attacker.Nickname} (ID: ${robbery.Attacker.Id}) and ${LocationList[robbery.LocationId].Description[Language.English]} (ID: ${robbery.LocationId}) added successfully.`);
+			Log.Success(`Robbery History for ${robbery.Attacker.Nickname} (ID: ${robbery.Attacker.Id}) and ${LocationList[robbery.LocationId].Name[Language.English]} (ID: ${robbery.LocationId}) added successfully.`);
 		}
 		catch (err) {
-			Log.Warning(`Something went wrong with adding Robbery History for ${robbery.Attacker.Nickname} (ID: ${robbery.Attacker.Id}) and ${LocationList[robbery.LocationId].Description[Language.English]} (ID: ${robbery.LocationId}).`);
+			Log.Warning(`Something went wrong with adding Robbery History for ${robbery.Attacker.Nickname} (ID: ${robbery.Attacker.Id}) and ${LocationList[robbery.LocationId].Name[Language.English]} (ID: ${robbery.LocationId}).`);
 		}
 	}
 

@@ -100,7 +100,7 @@ export class RobberyLocation extends Robbery {
 
 		if (this.Attacker.Robbery.IsRobbingLocationId !== null) {
 			const location = LocationList[this.Attacker.Robbery.IsRobbingLocationId];
-			message = globalStrings[this.Attacker.Language].attackerIsRobbingId(location.Description[this.Attacker.Language]);
+			message = globalStrings[this.Attacker.Language].attackerIsRobbingId(location.Name[this.Attacker.Language]);
 			canRob = false;
 		}
 
@@ -116,7 +116,7 @@ export class RobberyLocation extends Robbery {
 
 		await this.Attacker.Update();
 
-		Log.Info(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) started a robbery to location ${LocationList[this.LocationId].Description[Language.English]} (ID: ${LocationList[this.LocationId].Id}).`);
+		Log.Info(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) started a robbery to location ${LocationList[this.LocationId].Name[Language.English]} (ID: ${LocationList[this.LocationId].Id}).`);
 
 		this.Container.Channel
 			.setUser(this.Attacker)
@@ -125,7 +125,7 @@ export class RobberyLocation extends Robbery {
 			], 1)
 			.addLargeSeparator()
 			.addTexts([
-				`${s.tryingToRob} ${LocationList[this.LocationId].Emote.String} **${LocationList[this.LocationId].Description[this.Attacker.Language]}** ${EmoteString.Waiting}`,
+				`${s.tryingToRob} ${LocationList[this.LocationId].Emote.String} **${LocationList[this.LocationId].Name[this.Attacker.Language]}** ${EmoteString.Waiting}`,
 			], 50)
 			.addFooter();
 
@@ -145,7 +145,7 @@ export class RobberyLocation extends Robbery {
 		const s = Strings[this.Attacker.Language];
 
 		const locationEmote = LocationList[this.LocationId].Emote.String;
-		const locationName = LocationList[this.LocationId].Description[this.Attacker.Language];
+		const locationName = LocationList[this.LocationId].Name[this.Attacker.Language];
 
 		if (this.Success) {
 			this.MoneyRobbed = Math.floor(Math.random() * (this.RewardMax - this.RewardMin + 1)) + this.RewardMin;
@@ -164,7 +164,7 @@ export class RobberyLocation extends Robbery {
 
 			this.Container.Channel.changeTextFromSectionId(50, texts);
 
-			Log.Success(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) successfully robbed location ${LocationList[this.LocationId].Description[Language.English]} (ID: ${LocationList[this.LocationId].Id}) and got ${formatMoney(this.MoneyRobbed, Language.English)}.`);
+			Log.Success(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) successfully robbed location ${LocationList[this.LocationId].Name[Language.English]} (ID: ${LocationList[this.LocationId].Id}) and got ${formatMoney(this.MoneyRobbed, Language.English)}.`);
 		}
 		else {
 			this.Attacker.Prison.Time = addMinutes(new Date(), this.AttackerTimeInPrison);
@@ -183,7 +183,7 @@ export class RobberyLocation extends Robbery {
 
 			this.Container.Channel.changeTextFromSectionId(50, texts);
 
-			Log.Success(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) failed to rob location ${LocationList[this.LocationId].Description[Language.English]} (ID: ${LocationList[this.LocationId].Id}).`);
+			Log.Success(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) failed to rob location ${LocationList[this.LocationId].Name[Language.English]} (ID: ${LocationList[this.LocationId].Id}).`);
 		}
 
 		this.Container.Channel
