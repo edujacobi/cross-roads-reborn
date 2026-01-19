@@ -57,7 +57,7 @@ export const GangBases: GangBaseType = {
 		},
 		Modifier: {
 			PrisonEscape: {
-				Positive: 1,
+				Positive: 0.5,
 			},
 		},
 	},
@@ -76,7 +76,7 @@ export const GangBases: GangBaseType = {
 		},
 		Modifier: {
 			Defense: {
-				Positive: 0.5,
+				Positive: 1,
 			},
 		},
 	},
