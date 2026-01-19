@@ -248,8 +248,10 @@ export class Gang {
 			result.CreatedAt = gang.createdAt;
 			result.UpdatedAt = gang.updatedAt;
 
-			await result.LoadMembers();
-			await result.LoadRoles();
+			await Promise.all([
+				result.LoadMembers(),
+				result.LoadRoles(),
+			]);
 
 			return result;
 		}
