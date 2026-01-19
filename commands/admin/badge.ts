@@ -87,10 +87,7 @@ module.exports = {
 							.map(badge => {
 								return `### ${badge.Emoji.String} ${badge.Name[language]} \`${badge.Id}\`\n-# ${badge.Description[language]}`;
 							}),
-					)
-					.addFooter({
-						text: pagination.Showing(),
-					});
+					);
 			};
 
 			await pagination.GenerateContainer();

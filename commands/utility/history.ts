@@ -98,10 +98,7 @@ module.exports = {
 				.addLargeSeparator()
 				.addTexts([
 					historyList,
-				])
-				.addFooter({
-					text: pagination.Showing(),
-				});
+				]);
 		};
 
 		await pagination.GenerateContainer();

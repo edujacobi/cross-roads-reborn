@@ -68,10 +68,7 @@ module.exports = {
 				.addLargeSeparator()
 				.addTexts([
 					text,
-				])
-				.addFooter({
-					text: pagination.Showing(),
-				});
+				]);
 		};
 
 		await pagination.GenerateContainer();

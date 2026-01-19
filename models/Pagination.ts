@@ -46,18 +46,31 @@ export class Pagination {
 		return rowButtons;
 	}
 
-	Showing() {
+	private Showing() {
 		return Strings[this.Language].showing(this.Offset, this.Limit, this.HowManyRecords);
 	}
 
-	async GenerateContainer(mainContainer?: CustomContainerBuilder) {
-		let row = this.GenerateRow();
-		let container = await this.CustomizeContainer();
+	async BuildContainerWithRow() {
+		const row = this.GenerateRow();
+		const container = await this.CustomizeContainer();
 
-		const components: (CustomContainerBuilder | ActionRowBuilder<ButtonBuilder>)[] = mainContainer ? [mainContainer, container] : [container];
 		if (row.components.length > 0) {
-			components.push(row);
+			container
+				.addLargeSeparator()
+				.addActionRowComponents(row);
 		}
+
+		container.addFooter({
+			text: this.Showing(),
+		});
+
+		return container;
+	}
+
+	async GenerateContainer(mainContainer?: CustomContainerBuilder) {
+		let container = await this.BuildContainerWithRow();
+
+		const components: CustomContainerBuilder[] = mainContainer ? [mainContainer, container] : [container];
 
 		const response = await replyInteraction(this.Interaction, {
 			components,
@@ -65,6 +78,10 @@ export class Pagination {
 		});
 
 		const collector = createButtonCollector(this.Interaction, response, 30_000);
+
+		collector?.on("end", async () => {
+			await disableButtons(this.Interaction, mainContainer ?? container);
+		});
 
 		collector?.on("collect", async btn => {
 			await btn.deferUpdate();
@@ -80,17 +97,11 @@ export class Pagination {
 				this.Offset -= this.Limit;
 			}
 
-			container = await this.CustomizeContainer();
-			row = this.GenerateRow();
+			container = await this.BuildContainerWithRow();
 
 			await replyInteraction(this.Interaction, {
-				components: mainContainer ? [mainContainer, container, row] : [container, row],
-				flags: MessageFlags.IsComponentsV2,
+				components: mainContainer ? [mainContainer, container] : [container],
 			});
-		});
-
-		collector?.on("end", async () => {
-			await disableButtons(this.Interaction, mainContainer ?? container);
 		});
 
 		return { response, collector };

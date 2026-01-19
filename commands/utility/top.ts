@@ -1,6 +1,6 @@
 import { ButtonStyle, ChatInputCommandInteraction, Colors, Locale, SlashCommandBuilder } from "discord.js";
 import { Op } from "sequelize";
-import { formatMoney } from "../../utils/ui";
+import { defaultComponent, formatMoney } from "../../utils/ui";
 import { Users } from "../../database/Users";
 import { User } from "../../models/User";
 import { Language } from "../../models/Language";
@@ -8,15 +8,17 @@ import { ClassList } from "../../interfaces/Classes";
 import { EmoteBadgeString } from "../../utils/badges";
 import { Pagination } from "../../models/Pagination";
 import { IDescription } from "../../interfaces/Interfaces";
-import { EmoteString } from "../../utils/emotes";
+import { EmoteId, EmoteString } from "../../utils/emotes";
 import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
-import { GangColor } from "../../utils/colors";
+import { CrColors, GangColor } from "../../utils/colors";
 import Gangs from "../../database/Gangs";
 import { Gang } from "../../models/Gang";
 import { sequelize } from "../../database/Database";
 import GangMembers from "../../database/GangMembers";
 import { DEFAULT_GANG_IMAGE } from "../../ui/builders/GangImageCanvasBuilder";
-import { deferReply } from "../../utils/logic";
+import { deferReply, replyWithContainer, searchUser } from "../../utils/logic";
+import { Robbery } from "../../models/Robbery";
+import { BeatUp } from "../../models/BeatUp";
 
 enum TopSubcommand {
 	Money = "money",
@@ -362,6 +364,8 @@ module.exports = {
 			},
 		};
 
+		const s = Strings[language];
+
 		// Get the configuration for the current subcommand
 		const currentConfig = config[subcommand];
 		const title = currentConfig.strings[language];
@@ -406,6 +410,47 @@ module.exports = {
 			return gangs;
 		}
 
+		async function getTextFromIndex(i: number) {
+			const user = users[i];
+			const underscore = user.id == interaction.user.id ? "__" : "";
+			const emoteClass = ClassList[user.class].Image.Emote.String;
+
+			const position = i + pagination.Offset + 1;
+			let positionText = `\`${position}.\``;
+			if (i + pagination.Offset == 0) {
+				positionText = currentConfig.badge;
+			}
+			// Special case for money ranking which has badges for top 3
+			if (subcommand === TopSubcommand.Money) {
+				if (i + pagination.Offset == 1) {
+					positionText = EmoteBadgeString.Season1.Top2Money;
+				}
+				else if (i + pagination.Offset == 2) {
+					positionText = EmoteBadgeString.Season1.Top3Money;
+				}
+			}
+
+			const userGang = await Gang.GetByUserId(user.id);
+			const gPrefix = userGang ? `[${userGang.Acronym}]` : "";
+			const gSufix = userGang ? GangColor[userGang.Color].Emote.String : "";
+
+			const value = user[currentConfig.valueField as keyof Users] as number;
+			const valueModified = currentConfig.valueModifier ? currentConfig.valueModifier(value, language) : value;
+
+			const vPrefix = currentConfig.valuePrefix ? `${currentConfig.valuePrefix[language]} ` : "";
+			const vSufix = currentConfig.valueSufix ? ` ${currentConfig.valueSufix[language]}` : "";
+			const cPrefix = currentConfig.countPrefix ? `${currentConfig.countPrefix[language]} ` : "";
+			const cSufix = currentConfig.countSufix ? ` ${currentConfig.countSufix[language]}` : "";
+
+			const count = currentConfig.countField ? ` (${cPrefix}${user[currentConfig.countField as keyof Users]}${cSufix})` : "";
+
+			return [
+				`### ${positionText} ${gPrefix} ${emoteClass} ${underscore}${user.nickname}${underscore}${gSufix}`,
+				`${vPrefix}${valueModified}${vSufix}${count}`,
+				`-# \`ID: ${user.id}\``,
+			].join("\n");
+		}
+
 		if (subcommand === TopSubcommand.Gangs) {
 			pagination.HowManyRecords = await Gangs.count();
 		}
@@ -427,7 +472,7 @@ module.exports = {
 					.setUser(user)
 					.setAccentColor(Colors.Green)
 					.addTexts([
-						`# Ranking ${title}`
+						`# Ranking ${title}`,
 					])
 					.addLargeSeparator();
 
@@ -450,18 +495,13 @@ module.exports = {
 						continue;
 					}
 
-					const description = [
-						`${gang.Members.length}/${gang.GetMaxMembers()} ${members}`,
-						`-# ${leader}: **${leaderUser.GetNameWithImage()}**`,
-						`-# ${gang.GetExpBar(6, language)}`,
-					].join("\n");
-
 					container
 						.addSectionComponents(list => list
 							.addTexts([
 								`### ${positionText} ${underscore}[${gang.Acronym}] ${gang.Name}${underscore}${GangColor[gang.Color].Emote.String}`,
-								description,
-								``,
+								`${gang.Members.length}/${gang.GetMaxMembers()} ${members}`,
+								`-# ${leader}: **${leaderUser.GetNameWithImage()}**`,
+								`-# ${gang.GetExpBar(6, language)}`,
 							])
 							.setThumbnailAccessory(thumb => thumb
 								.setURL(gang.Image || DEFAULT_GANG_IMAGE),
@@ -469,15 +509,9 @@ module.exports = {
 						);
 
 					if (i != gangs.length - 1) {
-						container.addSeparatorComponents(s => s
-							.setDivider(true),
-						);
+						container.addLargeSeparator();
 					}
 				}
-
-				container.addFooter({
-					text: pagination.Showing(),
-				});
 
 				return container;
 			};
@@ -495,203 +529,151 @@ module.exports = {
 					.addLargeSeparator();
 
 				for (let i = 0; i < users.length; i++) {
-					const user = users[i];
-					const underscore = user.id == interaction.user.id ? "__" : "";
-					const emoteClass = ClassList[user.class].Image.Emote.String;
-
+					const text = await getTextFromIndex(i);
 					const position = i + pagination.Offset + 1;
-					let positionText = `\`${position}.\``;
-					if (i + pagination.Offset == 0) {
-						positionText = currentConfig.badge;
-					}
-					// Special case for money ranking which has badges for top 3
-					if (subcommand === TopSubcommand.Money) {
-						if (i + pagination.Offset == 1) {
-							positionText = EmoteBadgeString.Season1.Top2Money;
-						}
-						else if (i + pagination.Offset == 2) {
-							positionText = EmoteBadgeString.Season1.Top3Money;
-						}
-					}
-
-					const userGang = await Gang.GetByUserId(user.id);
-					const gPrefix = userGang ? `[${userGang.Acronym}]` : "";
-					const gSufix = userGang ? GangColor[userGang.Color].Emote.String : "";
-
-					const value = user[currentConfig.valueField as keyof Users] as number;
-					const valueModified = currentConfig.valueModifier ? currentConfig.valueModifier(value, language) : value;
-
-					const vPrefix = currentConfig.valuePrefix ? `${currentConfig.valuePrefix[language]} ` : "";
-					const vSufix = currentConfig.valueSufix ? ` ${currentConfig.valueSufix[language]}` : "";
-					const cPrefix = currentConfig.countPrefix ? `${currentConfig.countPrefix[language]} ` : "";
-					const cSufix = currentConfig.countSufix ? ` ${currentConfig.countSufix[language]}` : "";
-
-					const count = currentConfig.countField ? ` (${cPrefix}${user[currentConfig.countField as keyof Users]}${cSufix})` : "";
 
 					container
 						.addSectionComponents(list => list
 							.addTexts([
-								`### ${positionText} ${gPrefix} ${emoteClass} ${underscore}${user.nickname}${underscore}${gSufix}`,
-								`${vPrefix}${valueModified}${vSufix}${count}`,
-								`-# \`ID: ${user.id}\``,
-								``,
+								text,
 							])
 							.setButtonAccessory(btn => btn
-								.setLabel("Opções")
+								.setLabel(s.options)
 								.setCustomId("position" + position)
-								.setDisabled(true)
 								.setStyle(ButtonStyle.Secondary),
 							),
 						);
 
 					if (i != users.length - 1) {
-						container.addSeparatorComponents(s => s
-							.setDivider(true),
-						);
+						container.addLargeSeparator();
 					}
 				}
-
-				container.addFooter({
-					text: pagination.Showing(),
-				});
 
 				return container;
 			};
 		}
 
-		const { response, collector } = await pagination.GenerateContainer();
+		const { collector } = await pagination.GenerateContainer();
 
-		// let position: number;
-		//
-		// collector?.on("collect", async btn => {
+		let position: number;
 
-		// if (btn.customId.includes("position")) {
-		// 	position = (Number(btn.customId.replace("position", "")) % 6) - 1;
-		//
-		// 	const originalContainer = response?.components[0] as ContainerComponent;
-		//
-		// 	if (!originalContainer) {
-		// 		return;
-		// 	}
-		//
-		// 	const oldContainer = new ContainerBuilder(originalContainer.toJSON());
-		//
-		// 	const sections = oldContainer.components.filter(component => component.data.type === ComponentType.Section);
-		//
-		// 	const selectedSection = sections[position] as SectionBuilder;
-		//
-		// 	const button = selectedSection.accessory as ButtonBuilder;
-		//
-		// 	if (!button) {
-		// 		return;
-		// 	}
-		//
-		// 	selectedSection.setButtonAccessory(
-		// 		button
-		// 			.setLabel("Voltar")
-		// 			.setCustomId("goback"),
-		// 	);
-		//
-		// 	const newContainer = new CustomContainerBuilder()
-		// 		.setUser(user)
-		// 		.setAccentColor(CrColors.Default)
-		// 		.addSectionComponents(selectedSection)
-		// 		.addButtonRow(
-		// 			btn => btn
-		// 				.setLabel("Inventário")
-		// 				.setEmoji(EmoteId.OpenInv)
-		// 				.setCustomId("inv")
-		// 				.setStyle(ButtonStyle.Secondary),
-		// 			btn => btn
-		// 				.setLabel("Roubar")
-		// 				.setEmoji(EmoteId.Robbery)
-		// 				.setCustomId("rob")
-		// 				.setStyle(ButtonStyle.Secondary),
-		// 			btn => btn
-		// 				.setLabel("Espancar")
-		// 				.setEmoji(EmoteId.Beat)
-		// 				.setCustomId("beat")
-		// 				.setStyle(ButtonStyle.Secondary),
-		// 			btn => btn
-		// 				.setLabel("Convidar para gangue")
-		// 				.setEmoji(EmoteId.Gang)
-		// 				.setCustomId("invite")
-		// 				.setStyle(ButtonStyle.Secondary),
-		// 		)
-		// 		.addFooter();
-		//
-		// 	await replyInteraction(interaction, {
-		// 		components: [newContainer],
-		// 	});
-		// }
+		collector?.on("collect", async btn => {
+			if (btn.customId.includes("position")) {
+				const positionId = Number(btn.customId.replace("position", ""));
+				position = (positionId - 1) % pagination.Limit;
 
-		// else if (btn.customId === "inv") {
-		// 	const target = await searchUser(users[position].id, interaction);
-		// 	if (!target) {
-		// 		return;
-		// 	}
-		//
-		// 	const command = interaction.client.commands.get(interaction.commandName);
-		// 	if (!command) {
-		// 		return;
-		// 	}
-		//
-		// 	// @ts-ignore
-		// 	const invInteraction = new ChatInputCommandInteraction();
-		// 	invInteraction.type = interaction.type;
-		// 	invInteraction.guild = interaction.guild;
-		// 	invInteraction.client = interaction.client;
-		// 	invInteraction.user = interaction.user;
-		//
-		// 	const options: CommandInteractionOption[] = [{
-		// 		name: "target",
-		// 		type: ApplicationCommandOptionType.String,
-		// 		value: target.Id,
-		// 	}];
-		//
-		// 	// @ts-ignore
-		// 	invInteraction.options = new CommandInteractionOptionResolver(interaction.client, options, interaction.options.resolved);
-		//
-		// 	command.execute(invInteraction, user, language);
-		// }
+				const text = await getTextFromIndex(position);
 
-		// else if (btn.customId === "rob") {
-		// 	const target = await searchUser(users[position].id, interaction);
-		// 	if (!target) {
-		// 		return;
-		// 	}
-		//
-		// 	const robbery = new Robbery(user, target);
-		//
-		// 	const { canRob, message } = await robbery.CanRobUser();
-		//
-		// 	if (!canRob) {
-		// 		const container = defaultComponent({
-		// 			user,
-		// 			color: CrColors.Robbery,
-		// 			description: message,
-		// 			footer: formatMoney(user.Money, language),
-		// 		});
-		//
-		// 		return await replyInteraction(interaction, {
-		// 			components: [container],
-		// 			flags: MessageFlags.IsComponentsV2,
-		// 		});
-		// 	}
-		//
-		// 	await robbery.GetDiscordUser();
-		//
-		// 	await robbery.StartRobbery(interaction);
-		//
-		// }
-		//
-		// else if (btn.customId === "goback") {
-		// 	const container = await pagination.CustomizeContainer();
-		// 	await replyInteraction(interaction, {
-		// 		components: [container, pagination.GenerateRow()],
-		// 	});
-		// }
+				const newContainer = new CustomContainerBuilder()
+					.setUser(user)
+					.setAccentColor(CrColors.Default)
+					.addTexts([
+						`# Ranking ${title}`,
+					])
+					.addLargeSeparator()
+					.addTexts([
+						text,
+					])
+					.addLargeSeparator()
+					.addButtonRow(
+						btn => btn
+							.setLabel(s.goback)
+							.setCustomId("goback")
+							.setStyle(ButtonStyle.Secondary),
+						btn => btn
+							.setLabel(s.rob)
+							.setEmoji(EmoteId.Robbery)
+							.setCustomId("rob")
+							.setStyle(ButtonStyle.Secondary),
+						btn => btn
+							.setLabel(s.beat)
+							.setEmoji(EmoteId.Beat)
+							.setCustomId("beat")
+							.setStyle(ButtonStyle.Secondary),
+					)
+					.addFooter();
 
-		// });
+				await replyWithContainer(interaction, newContainer);
+			}
+
+			else if (btn.customId === "rob") {
+				const target = await searchUser(users[position].id, interaction);
+				if (!target) {
+					return;
+				}
+
+				const robbery = new Robbery(user, target);
+
+				const { canRob, message } = await robbery.CanRobUser();
+
+				if (!canRob) {
+					const container = defaultComponent({
+						user,
+						color: CrColors.Robbery,
+						description: message,
+					});
+
+					return replyWithContainer(interaction, container);
+				}
+
+				await robbery.GetDiscordUser();
+
+				await robbery.StartRobbery(interaction);
+
+			}
+
+			else if (btn.customId === "beat") {
+				const target = await searchUser(users[position].id, interaction);
+				if (!target) {
+					return;
+				}
+
+				const beatUp = new BeatUp(user, target);
+
+				const { canBeat, message } = await beatUp.CanBeatUser();
+
+				if (!canBeat) {
+					const container = defaultComponent({
+						user,
+						color: CrColors.BeatUp,
+						description: message,
+					});
+
+					return replyWithContainer(interaction, container);
+				}
+
+				await beatUp.GetDiscordUser();
+
+				await beatUp.StartBeating(interaction);
+
+			}
+
+			else if (btn.customId === "goback") {
+				const container = await pagination.BuildContainerWithRow();
+				return replyWithContainer(interaction, container);
+			}
+
+		});
 	},
 };
+
+const Strings = {
+	[Language.English]: {
+		options: "Options",
+		rob: "Rob",
+		beat: "Beat",
+		goback: "Go back",
+	},
+	[Language.Portuguese]: {
+		options: "Opções",
+		rob: "Roubar",
+		beat: "Espancar",
+		goback: "Voltar",
+	},
+	[Language.Spanish]: {
+		options: "Opciones",
+		rob: "Robar",
+		beat: "Golpear",
+		goback: "Volver",
+	},
+} as const;
