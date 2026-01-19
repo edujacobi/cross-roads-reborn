@@ -943,8 +943,10 @@ export class User {
 		const job = JobList[this.Job.Id];
 		this.Job.Id = null;
 
-		await Notification.Dismiss(this.Id, NotificationType.Job);
-		await this.Update();
+		await Promise.all([
+			Notification.Dismiss(this.Id, NotificationType.Job),
+			this.Update(),
+		]);
 		Log.Info(`User ${this.Nickname} (ID: ${this.Id}) canceled his job ${job.Description[this.Language]}.`);
 	}
 
