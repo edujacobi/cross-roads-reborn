@@ -10,7 +10,7 @@ import {
 	MessageFlags,
 	User as DUser,
 } from "discord.js";
-import { getPercent, replyInteraction, sendComplexPrivateMessage } from "../utils/logic";
+import { getPercent, replyWithContainer, sendComplexPrivateMessage } from "../utils/logic";
 import { formatMoney, showTime } from "../utils/ui";
 import { CrColors } from "../utils/colors";
 import { EmoteId, EmoteString } from "../utils/emotes";
@@ -204,65 +204,72 @@ export class Robbery {
 
 		this.Attacker.Robbery.IsRobbingId = this.Defender.Id;
 		this.Defender.Robbery.IsBeingRobbedById = this.Attacker.Id;
-		await Promise.all([this.Attacker.Update(), this.Defender.Update()]);
+
+		await Promise.all([
+			this.Attacker.Update(),
+			this.Defender.Update(),
+		]);
 
 		Log.Info(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) started a robbery to user ${this.Defender.Nickname} (ID: ${this.Defender.Id}).`);
 
 		const usedGun = `${this.Attacker.BestGun?.Skin[BundleId.Default].String} ${this.Attacker.BestGun?.Description[this.Defender.Language]}`;
 
+		const cannotReact = this.Defender.IsWorking() ||
+			this.Defender.IsInPrison() ||
+			this.Defender.IsInHospital() ||
+			this.Defender.Attributes.Attack === 0;
+
+		const cannotCallPolice = this.Defender.IsInHospital() || this.Defender.Attributes.Defense < 5;
+
 		this.Container.Private
 			.addTexts([
-				`${EmoteString.Robbery} ${this.Attacker.Nickname} • ${sD.hands}`,
+				`${EmoteString.Robbery} ${sD.robberyInProgress}`,
 			])
 			.addLargeSeparator()
 			.addTexts([
-				`**${this.Attacker.GetNameWithImage()}** ${sD.tryingToRobYou} **${usedGun}**`,
+				`**${this.Attacker.GetNameWithImage()}** ${sD.tryingToRobYou} **${usedGun}** • ${EmoteString.Attack}${this.Attacker.Attributes.Attack} ATK`,
 				``,
 				`-# ${sD.decide}:`,
-				`### ${EmoteString.React} **${sD.react}**`,
-				`${sD.reactDescription(this.DefenderTimeInHospital)}`,
 			])
+			.addSectionComponents(react => react
+				.addTexts([
+					`### ${EmoteString.React} **${sD.react}**`,
+					`${sD.reactDescription(this.DefenderTimeInHospital)}`,
+				])
+				.setButtonAccessory(new ButtonBuilder()
+					.setCustomId("react")
+					.setLabel(sD.react)
+					.setStyle(ButtonStyle.Secondary)
+					.setEmoji(EmoteId.React)
+					.setDisabled(cannotReact),
+				),
+			)
 			.addLargeSeparator()
-			.addTexts([
-				`### ${EmoteString.Police} **${sD.callPolice}**`,
-				`${sD.callPoliceDescription(this.AttackerAditionalTimeCallPolice)}`,
-			])
+			.addSectionComponents(callPolice => callPolice
+				.addTexts([
+					`### ${EmoteString.Police} **${sD.callPolice}**`,
+					`${sD.callPoliceDescription(this.AttackerAditionalTimeCallPolice)}`,
+				])
+				.setButtonAccessory(new ButtonBuilder()
+					.setCustomId("police")
+					.setLabel(sD.callPolice)
+					.setStyle(ButtonStyle.Secondary)
+					.setEmoji(EmoteId.Police)
+					.setDisabled(cannotCallPolice),
+				),
+			)
 			.addLargeSeparator()
-			.addTexts([
-				`### 🏳️ **${sD.doNothing}**`,
-				`${sD.doNothingDescription}`,
-			])
-			.addLargeSeparator();
-
-		const buttonReact = new ButtonBuilder()
-			.setCustomId("react")
-			.setLabel(sD.react)
-			.setStyle(ButtonStyle.Secondary)
-			.setEmoji(EmoteId.React)
-			.setDisabled(this.Defender.IsWorking() ||
-				this.Defender.IsInPrison() ||
-				this.Defender.IsInHospital() ||
-				this.Defender.Attributes.Attack === 0);
-
-		const buttonPolice = new ButtonBuilder()
-			.setCustomId("police")
-			.setLabel(sD.callPolice)
-			.setStyle(ButtonStyle.Secondary)
-			.setEmoji(EmoteId.Police)
-			.setDisabled(this.Defender.IsInHospital() ||
-				this.Defender.Attributes.Defense < 5);
-
-		const buttonNothing = new ButtonBuilder()
-			.setCustomId("nothing")
-			.setLabel(sD.doNothing)
-			.setStyle(ButtonStyle.Secondary)
-			.setEmoji("🏳️");
-
-		this.Container.Private
-			.addButtonRow(
-				() => buttonReact,
-				() => buttonPolice,
-				() => buttonNothing,
+			.addSectionComponents(nothing => nothing
+				.addTexts([
+					`### 🏳️ **${sD.doNothing}**`,
+					`${sD.doNothingDescription}`,
+				])
+				.setButtonAccessory(new ButtonBuilder()
+					.setCustomId("nothing")
+					.setLabel(sD.doNothing)
+					.setStyle(ButtonStyle.Secondary)
+					.setEmoji("🏳️"),
+				),
 			)
 			.addFooter({ text: sD.secondsToRespond });
 
@@ -275,15 +282,14 @@ export class Robbery {
 			.setUser(this.Attacker)
 			.addTexts([
 				`${EmoteString.Robbery} ${sA.robberyInProgress}`,
+			], 1)
+			.addLargeSeparator()
+			.addTexts([
+				`${sA.tryingToRob} **${this.Defender.GetNameWithImage()}** ${EmoteString.Waiting}`,
 			], 50)
-			.addFooter({
-				text: `${sA.tryingToRob} ${this.Defender.Nickname}`,
-			});
+			.addFooter();
 
-		await replyInteraction(interaction, {
-			components: [this.Container.Channel],
-			flags: MessageFlags.IsComponentsV2,
-		});
+		await replyWithContainer(interaction, this.Container.Channel);
 
 		const collectorPrivate = defenderMessage?.createMessageComponentCollector({
 			filter: (i: MessageComponentInteraction) => i.user.id === this.Defender.Id,
@@ -307,7 +313,6 @@ export class Robbery {
 				// this.Defender.Robbery.ReactedCount += 1;
 			}
 			else if (btn.customId === "police") {
-
 				this.Defender.Attributes.Defense -= 5;
 				this.AttackerTimeInPrison += this.AttackerAditionalTimeCallPolice;
 
@@ -323,7 +328,7 @@ export class Robbery {
 			this.Container.Private = new CustomContainerBuilder()
 				.setAccentColor(CrColors.Robbery)
 				.addTexts([
-					`${EmoteString.Robbery} ${this.Attacker.Nickname} • ${sD.hands}`,
+					`${EmoteString.Robbery} ${sD.robberyInProgress}`,
 				])
 				.addLargeSeparator()
 				.addTexts([
@@ -337,9 +342,7 @@ export class Robbery {
 				components: [this.Container.Private],
 			});
 
-			await replyInteraction(interaction, {
-				components: [this.Container.Channel],
-			});
+			await replyWithContainer(interaction, this.Container.Channel);
 		});
 
 		await wait(60_000);
@@ -353,7 +356,10 @@ export class Robbery {
 	}
 
 	async EndRobbery(interaction: ChatInputCommandInteraction, privateMessage: Message | undefined) {
-		await Promise.all([this.Attacker.GetInfo(), this.Defender.GetInfo()]);
+		await Promise.all([
+			this.Attacker.GetInfo(),
+			this.Defender.GetInfo(),
+		]);
 
 		const sA = Strings[this.Attacker.Language];
 		const sD = Strings[this.Defender.Language];
@@ -402,12 +408,18 @@ export class Robbery {
 			this.Container.Private
 				.setAccentColor(CrColors.Robbery)
 				.addTexts([
-					`${sD.wereRobbed(formatMoney(this.MoneyRobbed, this.Defender.Language), this.Attacker.Nickname)} ${EmoteString.Robbery}${willBeBeatenUp ? `
+					`${sD.wereRobbed(formatMoney(this.MoneyRobbed, this.Defender.Language), this.Attacker.GetNameWithImage())}${willBeBeatenUp ? `
 ${sD.beatedUp(this.Defender.Hospital.Time)} ${EmoteString.Hospital}` : ""}`,
 				]);
 
-			this.Container.Channel.changeTextFromSectionId(50, `${sA.youRobbed(formatMoney(this.MoneyRobbed, this.Attacker.Language), this.Defender.Nickname)} ${EmoteString.Robbery}${willBeBeatenUp ? `
-${sA.beatenUp(this.Defender.Hospital.Time)} ${EmoteString.Hospital}` : ""}`);
+			const texts = [
+				`### ${EmoteString.Victory} ${sA.success}!`,
+				`${sA.youRobbed(formatMoney(this.MoneyRobbed, this.Attacker.Language), this.Defender.GetNameWithImage())}${willBeBeatenUp ? `
+${sA.beatenUp(this.Defender.Hospital.Time)} ${EmoteString.Hospital}` : ""}`,
+				`-# ${sA.willBeAbleAgain} ${showTime(this.Attacker.Wanted.Time.getTime(), true)}`,
+			].join("\n");
+
+			this.Container.Channel.changeTextFromSectionId(50, texts);
 
 			Log.Success(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) successfully robbed user ${this.Defender.Nickname} (ID: ${this.Defender.Id}) and got ${formatMoney(this.MoneyRobbed, Language.English)}. ${willBeBeatenUp ? "The defender was beaten up." : ""}`);
 		}
@@ -427,10 +439,15 @@ ${sA.beatenUp(this.Defender.Hospital.Time)} ${EmoteString.Hospital}` : ""}`);
 -# ${sD.prisonUntil(this.Attacker.Prison.Time)}!`,
 				]);
 
+			const texts = [
+				`### ${EmoteString.Defeat} ${sA.failure}!`,
+				`${sA.youFailed}! ${EmoteString.Police}`,
+				`-# ${sA.prisonTime(this.Attacker.Prison.Time)}`,
+			].join("\n");
+
 			this.Container.Channel
 				.setAccentColor(CrColors.Police)
-				.changeTextFromSectionId(50, `${sA.youFailed}! ${EmoteString.Police}
--# ${sA.prisonTime(this.Attacker.Prison.Time)}`);
+				.changeTextFromSectionId(50, texts);
 
 			Log.Success(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) failed to rob user ${this.Defender.Nickname} (ID: ${this.Defender.Id}).`);
 		}
@@ -439,7 +456,7 @@ ${sA.beatenUp(this.Defender.Hospital.Time)} ${EmoteString.Hospital}` : ""}`);
 			.changeTextFromSectionId(1, `${EmoteString.Robbery} ${sA.finishedRobberyAttacker(this.Success)}`)
 			.changeFooterText(formatMoney(this.Attacker.Money, this.Attacker.Language));
 
-		await replyInteraction(interaction, { components: [this.Container.Channel] });
+		await replyWithContainer(interaction, this.Container.Channel);
 
 		if (privateMessage) {
 			this.Container.Private
@@ -451,7 +468,10 @@ ${sA.beatenUp(this.Defender.Hospital.Time)} ${EmoteString.Hospital}` : ""}`);
 
 		this.Attacker.Robbery.IsRobbingId = null;
 		this.Defender.Robbery.IsBeingRobbedById = null;
-		await Promise.all([this.Attacker.Update(), this.Defender.Update()]);
+		await Promise.all([
+			this.Attacker.Update(),
+			this.Defender.Update(),
+		]);
 
 		await RobHistories.CreateUserRobberyHistory(this);
 	}
@@ -491,11 +511,14 @@ const Strings = {
 		prisonUntil: (time: Date) => `He will be in prison until ${showTime(time.getTime())}`,
 		finishedRobberyDefender: "Robbery finished",
 		// Attacker
-		robberyInProgress: `Robbery in progress ${EmoteString.Waiting}`,
+		robberyInProgress: `Robbery in progress`,
 		tryingToRob: "Trying to rob",
 		isReacting: "is reacting",
 		isCallingPolice: "is calling the police",
 		isDoingNothing: "is doing nothing",
+		success: "Success",
+		failure: "Failure",
+		willBeAbleAgain: "Will be able to rob again",
 		youRobbed: (formattedMoney: string, defenderNick: string) => `You robbed ${formattedMoney} from **${defenderNick}**!`,
 		beatenUp: (time: Date) => `You beat him up and he will be hospitalized until ${showTime(time.getTime())}`,
 		youFailed: "You failed in your attempt",
@@ -535,11 +558,14 @@ const Strings = {
 		prisonUntil: (time: Date) => `Ele ficará preso até ${showTime(time.getTime())}`,
 		finishedRobberyDefender: "Roubo finalizado",
 		// Attacker
-		robberyInProgress: `Roubo em andamento ${EmoteString.Waiting}`,
+		robberyInProgress: `Roubo em andamento`,
 		tryingToRob: "Tentando roubar",
 		isReacting: "está reagindo",
 		isCallingPolice: "está chamando a polícia",
 		isDoingNothing: "não está fazendo nada",
+		success: "Sucesso",
+		failure: "Falha",
+		willBeAbleAgain: "Poderá roubar novamente",
 		youRobbed: (formattedMoney: string, defenderNick: string) => `Você roubou ${formattedMoney} de **${defenderNick}**!`,
 		beatenUp: (time: Date) => `Você detonou e ele ficará hospitalizado até ${showTime(time.getTime())}`,
 		youFailed: "Você falhou na sua tentativa",
@@ -579,11 +605,14 @@ const Strings = {
 		prisonUntil: (time: Date) => `Estará en prisión hasta ${showTime(time.getTime())}`,
 		finishedRobberyDefender: "Robo finalizado",
 		// Attacker
-		robberyInProgress: `Robo en progreso ${EmoteString.Waiting}`,
+		robberyInProgress: `Robo en progreso`,
 		tryingToRob: "Intentando robar",
 		isReacting: "está reaccionando",
 		isCallingPolice: "está llamando a la policía",
 		isDoingNothing: "no está haciendo nada",
+		success: "Éxito",
+		failure: "Fracaso",
+		willBeAbleAgain: "Podrás robar de nuevo",
 		youRobbed: (formattedMoney: string, defenderNick: string) => `¡Robaste ${formattedMoney} de **${defenderNick}**!`,
 		beatenUp: (time: Date) => `Lo golpeaste y estará hospitalizado hasta ${showTime(time.getTime())}`,
 		youFailed: `Fallaste en tu intento`,
