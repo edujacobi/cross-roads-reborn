@@ -4,48 +4,48 @@ export interface StockDefinition {
 	initialPrice: number;
 }
 
-export const STOCK_MAX_SHARES = 100;
-export const STOCK_GLOBAL_SUPPLY = 5000;
+export const STOCK_MAX_SHARES = 25;
+export const STOCK_GLOBAL_SUPPLY = 1000;
 
 export const StockList: StockDefinition[] = [
 	{
 		ticker: "PEAR",
 		name: "Pear",
-		initialPrice: 800,
+		initialPrice: 150,
 	},
 	{
 		ticker: "MCRH",
-		name: "Macrohard",
-		initialPrice: 700,
+		name: "Microhard",
+		initialPrice: 280,
 	},
 	{
 		ticker: "GGLE",
 		name: "Goggle",
-		initialPrice: 600,
+		initialPrice: 200,
 	},
 	{
-		ticker: "AMZF",
+		ticker: "AMZN",
 		name: "Amazoff",
-		initialPrice: 500,
+		initialPrice: 180,
 	},
 	{
-		ticker: "TSTA",
-		name: "Testa Motors",
-		initialPrice: 400,
+		ticker: "TSLA",
+		name: "Tuskla",
+		initialPrice: 220,
 	},
 	{
-		ticker: "CRSS",
-		name: "Cross Enterprises",
-		initialPrice: 300,
+		ticker: "META",
+		name: "Fetal",
+		initialPrice: 170,
 	},
 	{
 		ticker: "NFLX",
 		name: "Netfleas",
-		initialPrice: 200,
+		initialPrice: 130,
 	},
 	{
-		ticker: "DCRD",
-		name: "Discord",
-		initialPrice: 100,
+		ticker: "NVDA",
+		name: "Invidia",
+		initialPrice: 250,
 	},
 ];

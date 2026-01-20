@@ -9,6 +9,7 @@ export class StockMarket extends Model<
 	declare price: number;
 	declare previousPrice: number;
 	declare availableShares: number;
+	declare history: CreationOptional<string>;
 	declare createdAt: CreationOptional<Date>;
 	declare updatedAt: CreationOptional<Date>;
 }
@@ -31,6 +32,11 @@ StockMarket.init(
 		availableShares: {
 			type: DataTypes.INTEGER,
 			allowNull: false,
+		},
+		history: {
+			type: DataTypes.TEXT,
+			allowNull: false,
+			defaultValue: "[]",
 		},
 		createdAt: {
 			type: DataTypes.DATE,

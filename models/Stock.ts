@@ -6,11 +6,9 @@ import { Log } from "../utils/log";
 import { formatMoney } from "../utils/ui";
 import { Language } from "./Language";
 import { Op } from "sequelize";
-import { addHours } from "date-fns/addHours";
 
 export class Stock {
 	User: User;
-	static timers = new Set<NodeJS.Timeout>();
 
 	constructor(user: User) {
 		this.User = user;
@@ -33,30 +31,18 @@ export class Stock {
 			}
 		}
 
-		for (const t of Stock.timers) {
-			clearTimeout(t);
-			clearInterval(t);
-		}
-		Stock.timers.clear();
+		// Set up hourly refresh
+		setInterval(() => {
+			Stock.RefreshMarket();
+		}, 1000 * 60 * 60);
 
-		const nextRefresh = await Stock.GetTimeNextRefresh();
-		const now = new Date();
-		const delay = Math.max(0, nextRefresh.getTime() - now.getTime());
-
-		const timer = setTimeout(async () => {
-			await Stock.RefreshMarket();
-			const interval = setInterval(() => {
-				Stock.RefreshMarket();
-			}, 1_000 * 60 * 60);
-			Stock.timers.add(interval);
-		}, delay);
-
-		Stock.timers.add(timer);
-
-		Log.Info(`Stock market system initialized. Next stock market refresh in ${Math.ceil(delay / 60_000)} minutes.`);
+		// Run once on startup if needed, or just let the interval handle it.
+		// Actually, let's just log that it's running.
+		Log.Info("Stock market system initialized.");
 	}
 
 	static async RefreshMarket() {
+		Log.Info("Refreshing stock market...");
 		const stocks = await StockMarket.findAll();
 
 		for (const stock of stocks) {
@@ -79,13 +65,28 @@ export class Stock {
 			// Let's try: NewPrice = CurrentPrice * (Random(-0.05, 0.05) + ScarcityBias)
 			// ScarcityBias = (1000 - Available) / 5000.
 			// If 0 sold: Bias 0. If 500 sold: Bias 0.025 (2.5% upward pressure).
-			const scarcityBias = (STOCK_GLOBAL_SUPPLY - stock.availableShares) / 20_000;
+			const scarcityBias = (STOCK_GLOBAL_SUPPLY - stock.availableShares) / 20000;
 
 			newPrice = Math.floor(stock.price * (randomFactor + scarcityBias));
 
 			// Ensure price doesn't drop below 1
 			newPrice = Math.max(1, newPrice);
 
+			// Update History
+			let history: number[] = [];
+			try {
+				history = JSON.parse(stock.history);
+			}
+			catch (e) {
+				history = [];
+			}
+
+			history.push(oldPrice);
+			if (history.length > 5) {
+				history.shift();
+			}
+
+			stock.history = JSON.stringify(history);
 			stock.previousPrice = oldPrice;
 			stock.price = newPrice;
 			await stock.save();
@@ -93,19 +94,9 @@ export class Stock {
 		Log.Info("Stock market refreshed.");
 	}
 
-	static async GetTimeNextRefresh() {
-		const stocks = await StockMarket.findAll();
-
-		if (!stocks.length) {
-			return new Date();
-		}
-
-		return addHours(stocks[0].updatedAt, 1);
-	}
-
 	async GetPortfolio() {
 		const stocks = await UserStocks.findAll({
-			where: { userId: this.User.Id, quantity: { [Op.gt]: 0 } },
+			where: { userId: this.User.Id, quantity: { [Op.gt]: 0 } }
 		});
 
 		const portfolio = [];
@@ -116,7 +107,7 @@ export class Stock {
 				quantity: s.quantity,
 				averagePrice: s.averagePrice,
 				currentPrice: marketData?.price || 0,
-				totalValue: (marketData?.price || 0) * s.quantity,
+				totalValue: (marketData?.price || 0) * s.quantity
 			});
 		}
 		return portfolio;
@@ -125,51 +116,27 @@ export class Stock {
 	async Buy(ticker: string, quantity: number) {
 		const s = Strings[this.User.Language];
 
-		if (quantity <= 0) {
-			Log.Warning(`User ${this.User.Nickname} (Id: ${this.User.Id}) tried to buy ${quantity} shares of ${ticker} with an invalid quantity.`);
-			return {
-				success: false,
-				message: s.invalidQuantity,
-			};
-		}
+		if (quantity <= 0) return { success: false, message: s.invalidQuantity };
 
 		// Check global user limit
 		const userStocks = await UserStocks.findAll({ where: { userId: this.User.Id } });
 		const totalShares = userStocks.reduce((sum, stock) => sum + stock.quantity, 0);
 
 		if (totalShares + quantity > STOCK_MAX_SHARES) {
-			Log.Warning(`User ${this.User.Nickname} (Id: ${this.User.Id}) tried to buy ${quantity} shares of ${ticker} but reached the global limit of ${STOCK_MAX_SHARES} shares. Total shares: ${totalShares}.`);
-			return {
-				success: false,
-				message: s.limitReached(STOCK_MAX_SHARES, totalShares),
-			};
+			return { success: false, message: s.limitReached(STOCK_MAX_SHARES, totalShares) };
 		}
 
 		// Get stock data
 		const stock = await StockMarket.findByPk(ticker);
-		if (!stock) {
-			Log.Warning(`User ${this.User.Nickname} (Id: ${this.User.Id}) tried to buy ${quantity} shares of ${ticker} but the stock was not found.`);
-			return {
-				success: false,
-				message: s.stockNotFound,
-			};
-		}
+		if (!stock) return { success: false, message: s.stockNotFound };
 
 		if (stock.availableShares < quantity) {
-			Log.Warning(`User ${this.User.Nickname} (Id: ${this.User.Id}) tried to buy ${quantity} shares of ${ticker} but there were not enough shares available. Available: ${stock.availableShares}.`);
-			return {
-				success: false,
-				message: s.notEnoughShares(stock.availableShares),
-			};
+			return { success: false, message: s.notEnoughShares(stock.availableShares) };
 		}
 
 		const cost = stock.price * quantity;
 		if (this.User.Money < cost) {
-			Log.Warning(`User ${this.User.Nickname} (Id: ${this.User.Id}) tried to buy ${quantity} shares of ${ticker} but did not have enough money. Needed: ${cost}. Has: ${this.User.Money}.`);
-			return {
-				success: false,
-				message: s.notEnoughMoney(formatMoney(cost, this.User.Language)),
-			};
+			return { success: false, message: s.notEnoughMoney(formatMoney(cost, this.User.Language)) };
 		}
 
 		// Execute Trade
@@ -181,7 +148,7 @@ export class Stock {
 
 		// Update User Portfolio
 		const userStock = await UserStocks.findOne({
-			where: { userId: this.User.Id, ticker: ticker },
+			where: { userId: this.User.Id, ticker: ticker }
 		});
 
 		if (userStock) {
@@ -197,48 +164,31 @@ export class Stock {
 				userId: this.User.Id,
 				ticker: ticker,
 				quantity: quantity,
-				averagePrice: stock.price,
+				averagePrice: stock.price
 			});
 		}
 
-		Log.Success(`User ${this.User.Nickname} (Id: ${this.User.Id}) bought ${quantity} shares of ${ticker} for ${formatMoney(cost, Language.English)}. Remaining money: ${formatMoney(this.User.Money, Language.English)}.`);
 		return {
 			success: true,
-			message: s.buySuccess(quantity, ticker, formatMoney(cost, this.User.Language)),
+			message: s.buySuccess(quantity, ticker, formatMoney(cost, this.User.Language))
 		};
 	}
 
 	async Sell(ticker: string, quantity: number) {
 		const s = Strings[this.User.Language];
 
-		if (quantity <= 0) {
-			Log.Warning(`User ${this.User.Nickname} (Id: ${this.User.Id}) tried to sell ${quantity} shares of ${ticker} with an invalid quantity.`);
-			return {
-				success: false,
-				message: s.invalidQuantity,
-			};
-		}
+		if (quantity <= 0) return { success: false, message: s.invalidQuantity };
 
 		const userStock = await UserStocks.findOne({
-			where: { userId: this.User.Id, ticker: ticker },
+			where: { userId: this.User.Id, ticker: ticker }
 		});
 
 		if (!userStock || userStock.quantity < quantity) {
-			Log.Warning(`User ${this.User.Nickname} (Id: ${this.User.Id}) tried to sell ${quantity} shares of ${ticker} but only owns ${userStock?.quantity || 0}.`);
-			return {
-				success: false,
-				message: s.notEnoughOwned,
-			};
+			return { success: false, message: s.notEnoughOwned };
 		}
 
 		const stock = await StockMarket.findByPk(ticker);
-		if (!stock) {
-			Log.Warning(`User ${this.User.Nickname} (Id: ${this.User.Id}) tried to sell ${quantity} shares of ${ticker} but the stock was not found.`);
-			return {
-				success: false,
-				message: s.stockNotFound,
-			};
-		}
+		if (!stock) return { success: false, message: s.stockNotFound };
 
 		const revenue = stock.price * quantity;
 		const profit = revenue - (userStock.averagePrice * quantity);
@@ -258,10 +208,9 @@ export class Stock {
 			await userStock.save();
 		}
 
-		Log.Success(`User ${this.User.Nickname} (Id: ${this.User.Id}) sold ${quantity} shares of ${ticker} for ${formatMoney(revenue, Language.English)}. Profit: ${formatMoney(profit, Language.English)}.`);
 		return {
 			success: true,
-			message: s.sellSuccess(quantity, ticker, formatMoney(revenue, this.User.Language), formatMoney(profit, this.User.Language)),
+			message: s.sellSuccess(quantity, ticker, formatMoney(revenue, this.User.Language), formatMoney(profit, this.User.Language))
 		};
 	}
 }
