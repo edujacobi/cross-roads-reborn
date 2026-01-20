@@ -50,7 +50,7 @@ export class Pagination {
 		return Strings[this.Language].showing(this.Offset, this.Limit, this.HowManyRecords);
 	}
 
-	async BuildContainerWithRow() {
+	async BuildContainerWithRow(showFooter = true) {
 		const row = this.GenerateRow();
 		const container = await this.CustomizeContainer();
 
@@ -60,15 +60,17 @@ export class Pagination {
 				.addActionRowComponents(row);
 		}
 
-		container.addFooter({
-			text: this.Showing(),
-		});
+		if (showFooter) {
+			container.addFooter({
+				text: this.Showing(),
+			});
+		}
 
 		return container;
 	}
 
 	async GenerateContainer(mainContainer?: CustomContainerBuilder) {
-		let container = await this.BuildContainerWithRow();
+		let container = await this.BuildContainerWithRow(!mainContainer);
 
 		const components: CustomContainerBuilder[] = mainContainer ? [mainContainer, container] : [container];
 
