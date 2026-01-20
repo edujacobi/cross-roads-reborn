@@ -1,17 +1,15 @@
-import {
-	ChatInputCommandInteraction,
-	Locale,
-	SlashCommandBuilder,
-} from "discord.js";
+import { ChatInputCommandInteraction, Colors, Locale, SlashCommandBuilder } from "discord.js";
 import { User } from "../../models/User";
 import { Language } from "../../models/Language";
 import { Stock } from "../../models/Stock";
 import { StockMarket } from "../../database/StockMarket";
-import { StockList } from "../../interfaces/Stocks";
+import { getStockList, STOCK_MAX_SHARES, StockId, StockList } from "../../interfaces/Stocks";
 import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
-import { formatMoney } from "../../utils/ui";
+import { formatMoney, showTime } from "../../utils/ui";
 import { CrColors } from "../../utils/colors";
 import { deferReply, replyWithContainer } from "../../utils/logic";
+import { EmoteString } from "../../utils/emotes";
+import { EmoteBadgeString } from "../../utils/badges";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -23,42 +21,64 @@ module.exports = {
 			.setName("market")
 			.setDescription("View the stock market")
 			.setNameLocalization(Locale.PortugueseBR, "mercado")
-			.setDescriptionLocalization(Locale.PortugueseBR, "Veja o mercado de ações"))
+			.setDescriptionLocalization(Locale.PortugueseBR, "Veja o mercado de ações"),
+		)
 		.addSubcommand(sub => sub
 			.setName("portfolio")
 			.setDescription("View your portfolio")
 			.setNameLocalization(Locale.PortugueseBR, "portfolio")
-			.setDescriptionLocalization(Locale.PortugueseBR, "Veja seu portfólio"))
+			.setDescriptionLocalization(Locale.PortugueseBR, "Veja seu portfólio"),
+		)
 		.addSubcommand(sub => sub
 			.setName("buy")
 			.setDescription("Buy stocks")
 			.setNameLocalization(Locale.PortugueseBR, "comprar")
 			.setDescriptionLocalization(Locale.PortugueseBR, "Compre ações")
-			.addStringOption(op => op
-				.setName("ticker")
-				.setDescription("The stock ticker")
+			.addIntegerOption(op => op
+				.setName("company")
+				.setDescription("The company")
+				.setNameLocalization(Locale.PortugueseBR, "empresa")
+				.setDescriptionLocalization(Locale.PortugueseBR, "A empresa")
 				.setRequired(true)
-				.setAutocomplete(true))
+				.addChoices(getStockList().map(item => ({
+					name: item.CompanyName,
+					value: item.Id,
+				}))),
+			)
 			.addIntegerOption(op => op
 				.setName("amount")
 				.setDescription("Amount to buy")
+				.setNameLocalization(Locale.PortugueseBR, "quantidade")
+				.setDescriptionLocalization(Locale.PortugueseBR, "Quantidade a comprar")
 				.setRequired(true)
-				.setMinValue(1)))
+				.setMinValue(1),
+			),
+		)
 		.addSubcommand(sub => sub
 			.setName("sell")
 			.setDescription("Sell stocks")
 			.setNameLocalization(Locale.PortugueseBR, "vender")
 			.setDescriptionLocalization(Locale.PortugueseBR, "Venda ações")
-			.addStringOption(op => op
-				.setName("ticker")
-				.setDescription("The stock ticker")
+			.addIntegerOption(op => op
+				.setName("company")
+				.setDescription("The company")
+				.setNameLocalization(Locale.PortugueseBR, "empresa")
+				.setDescriptionLocalization(Locale.PortugueseBR, "A empresa")
 				.setRequired(true)
-				.setAutocomplete(true))
+				.addChoices(getStockList().map(item => ({
+					name: item.CompanyName,
+					value: item.Id,
+				}))),
+			)
 			.addIntegerOption(op => op
 				.setName("amount")
 				.setDescription("Amount to sell")
+				.setNameLocalization(Locale.PortugueseBR, "quantidade")
+				.setDescriptionLocalization(Locale.PortugueseBR, "Quantidade a vender")
 				.setRequired(true)
-				.setMinValue(1))),
+				.setMinValue(1),
+			),
+		),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 		const subcommand = interaction.options.getSubcommand();
@@ -68,16 +88,30 @@ module.exports = {
 		if (subcommand === "market") {
 			await deferReply(interaction);
 			const stocks = await StockMarket.findAll();
+			const next = await Stock.GetTimeNextRefresh();
 
 			const container = new CustomContainerBuilder()
 				.setUser(user)
-				.setAccentColor(CrColors.Job) // Using Job color (Greenish) for money related stuff
-				.setTitle(s.marketTitle);
+				.setAccentColor(CrColors.Default)
+				.addSectionComponents(header => header
+					.addTexts([
+						`# ${s.marketTitle}`,
+						s.marketDescription,
+						`-# ${s.nextRefresh} ${showTime(next.getTime(), true)}`,
+					])
+					.setThumbnailAccessory(thumb => thumb
+						.setURL("https://media.discordapp.net/attachments/1233604589064818808/1462966725803905219/Investidor.png"),
+					),
+				)
+				.addLargeSeparator();
 
-			let desc = "";
-			for (const stock of stocks) {
-				const def = StockList.find(d => d.ticker === stock.ticker);
-				const trend = stock.price >= stock.previousPrice ? "📈" : "📉";
+			for (let i = 0; i < stocks.length; i++) {
+				const stock = stocks[i];
+				const def = StockList[stock.companyId];
+				let trend = stock.price > stock.previousPrice ? EmoteString.Victory : EmoteString.Defeat;
+				if (stock.price === stock.previousPrice) {
+					trend = "🟰";
+				}
 				const change = stock.price - stock.previousPrice;
 				const changeStr = change >= 0 ? `+${formatMoney(change, language)}` : formatMoney(change, language);
 
@@ -89,16 +123,44 @@ module.exports = {
 					history = [];
 				}
 
-				const historyStr = history.length > 0 ? `\n${s.history}: ${history.map(p => formatMoney(p, language)).join(" ➡ ")} ➡ **${formatMoney(stock.price, language)}**` : "";
+				const historyFormatted = [];
+				if (history.length > 0) {
+					for (let j = 0; j < history.length; j++) {
+						const prevPrice = history[j - 1] || 0;
+						let trendEmote = history[j] > prevPrice ? EmoteString.Victory : EmoteString.Defeat;
+						if (history[j] === prevPrice) {
+							trendEmote = "🟰";
+						}
+						const change = history[j] - prevPrice;
+						const changeStrHist = change >= 0 ? `+${formatMoney(change, language)}` : formatMoney(change, language);
+						historyFormatted.push(`${trendEmote} ${formatMoney(history[j], language)} (${changeStrHist})`);
+					}
+					historyFormatted.push(`${trend} **${formatMoney(stock.price, language)}** (${changeStr})`);
+				}
+				else {
+					historyFormatted.push("-");
+				}
 
-				desc += `**${def?.name} (${stock.ticker})**\n`;
-				desc += `${s.price}: ${formatMoney(stock.price, language)} ${trend} (${changeStr})`;
-				desc += historyStr + "\n";
-				desc += `${s.available}: ${stock.availableShares}\n\n`;
+				container
+					.addTexts([
+						`### ${def?.CompanyName}`,
+						`${s.price}: **${formatMoney(stock.price, language)}**`,
+						`-# ${s.available}: ${formatMoney(stock.availableShares, language, "")}`,
+						`${s.history}:`,
+						`-# ${historyFormatted.join(" → ")}`,
+					]);
+
+
+				container.addLargeSeparator();
+
+
 			}
 
-			container.setDescription(desc);
-			container.addFooter({ text: formatMoney(user.Money, language) });
+			container
+				.addTexts([
+					s.toBuy,
+				])
+				.addFooter({ text: formatMoney(user.Money, language) });
 
 			return replyWithContainer(interaction, container);
 		}
@@ -109,29 +171,46 @@ module.exports = {
 
 			const container = new CustomContainerBuilder()
 				.setUser(user)
-				.setAccentColor(CrColors.Job)
-				.setTitle(s.portfolioTitle);
+				.setAccentColor(CrColors.Default)
+				.addSectionComponents(header => header
+					.setId(1)
+					.addTexts([
+						`# ${s.portfolioTitle}`,
+					], 2)
+					.setThumbnailAccessory(thumb => thumb
+						.setURL("https://media.discordapp.net/attachments/1233604589064818808/1462966725803905219/Investidor.png"),
+					),
+				)
+				.addLargeSeparator();
 
 			if (portfolio.length === 0) {
-				container.setDescription(s.emptyPortfolio);
+				container.changeTextFromSectionId(1, `# ${s.portfolioTitle}\n${s.emptyPortfolio}`);
 			}
 			else {
-				let desc = "";
+
 				let totalVal = 0;
-				for (const item of portfolio) {
-					const def = StockList.find(d => d.ticker === item.ticker);
-					const profit = (item.currentPrice - item.averagePrice) * item.quantity;
+				for (let i = 0; i < portfolio.length; i++) {
+					const stock = portfolio[i];
+					const def = StockList[stock.companyId];
+					const profit = (stock.currentPrice - stock.averagePrice) * stock.quantity;
 					const profitStr = profit >= 0 ? `+${formatMoney(profit, language)}` : formatMoney(profit, language);
 
-					desc += `**${def?.name} (${item.ticker})** x${item.quantity}\n`;
-					desc += `${s.avgPrice}: ${formatMoney(item.averagePrice, language)}\n`;
-					desc += `${s.currPrice}: ${formatMoney(item.currentPrice, language)}\n`;
-					desc += `${s.totalValue}: ${formatMoney(item.totalValue, language)} (${profitStr})\n\n`;
+					totalVal += stock.totalValue;
 
-					totalVal += item.totalValue;
+					container
+						.addTexts([
+							`### ${def?.CompanyName} \`x${stock.quantity}\``,
+							`${s.avgPrice}: ${formatMoney(stock.averagePrice, language)}`,
+							`${s.currPrice}: ${formatMoney(stock.currentPrice, language)}`,
+							`${s.totalValue}: ${formatMoney(stock.totalValue, language)} (${profitStr})`,
+						]);
+
+					if (i !== portfolio.length - 1) {
+						container.addLargeSeparator();
+					}
 				}
-				desc += `\n**${s.totalPortfolioValue}: ${formatMoney(totalVal, language)}**`;
-				container.setDescription(desc);
+
+				container.changeTextFromSectionId(1, `# ${s.portfolioTitle}\n-# ${s.totalPortfolioValue}:\n## ${formatMoney(totalVal, language)}`);
 			}
 
 			container.addFooter({ text: formatMoney(user.Money, language) });
@@ -140,82 +219,100 @@ module.exports = {
 
 		if (subcommand === "buy") {
 			await deferReply(interaction);
-			const ticker = interaction.options.getString("ticker")!.toUpperCase();
-			const amount = interaction.options.getInteger("amount")!;
+			const companyId = interaction.options.getInteger("company", true) as StockId;
+			const amount = interaction.options.getInteger("amount", true);
 
-			const result = await stockModel.Buy(ticker, amount);
+			const result = await stockModel.Buy(companyId, amount);
 
 			const container = new CustomContainerBuilder()
 				.setUser(user)
-				.setAccentColor(result.success ? CrColors.Job : CrColors.Red)
-				.setDescription(result.message);
+				.setAccentColor(result.success ? CrColors.Default : Colors.Red)
+				.addTexts([
+					`-# ${EmoteBadgeString.Season6.Invester} ${s.marketTitle}`,
+				])
+				.addLargeSeparator()
+				.addTexts([
+					result.message,
+				])
+				.addFooter({
+					text: formatMoney(user.Money, language),
+				});
 
 			return replyWithContainer(interaction, container);
 		}
 
 		if (subcommand === "sell") {
 			await deferReply(interaction);
-			const ticker = interaction.options.getString("ticker")!.toUpperCase();
-			const amount = interaction.options.getInteger("amount")!;
+			const companyId = interaction.options.getInteger("company", true) as StockId;
+			const amount = interaction.options.getInteger("amount", true);
 
-			const result = await stockModel.Sell(ticker, amount);
+			const result = await stockModel.Sell(companyId, amount);
 
 			const container = new CustomContainerBuilder()
 				.setUser(user)
-				.setAccentColor(result.success ? CrColors.Job : CrColors.Red)
-				.setDescription(result.message);
+				.setAccentColor(result.success ? CrColors.Default : Colors.Red)
+				.addTexts([
+					`-# ${EmoteBadgeString.Season6.Invester} ${s.marketTitle}`,
+				])
+				.addLargeSeparator()
+				.addTexts([
+					result.message,
+				])
+				.addFooter({
+					text: formatMoney(user.Money, language),
+				});
 
 			return replyWithContainer(interaction, container);
 		}
 	},
 
-	async autocomplete(interaction: ChatInputCommandInteraction) {
-		// @ts-expect-error - options exists on autocomplete interaction
-		const focusedValue = interaction.options.getFocused();
-		const choices = StockList.map(s => ({ name: `${s.name} (${s.ticker})`, value: s.ticker }));
-		const filtered = choices.filter((choice: { name: string }) => choice.name.toLowerCase().includes(focusedValue.toLowerCase()));
-		// @ts-expect-error - respond exists on autocomplete interaction
-		await interaction.respond(
-			filtered.slice(0, 25)
-		);
-	}
+
 };
 
 const Strings = {
 	[Language.English]: {
 		marketTitle: "Stock Market",
+		marketDescription: `The stock market is refreshed every hour!\nYou can hold a maximum of ${STOCK_MAX_SHARES} shares in total.`,
+		nextRefresh: `Next refresh`,
+		toBuy: "To buy, use `/stock buy <company> <amount>`",
 		price: "Price",
 		available: "Available",
-		portfolioTitle: "Your Portfolio",
+		portfolioTitle: "Your portfolio",
 		emptyPortfolio: "You don't own any stocks.",
-		avgPrice: "Avg Price",
-		currPrice: "Current Price",
+		avgPrice: "Avg price",
+		currPrice: "Current price",
 		totalValue: "Value",
-		totalPortfolioValue: "Total Portfolio Value",
+		totalPortfolioValue: "Total portfolio value",
 		history: "History",
 	},
 	[Language.Portuguese]: {
 		marketTitle: "Mercado de Ações",
+		marketDescription: `O mercado de ações é atualizado a cada hora!\nVocê pode ter no máximo ${STOCK_MAX_SHARES} ações no total.`,
+		nextRefresh: `Próxima atualização`,
+		toBuy: "Para comprar, use `/acoes comprar <empresa> <quantidade>`",
 		price: "Preço",
 		available: "Disponível",
-		portfolioTitle: "Seu Portfólio",
+		portfolioTitle: "Seu portfólio",
 		emptyPortfolio: "Você não possui ações.",
-		avgPrice: "Preço Médio",
-		currPrice: "Preço Atual",
+		avgPrice: "Preço médio",
+		currPrice: "Preço atual",
 		totalValue: "Valor",
-		totalPortfolioValue: "Valor Total do Portfólio",
+		totalPortfolioValue: "Valor total do portfólio",
 		history: "Histórico",
 	},
 	[Language.Spanish]: {
 		marketTitle: "Mercado de Valores",
+		marketDescription: `El mercado de valores se actualiza cada hora!\nPuedes tener un máximo de ${STOCK_MAX_SHARES} acciones en total.`,
+		nextRefresh: `Próxima actualización`,
+		toBuy: "Para comprar, usa `/stock buy <company> <cantidad>`",
 		price: "Precio",
 		available: "Disponible",
-		portfolioTitle: "Tu Portafolio",
+		portfolioTitle: "Tu portafolio",
 		emptyPortfolio: "No posees acciones.",
-		avgPrice: "Precio Promedio",
-		currPrice: "Precio Actual",
+		avgPrice: "Precio promedio",
+		currPrice: "Precio actual",
 		totalValue: "Valor",
-		totalPortfolioValue: "Valor Total del Portafolio",
+		totalPortfolioValue: "Valor total del portafolio",
 		history: "Historial",
 	},
 };

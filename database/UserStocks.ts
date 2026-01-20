@@ -1,5 +1,6 @@
 import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model } from "sequelize";
 import { sequelize } from "./Database";
+import { StockId } from "../interfaces/Stocks";
 
 export class UserStocks extends Model<
 	InferAttributes<UserStocks>,
@@ -7,7 +8,7 @@ export class UserStocks extends Model<
 > {
 	declare id: CreationOptional<number>;
 	declare userId: string;
-	declare ticker: string;
+	declare companyId: StockId;
 	declare quantity: number;
 	declare averagePrice: number;
 	declare createdAt: CreationOptional<Date>;
@@ -25,8 +26,8 @@ UserStocks.init(
 			type: new DataTypes.STRING(18),
 			allowNull: false,
 		},
-		ticker: {
-			type: DataTypes.STRING,
+		companyId: {
+			type: DataTypes.INTEGER,
 			allowNull: false,
 		},
 		quantity: {

@@ -1,51 +1,70 @@
-export interface StockDefinition {
-	ticker: string;
-	name: string;
-	initialPrice: number;
+export const STOCK_MAX_SHARES = 100;
+export const STOCK_GLOBAL_SUPPLY = 5000;
+
+export enum StockId {
+	Pear = 1,
+	Macrohard,
+	Goggle,
+	Amazoff,
+	TestaMotors,
+	CrossEnterprises,
+	Netfleas,
+	Discord,
 }
 
-export const STOCK_MAX_SHARES = 25;
-export const STOCK_GLOBAL_SUPPLY = 1000;
+export interface StockDefinition {
+	readonly Id: StockId;
+	readonly CompanyName: string;
+	readonly InitialPrice: number;
+}
 
-export const StockList: StockDefinition[] = [
-	{
-		ticker: "PEAR",
-		name: "Pear",
-		initialPrice: 150,
+interface StockListType {
+	[key: number]: StockDefinition,
+}
+
+export const StockList: StockListType = {
+	[StockId.Pear]: {
+		Id: StockId.Pear,
+		CompanyName: "Pear",
+		InitialPrice: 800,
 	},
-	{
-		ticker: "MCRH",
-		name: "Microhard",
-		initialPrice: 280,
+	[StockId.Macrohard]: {
+		Id: StockId.Macrohard,
+		CompanyName: "Macrohard",
+		InitialPrice: 700,
 	},
-	{
-		ticker: "GGLE",
-		name: "Goggle",
-		initialPrice: 200,
+	[StockId.Goggle]: {
+		Id: StockId.Goggle,
+		CompanyName: "Goggle",
+		InitialPrice: 600,
 	},
-	{
-		ticker: "AMZN",
-		name: "Amazoff",
-		initialPrice: 180,
+	[StockId.Amazoff]: {
+		Id: StockId.Amazoff,
+		CompanyName: "Amazoff",
+		InitialPrice: 500,
 	},
-	{
-		ticker: "TSLA",
-		name: "Tuskla",
-		initialPrice: 220,
+	[StockId.TestaMotors]: {
+		Id: StockId.TestaMotors,
+		CompanyName: "Testa Motors",
+		InitialPrice: 400,
 	},
-	{
-		ticker: "META",
-		name: "Fetal",
-		initialPrice: 170,
+	[StockId.CrossEnterprises]: {
+		Id: StockId.CrossEnterprises,
+		CompanyName: "Cross Enterprises",
+		InitialPrice: 300,
 	},
-	{
-		ticker: "NFLX",
-		name: "Netfleas",
-		initialPrice: 130,
+	[StockId.Netfleas]: {
+		Id: StockId.Netfleas,
+		CompanyName: "Netfleas",
+		InitialPrice: 200,
 	},
-	{
-		ticker: "NVDA",
-		name: "Invidia",
-		initialPrice: 250,
+	[StockId.Discord]: {
+		Id: StockId.Discord,
+		CompanyName: "Discord",
+		InitialPrice: 100,
 	},
-];
+} as const;
+
+export function getStockList(): StockDefinition[] {
+	return Object.values(StockList);
+}

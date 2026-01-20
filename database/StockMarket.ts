@@ -1,11 +1,12 @@
 import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model } from "sequelize";
 import { sequelize } from "./Database";
+import { StockId } from "../interfaces/Stocks";
 
 export class StockMarket extends Model<
 	InferAttributes<StockMarket>,
 	InferCreationAttributes<StockMarket>
 > {
-	declare ticker: string;
+	declare companyId: StockId;
 	declare price: number;
 	declare previousPrice: number;
 	declare availableShares: number;
@@ -16,8 +17,8 @@ export class StockMarket extends Model<
 
 StockMarket.init(
 	{
-		ticker: {
-			type: DataTypes.STRING,
+		companyId: {
+			type: DataTypes.INTEGER,
 			primaryKey: true,
 			allowNull: false,
 		},
