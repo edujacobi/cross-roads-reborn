@@ -4,6 +4,7 @@ import { sequelize } from "../database/Database";
 import { changeActivity } from "../utils/ui";
 import { Notification } from "../models/Notification";
 import { HorseRacing } from "../models/HorseRacing";
+import { Stock } from "../models/Stock";
 
 module.exports = {
 	name: Events.ClientReady,
@@ -17,6 +18,7 @@ module.exports = {
 			removeAllFromActions(),
 			startVIPProcedure(),
 			HorseRacing.Initialize(),
+			Stock.Initialize(),
 		]);
 	},
 };
