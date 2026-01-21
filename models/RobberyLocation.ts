@@ -175,10 +175,12 @@ export class RobberyLocation extends Robbery {
 
 			await Notification.Free(this.Attacker);
 
+			const prisonText = LocationList[this.LocationId].Prison.Text[Math.floor(Math.random() * LocationList[this.LocationId].Prison.Text.length)][this.Attacker.Language];
+
 			const texts = [
 				`### ${EmoteString.Defeat} ${s.failure}!`,
 				`${s.youFailed(`${locationEmote} ${locationName}`)}!`,
-				`-# ${EmoteString.Prison} ${s.prisonTime(this.Attacker.Prison.Time)}`,
+				`-# ${EmoteString.Prison} ${prisonText} ${s.prisonTime(this.Attacker.Prison.Time)}`,
 			].join("\n");
 
 			this.Container.Channel.changeTextFromSectionId(50, texts);

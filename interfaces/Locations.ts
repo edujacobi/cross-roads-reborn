@@ -25,6 +25,9 @@ export interface Location {
 	readonly SuccessChance: number,
 	readonly NeedAttack: number,
 	readonly Special: boolean,
+	readonly Prison: {
+		readonly Text: IDescription[],
+	},
 }
 
 interface LocationListType {
@@ -56,6 +59,21 @@ export const LocationList: LocationListType = {
 		SuccessChance: 70,
 		NeedAttack: 15,
 		Special: false,
+		Prison: {
+			Text: [{
+				[Language.English]: "The police saw you bullying the old lady.",
+				[Language.Portuguese]: "A polícia viu você intimidando a velhinha.",
+				[Language.Spanish]: "La policía te vio intimidando a la anciana.",
+			}, {
+				[Language.English]: "A passerby called the cops on you.",
+				[Language.Portuguese]: "Um pedestre chamou a polícia para você.",
+				[Language.Spanish]: "Un transeúnte llamó a la policía por ti.",
+			}, {
+				[Language.English]: "The old lady hit you with her purse until the police arrived.",
+				[Language.Portuguese]: "A velhinha te bateu com a bolsa até a polícia chegar.",
+				[Language.Spanish]: "La anciana te golpeó con su bolso hasta que llegó la policía.",
+			}],
+		},
 	},
 	[LocationId.GroceryStore]: {
 		Id: LocationId.GroceryStore,
@@ -81,6 +99,21 @@ export const LocationList: LocationListType = {
 		SuccessChance: 64,
 		NeedAttack: 20,
 		Special: false,
+		Prison: {
+			Text: [{
+				[Language.English]: "Joe triggered the silent alarm.",
+				[Language.Portuguese]: "O Zé acionou o alarme silencioso.",
+				[Language.Spanish]: "Pepe activó la alarma silenciosa.",
+			}, {
+				[Language.English]: "A patrol car was passing by just as you entered.",
+				[Language.Portuguese]: "Uma viatura estava passando bem na hora que você entrou.",
+				[Language.Spanish]: "Una patrulla pasaba justo cuando entraste.",
+			}, {
+				[Language.English]: "You got stuck in the automatic door while trying to escape.",
+				[Language.Portuguese]: "Você ficou preso na porta automática enquanto tentava fugir.",
+				[Language.Spanish]: "Te quedaste atascado en la puerta automática mientras ententava escapar.",
+			}],
+		},
 	},
 	[LocationId.GasStation]: {
 		Id: LocationId.GasStation,
@@ -106,6 +139,21 @@ export const LocationList: LocationListType = {
 		SuccessChance: 58,
 		NeedAttack: 25,
 		Special: false,
+		Prison: {
+			Text: [{
+				[Language.English]: "The attendant locked the doors and called the police.",
+				[Language.Portuguese]: "O frentista trancou as portas e chamou a polícia.",
+				[Language.Spanish]: "El empleado cerró las puertas y llamó a la policía.",
+			}, {
+				[Language.English]: "Police were refueling their car and saw you.",
+				[Language.Portuguese]: "A polícia estava abastecendo a viatura e te viu.",
+				[Language.Spanish]: "La policía estaba llenando el tanque y te vio.",
+			}, {
+				[Language.English]: "You slipped on an oil spill and the police caught you.",
+				[Language.Portuguese]: "Você escorregou em uma poça de óleo e a polícia te pegou.",
+				[Language.Spanish]: "Resbalaste en un charco de aceite y la policía te atrapó.",
+			}],
+		},
 	},
 	[LocationId.JewelryStore]: {
 		Id: LocationId.JewelryStore,
@@ -131,6 +179,21 @@ export const LocationList: LocationListType = {
 		SuccessChance: 52,
 		NeedAttack: 35,
 		Special: false,
+		Prison: {
+			Text: [{
+				[Language.English]: "You tripped the laser alarm system.",
+				[Language.Portuguese]: "Você acionou o sistema de alarme a laser.",
+				[Language.Spanish]: "Activaste el sistema de alarma láser.",
+			}, {
+				[Language.English]: "The security guard held you at gunpoint until police arrived.",
+				[Language.Portuguese]: "O segurança te manteve sob a mira de uma arma até a polícia chegar.",
+				[Language.Spanish]: "El guardia de seguridad te apuntó con un arma hasta que llegó la policía.",
+			}, {
+				[Language.English]: "An off-duty cop was buying a engagement ring and arrested you.",
+				[Language.Portuguese]: "Um policial de folga estava comprando um anel de noivado e te prendeu.",
+				[Language.Spanish]: "Un policía fuera de servicio estaba comprando un anillo de compromiso y te arrestó.",
+			}, ],
+		},
 	},
 	[LocationId.SmallBank]: {
 		Id: LocationId.SmallBank,
@@ -156,6 +219,21 @@ export const LocationList: LocationListType = {
 		SuccessChance: 46,
 		NeedAttack: 45,
 		Special: false,
+		Prison: {
+			Text: [{
+				[Language.English]: "The teller pressed the panic button under the desk.",
+				[Language.Portuguese]: "O caixa apertou o botão de pânico embaixo da mesa.",
+				[Language.Spanish]: "El cajero presionó el botón de pánico debajo del escritorio.",
+			}, {
+				[Language.English]: "You took too long to open the safe and police surrounded the building.",
+				[Language.Portuguese]: "Você demorou muito para abrir o cofre e a polícia cercou o prédio.",
+				[Language.Spanish]: "Tardaste mucho en abrir la caja fuerte y la policía rodeó el edificio.",
+			}, {
+				[Language.English]: "You got locked in the vault.",
+				[Language.Portuguese]: "Você ficou trancado no cofre.",
+				[Language.Spanish]: "Te quedaste encerrado en la bóveda.",
+			}],
+		},
 	},
 	[LocationId.ItalianMafia]: {
 		Id: LocationId.ItalianMafia,
@@ -181,6 +259,21 @@ export const LocationList: LocationListType = {
 		SuccessChance: 40,
 		NeedAttack: 60,
 		Special: false,
+		Prison: {
+			Text: [{
+				[Language.English]: "The Mafia abandoned the empty place and set a trap for you.",
+				[Language.Portuguese]: "A Mafia abandonou o local vazio e armou uma armadilha pra você.",
+				[Language.Spanish]: "The Mafia abandoned the empty place and set a trap for you.",
+			}, {
+				[Language.English]: "The police raided the place and caught you in the crossfire.",
+				[Language.Portuguese]: "A polícia invadiu o local e te pegou no fogo cruzado.",
+				[Language.Spanish]: "La policía allanó el lugar y te atrapó en el fuego cruzado.",
+			}, {
+				[Language.English]: "You were framed by the mobsters and left for the cops.",
+				[Language.Portuguese]: "Você foi incriminado pelos mafiosos e deixado para os policiais.",
+				[Language.Spanish]: "Fuiste incriminado por los mafiosos y dejado para la policía.",
+			}],
+		},
 	},
 	[LocationId.ArmyDepot]: {
 		Id: LocationId.ArmyDepot,
@@ -206,6 +299,21 @@ export const LocationList: LocationListType = {
 		SuccessChance: 34,
 		NeedAttack: 80,
 		Special: false,
+		Prison: {
+			Text: [{
+				[Language.English]: "The Military surrounded you immediately.",
+				[Language.Portuguese]: "Os militares te cercaram imediatamente.",
+				[Language.Spanish]: "Los militares te cercaron inmediatamente.",
+			}, {
+				[Language.English]: "You were caught by a thermal camera.",
+				[Language.Portuguese]: "Você foi pego por uma câmera térmica.",
+				[Language.Spanish]: "Fuiste capturado por una cámara térmica.",
+			}, {
+				[Language.English]: "A patrol dog sniffed you out.",
+				[Language.Portuguese]: "Um cão de patrulha te farejou.",
+				[Language.Spanish]: "Un perro patrulla te olfateó.",
+			}],
+		},
 	},
 	[LocationId.JacobiPalace]: {
 		Id: LocationId.JacobiPalace,
@@ -231,6 +339,21 @@ export const LocationList: LocationListType = {
 		SuccessChance: 27,
 		NeedAttack: 90,
 		Special: true,
+		Prison: {
+			Text: [{
+				[Language.English]: "The Mayor's personal security team neutralized you.",
+				[Language.Portuguese]: "A equipe de segurança pessoal do Prefeito te neutralizou.",
+				[Language.Spanish]: "El equipo de seguridad personal del alcalde te neutralizó.",
+			}, {
+				[Language.English]: "High-tech sensors detected your heartbeat.",
+				[Language.Portuguese]: "Sensores de alta tecnologia detectaram seus batimentos cardíacos.",
+				[Language.Spanish]: "Sensores de alta tecnología detectaron tus latidos.",
+			}, {
+				[Language.English]: "You were spotted by a sniper on the roof.",
+				[Language.Portuguese]: "Você foi avistado por um atirador no telhado.",
+				[Language.Spanish]: "Fuiste visto por un francotirador en el techo.",
+			}],
+		},
 	},
 } as const;
 

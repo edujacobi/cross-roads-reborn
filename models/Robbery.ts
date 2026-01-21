@@ -364,6 +364,7 @@ export class Robbery {
 		const sD = Strings[this.Defender.Language];
 
 		this.Container.Private = new CustomContainerBuilder()
+			.setAccentColor(CrColors.Robbery)
 			.addTexts([
 				`${EmoteString.Robbery} ${sD.finishedRobberyDefender}`,
 			])
@@ -405,15 +406,18 @@ export class Robbery {
 			await Notification.RobAgain(this.Attacker);
 
 			this.Container.Private
-				.setAccentColor(CrColors.Robbery)
 				.addTexts([
+					`### ${EmoteString.Victory} ${sD.success}!`,
 					`${sD.wereRobbed(formatMoney(this.MoneyRobbed, this.Defender.Language), this.Attacker.GetNameWithImage())}${willBeBeatenUp ? `
 ${sD.beatedUp(this.Defender.Hospital.Time)} ${EmoteString.Hospital}` : ""}`,
 				]);
 
+			const randomSuccessMessage = sA.successMessages[Math.floor(Math.random() * sA.successMessages.length)];
+			const successMessage = randomSuccessMessage(formatMoney(this.MoneyRobbed, this.Attacker.Language), this.Defender.GetNameWithImage());
+
 			const texts = [
 				`### ${EmoteString.Victory} ${sA.success}!`,
-				`${sA.youRobbed(formatMoney(this.MoneyRobbed, this.Attacker.Language), this.Defender.GetNameWithImage())}${willBeBeatenUp ? `
+				`${successMessage}${willBeBeatenUp ? `
 ${sA.beatenUp(this.Defender.Hospital.Time)} ${EmoteString.Hospital}` : ""}`,
 				`-# ${sA.willBeAbleAgain} ${showTime(this.Attacker.Wanted.Time.getTime(), true)}`,
 			].join("\n");
@@ -432,21 +436,21 @@ ${sA.beatenUp(this.Defender.Hospital.Time)} ${EmoteString.Hospital}` : ""}`,
 			await Notification.Free(this.Attacker);
 
 			this.Container.Private
-				.setAccentColor(CrColors.Police)
 				.addTexts([
+					`### ${EmoteString.Defeat} ${sD.failure}!`,
 					`**${this.Attacker.GetNameWithImage()}** ${sD.robFailed} ${EmoteString.Police}
 -# ${sD.prisonUntil(this.Attacker.Prison.Time)}!`,
 				]);
 
+			const randomFailureMessage = sA.failureMessages[Math.floor(Math.random() * sA.failureMessages.length)];
+
 			const texts = [
 				`### ${EmoteString.Defeat} ${sA.failure}!`,
-				`${sA.youFailed}! ${EmoteString.Police}`,
-				`-# ${sA.prisonTime(this.Attacker.Prison.Time)}`,
+				`${sA.youFailed}!`,
+				`-# ${EmoteString.Prison} ${randomFailureMessage} ${sA.prisonTime(this.Attacker.Prison.Time)}`,
 			].join("\n");
 
-			this.Container.Channel
-				.setAccentColor(CrColors.Police)
-				.changeTextFromSectionId(50, texts);
+			this.Container.Channel.changeTextFromSectionId(50, texts);
 
 			Log.Success(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) failed to rob user ${this.Defender.Nickname} (ID: ${this.Defender.Id}).`);
 		}
@@ -518,11 +522,29 @@ const Strings = {
 		success: "Success",
 		failure: "Failure",
 		willBeAbleAgain: "Will be able to rob again",
-		youRobbed: (formattedMoney: string, defenderNick: string) => `You robbed ${formattedMoney} from **${defenderNick}**!`,
 		beatenUp: (time: Date) => `You beat him up and he will be hospitalized until ${showTime(time.getTime())}`,
 		youFailed: "You failed in your attempt",
 		prisonTime: (time: Date) => `Will be in prison until ${showTime(time.getTime())}`,
 		finishedRobberyAttacker: (success: boolean) => `Robbery ${success ? "successful" : "unsuccessful"}`,
+		failureMessages: [
+			"The police arrived faster than you anticipated.",
+			"Someone saw your gun, reacted, and drew everyone's attention.",
+			"A bystander intervened and called the authorities.",
+			"You heard sirens nearby and panicked.",
+			"Security cameras caught your face, forcing you to run.",
+			"You forgot to load your weapon. Rookie mistake.",
+			"You had stolen so much money that you fainted with joy.",
+			"You tried to look cool but just ended up looking suspicious to a nearby cop.",
+			"A rabid stray dog attacked you, giving the police time to arrive.",
+			"While trying to escape, you tripped and dropped all the money.",
+		],
+		successMessages: [
+			(formattedMoney: string, defenderNick: string) => `You robbed ${formattedMoney} from **${defenderNick}**!`,
+			(formattedMoney: string, defenderNick: string) => `Easy money! You took ${formattedMoney} from **${defenderNick}**.`,
+			(formattedMoney: string, defenderNick: string) => `**${defenderNick}** didn't stand a chance. You got away with ${formattedMoney}!`,
+			(formattedMoney: string, defenderNick: string) => `Another successful heist! You pocketed ${formattedMoney} from **${defenderNick}**.`,
+			(formattedMoney: string, defenderNick: string) => `You now have ${formattedMoney} more, courtesy of **${defenderNick}**.`,
+		],
 	},
 	[Language.Portuguese]: {
 		// CanRob
@@ -565,11 +587,29 @@ const Strings = {
 		success: "Sucesso",
 		failure: "Falha",
 		willBeAbleAgain: "Poderá roubar novamente",
-		youRobbed: (formattedMoney: string, defenderNick: string) => `Você roubou ${formattedMoney} de **${defenderNick}**!`,
 		beatenUp: (time: Date) => `Você detonou e ele ficará hospitalizado até ${showTime(time.getTime())}`,
 		youFailed: "Você falhou na sua tentativa",
 		prisonTime: (time: Date) => `Ficará preso até ${showTime(time.getTime())}`,
 		finishedRobberyAttacker: (success: boolean) => `Roubo ${success ? "bem" : "mal"}-sucedido`,
+		failureMessages: [
+			"A polícia chegou mais rápido do que você esperava.",
+			"Uma pessoa viu sua arma, reagiu e chamou a atenção de todos.",
+			"Uma testemunha interveio e chamou as autoridades.",
+			"Você ouviu sirenes próximas e entrou em pânico.",
+			"Câmeras de segurança flagraram seu rosto, forçando você a fugir.",
+			"Você esqueceu de carregar sua arma. Erro de principiante.",
+			"Você havia roubado tanto dinheiro que desmaiou de alegria.",
+			"Você tentou parecer durão, mas acabou parecendo suspeito para um guarda próximo.",
+			"Um cão de rua raivoso te atacou, dando tempo para a polícia chegar.",
+			"Enquanto tentava fugir, você tropeçou e deixou cair toda a grana.",
+		],
+		successMessages: [
+			(formattedMoney: string, defenderNick: string) => `Você roubou ${formattedMoney} de **${defenderNick}**!`,
+			(formattedMoney: string, defenderNick: string) => `Dinheiro fácil! Você pegou ${formattedMoney} de **${defenderNick}**.`,
+			(formattedMoney: string, defenderNick: string) => `**${defenderNick}** não teve chance. Você escapou com ${formattedMoney}!`,
+			(formattedMoney: string, defenderNick: string) => `Mais um roubo bem-sucedido! Você embolsou ${formattedMoney} de **${defenderNick}**.`,
+			(formattedMoney: string, defenderNick: string) => `Você agora tem ${formattedMoney} a mais, cortesia de **${defenderNick}**.`,
+		],
 	},
 	[Language.Spanish]: {
 		// CanRob
@@ -612,10 +652,28 @@ const Strings = {
 		success: "Éxito",
 		failure: "Fracaso",
 		willBeAbleAgain: "Podrás robar de nuevo",
-		youRobbed: (formattedMoney: string, defenderNick: string) => `¡Robaste ${formattedMoney} de **${defenderNick}**!`,
 		beatenUp: (time: Date) => `Lo golpeaste y estará hospitalizado hasta ${showTime(time.getTime())}`,
 		youFailed: `Fallaste en tu intento`,
 		prisonTime: (time: Date) => `Estará en prisión hasta ${showTime(time.getTime())}`,
 		finishedRobberyAttacker: (success: boolean) => `Robo ${success ? "exitoso" : "fallido"}`,
+		failureMessages: [
+			"La policía llegó más rápido de lo que esperabas.",
+			"Alguien vio tu arma, reaccionó y atrajo la atención de todos.",
+			"Un transeúnte intervino y llamó a las autoridades.",
+			"Escuchaste sirenas cerca y entraste en pánico.",
+			"Las cámaras de seguridad captaron tu rostro, obligándote a huir.",
+			"Olvidaste cargar tu arma. Error de novato.",
+			"Habías robado tanto dinero que te desmayaste de alegría.",
+			"Intentaste parecer rudo pero terminaste pareciendo sospechoso para un policía cercano.",
+			"Un perro callejero rabioso te atacó, lo que le dio tiempo a la policía para que llegara.",
+			"Al intentar escapar, tropezaste y se te cayó todo el dinero.",
+		],
+		successMessages: [
+			(formattedMoney: string, defenderNick: string) => `¡Robaste ${formattedMoney} de **${defenderNick}**!`,
+			(formattedMoney: string, defenderNick: string) => `¡Dinero fácil! Le quitaste ${formattedMoney} a **${defenderNick}**.`,
+			(formattedMoney: string, defenderNick: string) => `**${defenderNick}** no tuvo ninguna oportunidad. Te escapaste con ${formattedMoney}!`,
+			(formattedMoney: string, defenderNick: string) => `¡Otro atraco exitoso! Te embolsaste ${formattedMoney} de **${defenderNick}**.`,
+			(formattedMoney: string, defenderNick: string) => `Ahora tienes ${formattedMoney} más, cortesía de **${defenderNick}**.`,
+		],
 	},
 } as const;
