@@ -86,7 +86,7 @@ export class Robbery {
 			canRob = false;
 		}
 
-		if (this.Attacker.Attributes.Attack == 0) {
+		if (!this.Attacker.BestGun) {
 			message = `${s.withoutItem} ${EmoteString.Robbery}`;
 			canRob = false;
 		}

@@ -354,10 +354,11 @@ export class User {
 		this.Drink.DrunkCount = user.drunkCount;
 
 		await Promise.all([
-			this.GetAttributes(),
 			this.GetSituation(language),
 			this.GetItems(),
 		]);
+		// After GetItems
+		await this.GetAttributes();
 
 		this.Language = user.language;
 
@@ -535,6 +536,7 @@ export class User {
 	 * @constructor
 	 */
 	private async GetItems() {
+		this.Items = [];
 		const items = await UserItems.findAll({
 			where: {
 				userId: this.Id,
@@ -551,7 +553,7 @@ export class User {
 		});
 
 		for (const item of items) {
-			const foundWeapon = ItemList[item.itemId] as UserItem;
+			const foundWeapon = { ...ItemList[item.itemId] } as UserItem;
 			foundWeapon.RemainingTime = item.remainingTime;
 			foundWeapon.Quantity = item.quantity;
 			foundWeapon.SelectedSkin = item.skin;
@@ -574,7 +576,7 @@ export class User {
 		const itemList: UserItem[] = [];
 
 		for (const item of items) {
-			const foundWeapon = ItemList[item.itemId] as UserItem;
+			const foundWeapon = { ...ItemList[item.itemId] } as UserItem;
 			foundWeapon.RemainingTime = item.remainingTime;
 			foundWeapon.Quantity = item.quantity;
 			foundWeapon.SelectedSkin = item.skin;
@@ -598,7 +600,7 @@ export class User {
 			},
 		});
 
-		const foundWeapon = ItemList[itemId] as UserItem;
+		const foundWeapon = { ...ItemList[itemId] } as UserItem;
 		foundWeapon.RemainingTime = <Date>item?.remainingTime ?? 0;
 		foundWeapon.Quantity = item?.quantity ?? 0;
 		foundWeapon.SelectedSkin = item?.skin ?? BundleId.Default;
@@ -698,19 +700,11 @@ export class User {
 	}
 
 	async GetAttributes(isBeatUp = false) {
-		const items = await UserItems.findAll({
-			where: {
-				userId: this.Id,
-				remainingTime: {
-					[Op.gt]: new Date(),
-				},
-			},
-		});
-
 		this.Attributes.Attack = 0;
 		this.Attributes.Defense = 0;
 		this.Attributes.MoneyAttack = 0;
 		this.Attributes.MoneyDefense = 0;
+		this.BestGun = null;
 
 		let moreATK = 0;
 		let moreDEF = 0;
@@ -721,32 +715,23 @@ export class User {
 		const isDay = hour >= 6 && hour < 18;
 		const isNight = !isDay;
 
-		for (const item of items) {
-			const foundItem = ItemList[item.itemId];
-
-			if (foundItem.Type === ItemType.BeatUp && !isBeatUp) {
+		for (const item of this.Items) {
+			if (item.Type === ItemType.BeatUp && !isBeatUp) {
 				continue;
 			}
 
-			const userItem = {
-				...foundItem,
-				RemainingTime: item.remainingTime,
-				Quantity: item.quantity,
-				SelectedSkin: item.skin,
-			} as UserItem;
+			this.BestGun = (this.BestGun?.Attack ?? 0) < item.Attack ? item : this.BestGun;
 
-			this.BestGun = (this.BestGun?.Attack ?? 0) > foundItem.Attack ? userItem : this.BestGun;
+			this.Attributes.Attack = Math.max(this.Attributes.Attack, item.Attack);
+			this.Attributes.Defense = Math.max(this.Attributes.Defense, item.Defense);
+			this.Attributes.MoneyAttack = Math.max(this.Attributes.MoneyAttack, item.MoneyAttack);
+			this.Attributes.MoneyDefense = Math.max(this.Attributes.MoneyDefense, item.MoneyDefense);
 
-			this.Attributes.Attack = Math.max(this.Attributes.Attack, foundItem.Attack);
-			this.Attributes.Defense = Math.max(this.Attributes.Defense, foundItem.Defense);
-			this.Attributes.MoneyAttack = Math.max(this.Attributes.MoneyAttack, foundItem.MoneyAttack);
-			this.Attributes.MoneyDefense = Math.max(this.Attributes.MoneyDefense, foundItem.MoneyDefense);
-
-			if ((foundItem.Special.Day && isDay) || (foundItem.Special.Night && isNight) || (!foundItem.Special.Night && !foundItem.Special.Day)) {
-				moreATK += foundItem.MoreAttack;
-				moreDEF += foundItem.MoreDefense;
-				moreMoneyATK += foundItem.MoreMoneyATK;
-				moreMoneyDEF += foundItem.MoreMoneyDEF;
+			if ((item.Special.Day && isDay) || (item.Special.Night && isNight) || (!item.Special.Night && !item.Special.Day)) {
+				moreATK += item.MoreAttack;
+				moreDEF += item.MoreDefense;
+				moreMoneyATK += item.MoreMoneyATK;
+				moreMoneyDEF += item.MoreMoneyDEF;
 			}
 		}
 
