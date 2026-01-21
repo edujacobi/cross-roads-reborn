@@ -15,6 +15,30 @@ export enum ScavengeId {
 	MilitaryBase,
 }
 
+export enum ScavengeRewardType {
+	Money,
+	ItemConsumable,
+	ItemDuration,
+}
+
+export enum ScavengeResultType {
+	Success,
+	Failure,
+}
+
+export enum ScavengeFailureReason {
+	UserScavengeTime,
+	UserScavenging,
+	UserWorking,
+	UserPrison,
+	UserHospital,
+	AttackerIsBeatingId,
+	AttackerIsBeingBeatedById,
+	AttackerIsRobbingId,
+	AttackerIsBeingRobbedById,
+	AttackerIsRobbingLocationId,
+}
+
 export interface ItemRewardScavenge {
 	readonly Id: ItemId;
 	readonly Duration: {
