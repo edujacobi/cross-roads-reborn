@@ -720,7 +720,9 @@ export class User {
 				continue;
 			}
 
-			this.BestGun = (this.BestGun?.Attack ?? 0) < item.Attack ? item : this.BestGun;
+			if ((this.BestGun?.Attack ?? 0) < item.Attack) {
+				this.BestGun = item;
+			}
 
 			this.Attributes.Attack = Math.max(this.Attributes.Attack, item.Attack);
 			this.Attributes.Defense = Math.max(this.Attributes.Defense, item.Defense);

@@ -7,7 +7,7 @@ import {
 	ScavengeList,
 	ScavengeRewardType,
 } from "../interfaces/Scavenge";
-import { ItemList, ItemType } from "../interfaces/Items";
+import { ItemList, Items, ItemType } from "../interfaces/Items";
 import { LocationList } from "../interfaces/Locations";
 import { Users } from "../database/Users";
 import { getScavengeChanceClassModifier, getScavengeDurationClassModifier } from "../interfaces/Classes";
@@ -20,7 +20,7 @@ import { formatMoney } from "../utils/ui";
 
 export class Scavenge {
 	User: User;
-	PlaceId: ScavengeId | undefined;
+	PlaceId: ScavengeId;
 	RewardMoneyMin = 0;
 	RewardMoneyMax = 0;
 	RewardItems: ItemRewardScavenge[] = [];
@@ -30,35 +30,9 @@ export class Scavenge {
 		Hospital: 0,
 	};
 
-	constructor(user: User) {
+	constructor(user: User, placeId: ScavengeId) {
 		this.User = user;
-	}
-
-	SetPlace(placeId: ScavengeId) {
 		this.PlaceId = placeId;
-		const place = ScavengeList[this.PlaceId];
-		this.RewardItems = place.Reward.Items.map(item => ({
-			...item,
-			Duration: {
-				...item.Duration,
-			},
-		}));
-
-		this.Timer.Prison = 5 * (this.PlaceId + 1);
-		this.Timer.Hospital = 3 * (this.PlaceId + 1);
-
-		// Check here and not in constructor, because user can change class between openning the command and executing the action
-		const userClassChanceModifier = getScavengeChanceClassModifier(this.User.Class);
-		this.SuccessChance = place.SuccessChance + userClassChanceModifier;
-
-		const userClassDurationModifier = getScavengeDurationClassModifier(this.User.Class);
-		this.RewardMoneyMin = Math.floor(place.Reward.Money.Min * userClassDurationModifier);
-		this.RewardMoneyMax = Math.floor(place.Reward.Money.Max * userClassDurationModifier);
-		this.RewardItems.forEach(item => {
-			const data = ItemList[item.Id];
-			item.Duration.Min = data.Type === ItemType.Consumable ? item.Duration.Min + 1 : (item.Duration.Min * userClassDurationModifier);
-			item.Duration.Max = data.Type === ItemType.Consumable ? item.Duration.Max + 1 : (item.Duration.Max * userClassDurationModifier);
-		});
 	}
 
 	async CanScavenge() {
@@ -104,32 +78,64 @@ export class Scavenge {
 
 		if (this.User.Robbery.IsRobbingLocationId !== null) {
 			const location = LocationList[this.User.Robbery.IsRobbingLocationId];
-			return { canScavenge: false, reason: ScavengeFailureReason.AttackerIsRobbingLocationId, location: location };
+			return {
+				canScavenge: false,
+				reason: ScavengeFailureReason.AttackerIsRobbingLocationId,
+				location: location,
+			};
 		}
 
 		return { canScavenge: true };
 	}
 
 	async StartScavenge() {
-		if (this.PlaceId === undefined) {
-			return;
-		}
-
 		this.User.Scavenge.IsScavengingId = this.PlaceId;
 		await this.User.Update();
+
+		const place = ScavengeList[this.PlaceId];
+		this.RewardItems = place.Reward.Items.map(item => ({
+			...item,
+			Duration: {
+				...item.Duration,
+			},
+		}));
+
+		this.Timer.Prison = 5 * (this.PlaceId + 1);
+		this.Timer.Hospital = 3 * (this.PlaceId + 1);
+
+		// Check here and not in constructor, because user can change class between openning the command and executing the action
+		const userClassChanceModifier = getScavengeChanceClassModifier(this.User.Class);
+		this.SuccessChance = place.SuccessChance + userClassChanceModifier;
+
+		const userClassDurationModifier = getScavengeDurationClassModifier(this.User.Class);
+		this.RewardMoneyMin = Math.floor(place.Reward.Money.Min * userClassDurationModifier);
+		this.RewardMoneyMax = Math.floor(place.Reward.Money.Max * userClassDurationModifier);
+		this.RewardItems.forEach(item => {
+			const data = ItemList[item.Id];
+			item.Duration.Min = data.Type === ItemType.Consumable ? item.Duration.Min + 1 : (item.Duration.Min * userClassDurationModifier);
+			item.Duration.Max = data.Type === ItemType.Consumable ? item.Duration.Max + 1 : (item.Duration.Max * userClassDurationModifier);
+		});
 	}
 
 	async EndScavenge() {
-		if (this.PlaceId === undefined) {
-			return;
-		}
-
 		const place = ScavengeList[this.PlaceId];
 
 		await this.User.GetInfo();
 
 		const success = Math.random() * 100 < this.SuccessChance;
-		const result: any = { success };
+		const result: {
+			success: boolean;
+			rewardType?: ScavengeRewardType;
+			rewardValue?: number;
+			rewardDescription?: string;
+			item?: Items;
+			quantity?: number;
+			duration?: number;
+			hospitalized?: boolean;
+			hospitalTime?: Date;
+			inprisoned?: boolean;
+			prisonTime?: Date;
+		} = { success };
 
 		if (success) {
 			const rewardMoney = Math.random() < 0.25;

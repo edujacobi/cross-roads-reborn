@@ -8,7 +8,7 @@ import { createButtonCollector, disableButtons, replyWithContainer } from "../..
 import { IScavenge, ScavengeFailureReason, ScavengeList } from "../../interfaces/Scavenge";
 import { defaultComponent, formatMoney, showTime } from "../../utils/ui";
 import { globalStrings, Language } from "../../models/Language";
-import { getScavengeChanceClassModifier, getScavengeDurationClassModifier, ClassList } from "../../interfaces/Classes";
+import { ClassList, getScavengeChanceClassModifier, getScavengeDurationClassModifier } from "../../interfaces/Classes";
 import { ItemList, ItemType } from "../../interfaces/Items";
 import { setTimeout as wait } from "timers/promises";
 import { addHours } from "date-fns";
@@ -22,7 +22,6 @@ module.exports = {
 		.setDescriptionLocalization(Locale.PortugueseBR, "Muitas coisas para encontrar nos lugares mais inesperados"),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User) {
-		const scavenge = new Scavenge(user);
 		let container = new CustomContainerBuilder();
 		const thumbnail = "https://media.discordapp.net/attachments/1233604589064818808/1353866194473582592/XeroqueHolmes.png";
 
@@ -133,10 +132,11 @@ module.exports = {
 				}
 
 				else if (btn.customId.includes("scavenge")) {
-					const { canScavenge } = await scavenge.CanScavenge();
-
 					const placeId = Number(btn.customId.replace("scavenge", ""));
 					const place = ScavengeList[placeId];
+
+					const scavenge = new Scavenge(user, place.Id);
+					const { canScavenge } = await scavenge.CanScavenge();
 
 					const hospitalChance = place.Hospital.Chance > 0 ? `${EmoteString.Hospital} ${s.hospitalizationChance}: ${place.Hospital.Chance}%` : "";
 					const prisonChance = place.Prison.Chance > 0 ? ` • ${EmoteString.Prison} ${s.prisonChance}: ${place.Prison.Chance}%` : "";
@@ -204,20 +204,41 @@ module.exports = {
 
 					const placeId = Number(btn.customId.replace("confirm", ""));
 
+					const scavenge = new Scavenge(user, placeId);
 					const { canScavenge, reason, attacker, location } = await scavenge.CanScavenge();
 
 					if (!canScavenge) {
 						let message = "";
-						if (reason === ScavengeFailureReason.UserScavengeTime) message = `${s.willBeAbleAgain} ${showTime(user.Scavenge.Time.getTime(), true)} ${EmoteString.Scavenge}`;
-						else if (reason === ScavengeFailureReason.UserScavenging) message = `${s.userScavenging(user.Scavenge.IsScavengingId!)} ${EmoteString.Scavenge}`;
-						else if (reason === ScavengeFailureReason.UserWorking) message = `${s.working(user.Job.EndsIn, user.Job.Id!)} ${EmoteString.Jobs}`;
-						else if (reason === ScavengeFailureReason.UserPrison) message = s.prison(user.Prison.Time);
-						else if (reason === ScavengeFailureReason.UserHospital) message = s.hospital(user.Hospital.Time);
-						else if (reason === ScavengeFailureReason.AttackerIsBeatingId) message = globalStrings[user.Language].attackerIsBeatingId(`${ClassList[attacker!.class].Image.Emote.String} ${attacker!.nickname!}`);
-						else if (reason === ScavengeFailureReason.AttackerIsBeingBeatedById) message = globalStrings[user.Language].attackerIsBeingBeatedById(`${ClassList[attacker!.class!].Image.Emote.String} ${attacker!.nickname!}`);
-						else if (reason === ScavengeFailureReason.AttackerIsRobbingId) message = globalStrings[user.Language].attackerIsRobbingId(`${ClassList[attacker!.class].Image.Emote.String} ${attacker!.nickname}`);
-						else if (reason === ScavengeFailureReason.AttackerIsBeingRobbedById) message = globalStrings[user.Language].attackerIsBeingRobbedById(`${ClassList[attacker!.class].Image.Emote.String} ${attacker!.nickname}`);
-						else if (reason === ScavengeFailureReason.AttackerIsRobbingLocationId) message = globalStrings[user.Language].attackerIsRobbingId(location!.Name[user.Language]);
+						if (reason === ScavengeFailureReason.UserScavengeTime) {
+							message = `${s.willBeAbleAgain} ${showTime(user.Scavenge.Time.getTime(), true)} ${EmoteString.Scavenge}`;
+						}
+						else if (reason === ScavengeFailureReason.UserScavenging) {
+							message = `${s.userScavenging(user.Scavenge.IsScavengingId!)} ${EmoteString.Scavenge}`;
+						}
+						else if (reason === ScavengeFailureReason.UserWorking) {
+							message = `${s.working(user.Job.EndsIn, user.Job.Id!)} ${EmoteString.Jobs}`;
+						}
+						else if (reason === ScavengeFailureReason.UserPrison) {
+							message = s.prison(user.Prison.Time);
+						}
+						else if (reason === ScavengeFailureReason.UserHospital) {
+							message = s.hospital(user.Hospital.Time);
+						}
+						else if (reason === ScavengeFailureReason.AttackerIsBeatingId) {
+							message = globalStrings[user.Language].attackerIsBeatingId(`${ClassList[attacker!.class].Image.Emote.String} ${attacker!.nickname!}`);
+						}
+						else if (reason === ScavengeFailureReason.AttackerIsBeingBeatedById) {
+							message = globalStrings[user.Language].attackerIsBeingBeatedById(`${ClassList[attacker!.class!].Image.Emote.String} ${attacker!.nickname!}`);
+						}
+						else if (reason === ScavengeFailureReason.AttackerIsRobbingId) {
+							message = globalStrings[user.Language].attackerIsRobbingId(`${ClassList[attacker!.class].Image.Emote.String} ${attacker!.nickname}`);
+						}
+						else if (reason === ScavengeFailureReason.AttackerIsBeingRobbedById) {
+							message = globalStrings[user.Language].attackerIsBeingRobbedById(`${ClassList[attacker!.class].Image.Emote.String} ${attacker!.nickname}`);
+						}
+						else if (reason === ScavengeFailureReason.AttackerIsRobbingLocationId) {
+							message = globalStrings[user.Language].attackerIsRobbingId(location!.Name[user.Language]);
+						}
 
 						container = defaultComponent({
 							user: user,
@@ -227,8 +248,6 @@ module.exports = {
 
 						return replyWithContainer(interaction, container);
 					}
-
-					scavenge.SetPlace(placeId);
 
 					const place = ScavengeList[placeId];
 					const placeName = `${place.Emote.String} **${place.Description[user.Language]}**`;
@@ -249,7 +268,7 @@ module.exports = {
 
 					const result = await scavenge.EndScavenge();
 
-					if (result.success) {
+					if (result.success && result.rewardDescription) {
 						addActionHeader(s.scavengeEndSuccess);
 
 						container
@@ -264,10 +283,10 @@ module.exports = {
 						let hospitalText = "";
 						let prisonText = "";
 
-						if (result.hospitalized) {
+						if (result.hospitalized && result.hospitalTime) {
 							hospitalText = `\n-# ${EmoteString.Hospital} ${place.Hospital.Text[user.Language]} ${s.hospitalized} ${showTime(result.hospitalTime.getTime(), true)}.`;
 						}
-						else if (result.inprisoned) {
+						else if (result.inprisoned && result.prisonTime) {
 							prisonText = `\n-# ${EmoteString.Prison} ${place.Prison.Text[user.Language]} ${s.inprisoned} ${showTime(result.prisonTime.getTime(), true)}.`;
 						}
 
