@@ -407,7 +407,7 @@ export class Robbery {
 
 			this.Container.Private
 				.addTexts([
-					`### ${EmoteString.Victory} ${sD.success}!`,
+					`### ${EmoteString.Defeat} ${sD.success}.`,
 					`${sD.wereRobbed(formatMoney(this.MoneyRobbed, this.Defender.Language), this.Attacker.GetNameWithImage())}${willBeBeatenUp ? `
 ${sD.beatedUp(this.Defender.Hospital.Time)} ${EmoteString.Hospital}` : ""}`,
 				]);
@@ -437,7 +437,7 @@ ${sA.beatenUp(this.Defender.Hospital.Time)} ${EmoteString.Hospital}` : ""}`,
 
 			this.Container.Private
 				.addTexts([
-					`### ${EmoteString.Defeat} ${sD.failure}!`,
+					`### ${EmoteString.Victory} ${sD.failure}!`,
 					`**${this.Attacker.GetNameWithImage()}** ${sD.robFailed} ${EmoteString.Police}
 -# ${sD.prisonUntil(this.Attacker.Prison.Time)}!`,
 				]);
