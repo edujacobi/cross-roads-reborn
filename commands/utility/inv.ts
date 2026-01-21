@@ -58,9 +58,8 @@ module.exports = {
 		const s = Strings[language];
 
 		// eslint-disable-next-line prefer-const
-		let [badges, userItems, gang] = await Promise.all([
+		let [badges, gang] = await Promise.all([
 			UserBadge.GetList(target.Id),
-			target.GetItems(),
 			target.GetGang(),
 		]);
 
@@ -79,9 +78,9 @@ module.exports = {
 
 		badges.forEach(badge => badgeText += `${badge.Emoji} `);
 
-		const emoteItems = [...userItems].sort((a, b) => a.Id - b.Id).map(weapon => weapon.Skin[weapon.SelectedSkin].String);
+		const emoteItems = [...target.Items].sort((a, b) => a.Id - b.Id).map(weapon => weapon.Skin[weapon.SelectedSkin].String);
 
-		const textItems = userItems.map(userItem => {
+		const textItems = target.Items.map(userItem => {
 			const name = `${userItem.Skin[userItem.SelectedSkin].String} ${userItem.Description[language]}`;
 			const consumable = userItem.Type === ItemType.Consumable;
 			const value = consumable ? String(userItem.Quantity) : showTime(userItem.RemainingTime.getTime(), true);

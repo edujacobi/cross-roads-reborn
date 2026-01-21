@@ -192,7 +192,7 @@ export class Scavenge {
 
 				const textItems = place.Reward.Items.map(item => {
 					const data = ItemList[item.Id];
-					const emote = data.Skin[BundleId.Default].String;
+					const emote = this.User.GetItemSkin(data);
 					const hoursOrUnits = data.Type === ItemType.Consumable ? "un" : "h";
 					const durationMin = data.Type === ItemType.Consumable ? item.Duration.Min + 1 : (item.Duration.Min * userClassDurationModifier).toFixed(1);
 					const durationMax = data.Type === ItemType.Consumable ? item.Duration.Max + 1 : (item.Duration.Max * userClassDurationModifier).toFixed(1);
@@ -415,7 +415,7 @@ export class Scavenge {
 
 				if (data.Type === ItemType.Consumable) {
 					const howMany = Math.floor(item.Duration.Min + Math.random() * (item.Duration.Max - item.Duration.Min));
-					rewardDescription = `${howMany} ${data.Skin[BundleId.Default].String} ${data.Description[this.User.Language]}`;
+					rewardDescription = `${howMany} ${this.User.GetItemSkin(data)} ${data.Description[this.User.Language]}`;
 					rewardDescriptionLog = `${howMany} ${data.Description[Language.English]}`;
 
 					await UserItems.upsert({
@@ -428,7 +428,7 @@ export class Scavenge {
 				}
 				else {
 					const duration = item.Duration.Min + Math.random() * (item.Duration.Max - item.Duration.Min);
-					rewardDescription = `${data.Skin[BundleId.Default].String} ${data.Description[this.User.Language]} (${duration.toFixed(1)}h)`;
+					rewardDescription = `${this.User.GetItemSkin(data)} ${data.Description[this.User.Language]} (${duration.toFixed(1)}h)`;
 					rewardDescriptionLog = `${duration.toFixed(1)}h ${data.Description[Language.English]}`;
 
 					const remaining = existingItem?.remainingTime ?? new Date(0);

@@ -1,9 +1,4 @@
-﻿import {
-	ButtonStyle,
-	ChatInputCommandInteraction,
-	Locale,
-	SlashCommandBuilder,
-} from "discord.js";
+﻿import { ButtonStyle, ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
 import { createButtonCollector, deferReply, disableButtons, replyWithContainer } from "../../utils/logic";
 import { EmoteString } from "../../utils/emotes";
 import { formatMoney, showTime } from "../../utils/ui";
@@ -18,7 +13,6 @@ import { LocationList } from "../../interfaces/Locations";
 import { ScavengeId, ScavengeList } from "../../interfaces/Scavenge";
 import { Event, EventType } from "../../models/Event";
 import { BlackMarket } from "../../models/BlackMarket";
-import { BundleId } from "../../interfaces/Ids";
 import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
 
 module.exports = {
@@ -97,18 +91,16 @@ module.exports = {
 				return container;
 			}
 			else {
-				const userItems = await user.GetItems();
-
 				for (let i = 0; i < currentPageJobs.length; i++) {
 					const job = currentPageJobs[i];
 					const weaponsNeeded = getItemList().filter(item => job.NeedItem?.includes(item.Id));
 					const jobDuration = job.Duration * eventActiveValue;
 					const jobSalary = Math.floor(job.Salary * userClassModifier);
-					const hasAllItems = job.NeedItem?.every(neededItem => userItems.some(userItem => userItem.Id === neededItem));
+					const hasAllItems = job.NeedItem?.every(neededItem => user.Items.some(userItem => userItem.Id === neededItem));
 
 					const textSalary = `${s.salary}: ${formatMoney(jobSalary, language)}`;
 					const textDuration = `${s.duration}: ${jobDuration}h`;
-					const textNeeded = weaponsNeeded.length ? `\n-# ${s.necessary}:\n## ${weaponsNeeded.map(weapon => weapon.Skin[BundleId.Default].String).join(" ")}` : "";
+					const textNeeded = weaponsNeeded.length ? `\n-# ${s.necessary}:\n## ${weaponsNeeded.map(weapon => user.GetItemSkin(weapon)).join(" ")}` : "";
 					const blackMarketText = job.Special ? ` • ${EmoteString.BlackMarket} ${s.blackMarket}` : "";
 
 					container.addSectionComponents(section => section
@@ -170,8 +162,7 @@ module.exports = {
 				const jobId = Number(btn.customId.replace("start", ""));
 				const job = JobList[jobId];
 
-				const userItems = await user.GetItems();
-				const hasAllItems = job.NeedItem?.every(neededItem => userItems.some(userItem => userItem.Id === neededItem));
+				const hasAllItems = job.NeedItem?.every(neededItem => user.Items.some(userItem => userItem.Id === neededItem));
 
 				let textResponse = "";
 
@@ -203,8 +194,8 @@ module.exports = {
 				}
 				else if (job.NeedItem && !hasAllItems) {
 					const neededItems = job.NeedItem
-						.filter(neededItem => !userItems.some(userItem => userItem.Id === neededItem))
-						.map(neededItem => `${ItemList[neededItem].Skin[BundleId.Default].String} ${ItemList[neededItem].Description[language]}`)
+						.filter(neededItem => !user.Items.some(userItem => userItem.Id === neededItem))
+						.map(neededItem => `${user.GetItemSkin(ItemList[neededItem])} ${ItemList[neededItem].Description[language]}`)
 						.join(", ");
 
 					textResponse = s.withoutItems(job.Description[language], neededItems);

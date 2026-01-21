@@ -124,7 +124,7 @@ export class User {
 		ComplexUI: "",
 		EmoteId: "",
 	};
-	BestGun: Items | null = null;
+	BestGun: UserItem | null = null;
 	Alms = {
 		GiveTime: new Date(),
 		ReceiveTime: new Date(),
@@ -152,6 +152,7 @@ export class User {
 		HappyHour: 0,
 		DrunkCount: 0,
 	};
+	Items: UserItem[] = [];
 
 	constructor(id: string, language: Language = Language.English) {
 		this.Id = id;
@@ -352,8 +353,11 @@ export class User {
 		this.Drink.HappyHour = user.drinkHappyHour;
 		this.Drink.DrunkCount = user.drunkCount;
 
-		await this.GetAttributes();
-		await this.GetSituation(language);
+		await Promise.all([
+			this.GetAttributes(),
+			this.GetSituation(language),
+			this.GetItems(),
+		]);
 
 		this.Language = user.language;
 
@@ -530,7 +534,7 @@ export class User {
 	 * Get all items from user that are greater than 0 and or are not expired
 	 * @constructor
 	 */
-	async GetItems() {
+	private async GetItems() {
 		const items = await UserItems.findAll({
 			where: {
 				userId: this.Id,
@@ -546,18 +550,14 @@ export class User {
 			order: [["remainingTime", "ASC"]],
 		});
 
-		const itemList: UserItem[] = [];
-
 		for (const item of items) {
 			const foundWeapon = ItemList[item.itemId] as UserItem;
 			foundWeapon.RemainingTime = item.remainingTime;
 			foundWeapon.Quantity = item.quantity;
 			foundWeapon.SelectedSkin = item.skin;
 
-			itemList.push(foundWeapon);
+			this.Items.push(foundWeapon);
 		}
-
-		return itemList;
 	}
 
 	/**
@@ -604,6 +604,15 @@ export class User {
 		foundWeapon.SelectedSkin = item?.skin ?? BundleId.Default;
 
 		return foundWeapon;
+	}
+
+	GetItemSkin(item: Items): string {
+		const found = this.Items.find(i => i.Id === item.Id);
+		if (found) {
+			return item.Skin[found.SelectedSkin].String;
+		}
+
+		return item.Skin[BundleId.Default].String;
 	}
 
 	async SetItemSkin(item: Items, bundle: SkinBundles) {
@@ -719,7 +728,14 @@ export class User {
 				continue;
 			}
 
-			this.BestGun = (this.BestGun?.Attack ?? 0) > foundItem.Attack ? this.BestGun : foundItem;
+			const userItem = {
+				...foundItem,
+				RemainingTime: item.remainingTime,
+				Quantity: item.quantity,
+				SelectedSkin: item.skin,
+			} as UserItem;
+
+			this.BestGun = (this.BestGun?.Attack ?? 0) > foundItem.Attack ? userItem : this.BestGun;
 
 			this.Attributes.Attack = Math.max(this.Attributes.Attack, foundItem.Attack);
 			this.Attributes.Defense = Math.max(this.Attributes.Defense, foundItem.Defense);

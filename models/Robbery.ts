@@ -26,7 +26,6 @@ import { ClassId, ClassList, getRobberyClassModifier } from "../interfaces/Class
 import { JobId, JobList } from "../interfaces/Jobs";
 import { LocationList } from "../interfaces/Locations";
 import { ScavengeId, ScavengeList } from "../interfaces/Scavenge";
-import { BundleId } from "../interfaces/Ids";
 import { CustomContainerBuilder } from "../ui/builders/CustomContainerBuilder";
 
 export enum ClashType {
@@ -212,7 +211,7 @@ export class Robbery {
 
 		Log.Info(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) started a robbery to user ${this.Defender.Nickname} (ID: ${this.Defender.Id}).`);
 
-		const usedGun = `${this.Attacker.BestGun?.Skin[BundleId.Default].String} ${this.Attacker.BestGun?.Description[this.Defender.Language]}`;
+		const usedGun = `${this.Attacker.GetItemSkin(this.Attacker.BestGun!)} ${this.Attacker.BestGun?.Description[this.Defender.Language]}`;
 
 		const cannotReact = this.Defender.IsWorking() ||
 			this.Defender.IsInPrison() ||

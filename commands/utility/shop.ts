@@ -12,7 +12,6 @@ import { formatMoney } from "../../utils/ui";
 import { createButtonCollector, deferReply, disableButtons, replyWithContainer } from "../../utils/logic";
 import { EmoteString } from "../../utils/emotes";
 import { ItemList, ItemType } from "../../interfaces/Items";
-import { BundleId } from "../../interfaces/Ids";
 import { Language } from "../../models/Language";
 
 module.exports = {
@@ -102,7 +101,7 @@ module.exports = {
 
 				container.addSectionComponents(section => section
 					.addTexts([
-						`### ${item.Skin[BundleId.Default].String} ${item.Description[user.Language]}`,
+						`### ${user.GetItemSkin(item)} ${item.Description[user.Language]}`,
 						value,
 					])
 					.setButtonAccessory(new ButtonBuilder()
@@ -186,7 +185,7 @@ module.exports = {
 
 				container
 					.addTexts([
-						s.itemBought(`${item.Skin[BundleId.Default].String} ${item.Description[user.Language]}`),
+						s.itemBought(`${user.GetItemSkin(item)} ${item.Description[user.Language]}`),
 					])
 					.addButtonRow(
 						btn => btn
