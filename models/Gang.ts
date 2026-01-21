@@ -241,6 +241,42 @@ export class Gang {
 		}
 	}
 
+	/**
+	 * Gets basic gang info without loading members and roles.
+	 * Useful for performance when only basic data is needed.
+	 * @param gangId The gang ID.
+	 */
+	static async GetBasicById(gangId: number): Promise<Gang | null> {
+		try {
+			const gang = await Gangs.findByPk(gangId);
+
+			if (!gang) {
+				return null;
+			}
+
+			const result = new Gang();
+			result.Id = gang.id;
+			result.Name = gang.name;
+			result.Acronym = gang.acronym.toUpperCase();
+			result.Money = gang.money;
+			result.BaseId = gang.baseId;
+			result.Color = gang.color;
+			result.Image = gang.image;
+			result.Description = gang.description;
+			result.Experience = gang.experience;
+			result.Level = gang.level;
+			result.LeaderId = gang.leaderId;
+			result.CreatedAt = gang.createdAt;
+			result.UpdatedAt = gang.updatedAt;
+
+			return result;
+		}
+		catch (err) {
+			Log.Warning(`Failed to get basic gang by Id ${gangId}: ${err}`);
+			return null;
+		}
+	}
+
 	static async GetInfo(gang: Gangs) {
 		const result = new Gang();
 		result.Id = gang.id;

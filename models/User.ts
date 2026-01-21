@@ -154,11 +154,19 @@ export class User {
 	};
 	Items: UserItem[] = [];
 
+	/**
+	 * Creates a new instance of User.
+	 * @param id The user's ID (usually Discord ID).
+	 * @param language The user's preferred language.
+	 */
 	constructor(id: string, language: Language = Language.English) {
 		this.Id = id;
 		this.Language = language;
 	}
 
+	/**
+	 * Creates the user in the database.
+	 */
 	async Create() {
 		try {
 			await Users.create({
@@ -222,6 +230,12 @@ export class User {
 		}
 	}
 
+	/**
+	 * Loads user information from the database.
+	 * @param fromUser Optional Users model instance to load from.
+	 * @param language Optional language to override.
+	 * @returns The User instance or null if not found.
+	 */
 	async GetInfo(fromUser?: Users, language?: Language) {
 		let user: Users | null;
 
@@ -267,7 +281,6 @@ export class User {
 		// Daily
 		this.Daily.CurrentStreak = user.dailyStreak;
 		this.Daily.MaxStreak = user.maxDailyStreak;
-		this.Daily.LastReceived = user.lastDailyReceived;
 		this.Daily.LastReceived = user.lastDailyReceived;
 
 		// Robberies
@@ -365,6 +378,12 @@ export class User {
 		return this;
 	}
 
+	/**
+	 * Sets the user's nickname.
+	 * @param nickname The new nickname.
+	 * @param cost Optional cost to change the nickname.
+	 * @returns True if successful, false if not enough money.
+	 */
 	async SetNickname(nickname: string, cost?: number) {
 		const oldNickname = this.Nickname;
 		this.Nickname = nickname;
@@ -379,6 +398,12 @@ export class User {
 		return true;
 	}
 
+	/**
+	 * Sets the user's class.
+	 * @param classId The new class ID.
+	 * @param cost Optional cost to change the class.
+	 * @returns True if successful, false if not enough money.
+	 */
 	async SetClass(classId: ClassId, cost?: number) {
 		const oldClass = this.Class;
 		this.Class = classId;
@@ -393,14 +418,26 @@ export class User {
 		return true;
 	}
 
+	/**
+	 * Gets the localized text of the user's class.
+	 * @returns The class name.
+	 */
 	GetClassText() {
 		return ClassList[this.Class].Name[this.Language];
 	}
 
+	/**
+	 * Gets the user's name with the class image emote.
+	 * @returns The formatted string.
+	 */
 	GetNameWithImage() {
 		return `${ClassList[this.Class].Image.Emote.String} ${this.Nickname}`;
 	}
 
+	/**
+	 * Checks if the user is a VIP.
+	 * @returns True if VIP, false otherwise.
+	 */
 	IsVip() {
 		if (this.VipEternal) {
 			return true;
@@ -413,6 +450,10 @@ export class User {
 		return this.VipTime > new Date();
 	}
 
+	/**
+	 * Adds VIP time to the user.
+	 * @param days Number of days to add.
+	 */
 	async AddVip(days: number) {
 		if (this.VipTime == null || this.VipTime < new Date()) {
 			this.VipTime = new Date();
@@ -427,6 +468,9 @@ export class User {
 		Log.Success(`User ${this.Nickname} (ID: ${this.Id}) received ${days} days of VIP.`);
 	}
 
+	/**
+	 * Toggles eternal VIP status.
+	 */
 	async SetEternalVip() {
 		this.VipEternal = !this.VipEternal;
 
@@ -434,6 +478,10 @@ export class User {
 		Log.Success(`User ${this.Nickname} (ID: ${this.Id}) ${this.VipEternal ? "is now" : "is not anymore"} a eternal VIP.`);
 	}
 
+	/**
+	 * Adds special coins to the user.
+	 * @param coins Number of coins to add.
+	 */
 	async AddSpecialCoin(coins: number) {
 		this.SpecialCoin += coins;
 
@@ -441,12 +489,22 @@ export class User {
 		Log.Success(`User ${this.Nickname} (ID: ${this.Id}) received ${coins} special coins.`);
 	}
 
+	/**
+	 * Checks if the user can receive the daily reward.
+	 * @returns True if eligible, false otherwise.
+	 */
 	CanReceiveDaily() {
 		const today = new Date();
 
 		return this.Daily.LastReceived == null || differenceInHours(today, this.Daily.LastReceived) > 23;
 	}
 
+	/**
+	 * Receives the daily reward.
+	 * @param options Options for the daily reward.
+	 * @param options.isBooster Whether the user is a server booster.
+	 * @returns The amount of money received.
+	 */
 	async ReceiveDaily({ isBooster }: { isBooster: boolean }) {
 		const today = new Date();
 
@@ -481,6 +539,11 @@ export class User {
 		return money;
 	}
 
+	/**
+	 * Buys an item for the user.
+	 * @param item The item to buy.
+	 * @returns True if successful.
+	 */
 	async BuyItem(item: Items) {
 		this.Money -= item.Price;
 
@@ -533,7 +596,6 @@ export class User {
 
 	/**
 	 * Get all items from user that are greater than 0 and or are not expired
-	 * @constructor
 	 */
 	private async GetItems() {
 		this.Items = [];
@@ -555,7 +617,7 @@ export class User {
 		for (const item of items) {
 			const foundWeapon = { ...ItemList[item.itemId] } as UserItem;
 			foundWeapon.RemainingTime = item.remainingTime;
-			foundWeapon.Quantity = item.quantity;
+			foundWeapon.Quantity = item.quantity ?? 0;
 			foundWeapon.SelectedSkin = item.skin;
 
 			this.Items.push(foundWeapon);
@@ -564,7 +626,6 @@ export class User {
 
 	/**
 	 * Get all items from user, even if quantity is 0 and remaining time is less than now (expired)
-	 * @constructor
 	 */
 	async GetAllItems() {
 		const items = await UserItems.findAll({
@@ -578,7 +639,7 @@ export class User {
 		for (const item of items) {
 			const foundWeapon = { ...ItemList[item.itemId] } as UserItem;
 			foundWeapon.RemainingTime = item.remainingTime;
-			foundWeapon.Quantity = item.quantity;
+			foundWeapon.Quantity = item.quantity ?? 0;
 			foundWeapon.SelectedSkin = item.skin;
 
 			itemList.push(foundWeapon);
@@ -590,7 +651,6 @@ export class User {
 	/**
 	 * Get the Item data, even if user doesnot have it in database (blank values)
 	 * @param itemId
-	 * @constructor
 	 */
 	async GetSpecificItem(itemId: number) {
 		const item = await UserItems.findOne({
@@ -608,6 +668,11 @@ export class User {
 		return foundWeapon;
 	}
 
+	/**
+	 * Gets the skin string for a specific item.
+	 * @param item The item to get the skin for.
+	 * @returns The skin string.
+	 */
 	GetItemSkin(item: Items): string {
 		const found = this.Items.find(i => i.Id === item.Id);
 		if (found) {
@@ -617,6 +682,11 @@ export class User {
 		return item.Skin[BundleId.Default].String;
 	}
 
+	/**
+	 * Sets the skin for a specific item.
+	 * @param item The item to set the skin for.
+	 * @param bundle The skin bundle.
+	 */
 	async SetItemSkin(item: Items, bundle: SkinBundles) {
 		const existingItem = await UserItems.findOne({
 			where: {
@@ -648,6 +718,10 @@ export class User {
 		Log.Info(`User ${this.Nickname} (ID: ${this.Id}) has set skin ${bundle.Description[Language.English]} (ID: ${bundle.Id}) for item ${item.Description[Language.English]} (ID: ${item.Id}).`);
 	}
 
+	/**
+	 * Sets the skin for all items in a bundle.
+	 * @param bundle The skin bundle.
+	 */
 	async SetBundleSkin(bundle: SkinBundles) {
 		const itemsToCreate = [];
 		const itemsToUpdate = [];
@@ -692,6 +766,10 @@ export class User {
 		Log.Info(`User ${this.Nickname} (ID: ${this.Id}) has set skin ${bundle.Description[Language.English]} (ID: ${bundle.Id}) for all items in bundle.`);
 	}
 
+	/**
+	 * Sets the avatar decoration for the user.
+	 * @param decoration The avatar decoration.
+	 */
 	async SetAvatarDecoration(decoration: AvatarDecorations) {
 		this.AvatarDecoration = decoration;
 		await this.Update();
@@ -699,6 +777,10 @@ export class User {
 		Log.Info(`User ${this.Nickname} (ID: ${this.Id}) has set avatar decoration ${decoration.Description[Language.English]} (ID: ${decoration.Id}).`);
 	}
 
+	/**
+	 * Calculates the user's attributes based on items and other factors.
+	 * @param isBeatUp Whether the user is in a beat-up situation.
+	 */
 	async GetAttributes(isBeatUp = false) {
 		this.Attributes.Attack = 0;
 		this.Attributes.Defense = 0;
@@ -748,7 +830,7 @@ export class User {
 
 		// Gang Modifiers
 		if (this.GangId) {
-			const gang = await Gang.GetById(this.GangId);
+			const gang = await Gang.GetBasicById(this.GangId);
 
 			if (gang) {
 				this.Attributes.Attack += (GangBases[gang.BaseId].Modifier?.Attack?.Positive || 0) * gang.Level;
@@ -757,9 +839,15 @@ export class User {
 		}
 	}
 
+	/**
+	 * Determines the current situation of the user.
+	 * @param language Optional language to override.
+	 */
 	async GetSituation(language?: Language) {
 		const lang = language ?? this.Language;
 		const s = Strings[lang];
+
+		// Default to Idling
 		this.Situation = {
 			Id: SituationId.Idling,
 			Simple: s.idling,
@@ -769,85 +857,28 @@ export class User {
 			EmoteId: EmoteId.Lazy,
 		};
 
-		if (this.Job.Id !== null) {
+		// Check situations by priority (highest to lowest)
+		if (this.IsScavenging()) {
 			this.Situation = {
-				Id: SituationId.Job,
-				Simple: s.workingSimple,
-				SimpleEmote: `${EmoteString.Jobs} ${s.workingSimple}`,
-				Complex: `${EmoteString.Jobs} ${s.workingComplex(JobList[this.Job.Id].Description[lang], this.Job.EndsIn)}`,
-				ComplexUI: s.workingComplexUI(JobList[this.Job.Id].Description[lang], this.Job.EndsIn),
-				EmoteId: EmoteId.Jobs,
+				Id: SituationId.Scavenging,
+				Simple: s.scavenging,
+				SimpleEmote: `${EmoteString.Scavenge} ${s.scavenging}`,
+				Complex: `${EmoteString.Scavenge} ${s.scavenging} ${ScavengeList[this.Scavenge.IsScavengingId!].Emote.String} ${ScavengeList[this.Scavenge.IsScavengingId!].Description[lang]}`,
+				ComplexUI: `${s.scavenging} ${ScavengeList[this.Scavenge.IsScavengingId!].Description[lang]}`,
+				EmoteId: EmoteId.Scavenge,
 			};
 		}
-		if (this.Robbery.IsRobbingId) {
-			const user = await Users.findByPk(this.Robbery.IsRobbingId, { attributes: ["id", "nickname"] });
+		else if (this.IsInPrison() && this.IsInHospital()) {
 			this.Situation = {
-				Id: SituationId.Robbery,
-				Simple: s.robbing,
-				SimpleEmote: `${EmoteString.Robbery} ${s.robbing}`,
-				Complex: `${EmoteString.Robbery} ${s.robbing} ${user!.nickname}`,
-				ComplexUI: `${s.robbing} ${user!.nickname}`,
-				EmoteId: EmoteId.Robbery,
-			};
-		}
-		if (this.Robbery.IsRobbingLocationId !== null) {
-			const location = LocationList[this.Robbery.IsRobbingLocationId];
-			this.Situation = {
-				Id: SituationId.Robbery,
-				Simple: s.robbing,
-				SimpleEmote: `${EmoteString.Robbery} ${s.robbing}`,
-				Complex: `${EmoteString.Robbery} ${s.robbing} ${location.Name[lang]}`,
-				ComplexUI: `${s.robbing} ${location.Name[lang]}`,
-				EmoteId: EmoteId.Robbery,
-			};
-		}
-		if (this.Robbery.IsBeingRobbedById) {
-			const user = await Users.findByPk(this.Robbery.IsBeingRobbedById, { attributes: ["id", "nickname"] });
-			this.Situation = {
-				Id: SituationId.Robbery,
-				Simple: s.beingRobbedSimple,
-				SimpleEmote: `${EmoteString.Robbery} ${s.beingRobbedSimple}`,
-				Complex: `${EmoteString.Robbery} ${s.beingRobbedComplex} ${user!.nickname}`,
-				ComplexUI: `${s.beingRobbedComplex} ${user!.nickname}`,
-				EmoteId: EmoteId.Robbery,
-			};
-		}
-		if (this.BeatUp.IsBeatingId) {
-			const user = await Users.findByPk(this.BeatUp.IsBeatingId, { attributes: ["id", "nickname"] });
-			this.Situation = {
-				Id: SituationId.BeatUp,
-				Simple: s.beating,
-				SimpleEmote: `${EmoteString.Beat} ${s.beating}`,
-				Complex: `${EmoteString.Beat} ${s.beating} ${user!.nickname}`,
-				ComplexUI: `${s.beating} ${user!.nickname}`,
-				EmoteId: EmoteId.Beat,
-			};
-		}
-		if (this.BeatUp.IsBeingBeatUpById) {
-			const user = await Users.findByPk(this.BeatUp.IsBeingBeatUpById, { attributes: ["id", "nickname"] });
-			this.Situation = {
-				Id: SituationId.BeatUp,
-				Simple: s.beingBeatedUpSimple,
-				SimpleEmote: `${EmoteString.Beat} ${s.beingBeatedUpSimple}`,
-				Complex: `${EmoteString.Beat} ${s.beingBeatedUpComplex} ${user!.nickname}`,
-				ComplexUI: `${s.beingBeatedUpComplex} ${user!.nickname}`,
-				EmoteId: EmoteId.Beat,
-			};
-		}
-		if (this.IsInPrison()) {
-			this.Situation = {
-				Id: SituationId.Prison,
-				Simple: s.imprisonedSimple,
-				SimpleEmote: `${EmoteString.Prison} ${s.imprisonedSimple}`,
-				Complex: `${EmoteString.Prison} ${s.imprisonedComplex} ${showTime(this.Prison.Time.getTime())}`,
-				ComplexUI: `${s.imprisonedComplex} ${formatDistanceToNow(this.Prison.Time, {
-					locale: getLocaleFromLanguage(lang),
-					includeSeconds: true,
-				})}`,
+				Id: SituationId.PrisonAndHospital,
+				Simple: s.imprisonedAndHospitalSimple,
+				SimpleEmote: s.imprisonedAndHospitalSimpleEmote,
+				Complex: s.imprisonedAndHospitalComplex(this.Prison.Time, this.Hospital.Time),
+				ComplexUI: s.imprisonedAndHospitalComplexUI(this.Prison.Time, this.Hospital.Time),
 				EmoteId: EmoteId.Prison,
 			};
 		}
-		if (this.IsInHospital()) {
+		else if (this.IsInHospital()) {
 			this.Situation = {
 				Id: SituationId.Hospital,
 				Simple: s.hospitalSimple,
@@ -860,26 +891,85 @@ export class User {
 				EmoteId: EmoteId.Hospital,
 			};
 		}
-		if (this.IsInPrison() && this.IsInHospital()) {
+		else if (this.IsInPrison()) {
 			this.Situation = {
-				Id: SituationId.PrisonAndHospital,
-				Simple: s.imprisonedAndHospitalSimple,
-				SimpleEmote: s.imprisonedAndHospitalSimpleEmote,
-				Complex: s.imprisonedAndHospitalComplex(this.Prison.Time, this.Hospital.Time),
-				ComplexUI: s.imprisonedAndHospitalComplexUI(this.Prison.Time, this.Hospital.Time),
+				Id: SituationId.Prison,
+				Simple: s.imprisonedSimple,
+				SimpleEmote: `${EmoteString.Prison} ${s.imprisonedSimple}`,
+				Complex: `${EmoteString.Prison} ${s.imprisonedComplex} ${showTime(this.Prison.Time.getTime())}`,
+				ComplexUI: `${s.imprisonedComplex} ${formatDistanceToNow(this.Prison.Time, {
+					locale: getLocaleFromLanguage(lang),
+					includeSeconds: true,
+				})}`,
 				EmoteId: EmoteId.Prison,
 			};
 		}
-		if (this.IsScavenging()) {
+		else if (this.BeatUp.IsBeingBeatUpById) {
+			const user = await Users.findByPk(this.BeatUp.IsBeingBeatUpById, { attributes: ["id", "nickname"] });
 			this.Situation = {
-				Id: SituationId.Scavenging,
-				Simple: s.scavenging,
-				SimpleEmote: `${EmoteString.Scavenge} ${s.scavenging}`,
-				Complex: `${EmoteString.Scavenge} ${s.scavenging} ${ScavengeList[this.Scavenge.IsScavengingId!].Emote.String} ${ScavengeList[this.Scavenge.IsScavengingId!].Description[lang]}`,
-				ComplexUI: `${s.scavenging} ${ScavengeList[this.Scavenge.IsScavengingId!].Description[lang]}`,
-				EmoteId: EmoteId.Scavenge,
+				Id: SituationId.BeatUp,
+				Simple: s.beingBeatedUpSimple,
+				SimpleEmote: `${EmoteString.Beat} ${s.beingBeatedUpSimple}`,
+				Complex: `${EmoteString.Beat} ${s.beingBeatedUpComplex} ${user?.nickname ?? "Unknown"}`,
+				ComplexUI: `${s.beingBeatedUpComplex} ${user?.nickname ?? "Unknown"}`,
+				EmoteId: EmoteId.Beat,
 			};
 		}
+		else if (this.BeatUp.IsBeatingId) {
+			const user = await Users.findByPk(this.BeatUp.IsBeatingId, { attributes: ["id", "nickname"] });
+			this.Situation = {
+				Id: SituationId.BeatUp,
+				Simple: s.beating,
+				SimpleEmote: `${EmoteString.Beat} ${s.beating}`,
+				Complex: `${EmoteString.Beat} ${s.beating} ${user?.nickname ?? "Unknown"}`,
+				ComplexUI: `${s.beating} ${user?.nickname ?? "Unknown"}`,
+				EmoteId: EmoteId.Beat,
+			};
+		}
+		else if (this.Robbery.IsBeingRobbedById) {
+			const user = await Users.findByPk(this.Robbery.IsBeingRobbedById, { attributes: ["id", "nickname"] });
+			this.Situation = {
+				Id: SituationId.Robbery,
+				Simple: s.beingRobbedSimple,
+				SimpleEmote: `${EmoteString.Robbery} ${s.beingRobbedSimple}`,
+				Complex: `${EmoteString.Robbery} ${s.beingRobbedComplex} ${user?.nickname ?? "Unknown"}`,
+				ComplexUI: `${s.beingRobbedComplex} ${user?.nickname ?? "Unknown"}`,
+				EmoteId: EmoteId.Robbery,
+			};
+		}
+		else if (this.Robbery.IsRobbingLocationId !== null) {
+			const location = LocationList[this.Robbery.IsRobbingLocationId];
+			this.Situation = {
+				Id: SituationId.Robbery,
+				Simple: s.robbing,
+				SimpleEmote: `${EmoteString.Robbery} ${s.robbing}`,
+				Complex: `${EmoteString.Robbery} ${s.robbing} ${location.Name[lang]}`,
+				ComplexUI: `${s.robbing} ${location.Name[lang]}`,
+				EmoteId: EmoteId.Robbery,
+			};
+		}
+		else if (this.Robbery.IsRobbingId) {
+			const user = await Users.findByPk(this.Robbery.IsRobbingId, { attributes: ["id", "nickname"] });
+			this.Situation = {
+				Id: SituationId.Robbery,
+				Simple: s.robbing,
+				SimpleEmote: `${EmoteString.Robbery} ${s.robbing}`,
+				Complex: `${EmoteString.Robbery} ${s.robbing} ${user?.nickname ?? "Unknown"}`,
+				ComplexUI: `${s.robbing} ${user?.nickname ?? "Unknown"}`,
+				EmoteId: EmoteId.Robbery,
+			};
+		}
+		else if (this.Job.Id !== null) {
+			this.Situation = {
+				Id: SituationId.Job,
+				Simple: s.workingSimple,
+				SimpleEmote: `${EmoteString.Jobs} ${s.workingSimple}`,
+				Complex: `${EmoteString.Jobs} ${s.workingComplex(JobList[this.Job.Id].Description[lang], this.Job.EndsIn)}`,
+				ComplexUI: s.workingComplexUI(JobList[this.Job.Id].Description[lang], this.Job.EndsIn),
+				EmoteId: EmoteId.Jobs,
+			};
+		}
+
 		if (this.IsWanted()) {
 			this.Situation = {
 				Id: SituationId.Wanted,
@@ -895,38 +985,66 @@ export class User {
 		}
 	}
 
+	/**
+	 * Checks if the user is working.
+	 */
 	IsWorking() {
 		return this.Job.Id != null;
 	}
 
+	/**
+	 * Checks if the user is in prison.
+	 */
 	IsInPrison() {
 		return this.Prison.Time > new Date();
 	}
 
+	/**
+	 * Checks if the user is wanted.
+	 */
 	IsWanted() {
 		return this.Wanted.Time > new Date();
 	}
 
+	/**
+	 * Checks if the user is escaping.
+	 */
 	IsEscaping() {
 		return this.Escape.Time > new Date();
 	}
 
+	/**
+	 * Checks if the user is in hospital.
+	 */
 	IsInHospital() {
 		return this.Hospital.Time > new Date();
 	}
 
+	/**
+	 * Checks if the user is scavenging.
+	 */
 	IsScavenging() {
 		return this.Scavenge.IsScavengingId != null;
 	}
 
+	/**
+	 * Checks if the user is in a robbery situation.
+	 */
 	IsInRobbery() {
 		return this.Robbery.IsRobbingId != null || this.Robbery.IsRobbingLocationId != null || this.Robbery.IsBeingRobbedById != null;
 	}
 
+	/**
+	 * Checks if the user is in a beat-up situation.
+	 */
 	IsInBeatUp() {
 		return this.BeatUp.IsBeatingId != null || this.BeatUp.IsBeingBeatUpById != null;
 	}
 
+	/**
+	 * Starts a job for the user.
+	 * @param jobId The job ID.
+	 */
 	async StartJob(jobId: JobId) {
 		const job = JobList[jobId];
 		const eventActiveValue = await Event.GetActiveFromType(EventType.JOB_TIME_MULTIPLIER);
@@ -939,6 +1057,9 @@ export class User {
 		Log.Info(`User ${this.Nickname} (ID: ${this.Id}) started job ${job.Description[this.Language]} (ID: ${jobId}), will finish in ${formatDate(this.Job.EndsIn, Language.English)}.`);
 	}
 
+	/**
+	 * Cancels the current job.
+	 */
 	async CancelJob() {
 		if (this.Job.Id === null) {
 			return;
@@ -953,6 +1074,9 @@ export class User {
 		Log.Info(`User ${this.Nickname} (ID: ${this.Id}) canceled his job ${job.Description[this.Language]}.`);
 	}
 
+	/**
+	 * Ends the current job and gives the reward.
+	 */
 	async EndJob() {
 		if (this.Job.Id === null) {
 			return;
@@ -969,6 +1093,11 @@ export class User {
 		Log.Success(`User ${this.Nickname} (ID: ${this.Id}) finished his job ${job.Description[this.Language]} and received ${formatMoney(salary, Language.English)}.`);
 	}
 
+	/**
+	 * Buys a skin bundle.
+	 * @param bundleId The bundle ID.
+	 * @returns True if successful.
+	 */
 	async BuySkinBundle(bundleId: BundleId) {
 		const success = await UserBundle.Create(this.Id, bundleId);
 
@@ -984,6 +1113,11 @@ export class User {
 		return success;
 	}
 
+	/**
+	 * Buys an avatar decoration.
+	 * @param avatarDecorationId The avatar decoration ID.
+	 * @returns True if successful.
+	 */
 	async BuyAvatarDecoration(avatarDecorationId: AvatarDecorationId) {
 		const success = await UserAvatarDecoration.Create(this.Id, avatarDecorationId);
 
@@ -999,6 +1133,9 @@ export class User {
 		return success;
 	}
 
+	/**
+	 * Updates the user in the database.
+	 */
 	async Update() {
 		try {
 			await Users.update({
@@ -1094,6 +1231,10 @@ export class User {
 		}
 	}
 
+	/**
+	 * Updates the user's language.
+	 * @param language The new language.
+	 */
 	async UpdateLanguage(language: Language) {
 		try {
 			await Users.update({
@@ -1113,11 +1254,17 @@ export class User {
 	// Métodos relacionados a gangues
 	// ==========================
 
+	/**
+	 * Checks if the user is in a gang.
+	 */
 	IsInGang() {
 		return this.GangId !== null;
 	}
 
-	// Obtém a gangue do usuário
+	/**
+	 * Gets the user's gang.
+	 * @returns The gang or null if not in one.
+	 */
 	async GetGang(): Promise<Gang | null> {
 		if (!this.IsInGang()) {
 			return null;
@@ -1126,7 +1273,15 @@ export class User {
 		return await Gang.GetById(this.GangId!);
 	}
 
-	// Cria uma gangue (exige que o usuário pague a taxa)
+	/**
+	 * Creates a new gang.
+	 * @param name Gang name.
+	 * @param acronym Gang acronym.
+	 * @param description Gang description.
+	 * @param color Gang color.
+	 * @param image Gang image URL.
+	 * @returns The created gang or null if failed.
+	 */
 	async CreateGang(name: string, acronym: string, description: string, color: GangColorId, image: string | null = null): Promise<Gang | null> {
 		if (this.IsInGang()) {
 			Log.Warning(`User ${this.Nickname} (ID: ${this.Id}) tried to create a gang, but already is in one.`);
@@ -1147,7 +1302,10 @@ export class User {
 		return gang;
 	}
 
-	// Sai de uma gangue
+	/**
+	 * Leaves the current gang.
+	 * @returns True if successful.
+	 */
 	async LeaveGang(): Promise<boolean> {
 		if (!this.IsInGang()) {
 			return false;
@@ -1180,6 +1338,12 @@ export class User {
 		return success;
 	}
 
+	/**
+	 * Searches for a user by name or ID.
+	 * @param nameOrId The name or ID to search for.
+	 * @param language Optional language.
+	 * @returns The User instance or null if not found.
+	 */
 	static async Search(nameOrId: string, language?: Language): Promise<User | null> {
 		const user = await Users.findOne({
 			where: {
