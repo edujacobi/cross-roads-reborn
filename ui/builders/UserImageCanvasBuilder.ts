@@ -62,12 +62,16 @@ const BorderStyles: Record<AvatarDecorationId, BorderStyle> = {
 	[AvatarDecorationId.Developer]: "#00B784",
 	[AvatarDecorationId.Moderator]: "#E43950",
 	[AvatarDecorationId.Helper]: "#007BFF",
+	// 1000
 	[AvatarDecorationId.Purple]: createLinearGradient(["#7345C4", "#3F1EB7"]),
 	[AvatarDecorationId.Sunset]: createLinearGradient(["#FD5949", "#D6249F", "#285AEB"]),
 	[AvatarDecorationId.Sunrise]: createLinearGradient(["#FCB045", "#FD1D1D", "#833AB4"]),
 	[AvatarDecorationId.Cloud]: createRadialGradient(["#94BBE9", "#EEAECA"]),
+	[AvatarDecorationId.BotanicalGarden]: createLinearGradient(["#3E805B", "#AAD47B", "#F9FFA1", "#e66c97", "#ba4fc2"], 30),
+	// 1500
 	[AvatarDecorationId.FrutigerAero]: createLinearGradient(["#EDDD53", "#57C785", "#2A7B9B"], 115),
 	[AvatarDecorationId.Silver]: createLinearGradient(["#d9d9d9", "#ADBBC3", "#656C70"], 115),
+	[AvatarDecorationId.Rainbow]: createLinearGradient(["#9C4F96", "#FF6355", "#FBA949", "#FAE442", "#8BD448", "#2AA8F2"], 45),
 	[AvatarDecorationId.Cat]: "#6A4931",
 };
 
@@ -278,7 +282,7 @@ export async function testImage() {
 		user,
 		"https://64.media.tumblr.com/e4c4d8cb95b53cb810d7d0cadf1a5fa1/e4a5be77d55d027d-fe/s1280x1920/874f014800947f2327825bc8ba35026e703bf033.jpg",
 	)
-		.SetDecoration(AvatarDecorationId.Purple)
+		.SetDecoration(AvatarDecorationId.BotanicalGarden)
 		.GenerateImage();
 
 	fs.writeFile("image.webp", image, (err) => {

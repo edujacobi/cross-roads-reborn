@@ -158,7 +158,7 @@ module.exports = {
 					),
 				);
 
-			const avatarDecorations = getAvatarDecorationList().filter(decoration => decoration.Shop);
+			const avatarDecorations = getAvatarDecorationList().filter(decoration => decoration.Shop).sort((a, b) => a.Price - b.Price);
 
 			const avatarDecorationsChunks = [];
 			for (let i = 0; i < avatarDecorations.length; i += 5) {

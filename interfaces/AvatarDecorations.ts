@@ -120,6 +120,26 @@ export const AvatarDecorationList: AvatarDecorationListType = {
 		Shop: true,
 		Price: 1500,
 	},
+	[AvatarDecorationId.Rainbow]: {
+		Id: AvatarDecorationId.Rainbow,
+		Description: {
+			[Language.English]: "Rainbow",
+			[Language.Portuguese]: "Arco-íris",
+			[Language.Spanish]: "Arcoíris",
+		},
+		Shop: true,
+		Price: 1500,
+	},
+	[AvatarDecorationId.BotanicalGarden]: {
+		Id: AvatarDecorationId.BotanicalGarden,
+		Description: {
+			[Language.English]: "Botanical Garden",
+			[Language.Portuguese]: "Jardim Botânico",
+			[Language.Spanish]: "Jardín botánico",
+		},
+		Shop: true,
+		Price: 1000,
+	},
 } as const;
 
 export function getAvatarDecorationList(): AvatarDecorations[] {

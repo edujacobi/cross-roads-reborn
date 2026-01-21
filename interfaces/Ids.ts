@@ -45,5 +45,7 @@ export enum AvatarDecorationId {
 	Cloud,
 	FrutigerAero,
 	Silver,
+	Rainbow,
+	BotanicalGarden,
 	Cat,
 }
