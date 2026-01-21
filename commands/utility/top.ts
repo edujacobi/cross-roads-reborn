@@ -13,8 +13,6 @@ import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder
 import { CrColors, GangColor } from "../../utils/colors";
 import Gangs from "../../database/Gangs";
 import { Gang } from "../../models/Gang";
-import { sequelize } from "../../database/Database";
-import GangMembers from "../../database/GangMembers";
 import { DEFAULT_GANG_IMAGE } from "../../ui/builders/GangImageCanvasBuilder";
 import { deferReply, replyWithContainer, searchUser } from "../../utils/logic";
 import { Robbery } from "../../models/Robbery";
@@ -342,7 +340,7 @@ module.exports = {
 				},
 			},
 			[TopSubcommand.Gangs]: {
-				attributes: ["id", "gangId"],
+				attributes: ["id"],
 				orderField: "level",
 				valueField: "level",
 				badge: EmoteBadgeString.Season6.TopGang,
@@ -352,9 +350,9 @@ module.exports = {
 					[Language.Spanish]: "Líder",
 				},
 				countPrefix: {
-					[Language.English]: "members",
-					[Language.Portuguese]: "membros",
-					[Language.Spanish]: "miembros",
+					[Language.English]: "Level",
+					[Language.Portuguese]: "Nível",
+					[Language.Spanish]: "Nivel",
 				},
 				strings: {
 					[Language.English]: "Gangs",
@@ -389,18 +387,22 @@ module.exports = {
 		}
 
 		async function findGangs() {
-			const list = await GangMembers.findAll({
+			const list = await Gangs.findAll({
 				attributes: currentConfig.attributes,
-				group: "gangId",
-				order: [[sequelize.fn("COUNT", sequelize.col("gangId")), "DESC"]],
+				order: [[currentConfig.orderField, "DESC"], ["experience", "DESC"]],
 				limit: pagination.Limit,
 				offset: pagination.Offset,
+				where: {
+					[currentConfig.orderField]: {
+						[Op.gt]: 0,
+					},
+				},
 			});
 
 			gangs = [];
 
 			for (const g of list) {
-				const gang = await Gang.GetById(g.gangId);
+				const gang = await Gang.GetBasicById(g.id);
 				if (!gang) {
 					continue;
 				}
@@ -486,7 +488,7 @@ module.exports = {
 						positionText = currentConfig.badge;
 					}
 
-					const members = currentConfig.countPrefix?.[language] ?? "";
+					const level = currentConfig.countPrefix?.[language] ?? "";
 					const leader = currentConfig.valuePrefix?.[language] ?? "";
 
 					const leaderUser = await User.Search(gang.LeaderId);
@@ -499,9 +501,9 @@ module.exports = {
 						.addSectionComponents(list => list
 							.addTexts([
 								`### ${positionText} ${underscore}[${gang.Acronym}] ${gang.Name}${underscore}${GangColor[gang.Color].Emote.String}`,
-								`${gang.Members.length}/${gang.GetMaxMembers()} ${members}`,
-								`-# ${leader}: **${leaderUser.GetNameWithImage()}**`,
+								`-# ${level} ${gang.Level}`,
 								`-# ${gang.GetExpBar(6, language)}`,
+								`-# ${leader}: **${leaderUser.GetNameWithImage()}**`,
 							])
 							.setThumbnailAccessory(thumb => thumb
 								.setURL(gang.Image || DEFAULT_GANG_IMAGE),
