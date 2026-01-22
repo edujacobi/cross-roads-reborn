@@ -78,7 +78,7 @@ export class BeatUp {
 			canBeat = false;
 		}
 
-		if (this.Attacker.Attributes.Attack == 0) {
+		if (!this.Attacker.BestGun) {
 			message = s.withoutItem;
 			canBeat = false;
 		}
