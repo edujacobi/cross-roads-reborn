@@ -597,6 +597,10 @@ export const ItemList: ItemListType = {
 				Id: EmoteId.LightVest,
 				String: EmoteString.LightVest,
 			},
+			[BundleId.Traditional]: {
+				Id: "1463697590599159890",
+				String: "<:LightVest:1463697590599159890>",
+			},
 		},
 		Price: 175_000,
 		Shop: true,
@@ -626,6 +630,10 @@ export const ItemList: ItemListType = {
 			[BundleId.Default]: {
 				Id: EmoteId.HeavyVest,
 				String: EmoteString.HeavyVest,
+			},
+			[BundleId.Traditional]: {
+				Id: "1463697568298176554",
+				String: "<:HeavyVest:1463697568298176554>",
 			},
 		},
 		Price: 1_000_000,

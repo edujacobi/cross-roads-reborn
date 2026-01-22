@@ -70,6 +70,8 @@ export const BundleList: SkinBundleListType = {
 			ItemId.Katana,
 			ItemId.RPG,
 			ItemId.Minigun,
+			ItemId.LightVest,
+			ItemId.HeavyVest,
 			ItemId.Goggles,
 			ItemId.Jetpack,
 			ItemId.Grenade,
