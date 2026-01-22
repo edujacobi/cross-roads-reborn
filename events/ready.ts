@@ -1,5 +1,5 @@
 ﻿import { Client, Events } from "discord.js";
-import { removeAllFromActions, startVIPProcedure } from "../utils/logic";
+import { removeAllFromActions } from "../utils/logic";
 import { sequelize } from "../database/Database";
 import { changeActivity } from "../utils/ui";
 import { Notification } from "../models/Notification";
@@ -15,7 +15,7 @@ module.exports = {
 		Notification.StartProcedure();
 		await Promise.all([
 			removeAllFromActions(),
-			startVIPProcedure(),
+			// startVIPProcedure(),
 			HorseRacing.Initialize(),
 		]);
 	},
