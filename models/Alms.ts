@@ -56,6 +56,11 @@ export class Alms {
 			canGive = false;
 		}
 
+		if (this.Giver.Casino.IsInGame) {
+			message = `${s.casinoGame} ${EmoteString.Alms}`;
+			canGive = false;
+		}
+
 		return { canGive, message };
 	}
 
@@ -64,7 +69,7 @@ export class Alms {
 			this.Giver.GetInfo(),
 			this.Receiver.GetInfo(),
 		]);
-		
+
 		this.Giver.Money -= this.Value;
 		this.Giver.Alms.GiveTime = addHours(new Date(), this.DefaultHours);
 		this.Giver.Alms.GivenSum += this.Value;
@@ -94,6 +99,7 @@ const Strings = {
 		almsReceiveAgain: "will be able to receive alms again",
 		withoutNick: "This user hasn't set a nickname yet!",
 		withoutClass: "This user hasn't choose a class yet!",
+		casinoGame: "You can't give alms while playing in the casino",
 	},
 	[Language.Portuguese]: {
 		almsYourself: "Você não pode dar esmola para si mesmo",
@@ -102,6 +108,7 @@ const Strings = {
 		almsReceiveAgain: "poderá receber esmola novamente",
 		withoutNick: "Este usuário ainda não cadastrou um nickname!",
 		withoutClass: "Este usuário ainda não escolheu uma classe!",
+		casinoGame: "Você não pode dar esmola enquanto estiver jogando no cassino",
 	},
 	[Language.Spanish]: {
 		almsYourself: "No puedes dar limosna a ti mismo",
@@ -110,5 +117,6 @@ const Strings = {
 		almsReceiveAgain: "podrá recibir limosna de nuevo",
 		withoutNick: "¡Este usuario aún no ha establecido un apodo!",
 		withoutClass: "¡Este usuario aún no ha elegido una clase!",
+		casinoGame: "No puedes dar limosna mientras estás jugando en el casino",
 	},
 };

@@ -133,6 +133,16 @@ export class BeatUp {
 			canBeat = false;
 		}
 
+		if (this.Attacker.IsInCasinoGame()) {
+			message = s.casinoAttacker;
+			canBeat = false;
+		}
+
+		if (this.Defender.IsInCasinoGame()) {
+			message = `${this.Defender.GetNameWithImage()} ${s.casinoDefender}`;
+			canBeat = false;
+		}
+
 		if (this.Attacker.BeatUp.Time > new Date()) {
 			message = s.isWaitingBeat(this.Attacker.BeatUp.Time);
 			canBeat = false;
@@ -492,6 +502,8 @@ const Strings = {
 		isWaitingBeat: (beatTime: Date) => `You can beat again ${showTime(beatTime.getTime(), true)} ${EmoteString.Beat}`,
 		isEscapingA: `You are trying to escape and cannot beat up! ${EmoteString.Escape}\n-# Focus!`,
 		isEscapingD: `is trying to escape prison and cannot be beaten! ${EmoteString.Escape}`,
+		casinoAttacker: `You can't beat someone up while you're in a casino game! ${EmoteString.Casino}`,
+		casinoDefender: `is in a casino game and cannot be beaten! ${EmoteString.Casino}`,
 		// Defender
 		hands: "I'll break your face!",
 		tryingToBeatYou: "is trying to beat you up using",
@@ -558,6 +570,8 @@ const Strings = {
 		isWaitingBeat: (beatTime: Date) => `Você poderá espancar novamente ${showTime(beatTime.getTime(), true)} ${EmoteString.Beat}`,
 		isEscapingA: `Você está tentando escapar da prisão e não pode espancar! ${EmoteString.Escape}\n-# "Foco!"`,
 		isEscapingD: `está tentando escapar da prisão e não pode ser espancado! ${EmoteString.Escape}`,
+		casinoAttacker: `Você não pode espancar enquanto está em um jogo de cassino! ${EmoteString.Casino}`,
+		casinoDefender: `está em um jogo de cassino e não pode ser espancado! ${EmoteString.Casino}`,
 		// Defender
 		hands: "Vou quebrar a tua cara!",
 		tryingToBeatYou: "está tentando espancar você utilizando",
@@ -624,6 +638,8 @@ const Strings = {
 		isWaitingBeat: (beatTime: Date) => `Puedes golpear de nuevo ${showTime(beatTime.getTime(), true)} ${EmoteString.Beat}`,
 		isEscapingA: `¡Estás intentando escapar de la prisión y no puedes golpear! ${EmoteString.Escape}\n-# "¡Enfócate!"`,
 		isEscapingD: `está intentando escapar de la prisión y no puede ser golpeado. ${EmoteString.Escape}`,
+		casinoAttacker: `¡No puedes golpear mientras estás en un juego de casino! ${EmoteString.Casino}`,
+		casinoDefender: `está en un juego de casino y no puede ser golpeado! ${EmoteString.Casino}`,
 		// Defender
 		hands: "¡Te voy a romper la cara!",
 		tryingToBeatYou: "está intentando golpearte usando",

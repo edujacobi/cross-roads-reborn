@@ -89,6 +89,7 @@ export async function removeAllFromActions() {
 			scavengingId: null,
 			beatingUserId: null,
 			beingBeatUpByUserId: null,
+			casinoIsInGame: false,
 		}, {
 			where: {
 				[Op.or]: {
@@ -109,6 +110,9 @@ export async function removeAllFromActions() {
 					},
 					beingBeatUpByUserId: {
 						[Op.not]: null,
+					},
+					casinoIsInGame: {
+						[Op.eq]: true,
 					},
 				},
 			},

@@ -67,6 +67,7 @@ export class Users extends Model<
 	declare hospitalTreatmentCount: number;
 	declare hospitalTreatmentSum: number;
 
+	declare casinoIsInGame: boolean;
 	declare casinoWinCount: number;
 	declare casinoLoseCount: number;
 	declare casinoWinSum: number;
@@ -307,6 +308,11 @@ Users.init(
 			type: DataTypes.INTEGER,
 			allowNull: false,
 			defaultValue: 0,
+		},
+		casinoIsInGame: {
+			type: DataTypes.BOOLEAN,
+			allowNull: false,
+			defaultValue: false,
 		},
 		casinoWinCount: {
 			type: DataTypes.INTEGER,

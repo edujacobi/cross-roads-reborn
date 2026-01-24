@@ -2,7 +2,7 @@ import { Gangs } from "../database/Gangs";
 import { GangMembers } from "../database/GangMembers";
 import { GangRoles } from "../database/GangRoles";
 import { Log } from "../utils/log";
-import { User } from "./User";
+import { SituationId, User } from "./User";
 import { Language } from "./Language";
 import { defaultComponent, formatMoney, showTime } from "../utils/ui";
 import { Users } from "../database/Users";
@@ -1082,6 +1082,10 @@ export class Gang {
 			text = s.notEnoughMoneyDeposit(formatMoney(amount, user.Language));
 			canDeposit = false;
 		}
+		else if (user.Situation.Id !== SituationId.Idling) {
+			text = s.mustBeIdling;
+			canDeposit = false;
+		}
 
 		return { canDeposit, text };
 	}
@@ -1145,6 +1149,7 @@ const Strings = {
 		depositCooldown: `You can deposit again`,
 		notEnoughMoneyDeposit: (amount: string) => `You don't have **${amount}** to deposit`,
 		maxDepositReached: (max: string) => `You can only deposit up to **${max}**`,
+		mustBeIdling: `You must be ${EmoteString.Idle} Idling to deposit`,
 	},
 	[Language.Portuguese]: {
 		acceptText: "Aceitar",
@@ -1176,6 +1181,7 @@ const Strings = {
 		depositCooldown: `Você pode depositar novamente`,
 		notEnoughMoneyDeposit: (amount: string) => `Você não tem **${amount}** para depositar`,
 		maxDepositReached: (max: string) => `Você só pode depositar até **${max}**`,
+		mustBeIdling: `Você precisa estar ${EmoteString.Idle} Vadiando para depositar`,
 	},
 	[Language.Spanish]: {
 		acceptText: "Aceptar",
@@ -1207,5 +1213,6 @@ const Strings = {
 		depositCooldown: `Puedes depositar de nuevo`,
 		notEnoughMoneyDeposit: (amount: string) => `No tienes **${amount}** para depositar`,
 		maxDepositReached: (max: string) => `Solo puedes depositar hasta **${max}**`,
+		mustBeIdling: `Debes estar ${EmoteString.Idle} Vagando para depositar`
 	},
 } as const;

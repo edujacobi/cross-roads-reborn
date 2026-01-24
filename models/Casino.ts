@@ -7,9 +7,10 @@ import { ScavengeId, ScavengeList } from "../interfaces/Scavenge";
 import { Users } from "../database/Users";
 import { ClassList } from "../interfaces/Classes";
 import { LocationList } from "../interfaces/Locations";
+import { Log } from "../utils/log";
 
 export class Casino {
-	static async CanUserPlayBet(user: User, amount: number) {
+	static async CanUserPlayGame(user: User, amount: number) {
 		const s = Strings[user.Language];
 		let canPlay = true;
 		let message = "";
@@ -36,6 +37,11 @@ export class Casino {
 
 		if (user.IsInHospital()) {
 			message = s.hospital(user.Hospital.Time);
+			canPlay = false;
+		}
+
+		if (user.IsInCasinoGame()) {
+			message = s.casino;
 			canPlay = false;
 		}
 
@@ -71,6 +77,30 @@ export class Casino {
 
 		return { canPlay, message };
 	}
+
+	static async StartUserGame(user: User) {
+		user.Casino.IsInGame = true;
+		await user.Update();
+		Log.Info(`User ${user.Nickname} (ID: ${user.Id}) is now in a Casino Game.`);
+	}
+
+	static async FinishUserGameWithWin(user: User, prize: number) {
+		user.Casino.IsInGame = false;
+		user.Money += prize;
+		user.Casino.WinCount += 1;
+		user.Casino.WinSum += prize;
+		await user.Update();
+		Log.Success(`User ${user.Nickname} (ID: ${user.Id}) won ${prize} in a Casino Game.`);
+	}
+
+	static async FinishUserGameWithLoss(user: User, amount: number) {
+		user.Casino.IsInGame = false;
+		user.Money -= amount;
+		user.Casino.LoseSum += amount;
+		user.Casino.LoseCount += 1;
+		await user.Update();
+		Log.Success(`User ${user.Nickname} (ID: ${user.Id}) lost ${amount} in a Casino Game.`);
+	}
 }
 
 const Strings = {
@@ -80,6 +110,7 @@ const Strings = {
 		working: (job: string, time: Date) => `You are working as **${job}** and can't play on casino ${EmoteString.Jobs}\n-# Will end ${showTime(time.getTime(), true)}`,
 		prison: (time: Date) => `You can't bet while in prison ${EmoteString.Prison}\n-# Will be free ${showTime(time.getTime(), true)}`,
 		hospital: (time: Date) => `You can't bet while in hospital ${EmoteString.Hospital}\n-# Will be healed ${showTime(time.getTime(), true)}!`,
+		casino: `You are playing another game in the casino! ${EmoteString.Casino}`,
 	},
 	[Language.Portuguese]: {
 		noMoney: "Você não possui dinheiro suficiente para apostar",
@@ -87,6 +118,7 @@ const Strings = {
 		working: (job: string, time: Date) => `Você está trabalhando como **${job}** e não pode apostar no cassino ${EmoteString.Jobs}\n-# Terminará ${showTime(time.getTime(), true)}`,
 		prison: (time: Date) => `Você não pode apostar enquanto está preso ${EmoteString.Prison}\n-# Será solto ${showTime(time.getTime(), true)}`,
 		hospital: (time: Date) => `Você não pode apostar enquanto está hospitalizado ${EmoteString.Hospital}\n-# Será atendido ${showTime(time.getTime(), true)}`,
+		casino: `Você está jogando em outro jogo no cassino! ${EmoteString.Casino}`,
 	},
 	[Language.Spanish]: {
 		noMoney: "No tienes suficiente dinero para apostar",
@@ -94,5 +126,6 @@ const Strings = {
 		working: (job: string, time: Date) => `Estás trabajando como **${job}** y no puedes hacer jugar en casino ${EmoteString.Jobs}\n-# Terminará ${showTime(time.getTime(), true)}`,
 		prison: (time: Date) => `No puedes apostar mientras estás en prisión ${EmoteString.Prison}\n-# Será liberado ${showTime(time.getTime(), true)}`,
 		hospital: (time: Date) => `No puedes apostar mientras estás en el hospital ${EmoteString.Hospital}\n-# Será atendido ${showTime(time.getTime(), true)}`,
+		casino: `Estás jugando en otro juego en el casino! ${EmoteString.Casino}`,
 	},
 } as const;

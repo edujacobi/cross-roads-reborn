@@ -56,6 +56,10 @@ export class Scavenge {
 			return { canScavenge: false, reason: ScavengeFailureReason.UserHospital };
 		}
 
+		if (this.User.IsInCasinoGame()) {
+			return { canScavenge: false, reason: ScavengeFailureReason.UserCasino };
+		}
+
 		if (this.User.BeatUp.IsBeatingId) {
 			const user = await Users.findByPk(this.User.BeatUp.IsBeatingId, { attributes: ["class", "nickname"] });
 			return { canScavenge: false, reason: ScavengeFailureReason.AttackerIsBeatingId, attacker: user };

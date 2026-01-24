@@ -41,6 +41,12 @@ module.exports = {
 				s.horseRaceDescription,
 				`-# ${s.horseRaceDescription2}`,
 			])
+			.addLargeSeparator()
+			.addTexts([
+				`### ${EmoteString.RussianRoulette} ${s.russianRouletteTitle}`,
+				s.russianRouletteDescription,
+				`-# ${s.russianRouletteDescription2}`,
+			])
 			.addFooter();
 
 		return replyWithContainer(interaction, container);
@@ -58,6 +64,9 @@ const Strings = {
 		horseRaceTitle: `Horse Racing`,
 		horseRaceDescription: `Bet on one of the horses in a race. Races are held every 6 hours. If your horse wins, you share the prize pool with other winners. Maximum bet is based on your ${EmoteString.Attack}ATK.`,
 		horseRaceDescription2: `Use \`/horserace\` to see the next race and to place your bet.`,
+		russianRouletteTitle: `Russian Roulette`,
+		russianRouletteDescription: `Bet an amount and compete against your friends. Only one will walk away with the cash and all others will be ${EmoteString.Hospital} Hospitalized!`,
+		russianRouletteDescription2: `Use \`/russianroulette <value>\` to start a new roulette.`,
 	},
 	[Language.Portuguese]: {
 		title: "Cassino",
@@ -69,6 +78,9 @@ const Strings = {
 		horseRaceTitle: `Corrida de Cavalos`,
 		horseRaceDescription: `Aposte em um dos cavalos em uma corrida. As corridas acontecem a cada 6 horas. Se seu cavalo vencer, você divide o prêmio com outros vencedores. A aposta máxima é baseada no seu ${EmoteString.Attack}ATK.`,
 		horseRaceDescription2: `Use \`/corridadecavalos\` para ver a próxima corrida e para fazer sua aposta.`,
+		russianRouletteTitle: `Roleta Russa`,
+		russianRouletteDescription: `Aposte um valor e dispute contra seus amigos. Apenas um sairá com a grana e todos os outros ficarão ${EmoteString.Hospital} Hospitalizados!`,
+		russianRouletteDescription2: `Use \`/roletarussa <valor>\` para iniciar uma nova roleta.`,
 	},
 	[Language.Spanish]: {
 		title: "Casino",
@@ -80,5 +92,8 @@ const Strings = {
 		horseRaceTitle: `Carrera de Caballos`,
 		horseRaceDescription: `Apuesta a uno de los caballos en una carrera. Las carreras se celebran cada 6 horas. Si tu caballo gana, compartes el premio con otros ganadores. La apuesta máxima se basa en tu ${EmoteString.Attack}ATK.`,
 		horseRaceDescription2: `Usa \`/horserace\` para ver la próxima carrera y para hacer tu apuesta.`,
+		russianRouletteTitle: `Roleta Russa`,
+		russianRouletteDescription: `Apuesta una cantidad y compete contra tus amigos. ¡Solo uno se llevará el dinero y todos los demás quedarán ${EmoteString.Hospital} Hospitalizados!`,
+		russianRouletteDescription2: `Usa \`/ruletarusa <apuesta>\` para iniciar una nueva ruleta.`,
 	},
 } as const;

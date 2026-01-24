@@ -51,6 +51,9 @@ module.exports = {
 		if (user.IsInHospital()) {
 			text = s.userHospital(user.Hospital.Time);
 		}
+		if (user.IsInCasinoGame()) {
+			text = s.userCasino;
+		}
 
 		if (!nameOrId) {
 			const container = new CustomContainerBuilder()
@@ -108,6 +111,7 @@ const Strings = {
 		userEscaping: (timerEscape: Date) => `You can't beat up while being wanted by the police! You can beat up again ${showTime(timerEscape.getTime(), true)} ${EmoteString.Police}`,
 		userPrison: (timerPrison: Date) => `You can't beat up while in prison! You will be released ${showTime(timerPrison.getTime(), true)} ${EmoteString.Prison}`,
 		userHospital: (timerHospital: Date) => `You can't beat up while in hospital! You will be healed ${showTime(timerHospital.getTime(), true)} ${EmoteString.Hospital}`,
+		userCasino: `You can't beat up while playing in casino! ${EmoteString.Casino}`,
 		description: `# Beat Up
 ### Defeat your nemesis and show who's boss!
 The loser of the fight will be hospitalized for a time determined by the defender player's ${EmoteString.Attack}ATK.
@@ -123,6 +127,7 @@ To beat up, the target must be ${EmoteString.Idle} **Idling**.
 		userEscaping: (timerEscape: Date) => `Você não pode espancar enquanto estiver sendo procurado pela polícia! Poderá espancar novamente ${showTime(timerEscape.getTime(), true)} ${EmoteString.Police}`,
 		userPrison: (timerPrison: Date) => `Você não pode espancar enquanto está preso! Será solto ${showTime(timerPrison.getTime(), true)} ${EmoteString.Prison}`,
 		userHospital: (timerHospital: Date) => `Você não pode espancar enquanto está hospitalizado! Será curado ${showTime(timerHospital.getTime(), true)} ${EmoteString.Hospital}`,
+		userCasino: `Você não pode espancar enquanto está jogando no cassino! ${EmoteString.Casino}`,
 		description: `# Espancar
 ### Derrote seu nêmesis e mostre quem é que manda!
 Quem perder a luta, ficará hospitalizado por um tempo determinado pela ${EmoteString.Attack}ATK do jogador defensor.
@@ -138,6 +143,7 @@ Para conseguir espancar, o alvo deve estar ${EmoteString.Idle} **Vadiando**.
 		userEscaping: (timerEscape: Date) => `¡No puedes golpear mientras eres perseguido por la policía! ¡Puedes golpear de nuevo ${showTime(timerEscape.getTime(), true)} ${EmoteString.Police}`,
 		userPrison: (timerPrison: Date) => `¡No puedes golpear mientras estás en prisión! ¡Serás liberado ${showTime(timerPrison.getTime(), true)} ${EmoteString.Prison}`,
 		userHospital: (timerHospital: Date) => `¡No puedes golpear mientras estás en el hospital! ¡Serás curado ${showTime(timerHospital.getTime(), true)} ${EmoteString.Hospital}`,
+		userCasino: `¡No puedes golpear mientras estás jugando en el casino! ${EmoteString.Casino}`,
 		description: `# Golpear
 ### ¡Derrota a tu némesis y demuestra quién manda!
 El perdedor de la pelea será hospitalizado por un tiempo determinado por la ${EmoteString.Attack}ATK del jugador defensor.

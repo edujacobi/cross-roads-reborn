@@ -74,6 +74,11 @@ export class RobberyLocation extends Robbery {
 			canRob = false;
 		}
 
+		if (this.Attacker.IsInCasinoGame()) {
+			message = s.isInCasino;
+			canRob = false;
+		}
+
 		if (this.Attacker.BeatUp.IsBeatingId) {
 			const user = await Users.findByPk(this.Attacker.BeatUp.IsBeatingId, { attributes: ["class", "nickname"] });
 			message = globalStrings[this.Attacker.Language].attackerIsBeatingId(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname!}`);
@@ -210,6 +215,7 @@ const Strings = {
 		inPrison: (prisonTime: Date) => `You can't rob while you're in prison! ${EmoteString.Prison}\n-# Will be released ${showTime(prisonTime.getTime(), true)}!`,
 		isWanted: (wantedTime: Date) => `You can't rob while you're wanted by the police! ${EmoteString.Police}\n-# Will be able to rob again ${showTime(wantedTime.getTime(), true)}!`,
 		isInHospital: (hospitalTime: Date) => `You can't rob while you're hospitalized! ${EmoteString.Hospital}\n-# Will be healed ${showTime(hospitalTime.getTime(), true)}!`,
+		isInCasino: `You can't rob while you're in a casino game! ${EmoteString.Casino}`,
 		// Attacker
 		robberyInProgress: `Robbery in progress`,
 		tryingToRob: "Trying to rob",
@@ -229,6 +235,7 @@ const Strings = {
 		inPrison: (prisonTime: Date) => `Você não pode roubar enquanto está preso! ${EmoteString.Prison}\n-# Será solto ${showTime(prisonTime.getTime(), true)}!`,
 		isWanted: (wantedTime: Date) => `Você não pode roubar enquanto está sendo procurado pela polícia! ${EmoteString.Police}\n-# Poderá roubar novamente ${showTime(wantedTime.getTime(), true)}!`,
 		isInHospital: (hospitalTime: Date) => `Você não pode roubar enquanto está hospitalizado! ${EmoteString.Hospital}\n-# Será curado ${showTime(hospitalTime.getTime(), true)}!`,
+		isInCasino: `Você não pode roubar enquanto está em um jogo de cassino! ${EmoteString.Casino}`,
 		// Attacker
 		robberyInProgress: `Roubo em andamento`,
 		tryingToRob: "Tentando roubar",
@@ -248,6 +255,7 @@ const Strings = {
 		inPrison: (prisonTime: Date) => `¡No puedes robar mientras estás en prisión! ${EmoteString.Prison}\n-# Será liberado ${showTime(prisonTime.getTime(), true)}!`,
 		isWanted: (wantedTime: Date) => `¡No puedes robar mientras estás siendo buscado por la policía! ${EmoteString.Police}\n-# Podrá robar nuevamente ${showTime(wantedTime.getTime(), true)}!`,
 		isInHospital: (hospitalTime: Date) => `¡No puedes robar mientras estás hospitalizado! ${EmoteString.Hospital}\n-# ¡Será curado ${showTime(hospitalTime.getTime(), true)}!`,
+		isInCasino: `¡No puedes robar mientras estás en un juego de casino! ${EmoteString.Casino}`,
 		// Attacker
 		robberyInProgress: `Robo en progreso`,
 		tryingToRob: "Intentando robar",

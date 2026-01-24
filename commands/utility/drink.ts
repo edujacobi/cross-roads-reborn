@@ -40,7 +40,7 @@ module.exports = {
 
 		const isHappyHour = hour >= 18 && hour <= 20 || day === 0 || day === 6;
 
-		const cantDrink = user.IsInPrison() || user.IsInHospital() || user.IsWorking() || user.IsInBeatUp() || user.IsInRobbery();
+		const cantDrink = user.IsInPrison() || user.IsInHospital() || user.IsWorking() || user.IsInBeatUp() || user.IsInRobbery() || user.IsInCasinoGame();
 
 		const channelName = interaction.guild?.name || s.fishcutterSt;
 
@@ -102,7 +102,7 @@ module.exports = {
 
 			if (btn.customId === "drink") {
 				await user.GetInfo();
-				const cantDrink = user.IsInPrison() || user.IsInHospital() || user.IsWorking() || user.IsInBeatUp() || user.IsInRobbery();
+				const cantDrink = user.IsInPrison() || user.IsInHospital() || user.IsWorking() || user.IsInBeatUp() || user.IsInRobbery() || user.IsInCasinoGame();
 
 				if (cantDrink) {
 					drinkButton.setDisabled(true);

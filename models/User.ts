@@ -34,6 +34,7 @@ export enum SituationId {
 	Scavenging,
 	Wanted,
 	BeatUp,
+	Casino,
 }
 
 export class User {
@@ -93,6 +94,7 @@ export class User {
 		Time: new Date(),
 	};
 	Casino = {
+		IsInGame: false,
 		WinCount: 0,
 		LoseCount: 0,
 		WinSum: 0,
@@ -180,6 +182,7 @@ export class User {
 				lastDailyReceived: this.Daily.LastReceived,
 				specialCoin: 0,
 				avatarDecoration: AvatarDecorationId.Default,
+				casinoIsInGame: false,
 				casinoLoseCount: 0,
 				casinoLoseSum: 0,
 				casinoWinCount: 0,
@@ -332,6 +335,7 @@ export class User {
 		this.Hospital.TreatmentSum = user.hospitalTreatmentSum;
 
 		// Casino
+		this.Casino.IsInGame = user.casinoIsInGame;
 		this.Casino.WinCount = user.casinoWinCount;
 		this.Casino.LoseCount = user.casinoLoseCount;
 		this.Casino.WinSum = user.casinoWinSum;
@@ -969,6 +973,16 @@ export class User {
 				EmoteId: EmoteId.Jobs,
 			};
 		}
+		else if (this.IsInCasinoGame()) {
+			this.Situation = {
+				Id: SituationId.Casino,
+				Simple: s.casinoSimple,
+				SimpleEmote: `${EmoteString.Casino} ${s.casinoSimple}`,
+				Complex: `${EmoteString.Casino} ${s.casinoSimple}`,
+				ComplexUI: s.casinoSimple,
+				EmoteId: EmoteId.Casino,
+			};
+		}
 
 		if (this.IsWanted()) {
 			this.Situation = {
@@ -1039,6 +1053,13 @@ export class User {
 	 */
 	IsInBeatUp() {
 		return this.BeatUp.IsBeatingId != null || this.BeatUp.IsBeingBeatUpById != null;
+	}
+
+	/**
+	 * Checks if the user is in a Casino game
+	 */
+	IsInCasinoGame() {
+		return this.Casino.IsInGame;
 	}
 
 	/**
@@ -1191,6 +1212,7 @@ export class User {
 				hospitalTreatmentCount: this.Hospital.TreatmentCount,
 				hospitalTreatmentSum: this.Hospital.TreatmentSum,
 
+				casinoIsInGame: this.Casino.IsInGame,
 				casinoWinCount: this.Casino.WinCount,
 				casinoLoseCount: this.Casino.LoseCount,
 				casinoWinSum: this.Casino.WinSum,
@@ -1386,6 +1408,7 @@ const Strings = {
 		imprisonedAndHospitalComplex: (prisonTime: Date, hospitalTime: Date) => `${EmoteString.Prison} Imprisoned until ${showTime(prisonTime.getTime())} and ${EmoteString.Hospital} Hospitalized until ${showTime(hospitalTime.getTime())}`,
 		imprisonedAndHospitalComplexUI: (prisonTime: Date, hospitalTime: Date) => `Imprisoned until ${formatDate(prisonTime, Language.English)} and Hospitalized until ${formatDate(hospitalTime, Language.English)}`,
 		scavenging: `Scavenging`,
+		casinoSimple: `Playing in Casino`,
 		wantedSimple: "and Wanted",
 		wantedSimpleEmote: `and ${EmoteString.Police} Wanted`,
 		wantedComplex: `and ${EmoteString.Police} Wanted until`,
@@ -1414,6 +1437,7 @@ const Strings = {
 		imprisonedAndHospitalComplex: (prisonTime: Date, hospitalTime: Date) => `${EmoteString.Prison} Preso até ${showTime(prisonTime.getTime())} e ${EmoteString.Hospital} Hospitalizado até ${showTime(hospitalTime.getTime())}`,
 		imprisonedAndHospitalComplexUI: (prisonTime: Date, hospitalTime: Date) => `Preso até ${formatDate(prisonTime, Language.Portuguese)} e Hospitalizado até ${formatDate(hospitalTime, Language.Portuguese)}`,
 		scavenging: "Vasculhando",
+		casinoSimple: `Jogando no Cassino`,
 		wantedSimple: "e Procurado",
 		wantedSimpleEmote: `e ${EmoteString.Police} Procurado`,
 		wantedComplex: `e ${EmoteString.Police} Procurado até`,
@@ -1442,6 +1466,7 @@ const Strings = {
 		imprisonedAndHospitalComplexUI: (prisonTime: Date, hospitalTime: Date) => `Preso hasta ${formatDate(prisonTime, Language.Spanish)} y Hospitalizado hasta ${formatDate(hospitalTime, Language.Spanish)}`,
 		imprisonedComplex: "Preso hasta",
 		scavenging: "Buscando",
+		casinoSimple: `Jugando en Casino`,
 		wantedSimple: "y Buscado",
 		wantedSimpleEmote: `y ${EmoteString.Police} Buscado`,
 		wantedComplex: `y ${EmoteString.Police} Buscado hasta`,
