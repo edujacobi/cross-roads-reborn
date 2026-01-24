@@ -108,22 +108,16 @@ module.exports = {
 			const prize = Math.round(value * 0.5 * userClassModifier);
 
 			if (win) {
-				user.Money += prize;
-				user.Casino.WinCount += 1;
-				user.Casino.WinSum += prize;
+				await Casino.FinishUserGameWithWin(user, prize);
 				currentBalance += prize;
 				winStreak += 1;
 
 			}
 			else {
-				user.Money -= value;
-				user.Casino.LoseCount += 1;
-				user.Casino.LoseSum += value;
+				await Casino.FinishUserGameWithLoss(user, value);
 				currentBalance -= value;
 				winStreak = 0;
 			}
-
-			await user.Update();
 
 			const heads = `${EmoteString.Heads} ${s.heads}`;
 			const tails = `${EmoteString.Tails} ${s.tails}`;
