@@ -106,6 +106,7 @@ export enum EmoteId {
 	Bank = "539497634826551307",
 	React = "1343948089249103945",
 	Escape = "1345061962437890129",
+	RussianRoulette = "1464352585220751593",
 
 	VIP = "778572312215027744",
 
@@ -252,6 +253,7 @@ export const EmoteString = {
 	Bank: `<:Banco:${EmoteId.Bank}>`,
 	React: `<:React:${EmoteId.React}>`,
 	Escape: `<:Escape:${EmoteId.Escape}>`,
+	RussianRoulette: `<:RussianRoulette:${EmoteId.RussianRoulette}>`,
 
 	VIP: `<:vip:${EmoteId.VIP}>`,
 
