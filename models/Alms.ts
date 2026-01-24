@@ -60,6 +60,11 @@ export class Alms {
 	}
 
 	async GiveAlms() {
+		await Promise.all([
+			this.Giver.GetInfo(),
+			this.Receiver.GetInfo(),
+		]);
+		
 		this.Giver.Money -= this.Value;
 		this.Giver.Alms.GiveTime = addHours(new Date(), this.DefaultHours);
 		this.Giver.Alms.GivenSum += this.Value;
