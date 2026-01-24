@@ -220,7 +220,7 @@ export class BeatUp {
 			Aditional: 5 + this.Defender.Attributes.Attack,
 		};
 
-		if (this.Defender.Attributes.Defense === 0) {
+		if (this.Defender.Attributes.Defense <= 0) {
 			this.Attacker.Attributes.Attack *= 1.35;
 		}
 
