@@ -81,10 +81,10 @@ export function formattedDate(date: Date, language: Language): string {
  * @returns The formatted currency string.
  */
 export function formatMoney(money: number, lang: Language, prefix = "Cr$") {
-	let m = money.toLocaleString("en-US");
+	let m = Math.floor(money).toLocaleString("en-US");
 
 	if (lang === Language.Portuguese) {
-		m = money.toLocaleString("pt-BR").replace(/,/g, ".");
+		m = Math.floor(money).toLocaleString("pt-BR").replace(/,/g, ".");
 	}
 
 	if (prefix === "") {

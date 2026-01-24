@@ -17,6 +17,7 @@ import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder
 import { EmoteString } from "../../utils/emotes";
 import { addHours } from "date-fns/addHours";
 import { setTimeout as wait } from "node:timers/promises";
+import { ClassId, ClassList } from "../../interfaces/Classes";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -43,7 +44,9 @@ module.exports = {
 
 		const participants: User[] = [];
 		const MAX_PARTICIPANTS = 5;
-		const prize = betValue * MAX_PARTICIPANTS;
+		const prize = (betValue * MAX_PARTICIPANTS) / (ClassList[ClassId.Attorney].Modifier?.Casino?.Positive || 1);
+		const attorneyPrize = betValue * MAX_PARTICIPANTS;
+		const thiefPrize = prize * (ClassList[ClassId.Thief].Modifier?.Casino?.Negative || 1);
 
 		function getHeader() {
 			return new CustomContainerBuilder()
@@ -265,11 +268,25 @@ module.exports = {
 				}
 			}
 
+			let actualPrize = prize;
+			let additionalMessage = "";
+			
+			if (winner.Class === ClassId.Thief) {
+				actualPrize = thiefPrize;
+				additionalMessage = s.thiefModifier(ClassList[winner.Class].Image.Emote.String, ClassList[winner.Class].Name[language]);
+			}
+			else if (winner.Class === ClassId.Attorney) {
+				actualPrize = attorneyPrize;
+				additionalMessage = s.attorneyModifier(ClassList[winner.Class].Image.Emote.String, ClassList[winner.Class].Name[language]);
+			}
+
+			const prizeToWinner = Math.floor(actualPrize - betValue);
+
 			history.push(
 				"",
-				`${s.winnerMessage(winner.GetNameWithImage())} ${formatMoney(prize, host.Language)}!`,
+				`${s.winnerMessage(winner.GetNameWithImage())} ${formatMoney(actualPrize, host.Language)}!`,
+				additionalMessage,
 			);
-			const prizeToWinner = Math.floor(prize - betValue);
 
 			await Promise.all([
 				...losers.map(loser => Casino.FinishUserGameWithLoss(loser, betValue)),
@@ -324,6 +341,8 @@ const Strings = {
 		],
 		winnerMessage: (name: string) => `**${name}** is the big winner and took the prize of`,
 		timeout: "Time expired",
+		thiefModifier: (emote: string, name: string) => `-# Prize reduced because of the ${emote} **${name}** class modifier!`,
+		attorneyModifier: (emote: string, name: string) => `-# Prize increased because of the ${emote} **${name}** class modifier!`,
 	},
 	[Language.Portuguese]: {
 		headerTitle: "Roleta Russa",
@@ -366,6 +385,8 @@ const Strings = {
 		],
 		winnerMessage: (name: string) => `**${name}** é o grande vencedor e levou o prêmio de`,
 		timeout: "Tempo esgotado",
+		thiefModifier: (emote: string, name: string) => `-# Prêmio reduzido devido ao modificador da classe ${emote} **${name}**!`,
+		attorneyModifier: (emote: string, name: string) => `-# Prêmio aumentado devido ao modificador da classe ${emote} **${name}**!`,
 	},
 	[Language.Spanish]: {
 		headerTitle: "Ruleta Rusa",
@@ -408,5 +429,7 @@ const Strings = {
 		],
 		winnerMessage: (name: string) => `**${name}** es el gran ganador y se llevó el premio de`,
 		timeout: "Tiempo agotado",
+		thiefModifier: (emote: string, name: string) => `-# ¡Premio reducido debido al modificador de la clase ${emote} **${name}**!`,
+		attorneyModifier: (emote: string, name: string) => `-# ¡Premio aumentado debido al modificador de la clase ${emote} **${name}**!`,
 	},
 } as const;
