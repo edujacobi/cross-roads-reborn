@@ -6,7 +6,7 @@ import { User } from "../models/User";
 import { CustomContainerBuilder, CustomSectionBuilder } from "../ui/builders/CustomContainerBuilder";
 
 interface ComponentParams {
-	user: User;
+	user?: User;
 	color?: ColorResolvable;
 	description: string;
 	footer?: string;
@@ -21,8 +21,11 @@ interface ComponentParams {
  * @returns A configured CustomContainerBuilder instance.
  */
 export function defaultComponent(options: ComponentParams): CustomContainerBuilder {
-	const container = new CustomContainerBuilder()
-		.setUser(options.user);
+	const container = new CustomContainerBuilder();
+
+	if (options.user) {
+		container.setUser(options.user);
+	}
 
 	if (options.thumbnail) {
 		const section = new CustomSectionBuilder()
