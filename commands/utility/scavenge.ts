@@ -84,6 +84,9 @@ module.exports = {
 			if (user.IsInHospital()) {
 				text = s.userHospital(user.Hospital.Time);
 			}
+			if (user.IsInCasinoGame()) {
+				text = s.casino;
+			}
 
 			for (let i = 0; i < places.length; i++) {
 				const place = places[i];
@@ -224,6 +227,9 @@ module.exports = {
 						else if (reason === ScavengeFailureReason.UserHospital) {
 							message = s.hospital(user.Hospital.Time);
 						}
+						else if (reason === ScavengeFailureReason.UserCasino) {
+							message = s.casino;
+						}
 						else if (reason === ScavengeFailureReason.AttackerIsBeatingId) {
 							message = globalStrings[user.Language].attackerIsBeatingId(`${ClassList[attacker!.class].Image.Emote.String} ${attacker!.nickname!}`);
 						}
@@ -317,11 +323,11 @@ const Strings = {
 	[Language.English]: {
 		moreAtk: `Get more ${EmoteString.Attack}ATK to unlock more places`,
 		title: "Scavenge",
-		userFree: "You can scagenge!",
-		userScavengeTime: "You will be able to scagenge again",
-		userWorking: `You cannot scagenge while working! ${EmoteString.Jobs}`,
-		userPrison: (timerPrison: Date) => `You cannot scagenge while in prison! You will be released ${showTime(timerPrison.getTime(), true)} ${EmoteString.Prison}`,
-		userHospital: (timerHospital: Date) => `You cannot scagenge while hospitalized! You will be healed ${showTime(timerHospital.getTime(), true)} ${EmoteString.Hospital}`,
+		userFree: "You can scavenge!",
+		userScavengeTime: "You will be able to scavenge again",
+		userWorking: `You cannot scavenge while working! ${EmoteString.Jobs}`,
+		userPrison: (timerPrison: Date) => `You cannot scavenge while in prison! You will be released ${showTime(timerPrison.getTime(), true)} ${EmoteString.Prison}`,
+		userHospital: (timerHospital: Date) => `You cannot scavenge while hospitalized! You will be healed ${showTime(timerHospital.getTime(), true)} ${EmoteString.Hospital}`,
 		description: "I'm looking for brave people who aren't afraid to enter dirty and dangerous places. Many good things can be found!\n-# You can scavenge once every hour.",
 		canFind: "You can find:",
 		chances: "Chances",
@@ -339,6 +345,7 @@ const Strings = {
 		prison: (prisonTime: Date) => `You cannot scavenge while in prison! ${EmoteString.Prison}\n-# Will be released ${showTime(prisonTime.getTime(), true)}!`,
 		isWanted: (scavengeTime: Date) => `You cannot scavenge while wanted by the police! ${EmoteString.Police}\n-# You can scavenge again ${showTime(scavengeTime.getTime(), true)}!`,
 		hospital: (hospitalTime: Date) => `You cannot scavenge while hospitalized! ${EmoteString.Hospital}\n-# Will be healed ${showTime(hospitalTime.getTime(), true)}!`,
+		casino: `You can't scavenge while playing in casino! ${EmoteString.Casino}`,
 		scavenging: "Scavenging",
 		scavengeStart: "Scavenge in progress",
 		scavengeEndSuccess: "Scavenge successful",
@@ -375,6 +382,7 @@ const Strings = {
 		prison: (prisonTime: Date) => `Você não pode vasculhar enquanto está preso! ${EmoteString.Prison}\n-# Será solto ${showTime(prisonTime.getTime(), true)}!`,
 		isWanted: (scavengeTime: Date) => `Você não pode vasculhar enquanto está sendo procurado pela polícia! ${EmoteString.Police}\n-# Poderá vasculhar novamente ${showTime(scavengeTime.getTime(), true)}!`,
 		hospital: (hospitalTime: Date) => `Você não pode vasculhar enquanto está hospitalizado! ${EmoteString.Hospital}\n-# Será curado ${showTime(hospitalTime.getTime(), true)}!`,
+		casino: `Você não pode vasculhar enquanto está jogando no cassino! ${EmoteString.Casino}`,
 		scavenging: "Vasculhando",
 		scavengeStart: "Vasculho em andamento",
 		scavengeEndSuccess: "Vasculho bem-sucedido",
@@ -411,6 +419,7 @@ const Strings = {
 		prison: (prisonTime: Date) => `¡No puedes buscar mientras estás en prisión! ${EmoteString.Prison}\n-# ¡Serás liberado ${showTime(prisonTime.getTime(), true)}!`,
 		isWanted: (scavengeTime: Date) => `¡No puedes buscar mientras eres buscado por la policía! ${EmoteString.Police}\n-# ¡Podrás buscar de nuevo ${showTime(scavengeTime.getTime(), true)}!`,
 		hospital: (hospitalTime: Date) => `¡No puedes buscar mientras estás hospitalizado! ${EmoteString.Hospital}\n-# ¡Serás curado ${showTime(hospitalTime.getTime(), true)}!`,
+		casino: `¡No puedes buscar mientras estás jugando en el casino! ${EmoteString.Casino}`,
 		scavenging: "Buscando",
 		scavengeStart: "Búsqueda en curso",
 		scavengeEndSuccess: "Búsqueda exitosa",

@@ -84,7 +84,7 @@ export class HorseRacing {
 		const s = Strings[this.User.Language];
 
 		// Check if user can bet
-		const { canPlay, message } = await Casino.CanUserPlayBet(this.User, amount);
+		const { canPlay, message } = await Casino.CanUserPlayGame(this.User, amount);
 		if (!canPlay) {
 			return { success: false, message };
 		}

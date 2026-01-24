@@ -126,6 +126,16 @@ export class Robbery {
 			canRob = false;
 		}
 
+		if (this.Attacker.IsInCasinoGame()) {
+			message = s.casinoAttacker;
+			canRob = false;
+		}
+
+		if (this.Defender.IsInCasinoGame()) {
+			message = `**${this.Defender.GetNameWithImage()}** ${s.casinoDefender}`;
+			canRob = false;
+		}
+
 		if (this.Attacker.BeatUp.IsBeatingId) {
 			const user = await Users.findByPk(this.Attacker.BeatUp.IsBeatingId, { attributes: ["class", "nickname"] });
 			message = globalStrings[this.Attacker.Language].attackerIsBeatingId(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname!}`);
@@ -494,6 +504,7 @@ const Strings = {
 		inPrison: (prisonTime: Date) => `You can't rob while you're in prison! ${EmoteString.Prison}\n-# Will be released ${showTime(prisonTime.getTime(), true)}!`,
 		isWanted: (wantedTime: Date) => `You can't rob while you're wanted by the police! ${EmoteString.Police}\n-# Will be able to rob again ${showTime(wantedTime.getTime(), true)}!`,
 		isInHospital: (hospitalTime: Date) => `You can't rob while you're hospitalized! ${EmoteString.Hospital}\n-# Will be healed ${showTime(hospitalTime.getTime(), true)}!`,
+		casinoAttacker: `You can't rob while you're in a casino game! ${EmoteString.Casino}`,
 		// Defender
 		hands: "Hands up!",
 		tryingToRobYou: "is trying to rob you using",
@@ -513,6 +524,7 @@ const Strings = {
 		robFailed: "tried to rob you, but the police caught him!",
 		prisonUntil: (time: Date) => `He will be in prison until ${showTime(time.getTime())}`,
 		finishedRobberyDefender: "Robbery finished",
+		casinoDefender: `is in a casino game and cannot be robbed! ${EmoteString.Casino}`,
 		// Attacker
 		robberyInProgress: `Robbery in progress`,
 		tryingToRob: "Trying to rob",
@@ -559,6 +571,7 @@ const Strings = {
 		inPrison: (prisonTime: Date) => `Você não pode roubar enquanto está preso! ${EmoteString.Prison}\n-# Será solto ${showTime(prisonTime.getTime(), true)}!`,
 		isWanted: (wantedTime: Date) => `Você não pode roubar enquanto está sendo procurado pela polícia! ${EmoteString.Police}\n-# Poderá roubar novamente ${showTime(wantedTime.getTime(), true)}!`,
 		isInHospital: (hospitalTime: Date) => `Você não pode roubar enquanto está hospitalizado! ${EmoteString.Hospital}\n-# Será curado ${showTime(hospitalTime.getTime(), true)}!`,
+		casinoAttacker: `Você não pode roubar enquanto está em um jogo de cassino! ${EmoteString.Casino}`,
 		// Defender
 		hands: "Mãos ao alto!",
 		tryingToRobYou: "está tentando roubar você utilizando",
@@ -578,6 +591,7 @@ const Strings = {
 		robFailed: "tentou lhe roubar, mas a polícia o capturou!",
 		prisonUntil: (time: Date) => `Ele ficará preso até ${showTime(time.getTime())}`,
 		finishedRobberyDefender: "Roubo finalizado",
+		casinoDefender: `está em um jogo de cassino e não pode ser roubado! ${EmoteString.Casino}`,
 		// Attacker
 		robberyInProgress: `Roubo em andamento`,
 		tryingToRob: "Tentando roubar",
@@ -624,6 +638,7 @@ const Strings = {
 		inPrison: (prisonTime: Date) => `¡No puedes robar mientras estás en prisión! ${EmoteString.Prison}\n-# Será liberado ${showTime(prisonTime.getTime(), true)}!`,
 		isWanted: (wantedTime: Date) => `¡No puedes robar mientras estás siendo buscado por la policía! ${EmoteString.Police}\n-# Podrá robar nuevamente ${showTime(wantedTime.getTime(), true)}!`,
 		isInHospital: (hospitalTime: Date) => `¡No puedes robar mientras estás hospitalizado! ${EmoteString.Hospital}\n-# ¡Será curado ${showTime(hospitalTime.getTime(), true)}!`,
+		casinoAttacker: `¡No puedes robar mientras estás en un juego de casino! ${EmoteString.Casino}`,
 		// Defender
 		hands: "¡Manos arriba!",
 		tryingToRobYou: "está intentando robarte utilizando",
@@ -643,6 +658,7 @@ const Strings = {
 		robFailed: "intentó robarte, ¡pero la policía lo atrapó!",
 		prisonUntil: (time: Date) => `Estará en prisión hasta ${showTime(time.getTime())}`,
 		finishedRobberyDefender: "Robo finalizado",
+		casinoDefender: `está en un juego de casino y no puede ser robado! ${EmoteString.Casino}`,
 		// Attacker
 		robberyInProgress: `Robo en progreso`,
 		tryingToRob: "Intentando robar",

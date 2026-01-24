@@ -32,6 +32,7 @@ export enum ScavengeFailureReason {
 	UserWorking,
 	UserPrison,
 	UserHospital,
+	UserCasino,
 	AttackerIsBeatingId,
 	AttackerIsBeingBeatedById,
 	AttackerIsRobbingId,

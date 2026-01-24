@@ -95,7 +95,7 @@ module.exports = {
 		}
 
 		async function checkEligibility(targetUser: User, interaction: ButtonInteraction) {
-			const { canPlay, message } = await Casino.CanUserPlayBet(targetUser, betValue);
+			const { canPlay, message } = await Casino.CanUserPlayGame(targetUser, betValue);
 
 			if (!canPlay) {
 				await warn(interaction, message);
@@ -125,7 +125,7 @@ module.exports = {
 
 		collector?.on("end", () => {
 			if (!battleStarted) {
-				container.changeFooterText("Tempo esgotado");
+				container.changeFooterText(s.timeout);
 				disableButtons(interaction, container);
 			}
 		});
@@ -141,7 +141,7 @@ module.exports = {
 				await btn.deferUpdate();
 				await user.GetInfo();
 
-				const { canPlay, message } = await Casino.CanUserPlayBet(user, betValue);
+				const { canPlay, message } = await Casino.CanUserPlayGame(user, betValue);
 
 				if (!canPlay) {
 					return warn(btn, message);
@@ -194,7 +194,7 @@ module.exports = {
 			const unavailableUsers = [];
 			for (const participant of participants) {
 				await participant.GetInfo();
-				const { canPlay } = await Casino.CanUserPlayBet(participant, betValue);
+				const { canPlay } = await Casino.CanUserPlayGame(participant, betValue);
 				if (!canPlay) {
 					unavailableUsers.push(participant.GetNameWithImage());
 				}
@@ -205,8 +205,11 @@ module.exports = {
 				return warn(interaction, unavailableMessage);
 			}
 
+			await Promise.all(participants.map(player => Casino.StartUserGame(player)));
+
 			participants.sort(() => Math.random() - 0.5);
 			const participantsStatus = participants.map(p => ({ user: p, alive: true }));
+			const losers: User[] = [];
 			const history: string[] = [];
 
 			function showStatus(currentPlayerId: string) {
@@ -241,15 +244,13 @@ module.exports = {
 
 					const hit = Math.random() < 0.2; // 1 muniçao / 5 espaços
 					if (hit) {
-						player.user.Money -= betValue;
-						player.user.Hospital.Count += 1;
 						const hospitalTime = Math.random() * 0.5 + 1.5; // 1.5 a 2.0
 						player.user.Hospital.Time = addHours(new Date(), hospitalTime);
-						player.user.Casino.LoseSum += betValue;
-						player.user.Casino.LoseCount += 1;
-						player.alive = false;
+						player.user.Hospital.Count += 1;
 
-						// await player.user.Update();
+						losers.push(player.user);
+
+						player.alive = false;
 
 						const msgFunc = s.hitMessages[Math.floor(Math.random() * s.hitMessages.length)];
 						history.push(msgFunc(player.user.GetNameWithImage(), EmoteString.Hospital));
@@ -269,11 +270,11 @@ module.exports = {
 				`${s.winnerMessage(winner.GetNameWithImage())} ${formatMoney(prize, host.Language)}!`,
 			);
 			const prizeToWinner = Math.floor(prize - betValue);
-			winner.Money += prizeToWinner;
-			winner.Casino.WinCount += 1;
-			winner.Casino.WinSum += prizeToWinner;
 
-			// await winner.Update();
+			await Promise.all([
+				...losers.map(loser => Casino.FinishUserGameWithLoss(loser, betValue)),
+				Casino.FinishUserGameWithWin(winner, prizeToWinner),
+			]);
 
 			container = showStatus(winner.Id);
 			await disableButtons(interaction, container);
@@ -322,6 +323,7 @@ const Strings = {
 			(name: string) => `**${name}** lives to spin another day.`,
 		],
 		winnerMessage: (name: string) => `**${name}** is the big winner and took the prize of`,
+		timeout: "Time expired",
 	},
 	[Language.Portuguese]: {
 		headerTitle: "Roleta Russa",
@@ -363,6 +365,7 @@ const Strings = {
 			(name: string) => `**${name}** vive para girar mais um dia.`,
 		],
 		winnerMessage: (name: string) => `**${name}** é o grande vencedor e levou o prêmio de`,
+		timeout: "Tempo esgotado",
 	},
 	[Language.Spanish]: {
 		headerTitle: "Ruleta Rusa",
@@ -404,5 +407,6 @@ const Strings = {
 			(name: string) => `**${name}** vive para girar un día más.`,
 		],
 		winnerMessage: (name: string) => `**${name}** es el gran ganador y se llevó el premio de`,
+		timeout: "Tiempo agotado",
 	},
 } as const;

@@ -180,6 +180,9 @@ module.exports = {
 				else if (user.IsInHospital()) {
 					textResponse = s.userHospital(user.Hospital.Time);
 				}
+				else if (user.IsInCasinoGame()) {
+					textResponse = s.userCasino;
+				}
 				else if (user.Robbery.IsRobbingId) {
 					const u = await Users.findByPk(user.Robbery.IsRobbingId, { attributes: ["class", "nickname"] });
 					textResponse = `${s.userIsRobbingId(`${ClassList[u!.class].Image.Emote.String} ${u!.nickname!}`)} ${EmoteString.Robbery}`;
@@ -305,6 +308,7 @@ const Strings = {
 		description: "You cannot bet, steal or search while working!",
 		userPrison: (timerPrison: Date) => `You are in prison! ${EmoteString.Prison}\n-# You will be released ${showTime(timerPrison.getTime(), true)}`,
 		userHospital: (timerHospital: Date) => `You are hospitalized ${EmoteString.Hospital}\n-# You will be attended ${showTime(timerHospital.getTime(), true)}`,
+		userCasino: `You are playing in casino! ${EmoteString.Casino}`,
 		userIsRobbingId: (nick: string) => `You're already robbing **${nick}**!`,
 		userIsBeingRobbingId: (nick: string) => `You're being robbed by **${nick}**!`,
 		workingOn: (jobId: JobId, jobTime: Date) => `You are working as **${JobList[jobId].Description[Language.English]}**\n-# Will finish ${showTime(jobTime.getTime(), true)}`,
@@ -329,6 +333,7 @@ const Strings = {
 		description: `Você não pode apostar, roubar nem vasculhar enquanto trabalha!`,
 		userPrison: (timerPrison: Date) => `Você está preso! ${EmoteString.Prison}\n-# Será solto ${showTime(timerPrison.getTime(), true)}`,
 		userHospital: (timerHospital: Date) => `Você está hospitalizado ${EmoteString.Hospital}\n-# Será atendido ${showTime(timerHospital.getTime(), true)}`,
+		userCasino: `Você está jogando no cassino! ${EmoteString.Casino}`,
 		userIsRobbingId: (nick: string) => `Você já está roubando **${nick}**!`,
 		userIsBeingRobbingId: (nick: string) => `Você está sendo roubado por **${nick}**!`,
 		workingOn: (jobId: JobId, jobTime: Date) => `Você está trabalhando como **${JobList[jobId].Description[Language.Portuguese]}**\n-# Terminará ${showTime(jobTime.getTime(), true)}`,
@@ -353,6 +358,7 @@ const Strings = {
 		description: "Tu no puedes apostar, robar o buscar mientras trabajas!",
 		userPrison: (timerPrison: Date) => `¡Estás preso! ${EmoteString.Prison}\n-# ¡Serás liberado ${showTime(timerPrison.getTime(), true)}`,
 		userHospital: (timerHospital: Date) => `¡Estás hospitalizado ${EmoteString.Hospital}\n-# Serás atendido ${showTime(timerHospital.getTime(), true)}`,
+		userCasino: `¡Estás jugando en el casino! ${EmoteString.Casino}`,
 		userIsRobbingId: (nick: string) => `¡Ya estás robando a **${nick}**!`,
 		userIsBeingRobbingId: (nick: string) => `¡Estás siendo robado por **${nick}**!`,
 		workingOn: (jobId: JobId, jobTime: Date) => `Usted está trabajando como **${JobList[jobId].Description[Language.Spanish]}**\n-# Terminará ${showTime(jobTime.getTime(), true)}`,

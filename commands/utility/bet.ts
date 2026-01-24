@@ -168,7 +168,7 @@ module.exports = {
 		}
 
 		async function checkIfCanPlay(value: number) {
-			const { canPlay, message } = await Casino.CanUserPlayBet(user, value);
+			const { canPlay, message } = await Casino.CanUserPlayGame(user, value);
 
 			if (!canPlay) {
 				container = addContainerHeader()
