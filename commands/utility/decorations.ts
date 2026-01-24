@@ -60,6 +60,7 @@ module.exports = {
 
 			case AvatarDecorationId.Silver:
 			case AvatarDecorationId.FrutigerAero:
+			case AvatarDecorationId.Rainbow:
 				// Expensive decorations
 				return EmoteId.Rare;
 
