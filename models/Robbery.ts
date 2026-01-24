@@ -197,7 +197,7 @@ export class Robbery {
 		this.AttackerAditionalTimeCallPolice = Math.floor(25 + 0.5 * this.Attacker.Attributes.Attack);
 		this.DefenderTimeInHospital = 25 + this.Defender.Attributes.Defense / 2;
 
-		if (this.Defender.Attributes.Defense === 0) {
+		if (this.Defender.Attributes.Defense <= 0) {
 			this.Attacker.Attributes.Attack *= 1.35;
 		}
 
