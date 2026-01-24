@@ -49,9 +49,11 @@ export function defaultComponent(options: ComponentParams): CustomContainerBuild
 		container.addActionRowComponents(options.buttons);
 	}
 
-	container.addFooter({
-		text: options.footer,
-	});
+	if (options.footer || options.user) {
+		container.addFooter({
+			text: options.footer,
+		});
+	}
 
 	if (options.color) {
 		container.setAccentColor(options.color as number);
