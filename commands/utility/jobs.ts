@@ -183,6 +183,14 @@ module.exports = {
 				else if (user.IsInCasinoGame()) {
 					textResponse = s.userCasino;
 				}
+				else if (user.BeatUp.IsBeatingId) {
+					const u = await Users.findByPk(user.BeatUp.IsBeatingId, { attributes: ["class", "nickname"] });
+					textResponse = `${s.userIsBeatingId(`${ClassList[u!.class].Image.Emote.String} ${u!.nickname!}`)} ${EmoteString.Beat}`;
+				}
+				else if (user.BeatUp.IsBeingBeatUpById) {
+					const u = await Users.findByPk(user.BeatUp.IsBeingBeatUpById, { attributes: ["class", "nickname"] });
+					textResponse = `${s.userIsBeingBeatedId(`${ClassList[u!.class].Image.Emote.String} ${u!.nickname!}`)} ${EmoteString.Beat}`;
+				}
 				else if (user.Robbery.IsRobbingId) {
 					const u = await Users.findByPk(user.Robbery.IsRobbingId, { attributes: ["class", "nickname"] });
 					textResponse = `${s.userIsRobbingId(`${ClassList[u!.class].Image.Emote.String} ${u!.nickname!}`)} ${EmoteString.Robbery}`;
@@ -309,6 +317,8 @@ const Strings = {
 		userPrison: (timerPrison: Date) => `You are in prison! ${EmoteString.Prison}\n-# You will be released ${showTime(timerPrison.getTime(), true)}`,
 		userHospital: (timerHospital: Date) => `You are hospitalized ${EmoteString.Hospital}\n-# You will be attended ${showTime(timerHospital.getTime(), true)}`,
 		userCasino: `You are playing in casino! ${EmoteString.Casino}`,
+		userIsBeatingId: (nick: string) => `You're already beating **${nick}**!`,
+		userIsBeingBeatedId: (nick: string) => `You're being beated by **${nick}!`,
 		userIsRobbingId: (nick: string) => `You're already robbing **${nick}**!`,
 		userIsBeingRobbingId: (nick: string) => `You're being robbed by **${nick}**!`,
 		workingOn: (jobId: JobId, jobTime: Date) => `You are working as **${JobList[jobId].Description[Language.English]}**\n-# Will finish ${showTime(jobTime.getTime(), true)}`,
@@ -334,6 +344,8 @@ const Strings = {
 		userPrison: (timerPrison: Date) => `Você está preso! ${EmoteString.Prison}\n-# Será solto ${showTime(timerPrison.getTime(), true)}`,
 		userHospital: (timerHospital: Date) => `Você está hospitalizado ${EmoteString.Hospital}\n-# Será atendido ${showTime(timerHospital.getTime(), true)}`,
 		userCasino: `Você está jogando no cassino! ${EmoteString.Casino}`,
+		userIsBeatingId: (nick: string) => `Você já está espancando **${nick}**!`,
+		userIsBeingBeatedId: (nick: string) => `Você está sendo espancado por **${nick}**!`,
 		userIsRobbingId: (nick: string) => `Você já está roubando **${nick}**!`,
 		userIsBeingRobbingId: (nick: string) => `Você está sendo roubado por **${nick}**!`,
 		workingOn: (jobId: JobId, jobTime: Date) => `Você está trabalhando como **${JobList[jobId].Description[Language.Portuguese]}**\n-# Terminará ${showTime(jobTime.getTime(), true)}`,
@@ -359,6 +371,8 @@ const Strings = {
 		userPrison: (timerPrison: Date) => `¡Estás preso! ${EmoteString.Prison}\n-# ¡Serás liberado ${showTime(timerPrison.getTime(), true)}`,
 		userHospital: (timerHospital: Date) => `¡Estás hospitalizado ${EmoteString.Hospital}\n-# Serás atendido ${showTime(timerHospital.getTime(), true)}`,
 		userCasino: `¡Estás jugando en el casino! ${EmoteString.Casino}`,
+		userIsBeatingId: (nick: string) => `¡Ya estás golpeando a **${nick}**!`,
+		userIsBeingBeatedId: (nick: string) => `¡Estás siendo golpeado por **${nick}**!`,
 		userIsRobbingId: (nick: string) => `¡Ya estás robando a **${nick}**!`,
 		userIsBeingRobbingId: (nick: string) => `¡Estás siendo robado por **${nick}**!`,
 		workingOn: (jobId: JobId, jobTime: Date) => `Usted está trabajando como **${JobList[jobId].Description[Language.Spanish]}**\n-# Terminará ${showTime(jobTime.getTime(), true)}`,
