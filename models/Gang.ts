@@ -74,6 +74,11 @@ export class Gang {
 	static TIME_BETWEEN_DEPOSITS = 12;
 	static MAX_DEPOSIT_PER_DAY = 100_000;
 
+	static LEADER_ROLE_NAMES = ["Leader", "Líder"];
+	static MEMBER_ROLE_NAMES = ["Member", "Membro", "Miembro"];
+	static RESERVED_ROLE_NAMES = [...Gang.LEADER_ROLE_NAMES, ...Gang.MEMBER_ROLE_NAMES];
+
+
 
 	/**
 	 * Calculates the maximum number of members based on the gang level.
@@ -725,7 +730,7 @@ export class Gang {
 
 			// Find member role (lowest ID that is not leader)
 			// Assuming "Membro" is the default role name for members
-			const memberRole = this.Roles.find(r => ["Member", "Membro", "Miembro"].includes(r.Name));
+			const memberRole = this.Roles.find(r => Gang.MEMBER_ROLE_NAMES.includes(r.Name));
 
 			if (!memberRole) {
 				return false;
@@ -951,6 +956,14 @@ export class Gang {
 			return false;
 		}
 
+		if (Gang.RESERVED_ROLE_NAMES.map(n => n.toLowerCase()).includes(name.toLowerCase())) {
+			return false;
+		}
+
+		if (this.Roles.some(r => r.Name.toLowerCase() === name.toLowerCase())) {
+			return false;
+		}
+
 		try {
 			await GangRoles.create({
 				gangId: this.Id,
@@ -974,14 +987,24 @@ export class Gang {
 	 * Edits an existing role in the gang.
 	 * @param editorId The ID of the user editing the role (must be leader).
 	 * @param roleId The ID of the role to edit.
-	 * @param name The new name for the role.
 	 * @param permissions The new permissions for the role.
+	 * @param name The new name for the role.
 	 * @returns True if the role was edited successfully, false otherwise.
 	 */
-	async EditRole(editorId: string, roleId: number, name: string, permissions: GangPermission[]): Promise<boolean> {
+	async EditRole(editorId: string, roleId: number, permissions: GangPermission[], name: string | null): Promise<boolean> {
 		// Only leader can edit roles
 		if (editorId !== this.LeaderId) {
 			return false;
+		}
+
+		if (name) {
+			if (Gang.RESERVED_ROLE_NAMES.map(n => n.toLowerCase()).includes(name.toLowerCase())) {
+				return false;
+			}
+
+			if (this.Roles.some(r => r.Name.toLowerCase() === name.toLowerCase() && r.Id !== roleId)) {
+				return false;
+			}
 		}
 
 		try {
@@ -994,7 +1017,7 @@ export class Gang {
 			}
 
 			await role.update({
-				name,
+				name: name || role.name,
 				canInvite: permissions.includes(GangPermission.Invite),
 				canKick: permissions.includes(GangPermission.Kick),
 				canPromote: permissions.includes(GangPermission.Promote),
@@ -1034,12 +1057,12 @@ export class Gang {
 		}
 
 		// Cannot delete default member role
-		if (["Member", "Membro", "Miembro"].includes(roleToDelete.Name)) {
+		if (Gang.RESERVED_ROLE_NAMES.map(n => n.toLowerCase()).includes(roleToDelete.Name.toLowerCase())) {
 			return false;
 		}
 
 		try {
-			const defaultRole = this.Roles.find(r => ["Member", "Membro", "Miembro"].includes(r.Name));
+			const defaultRole = this.Roles.find(r => Gang.MEMBER_ROLE_NAMES.includes(r.Name));
 			if (!defaultRole) {
 				// This should ideally not happen in a valid gang setup
 				Log.Warning(`Could not find a default role for gang ${this.Name} (Id: ${this.Id}) during role deletion.`);

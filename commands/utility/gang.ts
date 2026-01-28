@@ -1592,7 +1592,7 @@ module.exports = {
 				await btn.deferUpdate();
 
 				if (btn.customId === "confirm") {
-					const success = await gang.EditRole(user.Id, role.Id, targetName, permissions);
+					const success = await gang.EditRole(user.Id, role.Id, permissions, newRoleName);
 
 					if (!success) {
 						return warn(s.errorEditRole);
