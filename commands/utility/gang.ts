@@ -10,7 +10,7 @@ import {
 } from "discord.js";
 import { Language } from "../../models/Language";
 import { User } from "../../models/User";
-import { Gang } from "../../models/Gang";
+import { Gang, GangPermission } from "../../models/Gang";
 import { convertHexNumberToString, defaultComponent, formatMoney, hexToRGB, showTime } from "../../utils/ui";
 import { createButtonCollector, deferReply, disableButtons, replyWithContainer, searchUser } from "../../utils/logic";
 import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
@@ -28,7 +28,11 @@ enum CommandOption {
 	Kick = "kick",
 	Communicate = "communicate",
 	Base = "base",
-	Deposit = "deposit"
+	Deposit = "deposit",
+	CreateRole = "create_role",
+	ChangeRole = "change_role",
+	EditRole = "edit_role",
+	Roles = "roles",
 }
 
 module.exports = {
@@ -366,6 +370,109 @@ module.exports = {
 				.setRequired(true)
 				.setMinValue(1),
 			),
+		)
+		.addSubcommand(createRole => createRole
+			.setName(CommandOption.CreateRole)
+			.setNameLocalizations({
+				[Locale.PortugueseBR]: "criar_cargo",
+				[Locale.SpanishES]: "crear_cargo",
+			})
+			.setDescription("Create a new role for your gang")
+			.setDescriptionLocalizations({
+				[Locale.PortugueseBR]: "Cria um novo cargo para sua gangue",
+				[Locale.SpanishES]: "Crea un nuevo cargo para tu cuadrilla",
+			})
+			.addStringOption(name => name
+				.setName("name")
+				.setNameLocalizations({
+					[Locale.PortugueseBR]: "nome",
+					[Locale.SpanishES]: "nombre",
+				})
+				.setDescription("Role name")
+				.setDescriptionLocalizations({
+					[Locale.PortugueseBR]: "Nome do cargo",
+					[Locale.SpanishES]: "Nombre del cargo",
+				})
+				.setRequired(true)
+				.setMinLength(2)
+				.setMaxLength(20),
+			),
+		)
+		.addSubcommand(changeRole => changeRole
+			.setName(CommandOption.ChangeRole)
+			.setNameLocalizations({
+				[Locale.PortugueseBR]: "mudar_cargo",
+				[Locale.SpanishES]: "cambiar_cargo",
+			})
+			.setDescription("Change a member's role")
+			.setDescriptionLocalizations({
+				[Locale.PortugueseBR]: "Muda o cargo de um membro",
+				[Locale.SpanishES]: "Cambia el cargo de un miembro",
+			})
+			.addStringOption(user => user
+				.setName("user")
+				.setNameLocalizations({
+					[Locale.PortugueseBR]: "usuario",
+					[Locale.SpanishES]: "usuario",
+				})
+				.setDescription("User to change role")
+				.setDescriptionLocalizations({
+					[Locale.PortugueseBR]: "Usuário para mudar o cargo",
+					[Locale.SpanishES]: "Usuario para cambiar el cargo",
+				})
+				.setRequired(true),
+			),
+		)
+		.addSubcommand(editRole => editRole
+			.setName(CommandOption.EditRole)
+			.setNameLocalizations({
+				[Locale.PortugueseBR]: "editar_cargo",
+				[Locale.SpanishES]: "editar_cargo",
+			})
+			.setDescription("Edit an existing role in your gang")
+			.setDescriptionLocalizations({
+				[Locale.PortugueseBR]: "Edita um cargo existente na sua gangue",
+				[Locale.SpanishES]: "Edita un cargo existente en tu cuadrilla",
+			})
+			.addStringOption(role => role
+				.setName("role")
+				.setNameLocalizations({
+					[Locale.PortugueseBR]: "cargo",
+					[Locale.SpanishES]: "cargo",
+				})
+				.setDescription("The name of the role to edit")
+				.setDescriptionLocalizations({
+					[Locale.PortugueseBR]: "O nome do cargo para editar",
+					[Locale.SpanishES]: "El nombre del cargo para editar",
+				})
+				.setRequired(true)
+			)
+			.addStringOption(newName => newName
+				.setName("new_name")
+				.setNameLocalizations({
+					[Locale.PortugueseBR]: "novo_nome",
+					[Locale.SpanishES]: "nuevo_nombre",
+				})
+				.setDescription("The new name for the role")
+				.setDescriptionLocalizations({
+					[Locale.PortugueseBR]: "O novo nome para o cargo",
+					[Locale.SpanishES]: "El nuevo nombre para el cargo",
+				})
+				.setMinLength(2)
+				.setMaxLength(20)
+			)
+		)
+		.addSubcommand(roles => roles
+			.setName(CommandOption.Roles)
+			.setNameLocalizations({
+				[Locale.PortugueseBR]: "cargos",
+				[Locale.SpanishES]: "cargos",
+			})
+			.setDescription("List all roles in your gang")
+			.setDescriptionLocalizations({
+				[Locale.PortugueseBR]: "Lista todos os cargos da sua gangue",
+				[Locale.SpanishES]: "Lista todos los cargos de tu cuadrilla",
+			}),
 		),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
@@ -1189,6 +1296,457 @@ module.exports = {
 
 			return replyWithContainer(interaction, container);
 		}
+
+		case CommandOption.CreateRole: {
+			await deferReply(interaction);
+
+			const gang = await Gang.GetByUserId(user.Id);
+			if (!gang) {
+				return warn(s.notInGang);
+			}
+
+			if (user.Id !== gang.LeaderId) {
+				return warn(s.errorCreateRoleLeader);
+			}
+
+			const roleName = interaction.options.getString("name", true);
+
+			const permissions: GangPermission[] = [];
+
+			const getContainer = () => {
+				return new CustomContainerBuilder()
+					.setUser(user)
+					.setAccentColor(GangColor[gang.Color].Color)
+					.addTexts([
+						`-# ${EmoteString.Gang} ${gang.Name}`
+					])
+					.addLargeSeparator()
+					.addTexts([
+						`# ${s.createRoleTitle}`,
+						s.createRoleDescription(roleName),
+					])
+					.addLargeSeparator()
+					.addTexts([
+						`### ${s.permissions}`,
+					])
+					.addButtonRow(
+						btn => btn
+							.setLabel(s.permissionInvite)
+							.setCustomId("invite")
+							.setStyle(permissions.includes(GangPermission.Invite) ? ButtonStyle.Primary : ButtonStyle.Secondary),
+						btn => btn
+							.setLabel(s.permissionKick)
+							.setCustomId("kick")
+							.setStyle(permissions.includes(GangPermission.Kick) ? ButtonStyle.Primary : ButtonStyle.Secondary),
+						btn => btn
+							.setLabel(s.permissionPromote)
+							.setCustomId("promote")
+							.setStyle(permissions.includes(GangPermission.Promote) ? ButtonStyle.Primary : ButtonStyle.Secondary),
+						btn => btn
+							.setLabel(s.permissionEditGang)
+							.setCustomId("edit")
+							.setStyle(permissions.includes(GangPermission.EditGang) ? ButtonStyle.Primary : ButtonStyle.Secondary),
+					)
+					.addButtonRow(
+						btn => btn
+							.setLabel(s.confirm)
+							.setCustomId("confirm")
+							.setStyle(ButtonStyle.Success),
+					)
+					.addFooter();
+			};
+
+			let container = getContainer();
+
+			const response = await replyWithContainer(interaction, container);
+
+			const collector = createButtonCollector(interaction, response);
+
+			collector?.on("collect", async btn => {
+				await btn.deferUpdate();
+
+				if (btn.customId === "confirm") {
+					const success = await gang.CreateRole(user.Id, roleName, permissions);
+
+					if (!success) {
+						return warn(s.errorCreateRole);
+					}
+
+					container = defaultComponent({
+						color: GangColor[gang.Color].Color as ColorResolvable,
+						description: s.successCreateRole(roleName),
+						user,
+					});
+
+					return replyWithContainer(interaction, container);
+				}
+
+				const permissionMap: Record<string, GangPermission> = {
+					invite: GangPermission.Invite,
+					kick: GangPermission.Kick,
+					promote: GangPermission.Promote,
+					edit: GangPermission.EditGang,
+				};
+
+				const permission = permissionMap[btn.customId];
+
+				if (permission !== undefined) {
+					if (permissions.includes(permission)) {
+						const index = permissions.indexOf(permission);
+						permissions.splice(index, 1);
+					}
+					else {
+						permissions.push(permission);
+					}
+
+					container = getContainer();
+					return replyWithContainer(interaction, container);
+				}
+			});
+
+			collector?.on("end", async () => {
+				await disableButtons(interaction, container);
+			});
+
+			return;
+		}
+
+		case CommandOption.ChangeRole: {
+			await deferReply(interaction);
+
+			const gang = await Gang.GetByUserId(user.Id);
+			if (!gang) {
+				return warn(s.notInGang);
+			}
+
+			const targetUserInput = interaction.options.getString("user", true);
+			const target = await searchUser(targetUserInput, interaction);
+
+			if (!target) {
+				return;
+			}
+
+			if (target.Id === gang.LeaderId) {
+				return warn(s.errorChangeRoleLeader);
+			}
+
+			const member = gang.Members.find(m => m.UserId === target.Id);
+			if (!member) {
+				return warn(s.userNotInGang(target.Nickname));
+			}
+
+			const roles = gang.Roles.sort((a, b) => a.Id - b.Id);
+			const currentRole = roles.find(r => r.Id === member.RoleId);
+
+			const getContainer = () => {
+				const container = new CustomContainerBuilder()
+					.setUser(user)
+					.setAccentColor(GangColor[gang.Color].Color)
+					.addTexts([
+						`-# ${EmoteString.Gang} ${gang.Name}`
+					])
+					.addLargeSeparator()
+					.addTexts([
+						`# ${s.changeRoleTitle}`,
+						s.changeRoleDescription(target.Nickname, currentRole?.Name || "???"),
+					])
+					.addLargeSeparator();
+
+				const rows: ButtonBuilder[][] = [];
+				let currentRow: ButtonBuilder[] = [];
+
+				for (const role of roles) {
+					const btn = new ButtonBuilder()
+						.setLabel(role.Name)
+						.setCustomId(`role_${role.Id}`)
+						.setStyle(role.Id === member.RoleId ? ButtonStyle.Success : ButtonStyle.Secondary)
+						.setDisabled(role.Id === member.RoleId);
+
+					currentRow.push(btn);
+
+					if (currentRow.length === 5) {
+						rows.push(currentRow);
+						currentRow = [];
+					}
+				}
+
+				if (currentRow.length > 0) {
+					rows.push(currentRow);
+				}
+
+				for (const row of rows) {
+					container.addButtonRow(...row.map(btn => () => btn));
+				}
+
+				container.addFooter();
+
+				return container;
+			};
+
+			let container = getContainer();
+
+			const response = await replyWithContainer(interaction, container);
+
+			const collector = createButtonCollector(interaction, response);
+
+			collector?.on("collect", async btn => {
+				await btn.deferUpdate();
+
+				if (btn.customId.startsWith("role_")) {
+					const roleId = parseInt(btn.customId.split("_")[1]);
+					const success = await gang.ChangeRole(user.Id, target.Id, roleId);
+
+					if (!success) {
+						return warn(s.errorChangeRole);
+					}
+
+					const newRole = roles.find(r => r.Id === roleId);
+
+					container = defaultComponent({
+						color: GangColor[gang.Color].Color as ColorResolvable,
+						description: s.successChangeRole(target.Nickname, newRole?.Name || "???"),
+						user,
+					});
+
+					return replyWithContainer(interaction, container);
+				}
+			});
+
+			collector?.on("end", async () => {
+				await disableButtons(interaction, container);
+			});
+
+			return;
+		}
+
+		case CommandOption.EditRole: {
+			await deferReply(interaction);
+
+			const gang = await Gang.GetByUserId(user.Id);
+			if (!gang) {
+				return warn(s.notInGang);
+			}
+
+			if (user.Id !== gang.LeaderId) {
+				return warn(s.errorEditRoleLeader);
+			}
+
+			const roleName = interaction.options.getString("role", true);
+			const newRoleName = interaction.options.getString("new_name");
+
+			const role = gang.Roles.find(r => r.Name.toLowerCase() === roleName.toLowerCase());
+
+			if (!role) {
+				return warn(s.roleNotFound(roleName));
+			}
+
+			const permissions: GangPermission[] = [...role.Permissions];
+			const targetName = newRoleName || role.Name;
+
+			const getContainer = () => {
+				return new CustomContainerBuilder()
+					.setUser(user)
+					.setAccentColor(GangColor[gang.Color].Color)
+					.addTexts([
+						`# ${s.editRoleTitle}`,
+						s.editRoleDescription(role.Name, targetName),
+					])
+					.addLargeSeparator()
+					.addTexts([
+						`### ${s.permissions}`,
+					])
+					.addButtonRow(
+						btn => btn
+							.setLabel(s.permissionInvite)
+							.setCustomId("invite")
+							.setStyle(permissions.includes(GangPermission.Invite) ? ButtonStyle.Primary : ButtonStyle.Secondary),
+						btn => btn
+							.setLabel(s.permissionKick)
+							.setCustomId("kick")
+							.setStyle(permissions.includes(GangPermission.Kick) ? ButtonStyle.Primary : ButtonStyle.Secondary),
+						btn => btn
+							.setLabel(s.permissionPromote)
+							.setCustomId("promote")
+							.setStyle(permissions.includes(GangPermission.Promote) ? ButtonStyle.Primary : ButtonStyle.Secondary),
+						btn => btn
+							.setLabel(s.permissionEditGang)
+							.setCustomId("edit")
+							.setStyle(permissions.includes(GangPermission.EditGang) ? ButtonStyle.Primary : ButtonStyle.Secondary),
+					)
+					.addButtonRow(
+						btn => btn
+							.setLabel(s.confirm)
+							.setCustomId("confirm")
+							.setStyle(ButtonStyle.Success),
+					)
+					.addFooter();
+			};
+
+			let container = getContainer();
+
+			const response = await replyWithContainer(interaction, container);
+
+			const collector = createButtonCollector(interaction, response);
+
+			collector?.on("collect", async btn => {
+				await btn.deferUpdate();
+
+				if (btn.customId === "confirm") {
+					const success = await gang.EditRole(user.Id, role.Id, targetName, permissions);
+
+					if (!success) {
+						return warn(s.errorEditRole);
+					}
+
+					container = defaultComponent({
+						color: GangColor[gang.Color].Color as ColorResolvable,
+						description: s.successEditRole(targetName),
+						user,
+					});
+
+					return replyWithContainer(interaction, container);
+				}
+
+				const permissionMap: Record<string, GangPermission> = {
+					invite: GangPermission.Invite,
+					kick: GangPermission.Kick,
+					promote: GangPermission.Promote,
+					edit: GangPermission.EditGang,
+				};
+
+				const permission = permissionMap[btn.customId];
+
+				if (permission !== undefined) {
+					if (permissions.includes(permission)) {
+						const index = permissions.indexOf(permission);
+						permissions.splice(index, 1);
+					}
+					else {
+						permissions.push(permission);
+					}
+					container = getContainer();
+					return replyWithContainer(interaction, container);
+				}
+			});
+
+			collector?.on("end", async () => {
+				await disableButtons(interaction, container);
+			});
+
+			return;
+		}
+
+		case CommandOption.Roles: {
+			await deferReply(interaction);
+
+			let gang = await Gang.GetByUserId(user.Id);
+			if (!gang) {
+				return warn(s.notInGang);
+			}
+
+			const isLeader = user.Id === gang.LeaderId;
+
+			const getContainer = () => {
+				const container = new CustomContainerBuilder()
+					.setUser(user)
+					.setAccentColor(GangColor[gang!.Color].Color)
+					.addTexts([
+						`# ${s.rolesTitle(gang!.Name)}`,
+					])
+					.addLargeSeparator();
+
+				const roles = gang!.Roles.sort((a, b) => b.Permissions.length - a.Permissions.length);
+
+				for (const role of roles) {
+					const permissions = role.Permissions.map(p => {
+						const key = `permission${GangPermission[p]}` as keyof typeof s;
+						return s[key];
+					}).join(", ") || s.noPermissions;
+					const memberCount = gang!.Members.filter(m => m.RoleId === role.Id).length;
+
+					const canDelete = isLeader && !["Leader", "Líder", "Member", "Membro", "Miembro"].includes(role.Name) && gang!.Members.find(m => m.UserId === gang!.LeaderId)?.RoleId !== role.Id;
+
+					container.addSectionComponents(section => section
+						.addTexts([
+							`### ${role.Name}`,
+							`-# ${s.permissions}: ${permissions}`,
+							`-# ${s.membersWithRole}: ${memberCount}`,
+						])
+						.setButtonAccessory(btn => btn
+							.setLabel(s.delete)
+							.setCustomId(`delete_role_${role.Id}`)
+							.setStyle(ButtonStyle.Danger)
+							.setDisabled(!canDelete),
+						),
+					);
+				}
+				container.addFooter();
+				return container;
+			};
+
+			let container = getContainer();
+
+			const response = await replyWithContainer(interaction, container);
+			if (!isLeader) return;
+
+			const collector = createButtonCollector(interaction, response);
+
+			collector?.on("collect", async btn => {
+				await btn.deferUpdate();
+
+				const freshGang = await Gang.GetByUserId(user.Id);
+				if (!freshGang) return warn(s.notInGang);
+				gang = freshGang;
+
+				if (btn.customId.startsWith("delete_role_")) {
+					const roleId = parseInt(btn.customId.split("_")[2]);
+					const role = gang.Roles.find(r => r.Id === roleId);
+					if (!role) return;
+
+					container = new CustomContainerBuilder()
+						.setUser(user)
+						.setAccentColor(Colors.Red)
+						.addTexts([s.confirmDeleteRole(role.Name)])
+						.addButtonRow(
+							b => b
+								.setCustomId(`confirm_delete_${roleId}`)
+								.setLabel(s.confirm)
+								.setStyle(ButtonStyle.Danger),
+							b => b
+								.setCustomId("cancel_delete")
+								.setLabel(s.cancel)
+								.setStyle(ButtonStyle.Secondary),
+						)
+						.addFooter();
+					return replyWithContainer(interaction, container);
+				}
+
+				if (btn.customId.startsWith("confirm_delete_")) {
+					const roleId = parseInt(btn.customId.split("_")[2]);
+					const success = await gang.DeleteRole(user.Id, roleId);
+					if (!success) {
+						return warn(s.errorDeleteRole);
+					}
+
+					const updatedGang = await Gang.GetByUserId(user.Id);
+					if (!updatedGang) return warn(s.notInGang);
+					gang = updatedGang;
+					container = getContainer();
+					return replyWithContainer(interaction, container);
+				}
+
+				if (btn.customId === "cancel_delete") {
+					container = getContainer();
+					return replyWithContainer(interaction, container);
+				}
+			});
+
+			collector?.on("end", async () => {
+				await disableButtons(interaction, container);
+			});
+
+			return;
+		}
 		}
 
 		async function checkGangExists(name: string | null, acronym: string | null) {
@@ -1308,6 +1866,35 @@ const Strings = {
 		deposits: "Deposits",
 		canDeposit: "Can deposit",
 		canDepositAgain: "Can deposit again",
+		createRoleTitle: "Create Role",
+		createRoleDescription: (name: string) => `Creating role **${name}**. Select the permissions below:`,
+		permissions: "Permissions",
+		permissionInvite: "Invite Members",
+		permissionKick: "Kick Members",
+		permissionPromote: "Promote Members",
+		permissionEditGang: "Edit Gang",
+		errorCreateRoleLeader: `Only the leader can create roles ${EmoteString.Gang}`,
+		errorCreateRole: `Error creating role. Please try again later ${EmoteString.Gang}`,
+		successCreateRole: (name: string) => `Role **${name}** created successfully! ${EmoteString.Gang}`,
+		changeRoleTitle: "Change Role",
+		changeRoleDescription: (user: string, currentRole: string) => `Changing role for **${user}**.\nCurrent role: **${currentRole}**`,
+		userNotInGang: (user: string) => `**${user}** is not in your gang ${EmoteString.Gang}`,
+		errorChangeRole: `Error changing role. Please try again later ${EmoteString.Gang}`,
+		successChangeRole: (user: string, role: string) => `Role for **${user}** changed to **${role}** successfully! ${EmoteString.Gang}`,
+		errorChangeRoleLeader: `You cannot change the role of the leader ${EmoteString.Gang}`,
+		editRoleTitle: "Edit Role",
+		editRoleDescription: (oldName: string, newName: string) => `Editing role **${oldName}**${oldName !== newName ? ` to **${newName}**` : ""}. Select the permissions below:`,
+		errorEditRoleLeader: `Only the leader can edit roles ${EmoteString.Gang}`,
+		roleNotFound: (name: string) => `Role **${name}** not found in your gang ${EmoteString.Gang}`,
+		errorEditRole: `Error editing role. Please try again later ${EmoteString.Gang}`,
+		successEditRole: (name: string) => `Role **${name}** edited successfully! ${EmoteString.Gang}`,
+		rolesTitle: (name: string) => `Roles of ${name}`,
+		membersWithRole: "Members",
+		delete: "Delete",
+		noPermissions: "No permissions",
+		confirmDeleteRole: (name: string) => `Are you sure you want to delete the role **${name}**?\n-# Members with this role will be reassigned to the default **Member** role.`,
+		errorDeleteRole: `Error deleting role. It might be a protected role (like Leader or Member) or another error occurred.`,
+		cancel: "Cancel",
 	},
 	[Language.Portuguese]: {
 		gangTitle: `Gangues`,
@@ -1377,6 +1964,35 @@ const Strings = {
 		deposits: "Depósitos",
 		canDeposit: "Pode depositar",
 		canDepositAgain: "Pode depositar novamente",
+		createRoleTitle: "Criar Cargo",
+		createRoleDescription: (name: string) => `Criando cargo **${name}**. Selecione as permissões abaixo:`,
+		permissions: "Permissões",
+		permissionInvite: "Convidar Membros",
+		permissionKick: "Expulsar Membros",
+		permissionPromote: "Promover Membros",
+		permissionEditGang: "Editar Gangue",
+		errorCreateRoleLeader: `Apenas o líder pode criar cargos ${EmoteString.Gang}`,
+		errorCreateRole: `Erro ao criar cargo. Tente novamente mais tarde ${EmoteString.Gang}`,
+		successCreateRole: (name: string) => `Cargo **${name}** criado com sucesso! ${EmoteString.Gang}`,
+		changeRoleTitle: "Mudar Cargo",
+		changeRoleDescription: (user: string, currentRole: string) => `Mudando cargo de **${user}**.\nCargo atual: **${currentRole}**`,
+		userNotInGang: (user: string) => `**${user}** não está na sua gangue ${EmoteString.Gang}`,
+		errorChangeRole: `Erro ao mudar cargo. Tente novamente mais tarde ${EmoteString.Gang}`,
+		successChangeRole: (user: string, role: string) => `Cargo de **${user}** alterado para **${role}** com sucesso! ${EmoteString.Gang}`,
+		errorChangeRoleLeader: `Você não pode mudar o cargo do líder ${EmoteString.Gang}`,
+		editRoleTitle: "Editar Cargo",
+		editRoleDescription: (oldName: string, newName: string) => `Editando cargo **${oldName}**${oldName !== newName ? ` para **${newName}**` : ""}. Selecione as permissões abaixo:`,
+		errorEditRoleLeader: `Apenas o líder pode editar cargos ${EmoteString.Gang}`,
+		roleNotFound: (name: string) => `Cargo **${name}** não encontrado na sua gangue ${EmoteString.Gang}`,
+		errorEditRole: `Erro ao editar cargo. Tente novamente mais tarde ${EmoteString.Gang}`,
+		successEditRole: (name: string) => `Cargo **${name}** editado com sucesso! ${EmoteString.Gang}`,
+		rolesTitle: (name: string) => `Cargos da ${name}`,
+		membersWithRole: "Membros",
+		delete: "Deletar",
+		noPermissions: "Nenhuma permissão",
+		confirmDeleteRole: (name: string) => `Você tem certeza que quer deletar o cargo **${name}**?\n-# Membros com este cargo serão movidos para o cargo padrão de **Membro**.`,
+		errorDeleteRole: `Erro ao deletar cargo. Pode ser um cargo protegido (como Líder ou Membro) ou outro erro ocorreu.`,
+		cancel: "Cancelar",
 	},
 	[Language.Spanish]: {
 		gangTitle: `Cuadrillas`,
@@ -1397,7 +2013,7 @@ const Strings = {
 		updated: `Actualizada`,
 		description: `Descripción`,
 		color: `Color`,
-		image: `Imagen`,
+		image: `Imagem`,
 		gangId: (id: number) => `Id de Cuadrilla: ${id}`,
 		noMembers: "¡Esta cuadrilla no tiene miembros!",
 		membersOf: `Miembros de`,
@@ -1446,5 +2062,34 @@ const Strings = {
 		deposits: "Depositos",
 		canDeposit: "Puede depositar",
 		canDepositAgain: "Puede depositar nuevamente",
+		createRoleTitle: "Crear Cargo",
+		createRoleDescription: (name: string) => `Creando cargo **${name}**. Selecciona los permisos abajo:`,
+		permissions: "Permisos",
+		permissionInvite: "Invitar Miembros",
+		permissionKick: "Expulsar Miembros",
+		permissionPromote: "Promover Miembros",
+		permissionEditGang: "Editar Cuadrilla",
+		errorCreateRoleLeader: `Solo el líder puede crear cargos ${EmoteString.Gang}`,
+		errorCreateRole: `Error al crear cargo. Inténtalo de nuevo más tarde ${EmoteString.Gang}`,
+		successCreateRole: (name: string) => `¡Cargo **${name}** creado con éxito! ${EmoteString.Gang}`,
+		changeRoleTitle: "Cambiar Cargo",
+		changeRoleDescription: (user: string, currentRole: string) => `Cambiando cargo de **${user}**.\nCargo actual: **${currentRole}**`,
+		userNotInGang: (user: string) => `**${user}** no está en tu cuadrilla ${EmoteString.Gang}`,
+		errorChangeRole: `Error al cambiar cargo. Inténtalo de nuevo más tarde ${EmoteString.Gang}`,
+		successChangeRole: (user: string, role: string) => `¡Cargo de **${user}** cambiado a **${role}** con éxito! ${EmoteString.Gang}`,
+		errorChangeRoleLeader: `No puedes cambiar el cargo del líder ${EmoteString.Gang}`,
+		editRoleTitle: "Editar Cargo",
+		editRoleDescription: (oldName: string, newName: string) => `Editando cargo **${oldName}**${oldName !== newName ? ` a **${newName}**` : ""}. Selecciona los permisos abajo:`,
+		errorEditRoleLeader: `Solo el líder puede editar cargos ${EmoteString.Gang}`,
+		roleNotFound: (name: string) => `Cargo **${name}** no encontrado en tu cuadrilla ${EmoteString.Gang}`,
+		errorEditRole: `Error al editar cargo. Inténtalo de nuevo más tarde ${EmoteString.Gang}`,
+		successEditRole: (name: string) => `¡Cargo **${name}** editado con éxito! ${EmoteString.Gang}`,
+		rolesTitle: (name: string) => `Cargos de ${name}`,
+		membersWithRole: "Miembros",
+		delete: "Borrar",
+		noPermissions: "Sin permisos",
+		confirmDeleteRole: (name: string) => `¿Estás seguro de que quieres borrar el cargo **${name}**?\n-# Los miembros con este cargo serán reasignados al cargo de **Miembro** por defecto.`,
+		errorDeleteRole: `Error al borrar el cargo. Puede ser un cargo protegido (como Líder o Miembro) u otro error ha ocurrido.`,
+		cancel: "Cancelar",
 	},
 } as const;

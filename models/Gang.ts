@@ -75,17 +75,27 @@ export class Gang {
 	static MAX_DEPOSIT_PER_DAY = 100_000;
 
 
-	// Calcula o número máximo de membros com base no nível da gangue
+	/**
+	 * Calculates the maximum number of members based on the gang level.
+	 * @returns The maximum number of members.
+	 */
 	GetMaxMembers(): number {
-		return 9 + this.Level; // Nível 1: 10 membros, e +1 por nível adicional (máx 19 no nível 10)
+		return 9 + this.Level; // Level 1: 10 members, +1 per additional level (max 19 at level 10)
 	}
 
-	// Verificar se um usuário pode entrar na gangue
+	/**
+	 * Checks if a user can be added to the gang.
+	 * @returns True if the gang has space for more members, false otherwise.
+	 */
 	CanAddMember(): boolean {
 		return this.Members.length < this.GetMaxMembers();
 	}
 
-	// Experiência necessária para o próximo nível
+	/**
+	 * Calculates the experience required for the next level.
+	 * @param level The current level.
+	 * @returns The experience required for the next level.
+	 */
 	static GetXpForNextLevel(level: number): number {
 		if (level === 1) {
 			return Math.floor(level * 1_000);
@@ -94,14 +104,18 @@ export class Gang {
 		return Math.floor(level * 1000 ** (1 + ((level - 1) / 10)));
 	}
 
-	// Adiciona XP à gangue e verifica se subiu de nível
+	/**
+	 * Adds experience to the gang and checks if it leveled up.
+	 * @param xp The amount of experience to add.
+	 * @returns True if the gang leveled up, false otherwise.
+	 */
 	async AddExperience(xp: number): Promise<boolean> {
 		this.Experience += xp;
 
 		const xpNeeded = Gang.GetXpForNextLevel(this.Level);
 		let leveledUp = false;
 
-		if (this.Experience >= xpNeeded && this.Level < 10) { // Máximo nível 10
+		if (this.Experience >= xpNeeded && this.Level < 10) { // Max level 10
 			this.Level += 1;
 			this.Experience -= xpNeeded;
 			leveledUp = true;
@@ -112,13 +126,22 @@ export class Gang {
 		return leveledUp;
 	}
 
-	// Cria uma nova gangue
+	/**
+	 * Creates a new gang.
+	 * @param user The user creating the gang.
+	 * @param name The name of the gang.
+	 * @param acronym The acronym of the gang.
+	 * @param description The description of the gang.
+	 * @param color The color of the gang.
+	 * @param image The image URL of the gang (optional).
+	 * @returns The created gang object, or null if creation failed.
+	 */
 	static async Create(user: User, name: string, acronym: string, description: string, color: GangColorId, image: string | null = null): Promise<Gang | null> {
 		if (user.Money < Gang.CREATION_COST) {
 			return null;
 		}
 
-		// Verificar se o usuário já está em uma gangue
+		// Check if user is already in a gang
 		const existingMembership = await GangMembers.findOne({
 			where: { userId: user.Id },
 		});
@@ -127,7 +150,7 @@ export class Gang {
 			return null;
 		}
 
-		// Verificar se já existe gangue com esse nome
+		// Check if gang with same name exists
 		const existingGang = await Gangs.findOne({
 			where: {
 				name: {
@@ -141,11 +164,11 @@ export class Gang {
 		}
 
 		try {
-			// Cobrar o custo de criação
+			// Charge creation cost
 			user.Money -= Gang.CREATION_COST;
 			await user.Update();
 
-			// Criar a gangue
+			// Create gang
 			const gang = await Gangs.create({
 				name,
 				acronym,
@@ -171,7 +194,7 @@ export class Gang {
 				},
 			};
 
-			// Criar o cargo de líder
+			// Create leader role
 			const leaderRole = await GangRoles.create({
 				gangId: gang.id,
 				name: names.leader[user.Language],
@@ -181,7 +204,7 @@ export class Gang {
 				canEditGang: true,
 			});
 
-			// Criar cargo de membro comum
+			// Create member role
 			await GangRoles.create({
 				gangId: gang.id,
 				name: names.member[user.Language],
@@ -191,7 +214,7 @@ export class Gang {
 				canEditGang: false,
 			});
 
-			// Adicionar o líder como membro
+			// Add leader as member
 			await GangMembers.create({
 				gangId: gang.id,
 				userId: user.Id,
@@ -224,7 +247,11 @@ export class Gang {
 		}
 	}
 
-	// Obtém uma gangue pelo ID
+	/**
+	 * Gets a gang by its ID.
+	 * @param gangId The ID of the gang.
+	 * @returns The gang object, or null if not found.
+	 */
 	static async GetById(gangId: number): Promise<Gang | null> {
 		try {
 			const gang = await Gangs.findByPk(gangId);
@@ -245,6 +272,7 @@ export class Gang {
 	 * Gets basic gang info without loading members and roles.
 	 * Useful for performance when only basic data is needed.
 	 * @param gangId The gang ID.
+	 * @returns The gang object with basic info, or null if not found.
 	 */
 	static async GetBasicById(gangId: number): Promise<Gang | null> {
 		try {
@@ -277,6 +305,12 @@ export class Gang {
 		}
 	}
 
+	/**
+	 * Helper method to populate a Gang object from a Gangs database model.
+	 * Loads members and roles.
+	 * @param gang The Gangs database model.
+	 * @returns The populated Gang object.
+	 */
 	static async GetInfo(gang: Gangs) {
 		const result = new Gang();
 		result.Id = gang.id;
@@ -301,7 +335,11 @@ export class Gang {
 		return result;
 	}
 
-	// Obtém a gangue de um usuário
+	/**
+	 * Gets the gang a user belongs to.
+	 * @param userId The ID of the user.
+	 * @returns The gang object, or null if the user is not in a gang.
+	 */
 	static async GetByUserId(userId: string): Promise<Gang | null> {
 		try {
 			const membership = await GangMembers.findOne({
@@ -320,6 +358,11 @@ export class Gang {
 		}
 	}
 
+	/**
+	 * Checks if a gang with the given name exists.
+	 * @param name The name to check.
+	 * @returns True if a gang with the name exists, false otherwise.
+	 */
 	static async CheckGangWithName(name: string): Promise<boolean> {
 		try {
 			const gang = await Gangs.findOne({
@@ -340,6 +383,11 @@ export class Gang {
 		}
 	}
 
+	/**
+	 * Checks if a gang with the given acronym exists.
+	 * @param acronym The acronym to check.
+	 * @returns True if a gang with the acronym exists, false otherwise.
+	 */
 	static async CheckGangWithAcronym(acronym: string): Promise<boolean> {
 		try {
 			const gang = await Gangs.findOne({
@@ -356,7 +404,11 @@ export class Gang {
 		}
 	}
 
-	// Busca gangue pelo nome
+	/**
+	 * Finds a gang by its name or acronym.
+	 * @param name The name or acronym to search for.
+	 * @returns The gang object, or null if not found.
+	 */
 	static async FindByName(name: string): Promise<Gang | null> {
 		try {
 			const gang = await Gangs.findOne({
@@ -384,7 +436,9 @@ export class Gang {
 		}
 	}
 
-	// Carrega os membros da gangue
+	/**
+	 * Loads the members of the gang from the database.
+	 */
 	async LoadMembers() {
 		try {
 			const members = await GangMembers.findAll({
@@ -427,7 +481,9 @@ export class Gang {
 		}
 	}
 
-	// Carrega os cargos da gangue
+	/**
+	 * Loads the roles of the gang from the database.
+	 */
 	async LoadRoles() {
 		try {
 			const roles = await GangRoles.findAll({
@@ -456,8 +512,13 @@ export class Gang {
 		}
 	}
 
+	/**
+	 * Checks if a user has permission to invite others to the gang.
+	 * @param inviterId The ID of the user attempting to invite.
+	 * @returns True if the user has permission, false otherwise.
+	 */
 	CanInvite(inviterId: string) {
-		// Verificar se o convidador tem permissão
+		// Check if inviter has permission
 		const inviter = this.Members.find(m => m.UserId === inviterId);
 		if (!inviter) return false;
 
@@ -469,13 +530,18 @@ export class Gang {
 		return inviterRole.Permissions.includes(GangPermission.Invite);
 	}
 
-	// Convida um usuário para a gangue
+	/**
+	 * Invites a user to the gang.
+	 * @param inviter The user sending the invite.
+	 * @param targetUser The user being invited.
+	 * @returns True if the invite was sent successfully, false otherwise.
+	 */
 	async InviteUser(inviter: User, targetUser: User): Promise<boolean> {
 		const COOLDOWN_INVITE = 3 * 60_000;
 		const sI = Strings[inviter.Language];
 		const sT = Strings[targetUser.Language];
 
-		// Verificar se o alvo já está em uma gangue
+		// Check if target is already in a gang
 		const existingMembership = await GangMembers.findOne({
 			where: { userId: targetUser.Id },
 		});
@@ -484,12 +550,12 @@ export class Gang {
 			return false;
 		}
 
-		// Verificar se a gangue tem espaço
+		// Check if gang has space
 		if (!this.CanAddMember()) {
 			return false;
 		}
 
-		// Verificar se só existe um convite da gangue
+		// Check cooldown
 		const cooldownInvite = getClient().invites;
 		if (!cooldownInvite.has(this.Id)) {
 			cooldownInvite.set(this.Id, new Collection());
@@ -506,7 +572,7 @@ export class Gang {
 			const lastInviteTime = timestamp.get(targetUser.Id) || 0;
 
 			if (now - lastInviteTime < COOLDOWN_INVITE) {
-				return false; // Ainda está em cooldown
+				return false; // Still in cooldown
 			}
 		}
 
@@ -635,11 +701,15 @@ export class Gang {
 		return true;
 	}
 
-	// Aceitar um convite para a gangue (depois de pagar)
+	/**
+	 * Accepts an invite to the gang.
+	 * @param user The user accepting the invite.
+	 * @returns True if the user successfully joined, false otherwise.
+	 */
 	async AcceptInvite(user: User): Promise<boolean> {
 		try {
 
-			// Verificar se o usuário já está em uma gangue
+			// Check if user is already in a gang
 			const existingMembership = await GangMembers.findOne({
 				where: { userId: user.Id },
 			});
@@ -648,13 +718,14 @@ export class Gang {
 				return false;
 			}
 
-			// Verificar se a gangue tem espaço
+			// Check if gang has space
 			if (!this.CanAddMember()) {
 				return false;
 			}
 
-			// Encontrar o cargo de membro comum (o de menor ID que não seja o de líder)
-			const memberRole = this.Roles.find(r => r.Name === "Membro");
+			// Find member role (lowest ID that is not leader)
+			// Assuming "Membro" is the default role name for members
+			const memberRole = this.Roles.find(r => ["Member", "Membro", "Miembro"].includes(r.Name));
 
 			if (!memberRole) {
 				return false;
@@ -684,8 +755,13 @@ export class Gang {
 		}
 	}
 
+	/**
+	 * Checks if a user has permission to kick others from the gang.
+	 * @param kickerId The ID of the user attempting to kick.
+	 * @returns True if the user has permission, false otherwise.
+	 */
 	CanKick(kickerId: string): boolean {
-		// Verificar se o kicker tem permissão
+		// Check if kicker has permission
 		const kicker = this.Members.find(m => m.UserId === kickerId);
 		if (!kicker) return false;
 
@@ -697,14 +773,19 @@ export class Gang {
 		return kickerRole.Permissions.includes(GangPermission.Kick);
 	}
 
-	// Expulsar um membro da gangue
+	/**
+	 * Kicks a member from the gang.
+	 * @param kicker The user performing the kick.
+	 * @param targetUser The user being kicked.
+	 * @returns True if the user was kicked successfully, false otherwise.
+	 */
 	async KickMember(kicker: User, targetUser: User): Promise<boolean> {
-		// Não pode expulsar a si mesmo
+		// Cannot kick self
 		if (kicker.Id === targetUser.Id) {
 			return false;
 		}
 
-		// Não pode expulsar o líder
+		// Cannot kick leader
 		if (targetUser.Id === this.LeaderId) {
 			return false;
 		}
@@ -747,9 +828,15 @@ export class Gang {
 		}
 	}
 
-	// Trocar o cargo de um membro
+	/**
+	 * Changes the role of a gang member.
+	 * @param changerId The ID of the user performing the change.
+	 * @param targetUserId The ID of the user whose role is being changed.
+	 * @param newRoleId The ID of the new role.
+	 * @returns True if the role was changed successfully, false otherwise.
+	 */
 	async ChangeRole(changerId: string, targetUserId: string, newRoleId: number): Promise<boolean> {
-		// Verificar se o changer tem permissão
+		// Check if changer has permission
 		const changer = this.Members.find(m => m.UserId === changerId);
 		if (!changer) return false;
 
@@ -758,17 +845,14 @@ export class Gang {
 			return false;
 		}
 
-		// Verificar se o novo cargo existe
+		// Check if new role exists
 		const newRole = this.Roles.find(r => r.Id === newRoleId);
 		if (!newRole) {
 			return false;
 		}
 
-		// O líder só pode ser trocado se o próprio líder estiver fazendo a troca
-		const target = this.Members.find(m => m.UserId === targetUserId);
-		if (!target) return false;
-
-		if (targetUserId === this.LeaderId && changerId !== this.LeaderId) {
+		// Cannot change the leader's role
+		if (targetUserId === this.LeaderId) {
 			return false;
 		}
 
@@ -777,15 +861,6 @@ export class Gang {
 				{ roleId: newRoleId },
 				{ where: { gangId: this.Id, userId: targetUserId } },
 			);
-
-			// Se estiver mudando o cargo do líder, atualizar o líder da gangue
-			if (targetUserId === this.LeaderId) {
-				this.LeaderId = changerId;
-				await Gangs.update(
-					{ leaderId: changerId },
-					{ where: { id: this.Id } },
-				);
-			}
 
 			await this.LoadMembers();
 			return true;
@@ -796,7 +871,10 @@ export class Gang {
 		}
 	}
 
-	// Atualizar informações da gangue
+	/**
+	 * Updates the gang's information in the database.
+	 * @returns True if the update was successful, false otherwise.
+	 */
 	async Update(): Promise<boolean> {
 		try {
 			await Gangs.update(
@@ -823,6 +901,11 @@ export class Gang {
 		}
 	}
 
+	/**
+	 * Checks if a user has permission to edit the gang.
+	 * @param editorId The ID of the user attempting to edit.
+	 * @returns True if the user has permission, false otherwise.
+	 */
 	CanEdit(editorId: string): boolean {
 		const editor = this.Members.find(m => m.UserId === editorId);
 		if (!editor) return false;
@@ -833,7 +916,15 @@ export class Gang {
 		return editorRole.Permissions.includes(GangPermission.EditGang);
 	}
 
-	// Editar a gangue
+	/**
+	 * Edits the gang's details.
+	 * @param name New name (optional).
+	 * @param acronym New acronym (optional).
+	 * @param description New description (optional).
+	 * @param color New color (optional).
+	 * @param image New image URL (optional).
+	 * @returns True if the edit was successful, false otherwise.
+	 */
 	async Edit(name: string | null, acronym: string | null, description: string | null, color: GangColorId | null, image: string | null): Promise<boolean> {
 
 		if (name) this.Name = name;
@@ -847,9 +938,15 @@ export class Gang {
 		return await this.Update();
 	}
 
-	// Criar um novo cargo
+	/**
+	 * Creates a new role in the gang.
+	 * @param creatorId The ID of the user creating the role (must be leader).
+	 * @param name The name of the new role.
+	 * @param permissions The permissions assigned to the role.
+	 * @returns True if the role was created successfully, false otherwise.
+	 */
 	async CreateRole(creatorId: string, name: string, permissions: GangPermission[]): Promise<boolean> {
-		// Apenas o líder pode criar cargos
+		// Only leader can create roles
 		if (creatorId !== this.LeaderId) {
 			return false;
 		}
@@ -873,9 +970,114 @@ export class Gang {
 		}
 	}
 
-	// Sair da gangue
+	/**
+	 * Edits an existing role in the gang.
+	 * @param editorId The ID of the user editing the role (must be leader).
+	 * @param roleId The ID of the role to edit.
+	 * @param name The new name for the role.
+	 * @param permissions The new permissions for the role.
+	 * @returns True if the role was edited successfully, false otherwise.
+	 */
+	async EditRole(editorId: string, roleId: number, name: string, permissions: GangPermission[]): Promise<boolean> {
+		// Only leader can edit roles
+		if (editorId !== this.LeaderId) {
+			return false;
+		}
+
+		try {
+			const role = await GangRoles.findOne({
+				where: { id: roleId, gangId: this.Id },
+			});
+
+			if (!role) {
+				return false;
+			}
+
+			await role.update({
+				name,
+				canInvite: permissions.includes(GangPermission.Invite),
+				canKick: permissions.includes(GangPermission.Kick),
+				canPromote: permissions.includes(GangPermission.Promote),
+				canEditGang: permissions.includes(GangPermission.EditGang),
+			});
+
+			await this.LoadRoles();
+			return true;
+		}
+		catch (err) {
+			Log.Warning(`Failed to edit role ${name} for gang ${this.Name} (Id: ${this.Id}): ${err}`);
+			return false;
+		}
+	}
+
+	/**
+	 * Deletes a role from the gang.
+	 * @param deleterId The ID of the user deleting the role (must be leader).
+	 * @param roleId The ID of the role to delete.
+	 * @returns True if the role was deleted successfully, false otherwise.
+	 */
+	async DeleteRole(deleterId: string, roleId: number): Promise<boolean> {
+		// Only leader can delete roles
+		if (deleterId !== this.LeaderId) {
+			return false;
+		}
+
+		const roleToDelete = this.Roles.find(r => r.Id === roleId);
+		if (!roleToDelete) {
+			return false; // Role doesn't exist
+		}
+
+		// Cannot delete the role the leader has
+		const leaderMember = this.Members.find(m => m.UserId === this.LeaderId);
+		if (leaderMember?.RoleId === roleId) {
+			return false;
+		}
+
+		// Cannot delete default member role
+		if (["Member", "Membro", "Miembro"].includes(roleToDelete.Name)) {
+			return false;
+		}
+
+		try {
+			const defaultRole = this.Roles.find(r => ["Member", "Membro", "Miembro"].includes(r.Name));
+			if (!defaultRole) {
+				// This should ideally not happen in a valid gang setup
+				Log.Warning(`Could not find a default role for gang ${this.Name} (Id: ${this.Id}) during role deletion.`);
+				return false;
+			}
+
+			// Reassign members with the deleted role to the default role
+			await GangMembers.update(
+				{ roleId: defaultRole.Id },
+				{ where: { gangId: this.Id, roleId: roleId } },
+			);
+
+			// Delete the role
+			await GangRoles.destroy({
+				where: { id: roleId, gangId: this.Id },
+			});
+
+			// Reload roles and members to reflect changes
+			await this.LoadRoles();
+			await this.LoadMembers();
+
+			Log.Success(`Role ${roleToDelete.Name} (Id: ${roleId}) from gang ${this.Name} (Id: ${this.Id}) was deleted by ${deleterId}.`);
+
+			return true;
+		}
+		catch (err) {
+			Log.Warning(`Failed to delete role ${roleId} for gang ${this.Name} (Id: ${this.Id}): ${err}`);
+			return false;
+		}
+	}
+
+	/**
+	 * Allows a user to leave the gang.
+	 * @param user The user leaving the gang.
+	 * @returns True if the user left successfully, false otherwise.
+	 */
 	async LeaveGang(user: User): Promise<boolean> {
-		// O líder não pode sair, deve transferir a liderança primeiro
+		// Leader cannot leave, must transfer leadership first
 		if (user.Id === this.LeaderId) {
 			return false;
 		}
@@ -910,24 +1112,28 @@ export class Gang {
 		}
 	}
 
-	// Deletar a gangue (apenas o líder pode fazer isso)
+	/**
+	 * Deletes the gang.
+	 * @param userId The ID of the user deleting the gang (must be leader).
+	 * @returns True if the gang was deleted successfully, false otherwise.
+	 */
 	async DeleteGang(userId: string): Promise<boolean> {
 		if (userId !== this.LeaderId) {
 			return false;
 		}
 
 		try {
-			// Remover todos os membros
+			// Remove all members
 			await GangMembers.destroy({
 				where: { gangId: this.Id },
 			});
 
-			// Remover todos os cargos
+			// Remove all roles
 			await GangRoles.destroy({
 				where: { gangId: this.Id },
 			});
 
-			// Remover a gangue
+			// Remove gang
 			await Gangs.destroy({
 				where: { id: this.Id },
 			});
@@ -940,6 +1146,12 @@ export class Gang {
 		}
 	}
 
+	/**
+	 * Generates a visual experience bar for the gang.
+	 * @param emoteCount The number of emotes to use for the bar.
+	 * @param language The language for formatting.
+	 * @returns A string representing the experience bar.
+	 */
 	GetExpBar(emoteCount: number, language: Language) {
 		const exp = Gang.GetXpForNextLevel(this.Level);
 		const ratio = this.Experience / exp;
@@ -967,8 +1179,13 @@ export class Gang {
 		return `${bars} ${this.Experience} / ${formatMoney(exp, language, "")} (${Math.round(ratio * 100)}%)`;
 	}
 
+	/**
+	 * Checks if a user can send official communications.
+	 * @param senderId The ID of the user.
+	 * @returns True if the user can communicate, false otherwise.
+	 */
 	CanCommunicate(senderId: string): boolean {
-		// Verifica se o remetente é o líder ou tem permissão de comunicação
+		// Check if sender is leader or has permission
 		if (senderId === this.LeaderId) {
 			return true;
 		}
@@ -986,6 +1203,12 @@ export class Gang {
 		return role.Permissions.includes(GangPermission.EditGang);
 	}
 
+	/**
+	 * Sends an official communication to all gang members.
+	 * @param sender The user sending the communication.
+	 * @param message The message content.
+	 * @returns A promise that resolves when the communication is sent.
+	 */
 	async OfficialCommunication(sender: User, message: IDescription | string) {
 
 		Log.Info(`Gang ${this.Name} (Id: ${this.Id}) official communication from ${sender.Nickname} (Id: ${sender.Id}): ${message}`);
@@ -997,6 +1220,14 @@ export class Gang {
 		});
 	}
 
+	/**
+	 * Sends a private message to a specific gang member.
+	 * @param sender The user sending the message.
+	 * @param member The target member.
+	 * @param message The message content.
+	 * @param specialMessage An optional special message/header.
+	 * @returns A promise that resolves when the message is sent.
+	 */
 	async ComunicateMember(sender: User, member: GangMember, message: string, specialMessage?: string) {
 		const container = new CustomContainerBuilder()
 			.setAccentColor(GangColor[this.Color].Color)
@@ -1014,6 +1245,13 @@ export class Gang {
 		});
 	}
 
+	/**
+	 * Sends a message to all gang members.
+	 * @param sender The user sending the message.
+	 * @param message The message content (can be localized).
+	 * @param specialMessage An optional special message/header (can be localized).
+	 * @returns A promise that resolves when all messages are sent.
+	 */
 	async ComunicateAllMembers(sender: User, message: IDescription | string, specialMessage?: IDescription) {
 		const promises: Promise<Message<false> | undefined>[] = [];
 
@@ -1031,6 +1269,11 @@ export class Gang {
 		return await Promise.all(promises);
 	}
 
+	/**
+	 * Gets the emote representing a member's permission level.
+	 * @param member The gang member.
+	 * @returns The emote string.
+	 */
 	GetMemberEmote(member: GangMember): string {
 		const isLeader = this.LeaderId == member.UserId;
 		const role = this.Roles.find(r => r.Id === member.RoleId);
@@ -1054,6 +1297,12 @@ export class Gang {
 		return emote;
 	}
 
+	/**
+	 * Checks if a user can deposit money into the gang.
+	 * @param user The user attempting to deposit.
+	 * @param amount The amount to deposit.
+	 * @returns An object containing whether the deposit is allowed and a reason text.
+	 */
 	async CanDeposit(user: User, amount: number) {
 		const s = Strings[user.Language];
 		let canDeposit = true;
@@ -1090,6 +1339,11 @@ export class Gang {
 		return { canDeposit, text };
 	}
 
+	/**
+	 * Deposits money into the gang.
+	 * @param user The user depositing money.
+	 * @param amount The amount to deposit.
+	 */
 	async Deposit(user: User, amount: number) {
 		user.Money -= amount;
 		this.Money += amount;
