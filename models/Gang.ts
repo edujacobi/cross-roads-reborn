@@ -78,8 +78,6 @@ export class Gang {
 	static MEMBER_ROLE_NAMES = ["Member", "Membro", "Miembro"];
 	static RESERVED_ROLE_NAMES = [...Gang.LEADER_ROLE_NAMES, ...Gang.MEMBER_ROLE_NAMES];
 
-
-
 	/**
 	 * Calculates the maximum number of members based on the gang level.
 	 * @returns The maximum number of members.
