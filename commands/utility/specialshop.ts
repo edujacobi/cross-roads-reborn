@@ -310,6 +310,7 @@ module.exports = {
 					return replyWithContainer(interaction, container);
 				}
 
+				user.SpecialCoin -= price;
 				await user.AddVip(vipMonths * 30);
 
 				container = addHeader()
