@@ -125,6 +125,7 @@ export class Gang {
 			Log.Success(`Gang ${this.Name} (Id ${this.Id}) leveled up to level ${this.Level}!`);
 		}
 
+		Log.Success(`Gang ${this.Name} (Id: ${this.Id}) gained ${xp} experience.`);
 		await this.Update();
 		return leveledUp;
 	}
@@ -750,6 +751,7 @@ export class Gang {
 
 			await this.LoadMembers();
 
+			Log.Success(`User ${user.Nickname} (Id: ${user.Id}) joined gang ${this.Name} (Id: ${this.Id})`);
 			return true;
 		}
 		catch (err) {
@@ -805,7 +807,7 @@ export class Gang {
 				const kickedMember = this.Members.find(m => m.UserId === targetUser.Id);
 				this.Members = this.Members.filter(m => m.UserId !== targetUser.Id);
 
-				Log.Info(`User ${targetUser.Nickname} (Id: ${targetUser.Id}) was kicked from gang ${this.Name} (Id: ${this.Id}) by ${kicker.Nickname} (Id: ${kicker.Id})`);
+				Log.Success(`User ${targetUser.Nickname} (Id: ${targetUser.Id}) was kicked from gang ${this.Name} (Id: ${this.Id}) by ${kicker.Nickname} (Id: ${kicker.Id})`);
 
 				await Promise.all([
 					this.ComunicateAllMembers(kicker, {
@@ -866,6 +868,8 @@ export class Gang {
 			);
 
 			await this.LoadMembers();
+
+			Log.Success(`User ${targetUserId} had their role changed to ${newRole.Name} in gang ${this.Name} (Id: ${this.Id}) by ${changerId}`);
 			return true;
 		}
 		catch (err) {
@@ -936,7 +940,7 @@ export class Gang {
 		if (color != null) this.Color = color;
 		if (image) this.Image = image;
 
-		Log.Info(`Editing gang ${this.Id} with new values: ${name ? `[Name: ${this.Name}]` : ""} ${acronym ? `[Acronym: ${this.Acronym}]` : ""} ${description ? `[Description: ${this.Description}]` : ""} ${color ? `[Color: ${this.Color}]` : ""} ${image ? `[Image: ${this.Image}]` : ""}`);
+		Log.Success(`Editing gang ${this.Id} with new values: ${name ? `[Name: ${this.Name}]` : ""} ${acronym ? `[Acronym: ${this.Acronym}]` : ""} ${description ? `[Description: ${this.Description}]` : ""} ${color ? `[Color: ${this.Color}]` : ""} ${image ? `[Image: ${this.Image}]` : ""}`);
 
 		return await this.Update();
 	}
@@ -973,6 +977,8 @@ export class Gang {
 			});
 
 			await this.LoadRoles();
+
+			Log.Success(`Role ${name} created in gang ${this.Name} (Id: ${this.Id}) by ${creatorId}`);
 			return true;
 		}
 		catch (err) {
@@ -1023,6 +1029,8 @@ export class Gang {
 			});
 
 			await this.LoadRoles();
+
+			Log.Success(`Role ${role.name} (Id: ${roleId}) in gang ${this.Name} (Id: ${this.Id}) was edited by ${editorId}`);
 			return true;
 		}
 		catch (err) {
@@ -1125,6 +1133,8 @@ export class Gang {
 
 				return true;
 			}
+
+			Log.Warning(`User ${user.Nickname} (Id: ${user.Id}) tried to leave gang ${this.Name} (Id: ${this.Id}) but failed.`);
 			return false;
 		}
 		catch (err) {
@@ -1159,6 +1169,7 @@ export class Gang {
 				where: { id: this.Id },
 			});
 
+			Log.Success(`Gang ${this.Name} (Id: ${this.Id}) was deleted by ${userId}.`);
 			return true;
 		}
 		catch (err) {
