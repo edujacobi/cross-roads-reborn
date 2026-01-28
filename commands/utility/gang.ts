@@ -1986,7 +1986,7 @@ const Strings = {
 		roleNotFound: (name: string) => `Cargo **${name}** não encontrado na sua gangue ${EmoteString.Gang}`,
 		errorEditRole: `Erro ao editar cargo. Tente novamente mais tarde ${EmoteString.Gang}`,
 		successEditRole: (name: string) => `Cargo **${name}** editado com sucesso! ${EmoteString.Gang}`,
-		rolesTitle: (name: string) => `Cargos da ${name}`,
+		rolesTitle: (name: string) => `Cargos de ${name}`,
 		membersWithRole: "Membros",
 		delete: "Deletar",
 		noPermissions: "Nenhuma permissão",
