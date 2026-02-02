@@ -1664,7 +1664,9 @@ module.exports = {
 					}).join(", ") || s.noPermissions;
 					const memberCount = gang!.Members.filter(m => m.RoleId === role.Id).length;
 
-					const canDelete = isLeader && !["Leader", "Líder", "Member", "Membro", "Miembro"].includes(role.Name) && gang!.Members.find(m => m.UserId === gang!.LeaderId)?.RoleId !== role.Id;
+					const canDelete = isLeader &&
+						!Gang.RESERVED_ROLE_NAMES.map(n => n.toLowerCase()).includes(role.Name.toLowerCase()) &&
+						gang!.Members.find(m => m.UserId === gang!.LeaderId)?.RoleId !== role.Id;
 
 					container.addSectionComponents(section => section
 						.addTexts([
