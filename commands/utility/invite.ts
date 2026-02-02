@@ -51,19 +51,19 @@ module.exports = {
 
 const Strings = {
 	[Language.English]: {
-		footer: "Just click the buttons below!",
+		footer: "Just click the buttons above!",
 		description: `# Invite\nInvite Cross Roads Reborn to your server or join the official server and challenge new players!`,
 		addTo: "Add to server",
 		join: "Join the official server",
 	},
 	[Language.Portuguese]: {
-		footer: "Apenas clique nos botões abaixo!",
+		footer: "Apenas clique nos botões acima!",
 		description: "# Convite\nConvide Cross Roads Reborn para o seu servidor ou junte-se ao servidor oficial e desafie novos jogadores!",
 		addTo: "Adicionar ao servidor",
 		join: "Junte-se ao servidor oficial",
 	},
 	[Language.Spanish]: {
-		footer: "¡Simplemente haz clic en los botones de abajo!",
+		footer: "¡Simplemente haz clic en los botones de arriba!",
 		description: "# Invitación\n¡Invita a Cross Roads Reborn a tu servidor o únete al servidor oficial y desafía a nuevos jugadores!",
 		addTo: "Añadir al servidor",
 		join: "Únete al servidor oficial",
