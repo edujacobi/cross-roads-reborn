@@ -30,6 +30,9 @@ UserBundles.init(
 	{
 		sequelize,
 		tableName: "userbundles",
+		indexes: [
+			{ fields: ["userId"] },
+		],
 	},
 );
 

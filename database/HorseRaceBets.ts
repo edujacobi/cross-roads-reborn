@@ -72,6 +72,10 @@ HorseRaceBets.init(
 	{
 		sequelize,
 		tableName: "horse_race_bets",
+		indexes: [
+			{ fields: ["userId"] },
+			{ fields: ["raceId"] },
+		],
 	},
 );
 

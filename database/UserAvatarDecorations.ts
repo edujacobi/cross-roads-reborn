@@ -30,6 +30,9 @@ UserAvatarDecorations.init(
 	{
 		sequelize,
 		tableName: "useravatardecorations",
+		indexes: [
+			{ fields: ["userId"] },
+		],
 	},
 );
 

@@ -60,5 +60,9 @@ HorseRaces.init(
 	{
 		sequelize,
 		tableName: "horse_races",
+		indexes: [
+			{ fields: ["raceTime"] },
+			{ fields: ["isFinished"] },
+		],
 	},
 );

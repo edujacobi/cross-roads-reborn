@@ -46,5 +46,9 @@ UserItems.init(
 	{
 		sequelize,
 		tableName: "userItems",
+		indexes: [
+			{ fields: ["userId"] },
+			{ fields: ["itemId"] },
+		],
 	},
 );

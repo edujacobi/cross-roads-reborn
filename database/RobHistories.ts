@@ -141,5 +141,10 @@ RobHistories.init(
 	{
 		sequelize,
 		tableName: "robHistory",
+		indexes: [
+			{ fields: ["attackerId"] },
+			{ fields: ["defenderId"] },
+			{ fields: ["createdAt"] },
+		],
 	},
 );

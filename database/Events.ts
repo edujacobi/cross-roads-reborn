@@ -40,5 +40,10 @@ Events.init(
 	{
 		sequelize,
 		tableName: "events",
+		indexes: [
+			{ fields: ["type"] },
+			{ fields: ["periodStart"] },
+			{ fields: ["periodEnd"] },
+		],
 	},
 );

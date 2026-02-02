@@ -29,6 +29,9 @@ UserBadges.init(
 	{
 		sequelize,
 		tableName: "userbadges",
+		indexes: [
+			{ fields: ["userId"] },
+		],
 	},
 );
 

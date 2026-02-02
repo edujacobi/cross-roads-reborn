@@ -85,6 +85,9 @@ Gangs.init(
 	{
 		sequelize,
 		tableName: "gangs",
+		indexes: [
+			{ fields: ["level", "experience"] },
+		],
 	},
 );
 

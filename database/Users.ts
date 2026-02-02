@@ -439,5 +439,18 @@ Users.init(
 	{
 		sequelize,
 		tableName: "users",
+		indexes: [
+			{ fields: ["money"] },
+			{ fields: ["casinoWinSum"] },
+			{ fields: ["shopSpentSum"] },
+			{ fields: ["robberySuccessRobbedSum"] },
+			{ fields: ["jobReceivedSum"] },
+			{ fields: ["drinkHappyHour"] },
+			{ fields: ["beatUpSuccessCount"] },
+			{ fields: ["scavengeFoundTotal"] },
+			{ fields: ["hospitalTreatmentSum"] },
+			{ fields: ["prisonBriberySum"] },
+			{ fields: ["escapeCount"] },
+		],
 	},
 );

@@ -41,5 +41,9 @@ Notifications.init(
 	{
 		sequelize,
 		tableName: "notifications",
+		indexes: [
+			{ fields: ["userId"] },
+			{ fields: ["notified"] },
+		],
 	},
 );

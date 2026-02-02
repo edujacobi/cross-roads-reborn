@@ -59,6 +59,9 @@ GangRoles.init(
 		sequelize,
 		tableName: "gangroles",
 		timestamps: false,
+		indexes: [
+			{ fields: ["gangId"] },
+		],
 	},
 );
 
