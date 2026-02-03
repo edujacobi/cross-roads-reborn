@@ -1,6 +1,6 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, MessageFlags } from "discord.js";
 import { replyInteraction } from "@bot/utils/discordInteractions";
-import { Language } from "./Language";
+import { Language, Localization } from "./Language";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 import { createButtonCollector, disableButtons } from "@bot/utils/collectors";
 
@@ -127,4 +127,4 @@ const Strings = {
 		next: "Siguiente",
 		previous: "Anterior",
 	},
-} as const;
+} as const satisfies Localization;

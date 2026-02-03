@@ -1,5 +1,5 @@
 ﻿import { User } from "./User";
-import { Language } from "./Language";
+import { Language, Localization } from "./Language";
 import { Shop } from "./Shop";
 import { getItemList } from "@core/types/Items";
 import { CrColors } from "@bot/utils/colors";
@@ -63,4 +63,4 @@ const Strings = {
 		description: "¡Mira estas bellezas!",
 		hey: "Oye, psst... Vuelve aquí a las 8 PM del viernes y tendré algunas cosas geniales para mostrarte...",
 	},
-} as const;
+} as const satisfies Localization;

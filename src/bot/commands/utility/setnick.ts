@@ -10,7 +10,7 @@ import { replyWithContainer } from "@bot/utils/discordInteractions";
 import { defaultComponent, formatMoney } from "@bot/utils/ui";
 import { Users } from "@core/database/Users";
 import { User } from "@core/models/User";
-import { Language } from "@core/models/Language";
+import { Language, Localization } from "@core/models/Language";
 import { Op } from "sequelize";
 import { CrColors } from "@bot/utils/colors";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
@@ -171,4 +171,4 @@ const Strings = {
 		costToChange: (cost: number, newNick: string, oldNick: string) => `El costo para que usted cambie su nickname es ${formatMoney(cost, Language.Spanish)}.\n-# ¿Confirmar el cambio de **${oldNick}** a **${newNick}**?`,
 		errorChange: "No tienes suficiente dinero para cambiar su nickname.",
 	},
-} as const;
+} as const satisfies Localization;

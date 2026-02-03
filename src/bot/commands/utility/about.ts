@@ -7,7 +7,7 @@
 	SlashCommandBuilder,
 } from "discord.js";
 import { replyWithContainer } from "@bot/utils/discordInteractions";
-import { Language } from "@core/models/Language";
+import { Language, Localization } from "@core/models/Language";
 import { User } from "@core/models/User";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 
@@ -93,4 +93,4 @@ const Strings = {
 		art: "Arte",
 		others: "Otros",
 	},
-} as const;
+} as const satisfies Localization;

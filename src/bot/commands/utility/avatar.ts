@@ -1,7 +1,7 @@
 ﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder, SlashCommandUserOption } from "discord.js";
 import { replyInteraction } from "@bot/utils/discordInteractions";
 import { User } from "@core/models/User";
-import { Language } from "@core/models/Language";
+import { Language, Localization } from "@core/models/Language";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -44,4 +44,4 @@ const Strings = {
 		targetAvatar: (name: string) => `Avatar de ${name}`,
 		yourAvatar: "Tu avatar",
 	},
-} as const;
+} as const satisfies Localization;

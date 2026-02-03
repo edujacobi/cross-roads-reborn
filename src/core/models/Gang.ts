@@ -3,7 +3,7 @@ import { GangMembers } from "@core/database/GangMembers";
 import { GangRoles } from "@core/database/GangRoles";
 import { Log } from "@shared/log";
 import { SituationId, User } from "./User";
-import { Language } from "./Language";
+import { Language, Localization } from "./Language";
 import { defaultComponent, formatMoney, showTime } from "@bot/utils/ui";
 import { Users } from "@core/database/Users";
 import { Op } from "sequelize";
@@ -1501,4 +1501,4 @@ const Strings = {
 		maxDepositReached: (max: string) => `Solo puedes depositar hasta **${max}**`,
 		mustBeIdling: `Debes estar ${EmoteString.Idle} Vagando para depositar`
 	},
-} as const;
+} as const satisfies Localization;

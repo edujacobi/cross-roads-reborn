@@ -3,7 +3,7 @@ import { Op } from "sequelize";
 import { defaultComponent, formatMoney } from "@bot/utils/ui";
 import { Users } from "@core/database/Users";
 import { User } from "@core/models/User";
-import { Language } from "@core/models/Language";
+import { Language, Localization } from "@core/models/Language";
 import { ClassList } from "@core/types/Classes";
 import { EmoteBadgeString } from "@bot/utils/badges";
 import { Pagination } from "@core/models/Pagination";
@@ -679,4 +679,4 @@ const Strings = {
 		beat: "Golpear",
 		goback: "Volver",
 	},
-} as const;
+} as const satisfies Localization;

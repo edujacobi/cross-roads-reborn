@@ -8,7 +8,7 @@ import {
 	Locale,
 	SlashCommandBuilder,
 } from "discord.js";
-import { Language } from "@core/models/Language";
+import { Language, Localization } from "@core/models/Language";
 import { User } from "@core/models/User";
 import { Gang, GangPermission } from "@core/models/Gang";
 import { convertHexNumberToString, defaultComponent, formatMoney, hexToRGB, showTime } from "@bot/utils/ui";
@@ -2096,4 +2096,4 @@ const Strings = {
 		errorDeleteRole: `Error al borrar el cargo. Puede ser un cargo protegido (como Líder o Miembro) u otro error ha ocurrido.`,
 		cancel: "Cancelar",
 	},
-} as const;
+} as const satisfies Localization;

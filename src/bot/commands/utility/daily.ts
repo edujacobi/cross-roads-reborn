@@ -2,7 +2,7 @@
 import { replyWithContainer } from "@bot/utils/discordInteractions";
 import { formatMoney, showTime } from "@bot/utils/ui";
 import { addDays } from "date-fns";
-import { Language } from "@core/models/Language";
+import { Language, Localization } from "@core/models/Language";
 import { CrColors } from "@bot/utils/colors";
 import { User } from "@core/models/User";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
@@ -69,4 +69,4 @@ const Strings = {
 		description: (money: number, currentStreak: number) => `Usted recibió ${formatMoney(money, Language.Spanish)}.\n-# Tu racha diaria actual es **${currentStreak}**.`,
 		footer: (maxStreak: number) => `Racha máxima: ${maxStreak}`,
 	},
-} as const;
+} as const satisfies Localization;

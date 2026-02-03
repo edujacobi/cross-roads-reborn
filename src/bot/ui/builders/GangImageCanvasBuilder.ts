@@ -1,6 +1,6 @@
 import { User } from "@core/models/User";
 import { Gang } from "@core/models/Gang";
-import { Language } from "@core/models/Language";
+import { Language, Localization } from "@core/models/Language";
 import { Canvas, Image, loadImage } from "@napi-rs/canvas";
 import { logger } from "@shared/log";
 import { convertHexNumberToString, hexToRGB } from "@bot/utils/ui";
@@ -37,7 +37,7 @@ export class GangImageCanvasBuilder {
 				of: "de",
 				level: "Nivel",
 			},
-		} as const;
+		} as const satisfies Localization;
 
 		const canvas = new Canvas(1024, 100);
 		const ctx = canvas.getContext("2d");

@@ -7,7 +7,7 @@
 	TextDisplayBuilder,
 } from "discord.js";
 import { deferReply, replyWithContainer } from "@bot/utils/discordInteractions";
-import { Language } from "@core/models/Language";
+import { Language, Localization } from "@core/models/Language";
 import { User } from "@core/models/User";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 import { EmoteString } from "@bot/utils/emotes";
@@ -336,4 +336,4 @@ const Strings = {
 			hundred: "¿ACASO ERES JACOBI???!",
 		},
 	},
-} as const;
+} as const satisfies Localization;

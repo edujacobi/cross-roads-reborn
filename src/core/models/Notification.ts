@@ -4,7 +4,7 @@ import { addDays } from "date-fns";
 import { Log } from "@shared/log";
 import { JobList } from "@core/types/Jobs";
 import { User } from "./User";
-import { Language } from "./Language";
+import { Language, Localization } from "./Language";
 import { EmoteString } from "@bot/utils/emotes";
 import { formatMoney } from "@bot/utils/ui";
 import { sendPrivateMessage } from "@bot/utils/discordInteractions";
@@ -361,4 +361,4 @@ const Strings = {
 		horseRace: `¡Una carrera de caballos está comenzando pronto! ¡Haz tus apuestas ahora! ${EmoteString.Casino}`,
 		gangDepositAgain: `¡Puedes depositar de nuevo en la gangue! ${EmoteString.Gang}`,
 	},
-} as const;
+} as const satisfies Localization;

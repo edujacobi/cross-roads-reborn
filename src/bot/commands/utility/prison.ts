@@ -9,7 +9,7 @@ import { replyWithContainer } from "@bot/utils/discordInteractions";
 import { Pagination } from "@core/models/Pagination";
 import { ClassList, getPrisonEscapeClassModifier } from "@core/types/Classes";
 import { defaultComponent, formatMoney, showTime } from "@bot/utils/ui";
-import { globalStrings, Language } from "@core/models/Language";
+import { globalStrings, Language, Localization } from "@core/models/Language";
 import { ItemList } from "@core/types/Items";
 import { ItemId } from "@core/types/Ids";
 import { Gang } from "@core/models/Gang";
@@ -613,4 +613,4 @@ const Strings = {
 		escapeWaitMinutes: (minutes: number) => `Espera ${minutes} minutos para robar de nuevo`,
 		escapeWillBeInPrison: (minutes: number) => `Permanecerás encarcelado por otros ${minutes} minutos.`,
 	},
-} as const;
+} as const satisfies Localization;

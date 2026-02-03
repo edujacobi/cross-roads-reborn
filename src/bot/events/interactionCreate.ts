@@ -1,7 +1,7 @@
 ﻿import { Collection, Colors, CommandInteraction, Events, MessageFlags } from "discord.js";
 import { defaultComponent, showTime } from "@bot/utils/ui";
 import { replyInteraction, replyWithContainer } from "@bot/utils/discordInteractions";
-import { getLanguageFromLocale, Language } from "@core/models/Language";
+import { getLanguageFromLocale, Language, Localization } from "@core/models/Language";
 import { EmoteString } from "@bot/utils/emotes";
 import { ClassId } from "@core/types/Classes";
 import { logger } from "@shared/log";
@@ -160,4 +160,4 @@ const Strings = {
 		canNowUse: (commandName: string) => `Ahora puedes usar el comando \`${commandName}\`.`,
 		needVIP: `Necesitas ser ${EmoteString.VIP} **VIP** para realizar esta acción.`,
 	},
-} as const;
+} as const satisfies Localization;

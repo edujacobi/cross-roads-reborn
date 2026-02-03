@@ -2,7 +2,7 @@ import { User } from "./User";
 import { EmoteString } from "@bot/utils/emotes";
 import { showTime } from "@bot/utils/ui";
 import { JobList } from "@core/types/Jobs";
-import { globalStrings, Language } from "./Language";
+import { globalStrings, Language, Localization } from "./Language";
 import { ScavengeId, ScavengeList } from "@core/types/Scavenge";
 import { Users } from "@core/database/Users";
 import { ClassList } from "@core/types/Classes";
@@ -128,4 +128,4 @@ const Strings = {
 		hospital: (time: Date) => `No puedes apostar mientras estás en el hospital ${EmoteString.Hospital}\n-# Será atendido ${showTime(time.getTime(), true)}`,
 		casino: `Estás jugando en otro juego en el casino! ${EmoteString.Casino}`,
 	},
-} as const;
+} as const satisfies Localization;

@@ -10,7 +10,7 @@ import { deferReply, replyInteraction, replyWithContainer } from "@bot/utils/dis
 import { User } from "@core/models/User";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 import { EmoteBadgeString } from "@bot/utils/badges";
-import { Language } from "@core/models/Language";
+import { Language, Localization } from "@core/models/Language";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -82,4 +82,4 @@ const Strings = {
 		footer: "Si no puedes acceder, ¡únete al servidor!",
 		buttonLabel: "Unirse al servidor oficial",
 	},
-} as const;
+} as const satisfies Localization;

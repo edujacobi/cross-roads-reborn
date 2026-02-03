@@ -4,7 +4,7 @@ import { Users } from "@core/database/Users";
 import { differenceInHours } from "date-fns";
 import { UserItems } from "@core/database/UserItems";
 import { addHours } from "date-fns/addHours";
-import { globalStrings, Language } from "./Language";
+import { globalStrings, Language, Localization } from "./Language";
 import { ScavengeId, ScavengeList } from "@core/types/Scavenge";
 import { EmoteString } from "@bot/utils/emotes";
 import { showTime } from "@bot/utils/ui";
@@ -147,4 +147,4 @@ const Strings = {
 		inCasino: `¡No puedes comprar artículos mientras estás en el casino! ${EmoteString.Casino}`,
 		itemPassLimit: (hours: number, itemName: string) => `¡No puedes tener más de 360 horas del mismo artículo!\n-# Tiene ${hours} horas de ${itemName}.`,
 	},
-} as const;
+} as const satisfies Localization;

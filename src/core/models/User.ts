@@ -1,7 +1,7 @@
 ﻿import { Users } from "@core/database/Users";
 import { Log } from "@shared/log";
 import { addDays, differenceInHours, formatDistanceToNow } from "date-fns";
-import { getLocaleFromLanguage, Language } from "./Language";
+import { getLocaleFromLanguage, Language, Localization } from "./Language";
 import { UserItems } from "@core/database/UserItems";
 import { addHours } from "date-fns/addHours";
 import { Op } from "sequelize";
@@ -1474,4 +1474,4 @@ const Strings = {
 		hospitalSimple: "Hospitalizado",
 		hospitalComplex: `Hospitalizado hasta`,
 	},
-} as const;
+} as const satisfies Localization;

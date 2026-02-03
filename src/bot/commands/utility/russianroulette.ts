@@ -9,7 +9,7 @@
 } from "discord.js";
 import { replyWithContainer } from "@bot/utils/discordInteractions";
 import { User } from "@core/models/User";
-import { Language } from "@core/models/Language";
+import { Language, Localization } from "@core/models/Language";
 import { Casino } from "@core/models/Casino";
 import { defaultComponent, formatMoney } from "@bot/utils/ui";
 import { CrColors } from "@bot/utils/colors";
@@ -434,4 +434,4 @@ const Strings = {
 		thiefModifier: (emote: string, name: string) => `-# ¡Premio reducido debido al modificador de la clase ${emote} **${name}**!`,
 		attorneyModifier: (emote: string, name: string) => `-# ¡Premio aumentado debido al modificador de la clase ${emote} **${name}**!`,
 	},
-} as const;
+} as const satisfies Localization;

@@ -9,7 +9,7 @@
 	SlashCommandBuilder,
 } from "discord.js";
 import { deferReply, replyInteraction, replyWithContainer } from "@bot/utils/discordInteractions";
-import { Language } from "@core/models/Language";
+import { Language, Localization } from "@core/models/Language";
 import { EmoteId, EmoteString } from "@bot/utils/emotes";
 import { differenceInHours, subMinutes } from "date-fns";
 import { User } from "@core/models/User";
@@ -248,4 +248,4 @@ const Strings = {
 		inventoryItems: "Artículos en el inventario",
 		emptyInventory: "Inventario vacío",
 	},
-} as const;
+} as const satisfies Localization;

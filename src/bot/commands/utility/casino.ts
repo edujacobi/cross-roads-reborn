@@ -3,7 +3,7 @@ import { User } from "@core/models/User";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 import { replyWithContainer } from "@bot/utils/discordInteractions";
 import { CrColors } from "@bot/utils/colors";
-import { Language } from "@core/models/Language";
+import { Language, Localization } from "@core/models/Language";
 import { EmoteString } from "@bot/utils/emotes";
 
 module.exports = {
@@ -96,4 +96,4 @@ const Strings = {
 		russianRouletteDescription: `Apuesta una cantidad y compete contra tus amigos. ¡Solo uno se llevará el dinero y todos los demás quedarán ${EmoteString.Hospital} Hospitalizados!`,
 		russianRouletteDescription2: `Usa \`/ruletarusa <apuesta>\` para iniciar una nueva ruleta.`,
 	},
-} as const;
+} as const satisfies Localization;

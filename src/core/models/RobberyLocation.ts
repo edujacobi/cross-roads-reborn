@@ -8,7 +8,7 @@ import { setTimeout as wait } from "timers/promises";
 import { addHours } from "date-fns/addHours";
 import { Notification } from "./Notification";
 import { addMinutes } from "date-fns";
-import { globalStrings, Language } from "./Language";
+import { globalStrings, Language, Localization } from "./Language";
 import { RobHistories } from "@core/database/RobHistories";
 import { Users } from "@core/database/Users";
 import { JobId, JobList } from "@core/types/Jobs";
@@ -267,4 +267,4 @@ const Strings = {
 		success: "Éxito",
 		failure: "Fracaso",
 	},
-} as const;
+} as const satisfies Localization;

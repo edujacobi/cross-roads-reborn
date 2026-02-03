@@ -10,7 +10,7 @@
 } from "discord.js";
 import { replyWithContainer } from "@bot/utils/discordInteractions";
 import { User } from "@core/models/User";
-import { Language } from "@core/models/Language";
+import { Language, Localization } from "@core/models/Language";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 import { BundleList, getSkinBundleList } from "@core/types/Skins";
 import { ItemList, Items } from "@core/types/Items";
@@ -300,4 +300,4 @@ const Strings = {
 		select: "Seleccionar",
 		applied: "Aplicado a todos los artículos",
 	},
-} as const;
+} as const satisfies Localization;

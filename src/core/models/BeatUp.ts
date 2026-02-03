@@ -18,7 +18,7 @@ import { getClient } from "@bot/client";
 import { setTimeout as wait } from "timers/promises";
 import { Notification } from "./Notification";
 import { addMinutes } from "date-fns";
-import { globalStrings, Language } from "./Language";
+import { globalStrings, Language, Localization } from "./Language";
 import { RobHistories } from "@core/database/RobHistories";
 import { Users } from "@core/database/Users";
 import { ClassId, ClassList } from "@core/types/Classes";
@@ -687,4 +687,4 @@ const Strings = {
 		youFailed: (time: Date) => `¡Lo intentaste, pero tú fuiste el golpeado!\n-# Permanecerás en el hospital hasta ${showTime(time.getTime())} ${EmoteString.Hospital}`,
 		finishedBeatUpAttacker: (success: boolean) => `Golpiza ${success ? "exitosa" : "fallida"}`,
 	},
-} as const;
+} as const satisfies Localization;

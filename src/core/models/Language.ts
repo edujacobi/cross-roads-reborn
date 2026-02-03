@@ -9,6 +9,26 @@ export enum Language {
 	Spanish
 }
 
+type LocalizationReturn =
+	string |
+	string[] |
+	((...param: never) => string) |
+	((...param: never) => string)[] |
+	Record<
+		string,
+		string |
+		((...param: never) => string)
+	>
+
+export type Localization =
+	Record<
+		Language,
+		Record<
+			string,
+			LocalizationReturn
+		>
+	>;
+
 export function getLanguageText(language: Language) {
 	switch (language) {
 	case Language.English:
@@ -77,4 +97,4 @@ export const globalStrings = {
 		defenderIsBeatingId: (nick: CreationOptional<string> | undefined) => `está golpeando a **${nick}**! ${EmoteString.Beat}\n-# ¡Espera unos segundos más para iniciar tu acción!`,
 		defenderIsBeingBeatedById: (nick: CreationOptional<string> | undefined) => `está siendo golpeado por **${nick}**! ${EmoteString.Beat}\n-# ¡Espera unos segundos más para iniciar tu acción!`,
 	},
-};
+} as const satisfies Localization;

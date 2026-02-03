@@ -1,6 +1,6 @@
 ﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
 import { replyWithContainer } from "@bot/utils/discordInteractions";
-import { Language } from "@core/models/Language";
+import { Language, Localization } from "@core/models/Language";
 import { CrColors } from "@bot/utils/colors";
 import { User } from "@core/models/User";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
@@ -99,4 +99,4 @@ Para que todo vaya sobre ruedas, asegúrate de que puedes recibir mensajes priva
 		description7: `## Ayuda adicional
 ¿Confundido con algo? ¿Encontraste un error? Contáctanos en el [servidor oficial](https://discord.com/invite/sNf8avn).`,
 	},
-} as const;
+} as const satisfies Localization;

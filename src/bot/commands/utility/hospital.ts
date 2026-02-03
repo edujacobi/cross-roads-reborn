@@ -9,7 +9,7 @@ import { replyWithContainer } from "@bot/utils/discordInteractions";
 import { Pagination } from "@core/models/Pagination";
 import { ClassList } from "@core/types/Classes";
 import { defaultComponent, formatMoney, showTime } from "@bot/utils/ui";
-import { Language } from "@core/models/Language";
+import { Language, Localization } from "@core/models/Language";
 import { createButtonCollector, disableButtons } from "@bot/utils/collectors";
 
 module.exports = {
@@ -283,4 +283,4 @@ const Strings = {
 		withoutMoney: (money: number) => `¡No tienes suficiente dinero! ¡Necesitas ${formatMoney(money, Language.Spanish)} para la atención privada!`,
 		howManyTimes: (times: number) => `Hospitalizado \`${times}\` veces`,
 	},
-} as const;
+} as const satisfies Localization;

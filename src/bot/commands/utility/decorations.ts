@@ -9,7 +9,7 @@
 } from "discord.js";
 import { replyInteraction, replyWithContainer } from "@bot/utils/discordInteractions";
 import { User } from "@core/models/User";
-import { Language } from "@core/models/Language";
+import { Language, Localization } from "@core/models/Language";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 import { CrColors } from "@bot/utils/colors";
 import { UserAvatarDecoration } from "@core/models/UserAvatarDecoration";
@@ -225,4 +225,4 @@ const Strings = {
 		goBack: "Volver",
 		applied: "Aplicado! Utilice `/inv` para ver",
 	},
-} as const;
+} as const satisfies Localization;

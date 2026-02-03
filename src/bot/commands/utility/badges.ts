@@ -2,7 +2,7 @@ import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discor
 import { User } from "@core/models/User";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 import { BadgeId, getBadgeList } from "@core/types/Badges";
-import { Language } from "@core/models/Language";
+import { Language, Localization } from "@core/models/Language";
 import { UserBadge } from "@core/models/UserBadge";
 import { deferReply, replyWithContainer } from "@bot/utils/discordInteractions";
 
@@ -117,4 +117,4 @@ const Strings = {
 		seasonal: "Insignia de temporada",
 		your: "Tus insignias",
 	},
-} as const;
+} as const satisfies Localization;

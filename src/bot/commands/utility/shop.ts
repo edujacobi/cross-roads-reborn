@@ -6,7 +6,7 @@ import { formatMoney } from "@bot/utils/ui";
 import { deferReply, replyWithContainer } from "@bot/utils/discordInteractions";
 import { EmoteString } from "@bot/utils/emotes";
 import { ItemList, ItemType } from "@core/types/Items";
-import { Language } from "@core/models/Language";
+import { Language, Localization } from "@core/models/Language";
 import { createButtonCollector, disableButtons } from "@bot/utils/collectors";
 
 module.exports = {
@@ -252,4 +252,4 @@ const Strings = {
 		next: "Siguiente",
 		previous: "Anterior",
 	},
-} as const;
+} as const satisfies Localization;

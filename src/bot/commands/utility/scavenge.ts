@@ -7,7 +7,7 @@ import { EmoteString } from "@bot/utils/emotes";
 import { replyWithContainer } from "@bot/utils/discordInteractions";
 import { IScavenge, ScavengeFailureReason, ScavengeList } from "@core/types/Scavenge";
 import { defaultComponent, formatMoney, showTime } from "@bot/utils/ui";
-import { globalStrings, Language } from "@core/models/Language";
+import { globalStrings, Language, Localization } from "@core/models/Language";
 import { ClassList, getScavengeChanceClassModifier, getScavengeDurationClassModifier } from "@core/types/Classes";
 import { ItemList, ItemType } from "@core/types/Items";
 import { setTimeout as wait } from "timers/promises";
@@ -432,4 +432,4 @@ const Strings = {
 		inprisoned: "Serás liberado",
 
 	},
-} as const;
+} as const satisfies Localization;

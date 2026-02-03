@@ -4,7 +4,7 @@ import { defaultComponent, showTime } from "@bot/utils/ui";
 import { EmoteString } from "@bot/utils/emotes";
 import { CrColors } from "@bot/utils/colors";
 import { User } from "@core/models/User";
-import { Language } from "@core/models/Language";
+import { Language, Localization } from "@core/models/Language";
 import { BeatUp } from "@core/models/BeatUp";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 import { searchUser } from "@bot/utils/userUtils";
@@ -152,4 +152,4 @@ Para golpear, el objetivo debe estar ${EmoteString.Idle} **Vagando**.
 -# Si estás ${EmoteString.Prison} Encarcelado, también puedes golpear a otros prisioneros.`,
 		success: "Éxito",
 	},
-} as const;
+} as const satisfies Localization;

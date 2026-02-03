@@ -8,7 +8,7 @@
 	SlashCommandBuilder,
 } from "discord.js";
 import { deferReply, replyInteraction, replyWithContainer } from "@bot/utils/discordInteractions";
-import { Language } from "@core/models/Language";
+import { Language, Localization } from "@core/models/Language";
 import { User } from "@core/models/User";
 import { ClassList } from "@core/types/Classes";
 import { UserBadge } from "@core/models/UserBadge";
@@ -421,4 +421,4 @@ const Strings = {
 		playingSince: "Jugando desde",
 		goBack: "Volver",
 	},
-} as const;
+} as const satisfies Localization;

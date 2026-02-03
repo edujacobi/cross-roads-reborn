@@ -2,7 +2,7 @@
 import { replyWithContainer } from "@bot/utils/discordInteractions";
 import { EmoteString } from "@bot/utils/emotes";
 import { User } from "@core/models/User";
-import { Language } from "@core/models/Language";
+import { Language, Localization } from "@core/models/Language";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 
 module.exports = {
@@ -86,4 +86,4 @@ Na \`/lojaespecial\`, utilizando as ${EmoteString.SpecialCoinShop}Moedas Especia
 		howToAcquire: `## Cómo adquirir
 En \`/specialshop\`, usando ¡${EmoteString.SpecialCoinShop}Monedas especiales!`,
 	},
-} as const;
+} as const satisfies Localization;

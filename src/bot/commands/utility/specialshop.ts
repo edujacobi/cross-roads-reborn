@@ -9,7 +9,7 @@
 } from "discord.js";
 import { deferReply, replyInteraction, replyWithContainer } from "@bot/utils/discordInteractions";
 import { User } from "@core/models/User";
-import { Language } from "@core/models/Language";
+import { Language, Localization } from "@core/models/Language";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 import { BundleList, getSkinBundleList } from "@core/types/Skins";
 import { EmoteId, EmoteString } from "@bot/utils/emotes";
@@ -464,7 +464,7 @@ const Strings = {
 		months: (months: number) => `${months} ${months === 1 ? "Month" : "Months"}`,
 		vipDescription: `All that a new aristrocrat needs!`,
 		vipMoreInfo: `For more information, see \`/vip\``,
-		vipBought: (months: number) => `You bought **${Strings[Language.English].months(months)}** of ${EmoteString.VIP} VIP!`,
+		vipBought: (months: number) => `You bought **${months} ${months === 1 ? "Month" : "Months"}** of ${EmoteString.VIP} VIP!`,
 		buy: "Buy",
 		avatarDecoration: "Avatar decorations",
 		defeatDecoration: "Defeat your opponents in style",
@@ -492,7 +492,7 @@ const Strings = {
 		months: (months: number) => `${months} ${months === 1 ? "Mês" : "Meses"}`,
 		vipDescription: `Tudo que um novo aristocrata precisa!`,
 		vipMoreInfo: `Para mais informações, veja \`/vip\``,
-		vipBought: (months: number) => `Você comprou **${Strings[Language.Portuguese].months(months)}** de ${EmoteString.VIP} VIP!`,
+		vipBought: (months: number) => `Você comprou **${months} ${months === 1 ? "Mês" : "Meses"}** de ${EmoteString.VIP} VIP!`,
 		buy: "Comprar",
 		avatarDecoration: "Decorações de avatar",
 		defeatDecoration: "Derrote seus oponentes com estilo",
@@ -520,7 +520,7 @@ const Strings = {
 		months: (months: number) => `${months} ${months === 1 ? "Mes" : "Meses"}`,
 		vipDescription: `Todo lo que necesita un nuevo aristócrata!`,
 		vipMoreInfo: `Para obtener más información, consulte \`/vip\``,
-		vipBought: (months: number) => `Compraste **${Strings[Language.English].months(months)}** de ${EmoteString.VIP} VIP!`,
+		vipBought: (months: number) => `Compraste **${months} ${months === 1 ? "Mes" : "Meses"}** de ${EmoteString.VIP} VIP!`,
 		buy: "Comprar",
 		avatarDecoration: "Decoraciones de avatar",
 		defeatDecoration: "Derrota a tus oponentes con estilo",
@@ -528,4 +528,4 @@ const Strings = {
 		howToAcquireTitle: "Cómo adquirir",
 		howToAcquireDescription: "En el servidor oficial, en el canal #vip-special-coins.",
 	},
-} as const;
+} as const satisfies Localization;

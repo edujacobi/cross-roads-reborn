@@ -10,7 +10,7 @@ import { replyWithContainer } from "@bot/utils/discordInteractions";
 import { formatMoney } from "@bot/utils/ui";
 import { CrColors } from "@bot/utils/colors";
 import { EmoteString } from "@bot/utils/emotes";
-import { Language } from "@core/models/Language";
+import { Language, Localization } from "@core/models/Language";
 import { setTimeout as wait } from "timers/promises";
 import { User } from "@core/models/User";
 import { Casino } from "@core/models/Casino";
@@ -283,4 +283,4 @@ const Strings = {
 		totalBalance: "Balanco total",
 		winStreak: (value: number) => `Ganaste ${value} seguidas`,
 	},
-} as const;
+} as const satisfies Localization;

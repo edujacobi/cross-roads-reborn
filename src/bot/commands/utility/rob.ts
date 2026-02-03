@@ -4,7 +4,7 @@ import { defaultComponent, formatMoney, showTime } from "@bot/utils/ui";
 import { EmoteString } from "@bot/utils/emotes";
 import { CrColors } from "@bot/utils/colors";
 import { User } from "@core/models/User";
-import { Language } from "@core/models/Language";
+import { Language, Localization } from "@core/models/Language";
 import { Robbery } from "@core/models/Robbery";
 import { getLocationList, LocationList } from "@core/types/Locations";
 import { RobberyLocation } from "@core/models/RobberyLocation";
@@ -304,4 +304,4 @@ Si lo consigues, serás buscado por la policía y tendrás que esperar 1 hora pa
 		need: "Necesario",
 		canRob: "Puedes robar:",
 	},
-} as const;
+} as const satisfies Localization;

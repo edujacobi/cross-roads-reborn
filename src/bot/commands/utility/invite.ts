@@ -10,7 +10,7 @@ import { defaultComponent } from "@bot/utils/ui";
 import { replyWithContainer } from "@bot/utils/discordInteractions";
 import { CrColors } from "@bot/utils/colors";
 import { User } from "@core/models/User";
-import { Language } from "@core/models/Language";
+import { Language, Localization } from "@core/models/Language";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -68,4 +68,4 @@ const Strings = {
 		addTo: "Añadir al servidor",
 		join: "Únete al servidor oficial",
 	},
-} as const;
+} as const satisfies Localization;

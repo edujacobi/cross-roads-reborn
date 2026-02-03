@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { UserBadge } from "@core/models/UserBadge";
 import { BadgeList, getBadgeList } from "@core/types/Badges";
-import { Language } from "@core/models/Language";
+import { Language, Localization } from "@core/models/Language";
 import { deferReply, replyInteraction, replyUserDontExist, replyWithContainer } from "@bot/utils/discordInteractions";
 import { User } from "@core/models/User";
 import { Pagination } from "@core/models/Pagination";
@@ -225,4 +225,4 @@ const Strings = {
 		badgesTitle: (user: string) => `Insignias de ${user}`,
 		badgesFooter: (count: number) => `Total: ${count} insignia(s)`,
 	},
-} as const;
+} as const satisfies Localization;

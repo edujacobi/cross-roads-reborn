@@ -1,7 +1,7 @@
 import { User } from "./User";
 import { EmoteString } from "@bot/utils/emotes";
 import { formatMoney, showTime } from "@bot/utils/ui";
-import { Language } from "./Language";
+import { Language, Localization } from "./Language";
 import {
 	ActionRowBuilder,
 	ChatInputCommandInteraction,
@@ -931,4 +931,4 @@ Apostaste al ${userEmoji} **${userName}** y perdiste tu apuesta.`,
 		customAmount: "Usar apuesta personalizada",
 		invalidAmount: "Cantidad inválida. Por favor, ingrese un número válido.",
 	},
-} as const;
+} as const satisfies Localization;

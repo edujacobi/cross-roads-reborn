@@ -2,7 +2,7 @@
 import { replyWithContainer } from "@bot/utils/discordInteractions";
 import path from "node:path";
 import fs from "node:fs";
-import { Language } from "@core/models/Language";
+import { Language, Localization } from "@core/models/Language";
 import { CrColors } from "@bot/utils/colors";
 import { User } from "@core/models/User";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
@@ -68,4 +68,4 @@ const Strings = {
 	[Language.Spanish]: {
 		title: "Comandos",
 	},
-} as const;
+} as const satisfies Localization;

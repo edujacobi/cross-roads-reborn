@@ -4,7 +4,7 @@ import { EmoteString } from "@bot/utils/emotes";
 import { formatMoney, showTime } from "@bot/utils/ui";
 import { getJobList, JobId, JobList, Jobs } from "@core/types/Jobs";
 import { getItemList, ItemList } from "@core/types/Items";
-import { Language } from "@core/models/Language";
+import { Language, Localization } from "@core/models/Language";
 import { CrColors } from "@bot/utils/colors";
 import { User } from "@core/models/User";
 import { Users } from "@core/database/Users";
@@ -393,4 +393,4 @@ const Strings = {
 		withoutItems: (jobDescription: string, neededItems: string) => `Usted no tiene los elementos necesarios para comenzar a trabajar como **${jobDescription}**\n-# Usted necesita ${neededItems}`,
 		jobStarted: (jobDescription: string, jobTime: Date) => `Usted comenzó a trabajar como **${jobDescription}**\n-# Terminará ${showTime(jobTime.getTime(), true)}.`,
 	},
-} as const;
+} as const satisfies Localization;

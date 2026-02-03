@@ -2,7 +2,7 @@
 import { replyWithContainer } from "@bot/utils/discordInteractions";
 import { formatMoney } from "@bot/utils/ui";
 import { User } from "@core/models/User";
-import { Language } from "@core/models/Language";
+import { Language, Localization } from "@core/models/Language";
 import { Class, ClassId, ClassList, ClassModifier } from "@core/types/Classes";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 import { CrColors } from "@bot/utils/colors";
@@ -283,4 +283,4 @@ const Strings = {
 		classChanged: (oldClass: ClassId, newClass: ClassId) => `Ahora tienes la clase ${ClassList[oldClass].Image.Emote.String} → ${ClassList[newClass].Image.Emote.String} **${ClassList[newClass].Name[Language.Spanish]}**!`,
 		errorChange: "No tienes suficiente dinero para cambiar de clase.",
 	},
-} as const;
+} as const satisfies Localization;

@@ -10,7 +10,7 @@ import { defaultComponent } from "@bot/utils/ui";
 import { replyInteraction, replyWithContainer, sendPrivateMessage } from "@bot/utils/discordInteractions";
 import { EmoteString } from "@bot/utils/emotes";
 import { User } from "@core/models/User";
-import { Language } from "@core/models/Language";
+import { Language, Localization } from "@core/models/Language";
 import { checkUser } from "@bot/utils/userUtils";
 
 module.exports = {
@@ -52,7 +52,7 @@ module.exports = {
 				VIP: `${EmoteString.VIP} Ahora eres un VIP Eternal!`,
 				noVIP: `${EmoteString.VIP} No eres más un VIP Eternal... Cómo?`,
 			},
-		} as const;
+		} as const satisfies Localization;
 
 		let description = "";
 

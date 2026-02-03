@@ -15,7 +15,7 @@
 } from "discord.js";
 import { getClient } from "../client";
 import { Log } from "@shared/log";
-import { Language } from "@core/models/Language";
+import { Language, Localization } from "@core/models/Language";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 
 /**
@@ -155,4 +155,4 @@ const Strings = {
 	[Language.Spanish]: {
 		userDontExist: "Este usuario no existe en la base de datos.",
 	},
-} as const;
+} as const satisfies Localization;

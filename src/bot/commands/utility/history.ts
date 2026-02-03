@@ -5,7 +5,7 @@ import { User } from "@core/models/User";
 import { RobHistories } from "@core/database/RobHistories";
 import { EmoteString } from "@bot/utils/emotes";
 import { Users } from "@core/database/Users";
-import { Language } from "@core/models/Language";
+import { Language, Localization } from "@core/models/Language";
 import { Pagination } from "@core/models/Pagination";
 import { ClassList } from "@core/types/Classes";
 import { LocationList } from "@core/types/Locations";
@@ -149,4 +149,4 @@ const Strings = {
 		robbedTimes: (beingRobbedCount: number) => `Fue robado \`${beingRobbedCount}\` veces`,
 		lost: "Perdió",
 	},
-} as const;
+} as const satisfies Localization;

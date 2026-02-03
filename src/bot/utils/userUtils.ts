@@ -1,5 +1,5 @@
 import { CommandInteraction } from "discord.js";
-import { getLanguageFromLocale, Language } from "@core/models/Language";
+import { getLanguageFromLocale, Language, Localization } from "@core/models/Language";
 import { User } from "@core/models/User";
 import { Users } from "@core/database/Users";
 import { Op } from "sequelize";
@@ -148,4 +148,4 @@ ${EmoteString.Jobs} Para empezar a trabajar, usa \`/jobs\`.
 
 -# ¡Espero que disfrutes del juego!`,
 	},
-} as const;
+} as const satisfies Localization;

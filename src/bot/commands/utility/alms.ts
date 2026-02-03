@@ -1,7 +1,7 @@
 ﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
 import { replyWithContainer, sendPrivateMessage } from "@bot/utils/discordInteractions";
 import { User } from "@core/models/User";
-import { Language } from "@core/models/Language";
+import { Language, Localization } from "@core/models/Language";
 import { defaultComponent, formatMoney } from "@bot/utils/ui";
 import { EmoteString } from "@bot/utils/emotes";
 import { CrColors } from "@bot/utils/colors";
@@ -81,4 +81,4 @@ const Strings = {
 		received: (money: number) => `te ha dado una limosna de ${formatMoney(money, Language.Spanish)}`,
 		receivedServer: (serverName: string, money: number) => `del servidor ${serverName} te ha dado una limosna de ${formatMoney(money, Language.Spanish)}`,
 	},
-} as const;
+} as const satisfies Localization;
