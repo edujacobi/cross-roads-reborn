@@ -1,7 +1,8 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, MessageFlags } from "discord.js";
-import { createButtonCollector, disableButtons, replyInteraction } from "@bot/utils/logic";
+import { replyInteraction } from "@bot/utils/discordInteractions";
 import { Language } from "./Language";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
+import { createButtonCollector, disableButtons } from "@bot/utils/collectors";
 
 export class Pagination {
 	Interaction: ChatInputCommandInteraction;

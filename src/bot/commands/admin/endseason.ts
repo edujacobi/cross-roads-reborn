@@ -7,7 +7,7 @@
 	PermissionFlagsBits,
 	SlashCommandBuilder,
 } from "discord.js";
-import { createButtonCollector, disableButtons, replyWithContainer } from "@bot/utils/logic";
+import { replyWithContainer } from "@bot/utils/discordInteractions";
 import { CrColors } from "@bot/utils/colors";
 import { Users } from "@core/database/Users";
 import { Op } from "sequelize";
@@ -24,6 +24,7 @@ import { Notifications } from "@core/database/Notifications";
 import GangMembers from "@core/database/GangMembers";
 import GangRoles from "@core/database/GangRoles";
 import { EmoteString } from "@bot/utils/emotes";
+import { createButtonCollector, disableButtons } from "@bot/utils/collectors";
 
 module.exports = {
 	data: new SlashCommandBuilder()

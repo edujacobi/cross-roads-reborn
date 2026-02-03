@@ -1,5 +1,5 @@
 ﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder, SlashCommandUserOption } from "discord.js";
-import { replyInteraction } from "@bot/utils/logic";
+import { replyInteraction } from "@bot/utils/discordInteractions";
 import { User } from "@core/models/User";
 import { Language } from "@core/models/Language";
 

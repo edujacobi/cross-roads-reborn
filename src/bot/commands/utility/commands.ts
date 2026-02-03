@@ -1,5 +1,5 @@
 ﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
-import { replyWithContainer } from "@bot/utils/logic";
+import { replyWithContainer } from "@bot/utils/discordInteractions";
 import path from "node:path";
 import fs from "node:fs";
 import { Language } from "@core/models/Language";

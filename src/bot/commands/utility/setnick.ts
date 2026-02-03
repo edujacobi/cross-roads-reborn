@@ -6,7 +6,7 @@
 	SlashCommandBuilder,
 	SlashCommandStringOption,
 } from "discord.js";
-import { createButtonCollector, disableButtons, replyWithContainer } from "@bot/utils/logic";
+import { replyWithContainer } from "@bot/utils/discordInteractions";
 import { defaultComponent, formatMoney } from "@bot/utils/ui";
 import { Users } from "@core/database/Users";
 import { User } from "@core/models/User";
@@ -14,6 +14,7 @@ import { Language } from "@core/models/Language";
 import { Op } from "sequelize";
 import { CrColors } from "@bot/utils/colors";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
+import { createButtonCollector, disableButtons } from "@bot/utils/collectors";
 
 module.exports = {
 	data: new SlashCommandBuilder()

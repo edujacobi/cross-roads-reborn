@@ -6,7 +6,7 @@
 	Locale,
 	SlashCommandBuilder,
 } from "discord.js";
-import { replyWithContainer } from "@bot/utils/logic";
+import { replyWithContainer } from "@bot/utils/discordInteractions";
 import { Language } from "@core/models/Language";
 import { User } from "@core/models/User";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";

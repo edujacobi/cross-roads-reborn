@@ -6,7 +6,7 @@
 	SlashCommandIntegerOption,
 	SlashCommandNumberOption,
 } from "discord.js";
-import { createButtonCollector, disableButtons, replyWithContainer } from "@bot/utils/logic";
+import { replyWithContainer } from "@bot/utils/discordInteractions";
 import { formatMoney } from "@bot/utils/ui";
 import { CrColors } from "@bot/utils/colors";
 import { EmoteString } from "@bot/utils/emotes";
@@ -16,6 +16,7 @@ import { User } from "@core/models/User";
 import { Casino } from "@core/models/Casino";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 import { getCasinoClassModifier } from "@core/types/Classes";
+import { createButtonCollector, disableButtons } from "@bot/utils/collectors";
 
 const enum CoinSide {
 	Heads = 0,

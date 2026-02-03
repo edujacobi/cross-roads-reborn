@@ -6,7 +6,7 @@
 	SlashCommandBuilder,
 	TextDisplayBuilder,
 } from "discord.js";
-import { createButtonCollector, deferReply, disableButtons, replyWithContainer } from "@bot/utils/logic";
+import { deferReply, replyWithContainer } from "@bot/utils/discordInteractions";
 import { Language } from "@core/models/Language";
 import { User } from "@core/models/User";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
@@ -17,6 +17,7 @@ import { addHours, addMinutes } from "date-fns";
 import { Log } from "@shared/log";
 import { Notification } from "@core/models/Notification";
 import { getRandomItemFromArray } from "@shared/utils";
+import { createButtonCollector, disableButtons } from "@bot/utils/collectors";
 
 module.exports = {
 	data: new SlashCommandBuilder()

@@ -7,7 +7,7 @@
 	Locale,
 	SlashCommandBuilder,
 } from "discord.js";
-import { checkUser, disableButtons, replyWithContainer } from "@bot/utils/logic";
+import { replyWithContainer } from "@bot/utils/discordInteractions";
 import { User } from "@core/models/User";
 import { Language } from "@core/models/Language";
 import { Casino } from "@core/models/Casino";
@@ -18,6 +18,8 @@ import { EmoteString } from "@bot/utils/emotes";
 import { addHours } from "date-fns/addHours";
 import { setTimeout as wait } from "node:timers/promises";
 import { ClassId, ClassList } from "@core/types/Classes";
+import { checkUser } from "@bot/utils/userUtils";
+import { disableButtons } from "@bot/utils/collectors";
 
 module.exports = {
 	data: new SlashCommandBuilder()

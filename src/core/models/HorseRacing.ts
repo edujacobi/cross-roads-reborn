@@ -12,13 +12,7 @@ import {
 	StringSelectMenuOptionBuilder,
 } from "discord.js";
 import { CrColors } from "@bot/utils/colors";
-import {
-	createStringSelectCollector,
-	disableButtons,
-	replyInteraction,
-	replyWithContainer,
-	sendPrivateMessage,
-} from "@bot/utils/logic";
+import { replyInteraction, replyWithContainer, sendPrivateMessage } from "@bot/utils/discordInteractions";
 import { HorseRaces } from "@core/database/HorseRaces";
 import { HorseRaceBets } from "@core/database/HorseRaceBets";
 import { addHours } from "date-fns/addHours";
@@ -28,6 +22,7 @@ import { Notification, NotificationType } from "./Notification";
 import { Log } from "@shared/log";
 import { ClassList } from "@core/types/Classes";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
+import { createStringSelectCollector, disableButtons } from "@bot/utils/collectors";
 
 // Number of horses in each race
 export const HORSE_COUNT = 5;

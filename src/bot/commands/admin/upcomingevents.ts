@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
 import { Event } from "@core/models/Event";
-import { replyInteraction, replyWithContainer } from "@bot/utils/logic";
+import { replyInteraction, replyWithContainer } from "@bot/utils/discordInteractions";
 import { CrColors } from "@bot/utils/colors";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 

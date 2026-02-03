@@ -7,7 +7,7 @@ import { User } from "./User";
 import { Language } from "./Language";
 import { EmoteString } from "@bot/utils/emotes";
 import { formatMoney } from "@bot/utils/ui";
-import { sendPrivateMessage } from "@bot/utils/logic";
+import { sendPrivateMessage } from "@bot/utils/discordInteractions";
 import { CrColors } from "@bot/utils/colors";
 import { getJobClassModifier } from "@core/types/Classes";
 

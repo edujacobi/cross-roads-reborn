@@ -12,12 +12,14 @@ import { Language } from "@core/models/Language";
 import { User } from "@core/models/User";
 import { Gang, GangPermission } from "@core/models/Gang";
 import { convertHexNumberToString, defaultComponent, formatMoney, hexToRGB, showTime } from "@bot/utils/ui";
-import { createButtonCollector, deferReply, disableButtons, replyWithContainer, searchUser } from "@bot/utils/logic";
+import { deferReply, replyWithContainer } from "@bot/utils/discordInteractions";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 import { GangColor, IGangColor } from "@bot/utils/colors";
 import { EmoteString } from "@bot/utils/emotes";
 import { DEFAULT_GANG_IMAGE } from "@bot/ui/builders/GangImageCanvasBuilder";
 import { GangBaseId, GangBases, GangModifier, getGangBases } from "@core/types/GangBases";
+import { searchUser } from "@bot/utils/userUtils";
+import { createButtonCollector, disableButtons } from "@bot/utils/collectors";
 
 enum CommandOption {
 	Info = "info",

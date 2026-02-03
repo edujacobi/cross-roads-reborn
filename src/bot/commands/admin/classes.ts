@@ -5,7 +5,7 @@ import { Language } from "@core/models/Language";
 import { User } from "@core/models/User";
 import { ClassId, ClassList } from "@core/types/Classes";
 import { defaultComponent } from "@bot/utils/ui";
-import { deferReply, replyWithContainer } from "@bot/utils/logic";
+import { deferReply, replyWithContainer } from "@bot/utils/discordInteractions";
 
 module.exports = {
 	data: new SlashCommandBuilder()

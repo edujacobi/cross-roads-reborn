@@ -1,7 +1,7 @@
 import { User } from "./User";
 import { Log } from "@shared/log";
 import { ChatInputCommandInteraction } from "discord.js";
-import { replyWithContainer } from "@bot/utils/logic";
+import { replyWithContainer } from "@bot/utils/discordInteractions";
 import { formatMoney, showTime } from "@bot/utils/ui";
 import { EmoteString } from "@bot/utils/emotes";
 import { setTimeout as wait } from "timers/promises";

@@ -1,5 +1,5 @@
 ﻿import { ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
-import { createButtonCollector, disableButtons, replyWithContainer } from "@bot/utils/logic";
+import { replyWithContainer } from "@bot/utils/discordInteractions";
 import { formatMoney } from "@bot/utils/ui";
 import { User } from "@core/models/User";
 import { Language } from "@core/models/Language";
@@ -8,6 +8,7 @@ import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder"
 import { CrColors } from "@bot/utils/colors";
 import { EmoteString } from "@bot/utils/emotes";
 import { EmoteBadgeString } from "@bot/utils/badges";
+import { createButtonCollector, disableButtons } from "@bot/utils/collectors";
 
 module.exports = {
 	data: new SlashCommandBuilder()

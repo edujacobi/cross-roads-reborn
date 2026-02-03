@@ -8,7 +8,7 @@ import { User } from "@core/models/User";
 import { ClassList } from "@core/types/Classes";
 import { showTime } from "@bot/utils/ui";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
-import { deferReply } from "@bot/utils/logic";
+import { deferReply } from "@bot/utils/discordInteractions";
 
 module.exports = {
 	data: new SlashCommandBuilder()

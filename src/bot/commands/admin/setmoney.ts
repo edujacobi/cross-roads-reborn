@@ -7,9 +7,10 @@
 	SlashCommandStringOption,
 } from "discord.js";
 import { defaultComponent, formatMoney } from "@bot/utils/ui";
-import { checkUser, replyInteraction, replyWithContainer, sendPrivateMessage } from "@bot/utils/logic";
+import { replyInteraction, replyWithContainer, sendPrivateMessage } from "@bot/utils/discordInteractions";
 import { User } from "@core/models/User";
 import { CrColors } from "@bot/utils/colors";
+import { checkUser } from "@bot/utils/userUtils";
 
 enum SetMoneyConfiguration {
 	Add,

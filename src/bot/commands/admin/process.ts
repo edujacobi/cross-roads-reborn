@@ -1,6 +1,6 @@
 ﻿import { ChatInputCommandInteraction, Locale, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
 import { getClient } from "../../client";
-import { replyWithContainer } from "@bot/utils/logic";
+import { replyWithContainer } from "@bot/utils/discordInteractions";
 import { CrColors } from "@bot/utils/colors";
 import { Users } from "@core/database/Users";
 import { Op } from "sequelize";

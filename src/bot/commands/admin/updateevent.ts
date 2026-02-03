@@ -7,7 +7,7 @@ import {
 	SlashCommandStringOption,
 } from "discord.js";
 import { Event } from "@core/models/Event";
-import { replyInteraction } from "@bot/utils/logic";
+import { replyInteraction } from "@bot/utils/discordInteractions";
 import { Events } from "@core/database/Events";
 
 module.exports = {

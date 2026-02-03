@@ -10,7 +10,7 @@ import {
 import { Users } from "@core/database/Users";
 import { Op } from "sequelize";
 import { getLanguageFromLocale } from "@core/models/Language";
-import { replyInteraction, replyUserDontExist } from "@bot/utils/logic";
+import { replyInteraction, replyUserDontExist } from "@bot/utils/discordInteractions";
 
 module.exports = {
 	data: new SlashCommandBuilder()

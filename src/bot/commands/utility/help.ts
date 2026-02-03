@@ -1,5 +1,5 @@
 ﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
-import { replyWithContainer } from "@bot/utils/logic";
+import { replyWithContainer } from "@bot/utils/discordInteractions";
 import { Language } from "@core/models/Language";
 import { CrColors } from "@bot/utils/colors";
 import { User } from "@core/models/User";

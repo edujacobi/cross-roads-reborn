@@ -2,10 +2,11 @@ import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { UserBadge } from "@core/models/UserBadge";
 import { BadgeList, getBadgeList } from "@core/types/Badges";
 import { Language } from "@core/models/Language";
-import { checkUser, deferReply, replyInteraction, replyUserDontExist, replyWithContainer } from "@bot/utils/logic";
+import { deferReply, replyInteraction, replyUserDontExist, replyWithContainer } from "@bot/utils/discordInteractions";
 import { User } from "@core/models/User";
 import { Pagination } from "@core/models/Pagination";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
+import { checkUser } from "@bot/utils/userUtils";
 
 enum CommandOption {
 	Types = "types",

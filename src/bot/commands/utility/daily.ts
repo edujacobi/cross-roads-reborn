@@ -1,11 +1,12 @@
 ﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
-import { isUserBoosterInOfficialServer, replyWithContainer } from "@bot/utils/logic";
+import { replyWithContainer } from "@bot/utils/discordInteractions";
 import { formatMoney, showTime } from "@bot/utils/ui";
 import { addDays } from "date-fns";
 import { Language } from "@core/models/Language";
 import { CrColors } from "@bot/utils/colors";
 import { User } from "@core/models/User";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
+import { isUserBoosterInOfficialServer } from "@bot/utils/officialServer";
 
 module.exports = {
 	data: new SlashCommandBuilder()

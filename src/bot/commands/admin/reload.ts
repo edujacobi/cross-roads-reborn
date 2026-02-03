@@ -5,7 +5,7 @@ import { SlashCommand } from "@bot/types";
 import { logger } from "@shared/log";
 import { defaultComponent } from "@bot/utils/ui";
 import { User } from "@core/models/User";
-import { deferReply, replyWithContainer } from "@bot/utils/logic";
+import { deferReply, replyWithContainer } from "@bot/utils/discordInteractions";
 
 /**
  * @INFO: DONT FORGET TO RUN 'tsc --watch' FOR /RELOAD TO WORK PROPERLY

@@ -7,13 +7,7 @@
 	MessageFlags,
 	SlashCommandBuilder,
 } from "discord.js";
-import {
-	createButtonCollector,
-	deferReply,
-	disableButtons,
-	replyInteraction,
-	replyWithContainer,
-} from "@bot/utils/logic";
+import { deferReply, replyInteraction, replyWithContainer } from "@bot/utils/discordInteractions";
 import { User } from "@core/models/User";
 import { Language } from "@core/models/Language";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
@@ -26,6 +20,7 @@ import { CrColors } from "@bot/utils/colors";
 import { AvatarDecorationList, getAvatarDecorationList } from "@core/types/AvatarDecorations";
 import { UserImageCanvasBuilder } from "@bot/ui/builders/UserImageCanvasBuilder";
 import { UserAvatarDecoration } from "@core/models/UserAvatarDecoration";
+import { createButtonCollector, disableButtons } from "@bot/utils/collectors";
 
 module.exports = {
 	data: new SlashCommandBuilder()

@@ -8,14 +8,7 @@
 	MessageFlags,
 	SlashCommandBuilder,
 } from "discord.js";
-import {
-	createButtonCollector,
-	deferReply,
-	disableButtons,
-	replyInteraction,
-	replyWithContainer,
-	searchUser,
-} from "@bot/utils/logic";
+import { deferReply, replyInteraction, replyWithContainer } from "@bot/utils/discordInteractions";
 import { Language } from "@core/models/Language";
 import { EmoteId, EmoteString } from "@bot/utils/emotes";
 import { differenceInHours, subMinutes } from "date-fns";
@@ -29,6 +22,8 @@ import { GangColor } from "@bot/utils/colors";
 import { getClient } from "../../client";
 import { UserImageCanvasBuilder } from "@bot/ui/builders/UserImageCanvasBuilder";
 import { GangImageCanvasBuilder } from "@bot/ui/builders/GangImageCanvasBuilder";
+import { searchUser } from "@bot/utils/userUtils";
+import { createButtonCollector, disableButtons } from "@bot/utils/collectors";
 
 module.exports = {
 	data: new SlashCommandBuilder()

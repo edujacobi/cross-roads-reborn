@@ -6,7 +6,7 @@ import { UserItems } from "@core/database/UserItems";
 import { ItemList, ItemType, UserItem } from "@core/types/Items";
 import { Log } from "@shared/log";
 import { EmoteString } from "@bot/utils/emotes";
-import { deferReply, replyInteraction, sendPrivateMessage } from "@bot/utils/logic";
+import { deferReply, replyInteraction, sendPrivateMessage } from "@bot/utils/discordInteractions";
 import { CrColors } from "@bot/utils/colors";
 import { BundleId } from "@core/types/Ids";
 

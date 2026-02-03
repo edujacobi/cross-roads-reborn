@@ -4,7 +4,7 @@ import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder"
 import { BadgeId, getBadgeList } from "@core/types/Badges";
 import { Language } from "@core/models/Language";
 import { UserBadge } from "@core/models/UserBadge";
-import { deferReply, replyWithContainer } from "@bot/utils/logic";
+import { deferReply, replyWithContainer } from "@bot/utils/discordInteractions";
 
 module.exports = {
 	data: new SlashCommandBuilder()

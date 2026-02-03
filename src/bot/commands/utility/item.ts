@@ -8,7 +8,7 @@
 	SlashCommandBuilder,
 	SlashCommandIntegerOption,
 } from "discord.js";
-import { replyWithContainer } from "@bot/utils/logic";
+import { replyWithContainer } from "@bot/utils/discordInteractions";
 import { formatMoney } from "@bot/utils/ui";
 import { Language } from "@core/models/Language";
 import { User } from "@core/models/User";

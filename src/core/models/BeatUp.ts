@@ -10,7 +10,7 @@ import {
 	MessageFlags,
 	User as DUser,
 } from "discord.js";
-import { replyWithContainer, sendComplexPrivateMessage } from "@bot/utils/logic";
+import { replyWithContainer, sendComplexPrivateMessage } from "@bot/utils/discordInteractions";
 import { formatMoney, showTime } from "@bot/utils/ui";
 import { CrColors } from "@bot/utils/colors";
 import { EmoteString } from "@bot/utils/emotes";

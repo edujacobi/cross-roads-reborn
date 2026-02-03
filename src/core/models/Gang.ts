@@ -8,7 +8,7 @@ import { defaultComponent, formatMoney, showTime } from "@bot/utils/ui";
 import { Users } from "@core/database/Users";
 import { Op } from "sequelize";
 import { GangColor, GangColorId } from "@bot/utils/colors";
-import { sendComplexPrivateMessage } from "@bot/utils/logic";
+import { sendComplexPrivateMessage } from "@bot/utils/discordInteractions";
 import {
 	ActionRowBuilder,
 	ButtonBuilder,

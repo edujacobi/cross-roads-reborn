@@ -1,5 +1,5 @@
 ﻿import { ButtonStyle, ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
-import { createButtonCollector, deferReply, disableButtons, replyWithContainer } from "@bot/utils/logic";
+import { deferReply, replyWithContainer } from "@bot/utils/discordInteractions";
 import { EmoteString } from "@bot/utils/emotes";
 import { formatMoney, showTime } from "@bot/utils/ui";
 import { getJobList, JobId, JobList, Jobs } from "@core/types/Jobs";
@@ -14,6 +14,7 @@ import { ScavengeId, ScavengeList } from "@core/types/Scavenge";
 import { Event, EventType } from "@core/models/Event";
 import { BlackMarket } from "@core/models/BlackMarket";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
+import { createButtonCollector, disableButtons } from "@bot/utils/collectors";
 
 module.exports = {
 	data: new SlashCommandBuilder()

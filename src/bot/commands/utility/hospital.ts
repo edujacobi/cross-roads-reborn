@@ -5,11 +5,12 @@ import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder"
 import { CrColors } from "@bot/utils/colors";
 import { EmoteBadgeString } from "@bot/utils/badges";
 import { EmoteString } from "@bot/utils/emotes";
-import { createButtonCollector, disableButtons, replyWithContainer } from "@bot/utils/logic";
+import { replyWithContainer } from "@bot/utils/discordInteractions";
 import { Pagination } from "@core/models/Pagination";
 import { ClassList } from "@core/types/Classes";
 import { defaultComponent, formatMoney, showTime } from "@bot/utils/ui";
 import { Language } from "@core/models/Language";
+import { createButtonCollector, disableButtons } from "@bot/utils/collectors";
 
 module.exports = {
 	data: new SlashCommandBuilder()

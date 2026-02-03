@@ -4,7 +4,7 @@ import { Scavenge } from "@core/models/Scavenge";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 import { CrColors } from "@bot/utils/colors";
 import { EmoteString } from "@bot/utils/emotes";
-import { createButtonCollector, disableButtons, replyWithContainer } from "@bot/utils/logic";
+import { replyWithContainer } from "@bot/utils/discordInteractions";
 import { IScavenge, ScavengeFailureReason, ScavengeList } from "@core/types/Scavenge";
 import { defaultComponent, formatMoney, showTime } from "@bot/utils/ui";
 import { globalStrings, Language } from "@core/models/Language";
@@ -13,6 +13,7 @@ import { ItemList, ItemType } from "@core/types/Items";
 import { setTimeout as wait } from "timers/promises";
 import { addHours } from "date-fns";
 import { JobList } from "@core/types/Jobs";
+import { createButtonCollector, disableButtons } from "@bot/utils/collectors";
 
 module.exports = {
 	data: new SlashCommandBuilder()

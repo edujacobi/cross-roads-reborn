@@ -6,7 +6,7 @@
 	NewsChannel,
 	SlashCommandBuilder,
 } from "discord.js";
-import { deferReply, replyInteraction, replyWithContainer } from "@bot/utils/logic";
+import { deferReply, replyInteraction, replyWithContainer } from "@bot/utils/discordInteractions";
 import { User } from "@core/models/User";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 import { EmoteBadgeString } from "@bot/utils/badges";

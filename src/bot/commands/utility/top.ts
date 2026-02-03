@@ -14,9 +14,10 @@ import { CrColors, GangColor } from "@bot/utils/colors";
 import Gangs from "@core/database/Gangs";
 import { Gang } from "@core/models/Gang";
 import { DEFAULT_GANG_IMAGE } from "@bot/ui/builders/GangImageCanvasBuilder";
-import { deferReply, replyWithContainer, searchUser } from "@bot/utils/logic";
+import { deferReply, replyWithContainer } from "@bot/utils/discordInteractions";
 import { Robbery } from "@core/models/Robbery";
 import { BeatUp } from "@core/models/BeatUp";
+import { searchUser } from "@bot/utils/userUtils";
 
 enum TopSubcommand {
 	Money = "money",

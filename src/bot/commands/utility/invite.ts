@@ -7,7 +7,7 @@
 	SlashCommandBuilder,
 } from "discord.js";
 import { defaultComponent } from "@bot/utils/ui";
-import { replyWithContainer } from "@bot/utils/logic";
+import { replyWithContainer } from "@bot/utils/discordInteractions";
 import { CrColors } from "@bot/utils/colors";
 import { User } from "@core/models/User";
 import { Language } from "@core/models/Language";

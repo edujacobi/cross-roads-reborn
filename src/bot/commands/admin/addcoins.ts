@@ -7,11 +7,12 @@
 	SlashCommandStringOption,
 } from "discord.js";
 import { defaultComponent, formatMoney } from "@bot/utils/ui";
-import { checkUser, replyWithContainer, sendPrivateMessage } from "@bot/utils/logic";
+import { replyWithContainer, sendPrivateMessage } from "@bot/utils/discordInteractions";
 import { EmoteString } from "@bot/utils/emotes";
 import { User } from "@core/models/User";
 import { Language } from "@core/models/Language";
 import { CrColors } from "@bot/utils/colors";
+import { checkUser } from "@bot/utils/userUtils";
 
 module.exports = {
 	data: new SlashCommandBuilder()
