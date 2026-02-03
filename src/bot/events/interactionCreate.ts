@@ -1,18 +1,16 @@
-﻿import { Collection, Colors, CommandInteraction, Events, MessageFlags } from "discord.js";
-import { defaultComponent, showTime } from "@bot/utils/ui";
-import { replyInteraction, replyWithContainer } from "@bot/utils/discordInteractions";
-import { getLanguageFromLocale, Language, Localization } from "@core/models/Language";
+﻿import { replyInteraction, replyWithContainer } from "@bot/utils/discordInteractions";
 import { EmoteString } from "@bot/utils/emotes";
-import { ClassId } from "@core/types/Classes";
-import { logger } from "@shared/log";
-import { User } from "@core/models/User";
-import { checkUser } from "@bot/utils/userUtils";
 import {
 	isUserBoosterInOfficialServer,
-	setPlayerNicknameInOfficialServer,
-	setPlayerRoleInOfficialServer,
-	setVIPRoleInOfficialServer,
+	syncUserInOfficialServer
 } from "@bot/utils/officialServer";
+import { defaultComponent, showTime } from "@bot/utils/ui";
+import { checkUser } from "@bot/utils/userUtils";
+import { getLanguageFromLocale, Language, Localization } from "@core/models/Language";
+import { User } from "@core/models/User";
+import { ClassId } from "@core/types/Classes";
+import { logger } from "@shared/log";
+import { Collection, Colors, CommandInteraction, Events, MessageFlags } from "discord.js";
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const wait = require("node:timers/promises").setTimeout;
@@ -112,11 +110,21 @@ module.exports = {
 
 		interaction.client.userLastCommand.set(interaction.user.id, now);
 
-		await Promise.all([
-			setPlayerRoleInOfficialServer(interaction),
-			setVIPRoleInOfficialServer(interaction),
-			setPlayerNicknameInOfficialServer(interaction, user),
-		]);
+		// Throttled server synchronization (once every 4 hours)
+		const lastSync = interaction.client.userLastSync?.get(interaction.user.id) || 0;
+		const fourHours = 4 * 60 * 60 * 1000;
+
+		if (now - lastSync > fourHours) {
+			try {
+				await syncUserInOfficialServer(interaction, user);
+
+				interaction.client.userLastSync.set(interaction.user.id, now);
+
+			}
+			catch (error) {
+				logger.error("Error during throttled sync:", error);
+			}
+		}
 
 		try {
 			command.execute(interaction, user, language);

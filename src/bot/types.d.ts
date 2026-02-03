@@ -38,6 +38,7 @@ declare module "discord.js" {
 		commands: Collection<string, SlashCommand>,
 		cooldowns: Collection<string, Collection<string, number>>
 		userLastCommand: Collection<string, number>,
+		userLastSync: Collection<string, number>,
 		invites: Collection<number, Collection<string, number>>,
 	}
 }
