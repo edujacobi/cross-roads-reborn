@@ -76,8 +76,8 @@ export class Log {
 			if (process.env.NODE_ENV !== "PROD") {
 				return;
 			}
-			const LOG_CHANNEL_ID = "564988393713303579";
-			const channel = getClient().channels.cache.get(LOG_CHANNEL_ID);
+			const LOG_CHANNEL_ID = process.env.LOG_CHANNEL_ID;
+			const channel = LOG_CHANNEL_ID ? getClient().channels.cache.get(LOG_CHANNEL_ID) : null;
 
 			if (!channel) {
 				return;

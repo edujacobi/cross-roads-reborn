@@ -2,6 +2,8 @@ import { ChatInputCommandInteraction } from "discord.js";
 import { User } from "@core/models/User";
 import { Log } from "@shared/log";
 import { getClient } from "@bot/client";
+import { Users } from "@core/database/Users";
+import { Op } from "sequelize";
 
 /**
  * Assigns the 'Player' role to the user in the official server if they don't have it.
@@ -14,11 +16,11 @@ export async function setPlayerRoleInOfficialServer(interaction: ChatInputComman
 		return;
 	}
 
-	const playerRoleId = "824341916929622017";
+	const playerRoleId = process.env.PLAYER_ROLE_ID;
 
 	const isInOfficialServer = interaction.guild?.id === process.env.SERVER_ID;
 
-	if (!isInOfficialServer) {
+	if (!isInOfficialServer || !playerRoleId) {
 		return;
 	}
 
@@ -34,7 +36,7 @@ export async function setPlayerRoleInOfficialServer(interaction: ChatInputComman
 		return;
 	}
 
-	const isPlayer = user.roles.cache.some(role => role.id === playerRoleId);
+	const isPlayer = user.roles.cache.has(playerRoleId);
 
 	if (isPlayer) {
 		return;
@@ -60,11 +62,11 @@ export async function setVIPRoleInOfficialServer(interaction: ChatInputCommandIn
 		return;
 	}
 
-	const VIPRoleId = "529680357591613442";
+	const VIPRoleId = process.env.VIP_ROLE_ID;
 
 	const isInOfficialServer = interaction.guild?.id === process.env.SERVER_ID;
 
-	if (!isInOfficialServer) {
+	if (!isInOfficialServer || !VIPRoleId) {
 		return;
 	}
 
@@ -86,13 +88,14 @@ export async function setVIPRoleInOfficialServer(interaction: ChatInputCommandIn
 		return;
 	}
 
-	const hasVIPRole = user.roles.cache.some(role => role.id === VIPRoleId);
+	const hasVIPRole = user.roles.cache.has(VIPRoleId);
+	const isVIP = player.IsVip();
 
-	if (hasVIPRole && player.IsVip()) {
+	if (hasVIPRole && isVIP) {
 		return;
 	}
 
-	if (hasVIPRole && !player.IsVip()) {
+	if (hasVIPRole && !isVIP) {
 		try {
 			await user.roles.remove(VIPRole);
 			Log.Success(`Role VIP removed from user ${interaction.user.displayName} (ID: ${interaction.user.id})`);
@@ -102,7 +105,7 @@ export async function setVIPRoleInOfficialServer(interaction: ChatInputCommandIn
 		}
 	}
 
-	if (!hasVIPRole && player.IsVip()) {
+	if (!hasVIPRole && isVIP) {
 		try {
 			await user.roles.add(VIPRole);
 			Log.Success(`Role VIP added to user ${interaction.user.displayName} (ID: ${interaction.user.id})`);
@@ -155,6 +158,25 @@ export async function setPlayerNicknameInOfficialServer(interaction: ChatInputCo
 }
 
 /**
+ * Synchronizes a single user's roles and nickname in the official server.
+ * This is a combined function to be called from the interaction handler.
+ *
+ * @param interaction - The interaction triggering the sync.
+ * @param user - The user object from the database.
+ */
+export async function syncUserInOfficialServer(interaction: ChatInputCommandInteraction, user: User) {
+	if (process.env.NODE_ENV !== "PROD") {
+		return;
+	}
+
+	await Promise.allSettled([
+		setPlayerRoleInOfficialServer(interaction),
+		setVIPRoleInOfficialServer(interaction),
+		setPlayerNicknameInOfficialServer(interaction, user),
+	]);
+}
+
+/**
  * Checks if the user is a server booster in the official server.
  * Only works in the production environment and official server.
  *
@@ -166,27 +188,21 @@ export async function isUserBoosterInOfficialServer(interaction: ChatInputComman
 		return false;
 	}
 
-	const boosterRoleId = "758691633544953936";
+	const boosterRoleId = process.env.BOOSTER_ROLE_ID;
 
 	const isInOfficialServer = interaction.guild?.id === process.env.SERVER_ID;
 
-	if (!isInOfficialServer) {
+	if (!isInOfficialServer || !boosterRoleId) {
 		return false;
 	}
 
-	const boosterRole = interaction.guild.roles.cache.get(boosterRoleId);
+	const member = interaction.guild.members.cache.get(interaction.user.id);
 
-	if (!boosterRole) {
+	if (!member) {
 		return false;
 	}
 
-	const user = interaction.guild.members.cache.get(interaction.user.id);
-
-	if (!user) {
-		return false;
-	}
-
-	return user.roles.cache.some(role => role.id === boosterRoleId);
+	return member.roles.cache.has(boosterRoleId);
 }
 
 /**
@@ -200,10 +216,10 @@ async function setAllVIPRolesInOfficialServer() {
 
 	const client = getClient();
 	const serverId = process.env.SERVER_ID;
-	const VIPRoleId = "529680357591613442";
+	const VIPRoleId = process.env.VIP_ROLE_ID;
 
-	if (!serverId) {
-		Log.Warning("SERVER_ID is not set in environment variables.");
+	if (!serverId || !VIPRoleId) {
+		Log.Warning("SERVER_ID or VIP_ROLE_ID is not set in environment variables.");
 		return;
 	}
 
@@ -228,15 +244,23 @@ async function setAllVIPRolesInOfficialServer() {
 		return;
 	}
 
+	// Optimization: Fetch all VIP users from database first
+	const dbVipUsers = await Users.findAll({
+		where: {
+			[Op.or]: [
+				{ vipEternal: true },
+				{ vipTime: { [Op.gt]: new Date() } }
+			]
+		},
+		attributes: ["id"]
+	});
+
+	const vipUserIds = new Set(dbVipUsers.map(u => u.id));
+
 	for (const member of members.values()) {
 		const userId = member.user.id;
-		const user = await new User(userId).GetInfo();
-		if (!user) {
-			continue;
-		}
-
 		const hasVIPRole = member.roles.cache.has(VIPRoleId);
-		const isVIP = user.IsVip();
+		const isVIP = vipUserIds.has(userId);
 
 		if (isVIP && !hasVIPRole) {
 			try {
