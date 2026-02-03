@@ -16,5 +16,5 @@ export function getPercent(percent: number, from: number) {
  * @returns A random element from the array.
  */
 export function getRandomItemFromArray<T>(array: T[]): T {
-	return array[Math.round(Math.random() * (array.length - 1))];
+	return array[Math.floor(Math.random() * array.length)];
 }
