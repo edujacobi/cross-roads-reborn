@@ -2,7 +2,10 @@
   "name": "cross-roads-reborn",
   "version": "1.0.0",
   "description": "The return of Cross Roads",
-  "main": "index.ts",
+  "main": "src/index.ts",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
     "clear": "rimraf build",
     "prebuild": "npm run clear && npm run lint",
@@ -12,12 +15,19 @@
     "start": "pm2 start build/index.js --name \"cr\"",
     "stop": "pm2 stop cr",
     "deploy": "node build/deploy-commands.js",
-    "start-dev": "set NODE_ENV=DEV&& npx tsx index.ts -w",
-    "deploy-dev": "set NODE_ENV=DEV&& npx tsx deploy-commands.ts",
-    "clear-commands-dev": "set NODE_ENV=DEV&& npx tsx clear-commands.ts",
+    "start-dev": "set NODE_ENV=DEV&& npx tsx src/index.ts -w",
+    "deploy-dev": "set NODE_ENV=DEV&& npx tsx src/bot/deploy-commands.ts",
+    "clear-commands-dev": "set NODE_ENV=DEV&& npx tsx src/bot/clear-commands.ts",
     "lint": "eslint . --ext .ts",
     "lint-fix": "eslint . --ext .ts --fix"
   },
+  "keywords": [
+    "discord",
+    "bot",
+    "typescript",
+    "rpg",
+    "game"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/edujacobi/cross-roads-reborn.git"
@@ -37,7 +47,9 @@
     "@typescript-eslint/parser": "^8.37.0",
     "eslint": "^9.31.0",
     "globals": "^16.3.0",
-    "tsx": "^4.20.3"
+    "rimraf": "^6.0.1",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3"
   },
   "dependencies": {
     "@napi-rs/canvas": "^0.1.74",
@@ -50,7 +62,6 @@
     "pino-pretty": "^13.1.1",
     "pm2": "^6.0.8",
     "sequelize": "^6.37.7",
-    "sqlite3": "^5.1.6",
-    "typescript": "^5.8.3"
+    "sqlite3": "^5.1.6"
   }
 }

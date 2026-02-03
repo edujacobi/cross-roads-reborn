@@ -157,12 +157,16 @@ Additionally, you can use the `/reload` command (Admin only) to reload a specifi
 
 ### Project Structure
 
-- `/commands` - Bot commands organized by category
-- `/events` - Discord event handlers
-- `/models` - Data models and game mechanics
-- `/utils` - Utility functions
-- `/database` - Database configuration
-- `/interfaces` - TypeScript interfaces
+- `src/core` - Core business logic, database models, and types
+  - `database/` - Database models and configurations.
+  - `models/` - Business logic classes.
+  - `types/` - Interfaces, types, and enums.
+- `src/bot` - Discord bot implementation (commands, events, UI)
+  - `commands/` - Slash commands.
+  - `events/` - Event handlers.
+  - `ui/` - Interface builders and assets.
+  - `utils/` - Bot-specific utilities.
+- `src/shared` - Shared utilities
 
 ## Contributing
 
