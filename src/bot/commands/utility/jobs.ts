@@ -169,6 +169,7 @@ module.exports = {
 
 				container = addHeader();
 
+				// TODO: This should be in Model.
 				if (user.IsWorking()) {
 					textResponse = s.workingOn(user.Job.Id!, user.Job.EndsIn);
 				}
