@@ -58,7 +58,7 @@ The project follows a strict separation between the "Frontend" (Commands) and th
 import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
 import { replyWithContainer } from "../../utils/logic";
 import { User } from "../../models/User";
-import { Language } from "../../models/Language";
+import { Language, Localization } from "../../models/Language";
 import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
 import { CrColors } from "../../utils/colors";
 
@@ -105,5 +105,5 @@ const Strings = {
         description: (val: string) => `Resultado de la acción: ${val}`,
         footer: "Texto de pie de página",
     },
-} as const;
+} as const satisfies Localization;
 ```
