@@ -185,7 +185,7 @@ export class Scavenge {
 						userId: this.User.Id,
 						itemId: item.Id,
 						quantity: (existingItem?.quantity ?? 0) + howMany,
-						skin: BundleId.Default,
+						skin: existingItem?.skin ?? BundleId.Default,
 					});
 					result.rewardType = ScavengeRewardType.ItemConsumable;
 					result.item = data;
