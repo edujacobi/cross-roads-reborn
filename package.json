@@ -22,7 +22,8 @@
     "lint-fix": "eslint . --ext .ts --fix",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "prepare": "husky"
   },
   "keywords": [
     "discord",
@@ -51,6 +52,7 @@
     "@vitest/coverage-v8": "^4.0.18",
     "eslint": "^9.31.0",
     "globals": "^16.3.0",
+    "husky": "^9.1.7",
     "rimraf": "^6.0.1",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3",
