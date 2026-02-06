@@ -125,7 +125,7 @@ export const ScavengeList: ScavengeListType = {
 			},
 		},
 		Hospital: {
-			Chance: 2,
+			Chance: 3,
 			Text: {
 				[Language.English]: "A heroin syringe pierced your finger.",
 				[Language.Portuguese]: "Uma seringa de heroína perfurou o seu dedo.",
@@ -185,7 +185,7 @@ export const ScavengeList: ScavengeListType = {
 		NeedAttack: 15,
 		Special: false,
 		Prison: {
-			Chance: 3,
+			Chance: 5,
 			Text: {
 				[Language.English]: "You saw some cops taking bribes and they heard you.",
 				[Language.Portuguese]: "Você viu alguns policiais recebendo propina e eles te escutaram.",
@@ -277,7 +277,7 @@ export const ScavengeList: ScavengeListType = {
 		NeedAttack: 25,
 		Special: false,
 		Prison: {
-			Chance: 6,
+			Chance: 7,
 			Text: {
 				[Language.English]: "You found an electronic ankle bracelet, which made the police find you.",
 				[Language.Portuguese]: "Você encontrou uma tornozeleira eletrônica, que fez a polícia te encontrar.",
@@ -285,7 +285,7 @@ export const ScavengeList: ScavengeListType = {
 			},
 		},
 		Hospital: {
-			Chance: 6,
+			Chance: 5,
 			Text: {
 				[Language.English]: "Diving into human waste didn't do you any good.",
 				[Language.Portuguese]: "Mergulhar em dejetos humanos não te fizeram bem.",
@@ -365,7 +365,7 @@ export const ScavengeList: ScavengeListType = {
 			},
 		},
 		Hospital: {
-			Chance: 8,
+			Chance: 6,
 			Text: {
 				[Language.English]: `You almost got a ${EmoteString.Rifle} ${ItemList[ItemId.HuntRifle].Description[Language.English]}, but it accidentally fired and hit your toe.`,
 				[Language.Portuguese]: `Você quase pegou uma ${EmoteString.Rifle} ${ItemList[ItemId.HuntRifle].Description[Language.Portuguese]}, mas ela disparou por engano e acertou seu dedão do pé.`,
@@ -419,7 +419,7 @@ export const ScavengeList: ScavengeListType = {
 		NeedAttack: 45,
 		Special: false,
 		Prison: {
-			Chance: 12,
+			Chance: 11,
 			Text: {
 				[Language.English]: "You triggered an alarm while leaving, making the police arrive quickly.",
 				[Language.Portuguese]: "Você acionou um alarme enquanto saía, fazendo a polícia chegar rapidamente.",
@@ -427,7 +427,7 @@ export const ScavengeList: ScavengeListType = {
 			},
 		},
 		Hospital: {
-			Chance: 10,
+			Chance: 7,
 			Text: {
 				[Language.English]: "While you were sneaking, you accidentally knocked over a flask with a strange liquid that burned your skin.",
 				[Language.Portuguese]: "Enquanto você se esgueirava, acabou derrubando um frasco com um líquido estranho que queimou sua pele.",
@@ -487,7 +487,7 @@ export const ScavengeList: ScavengeListType = {
 		NeedAttack: 60,
 		Special: false,
 		Prison: {
-			Chance: 15,
+			Chance: 13,
 			Text: {
 				[Language.English]: "Even hiding, the guards have found you.",
 				[Language.Portuguese]: "Mesmo se escondendo, os guardas te encontraram.",
@@ -495,7 +495,7 @@ export const ScavengeList: ScavengeListType = {
 			},
 		},
 		Hospital: {
-			Chance: 12,
+			Chance: 8,
 			Text: {
 				[Language.English]: "You got too close to a nuclear reactor and ended up being contaminated.",
 				[Language.Portuguese]: "Você se aproximou demais de um reator nuclear e acabou sendo contaminado.",
@@ -561,7 +561,7 @@ export const ScavengeList: ScavengeListType = {
 		NeedAttack: 70,
 		Special: false,
 		Prison: {
-			Chance: 18,
+			Chance: 15,
 			Text: {
 				[Language.English]: "The ship was part of a police operation to catch you.",
 				[Language.Portuguese]: "A nave fazia parte de uma operação policial para te pegar.",
@@ -569,7 +569,7 @@ export const ScavengeList: ScavengeListType = {
 			},
 		},
 		Hospital: {
-			Chance: 14,
+			Chance: 9,
 			Text: {
 				[Language.English]: "The aliens saw you entering the ship and decided to insert a rectal probe into you.",
 				[Language.Portuguese]: "Os alienígenas te viram entrando na nave e resolveram inserir uma sonda retal em você.",
@@ -635,7 +635,7 @@ export const ScavengeList: ScavengeListType = {
 		NeedAttack: 80,
 		Special: false,
 		Prison: {
-			Chance: 21,
+			Chance: 17,
 			Text: {
 				[Language.English]: "The army was ready and locked you in a cell.",
 				[Language.Portuguese]: "O exército estava preparado e te trancou em uma cela.",
@@ -643,7 +643,7 @@ export const ScavengeList: ScavengeListType = {
 			},
 		},
 		Hospital: {
-			Chance: 16,
+			Chance: 10,
 			Text: {
 				[Language.English]: "You stepped on a landmine that exploded and threw you away, breaking a rib.",
 				[Language.Portuguese]: "Você pisou em uma mina terrestre que explodiu e te jogou longe, quebrando uma costela.",

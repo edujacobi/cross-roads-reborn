@@ -104,8 +104,8 @@ export class Scavenge {
 			},
 		}));
 
-		this.Timer.Prison = 5 * (this.PlaceId + 1);
-		this.Timer.Hospital = 3 * (this.PlaceId + 1);
+		this.Timer.Prison = 4 * (this.PlaceId + 1);
+		this.Timer.Hospital = 2 * (this.PlaceId + 1);
 
 		// Check here and not in constructor, because user can change class between openning the command and executing the action
 		const userClassChanceModifier = getScavengeChanceClassModifier(this.User.Class);
