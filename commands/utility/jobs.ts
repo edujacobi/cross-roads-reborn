@@ -70,80 +70,79 @@ module.exports = {
 
 			const userClassModifier = getJobClassModifier(user.Class);
 
+			for (let i = 0; i < currentPageJobs.length; i++) {
+				const job = currentPageJobs[i];
+				const weaponsNeeded = getItemList().filter(item => job.NeedItem?.includes(item.Id));
+				const jobDuration = job.Duration * eventActiveValue;
+				const jobSalary = Math.floor(job.Salary * userClassModifier);
+				const hasAllItems = job.NeedItem?.every(neededItem => user.Items.some(userItem => userItem.Id === neededItem));
+
+				const textSalary = `${s.salary}: ${formatMoney(jobSalary, language)}`;
+				const textDuration = `${s.duration}: ${jobDuration}h`;
+				const textNeeded = weaponsNeeded.length ? `\n-# ${s.necessary}:\n## ${weaponsNeeded.map(weapon => user.GetItemSkin(weapon)).join(" ")}` : "";
+				const blackMarketText = job.Special ? ` • ${EmoteString.BlackMarket} ${s.blackMarket}` : "";
+
+				container.addSectionComponents(section => section
+					.addTexts([
+						`### ${job.Description[language]}`,
+						`${textSalary} • ${textDuration}${blackMarketText}${textNeeded}`,
+					])
+					.setButtonAccessory(btn => btn
+						.setLabel(s.start)
+						.setDisabled(user.IsWorking())
+						.setStyle(job.NeedItem && !hasAllItems ? ButtonStyle.Secondary : ButtonStyle.Success)
+						.setCustomId(`start${job.Id}`)),
+				);
+
+				if (i != currentPageJobs.length - 1) {
+					container.addLargeSeparator();
+				}
+			}
+
+			if (pages.length > 1) {
+				container
+					.addLargeSeparator()
+					.addButtonRow(
+						btn => btn
+							.setLabel(s.previous)
+							.setStyle(ButtonStyle.Secondary)
+							.setCustomId("previous")
+							.setEmoji("⬅️")
+							.setDisabled(currentPage === 0),
+						btn => btn
+							.setLabel(s.next)
+							.setStyle(ButtonStyle.Secondary)
+							.setCustomId("next")
+							.setEmoji("➡️")
+							.setDisabled(currentPage === pages.length - 1),
+					);
+			}
+
 			if (user.IsWorking()) {
 				const job = JobList[user.Job.Id!];
 				const jobDuration = job.Duration * eventActiveValue;
 				const jobSalary = Math.floor(job.Salary * userClassModifier);
 
 				container
-					.addTexts([
-						s.workingOn(user.Job.Id!, user.Job.EndsIn),
-					])
-					.addButtonRow(btn => btn
-						.setCustomId("stop")
-						.setLabel(s.stop)
-						.setStyle(ButtonStyle.Danger),
-					)
-					.addFooter({
-						text: `${s.salary}: ${formatMoney(jobSalary, language)} • ${s.duration}: ${jobDuration}h`,
-					});
-
-				return container;
-			}
-			else {
-				for (let i = 0; i < currentPageJobs.length; i++) {
-					const job = currentPageJobs[i];
-					const weaponsNeeded = getItemList().filter(item => job.NeedItem?.includes(item.Id));
-					const jobDuration = job.Duration * eventActiveValue;
-					const jobSalary = Math.floor(job.Salary * userClassModifier);
-					const hasAllItems = job.NeedItem?.every(neededItem => user.Items.some(userItem => userItem.Id === neededItem));
-
-					const textSalary = `${s.salary}: ${formatMoney(jobSalary, language)}`;
-					const textDuration = `${s.duration}: ${jobDuration}h`;
-					const textNeeded = weaponsNeeded.length ? `\n-# ${s.necessary}:\n## ${weaponsNeeded.map(weapon => user.GetItemSkin(weapon)).join(" ")}` : "";
-					const blackMarketText = job.Special ? ` • ${EmoteString.BlackMarket} ${s.blackMarket}` : "";
-
-					container.addSectionComponents(section => section
+					.addLargeSeparator()
+					.addSectionComponents(working => working
 						.addTexts([
-							`### ${job.Description[language]}`,
-							`${textSalary} • ${textDuration}${blackMarketText}${textNeeded}`,
+							s.workingOn(user.Job.Id!, user.Job.EndsIn),
+							`-# ${s.salary}: ${formatMoney(jobSalary, language)} • ${s.duration}: ${jobDuration}h`
 						])
 						.setButtonAccessory(btn => btn
-							.setLabel(s.start)
-							.setStyle(job.NeedItem && !hasAllItems ? ButtonStyle.Secondary : ButtonStyle.Success)
-							.setCustomId(`start${job.Id}`)),
+							.setCustomId("stop")
+							.setLabel(s.stop)
+							.setStyle(ButtonStyle.Danger),
+						),
 					);
-
-					if (i != currentPageJobs.length - 1) {
-						container.addLargeSeparator();
-					}
-				}
-
-				if (pages.length > 1) {
-					container
-						.addLargeSeparator()
-						.addButtonRow(
-							btn => btn
-								.setLabel(s.previous)
-								.setStyle(ButtonStyle.Secondary)
-								.setCustomId("previous")
-								.setEmoji("⬅️")
-								.setDisabled(currentPage === 0),
-							btn => btn
-								.setLabel(s.next)
-								.setStyle(ButtonStyle.Secondary)
-								.setCustomId("next")
-								.setEmoji("➡️")
-								.setDisabled(currentPage === pages.length - 1),
-						);
-				}
-
-				container.addFooter({
-					text: formatMoney(user.Money, language),
-				});
-
-				return container;
 			}
+
+			container.addFooter({
+				text: formatMoney(user.Money, language),
+			});
+
+			return container;
 		}
 
 		let container = await generateDefaultContainer();
