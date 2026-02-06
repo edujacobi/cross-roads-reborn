@@ -2,7 +2,6 @@
 import { getItemList, Items } from "@core/types/Items";
 import { Users } from "@core/database/Users";
 import { differenceInHours } from "date-fns";
-import { UserItems } from "@core/database/UserItems";
 import { addHours } from "date-fns/addHours";
 import { globalStrings, Language, Localization } from "./Language";
 import { ScavengeId, ScavengeList } from "@core/types/Scavenge";
@@ -42,15 +41,10 @@ export class Shop {
 			canBuy = false;
 		}
 
-		const existingItem = await UserItems.findOne({
-			where: {
-				userId: this.User.Id,
-				itemId: item.Id,
-			},
-		});
+		const existingItem = this.User.Items.find((i) => i.Id === item.Id);
 
-		if (existingItem && differenceInHours(addHours(existingItem.remainingTime, 72), new Date()) > 360) {
-			message = s.itemPassLimit(differenceInHours(existingItem.remainingTime, new Date()), `${item.Skin[BundleId.Default].String} ${item.Description[this.User.Language]}`);
+		if (existingItem && differenceInHours(addHours(existingItem.RemainingTime, 72), new Date()) > 360) {
+			message = s.itemPassLimit(differenceInHours(existingItem.RemainingTime, new Date()), `${item.Skin[BundleId.Default].String} ${item.Description[this.User.Language]}`);
 			canBuy = false;
 		}
 
