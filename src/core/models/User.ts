@@ -17,7 +17,7 @@ import { Gang } from "./Gang";
 import { GangMembers } from "@core/database/GangMembers";
 import { Event, EventType } from "./Event";
 import { GangColorId } from "@bot/utils/colors";
-import { AvatarDecorationId, BundleId } from "@core/types/Ids";
+import { AvatarDecorationId, BundleId, ItemId } from "@core/types/Ids";
 import { UserBundle } from "./UserBundle";
 import { BundleList, SkinBundles } from "@core/types/Skins";
 import { UserAvatarDecoration } from "./UserAvatarDecoration";
@@ -599,6 +599,31 @@ export class User {
 	}
 
 	/**
+	 * Consumes an item from the user's inventory.
+	 * @param itemId The item ID to consume.
+	 * @param quantity The quantity to consume.
+	 * @returns True if successful.
+	 */
+	async ConsumeItem(itemId: ItemId, quantity = 1) {
+		const item = await UserItems.findOne({
+			where: {
+				userId: this.Id,
+				itemId: itemId,
+			},
+		});
+
+		if (item && (item.quantity ?? 0) >= quantity) {
+			await item.decrement("quantity", { by: quantity });
+			const localItem = this.Items.find(i => i.Id === itemId);
+			if (localItem) {
+				localItem.Quantity -= quantity;
+			}
+			return true;
+		}
+		return false;
+	}
+
+	/**
 	 * Get all items from user that are greater than 0 and or are not expired
 	 */
 	private async GetItems() {
@@ -784,8 +809,9 @@ export class User {
 	/**
 	 * Calculates the user's attributes based on items and other factors.
 	 * @param isBeatUp Whether the user is in a beat-up situation.
+	 * @param usedConsumables List of consumable items used in the current action.
 	 */
-	async GetAttributes(isBeatUp = false) {
+	async GetAttributes(isBeatUp = false, usedConsumables: ItemId[] = []) {
 		this.Attributes.Attack = 0;
 		this.Attributes.Defense = 0;
 		this.Attributes.MoneyAttack = 0;
@@ -806,6 +832,10 @@ export class User {
 				continue;
 			}
 
+			if (item.Type === ItemType.Consumable) {
+				continue;
+			}
+
 			if ((this.BestGun?.Attack ?? 0) < item.Attack) {
 				this.BestGun = item;
 			}
@@ -820,6 +850,18 @@ export class User {
 				moreDEF += item.MoreDefense;
 				moreMoneyATK += item.MoreMoneyATK;
 				moreMoneyDEF += item.MoreMoneyDEF;
+			}
+		}
+
+		for (const itemId of usedConsumables) {
+			const item = ItemList[itemId];
+			if (item) {
+				if ((item.Special.Day && isDay) || (item.Special.Night && isNight) || (!item.Special.Night && !item.Special.Day)) {
+					moreATK += item.MoreAttack;
+					moreDEF += item.MoreDefense;
+					moreMoneyATK += item.MoreMoneyATK;
+					moreMoneyDEF += item.MoreMoneyDEF;
+				}
 			}
 		}
 

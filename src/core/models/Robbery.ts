@@ -11,7 +11,7 @@ import {
 	User as DUser,
 } from "discord.js";
 import { replyWithContainer, sendComplexPrivateMessage } from "@bot/utils/discordInteractions";
-import { formatMoney, showTime } from "@bot/utils/ui";
+import { defaultComponent, formatMoney, showTime } from "@bot/utils/ui";
 import { CrColors } from "@bot/utils/colors";
 import { EmoteId, EmoteString } from "@bot/utils/emotes";
 import { getClient } from "@bot/client";
@@ -28,6 +28,8 @@ import { LocationList } from "@core/types/Locations";
 import { ScavengeId, ScavengeList } from "@core/types/Scavenge";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 import { getPercent } from "@shared/utils";
+import { ItemId } from "@core/types/Ids";
+import { ItemList } from "@core/types/Items";
 
 export enum ClashType {
 	User = 1,
@@ -48,6 +50,7 @@ export class Robbery {
 	Success = false;
 	MoneyRobbed = 0;
 	Type = ClashType.User;
+	UsedConsumables: ItemId[] = [];
 
 	DiscordUser: DUser | undefined;
 
@@ -204,6 +207,84 @@ export class Robbery {
 		const sA = Strings[this.Attacker.Language];
 		const sD = Strings[this.Defender.Language];
 
+		// Check for Grenade
+		const grenade = this.Attacker.Items.find(i => i.Id === ItemId.Grenade);
+		if (grenade && grenade.Quantity > 0) {
+			const grenadeContainer = new CustomContainerBuilder()
+				.setUser(this.Attacker)
+				.setAccentColor(CrColors.Robbery)
+				.addTexts([
+					`-# ${EmoteString.Robbery} ${sA.preparingToRob(this.Defender.GetNameWithImage())}`,
+				])
+				.addLargeSeparator()
+				.addSectionComponents(row => row
+					.addTexts([
+						`### ${EmoteString.Granade} **${sA.useGrenade}**`,
+						sA.useGrenadeEffect,
+					])
+					.setButtonAccessory(new ButtonBuilder()
+						.setCustomId("use_grenade")
+						.setLabel(sA.useGrenade)
+						.setStyle(ButtonStyle.Success)
+						.setEmoji(EmoteId.Granade),
+					),
+				)
+				.addLargeSeparator()
+				.addSectionComponents(row => row
+					.addTexts([
+						`### **${sA.dontUseGrenade}**`,
+						sA.dontUseGrenadeDescription,
+					])
+					.setButtonAccessory(new ButtonBuilder()
+						.setCustomId("dont_use_grenade")
+						.setLabel(sA.dontUseGrenade)
+						.setStyle(ButtonStyle.Secondary),
+					),
+				)
+				.addFooter({
+					text: sA.useGrenadeDescription(grenade.Quantity),
+				});
+
+			const grenadeMessage = await replyWithContainer(interaction, grenadeContainer);
+
+			if (grenadeMessage) {
+				try {
+					const confirmation = await grenadeMessage.awaitMessageComponent({
+						filter: (i) => i.user.id === this.Attacker.Id,
+						time: 30_000,
+						componentType: ComponentType.Button,
+					});
+
+					await this.Attacker.GetInfo();
+
+					const { canRob, message } = await this.CanRobUser();
+
+					if (!canRob) {
+						const container = defaultComponent({
+							user: this.Attacker,
+							color: CrColors.Robbery,
+							description: message,
+						});
+
+						return replyWithContainer(interaction, container);
+					}
+
+					if (confirmation.customId === "use_grenade") {
+						const consumed = await this.Attacker.ConsumeItem(ItemId.Grenade);
+						if (consumed) {
+							this.UsedConsumables.push(ItemId.Grenade);
+							await this.Attacker.GetAttributes(false, this.UsedConsumables);
+						}
+					}
+				}
+				catch (e) {
+					// Time out, do nothing
+					// Just refresh user info at the end
+					await this.Attacker.GetInfo();
+				}
+			}
+		}
+
 		this.AttackerTimeInPrison = 10 + 1.5 * this.Attacker.Attributes.Attack;
 		this.AttackerAditionalTimeCallPolice = Math.floor(25 + 0.5 * this.Attacker.Attributes.Attack);
 		this.DefenderTimeInHospital = 25 + this.Defender.Attributes.Defense / 2;
@@ -222,7 +303,10 @@ export class Robbery {
 
 		Log.Info(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) started a robbery to user ${this.Defender.Nickname} (ID: ${this.Defender.Id}).`);
 
-		const usedGun = `${this.Attacker.GetItemSkin(this.Attacker.BestGun!)} ${this.Attacker.BestGun?.Description[this.Defender.Language]}`;
+		let usedGun = `${this.Attacker.GetItemSkin(this.Attacker.BestGun!)} **${this.Attacker.BestGun?.Description[this.Defender.Language]}**`;
+		if (this.UsedConsumables.includes(ItemId.Grenade)) {
+			usedGun += ` ${sD.andAGrenade}`;
+		}
 
 		const cannotReact = this.Defender.IsWorking() ||
 			this.Defender.IsInPrison() ||
@@ -237,7 +321,7 @@ export class Robbery {
 			])
 			.addLargeSeparator()
 			.addTexts([
-				`**${this.Attacker.GetNameWithImage()}** ${sD.tryingToRobYou} **${usedGun}** • ${EmoteString.Attack}${this.Attacker.Attributes.Attack} ATK`,
+				`**${this.Attacker.GetNameWithImage()}** ${sD.tryingToRobYou} ${usedGun} • ${EmoteString.Attack}${this.Attacker.Attributes.Attack} ATK`,
 				``,
 				`-# ${sD.decide}:`,
 			])
@@ -370,6 +454,9 @@ export class Robbery {
 			this.Attacker.GetInfo(),
 			this.Defender.GetInfo(),
 		]);
+
+		// Re-apply consumables bonuses because GetInfo resets attributes
+		await this.Attacker.GetAttributes(false, this.UsedConsumables);
 
 		const sA = Strings[this.Attacker.Language];
 		const sD = Strings[this.Defender.Language];
@@ -509,6 +596,7 @@ const Strings = {
 		// Defender
 		hands: "Hands up!",
 		tryingToRobYou: "is trying to rob you using",
+		andAGrenade: `and a ${EmoteString.Granade} **Grenade**`,
 		decide: "Decide what to do",
 		react: "React",
 		reactDescription: (time: number) => `${EmoteString.Defense}+5 DEF, but you will be hospitalized for ${time} minutes if you get robbed`,
@@ -539,6 +627,12 @@ const Strings = {
 		youFailed: "You failed in your attempt",
 		prisonTime: (time: Date) => `Will be in prison until ${showTime(time.getTime())}`,
 		finishedRobberyAttacker: (success: boolean) => `Robbery ${success ? "successful" : "unsuccessful"}`,
+		preparingToRob: (nick: string) => `Preparing to rob **${nick}**`,
+		useGrenadeDescription: (quantity: number) => `You have ${quantity} ${quantity === 1 ? "grenade" : "grenades"}`,
+		useGrenade: "Use Grenade",
+		useGrenadeEffect: `${EmoteString.Attack}+${ItemList[ItemId.Grenade].MoreAttack} ATK`,
+		dontUseGrenade: "Don't use",
+		dontUseGrenadeDescription: "Save it for later",
 		failureMessages: [
 			"The police arrived faster than you anticipated.",
 			"Someone saw your gun, reacted, and drew everyone's attention.",
@@ -576,6 +670,7 @@ const Strings = {
 		// Defender
 		hands: "Mãos ao alto!",
 		tryingToRobYou: "está tentando roubar você utilizando",
+		andAGrenade: `e uma ${EmoteString.Granade} **Granada**`,
 		decide: "Decida o que fazer",
 		react: "Reagir",
 		reactDescription: (time: number) => `${EmoteString.Defense}+5 DEF, mas você ficará hospitalizado por ${time} minutos caso seja roubado`,
@@ -606,6 +701,12 @@ const Strings = {
 		youFailed: "Você falhou na sua tentativa",
 		prisonTime: (time: Date) => `Ficará preso até ${showTime(time.getTime())}`,
 		finishedRobberyAttacker: (success: boolean) => `Roubo ${success ? "bem" : "mal"}-sucedido`,
+		preparingToRob: (nick: string) => `Preparando-se para roubar **${nick}**`,
+		useGrenadeDescription: (quantity: number) => `Você tem ${quantity} ${quantity === 1 ? "granada" : "granadas"}`,
+		useGrenade: "Usar Granada",
+		useGrenadeEffect: `${EmoteString.Attack}+${ItemList[ItemId.Grenade].MoreAttack} ATK`,
+		dontUseGrenade: "Não usar",
+		dontUseGrenadeDescription: "Guardar para depois",
 		failureMessages: [
 			"A polícia chegou mais rápido do que você esperava.",
 			"Uma pessoa viu sua arma, reagiu e chamou a atenção de todos.",
@@ -643,6 +744,7 @@ const Strings = {
 		// Defender
 		hands: "¡Manos arriba!",
 		tryingToRobYou: "está intentando robarte utilizando",
+		andAGrenade: `y una ${EmoteString.Granade} **Granada**`,
 		decide: "Decide qué hacer",
 		react: "Reaccionar",
 		reactDescription: (time: number) => `${EmoteString.Defense}+5 DEF, pero estarás hospitalizado por ${time} minutos si te roban`,
@@ -673,6 +775,12 @@ const Strings = {
 		youFailed: `Fallaste en tu intento`,
 		prisonTime: (time: Date) => `Estará en prisión hasta ${showTime(time.getTime())}`,
 		finishedRobberyAttacker: (success: boolean) => `Robo ${success ? "exitoso" : "fallido"}`,
+		preparingToRob: (nick: string) => `Preparándose para robar a **${nick}**`,
+		useGrenadeDescription: (quantity: number) => `Tienes ${quantity} ${quantity === 1 ? "granada" : "granadas"}`,
+		useGrenade: "Usar Granada",
+		useGrenadeEffect: `${EmoteString.Attack}+${ItemList[ItemId.Grenade].MoreAttack} ATK`,
+		dontUseGrenade: "No usar",
+		dontUseGrenadeDescription: "Guardar para después",
 		failureMessages: [
 			"La policía llegó más rápido de lo que esperabas.",
 			"Alguien vio tu arma, reaccionó y atrajo la atención de todos.",
@@ -682,7 +790,7 @@ const Strings = {
 			"Olvidaste cargar tu arma. Error de novato.",
 			"Habías robado tanto dinero que te desmayaste de alegría.",
 			"Intentaste parecer rudo pero terminaste pareciendo sospechoso para un policía cercano.",
-			"Un perro callejero rabioso te atacó, lo que le dio tiempo a la policía para que llegara.",
+			"Un perro callejero rabioso te atacou, lo que le dio tiempo a la policía para que llegara.",
 			"Al intentar escapar, tropezaste y se te cayó todo el dinero.",
 		],
 		successMessages: [
