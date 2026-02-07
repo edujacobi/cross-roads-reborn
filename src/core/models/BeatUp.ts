@@ -11,9 +11,9 @@ import {
 	User as DUser,
 } from "discord.js";
 import { replyWithContainer, sendComplexPrivateMessage } from "@bot/utils/discordInteractions";
-import { formatMoney, showTime } from "@bot/utils/ui";
+import { defaultComponent, formatMoney, showTime } from "@bot/utils/ui";
 import { CrColors } from "@bot/utils/colors";
-import { EmoteString } from "@bot/utils/emotes";
+import { EmoteId, EmoteString } from "@bot/utils/emotes";
 import { getClient } from "@bot/client";
 import { setTimeout as wait } from "timers/promises";
 import { Notification } from "./Notification";
@@ -26,6 +26,8 @@ import { JobId, JobList } from "@core/types/Jobs";
 import { LocationList } from "@core/types/Locations";
 import { ScavengeId, ScavengeList } from "@core/types/Scavenge";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
+import { ItemId } from "@core/types/Ids";
+import { ItemList } from "@core/types/Items";
 
 export class BeatUp {
 	Id = 0;
@@ -37,6 +39,7 @@ export class BeatUp {
 	};
 	Date: Date;
 	Success = false;
+	UsedConsumables: ItemId[] = [];
 
 	DiscordUser: DUser | undefined;
 
@@ -225,6 +228,82 @@ export class BeatUp {
 		const sA = Strings[this.Attacker.Language];
 		const sD = Strings[this.Defender.Language];
 
+		// Check for Grenade
+		const grenade = this.Attacker.Items.find(i => i.Id === ItemId.Grenade);
+		if (grenade && grenade.Quantity > 0) {
+			const grenadeContainer = new CustomContainerBuilder()
+				.setUser(this.Attacker)
+				.setAccentColor(CrColors.BeatUp)
+				.addTexts([
+					`-# ${EmoteString.Beat} ${sA.preparingToBeat(this.Defender.GetNameWithImage())}`,
+				])
+				.addSectionComponents(row => row
+					.addTexts([
+						`### ${EmoteString.Granade} **${sA.useGrenade}**`,
+						sA.useGrenadeEffect,
+					])
+					.setButtonAccessory(new ButtonBuilder()
+						.setCustomId("use_grenade")
+						.setLabel(sA.useGrenade)
+						.setStyle(ButtonStyle.Success)
+						.setEmoji(EmoteId.Granade),
+					),
+				)
+				.addSectionComponents(row => row
+					.addTexts([
+						`### **${sA.dontUseGrenade}**`,
+						sA.dontUseGrenadeDescription,
+					])
+					.setButtonAccessory(new ButtonBuilder()
+						.setCustomId("dont_use_grenade")
+						.setLabel(sA.dontUseGrenade)
+						.setStyle(ButtonStyle.Secondary)
+					),
+				)
+				.addFooter({
+					text: sA.useGrenadeDescription(grenade.Quantity),
+				});
+
+			const grenadeMessage = await replyWithContainer(interaction, grenadeContainer);
+
+			if (grenadeMessage) {
+				try {
+					const confirmation = await grenadeMessage.awaitMessageComponent({
+						filter: (i) => i.user.id === this.Attacker.Id,
+						time: 30_000,
+						componentType: ComponentType.Button,
+					});
+
+					await this.Attacker.GetInfo();
+
+					const { canBeat, message } = await this.CanBeatUser();
+
+					if (!canBeat) {
+						const container = defaultComponent({
+							user: this.Attacker,
+							color: CrColors.BeatUp,
+							description: message,
+						});
+
+						return replyWithContainer(interaction, container);
+					}
+
+					if (confirmation.customId === "use_grenade") {
+						const consumed = await this.Attacker.ConsumeItem(ItemId.Grenade);
+						if (consumed) {
+							this.UsedConsumables.push(ItemId.Grenade);
+							await this.Attacker.GetAttributes(true, this.UsedConsumables);
+						}
+					}
+				}
+				catch (e) {
+					// Time out, do nothing
+					// Just refresh user info at the end
+					await this.Attacker.GetInfo();
+				}
+			}
+		}
+
 		this.TimeInHospital = {
 			Base: 45 + this.Defender.Attributes.Attack,
 			Aditional: 5 + this.Defender.Attributes.Attack,
@@ -244,7 +323,10 @@ export class BeatUp {
 
 		Log.Info(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) started beating up user ${this.Defender.Nickname} (ID: ${this.Defender.Id}).`);
 
-		const usedGun = `${this.Attacker.GetItemSkin(this.Attacker.BestGun!)} ${this.Attacker.BestGun?.Description[this.Defender.Language]}`;
+		let usedGun = `${this.Attacker.GetItemSkin(this.Attacker.BestGun!)} **${this.Attacker.BestGun?.Description[this.Defender.Language]}**`;
+		if (this.UsedConsumables.includes(ItemId.Grenade)) {
+			usedGun += ` ${sD.andAGrenade}`;
+		}
 
 		const cannotRun = this.Defender.Attributes.Attack < 5;
 
@@ -254,7 +336,7 @@ export class BeatUp {
 			])
 			.addLargeSeparator()
 			.addTexts([
-				`**${this.Attacker.GetNameWithImage()}** ${sD.tryingToBeatYou} **${usedGun}** • ${EmoteString.Attack}${this.Attacker.Attributes.Attack} ATK`,
+				`**${this.Attacker.GetNameWithImage()}** ${sD.tryingToBeatYou} ${usedGun} • ${EmoteString.Attack}${this.Attacker.Attributes.Attack} ATK`,
 				``,
 				`-# ${sD.decide}:`,
 			])
@@ -385,6 +467,9 @@ export class BeatUp {
 			this.Defender.GetInfo(),
 		]);
 
+		// Re-apply consumables bonuses because GetInfo resets attributes
+		await this.Attacker.GetAttributes(true, this.UsedConsumables);
+
 		const sA = Strings[this.Attacker.Language];
 		const sD = Strings[this.Defender.Language];
 
@@ -507,6 +592,7 @@ const Strings = {
 		// Defender
 		hands: "I'll break your face!",
 		tryingToBeatYou: "is trying to beat you up using",
+		andAGrenade: `and a ${EmoteString.Granade} **Grenade**`,
 		decide: "Decide what to do",
 		fight: "Fight",
 		fightDescription: (time: number) => `${EmoteString.Attack}+5 ATK, but whoever gets beaten will stay ${time} more minutes in the hospital`,
@@ -550,6 +636,12 @@ const Strings = {
 		willBeAbleAgain: "Will be able to beat up again",
 		youFailed: (time: Date) => `You tried, but you were the one beaten up!\n-# Will stay in the hospital until ${showTime(time.getTime())} ${EmoteString.Hospital}`,
 		finishedBeatUpAttacker: (success: boolean) => `Beating ${success ? "successful" : "unsuccessful"}`,
+		preparingToBeat: (nick: string) => `Preparing to beat **${nick}**`,
+		useGrenadeDescription: (quantity: number) => `You have ${quantity} ${quantity === 1 ? "grenade" : "grenades"}`,
+		useGrenade: "Use Grenade",
+		useGrenadeEffect: `${EmoteString.Attack}+${ItemList[ItemId.Grenade].MoreAttack} ATK`,
+		dontUseGrenade: "Don't use",
+		dontUseGrenadeDescription: "Save it for later",
 	},
 	[Language.Portuguese]: {
 		// CanBeat
@@ -575,6 +667,7 @@ const Strings = {
 		// Defender
 		hands: "Vou quebrar a tua cara!",
 		tryingToBeatYou: "está tentando espancar você utilizando",
+		andAGrenade: `e uma ${EmoteString.Granade} **Granada**`,
 		decide: "Decida o que fazer",
 		fight: "Lutar",
 		fightDescription: (time: number) => `${EmoteString.Attack}+5 ATK, mas quem apanhar ficará mais ${time} minutos hospitalizado`,
@@ -618,6 +711,12 @@ const Strings = {
 		willBeAbleAgain: "Poderá espancar novamente",
 		youFailed: (time: Date) => `Você até tentou, mas o espancado foi você!\n-# Ficará hospitalizado até ${showTime(time.getTime())} ${EmoteString.Hospital}`,
 		finishedBeatUpAttacker: (success: boolean) => `Espancamento ${success ? "bem" : "mal"}-sucedido`,
+		preparingToBeat: (nick: string) => `Preparando-se para espancar **${nick}**`,
+		useGrenadeDescription: (quantity: number) => `Você tem ${quantity} ${quantity === 1 ? "granada" : "granadas"}`,
+		useGrenade: "Usar Granada",
+		useGrenadeEffect: `${EmoteString.Attack}+${ItemList[ItemId.Grenade].MoreAttack} ATK`,
+		dontUseGrenade: "Não usar",
+		dontUseGrenadeDescription: "Guardar para depois",
 	},
 	[Language.Spanish]: {
 		// CanBeat
@@ -643,6 +742,7 @@ const Strings = {
 		// Defender
 		hands: "¡Te voy a romper la cara!",
 		tryingToBeatYou: "está intentando golpearte usando",
+		andAGrenade: `y una ${EmoteString.Granade} **Granada**`,
 		decide: "Decide qué hacer",
 		fight: "Luchar",
 		fightDescription: (time: number) => `${EmoteString.Attack}+5 ATK, pero quien sea golpeado permanecerá ${time} minutos más en el hospital`,
@@ -686,5 +786,11 @@ const Strings = {
 		willBeAbleAgain: "Podrás golpear de nuevo",
 		youFailed: (time: Date) => `¡Lo intentaste, pero tú fuiste el golpeado!\n-# Permanecerás en el hospital hasta ${showTime(time.getTime())} ${EmoteString.Hospital}`,
 		finishedBeatUpAttacker: (success: boolean) => `Golpiza ${success ? "exitosa" : "fallida"}`,
+		preparingToBeat: (nick: string) => `Preparándose para golpear a **${nick}**`,
+		useGrenadeDescription: (quantity: number) => `Tienes ${quantity} ${quantity === 1 ? "granada" : "granadas"}`,
+		useGrenade: "Usar Granada",
+		useGrenadeEffect: `${EmoteString.Attack}+${ItemList[ItemId.Grenade].MoreAttack} ATK`,
+		dontUseGrenade: "No usar",
+		dontUseGrenadeDescription: "Guardar para después",
 	},
 } as const satisfies Localization;
