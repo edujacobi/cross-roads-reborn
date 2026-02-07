@@ -266,7 +266,8 @@ export class Robbery {
 							description: message,
 						});
 
-						return replyWithContainer(interaction, container);
+						await replyWithContainer(interaction, container);
+						return;
 					}
 
 					if (confirmation.customId === "use_grenade") {
