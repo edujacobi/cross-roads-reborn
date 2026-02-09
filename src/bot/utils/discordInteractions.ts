@@ -4,7 +4,6 @@
 	Colors,
 	CommandInteraction,
 	ContainerBuilder,
-	EmbedBuilder,
 	InteractionEditReplyOptions,
 	InteractionReplyOptions,
 	MessageComponentInteraction,
@@ -12,39 +11,54 @@
 	MessageFlags,
 	MessagePayload,
 	Snowflake,
+	TextDisplayBuilder,
 } from "discord.js";
 import { getClient } from "../client";
 import { Log } from "@shared/log";
 import { Language, Localization } from "@core/models/Language";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 
+interface PrivateMessageParams {
+	userId: Snowflake;
+	message: string;
+	notificationMessage?: string;
+	color?: ColorResolvable;
+	footer?: string;
+}
+
 /**
  * Sends a private message (DM) to a user with a simple embed.
  *
- * @param userId - The ID of the user to send the message to.
- * @param message - The content of the message description.
- * @param color - The color of the embed (default: DarkButNotBlack).
- * @param footer - Optional footer text for the embed.
+ * @param params.userId - The ID of the user to send the message to.
+ * @param params.message - The content of the message description.
+ * @param params.notificationMessage - The content of the message that will be shown to pop up but not in message.
+ * @param params.color - The color of the embed (default: DarkButNotBlack).
+ * @param params.footer - Optional footer text for the embed.
  */
-export async function sendPrivateMessage(userId: string, message: string, color: ColorResolvable = Colors.DarkButNotBlack, footer: string = "") {
+export async function sendPrivateMessage(params: PrivateMessageParams): Promise<void> {
 	const client = getClient();
 
 	try {
-		const discordUser = await client.users.fetch(userId);
-		const embed = new EmbedBuilder()
-			.setDescription(message);
+		const discordUser = await client.users.fetch(params.userId);
+		const text = new TextDisplayBuilder().setContent(`||${params.notificationMessage ?? params.message}||`);
 
-		if (color) {
-			embed.setColor(color);
+		const container = new CustomContainerBuilder()
+			.addTexts([params.message]);
+
+		if (params.color) {
+			container.setAccentColor(params.color as number);
 		}
-		if (footer) {
-			embed.setFooter({ text: footer });
+		if (params.footer) {
+			container.addFooter({ text: params.footer });
 		}
 
-		await discordUser.send({ embeds: [embed] });
+		await discordUser.send({
+			components: [text, container],
+			flags: MessageFlags.IsComponentsV2
+		});
 	}
 	catch (err) {
-		Log.Warning(`Something went wrong with sending private message to user ${userId}. Error: ${err}`);
+		Log.Warning(`Something went wrong with sending private message to user ${params.userId}. Error: ${err}`);
 	}
 }
 

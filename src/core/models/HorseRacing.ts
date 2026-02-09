@@ -564,23 +564,23 @@ export class HorseRacing {
 
 					// Send notification with horse names and emojis if available
 					if (winningHorseData && userHorseData) {
-						await sendPrivateMessage(
-							user.Id,
-							s.raceLostWithName(
+						await sendPrivateMessage({
+							userId: user.Id,
+							message: s.raceLostWithName(
 								winningHorseData.emoji,
 								winningHorseName || "",
 								userHorseData.emoji,
 								userHorseName || "",
 							),
-							CrColors.Casino,
-						);
+							color: CrColors.Casino,
+						});
 					}
 					else {
-						await sendPrivateMessage(
-							user.Id,
-							s.raceLost(winningHorse, bet.horseNumber),
-							CrColors.Casino,
-						);
+						await sendPrivateMessage({
+							userId: user.Id,
+							message: s.raceLost(winningHorse, bet.horseNumber),
+							color: CrColors.Casino,
+						});
 					}
 				}
 			}
@@ -656,13 +656,13 @@ export class HorseRacing {
 				}
 			}
 
-			await sendPrivateMessage(
-				winner.user.Id,
-				(winningHorseData
+			await sendPrivateMessage({
+				userId: winner.user.Id,
+				message: (winningHorseData
 					? s.raceWonWithName(winningHorseData.emoji, horseName || "", formatMoney(winner.proportionalPrize, winner.user.Language))
 					: s.raceWon(winningHorse, formatMoney(winner.proportionalPrize, winner.user.Language))) + winnersText,
-				CrColors.Casino,
-			);
+				color: CrColors.Casino,
+			});
 		}
 
 		// Notify losers
@@ -697,23 +697,23 @@ export class HorseRacing {
 
 				// Send notification with horse names and emojis if available
 				if (winningHorseData && userHorseData) {
-					await sendPrivateMessage(
-						user.Id,
-						s.raceLostWithName(
+					await sendPrivateMessage({
+						userId: user.Id,
+						message: s.raceLostWithName(
 							winningHorseData.emoji,
 							winningHorseName || "",
 							userHorseData.emoji,
 							userHorseName || "",
 						) + winnersText,
-						CrColors.Casino,
-					);
+						color: CrColors.Casino,
+					});
 				}
 				else {
-					await sendPrivateMessage(
-						user.Id,
-						s.raceLost(winningHorse, bet.horseNumber) + winnersText,
-						CrColors.Casino,
-					);
+					await sendPrivateMessage({
+						userId: user.Id,
+						message: s.raceLost(winningHorse, bet.horseNumber) + winnersText,
+						color: CrColors.Casino,
+					});
 				}
 			}
 		}

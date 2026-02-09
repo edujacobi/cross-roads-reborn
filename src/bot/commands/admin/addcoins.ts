@@ -54,7 +54,18 @@ module.exports = {
 			[Language.Spanish]: `Has recibido ${EmoteString.SpecialCoinShop}${formatMoney(coins, Language.Spanish, "")} Monedas Especiales!`,
 		} as const;
 
-		await sendPrivateMessage(userId, messages[target.Language], CrColors.SpecialShop);
+		const hiddenMessages = {
+			[Language.English]: `You received 💠${formatMoney(coins, Language.English, "")} Special Coins!`,
+			[Language.Portuguese]: `Você recebeu 💠${formatMoney(coins, Language.Portuguese, "")} Moedas Especiais!`,
+			[Language.Spanish]: `Has recibido 💠${formatMoney(coins, Language.Spanish, "")} Monedas Especiales!`,
+		} as const;
+
+		await sendPrivateMessage({
+			userId,
+			message: messages[target.Language],
+			notificationMessage: hiddenMessages[target.Language],
+			color: CrColors.SpecialShop,
+		});
 
 		const container = defaultComponent({
 			user,

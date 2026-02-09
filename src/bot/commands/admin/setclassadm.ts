@@ -62,12 +62,17 @@ module.exports = {
 		await target.SetClass(classId);
 
 		const messages = {
-			[Language.English]: `${ClassList[classId].Image.Emote.String} You are now ${ClassList[classId].Name[Language.English]}`,
-			[Language.Portuguese]: `${ClassList[classId].Image.Emote.String} Você agora é ${ClassList[classId].Name[Language.Portuguese]}`,
-			[Language.Spanish]: `${ClassList[classId].Image.Emote.String} Ahora eres ${ClassList[classId].Name[Language.Spanish]}`,
+			[Language.English]: `You are now ${ClassList[classId].Name[Language.English]}`,
+			[Language.Portuguese]: `Você agora é ${ClassList[classId].Name[Language.Portuguese]}`,
+			[Language.Spanish]: `Ahora eres ${ClassList[classId].Name[Language.Spanish]}`,
 		} as const;
 
-		await sendPrivateMessage(userId, messages[target.Language], CrColors.Default);
+		await sendPrivateMessage({
+			userId,
+			message: `${ClassList[classId].Image.Emote.String} ${messages[target.Language]}`,
+			notificationMessage: messages[target.Language],
+			color: CrColors.Default
+		});
 
 		const container = defaultComponent({
 			user,

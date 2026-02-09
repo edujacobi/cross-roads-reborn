@@ -154,7 +154,13 @@ module.exports = {
 		}
 
 		Log.Success(`Admin ${user.Nickname} (${user.Id}) used setitem on ${targetUser.Nickname} (Id: ${targetUser.Id}) for item ${itemData.Description[Language.English]} (Id: ${itemData.Id}). Mode: ${mode === Mode.Set ? "set" : "add"}, ${itemData.Type == ItemType.Consumable ? "Quantity" : "Hours"}: ${hoursOrQuantity}`);
-		await sendPrivateMessage(targetUserId, `You ${mode === Mode.Set ? "now have" : "received"} ${hoursOrQuantity} ${itemData.Type == ItemType.Consumable ? "" : "hours"} of ${itemData.Skin[BundleId.Default].String} ${itemData.Description[Language.English]}!`, CrColors.Admin);
+
+		await sendPrivateMessage({
+			userId: targetUserId,
+			message: `You ${mode === Mode.Set ? "now have" : "received"} ${hoursOrQuantity} ${itemData.Type == ItemType.Consumable ? "" : "hours"} of ${itemData.Skin[BundleId.Default].String} ${itemData.Description[Language.English]}!`,
+			color: CrColors.Admin,
+		});
+
 		await replyInteraction(interaction, replyMessage);
 	},
 };

@@ -51,8 +51,14 @@ module.exports = {
 		await alms.GiveAlms();
 
 		const privateMessage = `**${user.GetNameWithImage()}** ${interaction.guild ? sR.receivedServer(interaction.guild.name, alms.Value) : sR.received(alms.Value)} ${EmoteString.Alms}`;
+		const hiddenMessage = `${user.Nickname} ${interaction.guild ? sR.receivedServer(interaction.guild.name, alms.Value) : sR.received(alms.Value)} 🪙`;
 
-		await sendPrivateMessage(target.Id, privateMessage, CrColors.Default);
+		await sendPrivateMessage({
+			userId: target.Id,
+			message: privateMessage,
+			notificationMessage: hiddenMessage,
+			color: CrColors.Default,
+		});
 
 		const container = defaultComponent({
 			user,

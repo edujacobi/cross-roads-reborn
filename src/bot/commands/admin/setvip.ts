@@ -13,6 +13,7 @@ import { EmoteString } from "@bot/utils/emotes";
 import { User } from "@core/models/User";
 import { Language } from "@core/models/Language";
 import { checkUser } from "@bot/utils/userUtils";
+import { CrColors } from "@bot/utils/colors";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -49,12 +50,17 @@ module.exports = {
 		await target?.AddVip(days);
 
 		const messages = {
-			[Language.English]: `${EmoteString.VIP} You received ${days} days of VIP`,
-			[Language.Portuguese]: `${EmoteString.VIP} Você recebeu ${days} dias de VIP`,
-			[Language.Spanish]: `${EmoteString.VIP} Has recibido ${days} días de VIP`,
+			[Language.English]: `You received ${days} days of VIP`,
+			[Language.Portuguese]: `Você recebeu ${days} dias de VIP`,
+			[Language.Spanish]: `Has recibido ${days} días de VIP`,
 		} as const;
 
-		await sendPrivateMessage(userId, messages[target.Language], Colors.Gold);
+		await sendPrivateMessage({
+			userId,
+			message: `${EmoteString.VIP} ${messages[target.Language]}`,
+			notificationMessage: `🎩 ${messages[target.Language]}`,
+			color: Colors.Gold
+		});
 
 		const container = defaultComponent({
 			user,

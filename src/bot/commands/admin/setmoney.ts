@@ -71,13 +71,21 @@ module.exports = {
 
 		if (addOrSet === SetMoneyConfiguration.Add) {
 			target.Money += money;
-			await sendPrivateMessage(userId, `You received ${formatMoney(money, user.Language)}.`, CrColors.Admin);
+			await sendPrivateMessage({
+				userId,
+				message: `You received ${formatMoney(money, user.Language)}.`,
+				color: CrColors.Admin,
+			});
 			description = `${formatMoney(money, user.Language)} added to user **${target.GetNameWithImage()}**`;
 
 		}
 		else {
 			target.Money = money;
-			await sendPrivateMessage(userId, `Your money is now ${formatMoney(money, user.Language)}.`, CrColors.Admin);
+			await sendPrivateMessage({
+				userId,
+				message: `Your money is now ${formatMoney(money, user.Language)}.`,
+				color: CrColors.Admin,
+			});
 			description = `User **${target.GetNameWithImage()}** now has ${formatMoney(money, user.Language)}`;
 		}
 

@@ -41,28 +41,38 @@ module.exports = {
 
 		const messages = {
 			[Language.English]: {
-				VIP: `${EmoteString.VIP} Now you are a Eternal VIP!`,
-				noVIP: `${EmoteString.VIP} You are no longer a Eternal VIP... How?`,
+				VIP: `Now you are a Eternal VIP!`,
+				noVIP: `You are no longer a Eternal VIP... How?`,
 			},
 			[Language.Portuguese]: {
-				VIP: `${EmoteString.VIP} Você agora é um VIP Eterno!`,
-				noVIP: `${EmoteString.VIP} Você não é mais um VIP Eterno... Como?`,
+				VIP: `Você agora é um VIP Eterno!`,
+				noVIP: `Você não é mais um VIP Eterno... Como?`,
 			},
 			[Language.Spanish]: {
-				VIP: `${EmoteString.VIP} Ahora eres un VIP Eternal!`,
-				noVIP: `${EmoteString.VIP} No eres más un VIP Eternal... Cómo?`,
+				VIP: `Ahora eres un VIP Eternal!`,
+				noVIP: `No eres más un VIP Eternal... Cómo?`,
 			},
 		} as const satisfies Localization;
 
 		let description = "";
 
 		if (target.VipEternal) {
-			await sendPrivateMessage(userId, messages[target.Language].VIP, Colors.Gold);
+			await sendPrivateMessage({
+				userId,
+				message: `${EmoteString.VIP} ${messages[target.Language].VIP}`,
+				notificationMessage: `🎩 ${messages[target.Language].VIP}`,
+				color: Colors.Gold,
+			});
 			description = `${EmoteString.VIP} user **${target.GetNameWithImage()}** is now a Eternal VIP`;
 
 		}
 		else {
-			await sendPrivateMessage(userId, messages[target.Language].noVIP, Colors.Gold);
+			await sendPrivateMessage({
+				userId,
+				message: `${EmoteString.VIP} ${messages[target.Language].noVIP}`,
+				notificationMessage: `🎩 ${messages[target.Language].noVIP}`,
+				color: Colors.Gold,
+			});
 			description = `${EmoteString.VIP} user **${target.GetNameWithImage()}** is no longer a Eternal VIP`;
 		}
 

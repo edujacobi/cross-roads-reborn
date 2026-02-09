@@ -29,7 +29,11 @@ export async function checkUser(userId: string, interaction: CommandInteraction)
 	if (userId == interaction.user.id) {
 		await user.Create();
 
-		await sendPrivateMessage(interaction.user.id, Strings[lang].welcomeMessage(interaction.user.username));
+		await sendPrivateMessage({
+			userId: interaction.user.id,
+			message: Strings[lang].welcomeMessage(interaction.user.username),
+			notificationMessage: "",
+		});
 		return user.GetInfo();
 	}
 }

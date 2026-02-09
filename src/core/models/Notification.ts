@@ -256,7 +256,11 @@ export class Notification {
 			const s = Strings[user.Language];
 
 			if (notification.Type == NotificationType.Daily) {
-				await sendPrivateMessage(user.Id, s.daily);
+				await sendPrivateMessage({
+					userId: user.Id,
+					message: `${s.daily} ${EmoteString.Experience}`,
+					notificationMessage: `${s.daily} 💰`,
+				});
 			}
 
 			else if (notification.Type == NotificationType.Job) {
@@ -265,45 +269,96 @@ export class Notification {
 					const userClassModifier = getJobClassModifier(user.Class);
 					const salary = Math.floor(job.Salary * userClassModifier);
 					await user.EndJob();
-					await sendPrivateMessage(user.Id, s.job(job.Description[user.Language], salary), CrColors.Jobs, formatMoney(user.Money, user.Language));
+					await sendPrivateMessage({
+						userId: user.Id,
+						message: s.job(job.Description[user.Language], salary),
+						notificationMessage: s.jobHidden(job.Description[user.Language], salary),
+						color: CrColors.Jobs,
+						footer: formatMoney(user.Money, user.Language),
+					});
 				}
 			}
 
 			else if (notification.Type == NotificationType.RobAgain) {
-				await sendPrivateMessage(user.Id, s.robAgain, CrColors.Robbery);
+				await sendPrivateMessage({
+					userId: user.Id,
+					message: `${s.robAgain} ${EmoteString.Robbery}`,
+					notificationMessage: `${s.robAgain} 🔫`,
+					color: CrColors.Robbery,
+				});
 			}
 
 			else if (notification.Type == NotificationType.Free) {
-				await sendPrivateMessage(user.Id, s.free, CrColors.Police);
+				await sendPrivateMessage({
+					userId: user.Id,
+					message: `${s.free} ${EmoteString.Prison}`,
+					notificationMessage: `${s.free} 🚓`,
+					color: CrColors.Police,
+				});
+
 			}
 
 			else if (notification.Type == NotificationType.Hospital) {
-				await sendPrivateMessage(user.Id, s.hospital, CrColors.Hospital);
+				await sendPrivateMessage({
+					userId: user.Id,
+					message: `${s.hospital} ${EmoteString.Hospital}`,
+					notificationMessage: `${s.hospital} 🏥`,
+					color: CrColors.Hospital,
+				});
 			}
 
 			else if (notification.Type == NotificationType.AlmsGive) {
-				await sendPrivateMessage(user.Id, s.almsGive, CrColors.Default);
+				await sendPrivateMessage({
+					userId: user.Id,
+					message: `${s.almsGive} ${EmoteString.Alms}`,
+					notificationMessage: `${s.almsGive} 🪙`,
+					color: CrColors.Default,
+				});
 			}
 
 			else if (notification.Type == NotificationType.AlmsReceive) {
-				await sendPrivateMessage(user.Id, s.almsReceive, CrColors.Default);
+				await sendPrivateMessage({
+					userId: user.Id,
+					message: `${s.almsReceive} ${EmoteString.Alms}`,
+					notificationMessage: `${s.almsReceive} 🪙`,
+					color: CrColors.Default,
+				});
 			}
 
 			else if (notification.Type == NotificationType.Scavenge) {
-				await sendPrivateMessage(user.Id, s.scavenge, CrColors.Scavenge);
+				await sendPrivateMessage({
+					userId: user.Id,
+					message: `${s.scavenge} ${EmoteString.Scavenge}`,
+					notificationMessage: `${s.scavenge} 🔎`,
+					color: CrColors.Scavenge,
+				});
 			}
 
 			else if (notification.Type == NotificationType.BeatAgain) {
-				await sendPrivateMessage(user.Id, s.beatAgain, CrColors.BeatUp);
+				await sendPrivateMessage({
+					userId: user.Id,
+					message: `${s.beatAgain} ${EmoteString.Beat}`,
+					notificationMessage: `${s.beatAgain} 🤜`,
+					color: CrColors.BeatUp,
+				});
 			}
 
 			else if (notification.Type == NotificationType.HorseRace) {
-				await sendPrivateMessage(user.Id, s.horseRace, CrColors.Casino);
+				await sendPrivateMessage({
+					userId: user.Id,
+					message: `${s.horseRace} ${EmoteString.Casino}`,
+					notificationMessage: `${s.horseRace} 🎲`,
+					color: CrColors.Casino,
+				});
 			}
 
 			else if (notification.Type == NotificationType.GangDepositAgain) {
 				if (user.GangId !== null) {
-					await sendPrivateMessage(user.Id, s.gangDepositAgain);
+					await sendPrivateMessage({
+						userId: user.Id,
+						message: `${s.gangDepositAgain} ${EmoteString.Gang}`,
+						notificationMessage: `${s.gangDepositAgain} 👨‍👩‍👧‍👦`,
+					});
 				}
 			}
 
@@ -323,42 +378,45 @@ export class Notification {
 
 const Strings = {
 	[Language.English]: {
-		daily: `You can receive your daily money again! ${EmoteString.Experience}`,
+		daily: `You can receive your daily money again!`,
 		job: (description: string, salary: number) => `You finished your **${description}** job and received ${formatMoney(salary, Language.English)}! ${EmoteString.Jobs}`,
-		robAgain: `You can rob again! ${EmoteString.Robbery}`,
-		free: `You are free! ${EmoteString.Prison}`,
-		hospital: `You are healed! ${EmoteString.Hospital}`,
-		almsGive: `You can give alms again! ${EmoteString.Alms}`,
-		almsReceive: `You can receive alms again! ${EmoteString.Alms}`,
-		scavenge: `You can scavenge again! ${EmoteString.Scavenge}`,
-		beatAgain: `You can beat up again! ${EmoteString.Beat}`,
-		horseRace: `A horse race is starting soon! Place your bets now! ${EmoteString.Casino}`,
-		gangDepositAgain: `You can deposit again in the gang! ${EmoteString.Gang}`,
+		jobHidden: (description: string, salary: number) => `You finished your ${description} job and received ${formatMoney(salary, Language.English)}! 👷`,
+		robAgain: `You can rob again!`,
+		free: `You are free!`,
+		hospital: `You are healed!`,
+		almsGive: `You can give alms again!`,
+		almsReceive: `You can receive alms again!`,
+		scavenge: `You can scavenge again!`,
+		beatAgain: `You can beat up again!`,
+		horseRace: `A horse race is starting soon! Place your bets now!`,
+		gangDepositAgain: `You can deposit again in the gang!`,
 	},
 	[Language.Portuguese]: {
-		daily: `Você pode receber sua grana diária novamente! ${EmoteString.Experience}`,
+		daily: `Você pode receber sua grana diária novamente!`,
 		job: (description: string, salary: number) => `Você terminou seu trabalho **${description}** e recebeu ${formatMoney(salary, Language.Portuguese)}! ${EmoteString.Jobs}`,
-		robAgain: `Você pode roubar novamente! ${EmoteString.Robbery}`,
-		free: `Você está livre! ${EmoteString.Prison}`,
-		hospital: `Você está curado! ${EmoteString.Hospital}`,
-		almsGive: `Você pode dar esmola novamente! ${EmoteString.Alms}`,
-		almsReceive: `Você pode receber esmola novamente! ${EmoteString.Alms}`,
-		scavenge: `Você pode vasculhar novamente! ${EmoteString.Scavenge}`,
-		beatAgain: `Você pode espancar novamente! ${EmoteString.Beat}`,
-		horseRace: `Uma corrida de cavalos está começando em breve! Faça suas apostas agora! ${EmoteString.Casino}`,
-		gangDepositAgain: `Você pode depositar novamente na gangue! ${EmoteString.Gang}`,
+		jobHidden: (description: string, salary: number) => `Você terminou seu trabalho ${description} e recebeu ${formatMoney(salary, Language.Portuguese)}! 👷`,
+		robAgain: `Você pode roubar novamente!`,
+		free: `Você está livre!`,
+		hospital: `Você está curado!`,
+		almsGive: `Você pode dar esmola novamente!`,
+		almsReceive: `Você pode receber esmola novamente!`,
+		scavenge: `Você pode vasculhar novamente!`,
+		beatAgain: `Você pode espancar novamente!`,
+		horseRace: `Uma corrida de cavalos está começando em breve! Faça suas apostas agora!`,
+		gangDepositAgain: `Você pode depositar novamente na gangue!`,
 	},
 	[Language.Spanish]: {
-		daily: `¡Puedes recibir tu dinero diario de nuevo! ${EmoteString.Experience}`,
+		daily: `¡Puedes recibir tu dinero diario de nuevo!`,
 		job: (description: string, salary: number) => `Terminaste tu trabajo **${description}** y recibiste ${formatMoney(salary, Language.Spanish)}! ${EmoteString.Jobs}`,
-		robAgain: `¡Puedes robar de nuevo! ${EmoteString.Robbery}`,
-		free: `¡Estás libre! ${EmoteString.Prison}`,
-		hospital: `¡Estás curado! ${EmoteString.Hospital}`,
-		almsGive: `¡Puedes dar limosna de nuevo! ${EmoteString.Alms}`,
-		almsReceive: `¡Puedes recibir limosna de nuevo! ${EmoteString.Alms}`,
-		scavenge: `¡Puedes buscar de nuevo! ${EmoteString.Scavenge}`,
-		beatAgain: `¡Puedes golpear de nuevo! ${EmoteString.Beat}`,
-		horseRace: `¡Una carrera de caballos está comenzando pronto! ¡Haz tus apuestas ahora! ${EmoteString.Casino}`,
-		gangDepositAgain: `¡Puedes depositar de nuevo en la gangue! ${EmoteString.Gang}`,
+		jobHidden: (description: string, salary: number) => `Terminaste tu trabajo ${description} y recibiste ${formatMoney(salary, Language.Spanish)}! 👷`,
+		robAgain: `¡Puedes robar de nuevo!`,
+		free: `¡Estás libre!`,
+		hospital: `¡Estás curado!`,
+		almsGive: `¡Puedes dar limosna de nuevo!`,
+		almsReceive: `¡Puedes recibir limosna de nuevo!`,
+		scavenge: `¡Puedes buscar de nuevo!`,
+		beatAgain: `¡Puedes golpear de nuevo!`,
+		horseRace: `¡Una carrera de caballos está comenzando pronto! ¡Haz tus apuestas ahora!`,
+		gangDepositAgain: `¡Puedes depositar de nuevo en la gangue!`,
 	},
 } as const satisfies Localization;
