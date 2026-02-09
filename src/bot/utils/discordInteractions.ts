@@ -28,9 +28,9 @@ import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder"
  */
 export async function sendPrivateMessage(userId: string, message: string, color: ColorResolvable = Colors.DarkButNotBlack, footer: string = "") {
 	const client = getClient();
-	const discordUser = await client.users.fetch(userId);
 
 	try {
+		const discordUser = await client.users.fetch(userId);
 		const embed = new EmbedBuilder()
 			.setDescription(message);
 
@@ -44,7 +44,7 @@ export async function sendPrivateMessage(userId: string, message: string, color:
 		await discordUser.send({ embeds: [embed] });
 	}
 	catch (err) {
-		Log.Warning(`Something went wrong with sending private message to ${discordUser.displayName} (${discordUser.id}).`);
+		Log.Warning(`Something went wrong with sending private message to user ${userId}. Error: ${err}`);
 	}
 }
 
@@ -60,13 +60,13 @@ export async function sendComplexPrivateMessage(userId: Snowflake | undefined, o
 		return;
 	}
 	const client = getClient();
-	const discordUser = await client.users.fetch(userId);
 
 	try {
+		const discordUser = await client.users.fetch(userId);
 		return await discordUser.send(options);
 	}
 	catch (err) {
-		Log.Warning(`Something went wrong with sending private message to ${discordUser.displayName} (${discordUser.id}).`);
+		Log.Warning(`Something went wrong with sending private message to user ${userId}. Error: ${err}`);
 	}
 }
 
