@@ -4,7 +4,7 @@ import { addDays, differenceInHours, formatDistanceToNow } from "date-fns";
 import { getLocaleFromLanguage, Language, Localization } from "./Language";
 import { UserItems } from "@core/database/UserItems";
 import { addHours } from "date-fns/addHours";
-import { Op } from "sequelize";
+import { InferAttributes, Op } from "sequelize";
 import { ItemList, Items, ItemType, UserItem } from "@core/types/Items";
 import { JobId, JobList } from "@core/types/Jobs";
 import { Notification, NotificationType } from "./Notification";
@@ -23,6 +23,7 @@ import { BundleList, SkinBundles } from "@core/types/Skins";
 import { UserAvatarDecoration } from "./UserAvatarDecoration";
 import { AvatarDecorationList, AvatarDecorations } from "@core/types/AvatarDecorations";
 import { GangBases } from "@core/types/GangBases";
+import { Col, Fn, Literal } from "sequelize/lib/utils";
 
 export enum SituationId {
 	Idling,
@@ -397,7 +398,12 @@ export class User {
 			}
 			this.Money -= cost;
 		}
-		await this.Update();
+
+		await this.Update({
+			nickname: this.Nickname,
+			money: this.Money,
+		});
+
 		Log.Success(`User ${oldNickname} (ID: ${this.Id}) changed nickname to ${nickname}.`);
 		return true;
 	}
@@ -417,7 +423,12 @@ export class User {
 			}
 			this.Money -= cost;
 		}
-		await this.Update();
+
+		await this.Update({
+			class: this.Class,
+			money: this.Money,
+		});
+
 		Log.Success(`User ${this.Nickname} (ID: ${this.Id}) changed class from ${ClassList[oldClass].Name[Language.English]} to ${ClassList[classId].Name[Language.English]}.`);
 		return true;
 	}
@@ -468,7 +479,11 @@ export class User {
 
 		this.VipTime = addDays(this.VipTime, days);
 
-		await this.Update();
+		await this.Update({
+			vipTime: this.VipTime,
+			avatarDecoration: this.AvatarDecoration.Id,
+		});
+
 		Log.Success(`User ${this.Nickname} (ID: ${this.Id}) received ${days} days of VIP.`);
 	}
 
@@ -478,7 +493,9 @@ export class User {
 	async SetEternalVip() {
 		this.VipEternal = !this.VipEternal;
 
-		await this.Update();
+		await this.Update({
+			vipEternal: this.VipEternal,
+		});
 		Log.Success(`User ${this.Nickname} (ID: ${this.Id}) ${this.VipEternal ? "is now" : "is not anymore"} a eternal VIP.`);
 	}
 
@@ -489,7 +506,10 @@ export class User {
 	async AddSpecialCoin(coins: number) {
 		this.SpecialCoin += coins;
 
-		await this.Update();
+		await this.Update({
+			specialCoin: this.SpecialCoin,
+		});
+
 		Log.Success(`User ${this.Nickname} (ID: ${this.Id}) received ${coins} special coins.`);
 	}
 
@@ -535,7 +555,12 @@ export class User {
 
 		this.Money += money;
 
-		await this.Update();
+		await this.Update({
+			money: this.Money,
+			lastDailyReceived: this.Daily.LastReceived,
+			dailyStreak: this.Daily.CurrentStreak,
+			maxDailyStreak: this.Daily.MaxStreak,
+		});
 		Log.Success(`User ${this.Nickname} (ID: ${this.Id}) received ${formatMoney(money, Language.English)} from daily. Streak: ${this.Daily.CurrentStreak}.`);
 
 		await Notification.Daily(this);
@@ -594,7 +619,11 @@ export class User {
 		this.Shop.SpentCount += 1;
 		this.Shop.SpentSum += item.Price;
 
-		await this.Update();
+		await this.Update({
+			money: this.Money,
+			shopSpentCount: this.Shop.SpentCount,
+			shopSpentSum: this.Shop.SpentSum,
+		});
 		return true;
 	}
 
@@ -801,7 +830,9 @@ export class User {
 	 */
 	async SetAvatarDecoration(decoration: AvatarDecorations) {
 		this.AvatarDecoration = decoration;
-		await this.Update();
+		await this.Update({
+			avatarDecoration: this.AvatarDecoration.Id,
+		});
 
 		Log.Info(`User ${this.Nickname} (ID: ${this.Id}) has set avatar decoration ${decoration.Description[Language.English]} (ID: ${decoration.Id}).`);
 	}
@@ -1116,7 +1147,10 @@ export class User {
 		this.Job.EndsIn = addHours(new Date(), jobDuration);
 
 		await Notification.Job(this);
-		await this.Update();
+		await this.Update({
+			jobId: this.Job.Id,
+			jobTime: this.Job.EndsIn,
+		});
 		Log.Info(`User ${this.Nickname} (ID: ${this.Id}) started job ${job.Description[this.Language]} (ID: ${jobId}), will finish in ${formatDate(this.Job.EndsIn, Language.English)}.`);
 	}
 
@@ -1132,7 +1166,9 @@ export class User {
 
 		await Promise.all([
 			Notification.Dismiss(this.Id, NotificationType.Job),
-			this.Update(),
+			this.Update({
+				jobId: this.Job.Id,
+			}),
 		]);
 		Log.Info(`User ${this.Nickname} (ID: ${this.Id}) canceled his job ${job.Description[this.Language]}.`);
 	}
@@ -1152,7 +1188,12 @@ export class User {
 		this.Job.ReceivedCount += 1;
 		this.Job.ReceivedSum += salary;
 
-		await this.Update();
+		await this.Update({
+			money: this.Money,
+			jobId: this.Job.Id,
+			jobReceivedCount: this.Job.ReceivedCount,
+			jobReceivedSum: this.Job.ReceivedSum,
+		});
 		Log.Success(`User ${this.Nickname} (ID: ${this.Id}) finished his job ${job.Description[this.Language]} and received ${formatMoney(salary, Language.English)}.`);
 	}
 
@@ -1166,7 +1207,9 @@ export class User {
 
 		if (success) {
 			this.SpecialCoin -= BundleList[bundleId].Price;
-			await this.Update();
+			await this.Update({
+				specialCoin: this.SpecialCoin,
+			});
 			Log.Success(`User ${this.Nickname} (ID: ${this.Id}) bought skin bundle ${BundleList[bundleId].Description[Language.English]} (ID: ${bundleId}) for ${formatMoney(BundleList[bundleId].Price, Language.English, "")}.`);
 		}
 		else {
@@ -1186,7 +1229,9 @@ export class User {
 
 		if (success) {
 			this.SpecialCoin -= AvatarDecorationList[avatarDecorationId].Price;
-			await this.Update();
+			await this.Update({
+				specialCoin: this.SpecialCoin,
+			});
 			Log.Success(`User ${this.Nickname} (ID: ${this.Id}) bought avatar decoration ${AvatarDecorationList[avatarDecorationId].Description[Language.English]} (ID: ${avatarDecorationId}) for ${formatMoney(AvatarDecorationList[avatarDecorationId].Price, Language.English, "")}.`);
 		}
 		else {
@@ -1199,94 +1244,9 @@ export class User {
 	/**
 	 * Updates the user in the database.
 	 */
-	async Update() {
+	async Update(values: { [key in keyof InferAttributes<Users>]?: InferAttributes<Users>[key] | Fn | Col | Literal }) {
 		try {
-			await Users.update({
-				nickname: this.Nickname,
-				money: this.Money,
-				class: this.Class,
-
-				lastDailyReceived: this.Daily.LastReceived,
-				dailyStreak: this.Daily.CurrentStreak,
-				maxDailyStreak: this.Daily.MaxStreak,
-
-				vipTime: this.VipTime,
-				vipEternal: this.VipEternal,
-				specialCoin: this.SpecialCoin,
-				avatarDecoration: this.AvatarDecoration.Id,
-
-				jobId: this.Job.Id,
-				jobTime: this.Job.EndsIn,
-				jobReceivedSum: this.Job.ReceivedSum,
-				jobReceivedCount: this.Job.ReceivedCount,
-
-				robberySuccessCount: this.Robbery.SuccessCount,
-				robberyFailureCount: this.Robbery.FailureCount,
-				robberySuccessRobbedSum: this.Robbery.SuccessRobbedSum,
-				robberyBeingRobbedCount: this.Robbery.BeingRobbedCount,
-				robberyBeingRobbedSum: this.Robbery.BeingRobbedSum,
-				robbingUserId: this.Robbery.IsRobbingId,
-				beingRobbedByUserId: this.Robbery.IsBeingRobbedById,
-				robbingLocationId: this.Robbery.IsRobbingLocationId,
-
-				beatUpSuccessCount: this.BeatUp.SuccessCount,
-				beatUpFailureCount: this.BeatUp.FailureCount,
-				beatUpBeatedUpCount: this.BeatUp.BeatedUpCount,
-				beatingUserId: this.BeatUp.IsBeatingId,
-				beingBeatUpByUserId: this.BeatUp.IsBeingBeatUpById,
-				beatUpTime: this.BeatUp.Time,
-
-				prisonCount: this.Prison.Count,
-				prisonBriberySum: this.Prison.BriberySum,
-				prisonBriberyCount: this.Prison.BriberyCount,
-				prisonHasPaidBribe: this.Prison.HasPaidBribe,
-				prisonTime: this.Prison.Time,
-
-				escapeCount: this.Escape.Count,
-				escapeTime: this.Escape.Time,
-				escapeHasTried: this.Escape.HasTried,
-
-				wantedCount: this.Wanted.Count,
-				wantedTime: this.Wanted.Time,
-
-				hospitalCount: this.Hospital.Count,
-				hospitalTime: this.Hospital.Time,
-				hospitalTreatmentCount: this.Hospital.TreatmentCount,
-				hospitalTreatmentSum: this.Hospital.TreatmentSum,
-
-				casinoIsInGame: this.Casino.IsInGame,
-				casinoWinCount: this.Casino.WinCount,
-				casinoLoseCount: this.Casino.LoseCount,
-				casinoWinSum: this.Casino.WinSum,
-				casinoLoseSum: this.Casino.LoseSum,
-
-				shopSpentSum: this.Shop.SpentSum,
-				shopSpentCount: this.Shop.SpentCount,
-
-				almsGiveTime: this.Alms.GiveTime,
-				almsReceiveTime: this.Alms.ReceiveTime,
-				almsGivenSum: this.Alms.GivenSum,
-				almsGivenCount: this.Alms.GivenCount,
-				almsReceivedSum: this.Alms.ReceivedSum,
-				almsReceivedCount: this.Alms.ReceivedCount,
-
-				scavengingId: this.Scavenge.IsScavengingId,
-				scavengeCount: this.Scavenge.Count,
-				scavengeTime: this.Scavenge.Time,
-				scavengeFoundTotal: this.Scavenge.Found.Total,
-				scavengeFoundItems: this.Scavenge.Found.Items,
-				scavengeMoneyCount: this.Scavenge.Found.MoneyCount,
-				scavengeMoneySum: this.Scavenge.Found.MoneySum,
-				scavengeFailures: this.Scavenge.Found.Failures,
-				scavengeFailureWithHospital: this.Scavenge.Found.FailureWithHospital,
-				scavengeFailureWithPrison: this.Scavenge.Found.FailureWithPrison,
-
-				drinkNormal: this.Drink.Normal,
-				drinkHappyHour: this.Drink.HappyHour,
-				drunkCount: this.Drink.DrunkCount,
-
-				updatedAt: this.UpdatedAt,
-			}, {
+			await Users.update(values, {
 				where: { id: this.Id },
 			});
 		}
@@ -1301,11 +1261,8 @@ export class User {
 	 */
 	async UpdateLanguage(language: Language) {
 		try {
-			await Users.update({
+			await this.Update({
 				language: language,
-				updatedAt: this.UpdatedAt,
-			}, {
-				where: { id: this.Id },
 			});
 			this.Language = language;
 		}
@@ -1381,7 +1338,7 @@ export class User {
 			// Situação estranha onde o usuário tem um ID de gangue, mas a gangue não existe
 			// Vamos limpar o GangId para corrigir a inconsistência
 			this.GangId = null;
-			await this.Update();
+			// No need to update Users table as GangId is not stored there
 			return true;
 		}
 
@@ -1395,7 +1352,6 @@ export class User {
 
 		if (success) {
 			this.GangId = null;
-			await this.Update();
 			Log.Success(`User ${this.Nickname} (ID: ${this.Id}) left gang ${gang.Name} (ID: ${gang.Id}).`);
 		}
 

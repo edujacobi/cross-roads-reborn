@@ -49,7 +49,12 @@ export class Hospital {
 
 		await Promise.all([
 			Notification.Dismiss(this.User.Id, NotificationType.Hospital),
-			this.User.Update(),
+			this.User.Update({
+				money: this.User.Money,
+				hospitalTreatmentSum: this.User.Hospital.TreatmentSum,
+				hospitalTreatmentCount: this.User.Hospital.TreatmentCount,
+				hospitalTime: this.User.Hospital.Time,
+			}),
 		]);
 
 		Log.Success(`User ${this.User.Nickname} (Id: ${this.User.Id}) paid ${formatMoney(this.PrivatePrice, Language.English)} for private care in Hospital`);

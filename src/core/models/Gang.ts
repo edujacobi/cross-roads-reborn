@@ -170,7 +170,9 @@ export class Gang {
 		try {
 			// Charge creation cost
 			user.Money -= Gang.CREATION_COST;
-			await user.Update();
+			await user.Update({
+				money: user.Money,
+			});
 
 			// Create gang
 			const gang = await Gangs.create({
@@ -739,7 +741,9 @@ export class Gang {
 			this.Money += Gang.JOIN_COST;
 
 			await Promise.all([
-				user.Update(),
+				user.Update({
+					money: user.Money,
+				}),
 				this.Update(),
 				GangMembers.create({
 					gangId: this.Id,
@@ -1394,7 +1398,9 @@ export class Gang {
 			await Promise.all([
 				member.save(),
 				Notification.GangDepositAgain(user, member.depositTime),
-				user.Update(),
+				user.Update({
+					money: user.Money,
+				}),
 				this.Update(),
 			]);
 		}

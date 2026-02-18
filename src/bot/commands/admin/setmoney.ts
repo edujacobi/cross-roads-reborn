@@ -87,7 +87,9 @@ module.exports = {
 			description,
 		});
 
-		await target.Update();
+		await target.Update({
+			money: target.Money,
+		});
 
 		await replyWithContainer(interaction, container);
 	},

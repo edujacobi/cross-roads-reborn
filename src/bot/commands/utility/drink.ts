@@ -195,7 +195,13 @@ module.exports = {
 						user.Drink.Normal = count;
 					}
 
-					await user.Update();
+					await user.Update({
+						hospitalCount: user.Hospital.Count,
+						hospitalTime: user.Hospital.Time,
+						drunkCount: user.Drink.DrunkCount,
+						drinkNormal: user.Drink.Normal,
+						drinkHappyHour: user.Drink.HappyHour,
+					});
 
 					Log.Info(`${user.Nickname} (${user.Id}) drank too much and fell into an alcoholic coma. Will be hospitalized for ${minutes} minutes. Drank ${count} times.`);
 

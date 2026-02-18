@@ -298,8 +298,12 @@ export class Robbery {
 		this.Defender.Robbery.IsBeingRobbedById = this.Attacker.Id;
 
 		await Promise.all([
-			this.Attacker.Update(),
-			this.Defender.Update(),
+			this.Attacker.Update({
+				robbingUserId: this.Attacker.Robbery.IsRobbingId,
+			}),
+			this.Defender.Update({
+				beingRobbedByUserId: this.Defender.Robbery.IsBeingRobbedById,
+			}),
 		]);
 
 		Log.Info(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) started a robbery to user ${this.Defender.Nickname} (ID: ${this.Defender.Id}).`);
@@ -571,8 +575,28 @@ ${sA.beatenUp(this.Defender.Hospital.Time)} ${EmoteString.Hospital}` : ""}`,
 		this.Attacker.Robbery.IsRobbingId = null;
 		this.Defender.Robbery.IsBeingRobbedById = null;
 		await Promise.all([
-			this.Attacker.Update(),
-			this.Defender.Update(),
+			this.Attacker.Update({
+				money: this.Attacker.Money,
+				robberySuccessCount: this.Attacker.Robbery.SuccessCount,
+				robberySuccessRobbedSum: this.Attacker.Robbery.SuccessRobbedSum,
+				wantedTime: this.Attacker.Wanted.Time,
+				beatUpSuccessCount: this.Attacker.BeatUp.SuccessCount,
+				prisonTime: this.Attacker.Prison.Time,
+				prisonHasPaidBribe: this.Attacker.Prison.HasPaidBribe,
+				escapeHasTried: this.Attacker.Escape.HasTried,
+				robberyFailureCount: this.Attacker.Robbery.FailureCount,
+				prisonCount: this.Attacker.Prison.Count,
+				robbingUserId: this.Attacker.Robbery.IsRobbingId,
+			}),
+			this.Defender.Update({
+				money: this.Defender.Money,
+				robberyBeingRobbedCount: this.Defender.Robbery.BeingRobbedCount,
+				robberyBeingRobbedSum: this.Defender.Robbery.BeingRobbedSum,
+				hospitalCount: this.Defender.Hospital.Count,
+				hospitalTime: this.Defender.Hospital.Time,
+				beatUpBeatedUpCount: this.Defender.BeatUp.BeatedUpCount,
+				beingRobbedByUserId: this.Defender.Robbery.IsBeingRobbedById,
+			}),
 		]);
 
 		await RobHistories.CreateUserRobberyHistory(this);

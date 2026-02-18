@@ -257,7 +257,7 @@ export class BeatUp {
 					.setButtonAccessory(new ButtonBuilder()
 						.setCustomId("dont_use_grenade")
 						.setLabel(sA.dontUseGrenade)
-						.setStyle(ButtonStyle.Secondary)
+						.setStyle(ButtonStyle.Secondary),
 					),
 				)
 				.addFooter({
@@ -318,8 +318,12 @@ export class BeatUp {
 		this.Defender.BeatUp.IsBeingBeatUpById = this.Attacker.Id;
 
 		await Promise.all([
-			this.Attacker.Update(),
-			this.Defender.Update(),
+			this.Attacker.Update({
+				beatingUserId: this.Attacker.BeatUp.IsBeatingId,
+			}),
+			this.Defender.Update({
+				beingBeatUpByUserId: this.Defender.BeatUp.IsBeingBeatUpById,
+			}),
 		]);
 
 		Log.Info(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) started beating up user ${this.Defender.Nickname} (ID: ${this.Defender.Id}).`);
@@ -560,8 +564,26 @@ export class BeatUp {
 		this.Attacker.BeatUp.IsBeatingId = null;
 		this.Defender.BeatUp.IsBeingBeatUpById = null;
 		await Promise.all([
-			this.Attacker.Update(),
-			this.Defender.Update(),
+			this.Attacker.Update({
+				beatingUserId: this.Attacker.BeatUp.IsBeatingId,
+				beatUpBeatedUpCount: this.Attacker.BeatUp.BeatedUpCount,
+				beatUpFailureCount: this.Attacker.BeatUp.FailureCount,
+				beatUpSuccessCount: this.Attacker.BeatUp.SuccessCount,
+				hospitalCount: this.Attacker.Hospital.Count,
+				hospitalTime: this.Attacker.Hospital.Time,
+				beatUpTime: this.Attacker.BeatUp.Time,
+				wantedCount: this.Attacker.Wanted.Count,
+				wantedTime: this.Attacker.Wanted.Time,
+			}),
+			this.Defender.Update({
+				beingBeatUpByUserId: this.Defender.BeatUp.IsBeingBeatUpById,
+				beatUpBeatedUpCount: this.Defender.BeatUp.BeatedUpCount,
+				beatUpFailureCount: this.Defender.BeatUp.FailureCount,
+				beatUpSuccessCount: this.Defender.BeatUp.SuccessCount,
+				hospitalCount: this.Defender.Hospital.Count,
+				hospitalTime: this.Defender.Hospital.Time,
+				beatUpTime: this.Defender.BeatUp.Time,
+			}),
 		]);
 
 		await RobHistories.CreateUserBeatUpHistory(this);

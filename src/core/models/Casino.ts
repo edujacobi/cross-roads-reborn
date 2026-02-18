@@ -80,7 +80,9 @@ export class Casino {
 
 	static async StartUserGame(user: User) {
 		user.Casino.IsInGame = true;
-		await user.Update();
+		await user.Update({
+			casinoIsInGame: user.Casino.IsInGame
+		});
 		Log.Info(`User ${user.Nickname} (ID: ${user.Id}) is now in a Casino Game.`);
 	}
 
@@ -89,7 +91,12 @@ export class Casino {
 		user.Money += prize;
 		user.Casino.WinCount += 1;
 		user.Casino.WinSum += prize;
-		await user.Update();
+		await user.Update({
+			money: user.Money,
+			casinoIsInGame: user.Casino.IsInGame,
+			casinoWinCount: user.Casino.WinCount,
+			casinoWinSum: user.Casino.WinSum,
+		});
 		Log.Success(`User ${user.Nickname} (ID: ${user.Id}) won ${prize} in a Casino Game.`);
 	}
 
@@ -98,7 +105,12 @@ export class Casino {
 		user.Money -= amount;
 		user.Casino.LoseSum += amount;
 		user.Casino.LoseCount += 1;
-		await user.Update();
+		await user.Update({
+			money: user.Money,
+			casinoIsInGame: user.Casino.IsInGame,
+			casinoLoseCount: user.Casino.LoseCount,
+			casinoLoseSum: user.Casino.LoseSum,
+		});
 		Log.Success(`User ${user.Nickname} (ID: ${user.Id}) lost ${amount} in a Casino Game.`);
 	}
 }

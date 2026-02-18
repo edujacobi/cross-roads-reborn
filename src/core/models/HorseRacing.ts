@@ -127,7 +127,9 @@ export class HorseRacing {
 
 		// Update user's money
 		this.User.Money -= amount;
-		await this.User.Update();
+		await this.User.Update({
+			money: this.User.Money,
+		});
 
 		return {
 			success: true,
@@ -636,7 +638,11 @@ export class HorseRacing {
 			winner.user.Money += winner.proportionalPrize;
 			winner.user.Casino.WinCount += 1;
 			winner.user.Casino.WinSum += winner.proportionalPrize;
-			await winner.user.Update();
+			await winner.user.Update({
+				money: winner.user.Money,
+				casinoWinCount: winner.user.Casino.WinCount,
+				casinoWinSum: winner.user.Casino.WinSum,
+			});
 
 			// Get horse name based on user language
 			const horseName = winner.user.Language === Language.Portuguese ? winningHorseData?.namePt :
@@ -675,6 +681,11 @@ export class HorseRacing {
 			if (user) {
 				user.Casino.LoseCount += 1;
 				user.Casino.LoseSum += bet.amount;
+				await user.Update({
+					casinoLoseCount: user.Casino.LoseCount,
+					casinoLoseSum: user.Casino.LoseSum,
+				});
+
 				// Get winning horse name based on user language
 				const winningHorseName = user.Language === Language.Portuguese ? winningHorseData?.namePt :
 					(user.Language === Language.Spanish ? winningHorseData?.nameEs : winningHorseData?.nameEn);

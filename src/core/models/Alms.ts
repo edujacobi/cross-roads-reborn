@@ -81,8 +81,18 @@ export class Alms {
 		this.Receiver.Alms.ReceivedSum += this.Value;
 
 		await Promise.all([
-			this.Giver.Update(),
-			this.Receiver.Update(),
+			this.Giver.Update({
+				money: this.Giver.Money,
+				almsGiveTime: this.Giver.Alms.GiveTime,
+				almsGivenSum: this.Giver.Alms.GivenSum,
+				almsGivenCount: this.Giver.Alms.GivenCount,
+			}),
+			this.Receiver.Update({
+				money: this.Receiver.Money,
+				almsReceiveTime: this.Receiver.Alms.ReceiveTime,
+				almsReceivedSum: this.Receiver.Alms.ReceivedSum,
+				almsReceivedCount: this.Receiver.Alms.ReceivedCount,
+			}),
 			Notification.AlmsGive(this.Giver),
 			// Notification.AlmsReceive(this.Receiver),
 		]);

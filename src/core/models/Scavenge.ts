@@ -94,7 +94,9 @@ export class Scavenge {
 
 	async StartScavenge() {
 		this.User.Scavenge.IsScavengingId = this.PlaceId;
-		await this.User.Update();
+		await this.User.Update({
+			scavengingId: this.User.Scavenge.IsScavengingId,
+		});
 
 		const place = ScavengeList[this.PlaceId];
 		this.RewardItems = place.Reward.Items.map(item => ({
@@ -253,7 +255,28 @@ export class Scavenge {
 
 		await Notification.Scavenge(this.User);
 
-		await this.User.Update();
+		await this.User.Update({
+			money: this.User.Money,
+			scavengeMoneyCount: this.User.Scavenge.Found.MoneyCount,
+			scavengeMoneySum: this.User.Scavenge.Found.MoneySum,
+			scavengeFoundItems: this.User.Scavenge.Found.Items,
+			scavengeFoundTotal: this.User.Scavenge.Found.Total,
+			scavengeFailures: this.User.Scavenge.Found.Failures,
+
+			prisonTime: this.User.Prison.Time,
+			prisonCount: this.User.Prison.Count,
+			prisonHasPaidBribe: this.User.Prison.HasPaidBribe,
+			escapeHasTried: this.User.Escape.HasTried,
+
+			scavengeFailureWithPrison: this.User.Scavenge.Found.FailureWithPrison,
+			hospitalTime: this.User.Hospital.Time,
+			hospitalCount: this.User.Hospital.Count,
+			scavengeFailureWithHospital: this.User.Scavenge.Found.FailureWithHospital,
+
+			scavengeCount: this.User.Scavenge.Count,
+			scavengeTime: this.User.Scavenge.Time,
+			scavengingId: this.User.Scavenge.IsScavengingId,
+		});
 
 		return result;
 	}

@@ -119,7 +119,9 @@ export class RobberyLocation extends Robbery {
 
 		this.Attacker.Robbery.IsRobbingLocationId = this.LocationId;
 
-		await this.Attacker.Update();
+		await this.Attacker.Update({
+			robbingLocationId: this.Attacker.Robbery.IsRobbingLocationId,
+		});
 
 		Log.Info(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) started a robbery to location ${LocationList[this.LocationId].Name[Language.English]} (ID: ${LocationList[this.LocationId].Id}).`);
 
@@ -200,7 +202,18 @@ export class RobberyLocation extends Robbery {
 		await replyWithContainer(interaction, this.Container.Channel);
 
 		this.Attacker.Robbery.IsRobbingLocationId = null;
-		await this.Attacker.Update();
+		await this.Attacker.Update({
+			money: this.Attacker.Money,
+			robberySuccessCount: this.Attacker.Robbery.SuccessCount,
+			robberySuccessRobbedSum: this.Attacker.Robbery.SuccessRobbedSum,
+			wantedTime: this.Attacker.Wanted.Time,
+			prisonTime: this.Attacker.Prison.Time,
+			prisonHasPaidBribe: this.Attacker.Prison.HasPaidBribe,
+			escapeHasTried: this.Attacker.Escape.HasTried,
+			robberyFailureCount: this.Attacker.Robbery.FailureCount,
+			prisonCount: this.Attacker.Prison.Count,
+			robbingLocationId: this.Attacker.Robbery.IsRobbingLocationId,
+		});
 
 		await RobHistories.CreateLocationHistory(this);
 	}
