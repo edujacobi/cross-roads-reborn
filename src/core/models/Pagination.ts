@@ -10,6 +10,7 @@ export class Pagination {
 	Offset: number = 0;
 	Limit = 5;
 	HowManyRecords: number = 0;
+	UserHasInteractedOutside = false;
 	CustomizeContainer: (() => Promise<CustomContainerBuilder>);
 
 	constructor(interaction: ChatInputCommandInteraction, language: Language) {
@@ -83,7 +84,9 @@ export class Pagination {
 		const collector = createButtonCollector(this.Interaction, response, 30_000);
 
 		collector?.on("end", async () => {
-			await disableButtons(this.Interaction, mainContainer ?? container);
+			if (!this.UserHasInteractedOutside) {
+				await disableButtons(this.Interaction, mainContainer ?? container);
+			}
 		});
 
 		collector?.on("collect", async btn => {

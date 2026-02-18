@@ -600,10 +600,14 @@ module.exports = {
 			}
 
 			else if (btn.customId === "rob") {
+				pagination.UserHasInteractedOutside = true;
+
 				const target = await searchUser(users[position].id, interaction);
 				if (!target) {
 					return;
 				}
+
+				await user.GetInfo();
 
 				const robbery = new Robbery(user, target);
 
@@ -626,10 +630,14 @@ module.exports = {
 			}
 
 			else if (btn.customId === "beat") {
+				pagination.UserHasInteractedOutside = true;
+
 				const target = await searchUser(users[position].id, interaction);
 				if (!target) {
 					return;
 				}
+
+				await user.GetInfo();
 
 				const beatUp = new BeatUp(user, target);
 
