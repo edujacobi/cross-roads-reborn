@@ -207,7 +207,7 @@ export class Scavenge {
 						userId: this.User.Id,
 						itemId: item.Id,
 						remainingTime,
-						skin: BundleId.Default,
+						skin: existingItem?.skin ?? BundleId.Default,
 					});
 					result.rewardType = ScavengeRewardType.ItemDuration;
 					result.item = data;
