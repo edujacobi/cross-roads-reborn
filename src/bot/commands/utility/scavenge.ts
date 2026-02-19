@@ -220,7 +220,7 @@ module.exports = {
 							message = `${s.userScavenging(user.Scavenge.IsScavengingId!)} ${EmoteString.Scavenge}`;
 						}
 						else if (reason === ScavengeFailureReason.UserWorking) {
-							message = `${s.working(user.Job.EndsIn, user.Job.Id!)} ${EmoteString.Jobs}`;
+							message = s.working(user.Job.EndsIn, user.Job.Id!);
 						}
 						else if (reason === ScavengeFailureReason.UserPrison) {
 							message = s.prison(user.Prison.Time);
@@ -340,7 +340,6 @@ const Strings = {
 		need: "Needed",
 		more: "More information",
 		less: "Less information",
-		placeholderSelect: "Select a place",
 		userScavenging: (placeId: number) => `You are already scavenging ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.English]}**!`,
 		working: (jobTime: Date, jobId: number) => `You cannot scavenge while working! ${EmoteString.Jobs}\n-# Your job of **${JobList[jobId].Description[Language.English]}** will end ${showTime(jobTime.getTime(), true)}!`,
 		prison: (prisonTime: Date) => `You cannot scavenge while in prison! ${EmoteString.Prison}\n-# Will be released ${showTime(prisonTime.getTime(), true)}!`,
@@ -377,7 +376,6 @@ const Strings = {
 		need: "Necessário",
 		more: "Mais informações",
 		less: "Menos informações",
-		placeholderSelect: "Selecione um lugar",
 		userScavenging: (placeId: number) => `Você já está vasculhando ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Portuguese]}**!`,
 		working: (jobTime: Date, jobId: number) => `Você não pode vasculhar enquanto está trabalhando! ${EmoteString.Jobs}\n-# Terminará seu trabalho de **${JobList[jobId].Description[Language.Portuguese]}** ${showTime(jobTime.getTime(), true)}!`,
 		prison: (prisonTime: Date) => `Você não pode vasculhar enquanto está preso! ${EmoteString.Prison}\n-# Será solto ${showTime(prisonTime.getTime(), true)}!`,
@@ -414,7 +412,6 @@ const Strings = {
 		need: "Necesario",
 		more: "Más información",
 		less: "Menos información",
-		placeholderSelect: "Seleccionar un lugar",
 		userScavenging: (placeId: number) => `¡Ya estás buscando en ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Spanish]}**!`,
 		working: (jobTime: Date, jobId: number) => `¡No puedes buscar mientras trabajas! ${EmoteString.Jobs}\n-# ¡Tu trabajo de **${JobList[jobId].Description[Language.Spanish]}** terminará ${showTime(jobTime.getTime(), true)}!`,
 		prison: (prisonTime: Date) => `¡No puedes buscar mientras estás en prisión! ${EmoteString.Prison}\n-# ¡Serás liberado ${showTime(prisonTime.getTime(), true)}!`,
