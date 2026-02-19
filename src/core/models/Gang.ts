@@ -2,7 +2,7 @@ import { Gangs } from "@core/database/Gangs";
 import { GangMembers } from "@core/database/GangMembers";
 import { GangRoles } from "@core/database/GangRoles";
 import { Log } from "@shared/log";
-import { SituationId, User } from "./User";
+import { User } from "./User";
 import { Language, Localization } from "./Language";
 import { defaultComponent, formatMoney, showTime } from "@bot/utils/ui";
 import { Users } from "@core/database/Users";
@@ -118,14 +118,22 @@ export class Gang {
 		const xpNeeded = Gang.GetXpForNextLevel(this.Level);
 		let leveledUp = false;
 
+		Log.Success(`Gang ${this.Name} (Id: ${this.Id}) gained ${xp} experience.`);
+
 		if (this.Experience >= xpNeeded && this.Level < 10) { // Max level 10
 			this.Level += 1;
 			this.Experience -= xpNeeded;
 			leveledUp = true;
 			Log.Success(`Gang ${this.Name} (Id ${this.Id}) leveled up to level ${this.Level}!`);
+
+			const levelUpMessages = {
+				[Language.English]: `**${this.Name}** leveled up to level ${this.Level}!`,
+				[Language.Portuguese]: `**${this.Name}** subiu para o nível ${this.Level}!`,
+				[Language.Spanish]: `**${this.Name}** ¡ha subido al nivel ${this.Level}!`,
+			};
+			await this.ComunicateAllMembers(levelUpMessages);
 		}
 
-		Log.Success(`Gang ${this.Name} (Id: ${this.Id}) gained ${xp} experience.`);
 		await this.Update();
 		return leveledUp;
 	}
@@ -814,12 +822,12 @@ export class Gang {
 				Log.Success(`User ${targetUser.Nickname} (Id: ${targetUser.Id}) was kicked from gang ${this.Name} (Id: ${this.Id}) by ${kicker.Nickname} (Id: ${kicker.Id})`);
 
 				await Promise.all([
-					this.ComunicateAllMembers(kicker, {
+					this.ComunicateAllMembers({
 						[Language.English]: `**${kicker.GetNameWithImage()}** kicked **${targetUser.GetNameWithImage()}** from the gang.`,
 						[Language.Portuguese]: `**${kicker.GetNameWithImage()}** expulsou **${targetUser.GetNameWithImage()}** da gangue.`,
 						[Language.Spanish]: `**${kicker.GetNameWithImage()}** expulsó a **${targetUser.GetNameWithImage()}** de la cuadrilla.`,
 					}),
-					this.ComunicateMember(kicker, kickedMember!, {
+					this.ComunicateMember(kickedMember!, {
 						[Language.English]: `**${kicker.GetNameWithImage()}** kicked you from the gang.`,
 						[Language.Portuguese]: `**${kicker.GetNameWithImage()}** expulsou você da gangue.`,
 						[Language.Spanish]: `**${kicker.GetNameWithImage()}** te expulsó de la cuadrilla.`,
@@ -1127,7 +1135,7 @@ export class Gang {
 				Log.Success(`User ${user.Nickname} (Id: ${user.Id}) left gang ${this.Name} (Id: ${this.Id})`);
 
 				await Promise.all([
-					this.ComunicateAllMembers(user, {
+					this.ComunicateAllMembers({
 						[Language.English]: `**${user.GetNameWithImage()}** left the gang.`,
 						[Language.Portuguese]: `**${user.GetNameWithImage()}** saiu da gangue.`,
 						[Language.Spanish]: `**${user.GetNameWithImage()}** dejó la cuadrilla.`,
@@ -1249,7 +1257,7 @@ export class Gang {
 
 		Log.Info(`Gang ${this.Name} (Id: ${this.Id}) official communication from ${sender.Nickname} (Id: ${sender.Id}): ${message}`);
 
-		return await this.ComunicateAllMembers(sender, message, {
+		return await this.ComunicateAllMembers(message, sender, {
 			[Language.English]: "Official communication",
 			[Language.Portuguese]: "Comunicado oficial",
 			[Language.Spanish]: "Comunicado oficial",
@@ -1258,21 +1266,29 @@ export class Gang {
 
 	/**
 	 * Sends a private message to a specific gang member.
-	 * @param sender The user sending the message.
 	 * @param member The target member.
-	 * @param message The message content.
-	 * @param specialMessage An optional special message/header.
+	 * @param message The message content (can be localized).
+	 * @param sender The user sending the message (optional).
+	 * @param specialMessage An special message/header (optional) (can be localized).
 	 * @returns A promise that resolves when the message is sent.
 	 */
-	async ComunicateMember(sender: User, member: GangMember, message: string, specialMessage?: string) {
+	async ComunicateMember(member: GangMember, message: IDescription | string, sender?: User, specialMessage?: IDescription | string) {
+		const language = (await Users.findByPk(member.UserId, { attributes: ["language"] }))?.language ?? Language.English;
+
+		const messageText = typeof message === "string" ? message : message[language];
+		let specialMessageText = "";
+		if (specialMessage) {
+			specialMessageText = typeof specialMessage === "string" ? specialMessage : specialMessage[language];
+		}
+
 		const container = new CustomContainerBuilder()
 			.setAccentColor(GangColor[this.Color].Color)
 			.addTexts([
-				message,
+				messageText,
 			])
 			.addLargeSeparator()
 			.addTexts([
-				`-# ${sender.GetNameWithImage()} • ${EmoteString.Gang} ${this.Name} (${this.Acronym})${specialMessage ? ` • **${specialMessage}**` : ""}`,
+				`-# ${sender ? `${sender.GetNameWithImage()} • ` : ""}${EmoteString.Gang} ${this.Name} (${this.Acronym})${specialMessageText ? ` • **${specialMessageText}**` : ""}`,
 			]);
 
 		return await sendComplexPrivateMessage(member.UserId, {
@@ -1283,23 +1299,16 @@ export class Gang {
 
 	/**
 	 * Sends a message to all gang members.
-	 * @param sender The user sending the message.
 	 * @param message The message content (can be localized).
+	 * @param sender The user sending the message (optional)
 	 * @param specialMessage An optional special message/header (can be localized).
 	 * @returns A promise that resolves when all messages are sent.
 	 */
-	async ComunicateAllMembers(sender: User, message: IDescription | string, specialMessage?: IDescription) {
+	async ComunicateAllMembers(message: IDescription | string, sender?: User, specialMessage?: IDescription | string) {
 		const promises: Promise<Message<false> | undefined>[] = [];
 
 		for (const member of this.Members) {
-			const user = await Users.findByPk(member.UserId, {
-				attributes: ["language"],
-			});
-			if (!user) continue;
-
-			const messateText = typeof message === "string" ? message : message[user.language];
-
-			promises.push(this.ComunicateMember(sender, member, messateText, specialMessage?.[user.language]));
+			promises.push(this.ComunicateMember(member, message, sender, specialMessage));
 		}
 
 		return await Promise.all(promises);
@@ -1383,7 +1392,6 @@ export class Gang {
 	async Deposit(user: User, amount: number) {
 		user.Money -= amount;
 		this.Money += amount;
-		await this.AddExperience(Math.floor(amount * 0.001));
 
 		const member = await GangMembers.findOne({
 			where: { userId: user.Id, gangId: this.Id },
@@ -1395,13 +1403,22 @@ export class Gang {
 
 			Log.Success(`User ${user.Nickname} (Id: ${user.Id}) deposited ${formatMoney(amount, user.Language)} in gang ${this.Name} (Id: ${this.Id})`);
 
+			const leaderMember = this.Members.find(m => m.UserId === this.LeaderId);
+
+			const messageToLeader = {
+				[Language.English]: `**${user.GetNameWithImage()}** deposited ${formatMoney(amount, Language.English)}`,
+				[Language.Portuguese]: `**${user.GetNameWithImage()}** depositou ${formatMoney(amount, Language.Portuguese)}`,
+				[Language.Spanish]: `**${user.GetNameWithImage()}** depositó ${formatMoney(amount, Language.Spanish)}`,
+			};
+
 			await Promise.all([
 				member.save(),
 				Notification.GangDepositAgain(user, member.depositTime),
 				user.Update({
 					money: user.Money,
 				}),
-				this.Update(),
+				leaderMember ? this.ComunicateMember(leaderMember, messageToLeader) : null,
+				this.AddExperience(Math.floor(amount * 0.001)),
 			]);
 		}
 		else {
@@ -1505,6 +1522,6 @@ const Strings = {
 		depositCooldown: `Puedes depositar de nuevo`,
 		notEnoughMoneyDeposit: (amount: string) => `No tienes **${amount}** para depositar`,
 		maxDepositReached: (max: string) => `Solo puedes depositar hasta **${max}**`,
-		mustBeIdling: `Debes estar ${EmoteString.Idle} Vagando para depositar`
+		mustBeIdling: `Debes estar ${EmoteString.Idle} Vagando para depositar`,
 	},
 } as const satisfies Localization;
