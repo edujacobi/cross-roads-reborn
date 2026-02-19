@@ -542,8 +542,8 @@ export const ScavengeList: ScavengeListType = {
 			}, {
 				Id: ItemId.Jetpack,
 				Duration: {
-					Min: 1,
-					Max: 3,
+					Min: 2,
+					Max: 4,
 				},
 			}, {
 				Id: ItemId.AdvancedScope,
