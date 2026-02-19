@@ -1192,10 +1192,13 @@ export class Gang {
 		const exp = Gang.GetXpForNextLevel(this.Level);
 		const ratio = this.Experience / exp;
 
+		let emptyBars = Math.round((1 - ratio) * (emoteCount));
+		emptyBars = Math.max(0, Math.min(emptyBars, emoteCount));
+
 		const color = {
 			left: EmoteString.ExpBarLeftFull,
 			center: EmoteString.ExpBarMidFull,
-			right: ratio >= 1 ? EmoteString.ExpBarRightFull : EmoteString.ExpBarRightEmpty,
+			right: emptyBars === 0 ? EmoteString.ExpBarRightFull : EmoteString.ExpBarRightEmpty,
 		};
 
 		if (ratio <= 0) {
@@ -1203,16 +1206,13 @@ export class Gang {
 			color.center = EmoteString.ExpBarMidEmpty;
 		}
 
-		let emptyBars = Math.ceil((1 - ratio) * (emoteCount));
-		emptyBars = Math.max(0, Math.min(emptyBars, emoteCount));
-
 		const bars = color.left + color.center.repeat(emoteCount - emptyBars) + EmoteString.ExpBarMidEmpty.repeat(emptyBars) + color.right;
 
 		if (this.Level === 10) {
 			return `${bars} MAX`;
 		}
 
-		return `${bars} ${this.Experience} / ${formatMoney(exp, language, "")} (${Math.round(ratio * 100)}%)`;
+		return `${bars} ${formatMoney(this.Experience, language, "")} / ${formatMoney(exp, language, "")} (${Math.round(ratio * 100)}%)`;
 	}
 
 	/**
