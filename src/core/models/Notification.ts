@@ -1,7 +1,7 @@
 ﻿import { Notifications } from "@core/database/Notifications";
 import { Op } from "sequelize";
 import { addDays } from "date-fns";
-import { Log } from "@shared/log";
+import { Log, logger } from "@shared/log";
 import { JobList } from "@core/types/Jobs";
 import { User } from "./User";
 import { Language, Localization } from "./Language";
@@ -255,63 +255,70 @@ export class Notification {
 
 			const s = Strings[user.Language];
 
-			if (notification.Type == NotificationType.Daily) {
-				await sendPrivateMessage(user.Id, s.daily);
-			}
+			try {
 
-			else if (notification.Type == NotificationType.Job) {
-				if (user.Job.Id !== null) {
-					const job = JobList[user.Job.Id];
-					const userClassModifier = getJobClassModifier(user.Class);
-					const salary = Math.floor(job.Salary * userClassModifier);
-					await user.EndJob();
-					await sendPrivateMessage(user.Id, s.job(job.Description[user.Language], salary), CrColors.Jobs, formatMoney(user.Money, user.Language));
+				if (notification.Type == NotificationType.Daily) {
+					await sendPrivateMessage(user.Id, s.daily);
+				}
+
+				else if (notification.Type == NotificationType.Job) {
+					if (user.Job.Id !== null) {
+						const job = JobList[user.Job.Id];
+						const userClassModifier = getJobClassModifier(user.Class);
+						const salary = Math.floor(job.Salary * userClassModifier);
+						await user.EndJob();
+						await sendPrivateMessage(user.Id, s.job(job.Description[user.Language], salary), CrColors.Jobs, formatMoney(user.Money, user.Language));
+					}
+				}
+
+				else if (notification.Type == NotificationType.RobAgain) {
+					await sendPrivateMessage(user.Id, s.robAgain, CrColors.Robbery);
+				}
+
+				else if (notification.Type == NotificationType.Free) {
+					await sendPrivateMessage(user.Id, s.free, CrColors.Police);
+				}
+
+				else if (notification.Type == NotificationType.Hospital) {
+					await sendPrivateMessage(user.Id, s.hospital, CrColors.Hospital);
+				}
+
+				else if (notification.Type == NotificationType.AlmsGive) {
+					await sendPrivateMessage(user.Id, s.almsGive, CrColors.Default);
+				}
+
+				else if (notification.Type == NotificationType.AlmsReceive) {
+					await sendPrivateMessage(user.Id, s.almsReceive, CrColors.Default);
+				}
+
+				else if (notification.Type == NotificationType.Scavenge) {
+					await sendPrivateMessage(user.Id, s.scavenge, CrColors.Scavenge);
+				}
+
+				else if (notification.Type == NotificationType.BeatAgain) {
+					await sendPrivateMessage(user.Id, s.beatAgain, CrColors.BeatUp);
+				}
+
+				else if (notification.Type == NotificationType.HorseRace) {
+					await sendPrivateMessage(user.Id, s.horseRace, CrColors.Casino);
+				}
+
+				else if (notification.Type == NotificationType.GangDepositAgain) {
+					if (user.GangId !== null) {
+						await sendPrivateMessage(user.Id, s.gangDepositAgain);
+					}
+				}
+
+				else {
+					Log.Warning(`Notification type ${notification.Type} not implemented.`);
 				}
 			}
-
-			else if (notification.Type == NotificationType.RobAgain) {
-				await sendPrivateMessage(user.Id, s.robAgain, CrColors.Robbery);
+			catch (err) {
+				logger.error(err);
 			}
-
-			else if (notification.Type == NotificationType.Free) {
-				await sendPrivateMessage(user.Id, s.free, CrColors.Police);
+			finally {
+				await notification.SetAsNotified();
 			}
-
-			else if (notification.Type == NotificationType.Hospital) {
-				await sendPrivateMessage(user.Id, s.hospital, CrColors.Hospital);
-			}
-
-			else if (notification.Type == NotificationType.AlmsGive) {
-				await sendPrivateMessage(user.Id, s.almsGive, CrColors.Default);
-			}
-
-			else if (notification.Type == NotificationType.AlmsReceive) {
-				await sendPrivateMessage(user.Id, s.almsReceive, CrColors.Default);
-			}
-
-			else if (notification.Type == NotificationType.Scavenge) {
-				await sendPrivateMessage(user.Id, s.scavenge, CrColors.Scavenge);
-			}
-
-			else if (notification.Type == NotificationType.BeatAgain) {
-				await sendPrivateMessage(user.Id, s.beatAgain, CrColors.BeatUp);
-			}
-
-			else if (notification.Type == NotificationType.HorseRace) {
-				await sendPrivateMessage(user.Id, s.horseRace, CrColors.Casino);
-			}
-
-			else if (notification.Type == NotificationType.GangDepositAgain) {
-				if (user.GangId !== null) {
-					await sendPrivateMessage(user.Id, s.gangDepositAgain);
-				}
-			}
-
-			else {
-				Log.Warning(`Notification type ${notification.Type} not implemented.`);
-			}
-
-			await notification.SetAsNotified();
 		}
 		// Log.Info(`Notification procedure complete ↑`);
 	}
