@@ -357,7 +357,7 @@ module.exports = {
 
 						container
 							.changeTextFromSectionId(1, `### ${emote} ${s.escapeSuccess}\n${textSuccess}\n-# ${textWanted}`)
-							.changeFooterText(s.escapeWaitMinutes(prison.Escape.TimeInMinutesWanted));
+							.changeFooterText(s.escapeWaitMinutes(Prison.EscapeTimeInMinutesWanted));
 					}
 					else {
 						const arrayFailure = prison.Escape.HasJetpack ? failureTextsJetpack : failureTexts;
@@ -519,7 +519,7 @@ const Strings = {
 		briberyStart: (value: number) => `_"We know you have some money hidden there... Give us **${formatMoney(value, Language.English)}** and we'll let you out quietly."_\n-# Confirm payment?`,
 		briberyAccepted: "Bribery accepted",
 		briberyAcceptedDescription: "_\"That's how it's done! Get out of here before anyone else sees you.\"_",
-		briberyAcceptedFooter: "Wait 30 minutes to do something stupid",
+		briberyAcceptedFooter: `Wait ${Prison.BribeTimeInMinutesWanted} minutes to do something stupid`,
 		briberyRejected: "Bribery rejected",
 		briberyRejectedDescription: "_\"Damn dude, you have to be really stupid to pay that amount and think we would release you.\"_",
 		briberyRejectedFooter: "You will remain imprisoned",
@@ -556,7 +556,7 @@ const Strings = {
 		briberyStart: (value: number) => `_"Sabemos que você tem um certo dinheiro escondido aí... Nos dê **${formatMoney(value, Language.Portuguese)}** e deixaremos você sair de fininho."_\n-# Confirmar pagamento?`,
 		briberyAccepted: "Suborno aceito",
 		briberyAcceptedDescription: "_\"Assim que se faz! Caia fora daqui antes que mais alguém te veja.\"_",
-		briberyAcceptedFooter: "Espere 30 minutos para fazer alguma besteira",
+		briberyAcceptedFooter: `Espere ${Prison.BribeTimeInMinutesWanted} minutos para fazer alguma besteira`,
 		briberyRejected: "Suborno recusado",
 		briberyRejectedDescription: "_\"Caralho mané, tu tem que ser muito burro pra pagar esse valor e achar que iríamos te liberar.\"_",
 		briberyRejectedFooter: "Você continuará preso",
@@ -593,7 +593,7 @@ const Strings = {
 		briberyStart: (value: number) => `_"Sabemos que tienes algo de dinero escondido ahí... Danos **${formatMoney(value, Language.Spanish)}** y te dejaremos salir en silencio."_\n-# ¿Confirmar pago?`,
 		briberyAccepted: "Soborno aceptado",
 		briberyAcceptedDescription: "_\"¡Así se hace! ¡Lárgate de aquí antes de que alguien más te vea!\"_",
-		briberyAcceptedFooter: "Espera 30 minutos para hacer alguna tontería",
+		briberyAcceptedFooter: `Espera ${Prison.BribeTimeInMinutesWanted} minutos para hacer alguna tontería`,
 		briberyRejected: "Soborno rechazado",
 		briberyRejectedDescription: "_\"¡Joder tío, tienes que ser muy tonto para pagar esa cantidad y pensar que te liberaríamos!\"_",
 		briberyRejectedFooter: "Permanecerás encarcelado",

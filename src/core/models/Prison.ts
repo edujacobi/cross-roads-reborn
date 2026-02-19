@@ -28,7 +28,6 @@ export class Prison {
 	Bribe = {
 		BaseValue: 20_000,
 		Value: 0,
-		TimeInMinutesWanted: 40,
 	};
 	Escape = {
 		HasJetpack: false,
@@ -37,8 +36,10 @@ export class Prison {
 		UserChance: 0,
 		TotalChance: 0,
 		DefaultDuration: 40,
-		TimeInMinutesWanted: 40,
 	};
+
+	static BribeTimeInMinutesWanted = 40;
+	static EscapeTimeInMinutesWanted = 40;
 
 	constructor(user: User) {
 		this.User = user;
@@ -135,7 +136,7 @@ export class Prison {
 		if (success) {
 			this.User.Escape.Count += 1;
 			this.User.Prison.Time = new Date();
-			this.User.Wanted.Time = addMinutes(new Date(), this.Escape.TimeInMinutesWanted);
+			this.User.Wanted.Time = addMinutes(new Date(), Prison.EscapeTimeInMinutesWanted);
 
 			await Notification.RobAgain(this.User);
 			Log.Success(`User ${this.User.Nickname} (ID: ${this.User.Id}) successfully escaped from prison. Total escapes: ${this.User.Escape.Count}`);
@@ -202,7 +203,7 @@ export class Prison {
 
 		if (success) {
 			this.User.Prison.Time = new Date();
-			this.User.Wanted.Time = addMinutes(new Date(), this.Bribe.TimeInMinutesWanted);
+			this.User.Wanted.Time = addMinutes(new Date(), Prison.BribeTimeInMinutesWanted);
 
 			await Promise.all([
 				Notification.Dismiss(this.User.Id, NotificationType.Free),
