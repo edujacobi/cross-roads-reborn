@@ -9,7 +9,7 @@
   "scripts": {
     "clear": "rimraf build",
     "prebuild": "npm run clear && npm run lint",
-    "build": "tsc",
+    "build": "tsc && tsc-alias",
     "build:watch": "tsc --watch",
     "clear-commands": "node build/src/bot/clear-commands.js",
     "start": "pm2 start build/src/index.js --name \"cr\"",
@@ -54,6 +54,7 @@
     "globals": "^16.3.0",
     "husky": "^9.1.7",
     "rimraf": "^6.0.1",
+    "tsc-alias": "^1.8.10",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3",
     "vite-tsconfig-paths": "^6.0.5",
