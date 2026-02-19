@@ -1367,7 +1367,7 @@ export class Gang {
 			text = s.notEnoughMoneyDeposit(formatMoney(amount, user.Language));
 			canDeposit = false;
 		}
-		else if (user.Situation.Id !== SituationId.Idling) {
+		else if (!user.IsIdling()) {
 			text = s.mustBeIdling;
 			canDeposit = false;
 		}

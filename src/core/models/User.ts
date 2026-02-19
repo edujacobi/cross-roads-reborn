@@ -1073,6 +1073,20 @@ export class User {
 	}
 
 	/**
+	 * Check if the user is not doing any action
+	 * Note: "Wanted" does not affect Idling
+	 */
+	IsIdling() {
+		return !this.IsWorking() &&
+			!this.IsInPrison() &&
+			!this.IsInHospital() &&
+			!this.IsScavenging() &&
+			!this.IsInCasinoGame() &&
+			!this.IsInRobbery() &&
+			!this.IsInBeatUp();
+	}
+
+	/**
 	 * Checks if the user is working.
 	 */
 	IsWorking() {
