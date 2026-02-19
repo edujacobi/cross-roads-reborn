@@ -70,7 +70,7 @@ const token = process.env.NODE_ENV === "DEV" ? process.env.TOKEN_DEV : process.e
 client.login(token).then(() => logger.info(`Cross Roads Reborn Online! ENV: ${process.env.NODE_ENV}`));
 
 const fontLoaded = GlobalFonts.registerFromPath(
-	path.join(__dirname, "bot", "ui", "assets", "fonts", "InterSemiBold.ttf"),
+	path.join(process.cwd(), "src", "bot", "ui", "assets", "fonts", "InterSemiBold.ttf"),
 	"Inter",
 );
 

@@ -6,6 +6,7 @@ import fs from "node:fs";
 import { UserBadge } from "@core/models/UserBadge";
 import { AvatarDecorationId } from "@core/types/Ids";
 import { DEFAULT_GANG_IMAGE } from "./GangImageCanvasBuilder";
+import path from "node:path";
 
 function createLinearGradient(colors: string[], angle = 90) {
 	return (ctx: SKRSContext2D, x: number, y: number, radius: number) => {
@@ -169,7 +170,7 @@ export class UserImageCanvasBuilder {
 		userCtx.restore();
 
 		let imageBadge: Image | null = null;
-		const badgePath = "ui/assets/images/badges";
+		const badgePath = "src/bot/ui/assets/images/badges";
 
 		const borderStyle = BorderStyles[this.Decoration];
 
@@ -191,7 +192,7 @@ export class UserImageCanvasBuilder {
 		userCtx.fillStyle = currentStyle;
 
 		if (badgeImageName) {
-			const badgeFullPath = `${badgePath}/${badgeImageName}`;
+			const badgeFullPath = path.join(process.cwd(), badgePath, badgeImageName);
 			if (badgeImageCache.has(badgeFullPath)) {
 				imageBadge = badgeImageCache.get(badgeFullPath)!;
 			}
