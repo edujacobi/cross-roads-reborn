@@ -447,7 +447,7 @@ module.exports = {
 					[Locale.PortugueseBR]: "O nome do cargo para editar",
 					[Locale.SpanishES]: "El nombre del cargo para editar",
 				})
-				.setRequired(true)
+				.setRequired(true),
 			)
 			.addStringOption(newName => newName
 				.setName("new_name")
@@ -461,8 +461,8 @@ module.exports = {
 					[Locale.SpanishES]: "El nuevo nombre para el cargo",
 				})
 				.setMinLength(2)
-				.setMaxLength(20)
-			)
+				.setMaxLength(20),
+			),
 		)
 		.addSubcommand(roles => roles
 			.setName(CommandOption.Roles)
@@ -561,6 +561,18 @@ module.exports = {
 
 				const gangBase = GangBases[gang.BaseId];
 
+				const gangBaseModifierText: string[] = [];
+
+				if (gangBase.Modifier.PrisonEscape?.Positive) {
+					gangBaseModifierText.push(`${EmoteString.Victory} +${gangBase.Modifier.PrisonEscape?.Positive * gang.Level}% ${s.prisonModifier} ${EmoteString.Escape}`);
+				}
+				if (gangBase.Modifier.Attack?.Positive) {
+					gangBaseModifierText.push(`${EmoteString.Victory}${EmoteString.Attack}+${gangBase.Modifier.Attack?.Positive * gang.Level} ATK `);
+				}
+				if (gangBase.Modifier.Defense?.Positive) {
+					gangBaseModifierText.push(`${EmoteString.Victory}${EmoteString.Defense}+${gangBase.Modifier.Defense?.Positive * gang.Level} DEF`);
+				}
+
 				const container = new CustomContainerBuilder()
 					.setUser(user)
 					.setAccentColor(hexToRGB(convertHexNumberToString(GangColor[gang.Color].Color)))
@@ -583,6 +595,8 @@ module.exports = {
 							.addTexts([
 								`### ${gangBase.Name[language]}`,
 								`-# ${s.level} ${gang.Level} ${gang.GetExpBar(6, language)}`,
+								``,
+								gangBaseModifierText.join("\n"),
 							])
 							.setThumbnailAccessory(thumb => thumb
 								.setURL(gangBase.ImageUrl!),
@@ -1320,7 +1334,7 @@ module.exports = {
 					.setUser(user)
 					.setAccentColor(GangColor[gang.Color].Color)
 					.addTexts([
-						`-# ${EmoteString.Gang} ${gang.Name}`
+						`-# ${EmoteString.Gang} ${gang.Name}`,
 					])
 					.addLargeSeparator()
 					.addTexts([
@@ -1445,7 +1459,7 @@ module.exports = {
 					.setUser(user)
 					.setAccentColor(GangColor[gang.Color].Color)
 					.addTexts([
-						`-# ${EmoteString.Gang} ${gang.Name}`
+						`-# ${EmoteString.Gang} ${gang.Name}`,
 					])
 					.addLargeSeparator()
 					.addTexts([
