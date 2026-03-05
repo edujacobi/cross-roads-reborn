@@ -291,7 +291,7 @@ module.exports = {
 
 			else if (btn.customId.includes("confirmvip")) {
 				const vipMonths = Number(btn.customId.replace("confirmvip", ""));
-				const price = vipMonths * VIP_BASE_PRICE;
+				const price = vipMonths * User.VIP_BASE_PRICE;
 				await user.GetInfo();
 
 				if (user.SpecialCoin < price) {
@@ -305,8 +305,7 @@ module.exports = {
 					return replyWithContainer(interaction, container);
 				}
 
-				user.SpecialCoin -= price;
-				await user.AddVip(vipMonths * 30);
+				await user.BuyVip(vipMonths);
 
 				container = addHeader()
 					.addTexts([

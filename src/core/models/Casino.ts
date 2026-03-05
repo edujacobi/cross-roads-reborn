@@ -81,7 +81,7 @@ export class Casino {
 	static async StartUserGame(user: User) {
 		user.Casino.IsInGame = true;
 		await user.Update({
-			casinoIsInGame: user.Casino.IsInGame
+			casinoIsInGame: user.Casino.IsInGame,
 		});
 		Log.Info(`User ${user.Nickname} (ID: ${user.Id}) is now in a Casino Game.`);
 	}
@@ -110,6 +110,9 @@ export class Casino {
 			casinoIsInGame: user.Casino.IsInGame,
 			casinoLoseCount: user.Casino.LoseCount,
 			casinoLoseSum: user.Casino.LoseSum,
+			// Russian Roulette
+			hospitalTime: user.Hospital.Time,
+			hospitalCount: user.Hospital.Count,
 		});
 		Log.Success(`User ${user.Nickname} (ID: ${user.Id}) lost ${amount} in a Casino Game.`);
 	}

@@ -106,7 +106,7 @@ export class Robbery {
 		}
 
 		if (this.Defender.IsScavenging()) {
-			message = s.scavengingD(this.Defender.Scavenge.IsScavengingId!);
+			message = `**${this.Defender.GetNameWithImage()}** ${s.scavengingD(this.Defender.Scavenge.IsScavengingId!)}`;
 			canRob = false;
 		}
 

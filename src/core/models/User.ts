@@ -39,6 +39,8 @@ export enum SituationId {
 }
 
 export class User {
+	static VIP_BASE_PRICE = 5_000; // special coins
+
 	Id: string;
 	CreatedAt = new Date();
 	UpdatedAt = new Date();
@@ -463,6 +465,22 @@ export class User {
 		}
 
 		return this.VipTime > new Date();
+	}
+
+	/**
+	 * Buys VIP time using special coins.
+	 * @param months Number of months to buy.
+	 */
+	async BuyVip(months: number) {
+		const price = months * User.VIP_BASE_PRICE;
+
+		this.SpecialCoin -= price;
+		await this.Update({
+			specialCoin: this.SpecialCoin,
+		});
+
+		await this.AddVip(months * 30);
+		Log.Success(`User ${this.Nickname} (ID: ${this.Id}) bought VIP for ${months} months.`);
 	}
 
 	/**
