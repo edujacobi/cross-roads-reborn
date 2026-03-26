@@ -248,6 +248,7 @@ export class Robbery {
 			const grenadeMessage = await replyWithContainer(interaction, grenadeContainer);
 
 			if (grenadeMessage) {
+				let usedGrenade = false;
 				try {
 					const confirmation = await grenadeMessage.awaitMessageComponent({
 						filter: (i) => i.user.id === this.Attacker.Id,
@@ -255,33 +256,35 @@ export class Robbery {
 						componentType: ComponentType.Button,
 					});
 
-					await this.Attacker.GetInfo();
-
-					const { canRob, message } = await this.CanRobUser();
-
-					if (!canRob) {
-						const container = defaultComponent({
-							user: this.Attacker,
-							color: CrColors.Robbery,
-							description: message,
-						});
-
-						await replyWithContainer(interaction, container);
-						return;
-					}
-
 					if (confirmation.customId === "use_grenade") {
-						const consumed = await this.Attacker.ConsumeItem(ItemId.Grenade);
-						if (consumed) {
-							this.UsedConsumables.push(ItemId.Grenade);
-							await this.Attacker.GetAttributes(false, this.UsedConsumables);
-						}
+						usedGrenade = true;
 					}
 				}
 				catch (e) {
 					// Time out, do nothing
-					// Just refresh user info at the end
-					await this.Attacker.GetInfo();
+				}
+
+				await this.Attacker.GetInfo();
+
+				const { canRob, message } = await this.CanRobUser();
+
+				if (!canRob) {
+					const container = defaultComponent({
+						user: this.Attacker,
+						color: CrColors.Robbery,
+						description: message,
+					});
+
+					await replyWithContainer(interaction, container);
+					return;
+				}
+
+				if (usedGrenade) {
+					const consumed = await this.Attacker.ConsumeItem(ItemId.Grenade);
+					if (consumed) {
+						this.UsedConsumables.push(ItemId.Grenade);
+						await this.Attacker.GetAttributes(false, this.UsedConsumables);
+					}
 				}
 			}
 		}

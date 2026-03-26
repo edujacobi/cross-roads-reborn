@@ -267,6 +267,7 @@ export class BeatUp {
 			const grenadeMessage = await replyWithContainer(interaction, grenadeContainer);
 
 			if (grenadeMessage) {
+				let usedGrenade = false;
 				try {
 					const confirmation = await grenadeMessage.awaitMessageComponent({
 						filter: (i) => i.user.id === this.Attacker.Id,
@@ -274,33 +275,35 @@ export class BeatUp {
 						componentType: ComponentType.Button,
 					});
 
-					await this.Attacker.GetInfo();
-
-					const { canBeat, message } = await this.CanBeatUser();
-
-					if (!canBeat) {
-						const container = defaultComponent({
-							user: this.Attacker,
-							color: CrColors.BeatUp,
-							description: message,
-						});
-
-						await replyWithContainer(interaction, container);
-						return;
-					}
-
 					if (confirmation.customId === "use_grenade") {
-						const consumed = await this.Attacker.ConsumeItem(ItemId.Grenade);
-						if (consumed) {
-							this.UsedConsumables.push(ItemId.Grenade);
-							await this.Attacker.GetAttributes(true, this.UsedConsumables);
-						}
+						usedGrenade = true;
 					}
 				}
 				catch (e) {
 					// Time out, do nothing
-					// Just refresh user info at the end
-					await this.Attacker.GetInfo();
+				}
+
+				await this.Attacker.GetInfo();
+
+				const { canBeat, message } = await this.CanBeatUser();
+
+				if (!canBeat) {
+					const container = defaultComponent({
+						user: this.Attacker,
+						color: CrColors.BeatUp,
+						description: message,
+					});
+
+					await replyWithContainer(interaction, container);
+					return;
+				}
+
+				if (usedGrenade) {
+					const consumed = await this.Attacker.ConsumeItem(ItemId.Grenade);
+					if (consumed) {
+						this.UsedConsumables.push(ItemId.Grenade);
+						await this.Attacker.GetAttributes(true, this.UsedConsumables);
+					}
 				}
 			}
 		}
