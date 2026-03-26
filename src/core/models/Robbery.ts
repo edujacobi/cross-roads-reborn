@@ -80,6 +80,11 @@ export class Robbery {
 			canRob = false;
 		}
 
+		if (this.Defender.GangId && this.Attacker.GangId && this.Defender.GangId === this.Attacker.GangId) {
+			message = `${s.sameGang} ${EmoteString.Robbery}`;
+			canRob = false;
+		}
+
 		if (!this.Defender.Nickname) {
 			message = `${s.withoutNick} ${EmoteString.Robbery}`;
 			canRob = false;
@@ -610,6 +615,7 @@ const Strings = {
 	[Language.English]: {
 		// CanRob
 		sameId: "You can't rob yourself, idiot!",
+		sameGang: "You can't rob a member of your own gang!",
 		withoutNick: "This user hasn't set a nickname yet!",
 		withoutClass: "This user hasn't choose a class yet!",
 		withoutItem: "You can't rob without a weapon!",
@@ -684,6 +690,7 @@ const Strings = {
 	[Language.Portuguese]: {
 		// CanRob
 		sameId: "Você não pode roubar a si mesmo, idiota!",
+		sameGang: "Você não pode roubar um membro da sua própria gangue!",
 		withoutNick: "Este usuário ainda não cadastrou um nickname!",
 		withoutClass: "Este usuário ainda não escolheu uma classe!",
 		withoutItem: "Você não pode roubar sem uma arma!",
@@ -758,6 +765,7 @@ const Strings = {
 	[Language.Spanish]: {
 		// CanRob
 		sameId: "¡No puedes robarte a ti mismo, idiota!",
+		sameGang: "¡No puedes robar a un miembro de tu propia pandilla!",
 		withoutNick: "¡Este usuario aún no ha establecido un apodo!",
 		withoutClass: "¡Este usuario aún no ha elegido una clase!",
 		withoutItem: "¡No puedes robar sin un arma!",

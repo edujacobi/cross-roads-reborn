@@ -71,6 +71,11 @@ export class BeatUp {
 			canBeat = false;
 		}
 
+		if (this.Defender.GangId && this.Attacker.GangId && this.Defender.GangId === this.Attacker.GangId) {
+			message = s.sameGang;
+			canBeat = false;
+		}
+
 		if (!this.Defender.Nickname) {
 			message = s.withoutNick;
 			canBeat = false;
@@ -597,6 +602,7 @@ const Strings = {
 	[Language.English]: {
 		// CanBeat
 		sameId: `You can't beat yourself up, idiot! ${EmoteString.Beat}`,
+		sameGang: `You can't beat up a member of your own gang! ${EmoteString.Beat}`,
 		withoutNick: `This user hasn't set a nickname yet! ${EmoteString.Beat}`,
 		withoutClass: `This user hasn't chosen a class yet! ${EmoteString.Beat}`,
 		withoutItem: `You can't beat someone up without a weapon! ${EmoteString.Beat}`,
@@ -672,6 +678,7 @@ const Strings = {
 	[Language.Portuguese]: {
 		// CanBeat
 		sameId: `Você não pode espancar a si mesmo, idiota! ${EmoteString.Beat}`,
+		sameGang: `Você não pode espancar um membro da sua própria gangue! ${EmoteString.Beat}`,
 		withoutNick: `Este usuário ainda não cadastrou um nickname! ${EmoteString.Beat}`,
 		withoutClass: `Este usuário ainda não escolheu uma classe! ${EmoteString.Beat}`,
 		withoutItem: `Você não pode espancar sem uma arma! ${EmoteString.Beat}`,
@@ -747,6 +754,7 @@ const Strings = {
 	[Language.Spanish]: {
 		// CanBeat
 		sameId: `¡No puedes golpearte a ti mismo, idiota! ${EmoteString.Beat}`,
+		sameGang: `¡No puedes golpear a un miembro de tu propia cuadrilla! ${EmoteString.Beat}`,
 		withoutNick: `¡Este usuario no ha configurado un apodo todavía! ${EmoteString.Beat}`,
 		withoutClass: `¡Este usuario no ha elegido una clase todavía! ${EmoteString.Beat}`,
 		withoutItem: `¡No puedes golpear a alguien sin un arma! ${EmoteString.Beat}`,
