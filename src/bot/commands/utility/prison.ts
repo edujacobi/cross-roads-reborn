@@ -1,4 +1,4 @@
-﻿import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
 import type { User } from "@core/models/User";
 import { Prison, PrisonFailureReason } from "@core/models/Prison";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
@@ -191,6 +191,9 @@ module.exports = {
 						}
 						else if (reason === PrisonFailureReason.EscapeEscaping) {
 							message = s.escapeEscaping;
+						}
+						else if (reason === PrisonFailureReason.EscapeInHospital) {
+							message = s.escapeInHospital(user.Hospital.Time);
 						}
 						else if (reason === PrisonFailureReason.AttackerIsBeingRobbedById) {
 							message = globalStrings[user.Language].attackerIsBeingRobbedById(`${ClassList[attacker!.class].Image.Emote.String} ${attacker!.nickname!}`);
@@ -386,6 +389,9 @@ module.exports = {
 						else if (reason === PrisonFailureReason.BribeEscaping) {
 							message = s.bribeEscaping;
 						}
+						else if (reason === PrisonFailureReason.BribeInHospital) {
+							message = s.bribeInHospital(user.Hospital.Time);
+						}
 						else if (reason === PrisonFailureReason.AttackerIsBeingRobbedById) {
 							message = globalStrings[user.Language].attackerIsBeingRobbedById(`${ClassList[attacker!.class].Image.Emote.String} ${attacker!.nickname!}`);
 						}
@@ -447,6 +453,9 @@ module.exports = {
 						}
 						else if (reason === PrisonFailureReason.BribeEscaping) {
 							message = s.bribeEscaping;
+						}
+						else if (reason === PrisonFailureReason.BribeInHospital) {
+							message = s.bribeInHospital(user.Hospital.Time);
 						}
 						else if (reason === PrisonFailureReason.AttackerIsBeingRobbedById) {
 							message = globalStrings[user.Language].attackerIsBeingRobbedById(`${ClassList[attacker!.class].Image.Emote.String} ${attacker!.nickname!}`);
@@ -533,6 +542,8 @@ const Strings = {
 		bribeHasPaid: `We won't accept anything from you, smartass! ${EmoteString.Police}\n-# "Maybe next time you stop being an idiot"`,
 		bribeNotInPrison: `You are not in prison! ${EmoteString.Prison}\n-# "But we can lock you in. What do you think?"`,
 		bribeEscaping: `You are trying to escape and cannot bribe! ${EmoteString.Escape}\n-# Focus!`,
+		escapeInHospital: (time: Date) => `You can't escape while you are hospitalized! ${EmoteString.Hospital}\n-# You will be healed ${showTime(time.getTime(), true)}!`,
+		bribeInHospital: (time: Date) => `You can't bribe while you are hospitalized! ${EmoteString.Hospital}\n-# You will be healed ${showTime(time.getTime(), true)}!`,
 		escapeInProgress: `Escape in progress ${EmoteString.Waiting}`,
 		escapeSuccess: "Successful escape!",
 		escapeFailure: "Failed escape!",
@@ -570,6 +581,8 @@ const Strings = {
 		bribeHasPaid: `Não aceitaremos nada vindo de você, espertalhão! ${EmoteString.Police}\n-# "Quem sabe na próxima tu deixa de ser idiota"`,
 		bribeNotInPrison: `Você não está preso! ${EmoteString.Prison}\n-# "Mas podemos te prender. O que acha?"`,
 		bribeEscaping: `Você está tentando escapar e não pode subornar! ${EmoteString.Escape}\n-# "Foco!"`,
+		escapeInHospital: (time: Date) => `Você não pode fugir enquanto está hospitalizado! ${EmoteString.Hospital}\n-# Será curado ${showTime(time.getTime(), true)}!`,
+		bribeInHospital: (time: Date) => `Você não pode subornar enquanto está hospitalizado! ${EmoteString.Hospital}\n-# Será curado ${showTime(time.getTime(), true)}!`,
 		escapeInProgress: `Fuga em andamento ${EmoteString.Waiting}`,
 		escapeSuccess: "Fuga bem-sucedida!",
 		escapeFailure: "Fuga fracassada!",
@@ -607,6 +620,8 @@ const Strings = {
 		bribeHasPaid: `¡No aceptaremos nada de ti, listillo! ${EmoteString.Police}\n-# "Quizás la próxima vez dejas de ser idiota"`,
 		bribeNotInPrison: `¡No estás en la cárcel! ${EmoteString.Prison}\n-# "Pero podemos encerrarte. ¿Qué te parece?"`,
 		bribeEscaping: `¡Estás intentando escapar y no puedes sobornar! ${EmoteString.Escape}\n-# "¡Enfócate!"`,
+		escapeInHospital: (time: Date) => `¡No puedes escapar mientras estás hospitalizado! ${EmoteString.Hospital}\n-# ¡Serás curado ${showTime(time.getTime(), true)}!`,
+		bribeInHospital: (time: Date) => `¡No puedes sobornar mientras estás hospitalizado! ${EmoteString.Hospital}\n-# ¡Serás curado ${showTime(time.getTime(), true)}!`,
 		escapeInProgress: `¡Fuga en progreso ${EmoteString.Waiting}`,
 		escapeSuccess: "Fuga exitosa!",
 		escapeFailure: "Fuga fallida!",

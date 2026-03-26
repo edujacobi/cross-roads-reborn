@@ -20,6 +20,8 @@ export enum PrisonFailureReason {
 	AttackerIsBeingBeatedById,
 	BribeHasPaid,
 	BribeEscaping,
+	EscapeInHospital,
+	BribeInHospital,
 }
 
 export class Prison {
@@ -79,6 +81,9 @@ export class Prison {
 	async CanEscape() {
 		if (!this.User.IsInPrison()) {
 			return { canEscape: false, reason: PrisonFailureReason.BribeNotInPrison };
+		}
+		if (this.User.IsInHospital()) {
+			return { canEscape: false, reason: PrisonFailureReason.EscapeInHospital };
 		}
 		if (this.User.Escape.HasTried) {
 			return { canEscape: false, reason: PrisonFailureReason.EscapeHasTried };
@@ -163,6 +168,9 @@ export class Prison {
 		}
 		if (!this.User.IsInPrison()) {
 			return { canBribe: false, reason: PrisonFailureReason.BribeNotInPrison };
+		}
+		if (this.User.IsInHospital()) {
+			return { canBribe: false, reason: PrisonFailureReason.BribeInHospital };
 		}
 		if (this.User.IsEscaping()) {
 			return { canBribe: false, reason: PrisonFailureReason.BribeEscaping };
