@@ -50,6 +50,15 @@ describe("BeatUp", () => {
 			expect(result.message).toContain("yourself");
 		});
 
+		it("Should fail if attacker and defender are in same gang", async () => {
+			user.GangId = 1;
+			defender.GangId = 1;
+			const beatUp = new BeatUp(user, defender);
+			const result = await beatUp.CanBeatUser();
+			expect(result.canBeat).toBe(false);
+			expect(result.message).toContain("gang");
+		});
+
 		it("Should fail if defender has no nickname", async () => {
 			const beatUp = new BeatUp(user, defender);
 			defender.Nickname = "";

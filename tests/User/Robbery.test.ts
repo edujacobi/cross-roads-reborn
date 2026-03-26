@@ -49,6 +49,15 @@ describe("Robbery", () => {
 			expect(result.message).toContain("yourself");
 		});
 
+		it("Should fail if attacker and defender are in same gang", async () => {
+			user.GangId = 1;
+			defender.GangId = 1;
+			const robbery = new Robbery(user, defender);
+			const result = await robbery.CanRobUser();
+			expect(result.canRob).toBe(false);
+			expect(result.message).toContain("gang");
+		});
+
 		it("Should fail if defender has no nickname", async () => {
 			defender.Nickname = "";
 			const robbery = new Robbery(user, defender);
