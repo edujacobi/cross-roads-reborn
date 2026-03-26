@@ -450,7 +450,6 @@ module.exports = {
 			return [
 				`### ${positionText} ${gPrefix} ${emoteClass} ${underscore}${user.nickname}${underscore}${gSufix}`,
 				`${vPrefix}${valueModified}${vSufix}${count}`,
-				`-# \`ID: ${user.id}\``,
 			].join("\n");
 		}
 
