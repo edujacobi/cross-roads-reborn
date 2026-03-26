@@ -1417,7 +1417,7 @@ export class Gang {
 				user.Update({
 					money: user.Money,
 				}),
-				leaderMember ? this.ComunicateMember(leaderMember, messageToLeader) : null,
+				leaderMember && user.Id !== this.LeaderId ? this.ComunicateMember(leaderMember, messageToLeader) : null,
 				this.AddExperience(Math.floor(amount * 0.001)),
 			]);
 		}
