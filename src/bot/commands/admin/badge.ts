@@ -1,9 +1,9 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { type ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { UserBadge } from "@core/models/UserBadge";
 import { BadgeList, getBadgeList } from "@core/types/Badges";
-import { Language, Localization } from "@core/models/Language";
+import { Language, type Localization } from "@core/models/Language";
 import { deferReply, replyInteraction, replyUserDontExist, replyWithContainer } from "@bot/utils/discordInteractions";
-import { User } from "@core/models/User";
+import type { User } from "@core/models/User";
 import { Pagination } from "@core/models/Pagination";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 import { checkUser } from "@bot/utils/userUtils";

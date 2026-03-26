@@ -2,22 +2,22 @@ import {
 	ActionRowBuilder,
 	ButtonBuilder,
 	ButtonStyle,
-	ChatInputCommandInteraction,
-	ColorResolvable,
+	type ChatInputCommandInteraction,
+	type ColorResolvable,
 	Colors,
 	Locale,
 	SlashCommandBuilder,
 } from "discord.js";
-import { Language, Localization } from "@core/models/Language";
-import { User } from "@core/models/User";
+import { Language, type Localization } from "@core/models/Language";
+import type { User } from "@core/models/User";
 import { Gang, GangPermission } from "@core/models/Gang";
 import { convertHexNumberToString, defaultComponent, formatMoney, hexToRGB, showTime } from "@bot/utils/ui";
 import { deferReply, replyWithContainer } from "@bot/utils/discordInteractions";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
-import { GangColor, IGangColor } from "@bot/utils/colors";
+import { GangColor, type IGangColor } from "@bot/utils/colors";
 import { EmoteString } from "@bot/utils/emotes";
 import { DEFAULT_GANG_IMAGE } from "@bot/ui/builders/GangImageCanvasBuilder";
-import { GangBaseId, GangBases, GangModifier, getGangBases } from "@core/types/GangBases";
+import { GangBaseId, GangBases, type GangModifier, getGangBases } from "@core/types/GangBases";
 import { searchUser } from "@bot/utils/userUtils";
 import { createButtonCollector, disableButtons } from "@bot/utils/collectors";
 

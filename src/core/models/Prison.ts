@@ -1,4 +1,4 @@
-import { User } from "./User";
+import type { User } from "./User";
 import { Language } from "./Language";
 import { Users } from "@core/database/Users";
 import { Op } from "sequelize";

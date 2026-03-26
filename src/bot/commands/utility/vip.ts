@@ -1,9 +1,9 @@
-﻿import { ChatInputCommandInteraction, Colors, Locale, SlashCommandBuilder } from "discord.js";
+﻿import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 import { replyWithContainer } from "@bot/utils/discordInteractions";
 import { EmoteString } from "@bot/utils/emotes";
-import { User } from "@core/models/User";
-import { Language, Localization } from "@core/models/Language";
-import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
+import { Language, type Localization } from "@core/models/Language";
+import type { User } from "@core/models/User";
+import { type ChatInputCommandInteraction, Colors, Locale, SlashCommandBuilder } from "discord.js";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -24,7 +24,7 @@ module.exports = {
 					s.benefits,
 				])
 				.setThumbnailAccessory(thumb => thumb
-					.setURL("https://media.discordapp.net/attachments/531174573463306240/799060089503875072/VIP.png")
+					.setURL("https://media.discordapp.net/attachments/531174573463306240/799060089503875072/VIP.png"),
 				),
 			)
 			.addLargeSeparator()

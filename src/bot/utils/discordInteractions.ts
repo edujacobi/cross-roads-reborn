@@ -1,22 +1,22 @@
 ﻿import {
 	ButtonInteraction,
-	ColorResolvable,
+	type ColorResolvable,
 	Colors,
-	CommandInteraction,
-	ContainerBuilder,
+	type CommandInteraction,
+	type ContainerBuilder,
 	EmbedBuilder,
-	InteractionEditReplyOptions,
-	InteractionReplyOptions,
+	type InteractionEditReplyOptions,
+	type InteractionReplyOptions,
 	MessageComponentInteraction,
-	MessageCreateOptions,
+	type MessageCreateOptions,
 	MessageFlags,
-	MessagePayload,
-	Snowflake,
+	type MessagePayload,
+	type Snowflake,
 } from "discord.js";
 import { getClient } from "../client";
 import { Log } from "@shared/log";
-import { Language, Localization } from "@core/models/Language";
-import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
+import { Language, type Localization } from "@core/models/Language";
+import type { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 
 /**
  * Sends a private message (DM) to a user with a simple embed.

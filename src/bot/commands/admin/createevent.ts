@@ -1,10 +1,10 @@
 import {
-	ChatInputCommandInteraction,
+	type ChatInputCommandInteraction,
 	PermissionFlagsBits,
 	SlashCommandBuilder,
-	SlashCommandIntegerOption,
-	SlashCommandNumberOption,
-	SlashCommandStringOption,
+	type SlashCommandIntegerOption,
+	type SlashCommandNumberOption,
+	type SlashCommandStringOption,
 } from "discord.js";
 import { Event, EventType } from "@core/models/Event";
 import { replyInteraction } from "@bot/utils/discordInteractions";
@@ -20,7 +20,10 @@ module.exports = {
 				.setDescription("Event type")
 				.setRequired(true)
 				.addChoices([
-					{ name: Event.GetEventTypeText(EventType.JOB_TIME_MULTIPLIER), value: EventType.JOB_TIME_MULTIPLIER },
+					{
+						name: Event.GetEventTypeText(EventType.JOB_TIME_MULTIPLIER),
+						value: EventType.JOB_TIME_MULTIPLIER,
+					},
 				]),
 		)
 		.addNumberOption((option: SlashCommandNumberOption) =>

@@ -1,10 +1,10 @@
-﻿import { ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+﻿import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
 import { deferReply, replyWithContainer } from "@bot/utils/discordInteractions";
 import { defaultComponent, formatMoney, showTime } from "@bot/utils/ui";
 import { EmoteString } from "@bot/utils/emotes";
 import { CrColors } from "@bot/utils/colors";
-import { User } from "@core/models/User";
-import { Language, Localization } from "@core/models/Language";
+import type { User } from "@core/models/User";
+import { Language, type Localization } from "@core/models/Language";
 import { Robbery } from "@core/models/Robbery";
 import { getLocationList, LocationList } from "@core/types/Locations";
 import { RobberyLocation } from "@core/models/RobberyLocation";

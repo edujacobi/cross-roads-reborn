@@ -1,5 +1,5 @@
 import {
-	ChatInputCommandInteraction,
+	type ChatInputCommandInteraction,
 	codeBlock,
 	Locale,
 	MessageFlags,

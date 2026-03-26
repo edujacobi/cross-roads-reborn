@@ -1,14 +1,14 @@
-import { User } from "./User";
+import type { User } from "./User";
 import { Log } from "@shared/log";
 import {
 	ButtonBuilder,
 	ButtonStyle,
-	ChatInputCommandInteraction,
+	type ChatInputCommandInteraction,
 	ComponentType,
-	Message,
-	MessageComponentInteraction,
+	type Message,
+	type MessageComponentInteraction,
 	MessageFlags,
-	User as DUser,
+	type User as DUser,
 } from "discord.js";
 import { replyWithContainer, sendComplexPrivateMessage } from "@bot/utils/discordInteractions";
 import { defaultComponent, formatMoney, showTime } from "@bot/utils/ui";
@@ -18,13 +18,13 @@ import { getClient } from "@bot/client";
 import { setTimeout as wait } from "timers/promises";
 import { Notification } from "./Notification";
 import { addMinutes } from "date-fns";
-import { globalStrings, Language, Localization } from "./Language";
+import { globalStrings, Language, type Localization } from "./Language";
 import { RobHistories } from "@core/database/RobHistories";
 import { Users } from "@core/database/Users";
 import { ClassId, ClassList } from "@core/types/Classes";
-import { JobId, JobList } from "@core/types/Jobs";
+import { type JobId, JobList } from "@core/types/Jobs";
 import { LocationList } from "@core/types/Locations";
-import { ScavengeId, ScavengeList } from "@core/types/Scavenge";
+import { type ScavengeId, ScavengeList } from "@core/types/Scavenge";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 import { ItemId } from "@core/types/Ids";
 import { ItemList } from "@core/types/Items";

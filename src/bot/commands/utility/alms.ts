@@ -1,7 +1,7 @@
-﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+﻿import { type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
 import { replyWithContainer, sendPrivateMessage } from "@bot/utils/discordInteractions";
-import { User } from "@core/models/User";
-import { Language, Localization } from "@core/models/Language";
+import type { User } from "@core/models/User";
+import { Language, type Localization } from "@core/models/Language";
 import { defaultComponent, formatMoney } from "@bot/utils/ui";
 import { EmoteString } from "@bot/utils/emotes";
 import { CrColors } from "@bot/utils/colors";

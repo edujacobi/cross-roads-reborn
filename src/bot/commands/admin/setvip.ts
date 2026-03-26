@@ -1,16 +1,16 @@
 ﻿import {
-	ChatInputCommandInteraction,
+	type ChatInputCommandInteraction,
 	Colors,
 	Locale,
 	PermissionFlagsBits,
 	SlashCommandBuilder,
-	SlashCommandIntegerOption,
-	SlashCommandStringOption,
+	type SlashCommandIntegerOption,
+	type SlashCommandStringOption,
 } from "discord.js";
 import { defaultComponent } from "@bot/utils/ui";
 import { replyInteraction, replyWithContainer, sendPrivateMessage } from "@bot/utils/discordInteractions";
 import { EmoteString } from "@bot/utils/emotes";
-import { User } from "@core/models/User";
+import type { User } from "@core/models/User";
 import { Language } from "@core/models/Language";
 import { checkUser } from "@bot/utils/userUtils";
 

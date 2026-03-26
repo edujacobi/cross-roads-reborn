@@ -1,12 +1,12 @@
-﻿import { ChatInputCommandInteraction, Locale, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
-import { getClient } from "../../client";
+﻿import { type ChatInputCommandInteraction, Locale, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
+import { getClient } from "@bot/client";
 import { replyWithContainer } from "@bot/utils/discordInteractions";
 import { CrColors } from "@bot/utils/colors";
 import { Users } from "@core/database/Users";
 import { Op } from "sequelize";
 import { subMinutes } from "date-fns";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
-import { User } from "@core/models/User";
+import type { User } from "@core/models/User";
 import { EmoteString } from "@bot/utils/emotes";
 import { Language } from "@core/models/Language";
 

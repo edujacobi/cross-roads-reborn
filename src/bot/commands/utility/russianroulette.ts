@@ -1,15 +1,15 @@
 ﻿import {
-	ButtonInteraction,
+	type ButtonInteraction,
 	ButtonStyle,
-	ChatInputCommandInteraction,
-	CommandInteraction,
+	type ChatInputCommandInteraction,
+	type CommandInteraction,
 	ComponentType,
 	Locale,
 	SlashCommandBuilder,
 } from "discord.js";
 import { replyWithContainer } from "@bot/utils/discordInteractions";
-import { User } from "@core/models/User";
-import { Language, Localization } from "@core/models/Language";
+import type { User } from "@core/models/User";
+import { Language, type Localization } from "@core/models/Language";
 import { Casino } from "@core/models/Casino";
 import { defaultComponent, formatMoney } from "@bot/utils/ui";
 import { CrColors } from "@bot/utils/colors";

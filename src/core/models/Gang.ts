@@ -2,8 +2,8 @@ import { Gangs } from "@core/database/Gangs";
 import { GangMembers } from "@core/database/GangMembers";
 import { GangRoles } from "@core/database/GangRoles";
 import { Log } from "@shared/log";
-import { User } from "./User";
-import { Language, Localization } from "./Language";
+import type { User } from "./User";
+import { Language, type Localization } from "./Language";
 import { defaultComponent, formatMoney, showTime } from "@bot/utils/ui";
 import { Users } from "@core/database/Users";
 import { Op } from "sequelize";
@@ -15,15 +15,15 @@ import {
 	ButtonStyle,
 	Collection,
 	ComponentType,
-	Message,
-	MessageComponentInteraction,
+	type Message,
+	type MessageComponentInteraction,
 	MessageFlags,
 } from "discord.js";
 import { getClient } from "@bot/client";
 import { EmoteString } from "@bot/utils/emotes";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 import { GangBaseId } from "@core/types/GangBases";
-import { IDescription } from "@core/types/Interfaces";
+import type { IDescription } from "@core/types/Interfaces";
 import { addHours } from "date-fns";
 import { Notification, NotificationType } from "./Notification";
 

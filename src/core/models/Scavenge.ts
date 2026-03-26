@@ -1,13 +1,13 @@
-import { User } from "./User";
+import type { User } from "./User";
 import { Language } from "./Language";
 import {
-	ItemRewardScavenge,
+	type ItemRewardScavenge,
 	ScavengeFailureReason,
-	ScavengeId,
+	type ScavengeId,
 	ScavengeList,
 	ScavengeRewardType,
 } from "@core/types/Scavenge";
-import { ItemList, Items, ItemType } from "@core/types/Items";
+import { ItemList, type Items, ItemType } from "@core/types/Items";
 import { LocationList } from "@core/types/Locations";
 import { Users } from "@core/database/Users";
 import { getScavengeChanceClassModifier, getScavengeDurationClassModifier } from "@core/types/Classes";

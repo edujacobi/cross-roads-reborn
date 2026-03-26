@@ -1,5 +1,5 @@
-﻿import { ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
-import { User } from "@core/models/User";
+﻿import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+import type { User } from "@core/models/User";
 import { Hospital, HospitalFailureReason } from "@core/models/Hospital";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 import { CrColors } from "@bot/utils/colors";
@@ -9,7 +9,7 @@ import { replyWithContainer } from "@bot/utils/discordInteractions";
 import { Pagination } from "@core/models/Pagination";
 import { ClassList } from "@core/types/Classes";
 import { defaultComponent, formatMoney, showTime } from "@bot/utils/ui";
-import { Language, Localization } from "@core/models/Language";
+import { Language, type Localization } from "@core/models/Language";
 import { createButtonCollector, disableButtons } from "@bot/utils/collectors";
 
 module.exports = {

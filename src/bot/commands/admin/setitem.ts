@@ -1,9 +1,9 @@
-import { ChatInputCommandInteraction, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
+import { type ChatInputCommandInteraction, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
 import { User } from "@core/models/User";
 import { Language } from "@core/models/Language";
 import { addHours } from "date-fns";
 import { UserItems } from "@core/database/UserItems";
-import { ItemList, ItemType, UserItem } from "@core/types/Items";
+import { ItemList, ItemType, type UserItem } from "@core/types/Items";
 import { Log } from "@shared/log";
 import { EmoteString } from "@bot/utils/emotes";
 import { deferReply, replyInteraction, sendPrivateMessage } from "@bot/utils/discordInteractions";

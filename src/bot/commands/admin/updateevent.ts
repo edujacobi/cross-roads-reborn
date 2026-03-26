@@ -1,14 +1,14 @@
 import {
-	ChatInputCommandInteraction,
+	type ChatInputCommandInteraction,
 	PermissionFlagsBits,
 	SlashCommandBuilder,
-	SlashCommandIntegerOption,
-	SlashCommandNumberOption,
-	SlashCommandStringOption,
+	type SlashCommandIntegerOption,
+	type SlashCommandNumberOption,
+	type SlashCommandStringOption,
 } from "discord.js";
 import { Event } from "@core/models/Event";
 import { replyInteraction } from "@bot/utils/discordInteractions";
-import { Events } from "@core/database/Events";
+import type { Events } from "@core/database/Events";
 
 module.exports = {
 	data: new SlashCommandBuilder()

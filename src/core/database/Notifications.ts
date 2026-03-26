@@ -1,7 +1,14 @@
-﻿import { CreationOptional, DataTypes, ForeignKey, InferAttributes, InferCreationAttributes, Model } from "sequelize";
+﻿import {
+	type CreationOptional,
+	DataTypes,
+	type ForeignKey,
+	type InferAttributes,
+	type InferCreationAttributes,
+	Model,
+} from "sequelize";
 import { sequelize } from "./Database";
-import { NotificationType } from "@core/models/Notification";
-import { Users } from "./Users";
+import type { NotificationType } from "@core/models/Notification";
+import type { Users } from "./Users";
 
 export class Notifications extends Model<
 	InferAttributes<Notifications>,

@@ -1,12 +1,12 @@
 import { User } from "./User";
 import { EmoteString } from "@bot/utils/emotes";
 import { formatMoney, showTime } from "@bot/utils/ui";
-import { Language, Localization } from "./Language";
+import { Language, type Localization } from "./Language";
 import {
 	ActionRowBuilder,
-	ChatInputCommandInteraction,
+	type ChatInputCommandInteraction,
 	Colors,
-	MessageComponentInteraction,
+	type MessageComponentInteraction,
 	MessageFlags,
 	StringSelectMenuBuilder,
 	StringSelectMenuOptionBuilder,
@@ -46,7 +46,7 @@ export class HorseRacing {
 	// Calculate maximum bet based on ATK: (100 * ATK)^1.5
 	CalculateMaxBet(): number {
 		const atk = this.User.Attributes.Attack;
-		return Math.floor(Math.pow(100 * Math.max(1, atk), 1.5));
+		return Math.floor((100 * Math.max(1, atk)) ** 1.5);
 	}
 
 	// Get the next upcoming race

@@ -1,20 +1,20 @@
 ﻿import {
-	CreationOptional,
+	type CreationOptional,
 	DataTypes,
-	ForeignKey,
-	InferAttributes,
-	InferCreationAttributes,
+	type ForeignKey,
+	type InferAttributes,
+	type InferCreationAttributes,
 	Model,
 	Op,
 } from "sequelize";
 import { sequelize } from "./Database";
-import { User } from "@core/models/User";
-import { Users } from "./Users";
-import { ClashType, Robbery } from "@core/models/Robbery";
+import type { User } from "@core/models/User";
+import type { Users } from "./Users";
+import { ClashType, type Robbery } from "@core/models/Robbery";
 import { Log } from "@shared/log";
-import { RobberyLocation } from "@core/models/RobberyLocation";
+import type { RobberyLocation } from "@core/models/RobberyLocation";
 import { Language } from "@core/models/Language";
-import { BeatUp } from "@core/models/BeatUp";
+import type { BeatUp } from "@core/models/BeatUp";
 import { LocationList } from "@core/types/Locations";
 
 export class RobHistories extends Model<
@@ -33,7 +33,7 @@ export class RobHistories extends Model<
 	declare updatedAt: CreationOptional<Date>;
 
 	static async Count(userId: string) {
-		return await this.count({
+		return await RobHistories.count({
 			where: {
 				[Op.or]: [{ attackerId: userId }, { defenderId: userId }],
 			},
@@ -41,7 +41,7 @@ export class RobHistories extends Model<
 	}
 
 	static async GetList(userId: string, limit: number, offset: number) {
-		return await this.findAll({
+		return await RobHistories.findAll({
 			limit,
 			order: [["createdAt", "DESC"]],
 			offset,

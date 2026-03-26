@@ -9,8 +9,8 @@
   "scripts": {
     "clear": "rimraf build",
     "prebuild": "npm run clear && npm run lint",
-    "build": "tsc && tsc-alias",
-    "build:watch": "tsc --watch",
+    "build": "tsgo && tsc-alias",
+    "build:watch": "tsgo --watch",
     "clear-commands": "node build/src/bot/clear-commands.js",
     "start": "pm2 start build/src/index.js --name \"cr\"",
     "stop": "pm2 stop cr",
@@ -62,6 +62,7 @@
   },
   "dependencies": {
     "@napi-rs/canvas": "^0.1.74",
+    "@typescript/native-preview": "^7.0.0-dev.20260320.1",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
     "discord-api-types": "0.38.16",
@@ -70,7 +71,7 @@
     "pino": "9.0.0",
     "pino-pretty": "^13.1.1",
     "pm2": "^6.0.8",
-    "sequelize": "^6.37.7",
+    "sequelize": "^6.37.8",
     "sqlite3": "^5.1.6"
   }
 }

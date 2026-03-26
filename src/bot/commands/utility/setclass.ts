@@ -1,9 +1,9 @@
-﻿import { ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+﻿import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
 import { replyWithContainer } from "@bot/utils/discordInteractions";
 import { formatMoney } from "@bot/utils/ui";
-import { User } from "@core/models/User";
-import { Language, Localization } from "@core/models/Language";
-import { Class, ClassId, ClassList, ClassModifier } from "@core/types/Classes";
+import type { User } from "@core/models/User";
+import { Language, type Localization } from "@core/models/Language";
+import { type Class, ClassId, ClassList, type ClassModifier } from "@core/types/Classes";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 import { CrColors } from "@bot/utils/colors";
 import { EmoteString } from "@bot/utils/emotes";

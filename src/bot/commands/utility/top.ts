@@ -1,23 +1,23 @@
-import { ButtonStyle, ChatInputCommandInteraction, Colors, Locale, SlashCommandBuilder } from "discord.js";
-import { Op } from "sequelize";
-import { defaultComponent, formatMoney } from "@bot/utils/ui";
-import { Users } from "@core/database/Users";
-import { User } from "@core/models/User";
-import { Language, Localization } from "@core/models/Language";
-import { ClassList } from "@core/types/Classes";
-import { EmoteBadgeString } from "@bot/utils/badges";
-import { Pagination } from "@core/models/Pagination";
-import { IDescription } from "@core/types/Interfaces";
-import { EmoteId, EmoteString } from "@bot/utils/emotes";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
-import { CrColors, GangColor } from "@bot/utils/colors";
-import Gangs from "@core/database/Gangs";
-import { Gang } from "@core/models/Gang";
 import { DEFAULT_GANG_IMAGE } from "@bot/ui/builders/GangImageCanvasBuilder";
+import { EmoteBadgeString } from "@bot/utils/badges";
+import { CrColors, GangColor } from "@bot/utils/colors";
 import { deferReply, replyWithContainer } from "@bot/utils/discordInteractions";
-import { Robbery } from "@core/models/Robbery";
-import { BeatUp } from "@core/models/BeatUp";
+import { EmoteId, EmoteString } from "@bot/utils/emotes";
+import { defaultComponent, formatMoney } from "@bot/utils/ui";
 import { searchUser } from "@bot/utils/userUtils";
+import Gangs from "@core/database/Gangs";
+import { Users } from "@core/database/Users";
+import { BeatUp } from "@core/models/BeatUp";
+import { Gang } from "@core/models/Gang";
+import { Language, type Localization } from "@core/models/Language";
+import { Pagination } from "@core/models/Pagination";
+import { Robbery } from "@core/models/Robbery";
+import { User } from "@core/models/User";
+import { ClassList } from "@core/types/Classes";
+import type { IDescription } from "@core/types/Interfaces";
+import { ButtonStyle, type ChatInputCommandInteraction, Colors, Locale, SlashCommandBuilder } from "discord.js";
+import { Op } from "sequelize";
 
 enum TopSubcommand {
 	Money = "money",
@@ -415,20 +415,20 @@ module.exports = {
 
 		async function getTextFromIndex(i: number) {
 			const user = users[i];
-			const underscore = user.id == interaction.user.id ? "__" : "";
+			const underscore = user.id === interaction.user.id ? "__" : "";
 			const emoteClass = ClassList[user.class].Image.Emote.String;
 
 			const position = i + pagination.Offset + 1;
 			let positionText = `\`${position}.\``;
-			if (i + pagination.Offset == 0) {
+			if (i + pagination.Offset === 0) {
 				positionText = currentConfig.badge;
 			}
 			// Special case for money ranking which has badges for top 3
 			if (subcommand === TopSubcommand.Money) {
-				if (i + pagination.Offset == 1) {
+				if (i + pagination.Offset === 1) {
 					positionText = EmoteBadgeString.Season1.Top2Money;
 				}
-				else if (i + pagination.Offset == 2) {
+				else if (i + pagination.Offset === 2) {
 					positionText = EmoteBadgeString.Season1.Top3Money;
 				}
 			}
@@ -481,11 +481,11 @@ module.exports = {
 
 				for (let i = 0; i < gangs.length; i++) {
 					const gang = gangs[i];
-					const underscore = gang.Id == user.GangId ? "__" : "";
+					const underscore = gang.Id === user.GangId ? "__" : "";
 
 					const position = i + pagination.Offset + 1;
 					let positionText = `\`${position}.\``;
-					if (i + pagination.Offset == 0) {
+					if (i + pagination.Offset === 0) {
 						positionText = currentConfig.badge;
 					}
 
@@ -511,7 +511,7 @@ module.exports = {
 							),
 						);
 
-					if (i != gangs.length - 1) {
+					if (i !== gangs.length - 1) {
 						container.addLargeSeparator();
 					}
 				}
@@ -547,7 +547,7 @@ module.exports = {
 							),
 						);
 
-					if (i != users.length - 1) {
+					if (i !== users.length - 1) {
 						container.addLargeSeparator();
 					}
 				}

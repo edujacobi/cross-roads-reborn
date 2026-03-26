@@ -1,4 +1,4 @@
-﻿import { Client, Events } from "discord.js";
+﻿import { type Client, Events } from "discord.js";
 import { sequelize } from "@core/database/Database";
 import { changeActivity } from "@bot/utils/ui";
 import { Notification } from "@core/models/Notification";

@@ -1,13 +1,13 @@
-﻿import { ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
-import { User } from "@core/models/User";
+﻿import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+import type { User } from "@core/models/User";
 import { Scavenge } from "@core/models/Scavenge";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 import { CrColors } from "@bot/utils/colors";
 import { EmoteString } from "@bot/utils/emotes";
 import { replyWithContainer } from "@bot/utils/discordInteractions";
-import { IScavenge, ScavengeFailureReason, ScavengeList } from "@core/types/Scavenge";
+import { type IScavenge, ScavengeFailureReason, ScavengeList } from "@core/types/Scavenge";
 import { defaultComponent, formatMoney, showTime } from "@bot/utils/ui";
-import { globalStrings, Language, Localization } from "@core/models/Language";
+import { globalStrings, Language, type Localization } from "@core/models/Language";
 import { ClassList, getScavengeChanceClassModifier, getScavengeDurationClassModifier } from "@core/types/Classes";
 import { ItemList, ItemType } from "@core/types/Items";
 import { setTimeout as wait } from "timers/promises";

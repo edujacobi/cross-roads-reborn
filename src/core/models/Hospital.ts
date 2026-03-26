@@ -1,4 +1,4 @@
-import { User } from "./User";
+import type { User } from "./User";
 import { Users } from "@core/database/Users";
 import { Op } from "sequelize";
 import { differenceInMinutes } from "date-fns";

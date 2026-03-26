@@ -1,7 +1,14 @@
-﻿import { CreationOptional, DataTypes, ForeignKey, InferAttributes, InferCreationAttributes, Model } from "sequelize";
+﻿import {
+	type CreationOptional,
+	DataTypes,
+	type ForeignKey,
+	type InferAttributes,
+	type InferCreationAttributes,
+	Model,
+} from "sequelize";
 import { sequelize } from "./Database";
-import { Users } from "./Users";
-import { BundleId, ItemId } from "@core/types/Ids";
+import type { Users } from "./Users";
+import type { BundleId, ItemId } from "@core/types/Ids";
 
 export class UserItems extends Model<
 	InferAttributes<UserItems>,

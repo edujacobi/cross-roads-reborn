@@ -2,24 +2,24 @@
 	AttachmentBuilder,
 	ButtonBuilder,
 	ButtonStyle,
-	ChatInputCommandInteraction,
+	type ChatInputCommandInteraction,
 	Colors,
 	Locale,
 	MessageFlags,
 	SlashCommandBuilder,
 } from "discord.js";
 import { deferReply, replyInteraction, replyWithContainer } from "@bot/utils/discordInteractions";
-import { Language, Localization } from "@core/models/Language";
+import { Language, type Localization } from "@core/models/Language";
 import { EmoteId, EmoteString } from "@bot/utils/emotes";
 import { differenceInHours, subMinutes } from "date-fns";
-import { User } from "@core/models/User";
+import type { User } from "@core/models/User";
 import { UserBadge } from "@core/models/UserBadge";
 import { ClassList } from "@core/types/Classes";
 import { convertHexNumberToString, formatMoney, hexToRGB, showTime } from "@bot/utils/ui";
 import { ItemType } from "@core/types/Items";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 import { GangColor } from "@bot/utils/colors";
-import { getClient } from "../../client";
+import { getClient } from "@bot/client";
 import { UserImageCanvasBuilder } from "@bot/ui/builders/UserImageCanvasBuilder";
 import { GangImageCanvasBuilder } from "@bot/ui/builders/GangImageCanvasBuilder";
 import { searchUser } from "@bot/utils/userUtils";

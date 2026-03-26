@@ -5,7 +5,7 @@ import { ClassId } from "@core/types/Classes";
 import { Shop } from "@core/models/Shop";
 import { ScavengeId } from "@core/types/Scavenge";
 import { ItemId } from "@core/types/Ids";
-import { ItemList, UserItem } from "@core/types/Items";
+import { ItemList, type UserItem } from "@core/types/Items";
 import { LocationId } from "@core/types/Locations";
 import { addHours } from "date-fns";
 

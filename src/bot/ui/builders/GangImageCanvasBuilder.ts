@@ -1,7 +1,7 @@
 import { User } from "@core/models/User";
-import { Gang } from "@core/models/Gang";
-import { Language, Localization } from "@core/models/Language";
-import { Canvas, Image, loadImage } from "@napi-rs/canvas";
+import type { Gang } from "@core/models/Gang";
+import { Language, type Localization } from "@core/models/Language";
+import { Canvas, type Image, loadImage } from "@napi-rs/canvas";
 import { logger } from "@shared/log";
 import { convertHexNumberToString, hexToRGB } from "@bot/utils/ui";
 import { GangColor } from "@bot/utils/colors";

@@ -1,4 +1,4 @@
-import { IDescription, IEmote } from "./Interfaces";
+import type { IDescription, IEmote } from "./Interfaces";
 import { Language } from "@core/models/Language";
 
 export enum LocationId {
@@ -192,7 +192,7 @@ export const LocationList: LocationListType = {
 				[Language.English]: "An off-duty cop was buying a engagement ring and arrested you.",
 				[Language.Portuguese]: "Um policial de folga estava comprando um anel de noivado e te prendeu.",
 				[Language.Spanish]: "Un policía fuera de servicio estaba comprando un anillo de compromiso y te arrestó.",
-			}, ],
+			}],
 		},
 	},
 	[LocationId.SmallBank]: {

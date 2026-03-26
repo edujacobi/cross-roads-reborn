@@ -1,14 +1,14 @@
 ﻿import {
 	ButtonBuilder,
 	ButtonStyle,
-	ChatInputCommandInteraction,
+	type ChatInputCommandInteraction,
 	Colors,
 	Locale,
 	SlashCommandBuilder,
 } from "discord.js";
 import { replyWithContainer } from "@bot/utils/discordInteractions";
-import { Language, Localization } from "@core/models/Language";
-import { User } from "@core/models/User";
+import { Language, type Localization } from "@core/models/Language";
+import type { User } from "@core/models/User";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 
 module.exports = {

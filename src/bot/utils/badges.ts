@@ -17,7 +17,7 @@ export const EmoteBadgeId = {
 		LargePocket: "817965462095790102",
 		TopRooster: "817965403347222568",
 		Invester: "816407267556851712",
-		TopGang: "895069437735108609"
+		TopGang: "895069437735108609",
 	},
 	Season5: {
 		Top1Money: "889681658167558154",
@@ -37,7 +37,7 @@ export const EmoteBadgeId = {
 		Preppy: "817097198860894310",
 		Politician: "816407267779411989",
 		Hypochondriac: "817965402621083748",
-		TopGang: "895069437735108609"
+		TopGang: "895069437735108609",
 	},
 	Season4: {
 		Top1Money: "853052970115006485",
@@ -224,6 +224,6 @@ export const EmoteBadgeString = {
 		Halloween2021: `<:badge_halloween_2021:${EmoteBadgeId.Events.Halloween2021}>`,
 		Christmas2021: `<:badge_BiscoitoNatalino:${EmoteBadgeId.Events.Christmas2021}>`,
 		KeyishMandrake: `<:badge_mandrakeChavoso:${EmoteBadgeId.Events.KeyishMandrake}>`,
-		Coroamuru: `<:EuDerroteiCoroamuru:${EmoteBadgeId.Events.Coroamuru}>`
+		Coroamuru: `<:EuDerroteiCoroamuru:${EmoteBadgeId.Events.Coroamuru}>`,
 	},
 };

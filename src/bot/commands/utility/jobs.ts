@@ -1,16 +1,16 @@
-﻿import { ButtonStyle, ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+﻿import { ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
 import { deferReply, replyWithContainer } from "@bot/utils/discordInteractions";
 import { EmoteString } from "@bot/utils/emotes";
 import { formatMoney, showTime } from "@bot/utils/ui";
-import { getJobList, JobId, JobList, Jobs } from "@core/types/Jobs";
+import { getJobList, type JobId, JobList, type Jobs } from "@core/types/Jobs";
 import { getItemList, ItemList } from "@core/types/Items";
-import { Language, Localization } from "@core/models/Language";
+import { Language, type Localization } from "@core/models/Language";
 import { CrColors } from "@bot/utils/colors";
-import { User } from "@core/models/User";
+import type { User } from "@core/models/User";
 import { Users } from "@core/database/Users";
 import { ClassList, getJobClassModifier } from "@core/types/Classes";
 import { LocationList } from "@core/types/Locations";
-import { ScavengeId, ScavengeList } from "@core/types/Scavenge";
+import { type ScavengeId, ScavengeList } from "@core/types/Scavenge";
 import { Event, EventType } from "@core/models/Event";
 import { BlackMarket } from "@core/models/BlackMarket";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
@@ -129,7 +129,7 @@ module.exports = {
 					.addSectionComponents(working => working
 						.addTexts([
 							s.workingOn(user.Job.Id!, user.Job.EndsIn),
-							`-# ${s.salary}: ${formatMoney(jobSalary, language)} • ${s.duration}: ${jobDuration}h`
+							`-# ${s.salary}: ${formatMoney(jobSalary, language)} • ${s.duration}: ${jobDuration}h`,
 						])
 						.setButtonAccessory(btn => btn
 							.setCustomId("stop")

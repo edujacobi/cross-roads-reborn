@@ -1,4 +1,4 @@
-import { User } from "./User";
+import type { User } from "./User";
 import { EmoteString } from "@bot/utils/emotes";
 import { formatMoney, showTime } from "@bot/utils/ui";
 import { addHours } from "date-fns/addHours";

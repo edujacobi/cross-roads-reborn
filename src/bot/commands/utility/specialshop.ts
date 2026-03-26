@@ -2,14 +2,14 @@
 	AttachmentBuilder,
 	ButtonBuilder,
 	ButtonStyle,
-	ChatInputCommandInteraction,
+	type ChatInputCommandInteraction,
 	Locale,
 	MessageFlags,
 	SlashCommandBuilder,
 } from "discord.js";
 import { deferReply, replyInteraction, replyWithContainer } from "@bot/utils/discordInteractions";
 import { User } from "@core/models/User";
-import { Language, Localization } from "@core/models/Language";
+import { Language, type Localization } from "@core/models/Language";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 import { BundleList, getSkinBundleList } from "@core/types/Skins";
 import { EmoteId, EmoteString } from "@bot/utils/emotes";
@@ -146,7 +146,7 @@ module.exports = {
 					.addTexts([
 						`# ${s.avatarDecoration}`,
 						s.defeatDecoration,
-						`-# ${s.testDecoration}`
+						`-# ${s.testDecoration}`,
 					])
 					.setThumbnailAccessory(thumb => thumb
 						.setURL("https://media.discordapp.net/attachments/1455628323848851639/1458923128968445983/preview.webp"),

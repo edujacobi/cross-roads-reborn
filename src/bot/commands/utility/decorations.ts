@@ -1,15 +1,15 @@
 ﻿import {
 	AttachmentBuilder,
-	ButtonBuilder,
+	type ButtonBuilder,
 	ButtonStyle,
-	ChatInputCommandInteraction,
+	type ChatInputCommandInteraction,
 	Locale,
 	MessageFlags,
 	SlashCommandBuilder,
 } from "discord.js";
 import { replyInteraction, replyWithContainer } from "@bot/utils/discordInteractions";
-import { User } from "@core/models/User";
-import { Language, Localization } from "@core/models/Language";
+import type { User } from "@core/models/User";
+import { Language, type Localization } from "@core/models/Language";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 import { CrColors } from "@bot/utils/colors";
 import { UserAvatarDecoration } from "@core/models/UserAvatarDecoration";

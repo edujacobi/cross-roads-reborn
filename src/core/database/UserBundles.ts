@@ -1,6 +1,6 @@
-import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model } from "sequelize";
+import { type CreationOptional, DataTypes, type InferAttributes, type InferCreationAttributes, Model } from "sequelize";
 import { sequelize } from "./Database";
-import { BundleId } from "@core/types/Ids";
+import type { BundleId } from "@core/types/Ids";
 
 export class UserBundles extends Model<
 	InferAttributes<UserBundles>,

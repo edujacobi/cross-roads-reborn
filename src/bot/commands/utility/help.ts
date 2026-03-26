@@ -1,8 +1,8 @@
-﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+﻿import { type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
 import { replyWithContainer } from "@bot/utils/discordInteractions";
-import { Language, Localization } from "@core/models/Language";
+import { Language, type Localization } from "@core/models/Language";
 import { CrColors } from "@bot/utils/colors";
-import { User } from "@core/models/User";
+import type { User } from "@core/models/User";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 import { EmoteString } from "@bot/utils/emotes";
 
@@ -22,7 +22,7 @@ module.exports = {
 			.setUser(user)
 			.setAccentColor(CrColors.Default)
 			.addTexts([
-				`# ${s.title}`
+				`# ${s.title}`,
 			])
 			.addLargeSeparator()
 			.addTexts([s.description1])

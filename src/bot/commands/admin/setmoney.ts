@@ -1,14 +1,14 @@
 ﻿import {
-	ChatInputCommandInteraction,
+	type ChatInputCommandInteraction,
 	Locale,
 	PermissionFlagsBits,
 	SlashCommandBuilder,
-	SlashCommandIntegerOption,
-	SlashCommandStringOption,
+	type SlashCommandIntegerOption,
+	type SlashCommandStringOption,
 } from "discord.js";
 import { defaultComponent, formatMoney } from "@bot/utils/ui";
 import { replyInteraction, replyWithContainer, sendPrivateMessage } from "@bot/utils/discordInteractions";
-import { User } from "@core/models/User";
+import type { User } from "@core/models/User";
 import { CrColors } from "@bot/utils/colors";
 import { checkUser } from "@bot/utils/userUtils";
 

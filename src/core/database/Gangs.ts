@@ -1,6 +1,6 @@
-import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model } from "sequelize";
+import { type CreationOptional, DataTypes, type InferAttributes, type InferCreationAttributes, Model } from "sequelize";
 import { sequelize } from "./Database";
-import { GangColorId } from "@bot/utils/colors";
+import type { GangColorId } from "@bot/utils/colors";
 
 export class Gangs extends Model<
 	InferAttributes<Gangs>,

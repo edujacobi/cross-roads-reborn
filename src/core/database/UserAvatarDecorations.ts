@@ -1,6 +1,6 @@
-import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model } from "sequelize";
+import { type CreationOptional, DataTypes, type InferAttributes, type InferCreationAttributes, Model } from "sequelize";
 import { sequelize } from "./Database";
-import { AvatarDecorationId } from "@core/types/Ids";
+import type { AvatarDecorationId } from "@core/types/Ids";
 
 export class UserAvatarDecorations extends Model<
 	InferAttributes<UserAvatarDecorations>,

@@ -1,10 +1,10 @@
-﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+﻿import { type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
 import { replyWithContainer } from "@bot/utils/discordInteractions";
 import { formatMoney, showTime } from "@bot/utils/ui";
 import { addDays } from "date-fns";
-import { Language, Localization } from "@core/models/Language";
+import { Language, type Localization } from "@core/models/Language";
 import { CrColors } from "@bot/utils/colors";
-import { User } from "@core/models/User";
+import type { User } from "@core/models/User";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 import { isUserBoosterInOfficialServer } from "@bot/utils/officialServer";
 

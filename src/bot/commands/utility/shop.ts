@@ -1,12 +1,12 @@
-﻿import { ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+﻿import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
 import { Shop } from "@core/models/Shop";
-import { User } from "@core/models/User";
+import type { User } from "@core/models/User";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 import { formatMoney } from "@bot/utils/ui";
 import { deferReply, replyWithContainer } from "@bot/utils/discordInteractions";
 import { EmoteString } from "@bot/utils/emotes";
 import { ItemList, ItemType } from "@core/types/Items";
-import { Language, Localization } from "@core/models/Language";
+import { Language, type Localization } from "@core/models/Language";
 import { createButtonCollector, disableButtons } from "@bot/utils/collectors";
 
 module.exports = {

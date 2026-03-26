@@ -1,4 +1,4 @@
-import { IDescription } from "./Interfaces";
+import type { IDescription } from "./Interfaces";
 import { Language } from "@core/models/Language";
 import { EmoteId, EmoteString } from "@bot/utils/emotes";
 import { EmoteBadgeId, EmoteBadgeString } from "@bot/utils/badges";

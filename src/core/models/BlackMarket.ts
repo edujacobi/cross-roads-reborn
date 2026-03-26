@@ -1,5 +1,5 @@
-﻿import { User } from "./User";
-import { Language, Localization } from "./Language";
+﻿import type { User } from "./User";
+import { Language, type Localization } from "./Language";
 import { Shop } from "./Shop";
 import { getItemList } from "@core/types/Items";
 import { CrColors } from "@bot/utils/colors";

@@ -1,6 +1,12 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, MessageFlags } from "discord.js";
+import {
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonStyle,
+	type ChatInputCommandInteraction,
+	MessageFlags,
+} from "discord.js";
 import { replyInteraction } from "@bot/utils/discordInteractions";
-import { Language, Localization } from "./Language";
+import { Language, type Localization } from "./Language";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 import { createButtonCollector, disableButtons } from "@bot/utils/collectors";
 

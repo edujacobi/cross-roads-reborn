@@ -1,17 +1,17 @@
 ﻿import {
 	ButtonBuilder,
 	ButtonStyle,
-	ChatInputCommandInteraction,
+	type ChatInputCommandInteraction,
 	Colors,
-	ComponentEmojiResolvable,
+	type ComponentEmojiResolvable,
 	Locale,
 	SlashCommandBuilder,
-	SlashCommandIntegerOption,
+	type SlashCommandIntegerOption,
 } from "discord.js";
 import { replyWithContainer } from "@bot/utils/discordInteractions";
 import { formatMoney } from "@bot/utils/ui";
-import { Language, Localization } from "@core/models/Language";
-import { User } from "@core/models/User";
+import { Language, type Localization } from "@core/models/Language";
+import type { User } from "@core/models/User";
 import { ItemList, ItemType } from "@core/types/Items";
 import { EmoteId, EmoteString } from "@bot/utils/emotes";
 import { UserItems } from "@core/database/UserItems";

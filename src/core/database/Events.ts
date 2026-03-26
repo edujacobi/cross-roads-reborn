@@ -1,6 +1,6 @@
-import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model } from "sequelize";
+import { type CreationOptional, DataTypes, type InferAttributes, type InferCreationAttributes, Model } from "sequelize";
 import { sequelize } from "./Database";
-import { EventType } from "@core/models/Event";
+import type { EventType } from "@core/models/Event";
 
 export class Events extends Model<
 	InferAttributes<Events>,

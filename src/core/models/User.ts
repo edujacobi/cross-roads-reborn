@@ -1,29 +1,29 @@
 ﻿import { Users } from "@core/database/Users";
 import { Log } from "@shared/log";
 import { addDays, differenceInHours, formatDistanceToNow } from "date-fns";
-import { getLocaleFromLanguage, Language, Localization } from "./Language";
+import { getLocaleFromLanguage, Language, type Localization } from "./Language";
 import { UserItems } from "@core/database/UserItems";
 import { addHours } from "date-fns/addHours";
-import { InferAttributes, Op } from "sequelize";
-import { ItemList, Items, ItemType, UserItem } from "@core/types/Items";
-import { JobId, JobList } from "@core/types/Jobs";
+import { type InferAttributes, Op } from "sequelize";
+import { ItemList, type Items, ItemType, type UserItem } from "@core/types/Items";
+import { type JobId, JobList } from "@core/types/Jobs";
 import { Notification, NotificationType } from "./Notification";
 import { formatDate, formatMoney, showTime } from "@bot/utils/ui";
 import { EmoteId, EmoteString } from "@bot/utils/emotes";
 import { ClassId, ClassList, getJobClassModifier } from "@core/types/Classes";
-import { LocationId, LocationList } from "@core/types/Locations";
-import { ScavengeId, ScavengeList } from "@core/types/Scavenge";
+import { type LocationId, LocationList } from "@core/types/Locations";
+import { type ScavengeId, ScavengeList } from "@core/types/Scavenge";
 import { Gang } from "./Gang";
 import { GangMembers } from "@core/database/GangMembers";
 import { Event, EventType } from "./Event";
-import { GangColorId } from "@bot/utils/colors";
-import { AvatarDecorationId, BundleId, ItemId } from "@core/types/Ids";
+import type { GangColorId } from "@bot/utils/colors";
+import { AvatarDecorationId, BundleId, type ItemId } from "@core/types/Ids";
 import { UserBundle } from "./UserBundle";
-import { BundleList, SkinBundles } from "@core/types/Skins";
+import { BundleList, type SkinBundles } from "@core/types/Skins";
 import { UserAvatarDecoration } from "./UserAvatarDecoration";
-import { AvatarDecorationList, AvatarDecorations } from "@core/types/AvatarDecorations";
+import { AvatarDecorationList, type AvatarDecorations } from "@core/types/AvatarDecorations";
 import { GangBases } from "@core/types/GangBases";
-import { Col, Fn, Literal } from "sequelize/lib/utils";
+import type { Col, Fn, Literal } from "sequelize/lib/utils";
 
 export enum SituationId {
 	Idling,

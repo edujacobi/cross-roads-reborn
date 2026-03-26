@@ -1,5 +1,5 @@
 import { Language } from "@core/models/Language";
-import { IDescription, IEmote } from "./Interfaces";
+import type { IDescription, IEmote } from "./Interfaces";
 import { ItemList } from "./Items";
 import { EmoteId, EmoteString } from "@bot/utils/emotes";
 import { ItemId } from "./Ids";

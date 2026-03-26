@@ -1,4 +1,11 @@
-import { CreationOptional, DataTypes, ForeignKey, InferAttributes, InferCreationAttributes, Model } from "sequelize";
+import {
+	type CreationOptional,
+	DataTypes,
+	type ForeignKey,
+	type InferAttributes,
+	type InferCreationAttributes,
+	Model,
+} from "sequelize";
 import { sequelize } from "./Database";
 import { Users } from "./Users";
 import { Gangs } from "./Gangs";

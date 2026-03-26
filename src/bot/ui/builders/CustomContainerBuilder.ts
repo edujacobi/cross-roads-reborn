@@ -6,7 +6,7 @@ import {
 	SeparatorSpacingSize,
 	TextDisplayBuilder,
 } from "discord.js";
-import { User } from "@core/models/User";
+import type { User } from "@core/models/User";
 import { EmoteBadgeString } from "@bot/utils/badges";
 
 interface FooterOptions {

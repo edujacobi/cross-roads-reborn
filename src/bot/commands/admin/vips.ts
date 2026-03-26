@@ -1,10 +1,10 @@
-﻿import { ChatInputCommandInteraction, Colors, Locale, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
+﻿import { type ChatInputCommandInteraction, Colors, Locale, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
 import { Users } from "@core/database/Users";
 import { Op } from "sequelize";
 import { EmoteString } from "@bot/utils/emotes";
 import { Pagination } from "@core/models/Pagination";
-import { Language } from "@core/models/Language";
-import { User } from "@core/models/User";
+import type { Language } from "@core/models/Language";
+import type { User } from "@core/models/User";
 import { ClassList } from "@core/types/Classes";
 import { showTime } from "@bot/utils/ui";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";

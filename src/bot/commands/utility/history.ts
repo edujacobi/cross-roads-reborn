@@ -1,11 +1,11 @@
-﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+﻿import { type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
 import { deferReply } from "@bot/utils/discordInteractions";
 import { formatDate, formatMoney } from "@bot/utils/ui";
-import { User } from "@core/models/User";
+import type { User } from "@core/models/User";
 import { RobHistories } from "@core/database/RobHistories";
 import { EmoteString } from "@bot/utils/emotes";
 import { Users } from "@core/database/Users";
-import { Language, Localization } from "@core/models/Language";
+import { Language, type Localization } from "@core/models/Language";
 import { Pagination } from "@core/models/Pagination";
 import { ClassList } from "@core/types/Classes";
 import { LocationList } from "@core/types/Locations";

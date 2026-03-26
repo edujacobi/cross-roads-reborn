@@ -1,45 +1,36 @@
 {
-  "_version": "22.16.0",
-  "compilerOptions": {
-    /* Visit https://aka.ms/tsconfig to read more about this file */
+	"_version": "22.16.0",
+	"compilerOptions": {
+		/* Visit https://aka.ms/tsconfig to read more about this file */
 
-    /* Projects */
-    "incremental": true,
-    /* Language and Environment */
-    "target": "es2022",
-    "lib": [
-      "es2022"
-    ],
-    /* Modules */
-    "module": "NodeNext",
-    /* Specify what module code is generated. */
-    "rootDir": ".",
-    "baseUrl": "./",
-    "paths": {
-      "@core/*": [
-        "src/core/*"
-      ],
-      "@bot/*": [
-        "src/bot/*"
-      ],
-      "@shared/*": [
-        "src/shared/*"
-      ]
-    },
-    "resolveJsonModule": true,
-    /* Emit */
-    "outDir": "./build",
-    "inlineSourceMap": true,
-    "inlineSources": true,
-    /* Interop Constraints */
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    /* Type Checking */
-    "strict": true,
-    "useUnknownInCatchVariables": false,
-    /* Completeness */
-    "skipDefaultLibCheck": true,
-    "skipLibCheck": true
-  }
+		/* Projects */
+		"incremental": true,
+		/* Language and Environment */
+		"target": "es2022",
+		"lib": ["es2022"],
+		/* Modules */
+		"module": "NodeNext",
+		/* Specify what module code is generated. */
+		"rootDir": ".",
+		"paths": {
+			"@core/*": ["./src/core/*"],
+			"@bot/*": ["./src/bot/*"],
+			"@shared/*": ["./src/shared/*"]
+		},
+		"resolveJsonModule": true,
+		/* Emit */
+		"outDir": "./build",
+		"inlineSourceMap": true,
+		"inlineSources": true,
+		/* Interop Constraints */
+		"allowSyntheticDefaultImports": true,
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		/* Type Checking */
+		"strict": true,
+		"useUnknownInCatchVariables": false,
+		/* Completeness */
+		"skipDefaultLibCheck": true,
+		"skipLibCheck": true
+	}
 }

@@ -1,8 +1,15 @@
-﻿import { ActionRowBuilder, ActivityType, ButtonBuilder, Client, ColorResolvable, RGBTuple } from "discord.js";
+﻿import {
+	type ActionRowBuilder,
+	ActivityType,
+	type ButtonBuilder,
+	type Client,
+	type ColorResolvable,
+	type RGBTuple,
+} from "discord.js";
 import { Language } from "@core/models/Language";
 import { enUS, es, ptBR } from "date-fns/locale";
 import { formatDistanceToNow } from "date-fns";
-import { User } from "@core/models/User";
+import type { User } from "@core/models/User";
 import { CustomContainerBuilder, CustomSectionBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 
 interface ComponentParams {

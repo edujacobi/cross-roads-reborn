@@ -1,5 +1,5 @@
-﻿import { ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
-import { User } from "@core/models/User";
+﻿import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+import type { User } from "@core/models/User";
 import { Prison, PrisonFailureReason } from "@core/models/Prison";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 import { CrColors } from "@bot/utils/colors";
@@ -9,7 +9,7 @@ import { replyWithContainer } from "@bot/utils/discordInteractions";
 import { Pagination } from "@core/models/Pagination";
 import { ClassList, getPrisonEscapeClassModifier } from "@core/types/Classes";
 import { defaultComponent, formatMoney, showTime } from "@bot/utils/ui";
-import { globalStrings, Language, Localization } from "@core/models/Language";
+import { globalStrings, Language, type Localization } from "@core/models/Language";
 import { ItemList } from "@core/types/Items";
 import { ItemId } from "@core/types/Ids";
 import { Gang } from "@core/models/Gang";

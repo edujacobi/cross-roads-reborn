@@ -1,6 +1,6 @@
 import { ItemId } from "./Ids";
 import { Language } from "@core/models/Language";
-import { IDescription } from "./Interfaces";
+import type { IDescription } from "./Interfaces";
 
 export enum JobId {
 	UberDriver, // pedreiro

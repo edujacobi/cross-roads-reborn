@@ -1,9 +1,9 @@
-import { User } from "./User";
+import type { User } from "./User";
 import { EmoteString } from "@bot/utils/emotes";
 import { showTime } from "@bot/utils/ui";
 import { JobList } from "@core/types/Jobs";
-import { globalStrings, Language, Localization } from "./Language";
-import { ScavengeId, ScavengeList } from "@core/types/Scavenge";
+import { globalStrings, Language, type Localization } from "./Language";
+import { type ScavengeId, ScavengeList } from "@core/types/Scavenge";
 import { Users } from "@core/database/Users";
 import { ClassList } from "@core/types/Classes";
 import { LocationList } from "@core/types/Locations";

@@ -2,7 +2,7 @@
 	ActionRowBuilder,
 	ButtonBuilder,
 	ButtonStyle,
-	ChatInputCommandInteraction,
+	type ChatInputCommandInteraction,
 	Locale,
 	PermissionFlagsBits,
 	SlashCommandBuilder,
@@ -12,7 +12,7 @@ import { CrColors } from "@bot/utils/colors";
 import { Users } from "@core/database/Users";
 import { Op } from "sequelize";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
-import { User } from "@core/models/User";
+import type { User } from "@core/models/User";
 import { Language } from "@core/models/Language";
 import { defaultComponent, formatMoney } from "@bot/utils/ui";
 import Gangs from "@core/database/Gangs";

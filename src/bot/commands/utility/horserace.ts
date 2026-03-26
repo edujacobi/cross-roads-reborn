@@ -1,5 +1,5 @@
-import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
-import { User } from "@core/models/User";
+import { type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+import type { User } from "@core/models/User";
 import { HorseRacing } from "@core/models/HorseRacing";
 
 module.exports = {

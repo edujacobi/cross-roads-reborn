@@ -1,26 +1,26 @@
-﻿import {
+﻿import { getClient } from "@bot/client";
+import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
+import { UserImageCanvasBuilder } from "@bot/ui/builders/UserImageCanvasBuilder";
+import { createButtonCollector, disableButtons } from "@bot/utils/collectors";
+import { deferReply, replyInteraction, replyWithContainer } from "@bot/utils/discordInteractions";
+import { EmoteId } from "@bot/utils/emotes";
+import { formatMoney, showTime } from "@bot/utils/ui";
+import { searchUser } from "@bot/utils/userUtils";
+import { Language, type Localization } from "@core/models/Language";
+import type { User } from "@core/models/User";
+import { UserBadge } from "@core/models/UserBadge";
+import { BadgeId, BadgeList } from "@core/types/Badges";
+import { ClassList } from "@core/types/Classes";
+import { addDays } from "date-fns";
+import {
 	AttachmentBuilder,
-	ButtonBuilder,
+	type ButtonBuilder,
 	ButtonStyle,
-	ChatInputCommandInteraction,
+	type ChatInputCommandInteraction,
 	Locale,
 	MessageFlags,
 	SlashCommandBuilder,
 } from "discord.js";
-import { deferReply, replyInteraction, replyWithContainer } from "@bot/utils/discordInteractions";
-import { Language, Localization } from "@core/models/Language";
-import { User } from "@core/models/User";
-import { ClassList } from "@core/types/Classes";
-import { UserBadge } from "@core/models/UserBadge";
-import { formatMoney, showTime } from "@bot/utils/ui";
-import { EmoteId } from "@bot/utils/emotes";
-import { getClient } from "../../client";
-import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
-import { UserImageCanvasBuilder } from "@bot/ui/builders/UserImageCanvasBuilder";
-import { addDays } from "date-fns";
-import { BadgeId, BadgeList } from "@core/types/Badges";
-import { searchUser } from "@bot/utils/userUtils";
-import { createButtonCollector, disableButtons } from "@bot/utils/collectors";
 
 module.exports = {
 	data: new SlashCommandBuilder()

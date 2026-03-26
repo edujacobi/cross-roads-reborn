@@ -15,7 +15,7 @@ const rest = new REST().setToken(token);
 
 		await rest.put(
 			Routes.applicationCommands(clientId),
-			{ body: [] }
+			{ body: [] },
 		);
 
 		await rest.put(
@@ -29,5 +29,3 @@ const rest = new REST().setToken(token);
 		logger.error(`${error}`);
 	}
 })();
-
-export {};

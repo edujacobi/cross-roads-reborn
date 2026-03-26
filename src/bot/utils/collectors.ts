@@ -1,17 +1,17 @@
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
-	ButtonInteraction,
-	CommandInteraction,
+	type ButtonInteraction,
+	type CommandInteraction,
 	ComponentType,
-	ContainerBuilder,
-	InteractionResponse,
-	Message,
-	MessageComponentInteraction,
+	type ContainerBuilder,
+	type InteractionResponse,
+	type Message,
+	type MessageComponentInteraction,
 	SectionBuilder,
 	StringSelectMenuBuilder,
 } from "discord.js";
-import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
+import type { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 import { Log } from "@shared/log";
 import { replyWithContainer } from "@bot/utils/discordInteractions";
 

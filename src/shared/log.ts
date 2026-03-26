@@ -1,4 +1,4 @@
-﻿import { ChannelType, ColorResolvable, Colors, MessageFlags } from "discord.js";
+﻿import { ChannelType, type ColorResolvable, Colors, MessageFlags } from "discord.js";
 import { getClient } from "@bot/client";
 import pino from "pino";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";

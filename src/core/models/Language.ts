@@ -1,6 +1,6 @@
 ﻿import { Locale } from "discord.js";
 import { enUS, es, ptBR } from "date-fns/locale";
-import { CreationOptional } from "sequelize";
+import type { CreationOptional } from "sequelize";
 import { EmoteString } from "@bot/utils/emotes";
 
 export enum Language {

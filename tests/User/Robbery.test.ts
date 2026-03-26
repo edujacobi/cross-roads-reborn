@@ -4,7 +4,7 @@ import { Language } from "@core/models/Language";
 import { ClassId } from "@core/types/Classes";
 import { Robbery } from "@core/models/Robbery";
 import { RobberyLocation } from "@core/models/RobberyLocation";
-import { ItemList, UserItem } from "@core/types/Items";
+import { ItemList, type UserItem } from "@core/types/Items";
 import { ItemId } from "@core/types/Ids";
 import { ScavengeId } from "@core/types/Scavenge";
 import { JobId } from "@core/types/Jobs";

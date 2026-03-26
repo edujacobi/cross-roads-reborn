@@ -41,6 +41,12 @@ export default defineConfig([
 		},
 
 		rules: {
+			"@typescript-eslint/consistent-type-imports": ["error", {
+				prefer: "type-imports",
+				fixStyle: "inline-type-imports",
+				disallowTypeAnnotations: false,
+			}],
+
 			"@typescript-eslint/no-unused-vars": ["warn", {
 				caughtErrors: "none",
 			}],

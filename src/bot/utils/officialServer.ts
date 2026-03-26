@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction } from "discord.js";
+import type { ChatInputCommandInteraction } from "discord.js";
 import { User } from "@core/models/User";
 import { Log } from "@shared/log";
 import { getClient } from "@bot/client";
@@ -249,10 +249,10 @@ async function setAllVIPRolesInOfficialServer() {
 		where: {
 			[Op.or]: [
 				{ vipEternal: true },
-				{ vipTime: { [Op.gt]: new Date() } }
-			]
+				{ vipTime: { [Op.gt]: new Date() } },
+			],
 		},
-		attributes: ["id"]
+		attributes: ["id"],
 	});
 
 	const vipUserIds = new Set(dbVipUsers.map(u => u.id));

@@ -4,7 +4,7 @@ import { AvatarDecorationId } from "@core/types/Ids";
 import UserAvatarDecorations from "@core/database/UserAvatarDecorations";
 import { AvatarDecorationList } from "@core/types/AvatarDecorations";
 import { UserBadge } from "./UserBadge";
-import { User } from "./User";
+import type { User } from "./User";
 
 export class UserAvatarDecoration {
 	UserId = "";

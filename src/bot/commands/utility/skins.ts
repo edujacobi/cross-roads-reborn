@@ -1,19 +1,19 @@
 ﻿import {
 	ActionRowBuilder,
-	ButtonBuilder,
+	type ButtonBuilder,
 	ButtonStyle,
-	ChatInputCommandInteraction,
+	type ChatInputCommandInteraction,
 	Locale,
 	SlashCommandBuilder,
 	StringSelectMenuBuilder,
 	StringSelectMenuOptionBuilder,
 } from "discord.js";
 import { replyWithContainer } from "@bot/utils/discordInteractions";
-import { User } from "@core/models/User";
-import { Language, Localization } from "@core/models/Language";
+import type { User } from "@core/models/User";
+import { Language, type Localization } from "@core/models/Language";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 import { BundleList, getSkinBundleList } from "@core/types/Skins";
-import { ItemList, Items } from "@core/types/Items";
+import { ItemList, type Items } from "@core/types/Items";
 import { UserBundle } from "@core/models/UserBundle";
 import { CrColors } from "@bot/utils/colors";
 import { BundleId } from "@core/types/Ids";
@@ -33,8 +33,7 @@ module.exports = {
 
 		const itemsWithSkins = [...new Set(userBundles
 			.filter(bundle => bundle.BundleId !== BundleId.Default)
-			.map(bundle => bundle.Items)
-			.flat()
+			.flatMap(bundle => bundle.Items)
 			.sort((a, b) => a.Id - b.Id),
 		)];
 

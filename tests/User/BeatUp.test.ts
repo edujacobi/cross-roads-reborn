@@ -6,7 +6,7 @@ import { ClassId } from "@core/types/Classes";
 import { BeatUp } from "@core/models/BeatUp";
 import { ScavengeId } from "@core/types/Scavenge";
 import { ItemId } from "@core/types/Ids";
-import { ItemList, UserItem } from "@core/types/Items";
+import { ItemList, type UserItem } from "@core/types/Items";
 import { LocationId } from "@core/types/Locations";
 
 // --- Global Mocks ---

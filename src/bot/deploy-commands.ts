@@ -2,7 +2,7 @@
 import { REST, Routes } from "discord.js";
 import path from "node:path";
 import dotenv from "dotenv";
-import { Command, SlashCommand } from "./types";
+import type { Command, SlashCommand } from "./types";
 import { logger } from "@shared/log";
 
 dotenv.config();
@@ -56,7 +56,6 @@ const rest = new REST().setToken(token);
 		const data: Command[] = await rest.put(
 			Routes.applicationCommands(clientId),
 			{ body: commands },
-			// {body: []}
 		) as Command[];
 
 		const dataAdmin: Command[] = await rest.put(
@@ -71,5 +70,3 @@ const rest = new REST().setToken(token);
 		logger.error(error);
 	}
 })();
-
-export {};

@@ -1,8 +1,8 @@
-import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
-import { User } from "@core/models/User";
+import { type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+import type { User } from "@core/models/User";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 import { BadgeId, getBadgeList } from "@core/types/Badges";
-import { Language, Localization } from "@core/models/Language";
+import { Language, type Localization } from "@core/models/Language";
 import { UserBadge } from "@core/models/UserBadge";
 import { deferReply, replyWithContainer } from "@bot/utils/discordInteractions";
 
@@ -80,17 +80,17 @@ module.exports = {
 		const container = new CustomContainerBuilder()
 			.setUser(user)
 			.addTexts([
-				`# ${s.badges}`
+				`# ${s.badges}`,
 			])
 			.addLargeSeparator()
 			.addTexts([
 				`## ${s.special}`,
-				textSpecial.join("\n")
+				textSpecial.join("\n"),
 			])
 			.addLargeSeparator()
 			.addTexts([
 				`## ${s.seasonal}`,
-				textSeasonal.join("\n")
+				textSeasonal.join("\n"),
 			])
 			.addFooter({ text: userBadgeText.length ? `${s.your}: ${userBadgeText}` : undefined });
 

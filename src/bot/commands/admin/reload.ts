@@ -1,10 +1,10 @@
-import { ChatInputCommandInteraction, Colors, SlashCommandBuilder } from "discord.js";
+import { type ChatInputCommandInteraction, Colors, SlashCommandBuilder } from "discord.js";
 import path from "node:path";
 import fs from "node:fs";
-import { SlashCommand } from "@bot/types";
+import type { SlashCommand } from "@bot/types";
 import { logger } from "@shared/log";
 import { defaultComponent } from "@bot/utils/ui";
-import { User } from "@core/models/User";
+import type { User } from "@core/models/User";
 import { deferReply, replyWithContainer } from "@bot/utils/discordInteractions";
 
 /**

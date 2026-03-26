@@ -4,7 +4,7 @@ import { addDays } from "date-fns";
 import { Log, logger } from "@shared/log";
 import { JobList } from "@core/types/Jobs";
 import { User } from "./User";
-import { Language, Localization } from "./Language";
+import { Language, type Localization } from "./Language";
 import { EmoteString } from "@bot/utils/emotes";
 import { formatMoney } from "@bot/utils/ui";
 import { sendPrivateMessage } from "@bot/utils/discordInteractions";
@@ -324,7 +324,7 @@ export class Notification {
 	}
 
 	static StartProcedure() {
-		setInterval(this.SendTimedNotification, 20_000);
+		setInterval(Notification.SendTimedNotification, 20_000);
 	}
 }
 

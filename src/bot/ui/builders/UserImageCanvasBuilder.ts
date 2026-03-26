@@ -1,9 +1,9 @@
 import { User } from "@core/models/User";
-import { Canvas, CanvasGradient, Image, loadImage, SKRSContext2D } from "@napi-rs/canvas";
+import { Canvas, type CanvasGradient, type Image, loadImage, type SKRSContext2D } from "@napi-rs/canvas";
 import { logger } from "@shared/log";
 import { ClassList } from "@core/types/Classes";
 import fs from "node:fs";
-import { UserBadge } from "@core/models/UserBadge";
+import type { UserBadge } from "@core/models/UserBadge";
 import { AvatarDecorationId } from "@core/types/Ids";
 import { DEFAULT_GANG_IMAGE } from "./GangImageCanvasBuilder";
 import path from "node:path";

@@ -1,7 +1,7 @@
 ﻿import fs from "node:fs";
 import path from "node:path";
 import { Collection } from "discord.js";
-import { SlashCommand } from "@bot/types";
+import type { SlashCommand } from "@bot/types";
 import dotenv from "dotenv";
 import { setClient } from "@bot/client";
 import { Log, logger } from "@shared/log";

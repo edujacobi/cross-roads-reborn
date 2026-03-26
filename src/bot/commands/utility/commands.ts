@@ -1,10 +1,10 @@
-﻿import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+﻿import { type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
 import { replyWithContainer } from "@bot/utils/discordInteractions";
 import path from "node:path";
 import fs from "node:fs";
-import { Language, Localization } from "@core/models/Language";
+import { Language, type Localization } from "@core/models/Language";
 import { CrColors } from "@bot/utils/colors";
-import { User } from "@core/models/User";
+import type { User } from "@core/models/User";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
 
 const environmentFile = process.env.NODE_ENV === "DEV" ? ".ts" : ".js";
@@ -42,7 +42,7 @@ module.exports = {
 			.addSectionComponents(section => section
 				.addTexts([
 					`# ${s.title}`,
-					text
+					text,
 				])
 				.setThumbnailAccessory(thumb => thumb
 					.setURL(interaction.client.user.avatarURL({ size: 512 }) ?? ""),
