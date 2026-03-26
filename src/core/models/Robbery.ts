@@ -765,7 +765,7 @@ const Strings = {
 	[Language.Spanish]: {
 		// CanRob
 		sameId: "¡No puedes robarte a ti mismo, idiota!",
-		sameGang: "¡No puedes robar a un miembro de tu propia pandilla!",
+		sameGang: "¡No puedes robar a un miembro de tu propia cuadrilla!",
 		withoutNick: "¡Este usuario aún no ha establecido un apodo!",
 		withoutClass: "¡Este usuario aún no ha elegido una clase!",
 		withoutItem: "¡No puedes robar sin un arma!",

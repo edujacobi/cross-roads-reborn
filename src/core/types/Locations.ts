@@ -245,7 +245,7 @@ export const LocationList: LocationListType = {
 		Description: {
 			[Language.English]: `The gangs may rule the streets, but the Mafia is rooted in the city`,
 			[Language.Portuguese]: "As gangues podem dominar as ruas, mas a Mafia está enraizada na cidade",
-			[Language.Spanish]: `La pandilla puede gobernar las calles, pero la Mafia está arraigada en la ciudad`,
+			[Language.Spanish]: `Las cuadrillas pueden gobernar las calles, pero la Mafia está arraigada en la ciudad`,
 		},
 		Emote: {
 			Id: "1349193561068929144",
