@@ -2240,7 +2240,7 @@ module.exports = {
 const Strings = {
 	[Language.English]: {
 		gangTitle: `Gangs`,
-		gangDescription: `Create your gang and work as a team! Participate in ~~group robberies and gang fights~~!\n\n**Cost to create a gang: ${formatMoney(Gang.CREATION_COST, Language.English)}**`,
+		gangDescription: `Create your gang and work as a team! Participate in group robberies and ~~gang fights~~!\n\n**Cost to create a gang: ${formatMoney(Gang.CREATION_COST, Language.English)}**`,
 		gangNotFoundByName: (name: string) => `No gang found with name or acronym **${name}** ${EmoteString.Gang}`,
 		notInGang: `You are not in a gang! To see a specific gang, use the \`gang info\` command ${EmoteString.Gang}`,
 		errorGettingGang: `Error retrieving gang information ${EmoteString.Gang}`,
@@ -2383,7 +2383,7 @@ const Strings = {
 	},
 	[Language.Portuguese]: {
 		gangTitle: `Gangues`,
-		gangDescription: `Crie sua gangue e trabalhe em equipe! Participe de ~~assaltos em grupo e lutas generalizadas~~!\n\n**Custo para criar uma gangue: ${formatMoney(Gang.CREATION_COST, Language.Portuguese)}**`,
+		gangDescription: `Crie sua gangue e trabalhe em equipe! Participe de assaltos em grupo e ~~lutas generalizadas~~!\n\n**Custo para criar uma gangue: ${formatMoney(Gang.CREATION_COST, Language.Portuguese)}**`,
 		gangNotFoundByName: (name: string) => `Nenhuma gangue encontrada com o nome ou acrônimo **${name}** ${EmoteString.Gang}`,
 		notInGang: `Você não está em uma gangue! Para ver uma gangue específica, use o comando \`gangue info\` ${EmoteString.Gang}`,
 		errorGettingGang: `Erro ao buscar informações da gangue ${EmoteString.Gang}`,
@@ -2525,7 +2525,7 @@ const Strings = {
 	},
 	[Language.Spanish]: {
 		gangTitle: `Cuadrillas`,
-		gangDescription: `¡Crea tu cuadrilla y trabaja en equipo! ¡Participa en ~~atracos grupales y peleas de cuadrillas~~!\n\n**Costo para crear una cuadrilla: ${formatMoney(Gang.CREATION_COST, Language.Spanish)}**`,
+		gangDescription: `¡Crea tu cuadrilla y trabaja en equipo! ¡Participa en atracos grupales y ~~peleas de cuadrillas~~!\n\n**Costo para crear una cuadrilla: ${formatMoney(Gang.CREATION_COST, Language.Spanish)}**`,
 		gangNotFoundByName: (name: string) => `¡No se encontró ninguna cuadrilla con el nombre o acrónimo **${name}** ${EmoteString.Gang}`,
 		notInGang: `¡No estás en una cuadrilla! Para ver una cuadrilla específica, usa el comando \`cuadrilla info\` ${EmoteString.Gang}`,
 		errorGettingGang: `Error al obtener información de la cuadrilla ${EmoteString.Gang}`,

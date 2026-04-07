@@ -53,7 +53,7 @@ Welcome to Cross City! Here, all paths cross, be them good or bad. Decide your p
 See your inventory using \`/inv\`.
 You can use \`/daily\` daily to receive a small amount that increases if you don't forget any day!`,
 		description3: `## Earn money
-There are many ways to earn money in the game. ${EmoteString.Jobs} Working, ~~investing~~, ${EmoteString.Casino} betting, ${EmoteString.Robbery} stealing and even ${EmoteString.Scavenge} scavenging through places.`,
+There are many ways to earn money in the game. ${EmoteString.Jobs} Working, ${EmoteString.InvestmentActive} investing, ${EmoteString.Casino} betting, ${EmoteString.Robbery} stealing and even ${EmoteString.Scavenge} scavenging through places.`,
 		description4: `## Commands
 To see all commands, use \`/commands\`.`,
 		description5: `## Notifications and functioning
@@ -71,7 +71,7 @@ Bem vindo à Cidade da Cruz! Aqui, todos os caminhos se cruzam, sejam eles bons 
 Veja seu inventário usando \`/inv\`.
 Você pode usar \`/daily\` diariamente para receber um pequeno valor que aumenta caso você não esqueça nenhum dia!`,
 		description3: `## Ganhe dinheiro
-Há muitas maneiras de ganhar dinheiro no jogo. ${EmoteString.Jobs} Trabalhando, ~~investindo~~, ${EmoteString.Casino} apostando, ${EmoteString.Robbery} roubando e até ${EmoteString.Scavenge} vasculhando lugares.`,
+Há muitas maneiras de ganhar dinheiro no jogo. ${EmoteString.Jobs} Trabalhando, ${EmoteString.InvestmentActive} investindo, ${EmoteString.Casino} apostando, ${EmoteString.Robbery} roubando e até ${EmoteString.Scavenge} vasculhando lugares.`,
 		description4: `## Comandos
 Para ver todos os comandos, use \`/comandos\`.`,
 		description5: `## Notificações e funcionamento
@@ -89,7 +89,7 @@ Ficou confuso com algo? Encontrou um bug? Entre em contato conosco no [servidor 
 Consulta tu inventario usando \`/inv\`.
 Puedes usar \`/daily\` diariamente para recibir una pequeña cantidad que aumenta si no olvidas ningún día.`,
 		description3: `## Gana dinero
-Hay muchas formas de ganar dinero en el juego. ${EmoteString.Jobs} Trabajando, ~~invirtiendo~~, ${EmoteString.Casino} apostando, ${EmoteString.Robbery} robando e incluso ${EmoteString.Scavenge} rebuscando por lugares.`,
+Hay muchas formas de ganar dinero en el juego. ${EmoteString.Jobs} Trabajando, ${EmoteString.InvestmentActive} invirtiendo, ${EmoteString.Casino} apostando, ${EmoteString.Robbery} robando e incluso ${EmoteString.Scavenge} rebuscando por lugares.`,
 		description4: `## Comandos
 Para ver todos los comandos, usa \`/comandos\`.`,
 		description5: `## Notificaciones y funcionamiento
