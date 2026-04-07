@@ -1,4 +1,4 @@
-﻿import { Users } from "@core/database/Users";
+import { Users } from "@core/database/Users";
 import { Log } from "@shared/log";
 import { addDays, differenceInHours, formatDistanceToNow } from "date-fns";
 import { getLocaleFromLanguage, Language, type Localization } from "./Language";
@@ -24,6 +24,8 @@ import { UserAvatarDecoration } from "./UserAvatarDecoration";
 import { AvatarDecorationList, type AvatarDecorations } from "@core/types/AvatarDecorations";
 import { GangBases } from "@core/types/GangBases";
 import type { Col, Fn, Literal } from "sequelize/lib/utils";
+import { UserInvestments } from "@core/database/UserInvestments";
+import { type InvestmentId } from "@core/types/Investments";
 
 export enum SituationId {
 	Idling,
@@ -36,6 +38,8 @@ export enum SituationId {
 	Wanted,
 	BeatUp,
 	Casino,
+	DefendingInvestment,
+	GangAction,
 }
 
 export class User {
@@ -73,6 +77,8 @@ export class User {
 		IsRobbingId: null as string | null,
 		IsBeingRobbedById: null as string | null,
 		IsRobbingLocationId: null as LocationId | null,
+		InvestmentIsDefending: false,
+		ParticipatingInGangAction: false,
 	};
 	Prison = {
 		Count: 0,
@@ -157,6 +163,16 @@ export class User {
 		HappyHour: 0,
 		DrunkCount: 0,
 	};
+	Investment = {
+		Id: null as InvestmentId | null,
+		AccumulatedYield: 0,
+		HenchmanEndsAt: null as Date | null,
+		HenchmanHospitalized: false,
+		ExpiresAt: null as Date | null,
+		PurchasedAt: null as Date | null,
+		NotifyYield: true,
+		TotalProfit: 0,
+	};
 	Items: UserItem[] = [];
 
 	/**
@@ -207,6 +223,8 @@ export class User {
 				robberyFailureCount: 0,
 				robberySuccessCount: 0,
 				robberySuccessRobbedSum: 0,
+				robberyInvestmentDefending: false,
+				robberyParticipatingInGangAction: false,
 				beatUpSuccessCount: 0,
 				beatUpFailureCount: 0,
 				beatUpBeatedUpCount: 0,
@@ -227,6 +245,8 @@ export class User {
 				drinkNormal: 0,
 				drinkHappyHour: 0,
 				drunkCount: 0,
+				notifyInvestmentYield: true,
+				investmentTotalProfit: 0,
 			});
 			Log.Success(`User ${this.Id} created.`);
 
@@ -302,6 +322,8 @@ export class User {
 			this.Robbery.IsBeingRobbedById = user.beingRobbedByUserId;
 		}
 		this.Robbery.IsRobbingLocationId = user.robbingLocationId;
+		this.Robbery.InvestmentIsDefending = user.robberyInvestmentDefending;
+		this.Robbery.ParticipatingInGangAction = user.robberyParticipatingInGangAction;
 
 		// Beat-ups
 		this.BeatUp.SuccessCount = user.beatUpSuccessCount;
@@ -372,6 +394,29 @@ export class User {
 		this.Drink.Normal = user.drinkNormal;
 		this.Drink.HappyHour = user.drinkHappyHour;
 		this.Drink.DrunkCount = user.drunkCount;
+
+		// Investment
+		const investment = await UserInvestments.findOne({
+			where: { userId: this.Id },
+		});
+		if (investment) {
+			this.Investment.Id = investment.investmentId as InvestmentId;
+			this.Investment.AccumulatedYield = investment.accumulatedYield;
+			this.Investment.HenchmanEndsAt = investment.henchmanEndsAt;
+			this.Investment.HenchmanHospitalized = investment.henchmanHospitalized;
+			this.Investment.ExpiresAt = investment.expiresAt;
+			this.Investment.PurchasedAt = investment.createdAt;
+		}
+		else {
+			this.Investment.Id = null;
+			this.Investment.AccumulatedYield = 0;
+			this.Investment.HenchmanEndsAt = null;
+			this.Investment.HenchmanHospitalized = false;
+			this.Investment.ExpiresAt = null;
+			this.Investment.PurchasedAt = null;
+		}
+		this.Investment.NotifyYield = user.notifyInvestmentYield;
+		this.Investment.TotalProfit = user.investmentTotalProfit;
 
 		await Promise.all([
 			this.GetSituation(language),
@@ -714,9 +759,9 @@ export class User {
 
 		for (const item of items) {
 			const foundWeapon = { ...ItemList[item.itemId] } as UserItem;
-			foundWeapon.RemainingTime = item.remainingTime;
-			foundWeapon.Quantity = item.quantity ?? 0;
-			foundWeapon.SelectedSkin = item.skin;
+			foundWeapon.RemainingTime = <Date>item?.remainingTime ?? 0;
+			foundWeapon.Quantity = item?.quantity ?? 0;
+			foundWeapon.SelectedSkin = item?.skin ?? BundleId.Default;
 
 			itemList.push(foundWeapon);
 		}
@@ -1021,6 +1066,26 @@ export class User {
 				EmoteId: EmoteId.Beat,
 			};
 		}
+		else if (this.IsDefendingInvestment()) {
+			this.Situation = {
+				Id: SituationId.DefendingInvestment,
+				Simple: s.defendingInvestmentSimple,
+				SimpleEmote: `${EmoteString.InvestmentActive} ${s.defendingInvestmentSimple}`,
+				Complex: `${EmoteString.InvestmentActive} ${s.defendingInvestmentComplex}`,
+				ComplexUI: s.defendingInvestmentComplex,
+				EmoteId: EmoteId.InvestmentActive,
+			};
+		}
+		else if (this.IsParticipatingInGangAction()) {
+			this.Situation = {
+				Id: SituationId.GangAction,
+				Simple: s.gangActionSimple,
+				SimpleEmote: `${EmoteString.Gang} ${s.gangActionSimple}`,
+				Complex: `${EmoteString.Gang} ${s.gangActionComplex}`,
+				ComplexUI: s.gangActionComplex,
+				EmoteId: EmoteId.Gang,
+			};
+		}
 		else if (this.Robbery.IsBeingRobbedById) {
 			const user = await Users.findByPk(this.Robbery.IsBeingRobbedById, { attributes: ["id", "nickname"] });
 			this.Situation = {
@@ -1064,6 +1129,7 @@ export class User {
 				EmoteId: EmoteId.Jobs,
 			};
 		}
+
 		else if (this.IsInCasinoGame()) {
 			this.Situation = {
 				Id: SituationId.Casino,
@@ -1101,7 +1167,9 @@ export class User {
 			!this.IsScavenging() &&
 			!this.IsInCasinoGame() &&
 			!this.IsInRobbery() &&
-			!this.IsInBeatUp();
+			!this.IsInBeatUp() &&
+			!this.IsDefendingInvestment() &&
+			!this.IsParticipatingInGangAction();
 	}
 
 	/**
@@ -1151,6 +1219,20 @@ export class User {
 	 */
 	IsInRobbery() {
 		return this.Robbery.IsRobbingId != null || this.Robbery.IsRobbingLocationId != null || this.Robbery.IsBeingRobbedById != null;
+	}
+
+	/**
+	 * Checks if the user is defending an investment.
+	 */
+	IsDefendingInvestment() {
+		return this.Robbery.InvestmentIsDefending;
+	}
+
+	/**
+	 * Checks if the user is participating in a gang action.
+	 */
+	IsParticipatingInGangAction() {
+		return this.Robbery.ParticipatingInGangAction;
 	}
 
 	/**
@@ -1428,6 +1510,8 @@ const Strings = {
 		robbing: "Robbing",
 		beingRobbedSimple: "Being robbed",
 		beingRobbedComplex: "Being robbed by",
+		defendingInvestmentSimple: "Defending investment",
+		defendingInvestmentComplex: "Defending investment",
 		beating: "Beating",
 		beingBeatedUpSimple: "Being beaten up",
 		beingBeatedUpComplex: "Being beaten up by",
@@ -1445,6 +1529,8 @@ const Strings = {
 		wantedComplexUI: `and Wanted until`,
 		hospitalSimple: "Hospitalized",
 		hospitalComplex: `Hospitalized until`,
+		gangActionSimple: "Participating in gang action",
+		gangActionComplex: "Participating in gang action",
 	},
 	[Language.Portuguese]: {
 		idling: "Vadiando",
@@ -1457,6 +1543,8 @@ const Strings = {
 		robbing: "Roubando",
 		beingRobbedSimple: "Sendo roubado",
 		beingRobbedComplex: "Sendo roubado por",
+		defendingInvestmentSimple: "Defending investimento",
+		defendingInvestmentComplex: "Defendendo investimento",
 		beating: "Espancando",
 		beingBeatedUpSimple: "Sendo espancado",
 		beingBeatedUpComplex: "Sendo espancado por",
@@ -1474,6 +1562,8 @@ const Strings = {
 		wantedComplexUI: `e Procurado até`,
 		hospitalSimple: "Hospitalizado",
 		hospitalComplex: `Hospitalizado até`,
+		gangActionSimple: "Participando de ação em gangue",
+		gangActionComplex: "Participando de ação em gangue",
 	},
 	[Language.Spanish]: {
 		idling: "Vagando",
@@ -1486,6 +1576,8 @@ const Strings = {
 		robbing: "Robando",
 		beingRobbedSimple: "Siendo robado",
 		beingRobbedComplex: "Siendo robado por",
+		defendingInvestmentSimple: "Defendiendo inversión",
+		defendingInvestmentComplex: "Defendiendo inversión",
 		beating: "Golpeando",
 		beingBeatedUpSimple: "Siendo golpeado",
 		beingBeatedUpComplex: "Siendo golpeado por",
@@ -1503,5 +1595,7 @@ const Strings = {
 		wantedComplexUI: `y Buscado hasta`,
 		hospitalSimple: "Hospitalizado",
 		hospitalComplex: `Hospitalizado hasta`,
+		gangActionSimple: "Participando en acción de pandilla",
+		gangActionComplex: "Participando en acción de pandilla",
 	},
 } as const satisfies Localization;

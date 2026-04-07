@@ -17,6 +17,8 @@ export const CrColors = {
 	DefaultString: "#57f287",
 	Hospital: 0xe54747,
 	HospitalString: "#e54747",
+	Investment: 0xBBE000,
+	InvestmentString: "#BBE000",
 	Jacobi: 0x426b69,
 	JacobiString: "#426b69",
 	Jobs: 0xFFE300,

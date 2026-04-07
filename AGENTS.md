@@ -5,7 +5,7 @@ This document serves as a guide for agents and developers working on the `cross-
 ## Environment Context
 
 *   **Runtime**: Node.js
-*   **Language**: TypeScript 5.8
+*   **Language**: TypeScript 6.0
 *   **Framework**: Discord.js 14
 *   **Database**: Sequelize with SQLite (JSON strings for array-like structures)
 
@@ -16,7 +16,7 @@ This document serves as a guide for agents and developers working on the `cross-
 The project follows a strict separation between the "Frontend" (Commands) and the "Backend" (Models), with Interfaces serving as the contract between them.
 
 ### 1. Commands ("Frontend")
-*   **Location**: `commands/`
+*   **Location**: `src/bot/commands/`
 *   **Role**: Handles user interaction (Receive `ChatInputCommandInteraction`), parses input, calls the appropriate `Model` methods, and formats the response for the user.
 *   **Output**: Must return a `CustomContainerBuilder` object.
 *   **Restrictions**:
@@ -25,21 +25,21 @@ The project follows a strict separation between the "Frontend" (Commands) and th
 *   **Localization**: All user-facing text must be localized (English, Portuguese, Spanish).
 
 ### 2. Models ("Backend")
-*   **Location**: `models/`
+*   **Location**: `src/core/models/`
 *   **Role**: Encapsulates business logic, state management, and data manipulation.
 *   **Behavior**: Functions like an API. Methods should return simple types (strings, enums, numbers, booleans) or data objects/interfaces.
 *   **Restrictions**:
     *   **NEVER** import `discord.js` UI classes (e.g., `EmbedBuilder`, `ButtonBuilder`, `ActionRowBuilder`, `ModalBuilder`).
-    *   **Database Access**: This is the **ONLY** layer allowed to import and interact with files in `database/`.
+    *   **Database Access**: This is the **ONLY** layer allowed to import and interact with files in `src/core/database/`.
 *   **Logging**: Internal logs should be in English (using `Log` utility).
 
-### 3. Interfaces ("Contracts")
-*   **Location**: `interfaces/`
+### 3. Types ("Contracts")
+*   **Location**: `src/core/types/`
 *   **Role**: Defines the shapes of data, properties, and static lists (e.g., `ItemList`, `JobList`, `LocationList`).
 *   **Usage**: Shared by both Commands and Models to ensure type safety.
 
 ### 4. Database
-*   **Location**: `database/`
+*   **Location**: `src/core/database/`
 *   **Role**: Sequelize schema definitions.
 *   **Access**: Private to the `Models` layer. Commands should never query the database directly.
 
@@ -56,11 +56,11 @@ The project follows a strict separation between the "Frontend" (Commands) and th
 
 ```typescript
 import { ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
-import { replyWithContainer } from "../../utils/logic";
-import { User } from "../../models/User";
-import { Language, Localization } from "../../models/Language";
-import { CustomContainerBuilder } from "../../ui/builders/CustomContainerBuilder";
-import { CrColors } from "../../utils/colors";
+import { replyWithContainer } from "@/bot/utils/logic";
+import { User } from "@/core/models/User";
+import { Language, Localization } from "@/core/models/Language";
+import { CustomContainerBuilder } from "@/bot/ui/builders/CustomContainerBuilder";
+import { CrColors } from "@/bot/utils/colors";
 
 module.exports = {
     data: new SlashCommandBuilder()

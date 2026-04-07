@@ -286,6 +286,38 @@ describe("BeatUp", () => {
 			expect(result.message).toContain("escape");
 		});
 
+		it("Should fail if attacker is defending investment", async () => {
+			const beatUp = new BeatUp(user, defender);
+			user.Robbery.InvestmentIsDefending = true;
+			const result = await beatUp.CanBeatUser();
+			expect(result.canBeat).toBe(false);
+			expect(result.message).toContain("investment");
+		});
+
+		it("Should fail if attacker is participating in gang action", async () => {
+			const beatUp = new BeatUp(user, defender);
+			user.Robbery.ParticipatingInGangAction = true;
+			const result = await beatUp.CanBeatUser();
+			expect(result.canBeat).toBe(false);
+			expect(result.message).toContain("gang action");
+		});
+
+		it("Should fail if defender is defending investment", async () => {
+			const beatUp = new BeatUp(user, defender);
+			defender.Robbery.InvestmentIsDefending = true;
+			const result = await beatUp.CanBeatUser();
+			expect(result.canBeat).toBe(false);
+			expect(result.message).toContain("investment");
+		});
+
+		it("Should fail if defender is participating in gang action", async () => {
+			const beatUp = new BeatUp(user, defender);
+			defender.Robbery.ParticipatingInGangAction = true;
+			const result = await beatUp.CanBeatUser();
+			expect(result.canBeat).toBe(false);
+			expect(result.message).toContain("gang action");
+		});
+
 		it("Should succeed", async () => {
 			const beatUp = new BeatUp(user, defender);
 			const result = await beatUp.CanBeatUser();

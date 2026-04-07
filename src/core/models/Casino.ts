@@ -75,6 +75,16 @@ export class Casino {
 			canPlay = false;
 		}
 
+		if (user.IsDefendingInvestment()) {
+			message = globalStrings[user.Language].attackerIsDefendingInvestment;
+			canPlay = false;
+		}
+
+		if (user.IsParticipatingInGangAction()) {
+			message = globalStrings[user.Language].attackerIsParticipatingInGangAction;
+			canPlay = false;
+		}
+
 		return { canPlay, message };
 	}
 

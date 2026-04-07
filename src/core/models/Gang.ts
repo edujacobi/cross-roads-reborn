@@ -64,6 +64,7 @@ export class Gang {
 	Experience = 0;
 	Level = 1;
 	LeaderId = "";
+	LastInvestmentRobbery: Date | null = null;
 	CreatedAt = new Date();
 	UpdatedAt = new Date();
 	Members: GangMember[] = [];
@@ -250,6 +251,7 @@ export class Gang {
 			newGang.Experience = gang.experience;
 			newGang.Level = gang.level;
 			newGang.LeaderId = gang.leaderId;
+			newGang.LastInvestmentRobbery = gang.lastInvestmentRobbery;
 			newGang.CreatedAt = gang.createdAt;
 			newGang.UpdatedAt = gang.updatedAt;
 
@@ -308,6 +310,7 @@ export class Gang {
 			result.Experience = gang.experience;
 			result.Level = gang.level;
 			result.LeaderId = gang.leaderId;
+			result.LastInvestmentRobbery = gang.lastInvestmentRobbery;
 			result.CreatedAt = gang.createdAt;
 			result.UpdatedAt = gang.updatedAt;
 
@@ -338,6 +341,7 @@ export class Gang {
 		result.Experience = gang.experience;
 		result.Level = gang.level;
 		result.LeaderId = gang.leaderId;
+		result.LastInvestmentRobbery = gang.lastInvestmentRobbery;
 		result.CreatedAt = gang.createdAt;
 		result.UpdatedAt = gang.updatedAt;
 
@@ -908,6 +912,7 @@ export class Gang {
 					experience: this.Experience,
 					level: this.Level,
 					leaderId: this.LeaderId,
+					lastInvestmentRobbery: this.LastInvestmentRobbery,
 					updatedAt: new Date(),
 				},
 				{ where: { id: this.Id } },
@@ -918,6 +923,11 @@ export class Gang {
 			Log.Warning(`Failed to update gang ${this.Name} (Id: ${this.Id}): ${err}`);
 			return false;
 		}
+	}
+
+	async UpdateLastInvestmentRobbery(): Promise<boolean> {
+		this.LastInvestmentRobbery = new Date();
+		return await this.Update();
 	}
 
 	/**

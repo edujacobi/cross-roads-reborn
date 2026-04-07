@@ -1,3 +1,17 @@
+import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
+import { DEFAULT_GANG_IMAGE } from "@bot/ui/builders/GangImageCanvasBuilder";
+import { createButtonCollector, disableButtons } from "@bot/utils/collectors";
+import { CrColors, GangColor, type IGangColor } from "@bot/utils/colors";
+import { deferReply, replyWithContainer, sendComplexPrivateMessage } from "@bot/utils/discordInteractions";
+import { EmoteId, EmoteString } from "@bot/utils/emotes";
+import { convertHexNumberToString, defaultComponent, formatMoney, hexToRGB, showTime } from "@bot/utils/ui";
+import { checkUser, searchUser } from "@bot/utils/userUtils";
+import { Gang, GangPermission } from "@core/models/Gang";
+import { InvestmentRobbery, InvestmentRobberyReason } from "@core/models/InvestmentRobbery";
+import { Language, type Localization } from "@core/models/Language";
+import { type User } from "@core/models/User";
+import { GangBaseId, GangBases, type GangModifier, getGangBases } from "@core/types/GangBases";
+import { addHours, isFuture } from "date-fns";
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
@@ -6,20 +20,9 @@ import {
 	type ColorResolvable,
 	Colors,
 	Locale,
+	MessageFlags,
 	SlashCommandBuilder,
 } from "discord.js";
-import { Language, type Localization } from "@core/models/Language";
-import type { User } from "@core/models/User";
-import { Gang, GangPermission } from "@core/models/Gang";
-import { convertHexNumberToString, defaultComponent, formatMoney, hexToRGB, showTime } from "@bot/utils/ui";
-import { deferReply, replyWithContainer } from "@bot/utils/discordInteractions";
-import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
-import { GangColor, type IGangColor } from "@bot/utils/colors";
-import { EmoteString } from "@bot/utils/emotes";
-import { DEFAULT_GANG_IMAGE } from "@bot/ui/builders/GangImageCanvasBuilder";
-import { GangBaseId, GangBases, type GangModifier, getGangBases } from "@core/types/GangBases";
-import { searchUser } from "@bot/utils/userUtils";
-import { createButtonCollector, disableButtons } from "@bot/utils/collectors";
 
 enum CommandOption {
 	Info = "info",
@@ -35,6 +38,7 @@ enum CommandOption {
 	ChangeRole = "change_role",
 	EditRole = "edit_role",
 	Roles = "roles",
+	RobInvestment = "rob_investment",
 }
 
 module.exports = {
@@ -475,6 +479,31 @@ module.exports = {
 				[Locale.PortugueseBR]: "Lista todos os cargos da sua gangue",
 				[Locale.SpanishES]: "Lista todos los cargos de tu cuadrilla",
 			}),
+		)
+		.addSubcommand(robInvestment => robInvestment
+			.setName(CommandOption.RobInvestment)
+			.setNameLocalizations({
+				[Locale.PortugueseBR]: "roubar_investimento",
+				[Locale.SpanishES]: "robar_inversion",
+			})
+			.setDescription("Rob a user's investment (Nickname or ID)")
+			.setDescriptionLocalizations({
+				[Locale.PortugueseBR]: "Rouba o investimento de um usuário (Apelido ou ID)",
+				[Locale.SpanishES]: "Roba la inversión de un usuario (Apodo o ID)",
+			})
+			.addStringOption(user => user
+				.setName("user")
+				.setNameLocalizations({
+					[Locale.PortugueseBR]: "usuario",
+					[Locale.SpanishES]: "usuario",
+				})
+				.setDescription("Target user to rob (Nickname or ID)")
+				.setDescriptionLocalizations({
+					[Locale.PortugueseBR]: "Usuário alvo do roubo (Apelido ou ID)",
+					[Locale.SpanishES]: "Usuario objetivo a robar (Apodo o ID)",
+				})
+				.setRequired(true),
+			),
 		),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
@@ -700,6 +729,399 @@ module.exports = {
 			catch (err) {
 				return warn(s.errorSearchingGang);
 			}
+		}
+
+		case CommandOption.RobInvestment: {
+			await deferReply(interaction);
+
+			const targetId = interaction.options.getString("user", true);
+
+			const targetUser = await searchUser(targetId, interaction, language);
+			if (!targetUser) {
+				return;
+			}
+
+			if (!user.IsInGang()) {
+				return warn(s.notInGang);
+			}
+
+			const gang = await Gang.GetByUserId(user.Id);
+			if (!gang) {
+				return warn(s.notInGang);
+			}
+
+			if (gang.LastInvestmentRobbery) {
+				const cooldownTime = addHours(gang.LastInvestmentRobbery, 6);
+				if (isFuture(cooldownTime)) {
+					return warn(s.robberyCooldown(cooldownTime.getTime()));
+				}
+			}
+
+			const robbery = new InvestmentRobbery(gang, user, targetUser);
+
+			const validation = await robbery.Validate();
+			if (!validation.success) {
+				return warn(s.reason(validation.reason!));
+			}
+
+			robbery.Participants.set(user.Id, user);
+
+			await robbery.ApplyAttackerState(user);
+
+			let defenderJoined = false;
+			let aborted = false;
+
+			const calculateTotalAtk = () => {
+				let total = 0;
+				for (const p of robbery.Participants.values()) {
+					total += p.Attributes.Attack;
+				}
+				return Math.round(total * 0.5);
+			};
+
+			const container = new CustomContainerBuilder()
+				.setUser(user)
+				.setAccentColor(GangColor[gang.Color].Color)
+				.addTexts([
+					`${EmoteString.InvestmentActive} ${s.robInvestment}`,
+				])
+				.addLargeSeparator()
+				.addSectionComponents(section => section
+					.addTexts([
+						s.robberyInitiated(robbery.InvestmentBase!.Name[user.Language], targetUser.GetNameWithImage()),
+						`-# ${s.participants(robbery.Participants.size)} • ${EmoteString.Attack}${calculateTotalAtk()} ATK`,
+						Array.from(robbery.Participants.values()).map(p => `- ${p.GetNameWithImage()}`).join("\n"),
+					])
+					.setThumbnailAccessory(thumb => thumb
+						.setURL(robbery.InvestmentBase!.ImageUrl),
+					),
+				)
+				.addSectionComponents(section => section
+					.addTexts([
+						`-# ${s.autoStartRobbery(60)}`,
+					])
+					.setButtonAccessory(
+						btn => btn
+							.setLabel(s.participate)
+							.setStyle(ButtonStyle.Primary)
+							.setCustomId("participate"),
+					),
+				)
+				.addLargeSeparator()
+				.addSectionComponents(section => section
+					.addTexts([
+						`-# ${EmoteString.Gang} ${gang.Name}`,
+					])
+					.setButtonAccessory(
+						btn => btn
+							.setLabel(s.abortRobbery)
+							.setStyle(ButtonStyle.Secondary)
+							.setCustomId("abort_robbery"),
+					),
+				);
+
+			const reply = await replyWithContainer(interaction, container);
+
+			const defenderLang = targetUser.Language;
+			const sDef = Strings[defenderLang];
+
+			// ── Phase 1: 60-second participant lobby ─────────────────────────────
+			await new Promise<void>(resolve => {
+				const collector = reply!.createMessageComponentCollector({ time: 60_000 });
+
+				collector.on("collect", async (btn) => {
+					if (btn.customId === "participate") {
+						const participantId = btn.user.id;
+						if (robbery.Participants.has(participantId)) {
+							return btn.reply({ content: s.alreadyIn, flags: MessageFlags.Ephemeral });
+						}
+
+						const participantUser = await checkUser(participantId, interaction);
+						if (!participantUser) return;
+
+						const validationJoin = robbery.ValidateJoin(participantUser);
+
+						if (!validationJoin.success) {
+							return btn.reply({
+								content: s.reason(validationJoin.reason!),
+								flags: MessageFlags.Ephemeral,
+							});
+						}
+
+						await robbery.ApplyAttackerState(participantUser);
+
+						container.changeTextFromSectionId(1, [
+							s.robberyInitiated(robbery.InvestmentBase!.Name[user.Language], targetUser.GetNameWithImage()),
+							`-# ${s.participants(robbery.Participants.size)} • ${EmoteString.Attack}${calculateTotalAtk()} ATK`,
+							Array.from(robbery.Participants.values()).map(p => `- ${p.GetNameWithImage()}`).join("\n"),
+						]);
+
+						await btn.update({ components: [container] });
+					}
+
+					else if (btn.customId === "abort_robbery") {
+						if (btn.user.id !== user.Id) {
+							return btn.reply({ content: s.onlyLeaderCanAbort, flags: MessageFlags.Ephemeral });
+						}
+						await btn.deferUpdate();
+						aborted = true;
+						collector.stop();
+					}
+				});
+
+				collector.on("end", async () => {
+					await disableButtons(interaction, container);
+					resolve();
+				});
+			});
+
+			if (aborted) {
+				const abortContainer = new CustomContainerBuilder()
+					.setUser(user)
+					.addTexts([
+						`${EmoteString.InvestmentActive} ${s.robInvestment}`,
+					])
+					.addLargeSeparator()
+					.setAccentColor(CrColors.Robbery)
+					.addTexts([
+						s.robberyAborted(user.GetNameWithImage()),
+					])
+					.addLargeSeparator()
+					.addTexts([
+						`-# ${EmoteString.Gang} ${gang.Name}`,
+					]);
+
+				await robbery.Abort();
+				await replyWithContainer(interaction, abortContainer);
+
+				return;
+			}
+
+			// ── Phase 2: Send DM to target, wait 60s for defence ─────────────────
+			const hasHenchman = !!(robbery.InvestmentData!.henchmanEndsAt && isFuture(new Date(robbery.InvestmentData!.henchmanEndsAt)));
+
+			const buildAttackingContainer = (defending: boolean) => {
+				const lines: string[] = [
+					s.robberyAttempting(robbery.InvestmentBase!.Name[user.Language], targetUser.GetNameWithImage()),
+					`-# ${s.participants(robbery.Participants.size)} • ${EmoteString.Attack}${calculateTotalAtk()} ATK`,
+					Array.from(robbery.Participants.values()).map(p => `- ${p.GetNameWithImage()}`).join("\n"),
+					defending ? `\n${s.targetIsDefending(targetUser.GetNameWithImage())}` : "",
+				];
+
+				if (hasHenchman) {
+					lines.push(`-# ${EmoteString.Henchman} ${s.targetHasHenchman}`);
+				}
+
+				return new CustomContainerBuilder()
+					.setUser(user)
+					.setAccentColor(GangColor[gang.Color].Color)
+					.addTexts([
+						`${EmoteString.InvestmentActive} ${s.robInvestment} ${s.inProgress}`,
+					])
+					.addLargeSeparator()
+					.addSectionComponents(section => section
+						.addTexts(lines)
+						.setThumbnailAccessory(thumb => thumb
+							.setURL(robbery.InvestmentBase!.ImageUrl),
+						),
+					)
+					.addLargeSeparator()
+					.addTexts([
+						`-# ${EmoteString.Gang}${gang.Name}`,
+					]);
+			};
+
+			await replyWithContainer(interaction, buildAttackingContainer(false));
+
+			const dmContainer = new CustomContainerBuilder()
+				.setUser(targetUser)
+				.setAccentColor(CrColors.Robbery)
+				.addTexts([
+					`${EmoteString.InvestmentActive} ${sDef.defendDMTitle}`,
+				])
+				.addLargeSeparator()
+				.addTexts([
+					sDef.defendDMDescription(gang.Name, robbery.InvestmentBase!.Name[defenderLang]),
+				]);
+
+			if (hasHenchman) {
+				dmContainer.addTexts([`-# ${EmoteString.Henchman} ${sDef.targetHasHenchman}`]);
+			}
+
+			dmContainer
+				.addButtonRow(btn => btn
+					.setLabel(sDef.defend)
+					.setEmoji(EmoteId.Defense)
+					.setStyle(ButtonStyle.Secondary)
+					.setCustomId("defend"),
+				)
+				.addFooter({
+					text: `${sDef.nextYield}: ${formatMoney(robbery.InvestmentData!.accumulatedYield, defenderLang)}`,
+				});
+
+			const defenderMessage = await sendComplexPrivateMessage(targetUser.Id, {
+				components: [dmContainer],
+				flags: MessageFlags.IsComponentsV2,
+			});
+
+			await new Promise<void>(resolve => {
+				const defendingCollector = defenderMessage?.createMessageComponentCollector({ time: 60_000 });
+
+				defendingCollector?.on("collect", async btn => {
+					if (btn.customId === "defend") {
+						if (!targetUser.IsIdling()) {
+							return btn.reply({ content: `**${sDef.youMustBeIdling}**`, flags: MessageFlags.Ephemeral });
+						}
+
+						await btn.deferUpdate();
+
+						defenderJoined = true;
+						await robbery.ApplyDefenderState();
+
+						// Update the public gang container to show the target is defending
+						await replyWithContainer(interaction, buildAttackingContainer(true));
+
+						const updatedDm = new CustomContainerBuilder()
+							.setUser(targetUser)
+							.setAccentColor(Colors.Green)
+							.addTexts([
+								`${EmoteString.InvestmentActive} ${sDef.defendDMTitle}`,
+							])
+							.addLargeSeparator()
+							.addTexts([sDef.defendingSuccess])
+							.addFooter({
+								text: `${sDef.nextYield}: ${formatMoney(robbery.InvestmentData!.accumulatedYield, defenderLang)}`,
+							});
+
+						await btn.editReply({ components: [updatedDm] });
+					}
+				});
+
+				defendingCollector?.on("end", () => resolve());
+
+				// If DM failed (DMs closed), don't hang forever
+				if (!defenderMessage) resolve();
+			});
+
+			const result = await robbery.CalculateAndApplyOutcome(defenderJoined);
+			await gang.UpdateLastInvestmentRobbery();
+
+			const resultContainer = new CustomContainerBuilder()
+				.setUser(user)
+				.addTexts([
+					`${EmoteString.InvestmentActive} ${s.robInvestment} ${s.finished}`,
+				])
+				.addLargeSeparator();
+
+			if (result.win) {
+				resultContainer
+					.setAccentColor(Colors.Green)
+					.addSectionComponents(section => section
+						.addTexts([
+							`### ${EmoteString.Victory} ${s.successWin}!`,
+							`**${s.stolen}**: ${formatMoney(result.robbedAmount, user.Language)}`,
+							`-# ${EmoteString.Experience} +${result.expGain} EXP`,
+						])
+						.setThumbnailAccessory(thumb => thumb
+							.setURL(robbery.InvestmentBase!.ImageUrl),
+						),
+					);
+
+				if (result.henchmanHospitalized) {
+					resultContainer
+						.addLargeSeparator()
+						.addTexts([`${EmoteString.Hospital} ${s.henchmanHospitalized}`]);
+				}
+
+				if (result.defenderHospitalized && result.defenderHospitalTime) {
+					resultContainer
+						.addLargeSeparator()
+						.addTexts([`${EmoteString.Hospital} ${s.defenderHospitalized(targetUser.GetNameWithImage(), result.defenderHospitalTime)}`]);
+				}
+			}
+			else {
+				const mainTexts = [
+					`${EmoteString.Police} ${s.attackersImprisoned(result.prisonHours)}`,
+				];
+				if (result.attackersHospitalized) {
+					mainTexts.push(`-# ${EmoteString.Hospital} ${s.attackersHospitalized}`);
+				}
+
+				resultContainer
+					.addTexts([
+						`### ${EmoteString.Defeat} ${s.failureLose}`,
+					])
+					.setAccentColor(CrColors.Police)
+					.addSectionComponents(section => section
+						.addTexts(mainTexts)
+						.setThumbnailAccessory(thumb => thumb
+							.setURL(robbery.InvestmentBase!.ImageUrl),
+						),
+					);
+			}
+
+			resultContainer
+				.addLargeSeparator()
+				.addTexts([
+					`-# ${EmoteString.Gang} ${gang.Name} • ${formatMoney(gang.Money, user.Language)}`,
+				]);
+
+			await replyWithContainer(interaction, resultContainer);
+
+			// Send outcome DM to target
+			const resultDm = new CustomContainerBuilder()
+				.setUser(targetUser)
+				.addTexts([
+					`-# ${EmoteString.Gang} ${sDef.defendDMTitle}`,
+				])
+				.addLargeSeparator();
+
+			if (result.win) {
+				resultDm
+					.setAccentColor(Colors.Red)
+					.addTexts([
+						`### ${EmoteString.Defeat} ${sDef.robberyResultLost}`,
+						`**${sDef.stolen}**: ${formatMoney(result.robbedAmount, defenderLang)}`,
+						`**${sDef.nextYield}**: ${formatMoney(result.remainingYield, defenderLang)}`,
+					]);
+
+				if (result.henchmanHospitalized) {
+					resultDm.addTexts([`${EmoteString.Hospital} ${sDef.henchmanHospitalized}`]);
+				}
+
+				if (result.defenderHospitalized && result.defenderHospitalTime) {
+					resultDm.addTexts([`${EmoteString.Hospital} ${sDef.youWereHospitalized(result.defenderHospitalTime)}`]);
+				}
+			}
+			else {
+				const dmTexts = [
+					`### ${EmoteString.Victory} ${sDef.robberyResultWon}`,
+					`${EmoteString.Police} ${sDef.attackersImprisoned(result.prisonHours)}`,
+				];
+				if (result.attackersHospitalized) {
+					dmTexts.push(`-# ${EmoteString.Hospital} ${sDef.attackersHospitalized}`);
+				}
+
+				resultDm
+					.setAccentColor(Colors.Green)
+					.addTexts(dmTexts);
+
+				if (result.henchmanHospitalized === false && hasHenchman) {
+					resultDm
+						.addLargeSeparator()
+						.addTexts([`-# ${EmoteString.Henchman} ${sDef.henchmanStillActive}`]);
+				}
+			}
+
+			resultDm.addFooter({
+				text: `${sDef.nextYield}: ${formatMoney(result.remainingYield, defenderLang)}`,
+			});
+
+			await sendComplexPrivateMessage(targetUser.Id, {
+				components: [resultDm],
+				flags: MessageFlags.IsComponentsV2,
+			});
+			return;
 		}
 
 		case CommandOption.Create: {
@@ -1819,27 +2241,20 @@ const Strings = {
 	[Language.English]: {
 		gangTitle: `Gangs`,
 		gangDescription: `Create your gang and work as a team! Participate in ~~group robberies and gang fights~~!\n\n**Cost to create a gang: ${formatMoney(Gang.CREATION_COST, Language.English)}**`,
-		gangNotFound: `Gang not found with this Id ${EmoteString.Gang}`,
 		gangNotFoundByName: (name: string) => `No gang found with name or acronym **${name}** ${EmoteString.Gang}`,
 		notInGang: `You are not in a gang! To see a specific gang, use the \`gang info\` command ${EmoteString.Gang}`,
 		errorGettingGang: `Error retrieving gang information ${EmoteString.Gang}`,
 		errorSearchingGang: `Error while searching for gang ${EmoteString.Gang}`,
 		name: `Name`,
 		acronym: `Acronym`,
-		base: `Base`,
-		leader: `Leader`,
 		level: `Level`,
 		totalInBalance: "Total in balance",
 		members: `Members`,
 		created: `Created`,
-		updated: `Last Updated`,
 		description: `Description`,
 		color: `Color`,
 		image: `Image`,
 		gangId: (id: number) => `Gang Id: ${id}`,
-		noMembers: `This gang has no members!`,
-		membersOf: `Members of`,
-		pageFooter: (current: number, total: number, members: number) => `Page ${current}/${total} · ${members} members`,
 		gangAlreadyExistsName: (name: string) => `A gang with the name **${name}** already exists ${EmoteString.Gang}`,
 		gangAlreadyExistsAcronym: (acronym: string) => `A gang with the acronym **${acronym}** already exists ${EmoteString.Gang}`,
 		alreadyInGang: `You are already in a gang! You need to leave your current gang before creating a new one ${EmoteString.Gang}`,
@@ -1913,31 +2328,76 @@ const Strings = {
 		confirmDeleteRole: (name: string) => `Are you sure you want to delete the role **${name}**?\n-# Members with this role will be reassigned to the default **Member** role.`,
 		errorDeleteRole: `Error deleting role. It might be a protected role (like Leader or Member) or another error occurred.`,
 		cancel: "Cancel",
+		robInvestment: "Robbery to investment",
+		inProgress: "in progress",
+		finished: "finished",
+		robberyInitiated: (invName: string, targetName: string) => `Organizing robbery against ${EmoteString.InvestmentActive} **${invName}** from **${targetName}**`,
+		robberyAttempting: (invName: string, targetName: string) => `Attempting to rob ${EmoteString.InvestmentActive} **${invName}** from **${targetName}** ${EmoteString.Waiting}`,
+		participants: (count: number) => `Participants: ${count}`,
+		participate: "Join",
+		abortRobbery: "Abort robbery",
+		autoStartRobbery: (seconds: number) => `Starts automatically in ${seconds} seconds.`,
+		alreadyIn: "You are already participating.",
+		reason: (type: InvestmentRobberyReason) => {
+			const reasons = {
+				[InvestmentRobberyReason.NoPermission]: "You don't have permission to start a robbery.",
+				[InvestmentRobberyReason.CantRobYourself]: "You can't rob your own investment.",
+				[InvestmentRobberyReason.LeaderNotIdling]: "You need to be idling to start a robbery.",
+				[InvestmentRobberyReason.TargetSameGang]: "The target is in your gang.",
+				[InvestmentRobberyReason.WithoutItem]: "You can't rob without a weapon!",
+				[InvestmentRobberyReason.TargetWithoutNick]: "The target doesn't have a nickname.",
+				[InvestmentRobberyReason.TargetWithoutClass]: "The target doesn't have a class.",
+				[InvestmentRobberyReason.TargetAlreadyUnderAttack]: "The target is already being attacked.",
+				[InvestmentRobberyReason.TargetNoInvestment]: "The target doesn't have an investment.",
+				[InvestmentRobberyReason.TargetNoYield]: "The target's investment has no profit.",
+				[InvestmentRobberyReason.NotInGang]: "You are not in this gang.",
+				[InvestmentRobberyReason.ParticipateNotIdling]: "You must be idling to participate.",
+			};
+			return reasons[type] || "Unknown error while starting the robbery.";
+		},
+		onlyLeaderCanAbort: "Only the user who started the robbery can abort it.",
+		robberyAborted: (user: string) => `The robbery has been aborted by **${user}**.`,
+		defendDMTitle: "Investment Attack!",
+		defendDMDescription: (gangName: string, invName: string) => `The gang **${gangName}** is attacking your investment **${invName}**! You can defend, gaining ${EmoteString.Defense}+5 DEF, but if you lose, you'll be hospitalized for 30 minutes.`,
+		defend: "Defend",
+		youMustBeIdling: "You must be idling to join the defense.",
+		defendingSuccess: "You are now defending your investment! Await results.",
+		chance: "Success chance",
+		successWin: "Success",
+		stolen: "Stolen for gang bank",
+		expGained: "Gang EXP gained",
+		henchmanHospitalized: "The henchman was hospitalized.",
+		defenderHospitalized: (name: string, date: Date) => `**${name}** was hospitalized! Will be cured ${showTime(date.getTime(), true)}`,
+		youWereHospitalized: (date: Date) => `You were hospitalized! Will be cured ${showTime(date.getTime(), true)}`,
+		failureLose: "Failure",
+		attackersImprisoned: (hours: number) => `All attackers were sent to prison!\n-# They will be free ${showTime(addHours(Date.now(), hours).getTime(), true)}`,
+		attackersHospitalized: "Also hospitalized for 30 minutes.",
+		waitingForTarget: `Robbery in progress ${EmoteString.Waiting}`,
+		targetIsDefending: (name: string) => `**${name}** is defending! ${EmoteString.Defense}`,
+		targetHasHenchman: `Target has an active henchman`,
+		nextYield: "Next profit",
+		robberyResultLost: "Your investment was successfully robbed!",
+		robberyResultWon: "You successfully defended your investment!",
+		henchmanStillActive: "Your henchman protected you and remains active!",
+		robberyCooldown: (time: number) => `${EmoteString.Police} The police is searching for your gang. You can rob again ${showTime(time, true)}`,
 	},
 	[Language.Portuguese]: {
 		gangTitle: `Gangues`,
 		gangDescription: `Crie sua gangue e trabalhe em equipe! Participe de ~~assaltos em grupo e lutas generalizadas~~!\n\n**Custo para criar uma gangue: ${formatMoney(Gang.CREATION_COST, Language.Portuguese)}**`,
-		gangNotFound: `Gangue não encontrada com este Id ${EmoteString.Gang}`,
 		gangNotFoundByName: (name: string) => `Nenhuma gangue encontrada com o nome ou acrônimo **${name}** ${EmoteString.Gang}`,
 		notInGang: `Você não está em uma gangue! Para ver uma gangue específica, use o comando \`gangue info\` ${EmoteString.Gang}`,
 		errorGettingGang: `Erro ao buscar informações da gangue ${EmoteString.Gang}`,
 		errorSearchingGang: `Erro ao procurar pela gangue ${EmoteString.Gang}`,
 		name: `Nome`,
 		acronym: `Acrônimo`,
-		base: `Base`,
-		leader: `Líder`,
 		level: `Nível`,
 		totalInBalance: "Total em caixa",
 		members: `Membros`,
 		created: `Criada em`,
-		updated: `Atualizada em`,
 		description: `Descrição`,
 		color: `Cor`,
 		image: `Imagem`,
 		gangId: (id: number) => `Id da Gangue: ${id}`,
-		noMembers: `Esta gangue não tem membros!`,
-		membersOf: `Membros de`,
-		pageFooter: (current: number, total: number, members: number) => `Página ${current}/${total} · ${members} membros`,
 		gangAlreadyExistsName: (name: string) => `Uma gangue com o nome **${name}** já existe ${EmoteString.Gang}`,
 		gangAlreadyExistsAcronym: (acronym: string) => `Uma gangue com o acrônimo **${acronym}** já existe ${EmoteString.Gang}`,
 		alreadyInGang: `Você já está em uma gangue! Você precisa sair da sua gangue atual antes de criar uma nova ${EmoteString.Gang}`,
@@ -2011,31 +2471,75 @@ const Strings = {
 		confirmDeleteRole: (name: string) => `Você tem certeza que quer deletar o cargo **${name}**?\n-# Membros com este cargo serão movidos para o cargo padrão de **Membro**.`,
 		errorDeleteRole: `Erro ao deletar cargo. Pode ser um cargo protegido (como Líder ou Membro) ou outro erro ocorreu.`,
 		cancel: "Cancelar",
+		robInvestment: "Roubo à investimento",
+		inProgress: "em andamento",
+		finished: "finalizado",
+		robberyInitiated: (invName: string, targetName: string) => `Organizando roubo contra ${EmoteString.InvestmentActive} **${invName}** de **${targetName}** ${EmoteString.Waiting}`,
+		robberyAttempting: (invName: string, targetName: string) => `Tentando roubar ${EmoteString.InvestmentActive} **${invName}** de **${targetName}** ${EmoteString.Waiting}`,
+		participants: (count: number) => `Participantes: ${count}`,
+		participate: "Participar",
+		abortRobbery: "Abortar roubo",
+		autoStartRobbery: (seconds: number) => `Inicia automaticamente em ${seconds} segundos.`,
+		alreadyIn: "Você já está participando.",
+		reason: (type: InvestmentRobberyReason) => {
+			const reasons = {
+				[InvestmentRobberyReason.NoPermission]: "Você não tem permissão para iniciar um roubo.",
+				[InvestmentRobberyReason.CantRobYourself]: "Você não pode roubar seu próprio investimento.",
+				[InvestmentRobberyReason.LeaderNotIdling]: "Você precisa estar vadiando para iniciar um roubo.",
+				[InvestmentRobberyReason.TargetSameGang]: "O alvo está na sua gangue.",
+				[InvestmentRobberyReason.WithoutItem]: "Você não pode roubar sem uma arma.",
+				[InvestmentRobberyReason.TargetWithoutNick]: "O alvo não tem um nickname.",
+				[InvestmentRobberyReason.TargetWithoutClass]: "O alvo não tem uma classe.",
+				[InvestmentRobberyReason.TargetAlreadyUnderAttack]: "O alvo já está sendo atacado.",
+				[InvestmentRobberyReason.TargetNoInvestment]: "O alvo não tem um investimento.",
+				[InvestmentRobberyReason.TargetNoYield]: "O investimento do alvo não tem lucros.",
+				[InvestmentRobberyReason.NotInGang]: "Você não está nesta gangue.",
+				[InvestmentRobberyReason.ParticipateNotIdling]: "Você precisa estar vadiando para participar.",
+			};
+			return reasons[type] || "Erro desconhecido ao iniciar o roubo.";
+		},
+		onlyLeaderCanAbort: "Apenas quem iniciou o roubo pode abortá-lo.",
+		robberyAborted: (user: string) => `O roubo foi abortado por **${user}**`,
+		defendDMTitle: "Ataque ao Investimento!",
+		defendDMDescription: (gangName: string, invName: string) => `A gangue **${gangName}** está atacando o seu investimento **${invName}**! Você pode defender, ganhando ${EmoteString.Defense}+5 DEF, mas se perder, será hospitalizado por 30 minutos.`,
+		defend: "Defender",
+		youMustBeIdling: "Você precisa estar Vadiando para defender.",
+		defendingSuccess: "Você está ajudando na defesa! Aguarde os resultados.",
+		chance: "Chance de sucesso",
+		successWin: "Sucesso",
+		stolen: "Roubado para o caixa da gangue",
+		expGained: "EXP ganho pela gangue",
+		henchmanHospitalized: "O capanga foi hospitalizado.",
+		defenderHospitalized: (name: string, date: Date) => `**${name}** foi hospitalizado! Será curado ${showTime(date.getTime(), true)}`,
+		youWereHospitalized: (date: Date) => `Você foi hospitalizado! Será curado ${showTime(date.getTime(), true)}`,
+		failureLose: "Fracasso",
+		attackersImprisoned: (hours: number) => `Todos os atacantes foram presos!\n-# Eles serão liberados ${showTime(addHours(Date.now(), hours).getTime(), true)}`,
+		attackersHospitalized: "Também foram hospitalizados por 30 minutos.",
+		targetIsDefending: (name: string) => `**${name}** está defendendo! ${EmoteString.Defense}`,
+		targetHasHenchman: `O alvo tem um capanga ativo!`,
+		nextYield: "Próximo lucro",
+		robberyResultLost: "Seu investimento foi roubado com sucesso!",
+		robberyResultWon: "Você defendeu seu investimento com sucesso!",
+		henchmanStillActive: "Seu capanga protegeu você e continua ativo!",
+		robberyCooldown: (time: number) => `${EmoteString.Police} A polícia está procurando por sua gangue. Você poderá roubar novamente ${showTime(time, true)}`,
 	},
 	[Language.Spanish]: {
 		gangTitle: `Cuadrillas`,
 		gangDescription: `¡Crea tu cuadrilla y trabaja en equipo! ¡Participa en ~~atracos grupales y peleas de cuadrillas~~!\n\n**Costo para crear una cuadrilla: ${formatMoney(Gang.CREATION_COST, Language.Spanish)}**`,
-		gangNotFound: `¡Cuadrilla no encontrada con este Id ${EmoteString.Gang}`,
-		gangNotFoundByName: (name: string) => `¡No se encontró ninguna quadrilla con el nombre o acrónimo **${name}** ${EmoteString.Gang}`,
-		notInGang: `¡No estás en una quadrilla! Para ver una cuadrilla específica, usa el comando \`cuadrilla info\` ${EmoteString.Gang}`,
+		gangNotFoundByName: (name: string) => `¡No se encontró ninguna cuadrilla con el nombre o acrónimo **${name}** ${EmoteString.Gang}`,
+		notInGang: `¡No estás en una cuadrilla! Para ver una cuadrilla específica, usa el comando \`cuadrilla info\` ${EmoteString.Gang}`,
 		errorGettingGang: `Error al obtener información de la cuadrilla ${EmoteString.Gang}`,
 		errorSearchingGang: `Error al buscar la cuadrilla ${EmoteString.Gang}`,
 		name: `Nombre`,
 		acronym: `Acrónimo`,
-		base: `Base`,
-		leader: `Líder`,
 		level: `Nivel`,
 		totalInBalance: "Total en el balance",
 		members: `Miembros`,
 		created: `Creada`,
-		updated: `Actualizada`,
 		description: `Descripción`,
 		color: `Color`,
-		image: `Imagem`,
+		image: `Imagen`,
 		gangId: (id: number) => `Id de Cuadrilla: ${id}`,
-		noMembers: "¡Esta cuadrilla no tiene miembros!",
-		membersOf: `Miembros de`,
-		pageFooter: (current: number, total: number, members: number) => `Página ${current}/${total} · ${members} miembros`,
 		gangAlreadyExistsName: (name: string) => `¡Una cuadrilla con el nombre **${name}** ya existe ${EmoteString.Gang}`,
 		gangAlreadyExistsAcronym: (acronym: string) => `¡Una cuadrilla con el acrónimo **${acronym}** ya existe ${EmoteString.Gang}`,
 		alreadyInGang: `¡Ya estás en una cuadrilla! Necesitas salir de tu cuadrilla actual antes de crear una nueva ${EmoteString.Gang}`,
@@ -2077,7 +2581,7 @@ const Strings = {
 		back: `Volver`,
 		baseBought: (baseName: string, gangName: string) => `Compraste la base **${baseName}** para la cuadrilla **${gangName}** ${EmoteString.Gang}`,
 		depositSuccess: (amount: string, gangName: string) => `Depositaste **${amount}** en la cuadrilla **${gangName}** ${EmoteString.Gang}`,
-		deposits: "Depositos",
+		deposits: "Depósitos",
 		canDeposit: "Puede depositar",
 		canDepositAgain: "Puede depositar nuevamente",
 		createRoleTitle: "Crear Cargo",
@@ -2109,5 +2613,56 @@ const Strings = {
 		confirmDeleteRole: (name: string) => `¿Estás seguro de que quieres borrar el cargo **${name}**?\n-# Los miembros con este cargo serán reasignados al cargo de **Miembro** por defecto.`,
 		errorDeleteRole: `Error al borrar el cargo. Puede ser un cargo protegido (como Líder o Miembro) u otro error ha ocurrido.`,
 		cancel: "Cancelar",
+		robInvestment: "Robo a inversión",
+		inProgress: "en progreso",
+		finished: "finalizado",
+		robberyInitiated: (invName: string, targetName: string) => `Organizando robo contra ${EmoteString.InvestmentActive} **${invName}** de **${targetName}** ${EmoteString.Waiting}`,
+		robberyAttempting: (invName: string, targetName: string) => `Intentando robar ${EmoteString.InvestmentActive} **${invName}** de **${targetName}** ${EmoteString.Waiting}`,
+		participants: (count: number) => `Participantes: ${count}`,
+		participate: "Participar",
+		abortRobbery: "Abortar robo",
+		autoStartRobbery: (seconds: number) => `Inicia automáticamente en ${seconds} segundos.`,
+		alreadyIn: "Ya estás participando.",
+		reason: (type: InvestmentRobberyReason) => {
+			const reasons = {
+				[InvestmentRobberyReason.NoPermission]: "No tienes permiso para iniciar un robo.",
+				[InvestmentRobberyReason.CantRobYourself]: "No puedes robar tu propia inversión.",
+				[InvestmentRobberyReason.LeaderNotIdling]: "Debes estar vagando para iniciar un robo.",
+				[InvestmentRobberyReason.TargetSameGang]: "El objetivo está en tu cuadrilla.",
+				[InvestmentRobberyReason.WithoutItem]: "No puedes robar sin un arma.",
+				[InvestmentRobberyReason.TargetWithoutNick]: "El objetivo no tiene un apodo.",
+				[InvestmentRobberyReason.TargetWithoutClass]: "El objetivo no tiene una clase.",
+				[InvestmentRobberyReason.TargetAlreadyUnderAttack]: "El objetivo ya está siendo atacado.",
+				[InvestmentRobberyReason.TargetNoInvestment]: "El objetivo no tiene un investimento.",
+				[InvestmentRobberyReason.TargetNoYield]: "El investimento del objetivo no tiene lucros.",
+				[InvestmentRobberyReason.NotInGang]: "No estás en esta cuadrilla.",
+				[InvestmentRobberyReason.ParticipateNotIdling]: "Debes estar vagando para participar.",
+			};
+			return reasons[type] || "Error desconocido al iniciar el robo.";
+		},
+		onlyLeaderCanAbort: "Solo quien inició el robo puede abortarlo.",
+		robberyAborted: (user: string) => `El robo fue abortado por **${user}**`,
+		defendDMTitle: "¡Ataque a Inversión!",
+		defendDMDescription: (gangName: string, invName: string) => `¡La cuadrilla **${gangName}** está atacando tu inversión **${invName}**! Puedes defender, ganando ${EmoteString.Defense}+5 DEF, pero si pierdes, serás hospitalizado por 30 minutos.`,
+		defend: "Defender",
+		youMustBeIdling: "Debes estar vagando para unirte a la defensa.",
+		defendingSuccess: "¡Ahora estás defendiendo tu inversión! Espera los resultados.",
+		chance: "Probabilidad de éxito",
+		successWin: "Éxito",
+		stolen: "Robado para el banco de cuadrilla",
+		expGained: "EXP ganada",
+		henchmanHospitalized: "El secuaz fue hospitalizado.",
+		defenderHospitalized: (name: string, date: Date) => `¡**${name}** fue hospitalizado! Será curado ${showTime(date.getTime(), true)}`,
+		youWereHospitalized: (date: Date) => `¡Fuiste hospitalizado! Serás curado ${showTime(date.getTime(), true)}`,
+		failureLose: "Fracaso",
+		attackersImprisoned: (hours: number) => `Todos los atacantes fueron enviados a prisión!\n-# Serán liberados ${showTime(addHours(Date.now(), hours).getTime(), true)}`,
+		attackersHospitalized: "También fueron hospitalizados por 30 minutos.",
+		targetIsDefending: (name: string) => `¡**${name}** está defendiendo! ${EmoteString.Defense}`,
+		targetHasHenchman: `¡El objetivo tiene un secuaz activo!`,
+		nextYield: "Próximo lucro",
+		robberyResultLost: "¡Tu inversión fue robada con éxito!",
+		robberyResultWon: "¡Defendiste tu inversión con éxito!",
+		henchmanStillActive: "¡Tu secuaz te protegió y sigue activo!",
+		robberyCooldown: (time: number) => `${EmoteString.Police} La policía está buscando a tu cuadrilla. Podrás robar de nuevo ${showTime(time, true)}`,
 	},
 } as const satisfies Localization;

@@ -43,12 +43,14 @@ Players can earn money, fight other users, work jobs, manage inventory, and much
 | `/horserace`     | View and bet on horse races               |
 | `/hospital`      | Visit the hospital to heal                |
 | `/inv`           | View your inventory                       |
+| `/investment`    | Manage or buy an investment               |
 | `/invite`        | Get an invite link for the bot            |
 | `/item`          | View information about an item            |
 | `/jobs`          | Work jobs to earn money                   |
 | `/ping`          | Check the bot's latency                   |
 | `/prison`        | Visit the prison                          |
 | `/rob`           | Rob other players                         |
+| `/russianroulette` | Game of Russian Roulette                |
 | `/scavenge`      | Scavenge for items and money              |
 | `/setclass`      | Change your character class               |
 | `/setnick`       | Set your nickname                         |
@@ -56,6 +58,7 @@ Players can earn money, fight other users, work jobs, manage inventory, and much
 | `/skins`         | Choose the skins for your items           |
 | `/specialshop`   | Buy permanent customizations              |
 | `/top`           | View various top rankings                 |
+| `/updates`       | Latest updates from Cross Roads!          |
 | `/user`          | View your or another user's profile       |
 | `/vip`           | Information about VIP benefits            |
 

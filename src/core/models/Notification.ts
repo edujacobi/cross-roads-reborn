@@ -1,4 +1,4 @@
-﻿import { Notifications } from "@core/database/Notifications";
+import { Notifications } from "@core/database/Notifications";
 import { Op } from "sequelize";
 import { addDays } from "date-fns";
 import { Log, logger } from "@shared/log";
@@ -23,6 +23,8 @@ export enum NotificationType {
 	BeatAgain,
 	HorseRace,
 	GangDepositAgain,
+	InvestmentYield,
+	InvestmentExpired,
 }
 
 const NotificationMapper = {
@@ -37,6 +39,8 @@ const NotificationMapper = {
 	[NotificationType.BeatAgain]: "beatAgain",
 	[NotificationType.HorseRace]: "horseRace",
 	[NotificationType.GangDepositAgain]: "gangDepositAgain",
+	[NotificationType.InvestmentYield]: "investmentYield",
+	[NotificationType.InvestmentExpired]: "investmentExpired",
 };
 
 export class Notification {
@@ -149,6 +153,24 @@ export class Notification {
 		notification.Type = NotificationType.GangDepositAgain;
 		notification.Date = nextDeposit;
 		await notification.Create();
+	}
+
+	static async InvestmentYield(user: User, investmentName: string, payout: number, feeAmount?: number, feePercent?: number) {
+		const s = Strings[user.Language];
+		let text = s.investmentYield(investmentName, formatMoney(payout, user.Language));
+		if (feeAmount && feePercent) {
+			text += `\n-# ${EmoteString.Henchman} ${s.henchmanFeeInfo(formatMoney(feeAmount, user.Language), feePercent)}`;
+		}
+		await sendPrivateMessage(user.Id, text, CrColors.Investment, formatMoney(user.Money, user.Language));
+	}
+
+	static async InvestmentExpired(user: User, investmentName: string, payout: number, feeAmount?: number, feePercent?: number) {
+		const s = Strings[user.Language];
+		let text = s.investmentExpired(investmentName, formatMoney(payout, user.Language));
+		if (feeAmount && feePercent) {
+			text += `\n-# ${EmoteString.Henchman} ${s.henchmanFeeInfo(formatMoney(feeAmount, user.Language), feePercent)}`;
+		}
+		await sendPrivateMessage(user.Id, text, CrColors.Investment, formatMoney(user.Money, user.Language));
 	}
 
 	static async HasNotificationsToSend(time: Date) {
@@ -341,6 +363,9 @@ const Strings = {
 		beatAgain: `You can beat up again! ${EmoteString.Beat}`,
 		horseRace: `A horse race is starting soon! Place your bets now! ${EmoteString.Casino}`,
 		gangDepositAgain: `You can deposit again in the gang! ${EmoteString.Gang}`,
+		investmentYield: (name: string, amount: string) => `You received **${amount}** from your investment **${name}**! ${EmoteString.InvestmentActive}`,
+		investmentExpired: (name: string, amount: string) => `Your investment **${name}** has expired! You received **${amount}** as a final profit. ${EmoteString.InvestmentInactive}`,
+		henchmanFeeInfo: (amount: string, percent: number) => `Henchman took **${amount}** (${percent}%) as payment`,
 	},
 	[Language.Portuguese]: {
 		daily: `Você pode receber sua grana diária novamente! ${EmoteString.Experience}`,
@@ -354,6 +379,9 @@ const Strings = {
 		beatAgain: `Você pode espancar novamente! ${EmoteString.Beat}`,
 		horseRace: `Uma corrida de cavalos está começando em breve! Faça suas apostas agora! ${EmoteString.Casino}`,
 		gangDepositAgain: `Você pode depositar novamente na gangue! ${EmoteString.Gang}`,
+		investmentYield: (name: string, amount: string) => `Você recebeu **${amount}** do seu investimento **${name}**! ${EmoteString.InvestmentActive}`,
+		investmentExpired: (name: string, amount: string) => `Seu investimento **${name}** expirou! Você recebeu **${amount}** como lucro final. ${EmoteString.InvestmentInactive}`,
+		henchmanFeeInfo: (amount: string, percent: number) => `O capanga cobrou **${amount}** (${percent}%) como pagamento`,
 	},
 	[Language.Spanish]: {
 		daily: `¡Puedes recibir tu dinero diario de nuevo! ${EmoteString.Experience}`,
@@ -367,5 +395,8 @@ const Strings = {
 		beatAgain: `¡Puedes golpear de nuevo! ${EmoteString.Beat}`,
 		horseRace: `¡Una carrera de caballos está comenzando pronto! ¡Haz tus apuestas ahora! ${EmoteString.Casino}`,
 		gangDepositAgain: `¡Puedes depositar de nuevo en la gangue! ${EmoteString.Gang}`,
+		investmentYield: (name: string, amount: string) => `¡Recibiste **${amount}** de tu inversión **${name}**! ${EmoteString.InvestmentActive}`,
+		investmentExpired: (name: string, amount: string) => `¡Tu inversión **${name}** ha expirado! Recibiste **${amount}** como lucro final. ${EmoteString.InvestmentInactive}`,
+		henchmanFeeInfo: (amount: string, percent: number) => `El secuaz cobró **${amount}** (${percent}%) como pago`,
 	},
 } as const satisfies Localization;

@@ -1,4 +1,4 @@
-﻿import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
 import { replyWithContainer } from "@bot/utils/discordInteractions";
 import { formatMoney } from "@bot/utils/ui";
 import type { User } from "@core/models/User";
@@ -44,6 +44,9 @@ module.exports = {
 			if (modifier.Job?.Positive) {
 				text.push(`${EmoteString.Victory} \`+${getMultiplicative(modifier.Job?.Positive)}%\` ${s.jobModifier}`);
 			}
+			if (modifier.InvestmentYield?.Positive) {
+				text.push(`${EmoteString.Victory} \`+${getMultiplicative(modifier.InvestmentYield?.Positive)}%\` ${s.investmentYieldModifier}`);
+			}
 			if (modifier.Robbery?.Positive) {
 				text.push(`${EmoteString.Victory} \`+${getMultiplicative(modifier.Robbery?.Positive)}%\` ${s.robberyModifier}`);
 			}
@@ -65,6 +68,9 @@ module.exports = {
 			}
 			if (modifier.Job?.Negative) {
 				text.push(`${EmoteString.Defeat} \`${getMultiplicative(modifier.Job?.Negative)}%\` ${s.jobModifier}`);
+			}
+			if (modifier.InvestmentYield?.Negative) {
+				text.push(`${EmoteString.Defeat} \`${getMultiplicative(modifier.InvestmentYield?.Negative)}%\` ${s.investmentYieldModifier}`);
 			}
 			if (modifier.Robbery?.Negative) {
 				text.push(`${EmoteString.Defeat} \`${getMultiplicative(modifier.Robbery?.Negative)}%\` ${s.robberyModifier}`);
@@ -229,6 +235,7 @@ const Strings = {
 		noModifier: "No modifiers",
 		casinoModifier: `winnings from gambling at the casino ${EmoteString.Casino}`,
 		jobModifier: `earnings received from jobs ${EmoteString.Jobs}`,
+		investmentYieldModifier: `profit from investments ${EmoteString.InvestmentActive}`,
 		robberyModifier: `stolen from users and locations ${EmoteString.Robbery}`,
 		scavengeDurationModifier: `money and duration of items found by scavenging ${EmoteString.Scavenge}`,
 		prisonBribeModifier: `chance of the bribe being accepted ${EmoteBadgeString.Season6.Politician}`,
@@ -249,6 +256,7 @@ const Strings = {
 		noModifier: "Sem modificadores",
 		casinoModifier: `ganhos em apostas no cassino ${EmoteString.Casino}`,
 		jobModifier: `recebidos de trabalhos ${EmoteString.Jobs}`,
+		investmentYieldModifier: `lucro de investimentos ${EmoteString.InvestmentActive}`,
 		robberyModifier: `roubados de usuários e locais ${EmoteString.Robbery}`,
 		scavengeDurationModifier: `grana e duração de itens encontrados vasculhando ${EmoteString.Scavenge}`,
 		prisonBribeModifier: `chance do suborno ser aceito ${EmoteBadgeString.Season6.Politician}`,
@@ -269,6 +277,7 @@ const Strings = {
 		noModifier: "Sin modificadores",
 		casinoModifier: `ganancias por jugar en el casino ${EmoteString.Casino}`,
 		jobModifier: `ganancias recibidas de trabajos ${EmoteString.Jobs}`,
+		investmentYieldModifier: `lucro de inversiones ${EmoteString.InvestmentActive}`,
 		robberyModifier: `robado de usuarios y ubicaciones ${EmoteString.Robbery}`,
 		scavengeDurationModifier: `dinero y duración de los objetos encontrados al buscar en la cárcel ${EmoteString.Scavenge}`,
 		prisonBribeModifier: `probabilidad de aceptar el soborno ${EmoteBadgeString.Season6.Politician}`,

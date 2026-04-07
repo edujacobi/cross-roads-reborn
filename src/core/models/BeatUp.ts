@@ -216,6 +216,26 @@ export class BeatUp {
 			canBeat = false;
 		}
 
+		if (this.Attacker.IsDefendingInvestment()) {
+			message = globalStrings[this.Attacker.Language].attackerIsDefendingInvestment;
+			canBeat = false;
+		}
+
+		if (this.Attacker.IsParticipatingInGangAction()) {
+			message = globalStrings[this.Attacker.Language].attackerIsParticipatingInGangAction;
+			canBeat = false;
+		}
+
+		if (this.Defender.IsDefendingInvestment()) {
+			message = globalStrings[this.Attacker.Language].defenderIsDefendingInvestment(this.Defender.GetNameWithImage());
+			canBeat = false;
+		}
+
+		if (this.Defender.IsParticipatingInGangAction()) {
+			message = globalStrings[this.Attacker.Language].defenderIsParticipatingInGangAction(this.Defender.GetNameWithImage());
+			canBeat = false;
+		}
+
 		if (this.Attacker.IsEscaping()) {
 			message = s.isEscapingA;
 			canBeat = false;

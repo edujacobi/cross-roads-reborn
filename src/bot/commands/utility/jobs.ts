@@ -1,10 +1,10 @@
-﻿import { ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+import { ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
 import { deferReply, replyWithContainer } from "@bot/utils/discordInteractions";
 import { EmoteString } from "@bot/utils/emotes";
 import { formatMoney, showTime } from "@bot/utils/ui";
 import { getJobList, type JobId, JobList, type Jobs } from "@core/types/Jobs";
 import { getItemList, ItemList } from "@core/types/Items";
-import { Language, type Localization } from "@core/models/Language";
+import { globalStrings, Language, type Localization } from "@core/models/Language";
 import { CrColors } from "@bot/utils/colors";
 import type { User } from "@core/models/User";
 import { Users } from "@core/database/Users";
@@ -90,7 +90,7 @@ module.exports = {
 					])
 					.setButtonAccessory(btn => btn
 						.setLabel(s.start)
-						.setDisabled(user.IsWorking())
+						.setDisabled(!user.IsIdling())
 						.setStyle(job.NeedItem && !hasAllItems ? ButtonStyle.Secondary : ButtonStyle.Success)
 						.setCustomId(`start${job.Id}`)),
 				);
@@ -204,6 +204,12 @@ module.exports = {
 					const location = LocationList[user.Robbery.IsRobbingLocationId];
 					textResponse = `${s.userIsRobbingId(location.Name[language])} ${EmoteString.Robbery}`;
 				}
+				else if (user.IsDefendingInvestment()) {
+					textResponse = globalStrings[language].attackerIsDefendingInvestment;
+				}
+				else if (user.IsParticipatingInGangAction()) {
+					textResponse = globalStrings[language].attackerIsParticipatingInGangAction;
+				}
 				else if (job.NeedItem && !hasAllItems) {
 					const neededItems = job.NeedItem
 						.filter(neededItem => !user.Items.some(userItem => userItem.Id === neededItem))
@@ -313,6 +319,9 @@ module.exports = {
 
 const Strings = {
 	[Language.English]: {
+		idling: "Idling",
+		userDefending: `You're defending your investment! ${EmoteString.InvestmentActive}`,
+		userParticipating: `You're participating in a gang action! ${EmoteString.Gang}`,
 		title: "Jobs",
 		description: "You cannot bet, steal or search while working!",
 		userPrison: (timerPrison: Date) => `You are in prison! ${EmoteString.Prison}\n-# You will be released ${showTime(timerPrison.getTime(), true)}`,
@@ -340,6 +349,9 @@ const Strings = {
 		jobStarted: (jobDescription: string, jobTime: Date) => `You started working as **${jobDescription}**\n-# Will finish ${showTime(jobTime.getTime(), true)}`,
 	},
 	[Language.Portuguese]: {
+		idling: "Vadiando",
+		userDefending: `Você está defendendo seu investimento! ${EmoteString.InvestmentActive}`,
+		userParticipating: `Você está participando de uma ação de gangue! ${EmoteString.Gang}`,
 		title: "Trabalhos",
 		description: `Você não pode apostar, roubar nem vasculhar enquanto trabalha!`,
 		userPrison: (timerPrison: Date) => `Você está preso! ${EmoteString.Prison}\n-# Será solto ${showTime(timerPrison.getTime(), true)}`,
@@ -367,6 +379,9 @@ const Strings = {
 		jobStarted: (jobDescription: string, jobTime: Date) => `Você começou a trabalhar como **${jobDescription}**\n-# Terminará ${showTime(jobTime.getTime(), true)}`,
 	},
 	[Language.Spanish]: {
+		idling: "Vagando",
+		userDefending: `¡Estás defendiendo tu inversión! ${EmoteString.InvestmentActive}`,
+		userParticipating: `¡Estás participando en una acción de cuadrilla! ${EmoteString.Gang}`,
 		title: "Trabajos",
 		description: "Tu no puedes apostar, robar o buscar mientras trabajas!",
 		userPrison: (timerPrison: Date) => `¡Estás preso! ${EmoteString.Prison}\n-# ¡Serás liberado ${showTime(timerPrison.getTime(), true)}`,

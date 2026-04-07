@@ -32,6 +32,7 @@ enum TopSubcommand {
 	Bribers = "bribers",
 	Escapers = "escapers",
 	Gangs = "gangs",
+	Investors = "investors",
 }
 
 interface TopSubcommandConfig {
@@ -130,6 +131,12 @@ module.exports = {
 			.setNameLocalization(Locale.PortugueseBR, "gangues")
 			.setDescription("List the gangs")
 			.setDescriptionLocalization(Locale.PortugueseBR, "Lista as gangues"),
+		)
+		.addSubcommand(investors => investors
+			.setName(TopSubcommand.Investors)
+			.setNameLocalization(Locale.PortugueseBR, "investidores")
+			.setDescription("List the users who earned the most from investments")
+			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários que mais ganharam com investimentos"),
 		),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
@@ -359,6 +366,18 @@ module.exports = {
 					[Language.English]: "Gangs",
 					[Language.Portuguese]: "Gangues",
 					[Language.Spanish]: "Cuadrillas",
+				},
+			},
+			[TopSubcommand.Investors]: {
+				attributes: [...defaultAttributes, "investmentTotalProfit"],
+				orderField: "investmentTotalProfit",
+				valueField: "investmentTotalProfit",
+				valueModifier: formatMoney,
+				badge: EmoteBadgeString.Season6.Invester,
+				strings: {
+					[Language.English]: "Investors",
+					[Language.Portuguese]: "Investidores",
+					[Language.Spanish]: "Inversores",
 				},
 			},
 		};

@@ -56,6 +56,14 @@ export class Scavenge {
 			return { canScavenge: false, reason: ScavengeFailureReason.UserHospital };
 		}
 
+		if (this.User.IsDefendingInvestment()) {
+			return { canScavenge: false, reason: ScavengeFailureReason.UserDefendingInvestment };
+		}
+
+		if (this.User.IsParticipatingInGangAction()) {
+			return { canScavenge: false, reason: ScavengeFailureReason.UserParticipatingInGangAction };
+		}
+
 		if (this.User.IsInCasinoGame()) {
 			return { canScavenge: false, reason: ScavengeFailureReason.UserCasino };
 		}

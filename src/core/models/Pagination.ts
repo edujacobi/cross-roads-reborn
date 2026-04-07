@@ -96,11 +96,11 @@ export class Pagination {
 		});
 
 		collector?.on("collect", async btn => {
-			await btn.deferUpdate();
-
 			if (!["next", "prev"].includes(btn.customId)) {
 				return;
 			}
+
+			await btn.deferUpdate();
 
 			if (btn.customId == "next") {
 				this.Offset += this.Limit;

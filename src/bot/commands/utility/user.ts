@@ -147,6 +147,7 @@ module.exports = {
 			emote: EmoteId.Bank,
 			texts: [
 				`\`${formatMoney(target.Job.ReceivedSum, user.Language)}\` (\`${target.Job.ReceivedCount}\`) ${s.fromJobs}`,
+				`\`${formatMoney(target.Investment.TotalProfit, language)}\` ${s.fromInvestments}`,
 				`\`${formatMoney(target.Shop.SpentSum, user.Language)}\` (\`${target.Shop.SpentCount}\`) ${s.spent}`,
 			],
 		}, {
@@ -293,6 +294,7 @@ const Strings = {
 		beatedUp: "times beated up",
 		money: "Money",
 		fromJobs: "from jobs",
+		fromInvestments: "from investments",
 		spent: "spent in shops",
 		casino: "Casino",
 		games: "games",
@@ -344,6 +346,7 @@ const Strings = {
 		beatedUp: "vezes espancado",
 		money: "Dinheiro",
 		fromJobs: "de trabalhos",
+		fromInvestments: "de investimentos",
 		spent: "gastos em lojas",
 		casino: "Cassino",
 		games: "jogos",
@@ -395,6 +398,7 @@ const Strings = {
 		beatedUp: "veces golpeado",
 		money: "Dinero",
 		fromJobs: "de trabajos",
+		fromInvestments: "de inversiones",
 		spent: "gastos en tiendas",
 		casino: "Casino",
 		games: "juegos",
@@ -419,6 +423,6 @@ const Strings = {
 		badges: "Insignia",
 		noBadges: "Sin insignia",
 		playingSince: "Jugando desde",
-		goBack: "Volver",
+		goBack: "Voltar",
 	},
 } as const satisfies Localization;

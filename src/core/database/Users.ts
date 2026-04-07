@@ -1,4 +1,4 @@
-﻿import { type CreationOptional, DataTypes, type InferAttributes, type InferCreationAttributes, Model } from "sequelize";
+import { type CreationOptional, DataTypes, type InferAttributes, type InferCreationAttributes, Model } from "sequelize";
 import { sequelize } from "./Database";
 import type { JobId } from "@core/types/Jobs";
 
@@ -41,6 +41,8 @@ export class Users extends Model<
 	declare robbingUserId: CreationOptional<string | null>;
 	declare beingRobbedByUserId: CreationOptional<string | null>;
 	declare robbingLocationId: CreationOptional<LocationId | null>;
+	declare robberyInvestmentDefending: boolean;
+	declare robberyParticipatingInGangAction: boolean;
 
 	declare beatUpSuccessCount: number;
 	declare beatUpFailureCount: number;
@@ -97,6 +99,9 @@ export class Users extends Model<
 	declare drinkNormal: number;
 	declare drinkHappyHour: number;
 	declare drunkCount: number;
+
+	declare notifyInvestmentYield: boolean;
+	declare investmentTotalProfit: number;
 
 	declare createdAt: CreationOptional<Date>;
 	declare updatedAt: CreationOptional<Date>;
@@ -218,6 +223,16 @@ Users.init(
 			type: DataTypes.INTEGER,
 			allowNull: true,
 			defaultValue: null,
+		},
+		robberyInvestmentDefending: {
+			type: DataTypes.BOOLEAN,
+			allowNull: false,
+			defaultValue: false,
+		},
+		robberyParticipatingInGangAction: {
+			type: DataTypes.BOOLEAN,
+			allowNull: false,
+			defaultValue: false,
 		},
 		beatUpSuccessCount: {
 			type: DataTypes.INTEGER,
@@ -433,6 +448,16 @@ Users.init(
 			allowNull: false,
 			defaultValue: 0,
 		},
+		notifyInvestmentYield: {
+			type: DataTypes.BOOLEAN,
+			allowNull: false,
+			defaultValue: true,
+		},
+		investmentTotalProfit: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0,
+		},
 		createdAt: DataTypes.DATE,
 		updatedAt: DataTypes.DATE,
 	},
@@ -451,6 +476,7 @@ Users.init(
 			{ fields: ["hospitalTreatmentSum"] },
 			{ fields: ["prisonBriberySum"] },
 			{ fields: ["escapeCount"] },
+			{ fields: ["investmentTotalProfit"] },
 		],
 	},
 );

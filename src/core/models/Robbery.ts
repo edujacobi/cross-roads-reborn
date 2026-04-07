@@ -105,6 +105,26 @@ export class Robbery {
 			canRob = false;
 		}
 
+		if (this.Attacker.IsDefendingInvestment()) {
+			message = globalStrings[this.Attacker.Language].attackerIsDefendingInvestment;
+			canRob = false;
+		}
+
+		if (this.Defender.IsDefendingInvestment()) {
+			message = globalStrings[this.Attacker.Language].defenderIsDefendingInvestment(this.Defender.GetNameWithImage());
+			canRob = false;
+		}
+
+		if (this.Attacker.IsParticipatingInGangAction()) {
+			message = globalStrings[this.Attacker.Language].attackerIsParticipatingInGangAction;
+			canRob = false;
+		}
+
+		if (this.Defender.IsParticipatingInGangAction()) {
+			message = globalStrings[this.Attacker.Language].defenderIsParticipatingInGangAction(this.Defender.GetNameWithImage());
+			canRob = false;
+		}
+
 		if (this.Attacker.IsScavenging()) {
 			message = s.scavengingA(this.Attacker.Scavenge.IsScavengingId!);
 			canRob = false;

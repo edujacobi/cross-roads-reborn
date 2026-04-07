@@ -20,6 +20,7 @@ export interface IModifier {
 export interface ClassModifier {
 	Casino?: IModifier, // multiplicative
 	Job?: IModifier, // multiplicative
+	InvestmentYield?: IModifier, // multiplicative
 	PrisonBribe?: IModifier, // additive
 	PrisonEscape?: IModifier, // additive
 	Robbery?: IModifier, // multiplicative
@@ -135,7 +136,10 @@ export const ClassList: ClassListType = {
 		},
 		Modifier: {
 			Job: {
-				Positive: 1.25,
+				Positive: 1.15,
+			},
+			InvestmentYield: {
+				Positive: 1.10,
 			},
 			Robbery: {
 				Negative: 0.75,
@@ -252,4 +256,8 @@ export function getScavengeChanceClassModifier(classId: ClassId) {
 
 export function getScavengeDurationClassModifier(classId: ClassId) {
 	return ClassList[classId].Modifier?.ScavengeDuration?.Positive || ClassList[classId].Modifier?.ScavengeDuration?.Negative || 1;
+}
+
+export function getInvestmentYieldClassModifier(classId: ClassId) {
+	return ClassList[classId].Modifier?.InvestmentYield?.Positive || ClassList[classId].Modifier?.InvestmentYield?.Negative || 1;
 }

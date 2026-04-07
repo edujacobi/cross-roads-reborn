@@ -87,8 +87,8 @@ export const EmoteId = {
 
 	CloseInv: "823344220597256223",
 	OpenInv: "823344220966223972",
-	InvestmentActive: "1334915524810768435",
-	InvestmentInactive: "1334915527583334431",
+	InvestmentActive: "1491105034585247904",
+	InvestmentInactive: "1491105055846305976",
 	Shop: "853054490915635221",
 	BlackMarket: "853054490441416724",
 	Jobs: "1337166793013334067",
@@ -122,6 +122,9 @@ export const EmoteId = {
 	Hobo: "1460252360457584767",
 	Mafioso: "1343060418461044756",
 	Thief: "1343060416896696423",
+
+	// Henchman
+	Henchman: "823251212135563304",
 
 	// Scavenge
 	Dump: "1353083468502011956",
@@ -234,8 +237,8 @@ export const EmoteString = {
 
 	CloseInv: `<:Fechar_Inventario:${EmoteId.CloseInv}>`,
 	OpenInv: `<:Abrir_Inventario:${EmoteId.OpenInv}>`,
-	InvestmentActive: `<:PropertyGreen:${EmoteId.InvestmentActive}>`,
-	InvestmentInactive: `<:PropertyRed:${EmoteId.InvestmentInactive}>`,
+	InvestmentActive: `<:Investment:${EmoteId.InvestmentActive}>`,
+	InvestmentInactive: `<:InvestmentEnd:${EmoteId.InvestmentInactive}>`,
 	Shop: `<:Loja:${EmoteId.Shop}>`,
 	BlackMarket: `<:MercadoNegro:${EmoteId.BlackMarket}>`,
 	Jobs: `<:Trabalhos:${EmoteId.Jobs}>`,
@@ -269,6 +272,9 @@ export const EmoteString = {
 	Hobo: `<:Class_Hobo:${EmoteId.Hobo}>`,
 	Mafioso: `<:Class_Mafioso:${EmoteId.Mafioso}>`,
 	Thief: `<:Class_Thief:${EmoteId.Thief}>`,
+
+	// Henchman
+	Henchman: `<:Classe_Mafioso:${EmoteId.Henchman}>`,
 
 	// Scavenge
 	Dump: `<:Dump:${EmoteId.Dump}>`,

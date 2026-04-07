@@ -95,7 +95,9 @@ export async function replyInteraction(interaction: CommandInteraction | ButtonI
 		return await interaction.reply(options as InteractionReplyOptions);
 	}
 	catch (err) {
-		Log.Warning(`Something went wrong with replying interaction ${interaction.id} of user ${interaction.user.displayName} in server ${interaction.guild?.name} (ID: ${interaction.guild?.id}). Error: ${err}`);
+		const error = err as Error;
+		console.debug(error);
+		Log.Warning(`Something went wrong with replying interaction of user ${interaction.user.displayName} in server ${interaction.guild?.name} (ID: ${interaction.guild?.id}). Error: ${error.message}`);
 	}
 }
 

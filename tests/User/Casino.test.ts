@@ -109,6 +109,20 @@ describe("Casino", () => {
 			expect(result.message).toContain("robbing");
 		});
 
+		it("Should fail if user is defending investment", async () => {
+			user.Robbery.InvestmentIsDefending = true;
+			const result = await Casino.CanUserPlayGame(user, BET_VALUE);
+			expect(result.canPlay).toBe(false);
+			expect(result.message).toContain("investment");
+		});
+
+		it("Should fail if user is participating in gang action", async () => {
+			user.Robbery.ParticipatingInGangAction = true;
+			const result = await Casino.CanUserPlayGame(user, BET_VALUE);
+			expect(result.canPlay).toBe(false);
+			expect(result.message).toContain("gang action");
+		});
+
 		it("Should succeed", async () => {
 			const result = await Casino.CanUserPlayGame(user, BET_VALUE);
 			expect(result.canPlay).toBe(true);

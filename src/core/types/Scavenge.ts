@@ -38,6 +38,8 @@ export enum ScavengeFailureReason {
 	AttackerIsRobbingId,
 	AttackerIsBeingRobbedById,
 	AttackerIsRobbingLocationId,
+	UserDefendingInvestment,
+	UserParticipatingInGangAction,
 }
 
 export interface ItemRewardScavenge {

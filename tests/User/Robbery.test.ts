@@ -238,6 +238,38 @@ describe("Robbery", () => {
 			expect(result.message).toContain("robbing");
 		});
 
+		it("Should fail if attacker is defending investment", async () => {
+			user.Robbery.InvestmentIsDefending = true;
+			const robbery = new Robbery(user, defender);
+			const result = await robbery.CanRobUser();
+			expect(result.canRob).toBe(false);
+			expect(result.message).toContain("investment");
+		});
+
+		it("Should fail if attacker is participating in gang action", async () => {
+			user.Robbery.ParticipatingInGangAction = true;
+			const robbery = new Robbery(user, defender);
+			const result = await robbery.CanRobUser();
+			expect(result.canRob).toBe(false);
+			expect(result.message).toContain("gang action");
+		});
+
+		it("Should fail if defender is defending investment", async () => {
+			defender.Robbery.InvestmentIsDefending = true;
+			const robbery = new Robbery(user, defender);
+			const result = await robbery.CanRobUser();
+			expect(result.canRob).toBe(false);
+			expect(result.message).toContain("investment");
+		});
+
+		it("Should fail if defender is participating in gang action", async () => {
+			defender.Robbery.ParticipatingInGangAction = true;
+			const robbery = new Robbery(user, defender);
+			const result = await robbery.CanRobUser();
+			expect(result.canRob).toBe(false);
+			expect(result.message).toContain("gang action");
+		});
+
 		it("Should succeed if all conditions met", async () => {
 			user.Items = [ItemList[ItemId.Bazooka] as UserItem];
 			defender.Items = [ItemList[ItemId.Pistol] as UserItem];
@@ -347,6 +379,22 @@ describe("Robbery", () => {
 			const result = await robberyLoc.CanRobLocation();
 			expect(result.canRob).toBe(false);
 			expect(result.message).toContain("robbing");
+		});
+
+		it("Should fail if user is defending investment", async () => {
+			user.Robbery.InvestmentIsDefending = true;
+			const robberyLoc = new RobberyLocation(user, LocationId.SmallBank);
+			const result = await robberyLoc.CanRobLocation();
+			expect(result.canRob).toBe(false);
+			expect(result.message).toContain("investment");
+		});
+
+		it("Should fail if user is participating in gang action", async () => {
+			user.Robbery.ParticipatingInGangAction = true;
+			const robberyLoc = new RobberyLocation(user, LocationId.SmallBank);
+			const result = await robberyLoc.CanRobLocation();
+			expect(result.canRob).toBe(false);
+			expect(result.message).toContain("gang action");
 		});
 
 		it("Should succeed if all conditions met", async () => {

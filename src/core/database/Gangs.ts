@@ -17,6 +17,7 @@ export class Gangs extends Model<
 	declare experience: number;
 	declare level: number;
 	declare leaderId: string;
+	declare lastInvestmentRobbery: CreationOptional<Date | null>;
 	declare createdAt: CreationOptional<Date>;
 	declare updatedAt: CreationOptional<Date>;
 }
@@ -78,6 +79,10 @@ Gangs.init(
 				model: "users",
 				key: "id",
 			},
+		},
+		lastInvestmentRobbery: {
+			type: DataTypes.DATE,
+			allowNull: true,
 		},
 		createdAt: DataTypes.DATE,
 		updatedAt: DataTypes.DATE,

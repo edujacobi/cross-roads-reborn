@@ -109,6 +109,16 @@ export class RobberyLocation extends Robbery {
 			canRob = false;
 		}
 
+		if (this.Attacker.IsDefendingInvestment()) {
+			message = globalStrings[this.Attacker.Language].attackerIsDefendingInvestment;
+			canRob = false;
+		}
+
+		if (this.Attacker.IsParticipatingInGangAction()) {
+			message = globalStrings[this.Attacker.Language].attackerIsParticipatingInGangAction;
+			canRob = false;
+		}
+
 		return { canRob, message };
 	}
 

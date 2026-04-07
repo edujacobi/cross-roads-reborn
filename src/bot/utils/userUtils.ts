@@ -67,6 +67,8 @@ export async function removeAllFromActions() {
 			beatingUserId: null,
 			beingBeatUpByUserId: null,
 			casinoIsInGame: false,
+			robberyParticipatingInGangAction: false,
+			robberyInvestmentDefending: false,
 		}, {
 			where: {
 				[Op.or]: {
@@ -89,6 +91,12 @@ export async function removeAllFromActions() {
 						[Op.not]: null,
 					},
 					casinoIsInGame: {
+						[Op.eq]: true,
+					},
+					robberyParticipatingInGangAction: {
+						[Op.eq]: true,
+					},
+					robberyInvestmentDefending: {
 						[Op.eq]: true,
 					},
 				},

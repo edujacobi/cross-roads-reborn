@@ -1,4 +1,4 @@
-﻿import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
 import type { User } from "@core/models/User";
 import { Scavenge } from "@core/models/Scavenge";
 import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
@@ -87,6 +87,12 @@ module.exports = {
 			}
 			if (user.IsInCasinoGame()) {
 				text = s.casino;
+			}
+			if (user.IsDefendingInvestment()) {
+				text = s.userDefendingInvestment;
+			}
+			if (user.IsParticipatingInGangAction()) {
+				text = s.userParticipatingInGangAction;
 			}
 
 			for (let i = 0; i < places.length; i++) {
@@ -231,6 +237,12 @@ module.exports = {
 						else if (reason === ScavengeFailureReason.UserCasino) {
 							message = s.casino;
 						}
+						else if (reason === ScavengeFailureReason.UserDefendingInvestment) {
+							message = globalStrings[user.Language].attackerIsDefendingInvestment;
+						}
+						else if (reason === ScavengeFailureReason.UserParticipatingInGangAction) {
+							message = globalStrings[user.Language].attackerIsParticipatingInGangAction;
+						}
 						else if (reason === ScavengeFailureReason.AttackerIsBeatingId) {
 							message = globalStrings[user.Language].attackerIsBeatingId(`${ClassList[attacker!.class].Image.Emote.String} ${attacker!.nickname!}`);
 						}
@@ -355,7 +367,8 @@ const Strings = {
 		willBeAbleAgain: "Will be able to scavenge again",
 		hospitalized: "Will be healed",
 		inprisoned: "Will be released",
-
+		userDefendingInvestment: `You cannot scavenge while defending an investment! ${EmoteString.InvestmentActive}`,
+		userParticipatingInGangAction: `You cannot scavenge while participating in a gang action! ${EmoteString.Gang}`,
 	},
 	[Language.Portuguese]: {
 		moreAtk: `Tenha mais ${EmoteString.Attack}ATK para liberar mais lugares`,
@@ -391,7 +404,8 @@ const Strings = {
 		willBeAbleAgain: "Poderá vasculhar novamente",
 		hospitalized: "Será curado",
 		inprisoned: "Será solto",
-
+		userDefendingInvestment: `Você não pode vasculhar enquanto defende um investimento! ${EmoteString.InvestmentActive}`,
+		userParticipatingInGangAction: `Você não pode vasculhar enquanto participa de uma ação de gangue! ${EmoteString.Gang}`,
 	},
 	[Language.Spanish]: {
 		moreAtk: `Obtén más ${EmoteString.Attack}ATK para desbloquear más lugares`,
@@ -427,6 +441,7 @@ const Strings = {
 		willBeAbleAgain: "Podrás buscar de nuevo",
 		hospitalized: "Serás curado",
 		inprisoned: "Serás liberado",
-
+		userDefendingInvestment: `¡No puedes buscar mientras defiendes una inversión! ${EmoteString.InvestmentActive}`,
+		userParticipatingInGangAction: `¡No puedes buscar mientras participas en una acción de cuadrilla! ${EmoteString.Gang}`,
 	},
 } as const satisfies Localization;

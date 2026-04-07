@@ -1,4 +1,4 @@
-﻿import {
+import {
 	AttachmentBuilder,
 	ButtonBuilder,
 	ButtonStyle,
@@ -24,6 +24,7 @@ import { UserImageCanvasBuilder } from "@bot/ui/builders/UserImageCanvasBuilder"
 import { GangImageCanvasBuilder } from "@bot/ui/builders/GangImageCanvasBuilder";
 import { searchUser } from "@bot/utils/userUtils";
 import { createButtonCollector, disableButtons } from "@bot/utils/collectors";
+import { InvestmentList } from "@core/types/Investments";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -109,6 +110,17 @@ module.exports = {
 
 			const gangAcronym = gang ? `[${gang.Acronym}] ` : "";
 
+
+			let investTextSimple: string | undefined = undefined;
+			let investTextComplex: string | undefined = undefined;
+
+			if (target.Investment.Id !== null) {
+				const investEmote = target.Investment.ExpiresAt!.getTime() > Date.now() ? EmoteString.InvestmentActive : EmoteString.InvestmentInactive;
+				const investment = InvestmentList[target.Investment.Id];
+				investTextSimple = `${investEmote} ${investment.Name[language]}`;
+				investTextComplex = `${investTextSimple}: ${showTime(target.Investment.ExpiresAt!.getTime(), true)}`;
+			}
+
 			if (isClosed) {
 				container
 					.addSectionComponents(headerSection => headerSection
@@ -128,14 +140,21 @@ module.exports = {
 					.addLargeSeparator()
 					.addTexts([
 						emoteItems.length ? `# ${emoteItems.join("\u0009")}` : `-# ${s.emptyInventory}`,
-					])
-					.addFooter({
-						button: new ButtonBuilder()
-							.setCustomId("moreInfo")
-							.setLabel(s.openInv)
-							.setStyle(ButtonStyle.Secondary)
-							.setEmoji(EmoteId.OpenInv),
-					});
+					]);
+
+				if (investTextSimple) {
+					container
+						.addLargeSeparator()
+						.addTexts([investTextSimple]);
+				}
+
+				container.addFooter({
+					button: new ButtonBuilder()
+						.setCustomId("moreInfo")
+						.setLabel(s.openInv)
+						.setStyle(ButtonStyle.Secondary)
+						.setEmoji(EmoteId.OpenInv),
+				});
 			}
 			else {
 				if (gang) {
@@ -170,14 +189,24 @@ module.exports = {
 						`-# ${s.inventoryItems}`,
 						textItems || `-# ${s.emptyInventory}`,
 
-					])
-					.addFooter({
-						button: new ButtonBuilder()
-							.setCustomId("lessInfo")
-							.setLabel(s.closeInv)
-							.setStyle(ButtonStyle.Secondary)
-							.setEmoji(EmoteId.CloseInv),
-					});
+					]);
+
+				if (investTextComplex) {
+					container
+						.addLargeSeparator()
+						.addTexts([
+							`-# ${s.investment}`,
+							investTextComplex,
+						]);
+				}
+
+				container.addFooter({
+					button: new ButtonBuilder()
+						.setCustomId("lessInfo")
+						.setLabel(s.closeInv)
+						.setStyle(ButtonStyle.Secondary)
+						.setEmoji(EmoteId.CloseInv),
+				});
 			}
 
 			return container;
@@ -231,6 +260,7 @@ const Strings = {
 		openInv: "Open",
 		inventoryItems: "Items in the inventory",
 		emptyInventory: "Empty inventory",
+		investment: "Investment",
 	},
 
 	[Language.Portuguese]: {
@@ -239,6 +269,7 @@ const Strings = {
 		openInv: "Abrir",
 		inventoryItems: "Itens no inventário",
 		emptyInventory: "Inventário vazio",
+		investment: "Investimento",
 	},
 
 	[Language.Spanish]: {
@@ -247,5 +278,6 @@ const Strings = {
 		openInv: "Abrir",
 		inventoryItems: "Artículos en el inventario",
 		emptyInventory: "Inventario vacío",
+		investment: "Inversión",
 	},
 } as const satisfies Localization;

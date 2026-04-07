@@ -124,6 +124,22 @@ describe("Scavenge", () => {
 			expect(result.reason).toBe(ScavengeFailureReason.AttackerIsRobbingLocationId);
 		});
 
+		it("Should fail if defending investment", async () => {
+			const scavenge = new Scavenge(user, ScavengeId.Dump);
+			user.Robbery.InvestmentIsDefending = true;
+			const result = await scavenge.CanScavenge();
+			expect(result.canScavenge).toBe(false);
+			expect(result.reason).toBe(ScavengeFailureReason.UserDefendingInvestment);
+		});
+
+		it("Should fail if participating in gang action", async () => {
+			const scavenge = new Scavenge(user, ScavengeId.Dump);
+			user.Robbery.ParticipatingInGangAction = true;
+			const result = await scavenge.CanScavenge();
+			expect(result.canScavenge).toBe(false);
+			expect(result.reason).toBe(ScavengeFailureReason.UserParticipatingInGangAction);
+		});
+
 		it("Should succeed", async () => {
 			const scavenge = new Scavenge(user, ScavengeId.Dump);
 			const result = await scavenge.CanScavenge();

@@ -123,15 +123,17 @@ export class CustomContainerBuilder extends ContainerBuilder {
 	 * @param id
 	 * @param text
 	 */
-	changeTextFromSectionId(id: number, text: string) {
+	changeTextFromSectionId(id: number, text: string | string[]) {
 		const textComponent = this.components.find(component => component.data?.id === id);
 
 		if (!textComponent) {
 			return this;
 		}
 
+		const content = Array.isArray(text) ? text.join("\n") : text;
+
 		if (textComponent instanceof TextDisplayBuilder) {
-			textComponent.setContent(text);
+			textComponent.setContent(content);
 		}
 		else if (textComponent instanceof SectionBuilder) {
 			const textComponentInside = textComponent.components.find(component => component.data?.id === id + 1);
@@ -141,7 +143,7 @@ export class CustomContainerBuilder extends ContainerBuilder {
 			}
 
 			if (textComponentInside instanceof TextDisplayBuilder) {
-				textComponentInside.setContent(text);
+				textComponentInside.setContent(content);
 			}
 
 		}
