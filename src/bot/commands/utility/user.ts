@@ -232,7 +232,7 @@ module.exports = {
 			}
 
 			container.addFooter({
-				text: `ID: ${target.Id} • ${s.playingSince}: ${target.CreatedAt.toLocaleDateString(interaction.locale)}`,
+				text: `Id: ${target.Id} • ${s.playingSince}: ${target.CreatedAt.toLocaleDateString(interaction.locale)}`,
 			});
 
 			return container;

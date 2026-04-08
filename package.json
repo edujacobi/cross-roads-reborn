@@ -7,9 +7,9 @@
     "node": ">=22.0.0"
   },
   "scripts": {
-    "clear": "rimraf build",
+    "clear": "npx rimraf build",
     "prebuild": "npm run clear && npm run lint",
-    "build": "tsgo && tsc-alias",
+    "build": "tsgo && npx tsc-alias",
     "build:watch": "tsgo --watch",
     "clear-commands": "node build/src/bot/clear-commands.js",
     "start": "pm2 start build/src/index.js --name \"cr\"",
@@ -18,7 +18,7 @@
     "start-dev": "set NODE_ENV=DEV&& npx tsx src/index.ts -w",
     "deploy-dev": "set NODE_ENV=DEV&& npx tsx src/bot/deploy-commands.ts",
     "clear-commands-dev": "set NODE_ENV=DEV&& npx tsx src/bot/clear-commands.ts",
-    "lint": "eslint . --ext .ts",
+    "lint": "npx eslint . --ext .ts",
     "lint-fix": "eslint . --ext .ts --fix",
     "test": "vitest run",
     "test:watch": "vitest",

@@ -177,7 +177,7 @@ export class User {
 
 	/**
 	 * Creates a new instance of User.
-	 * @param id The user's ID (usually Discord ID).
+	 * @param id The user's Id (usually Discord Id).
 	 * @param language The user's preferred language.
 	 */
 	constructor(id: string, language: Language = Language.English) {
@@ -451,13 +451,13 @@ export class User {
 			money: this.Money,
 		});
 
-		Log.Success(`User ${oldNickname} (ID: ${this.Id}) changed nickname to ${nickname}.`);
+		Log.Success(`User ${oldNickname} (Id: ${this.Id}) changed nickname to ${nickname}.`);
 		return true;
 	}
 
 	/**
 	 * Sets the user's class.
-	 * @param classId The new class ID.
+	 * @param classId The new class Id.
 	 * @param cost Optional cost to change the class.
 	 * @returns True if successful, false if not enough money.
 	 */
@@ -476,7 +476,7 @@ export class User {
 			money: this.Money,
 		});
 
-		Log.Success(`User ${this.Nickname} (ID: ${this.Id}) changed class from ${ClassList[oldClass].Name[Language.English]} to ${ClassList[classId].Name[Language.English]}.`);
+		Log.Success(`User ${this.Nickname} (Id: ${this.Id}) changed class from ${ClassList[oldClass].Name[Language.English]} to ${ClassList[classId].Name[Language.English]}.`);
 		return true;
 	}
 
@@ -525,7 +525,7 @@ export class User {
 		});
 
 		await this.AddVip(months * 30);
-		Log.Success(`User ${this.Nickname} (ID: ${this.Id}) bought VIP for ${months} months.`);
+		Log.Success(`User ${this.Nickname} (Id: ${this.Id}) bought VIP for ${months} months.`);
 	}
 
 	/**
@@ -547,7 +547,7 @@ export class User {
 			avatarDecoration: this.AvatarDecoration.Id,
 		});
 
-		Log.Success(`User ${this.Nickname} (ID: ${this.Id}) received ${days} days of VIP.`);
+		Log.Success(`User ${this.Nickname} (Id: ${this.Id}) received ${days} days of VIP.`);
 	}
 
 	/**
@@ -559,7 +559,7 @@ export class User {
 		await this.Update({
 			vipEternal: this.VipEternal,
 		});
-		Log.Success(`User ${this.Nickname} (ID: ${this.Id}) ${this.VipEternal ? "is now" : "is not anymore"} a eternal VIP.`);
+		Log.Success(`User ${this.Nickname} (Id: ${this.Id}) ${this.VipEternal ? "is now" : "is not anymore"} a eternal VIP.`);
 	}
 
 	/**
@@ -573,7 +573,7 @@ export class User {
 			specialCoin: this.SpecialCoin,
 		});
 
-		Log.Success(`User ${this.Nickname} (ID: ${this.Id}) received ${coins} special coins.`);
+		Log.Success(`User ${this.Nickname} (Id: ${this.Id}) received ${coins} special coins.`);
 	}
 
 	/**
@@ -624,7 +624,7 @@ export class User {
 			dailyStreak: this.Daily.CurrentStreak,
 			maxDailyStreak: this.Daily.MaxStreak,
 		});
-		Log.Success(`User ${this.Nickname} (ID: ${this.Id}) received ${formatMoney(money, Language.English)} from daily. Streak: ${this.Daily.CurrentStreak}.`);
+		Log.Success(`User ${this.Nickname} (Id: ${this.Id}) received ${formatMoney(money, Language.English)} from daily. Streak: ${this.Daily.CurrentStreak}.`);
 
 		await Notification.Daily(this);
 
@@ -658,7 +658,7 @@ export class User {
 				skin: BundleId.Default,
 			});
 
-			Log.Info(`User ${this.Nickname} (ID: ${this.Id}) bought item ${item.Description[Language.English]} (ID: ${item.Id}) for ${formatMoney(item.Price, Language.English)} [FIRST TIME!].`);
+			Log.Info(`User ${this.Nickname} (Id: ${this.Id}) bought item ${item.Description[Language.English]} (Id: ${item.Id}) for ${formatMoney(item.Price, Language.English)} [FIRST TIME!].`);
 		}
 		else {
 			let remaining = addHours(existingItem.remainingTime, 72);
@@ -676,7 +676,7 @@ export class User {
 				},
 			});
 
-			Log.Info(`User ${this.Nickname} (ID: ${this.Id}) bought item ${item.Description[Language.English]} (ID: ${item.Id}) for ${formatMoney(item.Price, Language.English)}. Total time: ${differenceInHours(remaining, new Date())}h.`);
+			Log.Info(`User ${this.Nickname} (Id: ${this.Id}) bought item ${item.Description[Language.English]} (Id: ${item.Id}) for ${formatMoney(item.Price, Language.English)}. Total time: ${differenceInHours(remaining, new Date())}h.`);
 		}
 
 		this.Shop.SpentCount += 1;
@@ -692,7 +692,7 @@ export class User {
 
 	/**
 	 * Consumes an item from the user's inventory.
-	 * @param itemId The item ID to consume.
+	 * @param itemId The item Id to consume.
 	 * @param quantity The quantity to consume.
 	 * @returns True if successful.
 	 */
@@ -836,7 +836,7 @@ export class User {
 			});
 		}
 
-		Log.Info(`User ${this.Nickname} (ID: ${this.Id}) has set skin ${bundle.Description[Language.English]} (ID: ${bundle.Id}) for item ${item.Description[Language.English]} (ID: ${item.Id}).`);
+		Log.Info(`User ${this.Nickname} (Id: ${this.Id}) has set skin ${bundle.Description[Language.English]} (Id: ${bundle.Id}) for item ${item.Description[Language.English]} (Id: ${item.Id}).`);
 	}
 
 	/**
@@ -884,7 +884,7 @@ export class User {
 			});
 		}
 
-		Log.Info(`User ${this.Nickname} (ID: ${this.Id}) has set skin ${bundle.Description[Language.English]} (ID: ${bundle.Id}) for all items in bundle.`);
+		Log.Info(`User ${this.Nickname} (Id: ${this.Id}) has set skin ${bundle.Description[Language.English]} (Id: ${bundle.Id}) for all items in bundle.`);
 	}
 
 	/**
@@ -897,7 +897,7 @@ export class User {
 			avatarDecoration: this.AvatarDecoration.Id,
 		});
 
-		Log.Info(`User ${this.Nickname} (ID: ${this.Id}) has set avatar decoration ${decoration.Description[Language.English]} (ID: ${decoration.Id}).`);
+		Log.Info(`User ${this.Nickname} (Id: ${this.Id}) has set avatar decoration ${decoration.Description[Language.English]} (Id: ${decoration.Id}).`);
 	}
 
 	/**
@@ -1251,7 +1251,7 @@ export class User {
 
 	/**
 	 * Starts a job for the user.
-	 * @param jobId The job ID.
+	 * @param jobId The job Id.
 	 */
 	async StartJob(jobId: JobId) {
 		const job = JobList[jobId];
@@ -1265,7 +1265,7 @@ export class User {
 			jobId: this.Job.Id,
 			jobTime: this.Job.EndsIn,
 		});
-		Log.Info(`User ${this.Nickname} (ID: ${this.Id}) started job ${job.Description[this.Language]} (ID: ${jobId}), will finish in ${formatDate(this.Job.EndsIn, Language.English)}.`);
+		Log.Info(`User ${this.Nickname} (Id: ${this.Id}) started job ${job.Description[this.Language]} (Id: ${jobId}), will finish in ${formatDate(this.Job.EndsIn, Language.English)}.`);
 	}
 
 	/**
@@ -1284,7 +1284,7 @@ export class User {
 				jobId: this.Job.Id,
 			}),
 		]);
-		Log.Info(`User ${this.Nickname} (ID: ${this.Id}) canceled his job ${job.Description[this.Language]}.`);
+		Log.Info(`User ${this.Nickname} (Id: ${this.Id}) canceled his job ${job.Description[this.Language]} (Id: ${job.Id}).`);
 	}
 
 	/**
@@ -1308,12 +1308,12 @@ export class User {
 			jobReceivedCount: this.Job.ReceivedCount,
 			jobReceivedSum: this.Job.ReceivedSum,
 		});
-		Log.Success(`User ${this.Nickname} (ID: ${this.Id}) finished his job ${job.Description[this.Language]} and received ${formatMoney(salary, Language.English)}.`);
+		Log.Success(`User ${this.Nickname} (Id: ${this.Id}) finished his job ${job.Description[this.Language]} (Id: ${job.Id}) and received ${formatMoney(salary, Language.English)}.`);
 	}
 
 	/**
 	 * Buys a skin bundle.
-	 * @param bundleId The bundle ID.
+	 * @param bundleId The bundle Id.
 	 * @returns True if successful.
 	 */
 	async BuySkinBundle(bundleId: BundleId) {
@@ -1324,10 +1324,10 @@ export class User {
 			await this.Update({
 				specialCoin: this.SpecialCoin,
 			});
-			Log.Success(`User ${this.Nickname} (ID: ${this.Id}) bought skin bundle ${BundleList[bundleId].Description[Language.English]} (ID: ${bundleId}) for ${formatMoney(BundleList[bundleId].Price, Language.English, "")}.`);
+			Log.Success(`User ${this.Nickname} (Id: ${this.Id}) bought skin bundle ${BundleList[bundleId].Description[Language.English]} (Id: ${bundleId}) for ${formatMoney(BundleList[bundleId].Price, Language.English, "")}.`);
 		}
 		else {
-			Log.Warning(`User ${this.Nickname} (ID: ${this.Id}) tried to buy skin bundle ${BundleList[bundleId].Description[Language.English]} (ID: ${bundleId}), but failed.`);
+			Log.Warning(`User ${this.Nickname} (Id: ${this.Id}) tried to buy skin bundle ${BundleList[bundleId].Description[Language.English]} (Id: ${bundleId}), but failed.`);
 		}
 
 		return success;
@@ -1335,7 +1335,7 @@ export class User {
 
 	/**
 	 * Buys an avatar decoration.
-	 * @param avatarDecorationId The avatar decoration ID.
+	 * @param avatarDecorationId The avatar decoration Id.
 	 * @returns True if successful.
 	 */
 	async BuyAvatarDecoration(avatarDecorationId: AvatarDecorationId) {
@@ -1346,10 +1346,10 @@ export class User {
 			await this.Update({
 				specialCoin: this.SpecialCoin,
 			});
-			Log.Success(`User ${this.Nickname} (ID: ${this.Id}) bought avatar decoration ${AvatarDecorationList[avatarDecorationId].Description[Language.English]} (ID: ${avatarDecorationId}) for ${formatMoney(AvatarDecorationList[avatarDecorationId].Price, Language.English, "")}.`);
+			Log.Success(`User ${this.Nickname} (Id: ${this.Id}) bought avatar decoration ${AvatarDecorationList[avatarDecorationId].Description[Language.English]} (Id: ${avatarDecorationId}) for ${formatMoney(AvatarDecorationList[avatarDecorationId].Price, Language.English, "")}.`);
 		}
 		else {
-			Log.Warning(`User ${this.Nickname} (ID: ${this.Id}) tried to buy avatar decoration ${AvatarDecorationList[avatarDecorationId].Description[Language.English]} (ID: ${avatarDecorationId}), but failed.`);
+			Log.Warning(`User ${this.Nickname} (Id: ${this.Id}) tried to buy avatar decoration ${AvatarDecorationList[avatarDecorationId].Description[Language.English]} (Id: ${avatarDecorationId}), but failed.`);
 		}
 
 		return success;
@@ -1419,12 +1419,12 @@ export class User {
 	 */
 	async CreateGang(name: string, acronym: string, description: string, color: GangColorId, image: string | null = null): Promise<Gang | null> {
 		if (this.IsInGang()) {
-			Log.Warning(`User ${this.Nickname} (ID: ${this.Id}) tried to create a gang, but already is in one.`);
+			Log.Warning(`User ${this.Nickname} (Id: ${this.Id}) tried to create a gang, but already is in one.`);
 			return null;
 		}
 
 		if (this.Money < Gang.CREATION_COST) {
-			Log.Warning(`User ${this.Nickname} (ID: ${this.Id}) tried to create a gang, but doesn't have money (user: ${formatMoney(this.Money, Language.English)} / cost: ${formatMoney(Gang.CREATION_COST, Language.English)}).`);
+			Log.Warning(`User ${this.Nickname} (Id: ${this.Id}) tried to create a gang, but doesn't have money (user: ${formatMoney(this.Money, Language.English)} / cost: ${formatMoney(Gang.CREATION_COST, Language.English)}).`);
 			return null;
 		}
 
@@ -1449,7 +1449,7 @@ export class User {
 		const gang = await Gang.GetById(this.GangId!);
 
 		if (!gang) {
-			// Situação estranha onde o usuário tem um ID de gangue, mas a gangue não existe
+			// Situação estranha onde o usuário tem um Id de gangue, mas a gangue não existe
 			// Vamos limpar o GangId para corrigir a inconsistência
 			this.GangId = null;
 			// No need to update Users table as GangId is not stored there
@@ -1458,7 +1458,7 @@ export class User {
 
 		// Se o usuário for o líder, ele não pode sair sem transferir a liderança
 		if (this.Id === gang.LeaderId) {
-			Log.Warning(`User ${this.Nickname} (ID: ${this.Id}) tried to leave gang ${gang.Name} (ID: ${gang.Id}), but is the leader.`);
+			Log.Warning(`User ${this.Nickname} (Id: ${this.Id}) tried to leave gang ${gang.Name} (Id: ${gang.Id}), but is the leader.`);
 			return false;
 		}
 
@@ -1466,15 +1466,15 @@ export class User {
 
 		if (success) {
 			this.GangId = null;
-			Log.Success(`User ${this.Nickname} (ID: ${this.Id}) left gang ${gang.Name} (ID: ${gang.Id}).`);
+			Log.Success(`User ${this.Nickname} (Id: ${this.Id}) left gang ${gang.Name} (Id: ${gang.Id}).`);
 		}
 
 		return success;
 	}
 
 	/**
-	 * Searches for a user by name or ID.
-	 * @param nameOrId The name or ID to search for.
+	 * Searches for a user by name or Id.
+	 * @param nameOrId The name or Id to search for.
 	 * @param language Optional language.
 	 * @returns The User instance or null if not found.
 	 */

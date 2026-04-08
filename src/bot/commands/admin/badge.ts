@@ -101,7 +101,7 @@ module.exports = {
 			await deferReply(interaction);
 
 			const target = await checkUser(_user.id, interaction);
-			let targetName = `ID: ${_user.id}`;
+			let targetName = `Id: ${_user.id}`;
 
 			if (target) {
 				targetName = target.GetNameWithImage();
@@ -131,7 +131,7 @@ module.exports = {
 			await deferReply(interaction);
 
 			const target = await checkUser(_user.id, interaction);
-			let targetName = `ID: ${_user.id}`;
+			let targetName = `Id: ${_user.id}`;
 
 			if (target) {
 				targetName = target.GetNameWithImage();

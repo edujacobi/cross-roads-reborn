@@ -264,8 +264,8 @@ export class Gang {
 	}
 
 	/**
-	 * Gets a gang by its ID.
-	 * @param gangId The ID of the gang.
+	 * Gets a gang by its Id.
+	 * @param gangId The Id of the gang.
 	 * @returns The gang object, or null if not found.
 	 */
 	static async GetById(gangId: number): Promise<Gang | null> {
@@ -287,7 +287,7 @@ export class Gang {
 	/**
 	 * Gets basic gang info without loading members and roles.
 	 * Useful for performance when only basic data is needed.
-	 * @param gangId The gang ID.
+	 * @param gangId The gang Id.
 	 * @returns The gang object with basic info, or null if not found.
 	 */
 	static async GetBasicById(gangId: number): Promise<Gang | null> {
@@ -355,7 +355,7 @@ export class Gang {
 
 	/**
 	 * Gets the gang a user belongs to.
-	 * @param userId The ID of the user.
+	 * @param userId The Id of the user.
 	 * @returns The gang object, or null if the user is not in a gang.
 	 */
 	static async GetByUserId(userId: string): Promise<Gang | null> {
@@ -532,7 +532,7 @@ export class Gang {
 
 	/**
 	 * Checks if a user has permission to invite others to the gang.
-	 * @param inviterId The ID of the user attempting to invite.
+	 * @param inviterId The Id of the user attempting to invite.
 	 * @returns True if the user has permission, false otherwise.
 	 */
 	CanInvite(inviterId: string) {
@@ -741,7 +741,7 @@ export class Gang {
 				return false;
 			}
 
-			// Find member role (lowest ID that is not leader)
+			// Find member role (lowest Id that is not leader)
 			// Assuming "Membro" is the default role name for members
 			const memberRole = this.Roles.find(r => Gang.MEMBER_ROLE_NAMES.includes(r.Name));
 
@@ -778,7 +778,7 @@ export class Gang {
 
 	/**
 	 * Checks if a user has permission to kick others from the gang.
-	 * @param kickerId The ID of the user attempting to kick.
+	 * @param kickerId The Id of the user attempting to kick.
 	 * @returns True if the user has permission, false otherwise.
 	 */
 	CanKick(kickerId: string): boolean {
@@ -851,9 +851,9 @@ export class Gang {
 
 	/**
 	 * Changes the role of a gang member.
-	 * @param changerId The ID of the user performing the change.
-	 * @param targetUserId The ID of the user whose role is being changed.
-	 * @param newRoleId The ID of the new role.
+	 * @param changerId The Id of the user performing the change.
+	 * @param targetUserId The Id of the user whose role is being changed.
+	 * @param newRoleId The Id of the new role.
 	 * @returns True if the role was changed successfully, false otherwise.
 	 */
 	async ChangeRole(changerId: string, targetUserId: string, newRoleId: number): Promise<boolean> {
@@ -932,7 +932,7 @@ export class Gang {
 
 	/**
 	 * Checks if a user has permission to edit the gang.
-	 * @param editorId The ID of the user attempting to edit.
+	 * @param editorId The Id of the user attempting to edit.
 	 * @returns True if the user has permission, false otherwise.
 	 */
 	CanEdit(editorId: string): boolean {
@@ -969,7 +969,7 @@ export class Gang {
 
 	/**
 	 * Creates a new role in the gang.
-	 * @param creatorId The ID of the user creating the role (must be leader).
+	 * @param creatorId The Id of the user creating the role (must be leader).
 	 * @param name The name of the new role.
 	 * @param permissions The permissions assigned to the role.
 	 * @returns True if the role was created successfully, false otherwise.
@@ -1011,8 +1011,8 @@ export class Gang {
 
 	/**
 	 * Edits an existing role in the gang.
-	 * @param editorId The ID of the user editing the role (must be leader).
-	 * @param roleId The ID of the role to edit.
+	 * @param editorId The Id of the user editing the role (must be leader).
+	 * @param roleId The Id of the role to edit.
 	 * @param permissions The new permissions for the role.
 	 * @param name The new name for the role.
 	 * @returns True if the role was edited successfully, false otherwise.
@@ -1063,8 +1063,8 @@ export class Gang {
 
 	/**
 	 * Deletes a role from the gang.
-	 * @param deleterId The ID of the user deleting the role (must be leader).
-	 * @param roleId The ID of the role to delete.
+	 * @param deleterId The Id of the user deleting the role (must be leader).
+	 * @param roleId The Id of the role to delete.
 	 * @returns True if the role was deleted successfully, false otherwise.
 	 */
 	async DeleteRole(deleterId: string, roleId: number): Promise<boolean> {
@@ -1167,7 +1167,7 @@ export class Gang {
 
 	/**
 	 * Deletes the gang.
-	 * @param userId The ID of the user deleting the gang (must be leader).
+	 * @param userId The Id of the user deleting the gang (must be leader).
 	 * @returns True if the gang was deleted successfully, false otherwise.
 	 */
 	async DeleteGang(userId: string): Promise<boolean> {
@@ -1235,7 +1235,7 @@ export class Gang {
 
 	/**
 	 * Checks if a user can send official communications.
-	 * @param senderId The ID of the user.
+	 * @param senderId The Id of the user.
 	 * @returns True if the user can communicate, false otherwise.
 	 */
 	CanCommunicate(senderId: string): boolean {

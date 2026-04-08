@@ -87,6 +87,6 @@ export async function disableButtons(interaction: CommandInteraction | ButtonInt
 		await replyWithContainer(interaction, container);
 	}
 	catch (err) {
-		Log.Warning(`Something went wrong with disabling buttons from container ${container.data.id} of user ${interaction.user.displayName} in server ${interaction.guild?.name} (ID: ${interaction.guild?.id}). Error: ${err}`);
+		Log.Warning(`Something went wrong with disabling buttons from container ${container.data.id} of user ${interaction.user.displayName} in server ${interaction.guild?.name} (Id: ${interaction.guild?.id}). Error: ${err}`);
 	}
 }

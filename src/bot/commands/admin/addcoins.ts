@@ -24,7 +24,7 @@ module.exports = {
 			option
 				.setName("userid")
 				.setDescription("The userId who will receive the coins")
-				.setDescriptionLocalization(Locale.PortugueseBR, "O ID do usuário que vai receber as moedas")
+				.setDescriptionLocalization(Locale.PortugueseBR, "O Id do usuário que vai receber as moedas")
 				.setRequired(true),
 		)
 		.addIntegerOption((option: SlashCommandIntegerOption) =>

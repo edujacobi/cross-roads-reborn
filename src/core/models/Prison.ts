@@ -115,7 +115,7 @@ export class Prison {
 			escapeHasTried: this.User.Escape.HasTried,
 			escapeTime: this.User.Escape.Time,
 		});
-		Log.Info(`User ${this.User.Nickname} (ID: ${this.User.Id}) started a escape attempt from prison ${this.Escape.HasJetpack ? "with a jetpack" : ""}.`);
+		Log.Info(`User ${this.User.Nickname} (Id: ${this.User.Id}) started a escape attempt from prison ${this.Escape.HasJetpack ? "with a jetpack" : ""}.`);
 	}
 
 	async EndEscape() {
@@ -144,13 +144,13 @@ export class Prison {
 			this.User.Wanted.Time = addMinutes(new Date(), Prison.EscapeTimeInMinutesWanted);
 
 			await Notification.RobAgain(this.User);
-			Log.Success(`User ${this.User.Nickname} (ID: ${this.User.Id}) successfully escaped from prison. Total escapes: ${this.User.Escape.Count}`);
+			Log.Success(`User ${this.User.Nickname} (Id: ${this.User.Id}) successfully escaped from prison. Total escapes: ${this.User.Escape.Count}`);
 		}
 		else {
 			this.User.Prison.Time = addMinutes(this.User.Prison.Time, totalTime);
 
 			await Notification.Free(this.User);
-			Log.Success(`User ${this.User.Nickname} (ID: ${this.User.Id}) failed in his attempt to escape from prison. Will be in prison until ${this.User.Prison.Time}`);
+			Log.Success(`User ${this.User.Nickname} (Id: ${this.User.Id}) failed in his attempt to escape from prison. Will be in prison until ${this.User.Prison.Time}`);
 		}
 
 		await this.User.Update({
@@ -227,7 +227,7 @@ export class Prison {
 			prisonTime: this.User.Prison.Time,
 			wantedTime: this.User.Wanted.Time,
 		});
-		Log.Success(`User ${this.User.Nickname} (ID: ${this.User.Id}) paid a bribe of ${formatMoney(bribeValue, Language.English)} to leave prison. Sucess: ${success}.`);
+		Log.Success(`User ${this.User.Nickname} (Id: ${this.User.Id}) paid a bribe of ${formatMoney(bribeValue, Language.English)} to leave prison. Sucess: ${success}.`);
 
 		return success;
 	}

@@ -1,6 +1,6 @@
 import type { User } from "./User";
 import { EmoteString } from "@bot/utils/emotes";
-import { showTime } from "@bot/utils/ui";
+import { formatMoney, showTime } from "@bot/utils/ui";
 import { JobList } from "@core/types/Jobs";
 import { globalStrings, Language, type Localization } from "./Language";
 import { type ScavengeId, ScavengeList } from "@core/types/Scavenge";
@@ -93,7 +93,7 @@ export class Casino {
 		await user.Update({
 			casinoIsInGame: user.Casino.IsInGame,
 		});
-		Log.Info(`User ${user.Nickname} (ID: ${user.Id}) is now in a Casino Game.`);
+		Log.Info(`User ${user.Nickname} (Id: ${user.Id}) is now in a Casino Game.`);
 	}
 
 	static async FinishUserGameWithWin(user: User, prize: number) {
@@ -107,7 +107,7 @@ export class Casino {
 			casinoWinCount: user.Casino.WinCount,
 			casinoWinSum: user.Casino.WinSum,
 		});
-		Log.Success(`User ${user.Nickname} (ID: ${user.Id}) won ${prize} in a Casino Game.`);
+		Log.Success(`User ${user.Nickname} (Id: ${user.Id}) won ${formatMoney(prize, Language.English)} in a Casino Game.`);
 	}
 
 	static async FinishUserGameWithLoss(user: User, amount: number) {
@@ -124,7 +124,7 @@ export class Casino {
 			hospitalTime: user.Hospital.Time,
 			hospitalCount: user.Hospital.Count,
 		});
-		Log.Success(`User ${user.Nickname} (ID: ${user.Id}) lost ${amount} in a Casino Game.`);
+		Log.Success(`User ${user.Nickname} (Id: ${user.Id}) lost ${formatMoney(amount, Language.English)} in a Casino Game.`);
 	}
 }
 

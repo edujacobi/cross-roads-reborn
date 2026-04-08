@@ -334,7 +334,7 @@ export class Robbery {
 			}),
 		]);
 
-		Log.Info(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) started a robbery to user ${this.Defender.Nickname} (ID: ${this.Defender.Id}).`);
+		Log.Info(`User ${this.Attacker.Nickname} (Id: ${this.Attacker.Id}) started a robbery to user ${this.Defender.Nickname} (Id: ${this.Defender.Id}).`);
 
 		let usedGun = `${this.Attacker.GetItemSkin(this.Attacker.BestGun!)} **${this.Attacker.BestGun?.Description[this.Defender.Language]}**`;
 		if (this.UsedConsumables.includes(ItemId.Grenade)) {
@@ -555,7 +555,7 @@ ${sA.beatenUp(this.Defender.Hospital.Time)} ${EmoteString.Hospital}` : ""}`,
 
 			this.Container.Channel.changeTextFromSectionId(50, texts);
 
-			Log.Success(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) successfully robbed user ${this.Defender.Nickname} (ID: ${this.Defender.Id}) and got ${formatMoney(this.MoneyRobbed, Language.English)}. ${willBeBeatenUp ? "The defender was beaten up." : ""}`);
+			Log.Success(`User ${this.Attacker.Nickname} (Id: ${this.Attacker.Id}) successfully robbed user ${this.Defender.Nickname} (Id: ${this.Defender.Id}) and got ${formatMoney(this.MoneyRobbed, Language.English)}. ${willBeBeatenUp ? "The defender was beaten up." : ""}`);
 		}
 		else {
 			this.Attacker.Prison.Time = addMinutes(new Date(), this.AttackerTimeInPrison);
@@ -583,7 +583,7 @@ ${sA.beatenUp(this.Defender.Hospital.Time)} ${EmoteString.Hospital}` : ""}`,
 
 			this.Container.Channel.changeTextFromSectionId(50, texts);
 
-			Log.Success(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) failed to rob user ${this.Defender.Nickname} (ID: ${this.Defender.Id}).`);
+			Log.Success(`User ${this.Attacker.Nickname} (Id: ${this.Attacker.Id}) failed to rob user ${this.Defender.Nickname} (Id: ${this.Defender.Id}).`);
 		}
 
 		this.Container.Channel

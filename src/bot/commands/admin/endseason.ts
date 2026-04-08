@@ -96,11 +96,11 @@ module.exports = {
 				}
 
 				function getUserRow(user: Users, info: string | number) {
-					return `**${ClassList[user.class].Image.Emote.String} ${user.nickname}**\n${info}\n-# \`ID: ${user.id}\``;
+					return `**${ClassList[user.class].Image.Emote.String} ${user.nickname}**\n${info}\n-# \`Id: ${user.id}\``;
 				}
 
 				function getGangRow(gang: Gangs, info: string | number) {
-					return `${gang.name} (${info})\n-# \`ID: ${gang.id}\``;
+					return `${gang.name} (${info})\n-# \`Id: ${gang.id}\``;
 				}
 
 				texts.push("Getting top ranking values...");

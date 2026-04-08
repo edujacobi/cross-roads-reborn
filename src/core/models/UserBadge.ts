@@ -124,7 +124,7 @@ export class UserBadge {
 
 	/**
 	 * Checks if a user has the Moderator badge
-	 * @param userId User ID to check
+	 * @param userId User Id to check
 	 * @returns Promise<boolean> True if the user has the moderator badge
 	 */
 	static async IsModerator(userId: string): Promise<boolean> {
@@ -151,7 +151,7 @@ export class UserBadge {
 
 	/**
 	 * Checks if a user has the Developer badge
-	 * @param userId User ID to check
+	 * @param userId User Id to check
 	 * @returns Promise<boolean> True if the user has the developer badge
 	 */
 	static async IsDeveloper(userId: string): Promise<boolean> {
@@ -178,7 +178,7 @@ export class UserBadge {
 
 	/**
 	 * Checks if a user has the Helper badge
-	 * @param userId User ID to check
+	 * @param userId User Id to check
 	 * @returns Promise<boolean> True if the user has the helper badge
 	 */
 	static async IsHelper(userId: string): Promise<boolean> {

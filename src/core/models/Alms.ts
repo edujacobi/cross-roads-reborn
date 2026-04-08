@@ -97,7 +97,7 @@ export class Alms {
 			// Notification.AlmsReceive(this.Receiver),
 		]);
 
-		Log.Success(`User ${this.Giver.Nickname} (ID: ${this.Giver.Id}) gave ${formatMoney(this.Value, Language.English)} to ${this.Receiver.Nickname} (ID: ${this.Receiver.Id}).`);
+		Log.Success(`User ${this.Giver.Nickname} (Id: ${this.Giver.Id}) gave ${formatMoney(this.Value, Language.English)} to ${this.Receiver.Nickname} (Id: ${this.Receiver.Id}).`);
 	}
 }
 

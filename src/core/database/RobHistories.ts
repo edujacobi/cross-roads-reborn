@@ -61,10 +61,10 @@ export class RobHistories extends Model<
 				type: robbery.Type,
 			});
 
-			Log.Success(`Robbery History for ${robbery.Attacker.Nickname} (ID: ${robbery.Attacker.Id}) and ${robbery.Defender.Nickname} (ID: ${robbery.Defender.Id}) added successfully.`);
+			Log.Success(`Robbery History for ${robbery.Attacker.Nickname} (Id: ${robbery.Attacker.Id}) and ${robbery.Defender.Nickname} (Id: ${robbery.Defender.Id}) added successfully.`);
 		}
 		catch (err) {
-			Log.Warning(`Something went wrong with adding Robbery History for ${robbery.Attacker.Nickname} (ID: ${robbery.Attacker.Id}) and ${robbery.Defender.Nickname} (ID: ${robbery.Defender.Id}).`);
+			Log.Warning(`Something went wrong with adding Robbery History for ${robbery.Attacker.Nickname} (Id: ${robbery.Attacker.Id}) and ${robbery.Defender.Nickname} (Id: ${robbery.Defender.Id}).`);
 		}
 	}
 
@@ -78,10 +78,10 @@ export class RobHistories extends Model<
 				type: robbery.Type,
 			});
 
-			Log.Success(`Robbery History for ${robbery.Attacker.Nickname} (ID: ${robbery.Attacker.Id}) and ${LocationList[robbery.LocationId].Name[Language.English]} (ID: ${robbery.LocationId}) added successfully.`);
+			Log.Success(`Robbery History for ${robbery.Attacker.Nickname} (Id: ${robbery.Attacker.Id}) and ${LocationList[robbery.LocationId].Name[Language.English]} (Id: ${robbery.LocationId}) added successfully.`);
 		}
 		catch (err) {
-			Log.Warning(`Something went wrong with adding Robbery History for ${robbery.Attacker.Nickname} (ID: ${robbery.Attacker.Id}) and ${LocationList[robbery.LocationId].Name[Language.English]} (ID: ${robbery.LocationId}).`);
+			Log.Warning(`Something went wrong with adding Robbery History for ${robbery.Attacker.Nickname} (Id: ${robbery.Attacker.Id}) and ${LocationList[robbery.LocationId].Name[Language.English]} (Id: ${robbery.LocationId}).`);
 		}
 	}
 
@@ -95,10 +95,10 @@ export class RobHistories extends Model<
 				type: ClashType.BeatUp,
 			});
 
-			Log.Success(`Beat Up History for ${beatup.Attacker.Nickname} (ID: ${beatup.Attacker.Id}) and ${beatup.Defender.Nickname} (ID: ${beatup.Defender.Id}) added successfully.`);
+			Log.Success(`Beat Up History for ${beatup.Attacker.Nickname} (Id: ${beatup.Attacker.Id}) and ${beatup.Defender.Nickname} (Id: ${beatup.Defender.Id}) added successfully.`);
 		}
 		catch (err) {
-			Log.Warning(`Something went wrong with adding Beat Up History for ${beatup.Attacker.Nickname} (ID: ${beatup.Attacker.Id}) and ${beatup.Defender.Nickname} (ID: ${beatup.Defender.Id}).`);
+			Log.Warning(`Something went wrong with adding Beat Up History for ${beatup.Attacker.Nickname} (Id: ${beatup.Attacker.Id}) and ${beatup.Defender.Nickname} (Id: ${beatup.Defender.Id}).`);
 		}
 	}
 }

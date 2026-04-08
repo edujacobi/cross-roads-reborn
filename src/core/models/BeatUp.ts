@@ -354,7 +354,7 @@ export class BeatUp {
 			}),
 		]);
 
-		Log.Info(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) started beating up user ${this.Defender.Nickname} (ID: ${this.Defender.Id}).`);
+		Log.Info(`User ${this.Attacker.Nickname} (Id: ${this.Attacker.Id}) started beating up user ${this.Defender.Nickname} (Id: ${this.Defender.Id}).`);
 
 		let usedGun = `${this.Attacker.GetItemSkin(this.Attacker.BestGun!)} **${this.Attacker.BestGun?.Description[this.Defender.Language]}**`;
 		if (this.UsedConsumables.includes(ItemId.Grenade)) {
@@ -542,7 +542,7 @@ export class BeatUp {
 
 			this.Container.Channel.changeTextFromSectionId(50, texts);
 
-			Log.Success(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) successfully beated user ${this.Defender.Nickname} (ID: ${this.Defender.Id})`);
+			Log.Success(`User ${this.Attacker.Nickname} (Id: ${this.Attacker.Id}) successfully beated user ${this.Defender.Nickname} (Id: ${this.Defender.Id})`);
 		}
 		else {
 			this.Attacker.BeatUp.BeatedUpCount += 1;
@@ -571,7 +571,7 @@ export class BeatUp {
 			this.Container.Channel
 				.changeTextFromSectionId(50, texts);
 
-			Log.Success(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) failed to beat user ${this.Defender.Nickname} (ID: ${this.Defender.Id}).`);
+			Log.Success(`User ${this.Attacker.Nickname} (Id: ${this.Attacker.Id}) failed to beat user ${this.Defender.Nickname} (Id: ${this.Defender.Id}).`);
 		}
 
 		this.Container.Channel

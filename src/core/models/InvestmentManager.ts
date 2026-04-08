@@ -164,7 +164,7 @@ export class InvestmentManager {
 					if (isIdling) {
 						const finalPayout = Math.round(totalPayout + currentInvestment.accumulatedYield);
 						const finalFee = Math.round(totalPayoutFee + currentInvestment.accumulatedFee);
- 
+
 						await Users.increment(
 							{ money: finalPayout, investmentTotalProfit: finalPayout },
 							{ where: { id: currentInvestment.userId } },
@@ -276,7 +276,7 @@ export class InvestmentManager {
 		user.Investment.ExpiresAt = expiresAt;
 		user.Investment.PurchasedAt = new Date();
 
-		Log.Success(`User ${user.Id} bought investment ${investmentData.Name[0]} (Id: ${investmentId}) for ${formatMoney(investmentData.Price, Language.English)}. Expires at ${expiresAt}.`);
+		Log.Success(`User ${user.Nickname} (Id: ${user.Id}) bought investment ${investmentData.Name[Language.English]} (Id: ${user.Investment.Id}) for ${formatMoney(investmentData.Price, Language.English)}. Expires at ${expiresAt}.`);
 
 		return { success: true };
 	}
@@ -294,7 +294,7 @@ export class InvestmentManager {
 			where: { userId: user.Id },
 		});
 
-		Log.Info(`User ${user.Id} abandoned investment ${investmentData.Name[0]} (Id: ${user.Investment.Id}).`);
+		Log.Info(`User ${user.Nickname} (Id: ${user.Id}) abandoned investment ${investmentData.Name[Language.English]} (Id: ${user.Investment.Id}).`);
 
 		user.Investment.Id = null;
 		user.Investment.AccumulatedYield = 0;
@@ -327,7 +327,7 @@ export class InvestmentManager {
 		user.Investment.HenchmanEndsAt = endsAt;
 		user.Investment.HenchmanHospitalized = false;
 
-		Log.Info(`User ${user.Id} hired a henchman for investment (Id: ${user.Investment.Id}). Ends at ${endsAt}.`);
+		Log.Info(`User ${user.Nickname} (Id: ${user.Id}) hired a henchman for investment ${InvestmentList[user.Investment.Id].Name[Language.English]} (Id: ${user.Investment.Id}). Ends at ${endsAt}.`);
 
 		return { success: true };
 	}

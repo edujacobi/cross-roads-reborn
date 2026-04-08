@@ -28,19 +28,19 @@ export enum NotificationType {
 }
 
 const NotificationMapper = {
-	[NotificationType.Daily]: "daily",
-	[NotificationType.Job]: "job",
-	[NotificationType.RobAgain]: "robAgain",
-	[NotificationType.Free]: "free",
-	[NotificationType.Hospital]: "hospital",
-	[NotificationType.AlmsGive]: "almsGive",
-	[NotificationType.AlmsReceive]: "almsReceive",
-	[NotificationType.Scavenge]: "scavenge",
-	[NotificationType.BeatAgain]: "beatAgain",
-	[NotificationType.HorseRace]: "horseRace",
-	[NotificationType.GangDepositAgain]: "gangDepositAgain",
-	[NotificationType.InvestmentYield]: "investmentYield",
-	[NotificationType.InvestmentExpired]: "investmentExpired",
+	[NotificationType.Daily]: "Daily",
+	[NotificationType.Job]: "Job",
+	[NotificationType.RobAgain]: "Rob Again",
+	[NotificationType.Free]: "Free",
+	[NotificationType.Hospital]: "Hospital",
+	[NotificationType.AlmsGive]: "Alms Give",
+	[NotificationType.AlmsReceive]: "Alms Receive",
+	[NotificationType.Scavenge]: "Scavenge",
+	[NotificationType.BeatAgain]: "Beat Again",
+	[NotificationType.HorseRace]: "Horse Race",
+	[NotificationType.GangDepositAgain]: "Gang Deposit Again",
+	[NotificationType.InvestmentYield]: "Investment Yield",
+	[NotificationType.InvestmentExpired]: "Investment Expired",
 };
 
 export class Notification {
@@ -65,7 +65,7 @@ export class Notification {
 
 		}
 		catch (err) {
-			Log.Warning(`Something went wrong with adding Notification Timer for ${this.UserId}.`);
+			Log.Warning(`Something went wrong with adding Notification Timer for UserId${this.UserId} Type ${NotificationMapper[this.Type]} (Id: ${this.Type}).`);
 		}
 	}
 
@@ -220,7 +220,7 @@ export class Notification {
 				where: { id: this.Id },
 			});
 
-			Log.Info(`Notification Timer (Id: ${this.Id}) (Type:${NotificationMapper[this.Type]} (${this.Type})) to user ${this.UserId} notified.`);
+			Log.Info(`Notification Timer (Id: ${this.Id}) Type ${NotificationMapper[this.Type]} (Id: ${this.Type}) to user ${this.UserId} notified.`);
 
 		}
 		catch (err) {
@@ -247,10 +247,10 @@ export class Notification {
 			notificationTimer.Id = notification.id;
 			await notificationTimer.SetAsNotified();
 
-			Log.Info(`Notification Timer ${notification.id} dismissed.`);
+			Log.Info(`Notification Timer (Id: ${notification.id}) Type ${NotificationMapper[notification.type]} (Id: ${notification.type}) dismissed.`);
 		}
 		catch (err) {
-			Log.Warning(`Something went wrong with dismissing Notification type ${type} of userId ${userId}.`);
+			Log.Warning(`Something went wrong with dismissing Notification Type ${NotificationMapper[type]} (Id: ${type}) of userId ${userId}.`);
 		}
 	}
 

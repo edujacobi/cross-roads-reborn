@@ -486,10 +486,10 @@ module.exports = {
 				[Locale.PortugueseBR]: "roubar_investimento",
 				[Locale.SpanishES]: "robar_inversion",
 			})
-			.setDescription("Rob a user's investment (Nickname or ID)")
+			.setDescription("Rob a user's investment (Nickname or Id)")
 			.setDescriptionLocalizations({
-				[Locale.PortugueseBR]: "Rouba o investimento de um usuário (Apelido ou ID)",
-				[Locale.SpanishES]: "Roba la inversión de un usuario (Apodo o ID)",
+				[Locale.PortugueseBR]: "Rouba o investimento de um usuário (Apelido ou Id)",
+				[Locale.SpanishES]: "Roba la inversión de un usuario (Apodo o Id)",
 			})
 			.addStringOption(user => user
 				.setName("user")
@@ -497,10 +497,10 @@ module.exports = {
 					[Locale.PortugueseBR]: "usuario",
 					[Locale.SpanishES]: "usuario",
 				})
-				.setDescription("Target user to rob (Nickname or ID)")
+				.setDescription("Target user to rob (Nickname or Id)")
 				.setDescriptionLocalizations({
-					[Locale.PortugueseBR]: "Usuário alvo do roubo (Apelido ou ID)",
-					[Locale.SpanishES]: "Usuario objetivo a robar (Apodo o ID)",
+					[Locale.PortugueseBR]: "Usuário alvo do roubo (Apelido ou Id)",
+					[Locale.SpanishES]: "Usuario objetivo a robar (Apodo o Id)",
 				})
 				.setRequired(true),
 			),

@@ -21,7 +21,7 @@ import type { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBui
 /**
  * Sends a private message (DM) to a user with a simple embed.
  *
- * @param userId - The ID of the user to send the message to.
+ * @param userId - The Id of the user to send the message to.
  * @param message - The content of the message description.
  * @param color - The color of the embed (default: DarkButNotBlack).
  * @param footer - Optional footer text for the embed.
@@ -51,9 +51,9 @@ export async function sendPrivateMessage(userId: string, message: string, color:
 /**
  * Sends a complex private message (DM) to a user.
  *
- * @param userId - The ID of the user to send the message to.
+ * @param userId - The Id of the user to send the message to.
  * @param options - The message options (string, payload, or create options).
- * @returns The sent message or undefined if the user ID is missing or an error occurs.
+ * @returns The sent message or undefined if the user Id is missing or an error occurs.
  */
 export async function sendComplexPrivateMessage(userId: Snowflake | undefined, options: string | MessagePayload | MessageCreateOptions) {
 	if (!userId) {
@@ -97,7 +97,7 @@ export async function replyInteraction(interaction: CommandInteraction | ButtonI
 	catch (err) {
 		const error = err as Error;
 		console.debug(error);
-		Log.Warning(`Something went wrong with replying interaction of user ${interaction.user.displayName} in server ${interaction.guild?.name} (ID: ${interaction.guild?.id}). Error: ${error.message}`);
+		Log.Warning(`Something went wrong with replying interaction of user ${interaction.user.displayName} in server ${interaction.guild?.name} (Id: ${interaction.guild?.id}). Error: ${error.message}`);
 	}
 }
 
@@ -129,7 +129,7 @@ export async function deferReply(interaction: CommandInteraction | ButtonInterac
 		await interaction.deferReply();
 	}
 	catch (err) {
-		Log.Warning(`Something went wrong with deferring interaction ${interaction.id} of user ${interaction.user.displayName} in server ${interaction.guild?.name} (ID: ${interaction.guild?.id}). Error: ${err}`);
+		Log.Warning(`Something went wrong with deferring interaction ${interaction.id} of user ${interaction.user.displayName} in server ${interaction.guild?.name} (Id: ${interaction.guild?.id}). Error: ${err}`);
 	}
 }
 

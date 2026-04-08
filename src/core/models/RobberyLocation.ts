@@ -133,7 +133,7 @@ export class RobberyLocation extends Robbery {
 			robbingLocationId: this.Attacker.Robbery.IsRobbingLocationId,
 		});
 
-		Log.Info(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) started a robbery to location ${LocationList[this.LocationId].Name[Language.English]} (ID: ${LocationList[this.LocationId].Id}).`);
+		Log.Info(`User ${this.Attacker.Nickname} (Id: ${this.Attacker.Id}) started a robbery to location ${LocationList[this.LocationId].Name[Language.English]} (Id: ${LocationList[this.LocationId].Id}).`);
 
 		this.Container.Channel
 			.setUser(this.Attacker)
@@ -181,7 +181,7 @@ export class RobberyLocation extends Robbery {
 
 			this.Container.Channel.changeTextFromSectionId(50, texts);
 
-			Log.Success(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) successfully robbed location ${LocationList[this.LocationId].Name[Language.English]} (ID: ${LocationList[this.LocationId].Id}) and got ${formatMoney(this.MoneyRobbed, Language.English)}.`);
+			Log.Success(`User ${this.Attacker.Nickname} (Id: ${this.Attacker.Id}) successfully robbed location ${LocationList[this.LocationId].Name[Language.English]} (Id: ${LocationList[this.LocationId].Id}) and got ${formatMoney(this.MoneyRobbed, Language.English)}.`);
 		}
 		else {
 			this.Attacker.Prison.Time = addMinutes(new Date(), this.AttackerTimeInPrison);
@@ -202,7 +202,7 @@ export class RobberyLocation extends Robbery {
 
 			this.Container.Channel.changeTextFromSectionId(50, texts);
 
-			Log.Success(`User ${this.Attacker.Nickname} (ID: ${this.Attacker.Id}) failed to rob location ${LocationList[this.LocationId].Name[Language.English]} (ID: ${LocationList[this.LocationId].Id}).`);
+			Log.Success(`User ${this.Attacker.Nickname} (Id: ${this.Attacker.Id}) failed to rob location ${LocationList[this.LocationId].Name[Language.English]} (Id: ${LocationList[this.LocationId].Id}).`);
 		}
 
 		this.Container.Channel

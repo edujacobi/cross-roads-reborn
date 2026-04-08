@@ -35,9 +35,9 @@ export class Event {
 	}
 
 	/**
-	 * Deletes an event by its ID.
+	 * Deletes an event by its Id.
 	 *
-	 * @param eventId The ID of the event to delete.
+	 * @param eventId The Id of the event to delete.
 	 * @returns True if the event was deleted successfully, false otherwise.
 	 */
 	static async Delete(eventId: number): Promise<boolean> {
@@ -47,24 +47,24 @@ export class Event {
 			});
 
 			if (result) {
-				Log.Success(`Event with ID ${eventId} deleted successfully.`);
+				Log.Success(`Event with Id ${eventId} deleted successfully.`);
 				return true;
 			}
 			else {
-				Log.Warning(`Event with ID ${eventId} not found.`);
+				Log.Warning(`Event with Id ${eventId} not found.`);
 				return false;
 			}
 		}
 		catch (err) {
-			Log.Error(`Error while deleting event with ID ${eventId}`);
+			Log.Error(`Error while deleting event with Id ${eventId}`);
 			return false;
 		}
 	}
 
 	/**
-	 * Updates an event by its ID.
+	 * Updates an event by its Id.
 	 *
-	 * @param eventId The ID of the event to update.
+	 * @param eventId The Id of the event to update.
 	 * @param updatedData The updated event data.
 	 * @returns True if the event was updated successfully, false otherwise.
 	 */
@@ -75,16 +75,16 @@ export class Event {
 			});
 
 			if (result[0] > 0) {
-				Log.Success(`Event with ID ${eventId} updated successfully.`);
+				Log.Success(`Event with Id ${eventId} updated successfully.`);
 				return true;
 			}
 			else {
-				Log.Warning(`Event with ID ${eventId} not found.`);
+				Log.Warning(`Event with Id ${eventId} not found.`);
 				return false;
 			}
 		}
 		catch (err) {
-			Log.Error(`Error while updating event with ID ${eventId}`);
+			Log.Error(`Error while updating event with Id ${eventId}`);
 			return false;
 		}
 	}

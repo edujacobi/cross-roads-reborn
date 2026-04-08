@@ -24,7 +24,7 @@ module.exports = {
 			option
 				.setName("userid")
 				.setDescription("The userId who will receive the class")
-				.setDescriptionLocalization(Locale.PortugueseBR, "O ID do usuário que vai receber a classe")
+				.setDescriptionLocalization(Locale.PortugueseBR, "O Id do usuário que vai receber a classe")
 				.setRequired(true),
 		)
 		.addIntegerOption((option: SlashCommandIntegerOption) =>

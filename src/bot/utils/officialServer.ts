@@ -44,10 +44,10 @@ export async function setPlayerRoleInOfficialServer(interaction: ChatInputComman
 
 	try {
 		await user.roles.add(playerRole);
-		Log.Success(`Role Player added to user ${interaction.user.displayName} (ID: ${interaction.user.id})`);
+		Log.Success(`Role Player added to user ${interaction.user.displayName} (Id: ${interaction.user.id})`);
 	}
 	catch (err) {
-		Log.Warning(`Something went wrong with adding role Player to user ${interaction.user.displayName} (ID: ${interaction.user.id}).`);
+		Log.Warning(`Something went wrong with adding role Player to user ${interaction.user.displayName} (Id: ${interaction.user.id}).`);
 	}
 }
 
@@ -98,20 +98,20 @@ export async function setVIPRoleInOfficialServer(interaction: ChatInputCommandIn
 	if (hasVIPRole && !isVIP) {
 		try {
 			await user.roles.remove(VIPRole);
-			Log.Success(`Role VIP removed from user ${interaction.user.displayName} (ID: ${interaction.user.id})`);
+			Log.Success(`Role VIP removed from user ${interaction.user.displayName} (Id: ${interaction.user.id})`);
 		}
 		catch (err) {
-			Log.Warning(`Something went wrong with removing role VIP from user ${interaction.user.displayName} (ID: ${interaction.user.id}).`);
+			Log.Warning(`Something went wrong with removing role VIP from user ${interaction.user.displayName} (Id: ${interaction.user.id}).`);
 		}
 	}
 
 	if (!hasVIPRole && isVIP) {
 		try {
 			await user.roles.add(VIPRole);
-			Log.Success(`Role VIP added to user ${interaction.user.displayName} (ID: ${interaction.user.id})`);
+			Log.Success(`Role VIP added to user ${interaction.user.displayName} (Id: ${interaction.user.id})`);
 		}
 		catch (err) {
-			Log.Warning(`Something went wrong with adding role VIP to user ${interaction.user.displayName} (ID: ${interaction.user.id}).`);
+			Log.Warning(`Something went wrong with adding role VIP to user ${interaction.user.displayName} (Id: ${interaction.user.id}).`);
 		}
 	}
 }
@@ -150,10 +150,10 @@ export async function setPlayerNicknameInOfficialServer(interaction: ChatInputCo
 
 	try {
 		await member.setNickname(user.Nickname);
-		Log.Success(`Nickname in server added to user ${interaction.user.displayName} (ID: ${interaction.user.id})`);
+		Log.Success(`Nickname in server added to user ${interaction.user.displayName} (Id: ${interaction.user.id})`);
 	}
 	catch (err) {
-		Log.Warning(`Something went wrong with adding Nickname in server to user ${interaction.user.displayName} (ID: ${interaction.user.id}).`);
+		Log.Warning(`Something went wrong with adding Nickname in server to user ${interaction.user.displayName} (Id: ${interaction.user.id}).`);
 	}
 }
 
