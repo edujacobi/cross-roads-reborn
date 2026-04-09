@@ -163,6 +163,17 @@ async function handleBuy(interaction: ChatInputCommandInteraction, user: User, l
 			const itemId = Number(btn.customId.replace("confirm_buy", "")) as InvestmentId;
 			const item = InvestmentList[itemId];
 
+			await user.GetInfo();
+
+			if (!user.IsIdling()) {
+				return replyWithContainer(interaction, new CustomContainerBuilder()
+					.setUser(user)
+					.setAccentColor(Colors.Red)
+					.addTexts([s.notIdlingBuy])
+					.addFooter());
+			}
+
+
 			// Process buy
 			const result = await InvestmentManager.Buy(user, itemId);
 
@@ -393,7 +404,19 @@ async function handleManage(interaction: ChatInputCommandInteraction, user: User
 
 		}
 		else if (btn.customId === "confirm_abandon") {
+			await user.GetInfo();
+
+			if (!user.IsIdling()) {
+				return replyWithContainer(interaction, new CustomContainerBuilder()
+					.setUser(user)
+					.setAccentColor(Colors.Red)
+					.addTexts([s.notIdlingAbandon])
+					.addFooter()
+				)
+			}
+
 			const result = await InvestmentManager.Abandon(user);
+
 			if (!result.success) {
 				const errorContainer = addContainerHeader()
 					.setAccentColor(Colors.Red)
@@ -476,6 +499,8 @@ const Strings = {
 		confirmBuy: "Confirm purchase",
 		cancelBuy: "Cancel",
 		abandonConfirmationTitle: "Abandon investment?",
+		notIdlingBuy: `You must be ${EmoteString.Idle} Idling to buy an investment!`,
+		notIdlingAbandon: `You must be ${EmoteString.Idle} Idling to abandon your investment!`,
 	},
 	[Language.Portuguese]: {
 		buyTitle: "Investimentos à Venda",
@@ -527,6 +552,8 @@ const Strings = {
 		confirmBuy: "Confirmar compra",
 		cancelBuy: "Cancelar",
 		abandonConfirmationTitle: "Abandonar investimento?",
+		notIdlingBuy: `Você precisa estar ${EmoteString.Idle} Vadiando para comprar um investimento!`,
+		notIdlingAbandon: `Você precisa estar ${EmoteString.Idle} Vadiando para abandonar seu investimento!`,
 	},
 	[Language.Spanish]: {
 		buyTitle: "Inversiones en Venta",
@@ -578,5 +605,7 @@ const Strings = {
 		confirmBuy: "Confirmar compra",
 		cancelBuy: "Cancelar",
 		abandonConfirmationTitle: "¿Abandonar inversión?",
+		notIdlingBuy: `¡Debes estar ${EmoteString.Idle} Vagando para comprar una inversión!`,
+		notIdlingAbandon: `¡Debes estar ${EmoteString.Idle} Vagando para abandonar tu inversión!`,
 	},
 } as const satisfies Localization;

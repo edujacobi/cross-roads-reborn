@@ -247,14 +247,14 @@ export class InvestmentRobbery {
 			if (defenderJoined) {
 				result.attackersHospitalized = true;
 			}
-			
+
 			for (const participant of this.Participants.values()) {
 				participant.Prison.Time = addHours(new Date(), result.prisonHours);
-				
+
 				if (defenderJoined) {
 					participant.Hospital.Time = addMinutes(new Date(), 30);
 				}
-				
+
 				participant.Robbery.IsRobbingId = null;
 				participant.Robbery.ParticipatingInGangAction = false;
 
@@ -262,6 +262,8 @@ export class InvestmentRobbery {
 					prisonTime: participant.Prison.Time,
 					...(defenderJoined && { hospitalTime: participant.Hospital.Time }),
 					robbingUserId: null,
+					prisonHasPaidBribe: false,
+					escapeHasTried: false,
 					robberyParticipatingInGangAction: false
 				});
 			}
