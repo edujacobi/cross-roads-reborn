@@ -71,7 +71,7 @@ async function handleBuy(interaction: ChatInputCommandInteraction, user: User, l
 					`-# ${s.durationInfo}`,
 				])
 				.setThumbnailAccessory(thumb => thumb
-					.setURL("https://media.discordapp.net/attachments/1233604589064818808/1491106544643997928/Investment.png")
+					.setURL("https://media.discordapp.net/attachments/1233604589064818808/1491106544643997928/Investment.png"),
 				),
 			)
 			.addLargeSeparator();
@@ -411,8 +411,8 @@ async function handleManage(interaction: ChatInputCommandInteraction, user: User
 					.setUser(user)
 					.setAccentColor(Colors.Red)
 					.addTexts([s.notIdlingAbandon])
-					.addFooter()
-				)
+					.addFooter(),
+				);
 			}
 
 			const result = await InvestmentManager.Abandon(user);

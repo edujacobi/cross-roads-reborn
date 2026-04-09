@@ -41,7 +41,7 @@ export class UserAvatarDecoration {
 			return true;
 		}
 		catch (err) {
-			Log.Warning(`Something went wrong adding vvatar decoration ${avatarDecorationId} for ${userId}. Error ${err}`);
+			Log.Warning(`Something went wrong adding avatar decoration ${avatarDecorationId} for ${userId}. Error ${err}`);
 			return false;
 		}
 	}
