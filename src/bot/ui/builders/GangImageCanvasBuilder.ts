@@ -96,7 +96,7 @@ export class GangImageCanvasBuilder {
 		// Text
 		const margin = 110;
 		const roleText = `${this.Gang.Members.find(member => member.UserId === this.User.Id)!.RoleName} ${Strings[this.Language].of}`;
-		ctx.font = "600 28px Inter";
+		ctx.font = "600 28px InterSemiBold";
 		ctx.fillStyle = "#FFFFFF";
 		ctx.textBaseline = "middle";
 		ctx.fillText(roleText, margin, ctx.canvas.height / 2);
@@ -105,7 +105,7 @@ export class GangImageCanvasBuilder {
 		ctx.fillText(this.Gang.Name, margin + ctx.measureText(roleText).width + 10, ctx.canvas.height / 2);
 
 		ctx.fillStyle = "#FFFFFF";
-		ctx.font = "600 20px Inter";
+		ctx.font = "600 20px InterSemiBold";
 		ctx.textAlign = "end";
 		ctx.fillText(`${Strings[this.Language].level} ${this.Gang.Level}`, ctx.canvas.width - 32, ctx.canvas.height / 2);
 

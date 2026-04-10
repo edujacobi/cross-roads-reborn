@@ -14,10 +14,17 @@ import { Language, type Localization } from "@core/models/Language";
 import { Pagination } from "@core/models/Pagination";
 import { Robbery } from "@core/models/Robbery";
 import { User } from "@core/models/User";
-import { ClassList } from "@core/types/Classes";
 import type { IDescription } from "@core/types/Interfaces";
-import { ButtonStyle, type ChatInputCommandInteraction, Colors, Locale, SlashCommandBuilder } from "discord.js";
+import {
+	AttachmentBuilder,
+	ButtonStyle,
+	type ChatInputCommandInteraction,
+	Colors,
+	Locale,
+	SlashCommandBuilder,
+} from "discord.js";
 import { Op } from "sequelize";
+import { UserRankingCardCanvasBuilder } from "@bot/ui/builders/UserRankingCardCanvasBuilder";
 
 enum TopSubcommand {
 	Money = "money",
@@ -144,7 +151,7 @@ module.exports = {
 
 		await deferReply(interaction);
 
-		const defaultAttributes = ["nickname", "id", "class"];
+		const defaultAttributes = ["nickname", "id", "class", "avatarDecoration", "backgroundDecoration", "vipTime", "vipEternal"];
 
 		// Define configuration for each subcommand
 		const config: ITopSubcommandConfig = {
@@ -432,46 +439,6 @@ module.exports = {
 			return gangs;
 		}
 
-		async function getTextFromIndex(i: number) {
-			const user = users[i];
-			const underscore = user.id === interaction.user.id ? "__" : "";
-			const emoteClass = ClassList[user.class].Image.Emote.String;
-
-			const position = i + pagination.Offset + 1;
-			let positionText = `\`${position}.\``;
-			if (i + pagination.Offset === 0) {
-				positionText = currentConfig.badge;
-			}
-			// Special case for money ranking which has badges for top 3
-			if (subcommand === TopSubcommand.Money) {
-				if (i + pagination.Offset === 1) {
-					positionText = EmoteBadgeString.Season1.Top2Money;
-				}
-				else if (i + pagination.Offset === 2) {
-					positionText = EmoteBadgeString.Season1.Top3Money;
-				}
-			}
-
-			const userGang = await Gang.GetByUserId(user.id);
-			const gPrefix = userGang ? `[${userGang.Acronym}]` : "";
-			const gSufix = userGang ? GangColor[userGang.Color].Emote.String : "";
-
-			const value = user[currentConfig.valueField as keyof Users] as number;
-			const valueModified = currentConfig.valueModifier ? currentConfig.valueModifier(value, language) : value;
-
-			const vPrefix = currentConfig.valuePrefix ? `${currentConfig.valuePrefix[language]} ` : "";
-			const vSufix = currentConfig.valueSufix ? ` ${currentConfig.valueSufix[language]}` : "";
-			const cPrefix = currentConfig.countPrefix ? `${currentConfig.countPrefix[language]} ` : "";
-			const cSufix = currentConfig.countSufix ? ` ${currentConfig.countSufix[language]}` : "";
-
-			const count = currentConfig.countField ? ` (${cPrefix}${user[currentConfig.countField as keyof Users]}${cSufix})` : "";
-
-			return [
-				`### ${positionText} ${gPrefix} ${emoteClass} ${underscore}${user.nickname}${underscore}${gSufix}`,
-				`${vPrefix}${valueModified}${vSufix}${count}`,
-			].join("\n");
-		}
-
 		if (subcommand === TopSubcommand.Gangs) {
 			pagination.HowManyRecords = await Gangs.count();
 		}
@@ -545,30 +512,74 @@ module.exports = {
 					.setUser(user)
 					.setAccentColor(Colors.Green)
 					.addTexts([
-						`# Ranking ${title}`,
+						`# ${currentConfig.badge} Ranking ${title}`,
 					])
 					.addLargeSeparator();
 
+				const cardBuffers = await Promise.all(users.map(async (u, i) => {
+					const position = i + pagination.Offset + 1;
+					const value = u[currentConfig.valueField as keyof Users] as number;
+					const valueModified = currentConfig.valueModifier ? currentConfig.valueModifier(value, language) : value;
+
+					const vPrefix = currentConfig.valuePrefix ? `${currentConfig.valuePrefix[language]} ` : "";
+					const vSufix = currentConfig.valueSufix ? ` ${currentConfig.valueSufix[language]}` : "";
+					const cPrefix = currentConfig.countPrefix ? `${currentConfig.countPrefix[language]} ` : "";
+					const cSufix = currentConfig.countSufix ? ` ${currentConfig.countSufix[language]}` : "";
+
+					const count = currentConfig.countField ? ` (${cPrefix}${u[currentConfig.countField as keyof Users]}${cSufix})` : "";
+					const valueText = `${vPrefix}${valueModified}${vSufix}${count}`;
+
+					// Resolve discord user for avatar
+					const discordUser = await interaction.client.users.fetch(u.id).catch(() => null);
+					const avatarUrl = discordUser?.avatarURL({ size: 512 }) || null;
+
+					const userModel = new User(u.id);
+					await userModel.GetSimpleInfo(u);
+
+					const cardBuilder = new UserRankingCardCanvasBuilder(
+						userModel,
+						position,
+						valueText,
+						avatarUrl,
+					)
+						.SetDecoration(u.backgroundDecoration);
+					return cardBuilder.GenerateImage();
+				}));
+
+				const attachments: AttachmentBuilder[] = [];
+
 				for (let i = 0; i < users.length; i++) {
-					const text = await getTextFromIndex(i);
+					const attachmentName = `top${i + 1}.webp`;
+					attachments.push(new AttachmentBuilder(cardBuffers[i], { name: attachmentName }));
+
 					const position = i + pagination.Offset + 1;
 
 					container
-						.addSectionComponents(list => list
-							.addTexts([
-								text,
-							])
-							.setButtonAccessory(btn => btn
-								.setLabel(s.options)
-								.setCustomId("position" + position)
-								.setStyle(ButtonStyle.Secondary),
-							),
+						.addImage(`attachment://${attachmentName}`, `#${position}: ${users[i].nickname}`)
+						// .addSectionComponents(section => section
+						// 	.addTexts([
+						// 		`\u200b`
+						// 	])
+						// 	.setButtonAccessory(btn => btn
+						// 		.setLabel(s.options)
+						// 		.setCustomId("position" + position)
+						// 		.setStyle(ButtonStyle.Secondary)
+						// 	)
+						// );
+						.addButtonRow(btn => btn
+							.setLabel(s.options)
+							.setCustomId("position" + position)
+							.setStyle(ButtonStyle.Secondary),
 						);
 
 					if (i !== users.length - 1) {
-						container.addLargeSeparator();
+						container.addSmallSeparator();
 					}
 				}
+
+				// We need to pass the attachments to the final response
+				// The Pagination class needs to be aware of these
+				pagination.Attachments = attachments;
 
 				return container;
 			};
@@ -583,18 +594,16 @@ module.exports = {
 				const positionId = Number(btn.customId.replace("position", ""));
 				position = (positionId - 1) % pagination.Limit;
 
-				const text = await getTextFromIndex(position);
+				// const text = await getTextFromIndex(position);
 
 				const newContainer = new CustomContainerBuilder()
 					.setUser(user)
 					.setAccentColor(CrColors.Default)
 					.addTexts([
-						`# Ranking ${title}`,
+						`# ${currentConfig.badge} Ranking ${title}`,
 					])
 					.addLargeSeparator()
-					.addTexts([
-						text,
-					])
+					.addImage(`attachment://top${position + 1}.webp`)
 					.addLargeSeparator()
 					.addButtonRow(
 						btn => btn

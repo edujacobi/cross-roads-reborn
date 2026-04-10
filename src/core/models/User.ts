@@ -17,11 +17,13 @@ import { Gang } from "./Gang";
 import { GangMembers } from "@core/database/GangMembers";
 import { Event, EventType } from "./Event";
 import type { GangColorId } from "@bot/utils/colors";
-import { AvatarDecorationId, BundleId, type ItemId } from "@core/types/Ids";
+import { AvatarDecorationId, BackgroundDecorationId, BundleId, type ItemId } from "@core/types/Ids";
 import { UserBundle } from "./UserBundle";
 import { BundleList, type SkinBundles } from "@core/types/Skins";
 import { UserAvatarDecoration } from "./UserAvatarDecoration";
 import { AvatarDecorationList, type AvatarDecorations } from "@core/types/AvatarDecorations";
+import { UserBackgroundDecoration } from "./UserBackgroundDecoration";
+import { BackgroundDecorationList, type BackgroundDecorations } from "@core/types/BackgroundDecorations";
 import { GangBases } from "@core/types/GangBases";
 import type { Col, Fn, Literal } from "sequelize/lib/utils";
 import { UserInvestments } from "@core/database/UserInvestments";
@@ -57,6 +59,7 @@ export class User {
 	GangId: number | null = null;
 	SpecialCoin = 0;
 	AvatarDecoration = AvatarDecorationList[AvatarDecorationId.Default];
+	BackgroundDecoration = BackgroundDecorationList[BackgroundDecorationId.Default];
 	Daily = {
 		CurrentStreak: 0,
 		MaxStreak: 0,
@@ -201,6 +204,7 @@ export class User {
 				lastDailyReceived: this.Daily.LastReceived,
 				specialCoin: 0,
 				avatarDecoration: AvatarDecorationId.Default,
+				backgroundDecoration: BackgroundDecorationId.Default,
 				casinoIsInGame: false,
 				casinoLoseCount: 0,
 				casinoLoseSum: 0,
@@ -290,6 +294,7 @@ export class User {
 		this.Class = user.class;
 		this.SpecialCoin = user.specialCoin;
 		this.AvatarDecoration = AvatarDecorationList[user.avatarDecoration];
+		this.BackgroundDecoration = BackgroundDecorationList[user.backgroundDecoration];
 
 		// Verificar se o usuário está em uma gangue
 		const gangMember = await GangMembers.findOne({
@@ -426,6 +431,54 @@ export class User {
 		await this.GetAttributes();
 
 		this.Language = user.language;
+
+		return this;
+	}
+
+	/**
+	 * Loads basic user information from the database without expensive lookups.
+	 * @param fromUser Optional Users model instance to load from.
+	 * @param language Optional language to override.
+	 * @returns The User instance or null if not found.
+	 */
+	async GetSimpleInfo(fromUser?: Users, language?: Language) {
+		let user: Users | null;
+
+		if (fromUser) {
+			user = fromUser;
+		}
+		else {
+			user = await Users.findOne({
+				where: {
+					id: this.Id,
+				},
+			});
+		}
+
+		if (!user) {
+			return null;
+		}
+
+		this.Id = user.id;
+		if (user.nickname !== undefined) this.Nickname = user.nickname;
+		if (user.money !== undefined) this.Money = user.money;
+		if (user.class !== undefined) this.Class = user.class;
+		if (user.specialCoin !== undefined) this.SpecialCoin = user.specialCoin;
+		if (user.avatarDecoration !== undefined) this.AvatarDecoration = AvatarDecorationList[user.avatarDecoration];
+		if (user.backgroundDecoration !== undefined) this.BackgroundDecoration = BackgroundDecorationList[user.backgroundDecoration];
+		if (user.language !== undefined) this.Language = user.language;
+		if (user.vipTime !== undefined) this.VipTime = user.vipTime;
+		if (user.vipEternal !== undefined) this.VipEternal = user.vipEternal;
+		if (user.createdAt !== undefined) this.CreatedAt = user.createdAt;
+		if (user.updatedAt !== undefined) this.UpdatedAt = user.updatedAt;
+
+		// Verificar se o usuário está em uma gangue
+		const gangMember = await GangMembers.findOne({
+			where: { userId: this.Id },
+		});
+		this.GangId = gangMember ? gangMember.gangId : null;
+
+		this.Language = language ?? this.Language;
 
 		return this;
 	}
@@ -1097,7 +1150,7 @@ export class User {
 				EmoteId: EmoteId.Robbery,
 			};
 		}
-		else if (this.Robbery.IsRobbingLocationId !== null) {
+		else if (this.Robbery.IsRobbingLocationId != null) {
 			const location = LocationList[this.Robbery.IsRobbingLocationId];
 			this.Situation = {
 				Id: SituationId.Robbery,
@@ -1119,7 +1172,7 @@ export class User {
 				EmoteId: EmoteId.Robbery,
 			};
 		}
-		else if (this.Job.Id !== null) {
+		else if (this.Job.Id != null) {
 			this.Situation = {
 				Id: SituationId.Job,
 				Simple: s.workingSimple,
@@ -1353,6 +1406,40 @@ export class User {
 		}
 
 		return success;
+	}
+
+	/**
+	 * Buys a background decoration.
+	 * @param backgroundDecorationId The background decoration Id.
+	 * @returns True if successful.
+	 */
+	async BuyBackgroundDecoration(backgroundDecorationId: BackgroundDecorationId) {
+		const success = await UserBackgroundDecoration.Create(this.Id, backgroundDecorationId);
+
+		if (success) {
+			this.SpecialCoin -= BackgroundDecorationList[backgroundDecorationId].Price;
+			await this.Update({
+				specialCoin: this.SpecialCoin,
+			});
+			Log.Success(`User ${this.Nickname} (Id: ${this.Id}) bought background decoration ${BackgroundDecorationList[backgroundDecorationId].Description[Language.English]} (Id: ${backgroundDecorationId}) for ${formatMoney(BackgroundDecorationList[backgroundDecorationId].Price, Language.English, "")}.`);
+		}
+		else {
+			Log.Warning(`User ${this.Nickname} (Id: ${this.Id}) tried to buy background decoration ${BackgroundDecorationList[backgroundDecorationId].Description[Language.English]} (Id: ${backgroundDecorationId}), but failed.`);
+		}
+
+		return success;
+	}
+
+	/**
+	 * Sets the user's background decoration.
+	 * @param decoration The background decoration.
+	 */
+	async SetBackgroundDecoration(decoration: BackgroundDecorations) {
+		this.BackgroundDecoration = decoration;
+		await this.Update({
+			backgroundDecoration: decoration.Id,
+		});
+		Log.Success(`User ${this.Nickname} (Id: ${this.Id}) changed background decoration to ${decoration.Description[Language.English]}.`);
 	}
 
 	/**

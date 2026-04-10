@@ -167,12 +167,20 @@ export class CustomContainerBuilder extends ContainerBuilder {
 	/**
 	 * Add an image to the container.
 	 * @param url
+	 * @param altText
 	 */
-	addImage(url: string) {
+	addImage(url: string, altText?: string) {
 		this.addMediaGalleryComponents(gallery => gallery
-			.addItems(galleryItem => galleryItem
-				.setURL(url),
-			),
+			.addItems(galleryItem => {
+				galleryItem
+					.setURL(url);
+
+				if (altText) {
+					galleryItem.setDescription(altText);
+				}
+
+				return galleryItem;
+			}),
 		);
 		return this;
 	}

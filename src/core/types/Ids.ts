@@ -49,3 +49,15 @@ export enum AvatarDecorationId {
 	BotanicalGarden,
 	Cat,
 }
+
+export enum BackgroundDecorationId {
+	Default,
+	Purple,
+	Sunset,
+	Sunrise,
+	Cloud,
+	FrutigerAero,
+	Silver,
+	Rainbow,
+	BotanicalGarden,
+}

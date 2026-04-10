@@ -1,11 +1,13 @@
-﻿import fs from "node:fs";
+import fs from "node:fs";
 import path from "node:path";
 import { Collection } from "discord.js";
 import type { SlashCommand } from "@bot/types";
 import dotenv from "dotenv";
 import { setClient } from "@bot/client";
-import { Log, logger } from "@shared/log";
+import { logger, Log } from "@shared/log";
 import { GlobalFonts } from "@napi-rs/canvas";
+import { BackgroundPatternRegistry } from "@bot/ui/patterns/BackgroundPatternRegistry";
+import { AvatarDecorationRegistry } from "@bot/ui/patterns/AvatarDecorationRegistry";
 
 const client = setClient();
 
@@ -70,8 +72,31 @@ const token = process.env.NODE_ENV === "DEV" ? process.env.TOKEN_DEV : process.e
 client.login(token).then(() => logger.info(`Cross Roads Reborn Online! ENV: ${process.env.NODE_ENV}`));
 
 const fontLoaded = GlobalFonts.registerFromPath(
-	path.join(process.cwd(), "src", "bot", "ui", "assets", "fonts", "InterSemiBold.ttf"),
+	path.join(process.cwd(), "src", "bot", "ui", "assets", "fonts", "Inter.ttf"),
 	"Inter",
 );
 
 logger.info(`Loaded Inter font with ${fontLoaded ? "Success" : "Error"}`);
+
+const fontSemiBoldLoaded = GlobalFonts.registerFromPath(
+	path.join(process.cwd(), "src", "bot", "ui", "assets", "fonts", "InterSemiBold.ttf"),
+	"InterSemiBold",
+);
+
+logger.info(`Loaded InterSemiBold font with ${fontSemiBoldLoaded ? "Success" : "Error"}`);
+
+const fontBoldLoaded = GlobalFonts.registerFromPath(
+	path.join(process.cwd(), "src", "bot", "ui", "assets", "fonts", "InterBold.ttf"),
+	"InterBold",
+);
+
+logger.info(`Loaded InterBold font with ${fontBoldLoaded ? "Success" : "Error"}`);
+
+BackgroundPatternRegistry.initialize().catch(err => {
+	Log.Error(`Failed to initialize background patterns: ${err}`);
+});
+
+AvatarDecorationRegistry.initialize().catch(err => {
+	Log.Error(`Failed to initialize avatar decoration frames: ${err}`);
+});
+

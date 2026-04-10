@@ -41,7 +41,7 @@ const Strings = {
 	[Language.English]: {
 		title: "VIP",
 		benefits: `## Benefits
-- Exclusive badge and avatar decoration in \`/user\` and \`/inv\`
+- Exclusive badge and avatar decoration in \`/user\`, \`/inv\` and \`/top\`
 - 50% bonus in \`/daily\`
 - Access to development channel
 - Less cooldown between commands
@@ -57,7 +57,7 @@ In \`/specialshop\`, using the ${EmoteString.SpecialCoinShop}Special Coins!`,
 	[Language.Portuguese]: {
 		title: "VIP",
 		benefits: `## Benefícios
-- Insígnia e decoração de avatar exclusivas no \`/usuario\` e \`/inv\`
+- Insígnia e decoração de avatar exclusivas no \`/usuario\`, \`/inv\` e \`/top\`
 - 50% de bônus no \`/daily\`
 - Acesso ao canal de desenvolvimento
 - Menos cooldown entre comandos
@@ -73,7 +73,7 @@ Na \`/lojaespecial\`, utilizando as ${EmoteString.SpecialCoinShop}Moedas Especia
 	[Language.Spanish]: {
 		title: "VIP",
 		benefits: `## Beneficios
-- Insignia y decoración de avatar exclusivas en \`/user\` y \`/inv\`
+- Insignia y decoración de avatar exclusivas en \`/user\`, \`/inv\` y \`/top\`
 - 50% de bonificación en \`/daily\`
 - Acceso al canal de desarrollo
 - Menos tiempo de espera entre comandos

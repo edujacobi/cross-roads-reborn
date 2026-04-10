@@ -4,6 +4,7 @@ import {
 	ButtonStyle,
 	type ChatInputCommandInteraction,
 	MessageFlags,
+	type AttachmentBuilder,
 } from "discord.js";
 import { replyInteraction } from "@bot/utils/discordInteractions";
 import { Language, type Localization } from "./Language";
@@ -17,6 +18,7 @@ export class Pagination {
 	Limit = 5;
 	HowManyRecords: number = 0;
 	UserHasInteractedOutside = false;
+	Attachments: AttachmentBuilder[] = [];
 	CustomizeContainer: (() => Promise<CustomContainerBuilder>);
 
 	constructor(interaction: ChatInputCommandInteraction, language: Language) {
@@ -85,6 +87,7 @@ export class Pagination {
 		const response = await replyInteraction(this.Interaction, {
 			components,
 			flags: MessageFlags.IsComponentsV2,
+			files: this.Attachments,
 		});
 
 		const collector = createButtonCollector(this.Interaction, response, 30_000);
@@ -113,6 +116,7 @@ export class Pagination {
 
 			await replyInteraction(this.Interaction, {
 				components: mainContainer ? [mainContainer, container] : [container],
+				files: this.Attachments,
 			});
 		});
 

@@ -1,4 +1,21 @@
-﻿import {
+import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
+import { UserImageCanvasBuilder } from "@bot/ui/builders/UserImageCanvasBuilder";
+import { UserRankingCardCanvasBuilder } from "@bot/ui/builders/UserRankingCardCanvasBuilder";
+import { createButtonCollector, disableButtons } from "@bot/utils/collectors";
+import { CrColors } from "@bot/utils/colors";
+import { deferReply, replyInteraction, replyWithContainer } from "@bot/utils/discordInteractions";
+import { EmoteId, EmoteString } from "@bot/utils/emotes";
+import { formatMoney } from "@bot/utils/ui";
+import { Language, type Localization } from "@core/models/Language";
+import { type User } from "@core/models/User";
+import { UserAvatarDecoration } from "@core/models/UserAvatarDecoration";
+import { UserBackgroundDecoration } from "@core/models/UserBackgroundDecoration";
+import { UserBundle } from "@core/models/UserBundle";
+import { AvatarDecorationList, getAvatarDecorationList } from "@core/types/AvatarDecorations";
+import { BackgroundDecorationList, getBackgroundDecorationList } from "@core/types/BackgroundDecorations";
+import { ItemList } from "@core/types/Items";
+import { BundleList, getSkinBundleList } from "@core/types/Skins";
+import {
 	AttachmentBuilder,
 	ButtonBuilder,
 	ButtonStyle,
@@ -7,20 +24,14 @@
 	MessageFlags,
 	SlashCommandBuilder,
 } from "discord.js";
-import { deferReply, replyInteraction, replyWithContainer } from "@bot/utils/discordInteractions";
-import { User } from "@core/models/User";
-import { Language, type Localization } from "@core/models/Language";
-import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
-import { BundleList, getSkinBundleList } from "@core/types/Skins";
-import { EmoteId, EmoteString } from "@bot/utils/emotes";
-import { formatMoney } from "@bot/utils/ui";
-import { ItemList } from "@core/types/Items";
-import { UserBundle } from "@core/models/UserBundle";
-import { CrColors } from "@bot/utils/colors";
-import { AvatarDecorationList, getAvatarDecorationList } from "@core/types/AvatarDecorations";
-import { UserImageCanvasBuilder } from "@bot/ui/builders/UserImageCanvasBuilder";
-import { UserAvatarDecoration } from "@core/models/UserAvatarDecoration";
-import { createButtonCollector, disableButtons } from "@bot/utils/collectors";
+
+enum SpecialShopCategory {
+	Menu = "MENU",
+	Skins = "SKINS",
+	VIP = "VIP",
+	Avatar = "AVATAR",
+	Ranking = "RANKING",
+}
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -33,6 +44,7 @@ module.exports = {
 		await deferReply(interaction);
 
 		const s = Strings[language];
+		let currentCategory = SpecialShopCategory.Menu;
 
 		function addHeader(container = new CustomContainerBuilder()) {
 			container.setUser(user)
@@ -59,65 +71,99 @@ module.exports = {
 			return container;
 		}
 
+		function addReturnButton(container: CustomContainerBuilder) {
+			return container.addButtonRow(btn => btn
+				.setLabel(s.goBack)
+				.setStyle(ButtonStyle.Secondary)
+				.setCustomId("back_to_section"),
+			);
+		}
+
 		const VIP_BASE_PRICE = 5_000;
 
 		async function generateDefaultContainer() {
 			await user.GetInfo();
 
-			// --- Pacotes de Skins
+			let container = addHeader();
 
-			let container = addHeader()
-				.addTexts([`## ${s.skinBundles}`]);
+			if (currentCategory === SpecialShopCategory.Menu) {
+				container.addTexts([`## ${s.mainMenu}`]);
 
-			const skinBundles = getSkinBundleList().filter(bundle => bundle.Shop);
-			for (let idx = 0; idx < skinBundles.length; idx++) {
-				const bundle = skinBundles[idx];
-				if (bundle.Items.length > 0) {
-					const itemEmotes = bundle.Items.map(item => ItemList[item].Skin[bundle.Id].String);
+				container.addButtonRow(
+					btn => btn
+						.setLabel("VIP")
+						.setStyle(ButtonStyle.Secondary)
+						.setEmoji(EmoteId.VIP)
+						.setCustomId(SpecialShopCategory.VIP),
+					btn => btn
+						.setLabel(s.skinBundles)
+						.setStyle(ButtonStyle.Secondary)
+						.setCustomId(SpecialShopCategory.Skins),
+					btn => btn
+						.setLabel(s.avatarDecoration)
+						.setStyle(ButtonStyle.Secondary)
+						.setCustomId(SpecialShopCategory.Avatar),
+					btn => btn
+						.setLabel(s.rankingBackground)
+						.setStyle(ButtonStyle.Secondary)
+						.setCustomId(SpecialShopCategory.Ranking),
+				);
 
-					const userHasBundle = await UserBundle.HasBundle(user.Id, bundle.Id);
+				container.addLargeSeparator()
+					.addTexts([
+						`### ${s.howToAcquireTitle}`,
+						`-# ${s.howToAcquireDescription}`,
+					]);
+			}
 
-					const meanValuePerSkin = bundle.Price / bundle.Items.length;
+			else if (currentCategory === SpecialShopCategory.Skins) {
+				container.addTexts([`## ${s.skinBundles}`]);
 
-					let rarityEmote = EmoteString.Common;
-					if (meanValuePerSkin > 500) {
-						rarityEmote = EmoteString.Mythic;
-					}
-					else if (meanValuePerSkin > 400) {
-						rarityEmote = EmoteString.Legendary;
-					}
-					else if (meanValuePerSkin > 300) {
-						rarityEmote = EmoteString.Rare;
-					}
-					else if (meanValuePerSkin > 200) {
-						rarityEmote = EmoteString.Uncommon;
-					}
+				const skinBundles = getSkinBundleList().filter(bundle => bundle.Shop);
+				for (let idx = 0; idx < skinBundles.length; idx++) {
+					const bundle = skinBundles[idx];
+					if (bundle.Items.length > 0) {
+						const itemEmotes = bundle.Items.map(item => ItemList[item].Skin[bundle.Id].String);
+						const userHasBundle = await UserBundle.HasBundle(user.Id, bundle.Id);
+						const meanValuePerSkin = bundle.Price / bundle.Items.length;
 
-					container.addSectionComponents(section => section
-						.addTexts([
-							`### ${rarityEmote}${bundle.Description[language]}`,
-							`-# ${s.howManyItems(itemEmotes)}`,
-							`# ${itemEmotes.join(" ")}`,
-						])
-						.setButtonAccessory(new ButtonBuilder()
-							.setLabel(formatMoney(bundle.Price, language, ""))
-							.setEmoji(EmoteId.SpecialCoinShop)
-							.setStyle(ButtonStyle.Secondary)
-							.setDisabled(userHasBundle)
-							.setCustomId("buy" + bundle.Id)),
-					);
+						let rarityEmote = EmoteString.Common;
+						if (meanValuePerSkin > 500) {
+							rarityEmote = EmoteString.Mythic;
+						}
+						else if (meanValuePerSkin > 400) {
+							rarityEmote = EmoteString.Legendary;
+						}
+						else if (meanValuePerSkin > 300) {
+							rarityEmote = EmoteString.Rare;
+						}
+						else if (meanValuePerSkin > 200) {
+							rarityEmote = EmoteString.Uncommon;
+						}
 
-					if (idx !== skinBundles.length - 1) {
-						container.addLargeSeparator();
+						container.addSectionComponents(section => section
+							.addTexts([
+								`### ${rarityEmote}${bundle.Description[language]}`,
+								`-# ${s.howManyItems(itemEmotes)}`,
+								`# ${itemEmotes.join(" ")}`,
+							])
+							.setButtonAccessory(new ButtonBuilder()
+								.setLabel(formatMoney(bundle.Price, language, ""))
+								.setEmoji(EmoteId.SpecialCoinShop)
+								.setStyle(ButtonStyle.Secondary)
+								.setDisabled(userHasBundle)
+								.setCustomId("buy" + bundle.Id)),
+						);
+
+						if (idx !== skinBundles.length - 1) {
+							container.addLargeSeparator();
+						}
 					}
 				}
 			}
 
-			// --- VIP
-
-			container
-				.addLargeSeparator()
-				.addSectionComponents(section => section
+			else if (currentCategory === SpecialShopCategory.VIP) {
+				container.addSectionComponents(section => section
 					.addTexts([
 						`# VIP`,
 						s.vipDescription,
@@ -128,21 +174,20 @@ module.exports = {
 					),
 				);
 
-			const vipButtons = [];
-			for (let idx = 1; idx <= 3; idx++) {
-				vipButtons.push((btn: ButtonBuilder) => btn
-					.setLabel(`${s.months(idx)}: ${formatMoney(idx * VIP_BASE_PRICE, language, "")}`)
-					.setEmoji(EmoteId.SpecialCoinShop)
-					.setStyle(ButtonStyle.Secondary)
-					.setCustomId("vip" + idx));
+				const vipButtons = [];
+				for (let idx = 1; idx <= 3; idx++) {
+					vipButtons.push((btn: ButtonBuilder) => btn
+						.setLabel(`${s.months(idx)}: ${formatMoney(idx * VIP_BASE_PRICE, language, "")}`)
+						.setEmoji(EmoteId.SpecialCoinShop)
+						.setStyle(ButtonStyle.Secondary)
+						.setCustomId("vip" + idx));
+				}
+
+				container.addButtonRow(...vipButtons);
 			}
 
-			container.addButtonRow(...vipButtons);
-
-			// --- Decoração de Avatar
-			container
-				.addLargeSeparator()
-				.addSectionComponents(section => section
+			else if (currentCategory === SpecialShopCategory.Avatar) {
+				container.addSectionComponents(section => section
 					.addTexts([
 						`# ${s.avatarDecoration}`,
 						s.defeatDecoration,
@@ -153,44 +198,71 @@ module.exports = {
 					),
 				);
 
-			const avatarDecorations = getAvatarDecorationList().filter(decoration => decoration.Shop).sort((a, b) => a.Price - b.Price);
+				const avatarDecorations = getAvatarDecorationList().filter(decoration => decoration.Shop).sort((a, b) => a.Price - b.Price);
+				const avatarDecorationsChunks = [];
+				for (let i = 0; i < avatarDecorations.length; i += 5) {
+					avatarDecorationsChunks.push(avatarDecorations.slice(i, i + 5));
+				}
 
-			const avatarDecorationsChunks = [];
-			for (let i = 0; i < avatarDecorations.length; i += 5) {
-				avatarDecorationsChunks.push(avatarDecorations.slice(i, i + 5));
+				for (const chunk of avatarDecorationsChunks) {
+					const buttons = await Promise.all(chunk.map(async decoration => {
+						const disabled = await UserAvatarDecoration.HasAvatarDecoration(user.Id, decoration.Id);
+						return (btn: ButtonBuilder) => btn
+							.setLabel(`${decoration.Description[language]}: ${formatMoney(decoration.Price, language, "")}`)
+							.setEmoji(EmoteId.SpecialCoinShop)
+							.setStyle(ButtonStyle.Secondary)
+							.setDisabled(disabled)
+							.setCustomId("decoration" + decoration.Id);
+					}));
+					container.addButtonRow(...buttons);
+				}
 			}
 
-			for (const chunk of avatarDecorationsChunks) {
-				const buttons = await Promise.all(chunk.map(async decoration => {
-					const disabled = await UserAvatarDecoration.HasAvatarDecoration(user.Id, decoration.Id);
-					return (btn: ButtonBuilder) => btn
-						.setLabel(`${decoration.Description[language]}: ${formatMoney(decoration.Price, language, "")}`)
-						.setEmoji(EmoteId.SpecialCoinShop)
+			else if (currentCategory === SpecialShopCategory.Ranking) {
+				container
+					.addTexts([
+						`# ${s.rankingBackground}`,
+						s.defeatBackground,
+						`-# ${s.testBackground}`,
+					])
+					.addImage("https://media.discordapp.net/attachments/777715925382201364/1491561252055416892/image.png");
+
+				const backgroundDecorations = getBackgroundDecorationList().filter(bg => bg.Shop).sort((a, b) => a.Price - b.Price);
+				const backgroundChunks = [];
+				for (let i = 0; i < backgroundDecorations.length; i += 5) {
+					backgroundChunks.push(backgroundDecorations.slice(i, i + 5));
+				}
+
+				for (const chunk of backgroundChunks) {
+					const buttons = await Promise.all(chunk.map(async bg => {
+						const disabled = await UserBackgroundDecoration.HasBackgroundDecoration(user.Id, bg.Id);
+						return (btn: ButtonBuilder) => btn
+							.setLabel(`${bg.Description[language]}: ${formatMoney(bg.Price, language, "")}`)
+							.setEmoji(EmoteId.SpecialCoinShop)
+							.setStyle(ButtonStyle.Secondary)
+							.setDisabled(disabled)
+							.setCustomId("background" + bg.Id);
+					}));
+					container.addButtonRow(...buttons);
+				}
+			}
+
+			if (currentCategory !== SpecialShopCategory.Menu) {
+				container
+					.addLargeSeparator()
+					.addButtonRow(btn => btn
+						.setLabel(s.goBack)
 						.setStyle(ButtonStyle.Secondary)
-						.setDisabled(disabled)
-						.setCustomId("decoration" + decoration.Id);
-				}));
-
-				container.addButtonRow(...buttons);
+						.setCustomId("back"),
+					);
 			}
-
-			// --- Footer
-
-			container.addLargeSeparator()
-				.addTexts([
-					`### ${s.howToAcquireTitle}`,
-					`-# ${s.howToAcquireDescription}`,
-				]);
 
 			container = addFooter(container);
-
 			return container;
 		}
 
 		let container = await generateDefaultContainer();
-
 		const response = await replyWithContainer(interaction, container);
-
 		const collector = createButtonCollector(interaction, response);
 
 		collector?.on("end", async () => {
@@ -200,9 +272,20 @@ module.exports = {
 		collector?.on("collect", async btn => {
 			await btn.deferUpdate();
 
-			if (btn.customId === "back") {
+			if (
+				btn.customId === SpecialShopCategory.Skins ||
+				btn.customId === SpecialShopCategory.VIP ||
+				btn.customId === SpecialShopCategory.Avatar ||
+				btn.customId === SpecialShopCategory.Ranking
+			) {
+				currentCategory = btn.customId as SpecialShopCategory;
 				container = await generateDefaultContainer();
+				return replyWithContainer(interaction, container);
+			}
 
+			if (btn.customId === "back") {
+				currentCategory = SpecialShopCategory.Menu;
+				container = await generateDefaultContainer();
 				return replyWithContainer(interaction, container);
 			}
 
@@ -215,23 +298,17 @@ module.exports = {
 
 				if (userHasBundle) {
 					container = addHeader()
-						.addTexts([
-							`${s.alreadyHaveBundle} **${bundle.Description[language]}**!`,
-						]);
-
+						.addTexts([`${s.alreadyHaveBundle} **${bundle.Description[language]}**!`]);
+					addReturnButton(container);
 					container = addFooter(container);
-
 					return replyWithContainer(interaction, container);
 				}
 
 				if (user.SpecialCoin < bundle.Price) {
 					container = addHeader()
-						.addTexts([
-							s.dontHaveCoins(bundle.Price),
-						]);
-
+						.addTexts([s.dontHaveCoins(bundle.Price)]);
+					addReturnButton(container);
 					container = addFooter(container);
-
 					return replyWithContainer(interaction, container);
 				}
 
@@ -239,22 +316,16 @@ module.exports = {
 
 				if (!success) {
 					container = addHeader()
-						.addTexts([
-							`${s.error} **${bundle.Description[language]}**`,
-						]);
-
+						.addTexts([`${s.error} **${bundle.Description[language]}**`]);
+					addReturnButton(container);
 					container = addFooter(container);
-
 					return replyWithContainer(interaction, container);
 				}
 
 				container = addHeader()
-					.addTexts([
-						`${s.bundleBought} **${bundle.Description[language]}**!`,
-					]);
-
+					.addTexts([`${s.bundleBought} **${bundle.Description[language]}**!`]);
+				addReturnButton(container);
 				container = addFooter(container);
-
 				return replyWithContainer(interaction, container);
 			}
 
@@ -263,7 +334,6 @@ module.exports = {
 				const bundle = BundleList[bundleId];
 
 				const itemData = bundle.Items.map(item => `- ${ItemList[item].Skin[bundle.Id].String} ${ItemList[item].Description[language]}`);
-
 				const canBuy = bundle.Price <= user.SpecialCoin;
 
 				container = addHeader(new CustomContainerBuilder())
@@ -276,7 +346,7 @@ module.exports = {
 						btn => btn
 							.setLabel(s.goBack)
 							.setStyle(ButtonStyle.Secondary)
-							.setCustomId("back"),
+							.setCustomId("back_to_section"),
 						btn => btn
 							.setLabel(s.buy)
 							.setStyle(ButtonStyle.Success)
@@ -285,35 +355,33 @@ module.exports = {
 					);
 
 				container = addFooter(container);
+				return replyWithContainer(interaction, container);
+			}
 
+			else if (btn.customId === "back_to_section") {
+				container = await generateDefaultContainer();
 				return replyWithContainer(interaction, container);
 			}
 
 			else if (btn.customId.includes("confirmvip")) {
 				const vipMonths = Number(btn.customId.replace("confirmvip", ""));
-				const price = vipMonths * User.VIP_BASE_PRICE;
+				const price = vipMonths * VIP_BASE_PRICE;
 				await user.GetInfo();
 
 				if (user.SpecialCoin < price) {
 					container = addHeader()
-						.addTexts([
-							s.dontHaveCoins(price),
-						]);
-
+						.addTexts([s.dontHaveCoins(price)]);
+					addReturnButton(container);
 					container = addFooter(container);
-
 					return replyWithContainer(interaction, container);
 				}
 
 				await user.BuyVip(vipMonths);
 
 				container = addHeader()
-					.addTexts([
-						`${s.vipBought(vipMonths)}`,
-					]);
-
+					.addTexts([`${s.vipBought(vipMonths)}`]);
+				addReturnButton(container);
 				container = addFooter(container);
-
 				return replyWithContainer(interaction, container);
 			}
 
@@ -331,7 +399,7 @@ module.exports = {
 						btn => btn
 							.setLabel(s.goBack)
 							.setStyle(ButtonStyle.Secondary)
-							.setCustomId("back"),
+							.setCustomId("back_to_section"),
 						btn => btn
 							.setLabel(s.buy)
 							.setStyle(ButtonStyle.Success)
@@ -340,7 +408,6 @@ module.exports = {
 					);
 
 				container = addFooter(container);
-
 				return replyWithContainer(interaction, container);
 			}
 
@@ -353,23 +420,17 @@ module.exports = {
 
 				if (userHasDecoration) {
 					container = addHeader()
-						.addTexts([
-							`${s.alreadyHaveDecoration} **${decoration.Description[language]}**!`,
-						]);
-
+						.addTexts([`${s.alreadyHaveDecoration} **${decoration.Description[language]}**!`]);
+					addReturnButton(container);
 					container = addFooter(container);
-
 					return replyWithContainer(interaction, container);
 				}
 
 				if (user.SpecialCoin < decoration.Price) {
 					container = addHeader()
-						.addTexts([
-							s.dontHaveCoins(decoration.Price),
-						]);
-
+						.addTexts([s.dontHaveCoins(decoration.Price)]);
+					addReturnButton(container);
 					container = addFooter(container);
-
 					return replyWithContainer(interaction, container);
 				}
 
@@ -377,12 +438,9 @@ module.exports = {
 
 				if (!success) {
 					container = addHeader()
-						.addTexts([
-							`${s.error} **${decoration.Description[language]}**`,
-						]);
-
+						.addTexts([`${s.error} **${decoration.Description[language]}**`]);
+					addReturnButton(container);
 					container = addFooter(container);
-
 					return replyWithContainer(interaction, container);
 				}
 
@@ -391,9 +449,8 @@ module.exports = {
 						`${s.decorationBought} **${decoration.Description[language]}**!`,
 						`-# ${s.activateDecoration}`,
 					]);
-
+				addReturnButton(container);
 				container = addFooter(container);
-
 				return replyWithContainer(interaction, container);
 			}
 
@@ -422,12 +479,94 @@ module.exports = {
 						btn => btn
 							.setLabel(s.goBack)
 							.setStyle(ButtonStyle.Secondary)
-							.setCustomId("back"),
+							.setCustomId("back_to_section"),
 						btn => btn
 							.setLabel(s.buy)
 							.setStyle(ButtonStyle.Success)
 							.setDisabled(!canBuy)
 							.setCustomId("confirmdecoration" + decoration.Id),
+					);
+
+				container = addFooter(container);
+
+				await replyInteraction(interaction, {
+					components: [container],
+					files: [previewImageFile],
+					flags: MessageFlags.IsComponentsV2,
+				});
+			}
+
+			else if (btn.customId.includes("confirmbackground")) {
+				const bgId = Number(btn.customId.replace("confirmbackground", ""));
+				const bg = BackgroundDecorationList[bgId];
+				await user.GetInfo();
+
+				const userHasBg = await UserBackgroundDecoration.HasBackgroundDecoration(user.Id, bg.Id);
+
+				if (userHasBg) {
+					container = addHeader()
+						.addTexts([`${s.alreadyHaveBackground} **${bg.Description[language]}**!`]);
+					addReturnButton(container);
+					container = addFooter(container);
+					return replyWithContainer(interaction, container);
+				}
+
+				if (user.SpecialCoin < bg.Price) {
+					container = addHeader()
+						.addTexts([s.dontHaveCoins(bg.Price)]);
+					addReturnButton(container);
+					container = addFooter(container);
+					return replyWithContainer(interaction, container);
+				}
+
+				const success = await user.BuyBackgroundDecoration(bgId);
+
+				if (!success) {
+					container = addHeader()
+						.addTexts([`${s.error} **${bg.Description[language]}**`]);
+					addReturnButton(container);
+					container = addFooter(container);
+					return replyWithContainer(interaction, container);
+				}
+
+				container = addHeader()
+					.addTexts([
+						`${s.backgroundBought} **${bg.Description[language]}**!`,
+						`-# ${s.activateDecoration}`,
+					]);
+				addReturnButton(container);
+				container = addFooter(container);
+				return replyWithContainer(interaction, container);
+			}
+
+			else if (btn.customId.includes("background")) {
+				const bgId = Number(btn.customId.replace("background", ""));
+				const bg = BackgroundDecorationList[bgId];
+
+				const canBuy = bg.Price <= user.SpecialCoin;
+
+				const previewImage = await new UserRankingCardCanvasBuilder(user, 1, "Cr$ 1.500.000", interaction.user.avatarURL({ size: 256 }))
+					.SetDecoration(bgId)
+					.GenerateImage();
+
+				const previewImageFile = new AttachmentBuilder(previewImage, { name: "preview_rank.webp" });
+
+				container = addHeader(new CustomContainerBuilder())
+					.addTexts([
+						`## ${s.rankingBackground} - ${bg.Description[language]}`,
+						`${s.price}: ${EmoteString.SpecialCoinShop}${formatMoney(bg.Price, language, "")}`,
+					])
+					.addImage("attachment://preview_rank.webp")
+					.addButtonRow(
+						btn => btn
+							.setLabel(s.goBack)
+							.setStyle(ButtonStyle.Secondary)
+							.setCustomId("back_to_section"),
+						btn => btn
+							.setLabel(s.buy)
+							.setStyle(ButtonStyle.Success)
+							.setDisabled(!canBuy)
+							.setCustomId("confirmbackground" + bg.Id),
 					);
 
 				container = addFooter(container);
@@ -445,6 +584,7 @@ module.exports = {
 const Strings = {
 	[Language.English]: {
 		title: "Special shop",
+		mainMenu: "Selection Menu",
 		permanent: "All customizations are permanent!",
 		youHaveCoins: (coins: number) => `You have ${EmoteString.SpecialCoinShop}${formatMoney(coins, Language.English, "")} Special Coins`,
 		skinBundles: "Skin Bundles",
@@ -468,11 +608,17 @@ const Strings = {
 		avatarDecoration: "Avatar decorations",
 		defeatDecoration: "Defeat your opponents in style",
 		testDecoration: "You can preview the decor before you buy",
+		rankingBackground: "Ranking Backgrounds",
+		defeatBackground: "Custom backgrounds for your ranking card",
+		testBackground: "You can preview the background before you buy",
+		alreadyHaveBackground: "You already own the ranking background",
+		backgroundBought: "You bought the ranking background",
 		howToAcquireTitle: "How to acquire",
 		howToAcquireDescription: "On the official server, in the #vip-special-coins channel",
 	},
 	[Language.Portuguese]: {
 		title: "Loja especial",
+		mainMenu: "Menu de Seleção",
 		permanent: "Todas as customizações são permanentes!",
 		youHaveCoins: (coins: number) => `Você possui ${EmoteString.SpecialCoinShop}${formatMoney(coins, Language.Portuguese, "")} Moedas Especiais`,
 		skinBundles: "Pacotes de skins",
@@ -496,11 +642,17 @@ const Strings = {
 		avatarDecoration: "Decorações de avatar",
 		defeatDecoration: "Derrote seus oponentes com estilo",
 		testDecoration: "Você pode pré visualizar a decoração antes de comprar",
+		rankingBackground: "Fundos de Ranking",
+		defeatBackground: "Fundos customizados para o seu cartão de ranking",
+		testBackground: "Você pode pré visualizar o fundo antes de comprar",
+		alreadyHaveBackground: "Você já possui o fundo de ranking",
+		backgroundBought: "Você comprou o fundo de ranking",
 		howToAcquireTitle: "Como adquirir",
 		howToAcquireDescription: "No servidor oficial, no canal #vip-moedas-especiais",
 	},
 	[Language.Spanish]: {
 		title: "Comercio especial",
+		mainMenu: "Menú de Selección",
 		permanent: "¡Todas las personalizaciones son permanentes!",
 		youHaveCoins: (coins: number) => `Tienes ${EmoteString.SpecialCoinShop}${formatMoney(coins, Language.Spanish, "")} Monedas Especiales`,
 		skinBundles: "Paquetes de skins",
@@ -524,6 +676,11 @@ const Strings = {
 		avatarDecoration: "Decoraciones de avatar",
 		defeatDecoration: "Derrota a tus oponentes con estilo",
 		testDecoration: "Puedes obtener una vista previa de la decoración antes de comprarla",
+		rankingBackground: "Fondos de Ranking",
+		defeatBackground: "Fondos personalizados para tu tarjeta de ranking",
+		testBackground: "Puedes previsualizar el fondo antes de comprarlo",
+		alreadyHaveBackground: "Ya tienes el fondo de ranking",
+		backgroundBought: "Compraste el fondo de ranking",
 		howToAcquireTitle: "Cómo adquirir",
 		howToAcquireDescription: "En el servidor oficial, en el canal #vip-special-coins.",
 	},

@@ -1,4 +1,4 @@
-﻿import {
+import {
 	AttachmentBuilder,
 	type ButtonBuilder,
 	ButtonStyle,
@@ -14,55 +14,55 @@ import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder"
 import { CrColors } from "@bot/utils/colors";
 import { UserAvatarDecoration } from "@core/models/UserAvatarDecoration";
 import { AvatarDecorationList } from "@core/types/AvatarDecorations";
+import { UserBackgroundDecoration } from "@core/models/UserBackgroundDecoration";
+import { BackgroundDecorationList } from "@core/types/BackgroundDecorations";
 import { UserImageCanvasBuilder } from "@bot/ui/builders/UserImageCanvasBuilder";
-import { AvatarDecorationId } from "@core/types/Ids";
+import { UserRankingCardCanvasBuilder } from "@bot/ui/builders/UserRankingCardCanvasBuilder";
+import { AvatarDecorationId, BackgroundDecorationId } from "@core/types/Ids";
 import { EmoteId } from "@bot/utils/emotes";
 import { createButtonCollector, disableButtons } from "@bot/utils/collectors";
+
+const CATEGORY_AVATAR = "cat_avatar";
+const CATEGORY_RANKING = "cat_ranking";
 
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("decorations")
 		.setNameLocalization(Locale.PortugueseBR, "decorações")
-		.setDescription("Choose the decoration for your avatar")
-		.setDescriptionLocalization(Locale.PortugueseBR, "Escolha a decoração para seu avatar"),
+		.setDescription("Choose the decoration for your avatar or ranking card")
+		.setDescriptionLocalization(Locale.PortugueseBR, "Escolha a decoração para seu avatar ou cartão de ranking"),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 
 		const s = Strings[language];
+		let currentCategory = CATEGORY_AVATAR;
 
-		const userDecorations = await UserAvatarDecoration.GetList(user, language);
-
-		const userHasDecorations = userDecorations.length > 0;
-
-		function addHeader(container = new CustomContainerBuilder()) {
+		function addHeader(container = new CustomContainerBuilder(), hasItems: boolean) {
 			container
 				.setUser(user)
 				.setAccentColor(CrColors.Default)
 				.addTexts([
-					`# ${s.title}`,
-					userHasDecorations ? s.subtitle : s.dontHave,
+					`# ${currentCategory === CATEGORY_AVATAR ? s.titleAvatar : s.titleRanking}`,
+					hasItems ? s.subtitle : s.dontHave,
 				]);
 
-			if (userHasDecorations) {
+			if (hasItems) {
 				container.addLargeSeparator();
 			}
 
 			return container;
 		}
 
-		function getEmoteDecoration(avatarDecorationId: AvatarDecorationId) {
-			switch (avatarDecorationId) {
-
+		function getAvatarEmote(id: AvatarDecorationId) {
+			switch (id) {
 			case AvatarDecorationId.Developer:
 			case AvatarDecorationId.Moderator:
 			case AvatarDecorationId.Helper:
-				// Special decorations
 				return EmoteId.Legendary;
 
 			case AvatarDecorationId.Silver:
 			case AvatarDecorationId.FrutigerAero:
 			case AvatarDecorationId.Rainbow:
-				// Expensive decorations
 				return EmoteId.Rare;
 
 			case AvatarDecorationId.VIP:
@@ -72,7 +72,22 @@ module.exports = {
 				return EmoteId.Common;
 
 			default:
-				// Cheap decorations
+				return EmoteId.Uncommon;
+			}
+		}
+
+		function getBackgroundEmote(id: BackgroundDecorationId) {
+			switch (id) {
+			case BackgroundDecorationId.Silver:
+			case BackgroundDecorationId.FrutigerAero:
+			case BackgroundDecorationId.Rainbow:
+			case BackgroundDecorationId.Cloud:
+				return EmoteId.Rare;
+
+			case BackgroundDecorationId.Default:
+				return EmoteId.Common;
+
+			default:
 				return EmoteId.Uncommon;
 			}
 		}
@@ -80,28 +95,55 @@ module.exports = {
 		async function generateDefaultContainer() {
 			await user.GetInfo();
 
-			// separate availableDecorations in different arrays with length = 5
-			const availableDecorationsChunks = [];
-			for (let i = 0; i < userDecorations.length; i += 5) {
-				availableDecorationsChunks.push(userDecorations.slice(i, i + 5));
-			}
+			const items = currentCategory === CATEGORY_AVATAR
+				? await UserAvatarDecoration.GetList(user, language)
+				: await UserBackgroundDecoration.GetList(user, language);
 
-			const container = addHeader();
+			const hasItems = items.length > 0;
+			const container = addHeader(new CustomContainerBuilder(), hasItems);
 
-			container.addTexts([
-				`### ${s.selectDecoration}`,
-			]);
+			// Category Buttons
+			container.addButtonRow(
+				btn => btn
+					.setLabel(s.catAvatar)
+					.setStyle(currentCategory === CATEGORY_AVATAR ? ButtonStyle.Primary : ButtonStyle.Secondary)
+					.setCustomId(CATEGORY_AVATAR)
+					.setDisabled(currentCategory === CATEGORY_AVATAR),
+				btn => btn
+					.setLabel(s.catRanking)
+					.setStyle(currentCategory === CATEGORY_RANKING ? ButtonStyle.Primary : ButtonStyle.Secondary)
+					.setCustomId(CATEGORY_RANKING)
+					.setDisabled(currentCategory === CATEGORY_RANKING),
+			);
 
-			for (const chunk of availableDecorationsChunks) {
-				container.addButtonRow(
-					...chunk.map(decoration => (btn: ButtonBuilder) => btn
-						.setLabel(decoration.Description)
-						.setStyle(ButtonStyle.Secondary)
-						.setEmoji(getEmoteDecoration(decoration.AvatarDecorationId))
-						.setDisabled(user.AvatarDecoration.Id === decoration.AvatarDecorationId)
-						.setCustomId("change-decoration" + decoration.AvatarDecorationId),
-					),
-				);
+			if (hasItems) {
+				container.addTexts([
+					`### ${s.selectDecoration}`,
+				]);
+
+				const chunks = [];
+				for (let i = 0; i < items.length; i += 5) {
+					chunks.push(items.slice(i, i + 5));
+				}
+
+				for (const chunk of chunks) {
+					container.addButtonRow(
+						...chunk.map(item => {
+							const isAvatar = "AvatarDecorationId" in item;
+							const id = isAvatar ? item.AvatarDecorationId : item.BackgroundDecorationId;
+							const isActive = isAvatar
+								? user.AvatarDecoration.Id === id
+								: user.BackgroundDecoration.Id === id;
+
+							return (btn: ButtonBuilder) => btn
+								.setLabel(item.Description)
+								.setStyle(ButtonStyle.Secondary)
+								.setEmoji(isAvatar ? getAvatarEmote(id as AvatarDecorationId) : getBackgroundEmote(id as BackgroundDecorationId))
+								.setDisabled(isActive)
+								.setCustomId("change-" + id);
+						}),
+					);
+				}
 			}
 
 			container.addFooter({
@@ -124,30 +166,64 @@ module.exports = {
 		collector?.on("collect", async btn => {
 			await btn.deferUpdate();
 
-			if (btn.customId === "back") {
+			if (btn.customId === CATEGORY_AVATAR || btn.customId === CATEGORY_RANKING) {
+				currentCategory = btn.customId;
 				container = await generateDefaultContainer();
-
 				return replyWithContainer(interaction, container);
 			}
 
-			else if (btn.customId.includes("change-decoration")) {
-				const decorationId = Number(btn.customId.replace("change-decoration", ""));
-				const decoration = AvatarDecorationList[decorationId];
+			if (btn.customId === "back") {
+				container = await generateDefaultContainer();
+				return replyWithContainer(interaction, container);
+			}
 
-				const previewImage = await new UserImageCanvasBuilder(user, interaction.user.avatarURL({ size: 512 }))
-					.SetDecoration(decoration.Id)
-					.GenerateImage();
+			else if (btn.customId.includes("change-")) {
+				const id = Number(btn.customId.replace("change-", ""));
+				const isAvatar = currentCategory === CATEGORY_AVATAR;
+
+				let previewImage: Buffer;
+				let name = "";
+
+				if (isAvatar) {
+					const decoration = AvatarDecorationList[id];
+					name = decoration.Description[language];
+					previewImage = await new UserImageCanvasBuilder(user, interaction.user.avatarURL({ size: 512 }))
+						.SetDecoration(decoration.Id)
+						.GenerateImage();
+				}
+				else {
+					const bg = BackgroundDecorationList[id];
+					name = bg.Description[language];
+
+					previewImage = await new UserRankingCardCanvasBuilder(user, 1, "Cr$ 1.500.000", interaction.user.avatarURL({ size: 128 }))
+						.SetDecoration(id)
+						.GenerateImage();
+				}
 
 				const previewImageFile = new AttachmentBuilder(previewImage, { name: "preview.webp" });
 
-				container = addHeader()
-					.addSectionComponents(section => section
+				container = addHeader(new CustomContainerBuilder(), true);
+
+				if (isAvatar) {
+					container
+						.addSectionComponents(section => section
+							.addTexts([
+								`## ${name}`,
+							])
+							.setThumbnailAccessory(preview => preview
+								.setURL("attachment://preview.webp"),
+							),
+						);
+				}
+				else {
+					container
 						.addTexts([
-							`## ${decoration.Description[language]}`,
+							`## ${name}`,
 						])
-						.setThumbnailAccessory(preview => preview
-							.setURL("attachment://preview.webp")),
-					)
+						.addImage("attachment://preview.webp");
+				}
+
+				container
 					.addButtonRow(
 						btn => btn
 							.setLabel(s.goBack)
@@ -156,7 +232,7 @@ module.exports = {
 						btn => btn
 							.setLabel(s.confirm)
 							.setStyle(ButtonStyle.Success)
-							.setCustomId("confirm" + decoration.Id),
+							.setCustomId("confirm-" + id),
 					);
 
 				container.addFooter();
@@ -168,16 +244,27 @@ module.exports = {
 				});
 			}
 
-			else if (btn.customId.includes("confirm")) {
-				const decorationId = Number(btn.customId.replace("confirm", ""));
-				const decoration = AvatarDecorationList[decorationId];
+			else if (btn.customId.includes("confirm-")) {
+				const id = Number(btn.customId.replace("confirm-", ""));
+				const isAvatar = currentCategory === CATEGORY_AVATAR;
 
 				await user.GetInfo();
-				await user.SetAvatarDecoration(decoration);
+				let name = "";
 
-				container = addHeader()
+				if (isAvatar) {
+					const decoration = AvatarDecorationList[id];
+					name = decoration.Description[language];
+					await user.SetAvatarDecoration(decoration);
+				}
+				else {
+					const bg = BackgroundDecorationList[id];
+					name = bg.Description[language];
+					await user.SetBackgroundDecoration(bg);
+				}
+
+				container = addHeader(new CustomContainerBuilder(), true)
 					.addTexts([
-						`## ${decoration.Description[language]}`,
+						`## ${name}`,
 						`-# ${s.applied}`,
 					])
 					.addButtonRow(btn => btn
@@ -196,33 +283,42 @@ module.exports = {
 
 const Strings = {
 	[Language.English]: {
-		title: "Avatar decorations",
-		subtitle: "Like an angel wearing a halo!",
-		selectDecoration: "Select decoration",
-		dontHave: "You don't have decorations.",
-		footer: "To buy decorations, access `/specialshop`",
+		titleAvatar: "Avatar decorations",
+		titleRanking: "Ranking backgrounds",
+		catAvatar: "Avatar",
+		catRanking: "Ranking",
+		subtitle: "Personalize your look!",
+		selectDecoration: "Select item",
+		dontHave: "You don't have items in this category.",
+		footer: "To buy customizations, access `/specialshop`",
 		confirm: "Confirm",
 		goBack: "Go back",
-		applied: "Applied! Use `/inv` to see it",
+		applied: "Applied successfully!",
 	},
 	[Language.Portuguese]: {
-		title: "Decorações de avatar",
-		subtitle: "Como um anjo usando uma auréola!",
-		selectDecoration: "Selecionar decoração",
-		dontHave: "Você não possui decorações.",
-		footer: "Para comprar decorações, acesse a `/lojaespecial`",
+		titleAvatar: "Decorações de avatar",
+		titleRanking: "Fundos de ranking",
+		catAvatar: "Avatar",
+		catRanking: "Ranking",
+		subtitle: "Personalize seu visual!",
+		selectDecoration: "Selecionar item",
+		dontHave: "Você não possui itens nesta categoria.",
+		footer: "Para comprar customizações, acesse a `/lojaespecial`",
 		confirm: "Confirmar",
 		goBack: "Voltar",
-		applied: "Aplicado! Use `/inv` para visualizar",
+		applied: "Aplicado com sucesso!",
 	},
 	[Language.Spanish]: {
-		title: "Decoraciones de avatar",
-		subtitle: "Como un ángel que lleva un halo",
-		selectDecoration: "Seleccionar decoración",
-		dontHave: "No tiene decoraciones.",
-		footer: "¡Para comprar decoraciones, ve a `/specialshop`",
+		titleAvatar: "Decoraciones de avatar",
+		titleRanking: "Fondos de ranking",
+		catAvatar: "Avatar",
+		catRanking: "Ranking",
+		subtitle: "¡Personaliza tu look!",
+		selectDecoration: "Seleccionar artículo",
+		dontHave: "No tienes artículos en esta categoría.",
+		footer: "¡Para comprar personalizaciones, ve a `/specialshop`",
 		confirm: "Confirmar",
 		goBack: "Volver",
-		applied: "Aplicado! Utilice `/inv` para ver",
+		applied: "¡Aplicado con éxito!",
 	},
 } as const satisfies Localization;

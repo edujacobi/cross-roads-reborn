@@ -6,7 +6,7 @@ import type { ClassId } from "@core/types/Classes";
 import type { Language } from "@core/models/Language";
 import type { LocationId } from "@core/types/Locations";
 import type { ScavengeId } from "@core/types/Scavenge";
-import type { AvatarDecorationId } from "@core/types/Ids";
+import type { AvatarDecorationId, BackgroundDecorationId } from "@core/types/Ids";
 
 export class Users extends Model<
 	InferAttributes<Users>,
@@ -27,6 +27,7 @@ export class Users extends Model<
 
 	declare specialCoin: number;
 	declare avatarDecoration: AvatarDecorationId;
+	declare backgroundDecoration: BackgroundDecorationId;
 
 	declare jobId: CreationOptional<JobId | null>;
 	declare jobTime: CreationOptional<Date>;
@@ -162,6 +163,11 @@ Users.init(
 			defaultValue: 0,
 		},
 		avatarDecoration: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0,
+		},
+		backgroundDecoration: {
 			type: DataTypes.INTEGER,
 			allowNull: false,
 			defaultValue: 0,
