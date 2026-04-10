@@ -6,10 +6,10 @@ import {
 	CARD_WIDTH,
 } from "../patterns/BackgroundPatternRegistry";
 import { UserImageCanvasBuilder } from "./UserImageCanvasBuilder";
-import { Gang } from "@core/models/Gang";
-import { GangColor } from "@bot/utils/colors";
-import type { User } from "@core/models/User";
-import { type AvatarDecorationId, BackgroundDecorationId } from "@core/types/Ids";
+import { Gang } from "#core/models/Gang";
+import { GangColor } from "#bot/utils/colors";
+import type { User } from "#core/models/User";
+import { type AvatarDecorationId, BackgroundDecorationId } from "#core/types/Ids";
 
 interface CachedDecoratedAvatar {
 	image: Image;

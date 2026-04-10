@@ -1,10 +1,10 @@
 import { type Client, Events } from "discord.js";
-import { sequelize } from "@core/database/Database";
-import { changeActivity } from "@bot/utils/ui";
-import { Notification } from "@core/models/Notification";
-import { HorseRacing } from "@core/models/HorseRacing";
-import { removeAllFromActions } from "@bot/utils/userUtils";
-import { InvestmentManager } from "@core/models/InvestmentManager";
+import { sequelize } from "#core/database/Database";
+import { changeActivity } from "#bot/utils/ui";
+import { Notification } from "#core/models/Notification";
+import { HorseRacing } from "#core/models/HorseRacing";
+import { removeAllFromActions } from "#bot/utils/userUtils";
+import { InvestmentManager } from "#core/models/InvestmentManager";
 
 module.exports = {
 	name: Events.ClientReady,

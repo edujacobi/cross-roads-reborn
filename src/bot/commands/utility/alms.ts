@@ -1,12 +1,12 @@
-﻿import { type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
-import { replyWithContainer, sendPrivateMessage } from "@bot/utils/discordInteractions";
-import type { User } from "@core/models/User";
-import { Language, type Localization } from "@core/models/Language";
-import { defaultComponent, formatMoney } from "@bot/utils/ui";
-import { EmoteString } from "@bot/utils/emotes";
-import { CrColors } from "@bot/utils/colors";
-import { Alms } from "@core/models/Alms";
-import { searchUser } from "@bot/utils/userUtils";
+import { type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+import { replyWithContainer, sendPrivateMessage } from "#bot/utils/discordInteractions";
+import type { User } from "#core/models/User";
+import { Language, type Localization } from "#core/models/Language";
+import { defaultComponent, formatMoney } from "#bot/utils/ui";
+import { EmoteString } from "#bot/utils/emotes";
+import { CrColors } from "#bot/utils/colors";
+import { Alms } from "#core/models/Alms";
+import { searchUser } from "#bot/utils/userUtils";
 
 module.exports = {
 	data: new SlashCommandBuilder()

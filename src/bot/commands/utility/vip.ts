@@ -1,8 +1,8 @@
-﻿import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
-import { replyWithContainer } from "@bot/utils/discordInteractions";
-import { EmoteString } from "@bot/utils/emotes";
-import { Language, type Localization } from "@core/models/Language";
-import type { User } from "@core/models/User";
+import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
+import { replyWithContainer } from "#bot/utils/discordInteractions";
+import { EmoteString } from "#bot/utils/emotes";
+import { Language, type Localization } from "#core/models/Language";
+import type { User } from "#core/models/User";
 import { type ChatInputCommandInteraction, Colors, Locale, SlashCommandBuilder } from "discord.js";
 
 module.exports = {

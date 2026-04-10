@@ -1,4 +1,4 @@
-﻿import {
+import {
 	type ApplicationCommandType,
 	type AutocompleteInteraction,
 	type ChatInputCommandInteraction,
@@ -6,8 +6,8 @@
 	type ModalSubmitInteraction,
 	type SlashCommandBuilder, type Snowflake,
 } from "discord.js";
-import { type User } from "@core/models/User";
-import { type Language } from "@core/models/Language";
+import { type User } from "#core/models/User";
+import { type Language } from "#core/models/Language";
 
 export interface SlashCommand {
 	data: Omit<SlashCommandBuilder, "addSubcommand" | "addSubcommandGroup">,

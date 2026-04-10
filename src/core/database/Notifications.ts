@@ -1,4 +1,4 @@
-﻿import {
+import {
 	type CreationOptional,
 	DataTypes,
 	type ForeignKey,
@@ -7,7 +7,7 @@
 	Model,
 } from "sequelize";
 import { sequelize } from "./Database";
-import type { NotificationType } from "@core/models/Notification";
+import type { NotificationType } from "#core/models/Notification";
 import type { Users } from "./Users";
 
 export class Notifications extends Model<

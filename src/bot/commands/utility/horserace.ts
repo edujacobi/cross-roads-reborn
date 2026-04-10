@@ -1,6 +1,6 @@
 import { type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
-import type { User } from "@core/models/User";
-import { HorseRacing } from "@core/models/HorseRacing";
+import type { User } from "#core/models/User";
+import { HorseRacing } from "#core/models/HorseRacing";
 
 module.exports = {
 	data: new SlashCommandBuilder()

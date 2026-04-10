@@ -1,6 +1,6 @@
 import { type CreationOptional, DataTypes, type InferAttributes, type InferCreationAttributes, Model } from "sequelize";
 import { sequelize } from "./Database";
-import type { BackgroundDecorationId } from "@core/types/Ids";
+import type { BackgroundDecorationId } from "#core/types/Ids";
 
 export class UserBackgroundDecorations extends Model<
 	InferAttributes<UserBackgroundDecorations>,

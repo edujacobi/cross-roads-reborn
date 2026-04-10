@@ -1,4 +1,4 @@
-﻿import {
+import {
 	ButtonInteraction,
 	type ColorResolvable,
 	Colors,
@@ -14,9 +14,9 @@
 	type Snowflake,
 } from "discord.js";
 import { getClient } from "../client";
-import { Log } from "@shared/log";
-import { Language, type Localization } from "@core/models/Language";
-import type { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
+import { Log } from "#shared/log";
+import { Language, type Localization } from "#core/models/Language";
+import type { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
 
 /**
  * Sends a private message (DM) to a user with a simple embed.

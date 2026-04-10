@@ -1,10 +1,10 @@
 import { type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
-import type { User } from "@core/models/User";
-import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
-import { BadgeId, getBadgeList } from "@core/types/Badges";
-import { Language, type Localization } from "@core/models/Language";
-import { UserBadge } from "@core/models/UserBadge";
-import { deferReply, replyWithContainer } from "@bot/utils/discordInteractions";
+import type { User } from "#core/models/User";
+import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
+import { BadgeId, getBadgeList } from "#core/types/Badges";
+import { Language, type Localization } from "#core/models/Language";
+import { UserBadge } from "#core/models/UserBadge";
+import { deferReply, replyWithContainer } from "#bot/utils/discordInteractions";
 
 module.exports = {
 	data: new SlashCommandBuilder()

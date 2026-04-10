@@ -1,21 +1,21 @@
 import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
-import type { User } from "@core/models/User";
-import { Prison, PrisonFailureReason } from "@core/models/Prison";
-import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
-import { CrColors } from "@bot/utils/colors";
-import { EmoteBadgeString } from "@bot/utils/badges";
-import { EmoteId, EmoteString } from "@bot/utils/emotes";
-import { replyWithContainer } from "@bot/utils/discordInteractions";
-import { Pagination } from "@core/models/Pagination";
-import { ClassList, getPrisonEscapeClassModifier } from "@core/types/Classes";
-import { defaultComponent, formatMoney, showTime } from "@bot/utils/ui";
-import { globalStrings, Language, type Localization } from "@core/models/Language";
-import { ItemList } from "@core/types/Items";
-import { ItemId } from "@core/types/Ids";
-import { Gang } from "@core/models/Gang";
-import { GangBases } from "@core/types/GangBases";
+import type { User } from "#core/models/User";
+import { Prison, PrisonFailureReason } from "#core/models/Prison";
+import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
+import { CrColors } from "#bot/utils/colors";
+import { EmoteBadgeString } from "#bot/utils/badges";
+import { EmoteId, EmoteString } from "#bot/utils/emotes";
+import { replyWithContainer } from "#bot/utils/discordInteractions";
+import { Pagination } from "#core/models/Pagination";
+import { ClassList, getPrisonEscapeClassModifier } from "#core/types/Classes";
+import { defaultComponent, formatMoney, showTime } from "#bot/utils/ui";
+import { globalStrings, Language, type Localization } from "#core/models/Language";
+import { ItemList } from "#core/types/Items";
+import { ItemId } from "#core/types/Ids";
+import { Gang } from "#core/models/Gang";
+import { GangBases } from "#core/types/GangBases";
 import { setTimeout as wait } from "timers/promises";
-import { createButtonCollector, disableButtons } from "@bot/utils/collectors";
+import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
 
 module.exports = {
 	data: new SlashCommandBuilder()

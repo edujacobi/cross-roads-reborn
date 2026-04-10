@@ -1,13 +1,13 @@
 ﻿import { type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
-import { deferReply, replyWithContainer } from "@bot/utils/discordInteractions";
-import { defaultComponent, showTime } from "@bot/utils/ui";
-import { EmoteString } from "@bot/utils/emotes";
-import { CrColors } from "@bot/utils/colors";
-import type { User } from "@core/models/User";
-import { Language, type Localization } from "@core/models/Language";
-import { BeatUp } from "@core/models/BeatUp";
-import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
-import { searchUser } from "@bot/utils/userUtils";
+import { deferReply, replyWithContainer } from "#bot/utils/discordInteractions";
+import { defaultComponent, showTime } from "#bot/utils/ui";
+import { EmoteString } from "#bot/utils/emotes";
+import { CrColors } from "#bot/utils/colors";
+import type { User } from "#core/models/User";
+import { Language, type Localization } from "#core/models/Language";
+import { BeatUp } from "#core/models/BeatUp";
+import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
+import { searchUser } from "#bot/utils/userUtils";
 
 module.exports = {
 	data: new SlashCommandBuilder()

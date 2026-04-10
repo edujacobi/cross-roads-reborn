@@ -1,7 +1,7 @@
-import { AvatarDecorationList } from "@core/types/AvatarDecorations";
-import { AvatarDecorationId } from "@core/types/Ids";
+import { AvatarDecorationList } from "#core/types/AvatarDecorations";
+import { AvatarDecorationId } from "#core/types/Ids";
 import { Canvas, type CanvasGradient, type Image, loadImage, type SKRSContext2D } from "@napi-rs/canvas";
-import { Log } from "@shared/log";
+import { Log } from "#shared/log";
 import path from "node:path";
 
 export const AVATAR_CANVAS_SIZE = 512;

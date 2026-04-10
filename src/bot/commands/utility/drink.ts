@@ -6,18 +6,18 @@
 	SlashCommandBuilder,
 	TextDisplayBuilder,
 } from "discord.js";
-import { deferReply, replyWithContainer } from "@bot/utils/discordInteractions";
-import { Language, type Localization } from "@core/models/Language";
-import type { User } from "@core/models/User";
-import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
-import { EmoteString } from "@bot/utils/emotes";
-import { CrColors } from "@bot/utils/colors";
-import { showTime } from "@bot/utils/ui";
+import { deferReply, replyWithContainer } from "#bot/utils/discordInteractions";
+import { Language, type Localization } from "#core/models/Language";
+import type { User } from "#core/models/User";
+import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
+import { EmoteString } from "#bot/utils/emotes";
+import { CrColors } from "#bot/utils/colors";
+import { showTime } from "#bot/utils/ui";
 import { addHours, addMinutes } from "date-fns";
-import { Log } from "@shared/log";
-import { Notification } from "@core/models/Notification";
-import { getRandomItemFromArray } from "@shared/utils";
-import { createButtonCollector, disableButtons } from "@bot/utils/collectors";
+import { Log } from "#shared/log";
+import { Notification } from "#core/models/Notification";
+import { getRandomItemFromArray } from "#shared/utils";
+import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
 
 module.exports = {
 	data: new SlashCommandBuilder()

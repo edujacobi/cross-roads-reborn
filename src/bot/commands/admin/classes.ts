@@ -1,11 +1,11 @@
-﻿import { type ChatInputCommandInteraction, Locale, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
-import { Users } from "@core/database/Users";
+import { type ChatInputCommandInteraction, Locale, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
+import { Users } from "#core/database/Users";
 import { Op } from "sequelize";
-import { Language } from "@core/models/Language";
-import type { User } from "@core/models/User";
-import { ClassId, ClassList } from "@core/types/Classes";
-import { defaultComponent } from "@bot/utils/ui";
-import { deferReply, replyWithContainer } from "@bot/utils/discordInteractions";
+import { Language } from "#core/models/Language";
+import type { User } from "#core/models/User";
+import { ClassId, ClassList } from "#core/types/Classes";
+import { defaultComponent } from "#bot/utils/ui";
+import { deferReply, replyWithContainer } from "#bot/utils/discordInteractions";
 
 module.exports = {
 	data: new SlashCommandBuilder()

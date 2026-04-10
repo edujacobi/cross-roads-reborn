@@ -1,8 +1,8 @@
 import type { ChatInputCommandInteraction } from "discord.js";
-import { User } from "@core/models/User";
-import { Log } from "@shared/log";
-import { getClient } from "@bot/client";
-import { Users } from "@core/database/Users";
+import { User } from "#core/models/User";
+import { Log } from "#shared/log";
+import { getClient } from "#bot/client";
+import { Users } from "#core/database/Users";
 import { Op } from "sequelize";
 
 /**

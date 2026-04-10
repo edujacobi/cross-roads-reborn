@@ -1,6 +1,6 @@
 import { BundleId, ItemId } from "./Ids";
 import { defaultSkinDescription, type IDescription } from "./Interfaces";
-import { Language } from "@core/models/Language";
+import { Language } from "#core/models/Language";
 
 export interface SkinBundles {
 	readonly Id: BundleId,

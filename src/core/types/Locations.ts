@@ -1,5 +1,5 @@
 import type { IDescription, IEmote } from "./Interfaces";
-import { Language } from "@core/models/Language";
+import { Language } from "#core/models/Language";
 
 export enum LocationId {
 	OldLady,

@@ -1,8 +1,8 @@
-﻿import { Log } from "@shared/log";
+import { Log } from "#shared/log";
 import { Language } from "./Language";
-import { AvatarDecorationId } from "@core/types/Ids";
-import UserAvatarDecorations from "@core/database/UserAvatarDecorations";
-import { AvatarDecorationList } from "@core/types/AvatarDecorations";
+import { AvatarDecorationId } from "#core/types/Ids";
+import UserAvatarDecorations from "#core/database/UserAvatarDecorations";
+import { AvatarDecorationList } from "#core/types/AvatarDecorations";
 import { UserBadge } from "./UserBadge";
 import type { User } from "./User";
 

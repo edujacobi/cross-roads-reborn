@@ -1,6 +1,6 @@
 import { User } from "./User";
-import { EmoteString } from "@bot/utils/emotes";
-import { formatMoney, showTime } from "@bot/utils/ui";
+import { EmoteString } from "#bot/utils/emotes";
+import { formatMoney, showTime } from "#bot/utils/ui";
 import { Language, type Localization } from "./Language";
 import {
 	ActionRowBuilder,
@@ -11,18 +11,18 @@ import {
 	StringSelectMenuBuilder,
 	StringSelectMenuOptionBuilder,
 } from "discord.js";
-import { CrColors } from "@bot/utils/colors";
-import { replyInteraction, replyWithContainer, sendPrivateMessage } from "@bot/utils/discordInteractions";
-import { HorseRaces } from "@core/database/HorseRaces";
-import { HorseRaceBets } from "@core/database/HorseRaceBets";
+import { CrColors } from "#bot/utils/colors";
+import { replyInteraction, replyWithContainer, sendPrivateMessage } from "#bot/utils/discordInteractions";
+import { HorseRaces } from "#core/database/HorseRaces";
+import { HorseRaceBets } from "#core/database/HorseRaceBets";
 import { addHours } from "date-fns/addHours";
 import { Op } from "sequelize";
 import { Casino } from "./Casino";
 import { Notification, NotificationType } from "./Notification";
-import { Log } from "@shared/log";
-import { ClassList } from "@core/types/Classes";
-import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
-import { createStringSelectCollector, disableButtons } from "@bot/utils/collectors";
+import { Log } from "#shared/log";
+import { ClassList } from "#core/types/Classes";
+import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
+import { createStringSelectCollector, disableButtons } from "#bot/utils/collectors";
 
 // Number of horses in each race
 export const HORSE_COUNT = 5;

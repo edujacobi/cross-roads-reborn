@@ -1,15 +1,15 @@
-import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
-import { createButtonCollector, disableButtons } from "@bot/utils/collectors";
-import { CrColors } from "@bot/utils/colors";
-import { deferReply, replyWithContainer } from "@bot/utils/discordInteractions";
-import { EmoteString } from "@bot/utils/emotes";
-import { formatMoney, showTime } from "@bot/utils/ui";
-import { InvestmentManager } from "@core/models/InvestmentManager";
-import { Language, type Localization } from "@core/models/Language";
-import { Pagination } from "@core/models/Pagination";
-import { type User } from "@core/models/User";
-import { getInvestmentYieldClassModifier } from "@core/types/Classes";
-import { type InvestmentActionReason, InvestmentList, type InvestmentId } from "@core/types/Investments";
+import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
+import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
+import { CrColors } from "#bot/utils/colors";
+import { deferReply, replyWithContainer } from "#bot/utils/discordInteractions";
+import { EmoteString } from "#bot/utils/emotes";
+import { formatMoney, showTime } from "#bot/utils/ui";
+import { InvestmentManager } from "#core/models/InvestmentManager";
+import { Language, type Localization } from "#core/models/Language";
+import { Pagination } from "#core/models/Pagination";
+import { type User } from "#core/models/User";
+import { getInvestmentYieldClassModifier } from "#core/types/Classes";
+import { type InvestmentActionReason, InvestmentList, type InvestmentId } from "#core/types/Investments";
 import {
 	ButtonBuilder,
 	ButtonStyle,

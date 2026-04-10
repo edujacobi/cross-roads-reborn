@@ -6,10 +6,10 @@ import {
 	MessageFlags,
 	type AttachmentBuilder,
 } from "discord.js";
-import { replyInteraction } from "@bot/utils/discordInteractions";
+import { replyInteraction } from "#bot/utils/discordInteractions";
 import { Language, type Localization } from "./Language";
-import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
-import { createButtonCollector, disableButtons } from "@bot/utils/collectors";
+import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
+import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
 
 export class Pagination {
 	Interaction: ChatInputCommandInteraction;

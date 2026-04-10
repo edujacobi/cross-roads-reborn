@@ -1,14 +1,14 @@
 import type { User } from "./User";
 import { Language } from "./Language";
-import { Users } from "@core/database/Users";
+import { Users } from "#core/database/Users";
 import { Op } from "sequelize";
-import { formatMoney } from "@bot/utils/ui";
-import { getPrisonBribeClassModifier, getPrisonEscapeClassModifier } from "@core/types/Classes";
+import { formatMoney } from "#bot/utils/ui";
+import { getPrisonBribeClassModifier, getPrisonEscapeClassModifier } from "#core/types/Classes";
 import { addMinutes, addSeconds } from "date-fns";
-import { Log } from "@shared/log";
+import { Log } from "#shared/log";
 import { Notification, NotificationType } from "./Notification";
-import { ItemId } from "@core/types/Ids";
-import { GangBases } from "@core/types/GangBases";
+import { ItemId } from "#core/types/Ids";
+import { GangBases } from "#core/types/GangBases";
 import { Gang } from "./Gang";
 
 export enum PrisonFailureReason {

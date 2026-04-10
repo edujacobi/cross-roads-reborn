@@ -1,15 +1,15 @@
-﻿import { replyInteraction, replyWithContainer } from "@bot/utils/discordInteractions";
-import { EmoteString } from "@bot/utils/emotes";
+import { replyInteraction, replyWithContainer } from "#bot/utils/discordInteractions";
+import { EmoteString } from "#bot/utils/emotes";
 import {
 	isUserBoosterInOfficialServer,
 	syncUserInOfficialServer,
-} from "@bot/utils/officialServer";
-import { defaultComponent, showTime } from "@bot/utils/ui";
-import { checkUser } from "@bot/utils/userUtils";
-import { getLanguageFromLocale, Language, type Localization } from "@core/models/Language";
-import { User } from "@core/models/User";
-import { ClassId } from "@core/types/Classes";
-import { logger } from "@shared/log";
+} from "#bot/utils/officialServer";
+import { defaultComponent, showTime } from "#bot/utils/ui";
+import { checkUser } from "#bot/utils/userUtils";
+import { getLanguageFromLocale, Language, type Localization } from "#core/models/Language";
+import { User } from "#core/models/User";
+import { ClassId } from "#core/types/Classes";
+import { logger } from "#shared/log";
 import { Collection, Colors, type CommandInteraction, Events, MessageFlags } from "discord.js";
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports

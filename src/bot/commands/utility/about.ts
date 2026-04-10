@@ -1,4 +1,4 @@
-﻿import {
+import {
 	ButtonBuilder,
 	ButtonStyle,
 	type ChatInputCommandInteraction,
@@ -6,10 +6,10 @@
 	Locale,
 	SlashCommandBuilder,
 } from "discord.js";
-import { replyWithContainer } from "@bot/utils/discordInteractions";
-import { Language, type Localization } from "@core/models/Language";
-import type { User } from "@core/models/User";
-import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
+import { replyWithContainer } from "#bot/utils/discordInteractions";
+import { Language, type Localization } from "#core/models/Language";
+import type { User } from "#core/models/User";
+import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
 
 module.exports = {
 	data: new SlashCommandBuilder()

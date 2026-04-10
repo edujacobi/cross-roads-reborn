@@ -1,4 +1,4 @@
-import { User } from "@core/models/User";
+import { User } from "#core/models/User";
 import { Canvas, type Image, loadImage } from "@napi-rs/canvas";
 import {
 	AVATAR_BORDER_WIDTH,
@@ -6,11 +6,11 @@ import {
 	AVATAR_RADIUS,
 	AvatarDecorationRegistry,
 } from "../patterns/AvatarDecorationRegistry";
-import { logger } from "@shared/log";
-import { ClassList } from "@core/types/Classes";
+import { logger } from "#shared/log";
+import { ClassList } from "#core/types/Classes";
 import fs from "node:fs";
-import type { UserBadge } from "@core/models/UserBadge";
-import { AvatarDecorationId } from "@core/types/Ids";
+import type { UserBadge } from "#core/models/UserBadge";
+import { AvatarDecorationId } from "#core/types/Ids";
 import { DEFAULT_GANG_IMAGE } from "./GangImageCanvasBuilder";
 
 const AVATAR_CENTER = { x: 284, y: 228 }; // Center position of the avatar on the canvas - Control padding changing center

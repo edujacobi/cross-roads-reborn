@@ -1,20 +1,20 @@
-import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
-import { UserImageCanvasBuilder } from "@bot/ui/builders/UserImageCanvasBuilder";
-import { UserRankingCardCanvasBuilder } from "@bot/ui/builders/UserRankingCardCanvasBuilder";
-import { createButtonCollector, disableButtons } from "@bot/utils/collectors";
-import { CrColors } from "@bot/utils/colors";
-import { deferReply, replyInteraction, replyWithContainer } from "@bot/utils/discordInteractions";
-import { EmoteId, EmoteString } from "@bot/utils/emotes";
-import { formatMoney } from "@bot/utils/ui";
-import { Language, type Localization } from "@core/models/Language";
-import { type User } from "@core/models/User";
-import { UserAvatarDecoration } from "@core/models/UserAvatarDecoration";
-import { UserBackgroundDecoration } from "@core/models/UserBackgroundDecoration";
-import { UserBundle } from "@core/models/UserBundle";
-import { AvatarDecorationList, getAvatarDecorationList } from "@core/types/AvatarDecorations";
-import { BackgroundDecorationList, getBackgroundDecorationList } from "@core/types/BackgroundDecorations";
-import { ItemList } from "@core/types/Items";
-import { BundleList, getSkinBundleList } from "@core/types/Skins";
+import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
+import { UserImageCanvasBuilder } from "#bot/ui/builders/UserImageCanvasBuilder";
+import { UserRankingCardCanvasBuilder } from "#bot/ui/builders/UserRankingCardCanvasBuilder";
+import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
+import { CrColors } from "#bot/utils/colors";
+import { deferReply, replyInteraction, replyWithContainer } from "#bot/utils/discordInteractions";
+import { EmoteId, EmoteString } from "#bot/utils/emotes";
+import { formatMoney } from "#bot/utils/ui";
+import { Language, type Localization } from "#core/models/Language";
+import { type User } from "#core/models/User";
+import { UserAvatarDecoration } from "#core/models/UserAvatarDecoration";
+import { UserBackgroundDecoration } from "#core/models/UserBackgroundDecoration";
+import { UserBundle } from "#core/models/UserBundle";
+import { AvatarDecorationList, getAvatarDecorationList } from "#core/types/AvatarDecorations";
+import { BackgroundDecorationList, getBackgroundDecorationList } from "#core/types/BackgroundDecorations";
+import { ItemList } from "#core/types/Items";
+import { BundleList, getSkinBundleList } from "#core/types/Skins";
 import {
 	AttachmentBuilder,
 	ButtonBuilder,

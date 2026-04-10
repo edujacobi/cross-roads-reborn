@@ -1,15 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { User } from "@core/models/User";
-import { Language } from "@core/models/Language";
-import { JobId } from "@core/types/Jobs";
-import { ClassId } from "@core/types/Classes";
-import { Scavenge } from "@core/models/Scavenge";
-import { ScavengeId, ScavengeFailureReason } from "@core/types/Scavenge";
-import { LocationId } from "@core/types/Locations";
+import { User } from "#core/models/User";
+import { Language } from "#core/models/Language";
+import { JobId } from "#core/types/Jobs";
+import { ClassId } from "#core/types/Classes";
+import { Scavenge } from "#core/models/Scavenge";
+import { ScavengeId, ScavengeFailureReason } from "#core/types/Scavenge";
+import { LocationId } from "#core/types/Locations";
 
 // --- Global Mocks ---
 
-vi.mock("@core/database/Users", () => ({
+vi.mock("#core/database/Users", () => ({
 	Users: {
 		update: vi.fn(),
 		findOne: vi.fn(),

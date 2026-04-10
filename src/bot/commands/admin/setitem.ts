@@ -1,14 +1,14 @@
 import { type ChatInputCommandInteraction, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
-import { User } from "@core/models/User";
-import { Language } from "@core/models/Language";
+import { User } from "#core/models/User";
+import { Language } from "#core/models/Language";
 import { addHours } from "date-fns";
-import { UserItems } from "@core/database/UserItems";
-import { ItemList, ItemType, type UserItem } from "@core/types/Items";
-import { Log } from "@shared/log";
-import { EmoteString } from "@bot/utils/emotes";
-import { deferReply, replyInteraction, sendPrivateMessage } from "@bot/utils/discordInteractions";
-import { CrColors } from "@bot/utils/colors";
-import { BundleId } from "@core/types/Ids";
+import { UserItems } from "#core/database/UserItems";
+import { ItemList, ItemType, type UserItem } from "#core/types/Items";
+import { Log } from "#shared/log";
+import { EmoteString } from "#bot/utils/emotes";
+import { deferReply, replyInteraction, sendPrivateMessage } from "#bot/utils/discordInteractions";
+import { CrColors } from "#bot/utils/colors";
+import { BundleId } from "#core/types/Ids";
 
 enum Mode {
 	Set,

@@ -1,6 +1,6 @@
 import { BackgroundDecorationId } from "./Ids";
 import { defaultSkinDescription, type IDescription } from "./Interfaces";
-import { Language } from "@core/models/Language";
+import { Language } from "#core/models/Language";
 
 export interface BackgroundDecorations {
 	readonly Id: BackgroundDecorationId,

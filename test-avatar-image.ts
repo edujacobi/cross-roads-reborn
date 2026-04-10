@@ -1,10 +1,10 @@
-import { User } from "@core/models/User";
-import { UserImageCanvasBuilder } from "@bot/ui/builders/UserImageCanvasBuilder";
-import { AvatarDecorationRegistry } from "@bot/ui/patterns/AvatarDecorationRegistry";
-import { BackgroundPatternRegistry } from "@bot/ui/patterns/BackgroundPatternRegistry";
+import { User } from "#core/models/User";
+import { UserImageCanvasBuilder } from "#bot/ui/builders/UserImageCanvasBuilder";
+import { AvatarDecorationRegistry } from "#bot/ui/patterns/AvatarDecorationRegistry";
+import { BackgroundPatternRegistry } from "#bot/ui/patterns/BackgroundPatternRegistry";
 import { GlobalFonts } from "@napi-rs/canvas";
-import { Language } from "@core/models/Language";
-import { AvatarDecorationId } from "@core/types/Ids";
+import { Language } from "#core/models/Language";
+import { AvatarDecorationId } from "#core/types/Ids";
 import fs from "node:fs";
 import path from "node:path";
 

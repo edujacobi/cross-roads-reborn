@@ -1,4 +1,4 @@
-import { Language } from "@core/models/Language";
+import { Language } from "#core/models/Language";
 import type { IDescription, IEmote } from "./Interfaces";
 
 export enum InvestmentId {

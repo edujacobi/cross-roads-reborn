@@ -7,10 +7,10 @@ import {
 	SlashCommandBuilder,
 	TextDisplayBuilder,
 } from "discord.js";
-import { Users } from "@core/database/Users";
+import { Users } from "#core/database/Users";
 import { Op } from "sequelize";
-import { getLanguageFromLocale } from "@core/models/Language";
-import { replyInteraction, replyUserDontExist } from "@bot/utils/discordInteractions";
+import { getLanguageFromLocale } from "#core/models/Language";
+import { replyInteraction, replyUserDontExist } from "#bot/utils/discordInteractions";
 
 module.exports = {
 	data: new SlashCommandBuilder()

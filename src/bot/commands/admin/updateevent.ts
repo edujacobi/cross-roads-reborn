@@ -6,9 +6,9 @@ import {
 	type SlashCommandNumberOption,
 	type SlashCommandStringOption,
 } from "discord.js";
-import { Event } from "@core/models/Event";
-import { replyInteraction } from "@bot/utils/discordInteractions";
-import type { Events } from "@core/database/Events";
+import { Event } from "#core/models/Event";
+import { replyInteraction } from "#bot/utils/discordInteractions";
+import type { Events } from "#core/database/Events";
 
 module.exports = {
 	data: new SlashCommandBuilder()

@@ -1,17 +1,17 @@
 ﻿import type { User } from "./User";
-import { getItemList, type Items } from "@core/types/Items";
-import { Users } from "@core/database/Users";
+import { getItemList, type Items } from "#core/types/Items";
+import { Users } from "#core/database/Users";
 import { differenceInHours } from "date-fns";
 import { addHours } from "date-fns/addHours";
 import { globalStrings, Language, type Localization } from "./Language";
-import { type ScavengeId, ScavengeList } from "@core/types/Scavenge";
-import { EmoteString } from "@bot/utils/emotes";
-import { showTime } from "@bot/utils/ui";
-import { ClassList } from "@core/types/Classes";
-import { LocationList } from "@core/types/Locations";
-import { BundleId } from "@core/types/Ids";
+import { type ScavengeId, ScavengeList } from "#core/types/Scavenge";
+import { EmoteString } from "#bot/utils/emotes";
+import { showTime } from "#bot/utils/ui";
+import { ClassList } from "#core/types/Classes";
+import { LocationList } from "#core/types/Locations";
+import { BundleId } from "#core/types/Ids";
 import { Colors } from "discord.js";
-import { JobList } from "@core/types/Jobs";
+import { JobList } from "#core/types/Jobs";
 
 export class Shop {
 	User: User;

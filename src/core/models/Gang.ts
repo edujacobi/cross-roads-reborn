@@ -1,14 +1,14 @@
-import { Gangs } from "@core/database/Gangs";
-import { GangMembers } from "@core/database/GangMembers";
-import { GangRoles } from "@core/database/GangRoles";
-import { Log } from "@shared/log";
+import { Gangs } from "#core/database/Gangs";
+import { GangMembers } from "#core/database/GangMembers";
+import { GangRoles } from "#core/database/GangRoles";
+import { Log } from "#shared/log";
 import type { User } from "./User";
 import { Language, type Localization } from "./Language";
-import { defaultComponent, formatMoney, showTime } from "@bot/utils/ui";
-import { Users } from "@core/database/Users";
+import { defaultComponent, formatMoney, showTime } from "#bot/utils/ui";
+import { Users } from "#core/database/Users";
 import { Op } from "sequelize";
-import { GangColor, GangColorId } from "@bot/utils/colors";
-import { sendComplexPrivateMessage } from "@bot/utils/discordInteractions";
+import { GangColor, GangColorId } from "#bot/utils/colors";
+import { sendComplexPrivateMessage } from "#bot/utils/discordInteractions";
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
@@ -19,11 +19,11 @@ import {
 	type MessageComponentInteraction,
 	MessageFlags,
 } from "discord.js";
-import { getClient } from "@bot/client";
-import { EmoteString } from "@bot/utils/emotes";
-import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
-import { GangBaseId } from "@core/types/GangBases";
-import type { IDescription } from "@core/types/Interfaces";
+import { getClient } from "#bot/client";
+import { EmoteString } from "#bot/utils/emotes";
+import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
+import { GangBaseId } from "#core/types/GangBases";
+import type { IDescription } from "#core/types/Interfaces";
 import { addHours } from "date-fns";
 import { Notification, NotificationType } from "./Notification";
 

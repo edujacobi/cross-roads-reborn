@@ -1,8 +1,8 @@
-﻿import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
-import { EmoteBadgeString } from "@bot/utils/badges";
-import { deferReply, replyInteraction, replyWithContainer } from "@bot/utils/discordInteractions";
-import { Language, type Localization } from "@core/models/Language";
-import type { User } from "@core/models/User";
+import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
+import { EmoteBadgeString } from "#bot/utils/badges";
+import { deferReply, replyInteraction, replyWithContainer } from "#bot/utils/discordInteractions";
+import { Language, type Localization } from "#core/models/Language";
+import type { User } from "#core/models/User";
 import {
 	ButtonBuilder,
 	ButtonStyle,

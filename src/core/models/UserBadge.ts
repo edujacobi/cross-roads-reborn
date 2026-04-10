@@ -1,8 +1,8 @@
-﻿import UserBadges from "@core/database/UserBadges";
-import { Log } from "@shared/log";
-import { showTime } from "@bot/utils/ui";
+import UserBadges from "#core/database/UserBadges";
+import { Log } from "#shared/log";
+import { showTime } from "#bot/utils/ui";
 import type { User } from "./User";
-import { BadgeId, BadgeList } from "@core/types/Badges";
+import { BadgeId, BadgeList } from "#core/types/Badges";
 import { Language } from "./Language";
 
 export class UserBadge {

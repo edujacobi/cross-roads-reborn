@@ -1,20 +1,20 @@
-import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
-import { DEFAULT_GANG_IMAGE } from "@bot/ui/builders/GangImageCanvasBuilder";
-import { EmoteBadgeString } from "@bot/utils/badges";
-import { CrColors, GangColor } from "@bot/utils/colors";
-import { deferReply, replyWithContainer } from "@bot/utils/discordInteractions";
-import { EmoteId, EmoteString } from "@bot/utils/emotes";
-import { defaultComponent, formatMoney } from "@bot/utils/ui";
-import { searchUser } from "@bot/utils/userUtils";
-import Gangs from "@core/database/Gangs";
-import { Users } from "@core/database/Users";
-import { BeatUp } from "@core/models/BeatUp";
-import { Gang } from "@core/models/Gang";
-import { Language, type Localization } from "@core/models/Language";
-import { Pagination } from "@core/models/Pagination";
-import { Robbery } from "@core/models/Robbery";
-import { User } from "@core/models/User";
-import type { IDescription } from "@core/types/Interfaces";
+import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
+import { DEFAULT_GANG_IMAGE } from "#bot/ui/builders/GangImageCanvasBuilder";
+import { EmoteBadgeString } from "#bot/utils/badges";
+import { CrColors, GangColor } from "#bot/utils/colors";
+import { deferReply, replyWithContainer } from "#bot/utils/discordInteractions";
+import { EmoteId, EmoteString } from "#bot/utils/emotes";
+import { defaultComponent, formatMoney } from "#bot/utils/ui";
+import { searchUser } from "#bot/utils/userUtils";
+import Gangs from "#core/database/Gangs";
+import { Users } from "#core/database/Users";
+import { BeatUp } from "#core/models/BeatUp";
+import { Gang } from "#core/models/Gang";
+import { Language, type Localization } from "#core/models/Language";
+import { Pagination } from "#core/models/Pagination";
+import { Robbery } from "#core/models/Robbery";
+import { User } from "#core/models/User";
+import type { IDescription } from "#core/types/Interfaces";
 import {
 	AttachmentBuilder,
 	ButtonStyle,
@@ -24,7 +24,7 @@ import {
 	SlashCommandBuilder,
 } from "discord.js";
 import { Op } from "sequelize";
-import { UserRankingCardCanvasBuilder } from "@bot/ui/builders/UserRankingCardCanvasBuilder";
+import { UserRankingCardCanvasBuilder } from "#bot/ui/builders/UserRankingCardCanvasBuilder";
 
 enum TopSubcommand {
 	Money = "money",

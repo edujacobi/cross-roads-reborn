@@ -1,9 +1,9 @@
-﻿import { Log } from "@shared/log";
+import { Log } from "#shared/log";
 import { Language } from "./Language";
-import { BundleId } from "@core/types/Ids";
-import UserBundles from "@core/database/UserBundles";
-import { BundleList } from "@core/types/Skins";
-import { ItemList, type Items } from "@core/types/Items";
+import { BundleId } from "#core/types/Ids";
+import UserBundles from "#core/database/UserBundles";
+import { BundleList } from "#core/types/Skins";
+import { ItemList, type Items } from "#core/types/Items";
 
 export class UserBundle {
 	UserId = "";

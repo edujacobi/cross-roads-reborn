@@ -1,6 +1,6 @@
 import { AvatarDecorationId } from "./Ids";
 import { defaultSkinDescription, type IDescription } from "./Interfaces";
-import { Language } from "@core/models/Language";
+import { Language } from "#core/models/Language";
 
 export interface AvatarDecorations {
 	readonly Id: AvatarDecorationId,

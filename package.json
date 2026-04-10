@@ -9,12 +9,12 @@
   "scripts": {
     "clear": "npx rimraf build",
     "prebuild": "npm run clear && npm run lint",
-    "build": "tsgo && npx tsc-alias",
+    "build": "tsgo",
     "build:watch": "tsgo --watch",
-    "clear-commands": "node build/src/bot/clear-commands.js",
-    "start": "pm2 start build/src/index.js --name \"cr\"",
+    "clear-commands": "npx tsx src/bot/clear-commands.ts",
+    "start": "pm2 start \"npx tsx src/index.ts\" --name \"cr\"",
     "stop": "pm2 stop cr",
-    "deploy": "node build/src/bot/deploy-commands.js",
+    "deploy": "npx tsx src/bot/deploy-commands.ts",
     "start-dev": "set NODE_ENV=DEV&& npx tsx src/index.ts -w",
     "deploy-dev": "set NODE_ENV=DEV&& npx tsx src/bot/deploy-commands.ts",
     "clear-commands-dev": "set NODE_ENV=DEV&& npx tsx src/bot/clear-commands.ts",
@@ -32,6 +32,20 @@
     "rpg",
     "game"
   ],
+  "imports": {
+    "#core/*": {
+      "types": "./src/core/*.ts",
+      "default": "./build/src/core/*.js"
+    },
+    "#bot/*": {
+      "types": "./src/bot/*.ts",
+      "default": "./build/src/bot/*.js"
+    },
+    "#shared/*": {
+      "types": "./src/shared/*.ts",
+      "default": "./build/src/shared/*.js"
+    }
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/edujacobi/cross-roads-reborn.git"
@@ -54,7 +68,6 @@
     "globals": "^16.3.0",
     "husky": "^9.1.7",
     "rimraf": "^6.0.1",
-    "tsc-alias": "^1.8.10",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3",
     "vite-tsconfig-paths": "^6.0.5",

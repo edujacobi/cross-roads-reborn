@@ -1,16 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { User } from "@core/models/User";
-import { Language } from "@core/models/Language";
-import { ClassId } from "@core/types/Classes";
-import { Robbery } from "@core/models/Robbery";
-import { RobberyLocation } from "@core/models/RobberyLocation";
-import { ItemList, type UserItem } from "@core/types/Items";
-import { ItemId } from "@core/types/Ids";
-import { ScavengeId } from "@core/types/Scavenge";
-import { JobId } from "@core/types/Jobs";
-import { LocationId } from "@core/types/Locations";
+import { User } from "#core/models/User";
+import { Language } from "#core/models/Language";
+import { ClassId } from "#core/types/Classes";
+import { Robbery } from "#core/models/Robbery";
+import { RobberyLocation } from "#core/models/RobberyLocation";
+import { ItemList, type UserItem } from "#core/types/Items";
+import { ItemId } from "#core/types/Ids";
+import { ScavengeId } from "#core/types/Scavenge";
+import { JobId } from "#core/types/Jobs";
+import { LocationId } from "#core/types/Locations";
 
-vi.mock("@core/database/Users", () => ({
+vi.mock("#core/database/Users", () => ({
 	Users: {
 		update: vi.fn(),
 		findOne: vi.fn(),

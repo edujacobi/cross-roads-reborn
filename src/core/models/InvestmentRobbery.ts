@@ -1,13 +1,13 @@
 import type { User } from "./User";
 import type { Gang } from "./Gang";
-import { InvestmentList, type InvestmentId, type Investment } from "@core/types/Investments";
-import { UserInvestments } from "@core/database/UserInvestments";
-import { getPercent } from "@shared/utils";
+import { InvestmentList, type InvestmentId, type Investment } from "#core/types/Investments";
+import { UserInvestments } from "#core/database/UserInvestments";
+import { getPercent } from "#shared/utils";
 import { addHours, addMinutes, isFuture } from "date-fns";
-import { ClassId } from "@core/types/Classes";
-import { logger } from "@shared/log";
+import { ClassId } from "#core/types/Classes";
+import { logger } from "#shared/log";
 import { Language } from "./Language";
-import { formatMoney } from "@bot/utils/ui";
+import { formatMoney } from "#bot/utils/ui";
 
 export enum InvestmentRobberyReason {
 	NoPermission,

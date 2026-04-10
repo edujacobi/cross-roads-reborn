@@ -1,3 +1,3 @@
-import { testImage } from "@bot/ui/builders/UserImageCanvasBuilder";
+import { testImage } from "#bot/ui/builders/UserImageCanvasBuilder";
 
 testImage();

@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { User } from "@core/models/User";
-import { Language } from "@core/models/Language";
-import { ClassId } from "@core/types/Classes";
-import { Prison, PrisonFailureReason } from "@core/models/Prison";
+import { User } from "#core/models/User";
+import { Language } from "#core/models/Language";
+import { ClassId } from "#core/types/Classes";
+import { Prison, PrisonFailureReason } from "#core/models/Prison";
 
 // --- Global Mocks ---
 
-vi.mock("@core/database/Users", () => ({
+vi.mock("#core/database/Users", () => ({
 	Users: {
 		update: vi.fn(),
 		findOne: vi.fn(),

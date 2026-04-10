@@ -1,16 +1,16 @@
-﻿import { getClient } from "@bot/client";
-import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
-import { UserImageCanvasBuilder } from "@bot/ui/builders/UserImageCanvasBuilder";
-import { createButtonCollector, disableButtons } from "@bot/utils/collectors";
-import { deferReply, replyInteraction, replyWithContainer } from "@bot/utils/discordInteractions";
-import { EmoteId } from "@bot/utils/emotes";
-import { formatMoney, showTime } from "@bot/utils/ui";
-import { searchUser } from "@bot/utils/userUtils";
-import { Language, type Localization } from "@core/models/Language";
-import type { User } from "@core/models/User";
-import { UserBadge } from "@core/models/UserBadge";
-import { BadgeId, BadgeList } from "@core/types/Badges";
-import { ClassList } from "@core/types/Classes";
+﻿import { getClient } from "#bot/client";
+import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
+import { UserImageCanvasBuilder } from "#bot/ui/builders/UserImageCanvasBuilder";
+import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
+import { deferReply, replyInteraction, replyWithContainer } from "#bot/utils/discordInteractions";
+import { EmoteId } from "#bot/utils/emotes";
+import { formatMoney, showTime } from "#bot/utils/ui";
+import { searchUser } from "#bot/utils/userUtils";
+import { Language, type Localization } from "#core/models/Language";
+import type { User } from "#core/models/User";
+import { UserBadge } from "#core/models/UserBadge";
+import { BadgeId, BadgeList } from "#core/types/Badges";
+import { ClassList } from "#core/types/Classes";
 import { addDays } from "date-fns";
 import {
 	AttachmentBuilder,

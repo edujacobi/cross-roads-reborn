@@ -1,7 +1,7 @@
-import { getBackgroundDecorationList } from "@core/types/BackgroundDecorations";
-import { BackgroundDecorationId } from "@core/types/Ids";
+import { getBackgroundDecorationList } from "#core/types/BackgroundDecorations";
+import { BackgroundDecorationId } from "#core/types/Ids";
 import { Canvas, type Image, loadImage, type SKRSContext2D } from "@napi-rs/canvas";
-import { Log } from "@shared/log";
+import { Log } from "#shared/log";
 
 export const CARD_WIDTH = 1200;
 export const CARD_HEIGHT = 150;

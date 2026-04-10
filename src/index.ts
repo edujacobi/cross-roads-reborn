@@ -1,13 +1,13 @@
 import fs from "node:fs";
 import path from "node:path";
 import { Collection } from "discord.js";
-import type { SlashCommand } from "@bot/types";
+import type { SlashCommand } from "#bot/types";
 import dotenv from "dotenv";
-import { setClient } from "@bot/client";
-import { logger, Log } from "@shared/log";
+import { setClient } from "#bot/client";
+import { logger, Log } from "#shared/log";
 import { GlobalFonts } from "@napi-rs/canvas";
-import { BackgroundPatternRegistry } from "@bot/ui/patterns/BackgroundPatternRegistry";
-import { AvatarDecorationRegistry } from "@bot/ui/patterns/AvatarDecorationRegistry";
+import { BackgroundPatternRegistry } from "#bot/ui/patterns/BackgroundPatternRegistry";
+import { AvatarDecorationRegistry } from "#bot/ui/patterns/AvatarDecorationRegistry";
 
 const client = setClient();
 

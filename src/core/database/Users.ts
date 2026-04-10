@@ -1,12 +1,12 @@
 import { type CreationOptional, DataTypes, type InferAttributes, type InferCreationAttributes, Model } from "sequelize";
 import { sequelize } from "./Database";
-import type { JobId } from "@core/types/Jobs";
+import type { JobId } from "#core/types/Jobs";
 
-import type { ClassId } from "@core/types/Classes";
-import type { Language } from "@core/models/Language";
-import type { LocationId } from "@core/types/Locations";
-import type { ScavengeId } from "@core/types/Scavenge";
-import type { AvatarDecorationId, BackgroundDecorationId } from "@core/types/Ids";
+import type { ClassId } from "#core/types/Classes";
+import type { Language } from "#core/models/Language";
+import type { LocationId } from "#core/types/Locations";
+import type { ScavengeId } from "#core/types/Scavenge";
+import type { AvatarDecorationId, BackgroundDecorationId } from "#core/types/Ids";
 
 export class Users extends Model<
 	InferAttributes<Users>,

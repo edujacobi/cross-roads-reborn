@@ -8,18 +8,18 @@
 	SlashCommandBuilder,
 	type SlashCommandIntegerOption,
 } from "discord.js";
-import { replyWithContainer } from "@bot/utils/discordInteractions";
-import { formatMoney } from "@bot/utils/ui";
-import { Language, type Localization } from "@core/models/Language";
-import type { User } from "@core/models/User";
-import { ItemList, ItemType } from "@core/types/Items";
-import { EmoteId, EmoteString } from "@bot/utils/emotes";
-import { UserItems } from "@core/database/UserItems";
+import { replyWithContainer } from "#bot/utils/discordInteractions";
+import { formatMoney } from "#bot/utils/ui";
+import { Language, type Localization } from "#core/models/Language";
+import type { User } from "#core/models/User";
+import { ItemList, ItemType } from "#core/types/Items";
+import { EmoteId, EmoteString } from "#bot/utils/emotes";
+import { UserItems } from "#core/database/UserItems";
 import { Op } from "sequelize";
-import { BundleId } from "@core/types/Ids";
-import { BundleList } from "@core/types/Skins";
-import { CrColors, GangColor, GangColorId } from "@bot/utils/colors";
-import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
+import { BundleId } from "#core/types/Ids";
+import { BundleList } from "#core/types/Skins";
+import { CrColors, GangColor, GangColorId } from "#bot/utils/colors";
+import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
 
 module.exports = {
 	data: new SlashCommandBuilder()

@@ -1,5 +1,5 @@
 import type { IDescription } from "./Interfaces";
-import { Language } from "@core/models/Language";
+import { Language } from "#core/models/Language";
 import type { IModifier } from "./Classes";
 
 export enum GangBaseId {

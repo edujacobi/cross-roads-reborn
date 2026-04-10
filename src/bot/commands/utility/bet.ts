@@ -1,4 +1,4 @@
-﻿import {
+import {
 	ButtonStyle,
 	type ChatInputCommandInteraction,
 	Locale,
@@ -6,17 +6,17 @@
 	type SlashCommandIntegerOption,
 	type SlashCommandNumberOption,
 } from "discord.js";
-import { replyWithContainer } from "@bot/utils/discordInteractions";
-import { formatMoney } from "@bot/utils/ui";
-import { CrColors } from "@bot/utils/colors";
-import { EmoteString } from "@bot/utils/emotes";
-import { Language, type Localization } from "@core/models/Language";
+import { replyWithContainer } from "#bot/utils/discordInteractions";
+import { formatMoney } from "#bot/utils/ui";
+import { CrColors } from "#bot/utils/colors";
+import { EmoteString } from "#bot/utils/emotes";
+import { Language, type Localization } from "#core/models/Language";
 import { setTimeout as wait } from "timers/promises";
-import type { User } from "@core/models/User";
-import { Casino } from "@core/models/Casino";
-import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
-import { getCasinoClassModifier } from "@core/types/Classes";
-import { createButtonCollector, disableButtons } from "@bot/utils/collectors";
+import type { User } from "#core/models/User";
+import { Casino } from "#core/models/Casino";
+import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
+import { getCasinoClassModifier } from "#core/types/Classes";
+import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
 
 enum CoinSide {
 	Heads = 0,

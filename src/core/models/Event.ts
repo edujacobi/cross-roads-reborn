@@ -1,6 +1,6 @@
 import { Op } from "sequelize";
-import { Events } from "@core/database/Events";
-import { Log } from "@shared/log";
+import { Events } from "#core/database/Events";
+import { Log } from "#shared/log";
 
 export enum EventType {
 	JOB_TIME_MULTIPLIER = 1,

@@ -1,8 +1,8 @@
-import { Log } from "@shared/log";
+import { Log } from "#shared/log";
 import { Language } from "./Language";
-import { BackgroundDecorationId } from "@core/types/Ids";
-import UserBackgroundDecorations from "@core/database/UserBackgroundDecorations";
-import { BackgroundDecorationList } from "@core/types/BackgroundDecorations";
+import { BackgroundDecorationId } from "#core/types/Ids";
+import UserBackgroundDecorations from "#core/database/UserBackgroundDecorations";
+import { BackgroundDecorationList } from "#core/types/BackgroundDecorations";
 import type { User } from "./User";
 
 export class UserBackgroundDecoration {

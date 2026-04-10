@@ -1,9 +1,9 @@
 import type { User } from "./User";
-import { EmoteString } from "@bot/utils/emotes";
-import { formatMoney, showTime } from "@bot/utils/ui";
+import { EmoteString } from "#bot/utils/emotes";
+import { formatMoney, showTime } from "#bot/utils/ui";
 import { addHours } from "date-fns/addHours";
-import { ClassId } from "@core/types/Classes";
-import { Log } from "@shared/log";
+import { ClassId } from "#core/types/Classes";
+import { Log } from "#shared/log";
 import { Language } from "./Language";
 import { Notification } from "./Notification";
 

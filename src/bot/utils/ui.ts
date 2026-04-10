@@ -1,4 +1,4 @@
-﻿import {
+import {
 	type ActionRowBuilder,
 	ActivityType,
 	type ButtonBuilder,
@@ -6,11 +6,11 @@
 	type ColorResolvable,
 	type RGBTuple,
 } from "discord.js";
-import { Language } from "@core/models/Language";
+import { Language } from "#core/models/Language";
 import { enUS, es, ptBR } from "date-fns/locale";
 import { formatDistanceToNow } from "date-fns";
-import type { User } from "@core/models/User";
-import { CustomContainerBuilder, CustomSectionBuilder } from "@bot/ui/builders/CustomContainerBuilder";
+import type { User } from "#core/models/User";
+import { CustomContainerBuilder, CustomSectionBuilder } from "#bot/ui/builders/CustomContainerBuilder";
 
 interface ComponentParams {
 	user?: User;

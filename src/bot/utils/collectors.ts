@@ -11,9 +11,9 @@ import {
 	SectionBuilder,
 	StringSelectMenuBuilder,
 } from "discord.js";
-import type { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
-import { Log } from "@shared/log";
-import { replyWithContainer } from "@bot/utils/discordInteractions";
+import type { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
+import { Log } from "#shared/log";
+import { replyWithContainer } from "#bot/utils/discordInteractions";
 
 /**
  * Creates a button interaction collector for a message.

@@ -1,6 +1,6 @@
-﻿import { REST, Routes } from "discord.js";
+import { REST, Routes } from "discord.js";
 import dotenv from "dotenv";
-import { logger } from "@shared/log";
+import { logger } from "#shared/log";
 
 dotenv.config();
 

@@ -1,17 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { User } from "@core/models/User";
-import { Language } from "@core/models/Language";
-import { ClassId } from "@core/types/Classes";
-import { Shop } from "@core/models/Shop";
-import { ScavengeId } from "@core/types/Scavenge";
-import { ItemId } from "@core/types/Ids";
-import { ItemList, type UserItem } from "@core/types/Items";
-import { LocationId } from "@core/types/Locations";
+import { User } from "#core/models/User";
+import { Language } from "#core/models/Language";
+import { ClassId } from "#core/types/Classes";
+import { Shop } from "#core/models/Shop";
+import { ScavengeId } from "#core/types/Scavenge";
+import { ItemId } from "#core/types/Ids";
+import { ItemList, type UserItem } from "#core/types/Items";
+import { LocationId } from "#core/types/Locations";
 import { addHours } from "date-fns";
 
 // --- Global Mocks ---
 
-vi.mock("@core/database/Users", () => ({
+vi.mock("#core/database/Users", () => ({
 	Users: {
 		update: vi.fn(),
 		findOne: vi.fn(),

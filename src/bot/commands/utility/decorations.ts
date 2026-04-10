@@ -7,20 +7,20 @@ import {
 	MessageFlags,
 	SlashCommandBuilder,
 } from "discord.js";
-import { replyInteraction, replyWithContainer } from "@bot/utils/discordInteractions";
-import type { User } from "@core/models/User";
-import { Language, type Localization } from "@core/models/Language";
-import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
-import { CrColors } from "@bot/utils/colors";
-import { UserAvatarDecoration } from "@core/models/UserAvatarDecoration";
-import { AvatarDecorationList } from "@core/types/AvatarDecorations";
-import { UserBackgroundDecoration } from "@core/models/UserBackgroundDecoration";
-import { BackgroundDecorationList } from "@core/types/BackgroundDecorations";
-import { UserImageCanvasBuilder } from "@bot/ui/builders/UserImageCanvasBuilder";
-import { UserRankingCardCanvasBuilder } from "@bot/ui/builders/UserRankingCardCanvasBuilder";
-import { AvatarDecorationId, BackgroundDecorationId } from "@core/types/Ids";
-import { EmoteId } from "@bot/utils/emotes";
-import { createButtonCollector, disableButtons } from "@bot/utils/collectors";
+import { replyInteraction, replyWithContainer } from "#bot/utils/discordInteractions";
+import type { User } from "#core/models/User";
+import { Language, type Localization } from "#core/models/Language";
+import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
+import { CrColors } from "#bot/utils/colors";
+import { UserAvatarDecoration } from "#core/models/UserAvatarDecoration";
+import { AvatarDecorationList } from "#core/types/AvatarDecorations";
+import { UserBackgroundDecoration } from "#core/models/UserBackgroundDecoration";
+import { BackgroundDecorationList } from "#core/types/BackgroundDecorations";
+import { UserImageCanvasBuilder } from "#bot/ui/builders/UserImageCanvasBuilder";
+import { UserRankingCardCanvasBuilder } from "#bot/ui/builders/UserRankingCardCanvasBuilder";
+import { AvatarDecorationId, BackgroundDecorationId } from "#core/types/Ids";
+import { EmoteId } from "#bot/utils/emotes";
+import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
 
 const CATEGORY_AVATAR = "cat_avatar";
 const CATEGORY_RANKING = "cat_ranking";

@@ -6,17 +6,17 @@ import {
 	type ScavengeId,
 	ScavengeList,
 	ScavengeRewardType,
-} from "@core/types/Scavenge";
-import { ItemList, type Items, ItemType } from "@core/types/Items";
-import { LocationList } from "@core/types/Locations";
-import { Users } from "@core/database/Users";
-import { getScavengeChanceClassModifier, getScavengeDurationClassModifier } from "@core/types/Classes";
+} from "#core/types/Scavenge";
+import { ItemList, type Items, ItemType } from "#core/types/Items";
+import { LocationList } from "#core/types/Locations";
+import { Users } from "#core/database/Users";
+import { getScavengeChanceClassModifier, getScavengeDurationClassModifier } from "#core/types/Classes";
 import { addHours, addMinutes } from "date-fns";
-import { Log } from "@shared/log";
+import { Log } from "#shared/log";
 import { Notification } from "./Notification";
-import { UserItems } from "@core/database/UserItems";
-import { BundleId } from "@core/types/Ids";
-import { formatMoney } from "@bot/utils/ui";
+import { UserItems } from "#core/database/UserItems";
+import { BundleId } from "#core/types/Ids";
+import { formatMoney } from "#bot/utils/ui";
 
 export class Scavenge {
 	User: User;

@@ -1,4 +1,4 @@
-﻿import {
+import {
 	type ChatInputCommandInteraction,
 	Locale,
 	PermissionFlagsBits,
@@ -6,11 +6,11 @@
 	type SlashCommandIntegerOption,
 	type SlashCommandStringOption,
 } from "discord.js";
-import { defaultComponent, formatMoney } from "@bot/utils/ui";
-import { replyInteraction, replyWithContainer, sendPrivateMessage } from "@bot/utils/discordInteractions";
-import type { User } from "@core/models/User";
-import { CrColors } from "@bot/utils/colors";
-import { checkUser } from "@bot/utils/userUtils";
+import { defaultComponent, formatMoney } from "#bot/utils/ui";
+import { replyInteraction, replyWithContainer, sendPrivateMessage } from "#bot/utils/discordInteractions";
+import type { User } from "#core/models/User";
+import { CrColors } from "#bot/utils/colors";
+import { checkUser } from "#bot/utils/userUtils";
 
 enum SetMoneyConfiguration {
 	Add,

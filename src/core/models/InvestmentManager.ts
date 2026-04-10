@@ -1,17 +1,17 @@
 import { User } from "./User";
-import { UserInvestments } from "@core/database/UserInvestments";
+import { UserInvestments } from "#core/database/UserInvestments";
 import {
 	type InvestmentId,
 	InvestmentList,
 	type InvestmentActionResult,
-} from "@core/types/Investments";
-import { Users } from "@core/database/Users";
+} from "#core/types/Investments";
+import { Users } from "#core/database/Users";
 import { addDays, addHours, differenceInHours, isFuture, isPast, startOfHour } from "date-fns";
-import { Log } from "@shared/log";
-import { formatMoney } from "@bot/utils/ui";
+import { Log } from "#shared/log";
+import { formatMoney } from "#bot/utils/ui";
 import { Notification } from "./Notification";
 import { Language } from "./Language";
-import { type ClassId, getInvestmentYieldClassModifier } from "@core/types/Classes";
+import { type ClassId, getInvestmentYieldClassModifier } from "#core/types/Classes";
 
 export class InvestmentManager {
 	static readonly DURATION_DAYS = 7;

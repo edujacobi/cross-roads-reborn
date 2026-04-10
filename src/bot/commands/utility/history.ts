@@ -1,17 +1,17 @@
-﻿import { type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
-import { deferReply } from "@bot/utils/discordInteractions";
-import { formatDate, formatMoney } from "@bot/utils/ui";
-import type { User } from "@core/models/User";
-import { RobHistories } from "@core/database/RobHistories";
-import { EmoteString } from "@bot/utils/emotes";
-import { Users } from "@core/database/Users";
-import { Language, type Localization } from "@core/models/Language";
-import { Pagination } from "@core/models/Pagination";
-import { ClassList } from "@core/types/Classes";
-import { LocationList } from "@core/types/Locations";
-import { ClashType } from "@core/models/Robbery";
-import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
-import { searchUser } from "@bot/utils/userUtils";
+import { type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+import { deferReply } from "#bot/utils/discordInteractions";
+import { formatDate, formatMoney } from "#bot/utils/ui";
+import type { User } from "#core/models/User";
+import { RobHistories } from "#core/database/RobHistories";
+import { EmoteString } from "#bot/utils/emotes";
+import { Users } from "#core/database/Users";
+import { Language, type Localization } from "#core/models/Language";
+import { Pagination } from "#core/models/Pagination";
+import { ClassList } from "#core/types/Classes";
+import { LocationList } from "#core/types/Locations";
+import { ClashType } from "#core/models/Robbery";
+import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
+import { searchUser } from "#bot/utils/userUtils";
 
 module.exports = {
 	cooldown: 10,

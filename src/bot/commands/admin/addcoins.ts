@@ -6,13 +6,13 @@
 	type SlashCommandIntegerOption,
 	type SlashCommandStringOption,
 } from "discord.js";
-import { defaultComponent, formatMoney } from "@bot/utils/ui";
-import { replyWithContainer, sendPrivateMessage } from "@bot/utils/discordInteractions";
-import { EmoteString } from "@bot/utils/emotes";
-import type { User } from "@core/models/User";
-import { Language } from "@core/models/Language";
-import { CrColors } from "@bot/utils/colors";
-import { checkUser } from "@bot/utils/userUtils";
+import { defaultComponent, formatMoney } from "#bot/utils/ui";
+import { replyWithContainer, sendPrivateMessage } from "#bot/utils/discordInteractions";
+import { EmoteString } from "#bot/utils/emotes";
+import type { User } from "#core/models/User";
+import { Language } from "#core/models/Language";
+import { CrColors } from "#bot/utils/colors";
+import { checkUser } from "#bot/utils/userUtils";
 
 module.exports = {
 	data: new SlashCommandBuilder()

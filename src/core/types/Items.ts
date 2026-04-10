@@ -1,6 +1,6 @@
 import type { IDescription, IEmote } from "./Interfaces";
-import { Language } from "@core/models/Language";
-import { EmoteId, EmoteString } from "@bot/utils/emotes";
+import { Language } from "#core/models/Language";
+import { EmoteId, EmoteString } from "#bot/utils/emotes";
 import { BundleId, ItemId } from "./Ids";
 
 export enum ItemType {

@@ -1,10 +1,10 @@
-﻿import { type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
-import { deferReply, replyWithContainer } from "@bot/utils/discordInteractions";
-import { defaultComponent } from "@bot/utils/ui";
-import { CrColors } from "@bot/utils/colors";
-import type { User } from "@core/models/User";
-import { Robbery } from "@core/models/Robbery";
-import { searchUser } from "@bot/utils/userUtils";
+import { type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+import { deferReply, replyWithContainer } from "#bot/utils/discordInteractions";
+import { defaultComponent } from "#bot/utils/ui";
+import { CrColors } from "#bot/utils/colors";
+import type { User } from "#core/models/User";
+import { Robbery } from "#core/models/Robbery";
+import { searchUser } from "#bot/utils/userUtils";
 
 module.exports = {
 	data: new SlashCommandBuilder()

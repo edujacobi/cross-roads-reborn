@@ -1,21 +1,21 @@
 import { User } from "./User";
-import { Log } from "@shared/log";
+import { Log } from "#shared/log";
 import type { ChatInputCommandInteraction } from "discord.js";
-import { replyWithContainer } from "@bot/utils/discordInteractions";
-import { formatMoney, showTime } from "@bot/utils/ui";
-import { EmoteString } from "@bot/utils/emotes";
+import { replyWithContainer } from "#bot/utils/discordInteractions";
+import { formatMoney, showTime } from "#bot/utils/ui";
+import { EmoteString } from "#bot/utils/emotes";
 import { setTimeout as wait } from "timers/promises";
 import { addHours } from "date-fns/addHours";
 import { Notification } from "./Notification";
 import { addMinutes } from "date-fns";
 import { globalStrings, Language, type Localization } from "./Language";
-import { RobHistories } from "@core/database/RobHistories";
-import { Users } from "@core/database/Users";
-import { type JobId, JobList } from "@core/types/Jobs";
+import { RobHistories } from "#core/database/RobHistories";
+import { Users } from "#core/database/Users";
+import { type JobId, JobList } from "#core/types/Jobs";
 import { ClashType, Robbery } from "./Robbery";
-import { type LocationId, LocationList } from "@core/types/Locations";
-import { ClassList, getRobberyClassModifier } from "@core/types/Classes";
-import { type ScavengeId, ScavengeList } from "@core/types/Scavenge";
+import { type LocationId, LocationList } from "#core/types/Locations";
+import { ClassList, getRobberyClassModifier } from "#core/types/Classes";
+import { type ScavengeId, ScavengeList } from "#core/types/Scavenge";
 
 export class RobberyLocation extends Robbery {
 	LocationId: LocationId;

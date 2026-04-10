@@ -1,5 +1,5 @@
 import { ItemId } from "./Ids";
-import { Language } from "@core/models/Language";
+import { Language } from "#core/models/Language";
 import type { IDescription } from "./Interfaces";
 
 export enum JobId {

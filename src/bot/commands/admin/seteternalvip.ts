@@ -6,12 +6,12 @@
 	SlashCommandBuilder,
 	type SlashCommandStringOption,
 } from "discord.js";
-import { defaultComponent } from "@bot/utils/ui";
-import { replyInteraction, replyWithContainer, sendPrivateMessage } from "@bot/utils/discordInteractions";
-import { EmoteString } from "@bot/utils/emotes";
-import type { User } from "@core/models/User";
-import { Language, type Localization } from "@core/models/Language";
-import { checkUser } from "@bot/utils/userUtils";
+import { defaultComponent } from "#bot/utils/ui";
+import { replyInteraction, replyWithContainer, sendPrivateMessage } from "#bot/utils/discordInteractions";
+import { EmoteString } from "#bot/utils/emotes";
+import type { User } from "#core/models/User";
+import { Language, type Localization } from "#core/models/Language";
+import { checkUser } from "#bot/utils/userUtils";
 
 module.exports = {
 	data: new SlashCommandBuilder()

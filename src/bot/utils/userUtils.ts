@@ -1,11 +1,11 @@
 import type { CommandInteraction } from "discord.js";
-import { getLanguageFromLocale, Language, type Localization } from "@core/models/Language";
-import { User } from "@core/models/User";
-import { Users } from "@core/database/Users";
+import { getLanguageFromLocale, Language, type Localization } from "#core/models/Language";
+import { User } from "#core/models/User";
+import { Users } from "#core/database/Users";
 import { Op } from "sequelize";
-import { Log } from "@shared/log";
-import { replyUserDontExist, sendPrivateMessage } from "@bot/utils/discordInteractions";
-import { EmoteString } from "@bot/utils/emotes";
+import { Log } from "#shared/log";
+import { replyUserDontExist, sendPrivateMessage } from "#bot/utils/discordInteractions";
+import { EmoteString } from "#bot/utils/emotes";
 
 /**
  * Checks if the user exists in the database. If the user is the one who invoked the interaction,

@@ -1,10 +1,10 @@
-import { User } from "@core/models/User";
-import type { Gang } from "@core/models/Gang";
-import { Language, type Localization } from "@core/models/Language";
+import { User } from "#core/models/User";
+import type { Gang } from "#core/models/Gang";
+import { Language, type Localization } from "#core/models/Language";
 import { Canvas, type Image, loadImage } from "@napi-rs/canvas";
-import { logger } from "@shared/log";
-import { convertHexNumberToString, hexToRGB } from "@bot/utils/ui";
-import { GangColor } from "@bot/utils/colors";
+import { logger } from "#shared/log";
+import { convertHexNumberToString, hexToRGB } from "#bot/utils/ui";
+import { GangColor } from "#bot/utils/colors";
 import fs from "node:fs";
 
 export const DEFAULT_GANG_IMAGE = "https://i.imgur.com/xOUjOlZ.png";

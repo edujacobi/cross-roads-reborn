@@ -1,13 +1,13 @@
 import type { User } from "./User";
-import { EmoteString } from "@bot/utils/emotes";
-import { formatMoney, showTime } from "@bot/utils/ui";
-import { JobList } from "@core/types/Jobs";
+import { EmoteString } from "#bot/utils/emotes";
+import { formatMoney, showTime } from "#bot/utils/ui";
+import { JobList } from "#core/types/Jobs";
 import { globalStrings, Language, type Localization } from "./Language";
-import { type ScavengeId, ScavengeList } from "@core/types/Scavenge";
-import { Users } from "@core/database/Users";
-import { ClassList } from "@core/types/Classes";
-import { LocationList } from "@core/types/Locations";
-import { Log } from "@shared/log";
+import { type ScavengeId, ScavengeList } from "#core/types/Scavenge";
+import { Users } from "#core/database/Users";
+import { ClassList } from "#core/types/Classes";
+import { LocationList } from "#core/types/Locations";
+import { Log } from "#shared/log";
 
 export class Casino {
 	static async CanUserPlayGame(user: User, amount: number) {

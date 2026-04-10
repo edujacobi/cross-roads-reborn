@@ -1,16 +1,16 @@
-import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
-import { DEFAULT_GANG_IMAGE } from "@bot/ui/builders/GangImageCanvasBuilder";
-import { createButtonCollector, disableButtons } from "@bot/utils/collectors";
-import { CrColors, GangColor, type IGangColor } from "@bot/utils/colors";
-import { deferReply, replyWithContainer, sendComplexPrivateMessage } from "@bot/utils/discordInteractions";
-import { EmoteId, EmoteString } from "@bot/utils/emotes";
-import { convertHexNumberToString, defaultComponent, formatMoney, hexToRGB, showTime } from "@bot/utils/ui";
-import { checkUser, searchUser } from "@bot/utils/userUtils";
-import { Gang, GangPermission } from "@core/models/Gang";
-import { InvestmentRobbery, InvestmentRobberyReason } from "@core/models/InvestmentRobbery";
-import { Language, type Localization } from "@core/models/Language";
-import { type User } from "@core/models/User";
-import { GangBaseId, GangBases, type GangModifier, getGangBases } from "@core/types/GangBases";
+import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
+import { DEFAULT_GANG_IMAGE } from "#bot/ui/builders/GangImageCanvasBuilder";
+import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
+import { CrColors, GangColor, type IGangColor } from "#bot/utils/colors";
+import { deferReply, replyWithContainer, sendComplexPrivateMessage } from "#bot/utils/discordInteractions";
+import { EmoteId, EmoteString } from "#bot/utils/emotes";
+import { convertHexNumberToString, defaultComponent, formatMoney, hexToRGB, showTime } from "#bot/utils/ui";
+import { checkUser, searchUser } from "#bot/utils/userUtils";
+import { Gang, GangPermission } from "#core/models/Gang";
+import { InvestmentRobbery, InvestmentRobberyReason } from "#core/models/InvestmentRobbery";
+import { Language, type Localization } from "#core/models/Language";
+import { type User } from "#core/models/User";
+import { GangBaseId, GangBases, type GangModifier, getGangBases } from "#core/types/GangBases";
 import { addHours, isFuture } from "date-fns";
 import {
 	ActionRowBuilder,

@@ -1,4 +1,4 @@
-﻿import {
+import {
 	type CreationOptional,
 	DataTypes,
 	type ForeignKey,
@@ -8,14 +8,14 @@
 	Op,
 } from "sequelize";
 import { sequelize } from "./Database";
-import type { User } from "@core/models/User";
+import type { User } from "#core/models/User";
 import type { Users } from "./Users";
-import { ClashType, type Robbery } from "@core/models/Robbery";
-import { Log } from "@shared/log";
-import type { RobberyLocation } from "@core/models/RobberyLocation";
-import { Language } from "@core/models/Language";
-import type { BeatUp } from "@core/models/BeatUp";
-import { LocationList } from "@core/types/Locations";
+import { ClashType, type Robbery } from "#core/models/Robbery";
+import { Log } from "#shared/log";
+import type { RobberyLocation } from "#core/models/RobberyLocation";
+import { Language } from "#core/models/Language";
+import type { BeatUp } from "#core/models/BeatUp";
+import { LocationList } from "#core/types/Locations";
 
 export class RobHistories extends Model<
 	InferAttributes<RobHistories>,

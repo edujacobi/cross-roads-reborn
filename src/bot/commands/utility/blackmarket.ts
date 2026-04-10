@@ -1,10 +1,10 @@
-﻿import { type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
-import { replyWithContainer } from "@bot/utils/discordInteractions";
-import { BlackMarket } from "@core/models/BlackMarket";
-import { defaultComponent } from "@bot/utils/ui";
-import { CrColors } from "@bot/utils/colors";
-import type { User } from "@core/models/User";
-import type { Language } from "@core/models/Language";
+import { type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+import { replyWithContainer } from "#bot/utils/discordInteractions";
+import { BlackMarket } from "#core/models/BlackMarket";
+import { defaultComponent } from "#bot/utils/ui";
+import { CrColors } from "#bot/utils/colors";
+import type { User } from "#core/models/User";
+import type { Language } from "#core/models/Language";
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const shopCommand = require("./shop");
 

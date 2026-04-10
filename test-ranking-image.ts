@@ -1,12 +1,12 @@
-import { Language } from "@core/models/Language";
-import { User } from "@core/models/User";
-import { getBackgroundDecorationList } from "@core/types/BackgroundDecorations";
+import { Language } from "#core/models/Language";
+import { User } from "#core/models/User";
+import { getBackgroundDecorationList } from "#core/types/BackgroundDecorations";
 import { GlobalFonts } from "@napi-rs/canvas";
 import fs from "node:fs";
 import path from "node:path";
-import { UserRankingCardCanvasBuilder } from "@bot/ui/builders/UserRankingCardCanvasBuilder";
-import { BackgroundPatternRegistry } from "@bot/ui/patterns/BackgroundPatternRegistry";
-import { AvatarDecorationRegistry } from "@bot/ui/patterns/AvatarDecorationRegistry";
+import { UserRankingCardCanvasBuilder } from "#bot/ui/builders/UserRankingCardCanvasBuilder";
+import { BackgroundPatternRegistry } from "#bot/ui/patterns/BackgroundPatternRegistry";
+import { AvatarDecorationRegistry } from "#bot/ui/patterns/AvatarDecorationRegistry";
 
 GlobalFonts.registerFromPath(path.join(process.cwd(), "src", "bot", "ui", "assets", "fonts", "Inter.ttf"), "Inter");
 GlobalFonts.registerFromPath(path.join(process.cwd(), "src", "bot", "ui", "assets", "fonts", "InterSemiBold.ttf"), "InterSemiBold");

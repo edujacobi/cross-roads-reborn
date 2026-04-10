@@ -1,11 +1,11 @@
 import type { User } from "./User";
-import { Users } from "@core/database/Users";
+import { Users } from "#core/database/Users";
 import { Op } from "sequelize";
 import { differenceInMinutes } from "date-fns";
 import { Notification, NotificationType } from "./Notification";
-import { Log } from "@shared/log";
+import { Log } from "#shared/log";
 import { Language } from "./Language";
-import { formatMoney } from "@bot/utils/ui";
+import { formatMoney } from "#bot/utils/ui";
 
 export enum HospitalFailureReason {
 	UserFree,

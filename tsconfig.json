@@ -13,9 +13,9 @@
 		/* Specify what module code is generated. */
 		"rootDir": ".",
 		"paths": {
-			"@core/*": ["./src/core/*"],
-			"@bot/*": ["./src/bot/*"],
-			"@shared/*": ["./src/shared/*"]
+			"#core/*": ["./src/core/*"],
+			"#bot/*": ["./src/bot/*"],
+			"#shared/*": ["./src/shared/*"]
 		},
 		"resolveJsonModule": true,
 		/* Emit */

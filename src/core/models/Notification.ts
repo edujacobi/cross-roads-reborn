@@ -1,15 +1,15 @@
-import { Notifications } from "@core/database/Notifications";
+import { Notifications } from "#core/database/Notifications";
 import { Op } from "sequelize";
 import { addDays } from "date-fns";
-import { Log, logger } from "@shared/log";
-import { JobList } from "@core/types/Jobs";
+import { Log, logger } from "#shared/log";
+import { JobList } from "#core/types/Jobs";
 import { User } from "./User";
 import { Language, type Localization } from "./Language";
-import { EmoteString } from "@bot/utils/emotes";
-import { formatMoney } from "@bot/utils/ui";
-import { sendPrivateMessage } from "@bot/utils/discordInteractions";
-import { CrColors } from "@bot/utils/colors";
-import { getJobClassModifier } from "@core/types/Classes";
+import { EmoteString } from "#bot/utils/emotes";
+import { formatMoney } from "#bot/utils/ui";
+import { sendPrivateMessage } from "#bot/utils/discordInteractions";
+import { CrColors } from "#bot/utils/colors";
+import { getJobClassModifier } from "#core/types/Classes";
 
 export enum NotificationType {
 	Daily = 1,

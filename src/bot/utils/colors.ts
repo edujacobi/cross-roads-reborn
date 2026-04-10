@@ -1,6 +1,6 @@
 import { Colors } from "discord.js";
-import { Language } from "@core/models/Language";
-import type { IDescription, IEmote } from "@core/types/Interfaces";
+import { Language } from "#core/models/Language";
+import type { IDescription, IEmote } from "#core/types/Interfaces";
 
 export const CrColors = {
 	Admin: 0x80e893,

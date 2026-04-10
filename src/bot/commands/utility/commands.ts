@@ -1,11 +1,11 @@
-﻿import { type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
-import { replyWithContainer } from "@bot/utils/discordInteractions";
+import { type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+import { replyWithContainer } from "#bot/utils/discordInteractions";
 import path from "node:path";
 import fs from "node:fs";
-import { Language, type Localization } from "@core/models/Language";
-import { CrColors } from "@bot/utils/colors";
-import type { User } from "@core/models/User";
-import { CustomContainerBuilder } from "@bot/ui/builders/CustomContainerBuilder";
+import { Language, type Localization } from "#core/models/Language";
+import { CrColors } from "#bot/utils/colors";
+import type { User } from "#core/models/User";
+import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
 
 const environmentFile = process.env.NODE_ENV === "DEV" ? ".ts" : ".js";
 
