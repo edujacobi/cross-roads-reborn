@@ -13,11 +13,9 @@ const client = setClient();
 
 dotenv.config();
 
-const environmentFile = process.env.NODE_ENV === "DEV" ? ".ts" : ".js";
-
 // Events
 const eventsPath = path.join(__dirname, "bot", "events");
-const eventFiles = fs.readdirSync(eventsPath).filter((file: string) => file.endsWith(environmentFile));
+const eventFiles = fs.readdirSync(eventsPath).filter((file: string) => file.endsWith(".ts"));
 
 for (const file of eventFiles) {
 	const filePath = path.join(eventsPath, file);
@@ -49,7 +47,7 @@ const commandFolders = fs.readdirSync(foldersPath);
 
 for (const folder of commandFolders) {
 	const commandsPath = path.join(foldersPath, folder);
-	const commandFiles = fs.readdirSync(commandsPath).filter((file: string) => file.endsWith(environmentFile));
+	const commandFiles = fs.readdirSync(commandsPath).filter((file: string) => file.endsWith(".ts"));
 
 	for (const file of commandFiles) {
 		const filePath = path.join(commandsPath, file);
@@ -68,8 +66,6 @@ for (const folder of commandFolders) {
 }
 
 const token = process.env.NODE_ENV === "DEV" ? process.env.TOKEN_DEV : process.env.TOKEN;
-
-client.login(token).then(() => logger.info(`Cross Roads Reborn Online! ENV: ${process.env.NODE_ENV}`));
 
 const fontLoaded = GlobalFonts.registerFromPath(
 	path.join(process.cwd(), "src", "bot", "ui", "assets", "fonts", "Inter.ttf"),
@@ -100,3 +96,4 @@ AvatarDecorationRegistry.initialize().catch(err => {
 	Log.Error(`Failed to initialize avatar decoration frames: ${err}`);
 });
 
+client.login(token).then(() => logger.info(`Cross Roads Reborn Online! ENV: ${process.env.NODE_ENV}`));

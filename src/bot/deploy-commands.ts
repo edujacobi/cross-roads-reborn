@@ -7,8 +7,6 @@ import { logger } from "#shared/log";
 
 dotenv.config();
 
-const environmentFile = process.env.NODE_ENV === "DEV" ? ".ts" : ".js";
-
 const commands: SlashCommand[] = [];
 const adminCommands: SlashCommand[] = [];
 const foldersPath = path.join(__dirname, "commands");
@@ -17,7 +15,7 @@ const commandFolders = fs.readdirSync(foldersPath);
 for (const folder of commandFolders) {
 	// Grab all the command files from the commands directory you created earlier
 	const commandsPath = path.join(foldersPath, folder);
-	const commandFiles = fs.readdirSync(commandsPath).filter((file: string) => file.endsWith(environmentFile));
+	const commandFiles = fs.readdirSync(commandsPath).filter((file: string) => file.endsWith(".ts"));
 	// Grab the SlashCommandBuilder#toJSON() output of each command's data for deployment
 	for (const file of commandFiles) {
 		const filePath = path.join(commandsPath, file);
