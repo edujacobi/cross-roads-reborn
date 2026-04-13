@@ -1,4 +1,23 @@
+import { getClient } from "#bot/client";
+import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
+import { GangImageCanvasBuilder } from "#bot/ui/builders/GangImageCanvasBuilder";
+import { InventoryCanvasBuilder } from "#bot/ui/builders/InventoryCanvasBuilder";
+import { UserImageCanvasBuilder } from "#bot/ui/builders/UserImageCanvasBuilder";
+import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
+import { GangColor } from "#bot/utils/colors";
+import { deferReply, replyInteraction, replyWithContainer } from "#bot/utils/discordInteractions";
+import { EmoteId, EmoteString } from "#bot/utils/emotes";
+import { convertHexNumberToString, formatMoney, hexToRGB, showTime } from "#bot/utils/ui";
+import { searchUser } from "#bot/utils/userUtils";
+import { Language, type Localization } from "#core/models/Language";
+import type { User } from "#core/models/User";
+import { UserBadge } from "#core/models/UserBadge";
+import { ClassList } from "#core/types/Classes";
+import { InvestmentList } from "#core/types/Investments";
+import { ItemType } from "#core/types/Items";
+import { differenceInHours, subMinutes } from "date-fns";
 import {
+	ActionRowBuilder,
 	AttachmentBuilder,
 	ButtonBuilder,
 	ButtonStyle,
@@ -6,25 +25,8 @@ import {
 	Colors,
 	Locale,
 	MessageFlags,
-	SlashCommandBuilder,
+	SlashCommandBuilder
 } from "discord.js";
-import { deferReply, replyInteraction, replyWithContainer } from "#bot/utils/discordInteractions";
-import { Language, type Localization } from "#core/models/Language";
-import { EmoteId, EmoteString } from "#bot/utils/emotes";
-import { differenceInHours, subMinutes } from "date-fns";
-import type { User } from "#core/models/User";
-import { UserBadge } from "#core/models/UserBadge";
-import { ClassList } from "#core/types/Classes";
-import { convertHexNumberToString, formatMoney, hexToRGB, showTime } from "#bot/utils/ui";
-import { ItemType } from "#core/types/Items";
-import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
-import { GangColor } from "#bot/utils/colors";
-import { getClient } from "#bot/client";
-import { UserImageCanvasBuilder } from "#bot/ui/builders/UserImageCanvasBuilder";
-import { GangImageCanvasBuilder } from "#bot/ui/builders/GangImageCanvasBuilder";
-import { searchUser } from "#bot/utils/userUtils";
-import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
-import { InvestmentList } from "#core/types/Investments";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -41,6 +43,8 @@ module.exports = {
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 		const nameOrId = interaction.options.getString("target");
+
+		const FEATURE_FLAG_NEW_INV = true;
 
 		await deferReply(interaction);
 
@@ -63,193 +67,255 @@ module.exports = {
 			badges = UserBadge.AddVIPBadgeInList(badges, target, language);
 		}
 
-		const userImage = await new UserImageCanvasBuilder(target, _user.avatarURL({ size: 512 }))
-			.SetBadges(badges)
-			.SetDecoration(target.AvatarDecoration.Id)
-			.GenerateImage();
+		if (FEATURE_FLAG_NEW_INV) {
+			const render = async (fullSize: boolean) => {
+				const lastCommand = interaction.client.userLastCommand.get(target.Id) || 0;
+				const isOnline = new Date(lastCommand) > subMinutes(new Date(), 15);
 
-		const userImageFile = new AttachmentBuilder(userImage, { name: "user.webp" });
+				const builder = new InventoryCanvasBuilder({
+					User: target,
+					Badges: badges,
+					DiscordUser: _user,
+					Language: language,
+					FullSize: fullSize,
+					Gang: gang,
+					IsOnline: isOnline,
+				});
 
-		let badgeText = "";
+				await builder.GetCanvas();
+				const buffer = await builder.GenerateImage();
+				const name = `inventory${fullSize ? "_full" : ""}.webp`;
+				const attachment = new AttachmentBuilder(buffer, { name });
 
-		badges.forEach(badge => badgeText += `${badge.Emoji} `);
+				const button = new ButtonBuilder()
+					.setCustomId(fullSize ? "lessInfo" : "moreInfo")
+					.setLabel(fullSize ? s.closeInv : s.openInv)
+					.setEmoji(fullSize ? EmoteId.CloseInv : EmoteId.OpenInv)
+					.setStyle(ButtonStyle.Secondary);
 
-		const emoteItems = [...target.Items].sort((a, b) => a.Id - b.Id).map(weapon => weapon.Skin[weapon.SelectedSkin].String);
+				const row = new ActionRowBuilder<ButtonBuilder>().setComponents(button);
 
-		const textItems = target.Items.map(userItem => {
-			const name = `${userItem.Skin[userItem.SelectedSkin].String} ${userItem.Description[language]}`;
-			const consumable = userItem.Type === ItemType.Consumable;
-			const value = consumable ? String(userItem.Quantity) : showTime(userItem.RemainingTime.getTime(), true);
-			const isLessThan24Hours = consumable ? userItem.Quantity <= 2 : differenceInHours(userItem.RemainingTime, Date.now()) < 24;
-			const isLessThan12Hours = consumable ? userItem.Quantity <= 1 : differenceInHours(userItem.RemainingTime, Date.now()) < 12;
-			const emote = isLessThan12Hours ? EmoteString.LessThan12Hours : isLessThan24Hours ? EmoteString.LessThan24Hours : "";
+				return { attachment, row };
+			};
 
-			return `**${name}** ${value}${emote}`;
-		}).join("\n");
+			const initial = await render(false);
 
-		const lastCommand = interaction.client.userLastCommand.get(target.Id) || 0;
+			const response = await replyInteraction(interaction, {
+				files: [initial.attachment],
+				components: [initial.row],
+			});
 
-		const online = new Date(lastCommand) > subMinutes(new Date(), 15);
-		const emoteOnline = online ? EmoteString.Online : EmoteString.Offline;
-		const textOnline = online ? `${EmoteString.Online} Online` : `${EmoteString.Offline} Offline`;
+			const collector = createButtonCollector(interaction, response);
 
-		let gangImage: Buffer<ArrayBufferLike> | null = null;
-		let gangImageFile: AttachmentBuilder | null = null;
+			collector?.on("collect", async btn => {
+				await btn.deferUpdate();
 
-		async function generateContainer(isClosed: boolean, target: User) {
-			const container = new CustomContainerBuilder()
-				.setUser(user);
+				const fullSize = btn.customId === "moreInfo";
+				const { attachment, row } = await render(fullSize);
 
-			if (target.IsVip()) {
-				container.setAccentColor(Colors.Gold);
-			}
+				return replyInteraction(interaction, {
+					components: [row],
+					files: [attachment],
+				});
+			});
 
-			if (gang) {
-				container.setAccentColor(hexToRGB(convertHexNumberToString(GangColor[gang.Color].Color)));
-			}
+			collector?.on("end", async () => {
+				await replyInteraction(interaction, {
+					files: [initial.attachment],
+					components: [],
+				});
+			});
+		}
 
-			const gangAcronym = gang ? `[${gang.Acronym}] ` : "";
+		else {
+			const userImage = await new UserImageCanvasBuilder(target, _user.avatarURL({ size: 512 }))
+				.SetBadges(badges)
+				.SetDecoration(target.AvatarDecoration.Id)
+				.GenerateImage();
 
+			const userImageFile = new AttachmentBuilder(userImage, { name: "user.webp" });
 
-			let investTextSimple: string | undefined = undefined;
-			let investTextComplex: string | undefined = undefined;
+			let badgeText = "";
 
-			if (target.Investment.Id !== null) {
-				const investEmote = target.Investment.ExpiresAt!.getTime() > Date.now() ? EmoteString.InvestmentActive : EmoteString.InvestmentInactive;
-				const investment = InvestmentList[target.Investment.Id];
-				investTextSimple = `${investEmote} ${investment.Name[language]}`;
-				investTextComplex = `${investTextSimple}: ${showTime(target.Investment.ExpiresAt!.getTime(), true)}`;
-			}
+			badges.forEach(badge => badgeText += `${badge.Emoji} `);
 
-			if (isClosed) {
-				container
-					.addSectionComponents(headerSection => headerSection
-						.addTexts([
-							`### ${emoteOnline} ${s.inventoryOf} ${gangAcronym}${target.GetNameWithImage()}`,
-							badgeText ? `### -# ${badgeText}` : "\u200b",
-							`# ${formatMoney(target.Money, language)}`,
-						])
-						.setThumbnailAccessory(avatar => avatar
-							.setDescription(`Image of ${user.Nickname}`)
-							.setURL("attachment://user.webp"),
-						),
-					)
-					.addTexts([
-						`-# ${target.Situation.SimpleEmote} •${EmoteString.Attack}${target.Attributes.Attack}${EmoteString.Defense}${target.Attributes.Defense}`,
-					])
-					.addLargeSeparator()
-					.addTexts([
-						emoteItems.length ? `# ${emoteItems.join("\u0009")}` : `-# ${s.emptyInventory}`,
-					]);
+			const emoteItems = [...target.Items].sort((a, b) => a.Id - b.Id).map(weapon => weapon.Skin[weapon.SelectedSkin].String);
 
-				if (investTextSimple) {
-					container
-						.addLargeSeparator()
-						.addTexts([investTextSimple]);
+			const textItems = target.Items.map(userItem => {
+				const name = `${userItem.Skin[userItem.SelectedSkin].String} ${userItem.Description[language]}`;
+				const consumable = userItem.Type === ItemType.Consumable;
+				const value = consumable ? String(userItem.Quantity) : showTime(userItem.RemainingTime.getTime(), true);
+				const isLessThan24Hours = consumable ? userItem.Quantity <= 2 : differenceInHours(userItem.RemainingTime, Date.now()) < 24;
+				const isLessThan12Hours = consumable ? userItem.Quantity <= 1 : differenceInHours(userItem.RemainingTime, Date.now()) < 12;
+				const emote = isLessThan12Hours ? EmoteString.LessThan12Hours : isLessThan24Hours ? EmoteString.LessThan24Hours : "";
+
+				return `**${name}** ${value}${emote}`;
+			}).join("\n");
+
+			const lastCommand = interaction.client.userLastCommand.get(target.Id) || 0;
+
+			const online = new Date(lastCommand) > subMinutes(new Date(), 15);
+			const emoteOnline = online ? EmoteString.Online : EmoteString.Offline;
+			const textOnline = online ? `${EmoteString.Online} Online` : `${EmoteString.Offline} Offline`;
+
+			let gangImage: Buffer<ArrayBufferLike> | null = null;
+			let gangImageFile: AttachmentBuilder | null = null;
+
+			async function generateContainer(isClosed: boolean, target: User) {
+				const container = new CustomContainerBuilder()
+					.setUser(user);
+
+				if (target.IsVip()) {
+					container.setAccentColor(Colors.Gold);
 				}
 
-				container.addFooter({
-					button: new ButtonBuilder()
-						.setCustomId("moreInfo")
-						.setLabel(s.openInv)
-						.setStyle(ButtonStyle.Secondary)
-						.setEmoji(EmoteId.OpenInv),
-				});
-			}
-			else {
 				if (gang) {
-					if (!gangImageFile) {
-						gangImage = await new GangImageCanvasBuilder(target, gang, language).GenerateImage();
-						gangImageFile = new AttachmentBuilder(gangImage, { name: "gang.webp" });
+					container.setAccentColor(hexToRGB(convertHexNumberToString(GangColor[gang.Color].Color)));
+				}
+
+				const gangAcronym = gang ? `[${gang.Acronym}] ` : "";
+
+
+				let investTextSimple: string | undefined = undefined;
+				let investTextComplex: string | undefined = undefined;
+
+				if (target.Investment.Id !== null) {
+					const investEmote = target.Investment.ExpiresAt!.getTime() > Date.now() ? EmoteString.InvestmentActive : EmoteString.InvestmentInactive;
+					const investment = InvestmentList[target.Investment.Id];
+					investTextSimple = `${investEmote} ${investment.Name[language]}`;
+					investTextComplex = `${investTextSimple}: ${showTime(target.Investment.ExpiresAt!.getTime(), true)}`;
+				}
+
+				if (isClosed) {
+					container
+						.addSectionComponents(headerSection => headerSection
+							.addTexts([
+								`### ${emoteOnline} ${s.inventoryOf} ${gangAcronym}${target.GetNameWithImage()}`,
+								badgeText ? `### -# ${badgeText}` : "\u200b",
+								`# ${formatMoney(target.Money, language)}`,
+							])
+							.setThumbnailAccessory(avatar => avatar
+								.setDescription(`Image of ${user.Nickname}`)
+								.setURL("attachment://user.webp"),
+							),
+						)
+						.addTexts([
+							`-# ${target.Situation.SimpleEmote} •${EmoteString.Attack}${target.Attributes.Attack}${EmoteString.Defense}${target.Attributes.Defense}`,
+						])
+						.addLargeSeparator()
+						.addTexts([
+							emoteItems.length ? `# ${emoteItems.join("\u0009")}` : `-# ${s.emptyInventory}`,
+						]);
+
+					if (investTextSimple) {
+						container
+							.addLargeSeparator()
+							.addTexts([investTextSimple]);
+					}
+
+					container.addFooter({
+						button: new ButtonBuilder()
+							.setCustomId("moreInfo")
+							.setLabel(s.openInv)
+							.setStyle(ButtonStyle.Secondary)
+							.setEmoji(EmoteId.OpenInv),
+					});
+				}
+				else {
+					if (gang) {
+						if (!gangImageFile) {
+							gangImage = await new GangImageCanvasBuilder(target, gang, language).GenerateImage();
+							gangImageFile = new AttachmentBuilder(gangImage, { name: "gang.webp" });
+						}
+
+						container
+							.addImage("attachment://gang.webp")
+							.addSmallSeparator(false);
 					}
 
 					container
-						.addImage("attachment://gang.webp")
-						.addSmallSeparator(false);
-				}
-
-				container
-					.addSectionComponents(headerSection => headerSection
+						.addSectionComponents(headerSection => headerSection
+							.addTexts([
+								`### ${s.inventoryOf} ${target.GetNameWithImage()}, ${ClassList[target.Class].Name[language]}`,
+								`-# ${textOnline}`,
+								badgeText ? `### ${badgeText}` : "\u200b",
+								`# ${formatMoney(target.Money, language)}`,
+							])
+							.setThumbnailAccessory(avatar => avatar
+								.setDescription(`Image of ${user.Nickname}`)
+								.setURL("attachment://user.webp"),
+							),
+						)
 						.addTexts([
-							`### ${s.inventoryOf} ${target.GetNameWithImage()}, ${ClassList[target.Class].Name[language]}`,
-							`-# ${textOnline}`,
-							badgeText ? `### ${badgeText}` : "\u200b",
-							`# ${formatMoney(target.Money, language)}`,
+							`${target.Situation.Complex} • ${EmoteString.Attack}${target.Attributes.Attack} ATK • ${EmoteString.Defense}${target.Attributes.Defense} DEF`,
 						])
-						.setThumbnailAccessory(avatar => avatar
-							.setDescription(`Image of ${user.Nickname}`)
-							.setURL("attachment://user.webp"),
-						),
-					)
-					.addTexts([
-						`${target.Situation.Complex} • ${EmoteString.Attack}${target.Attributes.Attack} ATK • ${EmoteString.Defense}${target.Attributes.Defense} DEF`,
-					])
-					.addLargeSeparator()
-					.addTexts([
-						`-# ${s.inventoryItems}`,
-						textItems || `-# ${s.emptyInventory}`,
-
-					]);
-
-				if (investTextComplex) {
-					container
 						.addLargeSeparator()
 						.addTexts([
-							`-# ${s.investment}`,
-							investTextComplex,
+							`-# ${s.inventoryItems}`,
+							textItems || `-# ${s.emptyInventory}`,
+
 						]);
+
+					if (investTextComplex) {
+						container
+							.addLargeSeparator()
+							.addTexts([
+								`-# ${s.investment}`,
+								investTextComplex,
+							]);
+					}
+
+					container.addFooter({
+						button: new ButtonBuilder()
+							.setCustomId("lessInfo")
+							.setLabel(s.closeInv)
+							.setStyle(ButtonStyle.Secondary)
+							.setEmoji(EmoteId.CloseInv),
+					});
 				}
 
-				container.addFooter({
-					button: new ButtonBuilder()
-						.setCustomId("lessInfo")
-						.setLabel(s.closeInv)
-						.setStyle(ButtonStyle.Secondary)
-						.setEmoji(EmoteId.CloseInv),
-				});
+				return container;
 			}
 
-			return container;
-		}
+			let container = await generateContainer(true, target);
 
-		let container = await generateContainer(true, target);
+			const files: AttachmentBuilder[] = [];
+			if (userImageFile) {
+				files.push(userImageFile);
+			}
 
-		const files: AttachmentBuilder[] = [];
-		if (userImageFile) {
-			files.push(userImageFile);
-		}
+			const response = await replyInteraction(interaction, {
+				components: [container],
+				files,
+				flags: MessageFlags.IsComponentsV2,
+			});
 
-		const response = await replyInteraction(interaction, {
-			components: [container],
-			files,
-			flags: MessageFlags.IsComponentsV2,
-		});
+			const collector = createButtonCollector(interaction, response);
 
-		const collector = createButtonCollector(interaction, response);
+			collector?.on("collect", async btn => {
+				await btn.deferUpdate();
 
-		collector?.on("collect", async btn => {
-			await btn.deferUpdate();
-
-			if (btn.customId === "moreInfo") {
-				container = await generateContainer(false, target);
-				if (gangImageFile && !files.includes(gangImageFile)) {
-					files.push(gangImageFile);
+				if (btn.customId === "moreInfo") {
+					container = await generateContainer(false, target);
+					if (gangImageFile && !files.includes(gangImageFile)) {
+						files.push(gangImageFile);
+					}
+					return replyInteraction(interaction, {
+						components: [container],
+						files,
+					});
 				}
-				return replyInteraction(interaction, {
-					components: [container],
-					files,
-				});
-			}
 
-			else if (btn.customId === "lessInfo") {
-				container = await generateContainer(true, target);
-				return replyWithContainer(interaction, container);
-			}
-		});
+				else if (btn.customId === "lessInfo") {
+					container = await generateContainer(true, target);
+					return replyWithContainer(interaction, container);
+				}
+			});
 
-		collector?.on("end", async () => {
-			await disableButtons(interaction, container);
-		});
+			collector?.on("end", async () => {
+				await disableButtons(interaction, container);
+			});
+		}
 	},
 };
 

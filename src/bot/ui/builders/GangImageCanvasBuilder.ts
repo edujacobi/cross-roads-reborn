@@ -1,7 +1,7 @@
 import { User } from "#core/models/User";
 import type { Gang } from "#core/models/Gang";
 import { Language, type Localization } from "#core/models/Language";
-import { Canvas, type Image, loadImage } from "@napi-rs/canvas";
+import { Canvas, type Image, loadImage, type SKRSContext2D } from "@napi-rs/canvas";
 import { logger } from "#shared/log";
 import { convertHexNumberToString, hexToRGB } from "#bot/utils/ui";
 import { GangColor } from "#bot/utils/colors";
@@ -9,21 +9,37 @@ import fs from "node:fs";
 
 export const DEFAULT_GANG_IMAGE = "https://i.imgur.com/xOUjOlZ.png";
 
-// Cache for gang images
-const gangImageCache: Map<string, Image> = new Map();
-
 export class GangImageCanvasBuilder {
 	User: User;
 	Gang: Gang;
 	Language: Language;
+	IsFullSize: boolean;
+	Width: number = 1184;
+	Height: number;
 
-	constructor(user: User, gang: Gang, language: Language) {
+	constructor(user: User, gang: Gang, language: Language, isFullSize: boolean = false) {
 		this.User = user;
 		this.Gang = gang;
 		this.Language = language;
+		this.IsFullSize = isFullSize;
+		this.Height = isFullSize ? 64 : 32;
 	}
 
+	private static GangImageCache = new Map<string, Image>();
+
 	async GenerateImage() {
+		const canvas = await this.GetCanvas();
+		return canvas.encode("webp");
+	}
+
+	async GetCanvas(): Promise<Canvas> {
+		const canvas = new Canvas(this.Width, this.Height);
+		const ctx = canvas.getContext("2d");
+		await this.DrawGangInfo(ctx, 0, 0);
+		return canvas;
+	}
+
+	async DrawGangInfo(ctx: SKRSContext2D, x: number, y: number): Promise<void> {
 		const Strings = {
 			[Language.English]: {
 				of: "of",
@@ -39,93 +55,118 @@ export class GangImageCanvasBuilder {
 			},
 		} as const satisfies Localization;
 
-		const canvas = new Canvas(1024, 100);
-		const ctx = canvas.getContext("2d");
 		let image: Image;
-
 		const imageUrl = this.Gang.Image ?? DEFAULT_GANG_IMAGE;
 
-		if (gangImageCache.has(imageUrl)) {
-			image = gangImageCache.get(imageUrl)!;
+		const cached = GangImageCanvasBuilder.GangImageCache.get(imageUrl);
+		if (cached) {
+			image = cached;
 		}
 		else {
 			try {
 				image = await loadImage(imageUrl);
-				gangImageCache.set(imageUrl, image);
+				GangImageCanvasBuilder.GangImageCache.set(imageUrl, image);
 			}
 			catch (error) {
 				logger.error(`Error loading gang image. Default image used instead.`, error);
-				// Try to load default image, check cache first
-				if (gangImageCache.has(DEFAULT_GANG_IMAGE)) {
-					image = gangImageCache.get(DEFAULT_GANG_IMAGE)!;
+				const defaultCached = GangImageCanvasBuilder.GangImageCache.get(DEFAULT_GANG_IMAGE);
+				if (defaultCached) {
+					image = defaultCached;
 				}
 				else {
 					image = await loadImage(DEFAULT_GANG_IMAGE);
-					gangImageCache.set(DEFAULT_GANG_IMAGE, image);
+					GangImageCanvasBuilder.GangImageCache.set(DEFAULT_GANG_IMAGE, image);
 				}
 			}
 		}
 
-		// Background
-		const color = hexToRGB(convertHexNumberToString(GangColor[this.Gang.Color].Color));
-		ctx.fillStyle = `rgba(${color[0]}, ${color[1]}, ${color[2]}, 0.15)`;
-		ctx.fillRect(0, 0, canvas.width, canvas.height);
+		const colorString = convertHexNumberToString(GangColor[this.Gang.Color].Color);
+		const color = hexToRGB(colorString);
 
-		const padding = 22;
-		const radius = 32;
+		if (this.IsFullSize) {
+			ctx.fillStyle = `rgba(${color[0]}, ${color[1]}, ${color[2]}, 0.15)`;
+			ctx.beginPath();
+			ctx.roundRect(x, y, this.Width, this.Height, 18);
+			ctx.fill();
+		}
+
+		const radius = 16;
 		const imageSize = radius * 2;
+		const circleY = y + this.Height / 2;
 
-		const circleX = padding + radius;
-		const circleY = ctx.canvas.height / 2;
+		if (this.IsFullSize) {
+			const padding = 8;
+			const circleX = x + padding + radius;
 
-		// Draw circle
-		ctx.beginPath();
-		ctx.arc(circleX, circleY, radius, 0, Math.PI * 2);
-		ctx.fillStyle = `rgba(${color[0]}, ${color[1]}, ${color[2]}, 0.5)`;
-		ctx.fill();
+			ctx.beginPath();
+			ctx.arc(circleX, circleY, radius, 0, Math.PI * 2);
+			ctx.fillStyle = `rgba(${color[0]}, ${color[1]}, ${color[2]}, 0.5)`;
+			ctx.fill();
 
-		// Image
-		ctx.save();
-		ctx.clip();
-		// Calculate the top-left corner to center the image inside the circle
-		const imageX = circleX - radius;
-		const imageY = circleY - radius;
-		ctx.drawImage(image, imageX, imageY, imageSize, imageSize);
-		ctx.restore();
+			ctx.save();
+			ctx.clip();
+			ctx.drawImage(image, circleX - radius, circleY - radius, imageSize, imageSize);
+			ctx.restore();
 
-		// Text
-		const margin = 110;
-		const roleText = `${this.Gang.Members.find(member => member.UserId === this.User.Id)!.RoleName} ${Strings[this.Language].of}`;
-		ctx.font = "600 28px InterSemiBold";
-		ctx.fillStyle = "#FFFFFF";
-		ctx.textBaseline = "middle";
-		ctx.fillText(roleText, margin, ctx.canvas.height / 2);
+			ctx.font = "600 18px InterSemiBold";
+			ctx.fillStyle = "#E3E3E6";
+			ctx.textBaseline = "middle";
+			ctx.textAlign = "start";
 
-		ctx.fillStyle = convertHexNumberToString(GangColor[this.Gang.Color].Color);
-		ctx.fillText(this.Gang.Name, margin + ctx.measureText(roleText).width + 10, ctx.canvas.height / 2);
+			const textMargin = circleX + radius + 16;
+			const roleText = `${this.Gang.Members.find(member => member.UserId === this.User.Id)!.RoleName} ${Strings[this.Language].of} `;
+			ctx.fillText(roleText, textMargin, circleY);
 
-		ctx.fillStyle = "#FFFFFF";
-		ctx.font = "600 20px InterSemiBold";
-		ctx.textAlign = "end";
-		ctx.fillText(`${Strings[this.Language].level} ${this.Gang.Level}`, ctx.canvas.width - 32, ctx.canvas.height / 2);
+			const roleWidth = ctx.measureText(roleText).width;
+			ctx.fillStyle = colorString;
+			ctx.fillText(this.Gang.Name, textMargin + roleWidth, circleY);
 
-		return canvas.encode("webp");
+			ctx.fillStyle = "#E3E3E6";
+			ctx.textAlign = "end";
+			ctx.fillText(`${Strings[this.Language].level} ${this.Gang.Level}`, this.Width - 8, circleY);
+
+		}
+		else {
+			// Compact mode: [Icon] [Text] (Right aligned as a group)
+			ctx.font = "600 18px InterSemiBold";
+			ctx.textBaseline = "middle";
+
+			const roleName = this.Gang.Members.find(member => member.UserId === this.User.Id)!.RoleName;
+			const roleText = `${roleName} ${Strings[this.Language].of} `;
+			const textWidth = ctx.measureText(roleText).width + ctx.measureText(this.Gang.Name).width;
+			const groupWidth = imageSize + 10 + textWidth;
+
+			const startX = x + this.Width - groupWidth;
+			const circleX = startX + radius;
+
+			ctx.beginPath();
+			ctx.arc(circleX, circleY, radius, 0, Math.PI * 2);
+			ctx.fillStyle = `rgba(${color[0]}, ${color[1]}, ${color[2]}, 0.15)`;
+			ctx.fill();
+
+			ctx.save();
+			ctx.clip();
+			ctx.drawImage(image, circleX - radius, circleY - radius, imageSize, imageSize);
+			ctx.restore();
+
+			const textMargin = startX + imageSize + 10;
+			ctx.textAlign = "left";
+			ctx.fillStyle = "#E3E3E6";
+			ctx.fillText(roleText, textMargin, circleY);
+
+			ctx.fillStyle = colorString;
+			ctx.fillText(this.Gang.Name, textMargin + ctx.measureText(roleText).width, circleY);
+		}
 	}
 }
 
 export async function testImage() {
 	const user = await new User("332228051871989761").GetInfo();
-	if (!user) {
-		return;
-	}
+	if (!user) return;
 	const gang = await user.GetGang();
-	if (!gang) {
-		return;
-	}
-
+	if (!gang) return;
 	const image = await new GangImageCanvasBuilder(user, gang, Language.English).GenerateImage();
-
 	fs.writeFile("image.webp", image, (err) => {
-		logger.error(err);
+		if (err) logger.error(err); 
 	});
 }

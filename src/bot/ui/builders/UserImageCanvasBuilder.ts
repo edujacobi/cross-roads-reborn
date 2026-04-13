@@ -39,7 +39,20 @@ export class UserImageCanvasBuilder {
 		return this;
 	}
 
+	// Cache for fully rendered decorated avatars
+	private static AvatarCache = new Map<string, Canvas>();
+
 	async GenerateImage() {
+		const canvas = await this.GetCanvas();
+		return canvas.encode("webp");
+	}
+
+	async GetCanvas(): Promise<Canvas> {
+		// Cache Key: Unique combination of avatar source and aesthetic choices
+		const cacheKey = `${this.AvatarUrl}_${this.Decoration}`;
+		const cached = UserImageCanvasBuilder.AvatarCache.get(cacheKey);
+		if (cached) return cached;
+
 		const canvas = new Canvas(AVATAR_CANVAS_SIZE, AVATAR_CANVAS_SIZE);
 		const ctx = canvas.getContext("2d");
 
@@ -59,12 +72,8 @@ export class UserImageCanvasBuilder {
 			image = await loadImage(DEFAULT_GANG_IMAGE);
 		}
 
-		// Calculate image size based on radius to ensure it covers the clip area
-		// Clip radius is (AVATAR_RADIUS - BORDER_WIDTH / 2)
-		// We multiply by 2 for diameter and add a small buffer (+4)
 		const imageDrawSize = (AVATAR_RADIUS - AVATAR_BORDER_WIDTH / 2) * 2 + 4;
 
-		// Draw the user image on the separate canvas
 		userCtx.save();
 		userCtx.beginPath();
 		userCtx.arc(LAYER_CENTER_X, LAYER_CENTER_Y, AVATAR_RADIUS - AVATAR_BORDER_WIDTH / 2, 0, Math.PI * 2);
@@ -80,17 +89,18 @@ export class UserImageCanvasBuilder {
 		);
 		userCtx.restore();
 
-		// Draw the frame from the registry
 		const frame = AvatarDecorationRegistry.get(this.Decoration);
 		userCtx.drawImage(frame, 0, 0, AVATAR_CANVAS_SIZE, AVATAR_CANVAS_SIZE);
 
-		// Draw the user canvas onto the main canvas with repositioning
 		const offsetX = AVATAR_CENTER.x - LAYER_CENTER_X;
 		const offsetY = AVATAR_CENTER.y - LAYER_CENTER_Y;
 
 		ctx.drawImage(userCanvas, offsetX, offsetY);
 
-		return canvas.encode("webp");
+		// Store in cache
+		UserImageCanvasBuilder.AvatarCache.set(cacheKey, canvas);
+
+		return canvas;
 	}
 }
 
