@@ -1,4 +1,4 @@
-﻿import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
 import { Shop } from "#core/models/Shop";
 import type { User } from "#core/models/User";
 import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
@@ -52,7 +52,7 @@ module.exports = {
 				pages.push(shop.ItemList.slice(i, i + 7));
 			}
 
-			const currentPageItems = pages[currentPage];
+			const currentPageItems = pages[currentPage] || [];
 
 			for (let i = 0; i < currentPageItems.length; i++) {
 				const item = currentPageItems[i];

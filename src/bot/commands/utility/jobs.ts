@@ -67,7 +67,7 @@ module.exports = {
 
 			const container = addHeader();
 
-			const currentPageJobs = pages[currentPage];
+			const currentPageJobs = pages[currentPage] || [];
 
 			const userClassModifier = getJobClassModifier(user.Class);
 
