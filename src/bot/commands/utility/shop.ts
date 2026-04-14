@@ -183,12 +183,19 @@ module.exports = {
 
 				await user.BuyItem(item);
 
+				const userItem = user.Items.find(i => i.Id == item.Id);
+
+				const remainigTime = userItem?.RemainingTime;
+				const quantity = userItem?.Quantity;
+
 				container = addContainerHeader();
 
 				container
 					.addTexts([
 						s.itemBought(`${user.GetItemSkin(item)} ${item.Description[user.Language]}`),
-					])
+						remainigTime ? `-# ${s.yourItemEnds} ${showTime(remainigTime.getTime(), true)}` : "",
+						quantity ? `-# ${s.youHave} ${quantity}` : "",
+					].filter(Boolean))
 					.addButtonRow(
 						btn => btn
 							.setLabel(s.back)

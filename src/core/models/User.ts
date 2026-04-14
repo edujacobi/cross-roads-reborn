@@ -700,16 +700,22 @@ export class User {
 		});
 
 		const now = new Date();
-		const userItem = ItemList[item.Id] as UserItem;
+		const userItem = { ...ItemList[item.Id] } as UserItem;
 
 		if (!existingItem) {
+			const remaining = userItem.Type != ItemType.Consumable ? addHours(now, 72) : undefined;
+			const quantity = userItem.Type == ItemType.Consumable ? 1 : undefined;
 			await UserItems.create({
 				userId: this.Id,
 				itemId: item.Id,
-				remainingTime: userItem.Type != ItemType.Consumable ? addHours(now, 72) : undefined,
-				quantity: userItem.Type == ItemType.Consumable ? 1 : undefined,
+				remainingTime: remaining,
+				quantity: quantity,
 				skin: BundleId.Default,
 			});
+
+			userItem.RemainingTime = remaining ?? new Date();
+			userItem.Quantity = quantity ?? 0;
+			userItem.SelectedSkin = BundleId.Default;
 
 			Log.Info(`User ${this.Nickname} (Id: ${this.Id}) bought item ${item.Description[Language.English]} (Id: ${item.Id}) for ${formatMoney(item.Price, Language.English)} [FIRST TIME!].`);
 		}
@@ -729,11 +735,16 @@ export class User {
 				},
 			});
 
+			userItem.RemainingTime = remaining;
+			userItem.Quantity = existingItem.quantity += 1;
+			userItem.SelectedSkin = existingItem.skin;
+
 			Log.Info(`User ${this.Nickname} (Id: ${this.Id}) bought item ${item.Description[Language.English]} (Id: ${item.Id}) for ${formatMoney(item.Price, Language.English)}. Total time: ${differenceInHours(remaining, new Date())}h.`);
 		}
 
 		this.Shop.SpentCount += 1;
 		this.Shop.SpentSum += item.Price;
+		this.Items.push(userItem);
 
 		await this.Update({
 			money: this.Money,
