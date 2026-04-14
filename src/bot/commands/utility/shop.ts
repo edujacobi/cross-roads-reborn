@@ -2,7 +2,7 @@
 import { Shop } from "#core/models/Shop";
 import type { User } from "#core/models/User";
 import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
-import { formatMoney } from "#bot/utils/ui";
+import { formatMoney, showTime } from "#bot/utils/ui";
 import { deferReply, replyWithContainer } from "#bot/utils/discordInteractions";
 import { EmoteString } from "#bot/utils/emotes";
 import { ItemList, ItemType } from "#core/types/Items";
@@ -94,11 +94,18 @@ module.exports = {
 					value = `-# +30% ${s.escape}`;
 				}
 
+				const userItem = user.Items.find(i => i.Id == item.Id);
+
+				const remainigTime = userItem?.RemainingTime;
+				const quantity = userItem?.Quantity;
+
 				container.addSectionComponents(section => section
 					.addTexts([
 						`### ${user.GetItemSkin(item)} ${item.Description[user.Language]}`,
 						value,
-					])
+						remainigTime ? `-# ${s.yourItemEnds} ${showTime(remainigTime.getTime(), true)}` : "",
+						quantity ? `-# ${s.youHave} ${quantity}` : "",
+					].filter(Boolean))
 					.setButtonAccessory(new ButtonBuilder()
 						.setLabel(formatMoney(item.Price, user.Language))
 						.setCustomId(`buy${item.Id}`)
@@ -222,6 +229,8 @@ const Strings = {
 		night: "night",
 		escape: "escape",
 		consumable: "consumable",
+		yourItemEnds: "Your item ends",
+		youHave: "You have",
 		itemBought: (itemName: string) => `You bought **${itemName}**!`,
 		buyMore: (price: number) => `Buy more! ${formatMoney(price, Language.English)}`,
 		back: "Go back",
@@ -234,6 +243,8 @@ const Strings = {
 		night: "noite",
 		escape: "fuga",
 		consumable: "consumível",
+		yourItemEnds: "Seu item acaba",
+		youHave: "Você possui",
 		itemBought: (itemName: string) => `Você comprou **${itemName}**!`,
 		buyMore: (price: number) => `Comprar mais! ${formatMoney(price, Language.Portuguese)}`,
 		back: "Voltar",
@@ -246,6 +257,8 @@ const Strings = {
 		night: "noche",
 		escape: "fuga",
 		consumable: "consumible",
+		yourItemEnds: "Tu item acaba",
+		youHave: "Posees",
 		itemBought: (itemName: string) => `Tú compraste **${itemName}**!`,
 		buyMore: (price: number) => `¡Comprar más! ${formatMoney(price, Language.Spanish)}`,
 		back: "Volver",

@@ -104,6 +104,16 @@ export class Shop {
 			canBuy = false;
 		}
 
+		if (this.User.Robbery.InvestmentIsDefending) {
+			message = globalStrings[this.User.Language].attackerIsDefendingInvestment;
+			canBuy = false;
+		}
+
+		if (this.User.Robbery.ParticipatingInGangAction) {
+			message = globalStrings[this.User.Language].attackerIsParticipatingInGangAction;
+			canBuy = false;
+		}
+
 		return { canBuy, message };
 	}
 }

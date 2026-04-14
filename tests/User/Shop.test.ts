@@ -122,6 +122,34 @@ describe("Shop", () => {
 			expect(result.message).toContain("robbing");
 		});
 
+		it("Should fail if user is working", async () => {
+			const shop = new Shop(user);
+			user.Job.Id = 1;
+			user.Job.EndsIn = new Date(Date.now() + 3_600_000);
+			// Mock IsWorking to return true since it probably checks Job.EndsIn
+			vi.spyOn(user, "IsWorking").mockReturnValue(true);
+
+			const result = await shop.CanUserBuyItem(ItemList[ItemId.Knife]);
+			expect(result.canBuy).toBe(false);
+			expect(result.message).toContain("working");
+		});
+
+		it("Should fail if user is defending investment", async () => {
+			const shop = new Shop(user);
+			user.Robbery.InvestmentIsDefending = true;
+			const result = await shop.CanUserBuyItem(ItemList[ItemId.Knife]);
+			expect(result.canBuy).toBe(false);
+			expect(result.message).toContain("defending your investment");
+		});
+
+		it("Should fail if user is participating in gang action", async () => {
+			const shop = new Shop(user);
+			user.Robbery.ParticipatingInGangAction = true;
+			const result = await shop.CanUserBuyItem(ItemList[ItemId.Knife]);
+			expect(result.canBuy).toBe(false);
+			expect(result.message).toContain("participating in a gang action");
+		});
+
 		it("Should succeed", async () => {
 			const shop = new Shop(user);
 			const result = await shop.CanUserBuyItem(ItemList[ItemId.Knife]);
