@@ -1,7 +1,7 @@
 import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
 import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
 import { CrColors } from "#bot/utils/colors";
-import { deferReply, replyWithContainer } from "#bot/utils/discordInteractions";
+import { deferReply, deferUpdate, replyWithContainer } from "#bot/utils/discordInteractions";
 import { EmoteString } from "#bot/utils/emotes";
 import { formatMoney, showTime } from "#bot/utils/ui";
 import { InvestmentManager } from "#core/models/InvestmentManager";
@@ -9,7 +9,7 @@ import { Language, type Localization } from "#core/models/Language";
 import { Pagination } from "#core/models/Pagination";
 import { type User } from "#core/models/User";
 import { getInvestmentYieldClassModifier } from "#core/types/Classes";
-import { type InvestmentActionReason, InvestmentList, type InvestmentId } from "#core/types/Investments";
+import { InvestmentList, type InvestmentActionReason, type InvestmentId } from "#core/types/Investments";
 import {
 	ButtonBuilder,
 	ButtonStyle,
@@ -132,7 +132,7 @@ async function handleBuy(interaction: ChatInputCommandInteraction, user: User, l
 
 	collector?.on("collect", async btn => {
 		if (btn.customId.startsWith("buy")) {
-			await btn.deferUpdate();
+			await deferUpdate(btn);
 			const itemId = Number(btn.customId.replace("buy", "")) as InvestmentId;
 			const item = InvestmentList[itemId];
 
@@ -159,7 +159,7 @@ async function handleBuy(interaction: ChatInputCommandInteraction, user: User, l
 
 		}
 		else if (btn.customId.startsWith("confirm_buy")) {
-			await btn.deferUpdate();
+			await deferUpdate(btn);
 			const itemId = Number(btn.customId.replace("confirm_buy", "")) as InvestmentId;
 			const item = InvestmentList[itemId];
 
@@ -205,7 +205,7 @@ async function handleBuy(interaction: ChatInputCommandInteraction, user: User, l
 
 		}
 		else if (btn.customId === "cancel_buy") {
-			await btn.deferUpdate();
+			await deferUpdate(btn);
 			const container = await pagination.BuildContainerWithRow();
 			return replyWithContainer(interaction, container);
 		}
@@ -324,7 +324,7 @@ async function handleManage(interaction: ChatInputCommandInteraction, user: User
 	const collector = createButtonCollector(interaction, response);
 
 	collector?.on("collect", async btn => {
-		await btn.deferUpdate();
+		await deferUpdate(btn);
 
 		if (btn.customId === "hire_henchman") {
 			// Show confirmation

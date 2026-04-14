@@ -134,6 +134,23 @@ export async function deferReply(interaction: CommandInteraction | ButtonInterac
 }
 
 /**
+ * Defers the update to an interaction if it hasn't been deferred already.
+ *
+ * @param interaction - The interaction to defer.
+ */
+export async function deferUpdate(interaction: ButtonInteraction | MessageComponentInteraction) {
+	try {
+		if (interaction.deferred) {
+			return;
+		}
+		await interaction.deferUpdate();
+	}
+	catch (err) {
+		Log.Warning(`Something went wrong with deferring interaction ${interaction.id} of user ${interaction.user.displayName} in server ${interaction.guild?.name} (Id: ${interaction.guild?.id}). Error: ${err}`);
+	}
+}
+
+/**
  * Replies to an interaction indicating that the user does not exist.
  *
  * @param interaction - The interaction to reply to.

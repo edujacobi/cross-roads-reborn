@@ -2,7 +2,7 @@ import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder"
 import { DEFAULT_GANG_IMAGE } from "#bot/ui/builders/GangImageCanvasBuilder";
 import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
 import { CrColors, GangColor, type IGangColor } from "#bot/utils/colors";
-import { deferReply, replyWithContainer, sendComplexPrivateMessage } from "#bot/utils/discordInteractions";
+import { deferReply, deferUpdate, replyWithContainer, sendComplexPrivateMessage } from "#bot/utils/discordInteractions";
 import { EmoteId, EmoteString } from "#bot/utils/emotes";
 import { convertHexNumberToString, defaultComponent, formatMoney, hexToRGB, showTime } from "#bot/utils/ui";
 import { checkUser, searchUser } from "#bot/utils/userUtils";
@@ -689,7 +689,7 @@ module.exports = {
 				});
 
 				collector?.on("collect", async btn => {
-					await btn.deferUpdate();
+					await deferUpdate(btn);
 
 					if (btn.customId === "info") {
 						gotToInfo = true;
@@ -863,7 +863,7 @@ module.exports = {
 						if (btn.user.id !== user.Id) {
 							return btn.reply({ content: s.onlyLeaderCanAbort, flags: MessageFlags.Ephemeral });
 						}
-						await btn.deferUpdate();
+						await deferUpdate(btn);
 						aborted = true;
 						collector.stop();
 					}
@@ -973,7 +973,7 @@ module.exports = {
 							return btn.reply({ content: `**${sDef.youMustBeIdling}**`, flags: MessageFlags.Ephemeral });
 						}
 
-						await btn.deferUpdate();
+						await deferUpdate(btn);
 
 						defenderJoined = true;
 						await robbery.ApplyDefenderState();
@@ -1624,7 +1624,7 @@ module.exports = {
 			});
 
 			collector?.on("collect", async btn => {
-				await btn.deferUpdate();
+				await deferUpdate(btn);
 
 				if (btn.customId === "back") {
 					container = generateDefaultContainer();
@@ -1801,7 +1801,7 @@ module.exports = {
 			const collector = createButtonCollector(interaction, response);
 
 			collector?.on("collect", async btn => {
-				await btn.deferUpdate();
+				await deferUpdate(btn);
 
 				if (btn.customId === "confirm") {
 					const success = await gang.CreateRole(user.Id, roleName, permissions);
@@ -1928,7 +1928,7 @@ module.exports = {
 			const collector = createButtonCollector(interaction, response);
 
 			collector?.on("collect", async btn => {
-				await btn.deferUpdate();
+				await deferUpdate(btn);
 
 				if (btn.customId.startsWith("role_")) {
 					const roleId = parseInt(btn.customId.split("_")[1]);
@@ -2027,7 +2027,7 @@ module.exports = {
 			const collector = createButtonCollector(interaction, response);
 
 			collector?.on("collect", async btn => {
-				await btn.deferUpdate();
+				await deferUpdate(btn);
 
 				if (btn.customId === "confirm") {
 					const success = await gang.EditRole(user.Id, role.Id, permissions, newRoleName);
@@ -2132,7 +2132,7 @@ module.exports = {
 			const collector = createButtonCollector(interaction, response);
 
 			collector?.on("collect", async btn => {
-				await btn.deferUpdate();
+				await deferUpdate(btn);
 
 				const freshGang = await Gang.GetByUserId(user.Id);
 				if (!freshGang) return warn(s.notInGang);

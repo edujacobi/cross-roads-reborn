@@ -1,19 +1,19 @@
-import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
-import type { User } from "#core/models/User";
-import { Scavenge } from "#core/models/Scavenge";
 import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
+import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
 import { CrColors } from "#bot/utils/colors";
+import { deferUpdate, replyWithContainer } from "#bot/utils/discordInteractions";
 import { EmoteString } from "#bot/utils/emotes";
-import { replyWithContainer } from "#bot/utils/discordInteractions";
-import { type IScavenge, ScavengeFailureReason, ScavengeList } from "#core/types/Scavenge";
 import { defaultComponent, formatMoney, showTime } from "#bot/utils/ui";
 import { globalStrings, Language, type Localization } from "#core/models/Language";
+import { Scavenge } from "#core/models/Scavenge";
+import type { User } from "#core/models/User";
 import { ClassList, getScavengeChanceClassModifier, getScavengeDurationClassModifier } from "#core/types/Classes";
 import { ItemList, ItemType } from "#core/types/Items";
-import { setTimeout as wait } from "timers/promises";
-import { addHours } from "date-fns";
 import { JobList } from "#core/types/Jobs";
-import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
+import { type IScavenge, ScavengeFailureReason, ScavengeList } from "#core/types/Scavenge";
+import { addHours } from "date-fns";
+import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+import { setTimeout as wait } from "timers/promises";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -133,7 +133,7 @@ module.exports = {
 			const collector = createButtonCollector(interaction, response);
 
 			collector?.on("collect", async btn => {
-				await btn.deferUpdate();
+				await deferUpdate(btn);
 
 				if (btn.customId === "back") {
 					generateDefaultContainer();

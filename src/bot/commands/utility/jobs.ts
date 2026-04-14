@@ -1,20 +1,20 @@
-import { ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
-import { deferReply, replyWithContainer } from "#bot/utils/discordInteractions";
-import { EmoteString } from "#bot/utils/emotes";
-import { formatMoney, showTime } from "#bot/utils/ui";
-import { getJobList, type JobId, JobList, type Jobs } from "#core/types/Jobs";
-import { getItemList, ItemList } from "#core/types/Items";
-import { globalStrings, Language, type Localization } from "#core/models/Language";
-import { CrColors } from "#bot/utils/colors";
-import type { User } from "#core/models/User";
-import { Users } from "#core/database/Users";
-import { ClassList, getJobClassModifier } from "#core/types/Classes";
-import { LocationList } from "#core/types/Locations";
-import { type ScavengeId, ScavengeList } from "#core/types/Scavenge";
-import { Event, EventType } from "#core/models/Event";
-import { BlackMarket } from "#core/models/BlackMarket";
 import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
 import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
+import { CrColors } from "#bot/utils/colors";
+import { deferReply, deferUpdate, replyWithContainer } from "#bot/utils/discordInteractions";
+import { EmoteString } from "#bot/utils/emotes";
+import { formatMoney, showTime } from "#bot/utils/ui";
+import { Users } from "#core/database/Users";
+import { BlackMarket } from "#core/models/BlackMarket";
+import { Event, EventType } from "#core/models/Event";
+import { globalStrings, Language, type Localization } from "#core/models/Language";
+import type { User } from "#core/models/User";
+import { ClassList, getJobClassModifier } from "#core/types/Classes";
+import { getItemList, ItemList } from "#core/types/Items";
+import { getJobList, type JobId, JobList, type Jobs } from "#core/types/Jobs";
+import { LocationList } from "#core/types/Locations";
+import { type ScavengeId, ScavengeList } from "#core/types/Scavenge";
+import { ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -153,7 +153,7 @@ module.exports = {
 		const collector = createButtonCollector(interaction, response);
 
 		collector?.on("collect", async btn => {
-			await btn.deferUpdate();
+			await deferUpdate(btn);
 
 			if (btn.customId.includes("start")) {
 				await user.GetInfo();

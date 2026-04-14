@@ -5,7 +5,7 @@ import { InventoryCanvasBuilder } from "#bot/ui/builders/InventoryCanvasBuilder"
 import { UserImageCanvasBuilder } from "#bot/ui/builders/UserImageCanvasBuilder";
 import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
 import { GangColor } from "#bot/utils/colors";
-import { deferReply, replyInteraction, replyWithContainer } from "#bot/utils/discordInteractions";
+import { deferReply, deferUpdate, replyInteraction, replyWithContainer } from "#bot/utils/discordInteractions";
 import { EmoteId, EmoteString } from "#bot/utils/emotes";
 import { convertHexNumberToString, formatMoney, hexToRGB, showTime } from "#bot/utils/ui";
 import { searchUser } from "#bot/utils/userUtils";
@@ -108,7 +108,7 @@ module.exports = {
 			const collector = createButtonCollector(interaction, response);
 
 			collector?.on("collect", async btn => {
-				await btn.deferUpdate();
+				await deferUpdate(btn);
 
 				const fullSize = btn.customId === "moreInfo";
 				const { attachment, row } = await render(fullSize);
@@ -293,7 +293,7 @@ module.exports = {
 			const collector = createButtonCollector(interaction, response);
 
 			collector?.on("collect", async btn => {
-				await btn.deferUpdate();
+				await deferUpdate(btn);
 
 				if (btn.customId === "moreInfo") {
 					container = await generateContainer(false, target);

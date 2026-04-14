@@ -3,7 +3,7 @@ import { UserImageCanvasBuilder } from "#bot/ui/builders/UserImageCanvasBuilder"
 import { UserRankingCardCanvasBuilder } from "#bot/ui/builders/UserRankingCardCanvasBuilder";
 import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
 import { CrColors } from "#bot/utils/colors";
-import { deferReply, replyInteraction, replyWithContainer } from "#bot/utils/discordInteractions";
+import { deferReply, deferUpdate, replyInteraction, replyWithContainer } from "#bot/utils/discordInteractions";
 import { EmoteId, EmoteString } from "#bot/utils/emotes";
 import { formatMoney } from "#bot/utils/ui";
 import { Language, type Localization } from "#core/models/Language";
@@ -270,7 +270,7 @@ module.exports = {
 		});
 
 		collector?.on("collect", async btn => {
-			await btn.deferUpdate();
+			await deferUpdate(btn);
 
 			if (
 				btn.customId === SpecialShopCategory.Skins ||

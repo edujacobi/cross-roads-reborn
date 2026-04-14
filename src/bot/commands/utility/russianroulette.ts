@@ -1,3 +1,15 @@
+import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
+import { disableButtons } from "#bot/utils/collectors";
+import { CrColors } from "#bot/utils/colors";
+import { deferUpdate, replyWithContainer } from "#bot/utils/discordInteractions";
+import { EmoteString } from "#bot/utils/emotes";
+import { defaultComponent, formatMoney } from "#bot/utils/ui";
+import { checkUser } from "#bot/utils/userUtils";
+import { Casino } from "#core/models/Casino";
+import { Language, type Localization } from "#core/models/Language";
+import type { User } from "#core/models/User";
+import { ClassId, ClassList } from "#core/types/Classes";
+import { addHours } from "date-fns/addHours";
 import {
 	type ButtonInteraction,
 	ButtonStyle,
@@ -7,19 +19,7 @@ import {
 	Locale,
 	SlashCommandBuilder,
 } from "discord.js";
-import { replyWithContainer } from "#bot/utils/discordInteractions";
-import type { User } from "#core/models/User";
-import { Language, type Localization } from "#core/models/Language";
-import { Casino } from "#core/models/Casino";
-import { defaultComponent, formatMoney } from "#bot/utils/ui";
-import { CrColors } from "#bot/utils/colors";
-import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
-import { EmoteString } from "#bot/utils/emotes";
-import { addHours } from "date-fns/addHours";
 import { setTimeout as wait } from "node:timers/promises";
-import { ClassId, ClassList } from "#core/types/Classes";
-import { checkUser } from "#bot/utils/userUtils";
-import { disableButtons } from "#bot/utils/collectors";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -143,7 +143,7 @@ module.exports = {
 					return warn(btn, s.onlyHostCanStart);
 				}
 
-				await btn.deferUpdate();
+				await deferUpdate(btn);
 				await user.GetInfo();
 
 				const { canPlay, message } = await Casino.CanUserPlayGame(user, betValue);
@@ -170,7 +170,7 @@ module.exports = {
 					return warn(btn, s.fullGame(participants.length, MAX_PARTICIPANTS));
 				}
 
-				await btn.deferUpdate();
+				await deferUpdate(btn);
 
 				const joiningUser = await checkUser(btn.user.id, interaction);
 				if (!joiningUser) {

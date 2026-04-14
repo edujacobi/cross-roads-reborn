@@ -8,7 +8,7 @@
 	StringSelectMenuBuilder,
 	StringSelectMenuOptionBuilder,
 } from "discord.js";
-import { replyWithContainer } from "#bot/utils/discordInteractions";
+import { deferUpdate, replyWithContainer } from "#bot/utils/discordInteractions";
 import type { User } from "#core/models/User";
 import { Language, type Localization } from "#core/models/Language";
 import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
@@ -131,7 +131,7 @@ module.exports = {
 		});
 
 		collectorButton?.on("collect", async btn => {
-			await btn.deferUpdate();
+			await deferUpdate(btn);
 
 			if (btn.customId === "back") {
 				container = await generateDefaultContainer();

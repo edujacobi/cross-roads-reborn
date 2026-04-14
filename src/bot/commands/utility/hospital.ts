@@ -5,7 +5,7 @@ import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder"
 import { CrColors } from "#bot/utils/colors";
 import { EmoteBadgeString } from "#bot/utils/badges";
 import { EmoteString } from "#bot/utils/emotes";
-import { replyWithContainer } from "#bot/utils/discordInteractions";
+import { deferUpdate, replyWithContainer } from "#bot/utils/discordInteractions";
 import { Pagination } from "#core/models/Pagination";
 import { ClassList } from "#core/types/Classes";
 import { defaultComponent, formatMoney, showTime } from "#bot/utils/ui";
@@ -94,7 +94,7 @@ module.exports = {
 			});
 
 			collector?.on("collect", async btn => {
-				await btn.deferUpdate();
+				await deferUpdate(btn);
 
 				if (btn.customId === "hospitalized") {
 					buttonHospitalized.setDisabled(true);

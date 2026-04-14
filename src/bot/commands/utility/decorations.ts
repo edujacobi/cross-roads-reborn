@@ -1,3 +1,17 @@
+import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
+import { UserImageCanvasBuilder } from "#bot/ui/builders/UserImageCanvasBuilder";
+import { UserRankingCardCanvasBuilder } from "#bot/ui/builders/UserRankingCardCanvasBuilder";
+import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
+import { CrColors } from "#bot/utils/colors";
+import { deferUpdate, replyInteraction, replyWithContainer } from "#bot/utils/discordInteractions";
+import { EmoteId } from "#bot/utils/emotes";
+import { Language, type Localization } from "#core/models/Language";
+import type { User } from "#core/models/User";
+import { UserAvatarDecoration } from "#core/models/UserAvatarDecoration";
+import { UserBackgroundDecoration } from "#core/models/UserBackgroundDecoration";
+import { AvatarDecorationList } from "#core/types/AvatarDecorations";
+import { BackgroundDecorationList } from "#core/types/BackgroundDecorations";
+import { AvatarDecorationId, BackgroundDecorationId } from "#core/types/Ids";
 import {
 	AttachmentBuilder,
 	type ButtonBuilder,
@@ -7,20 +21,6 @@ import {
 	MessageFlags,
 	SlashCommandBuilder,
 } from "discord.js";
-import { replyInteraction, replyWithContainer } from "#bot/utils/discordInteractions";
-import type { User } from "#core/models/User";
-import { Language, type Localization } from "#core/models/Language";
-import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
-import { CrColors } from "#bot/utils/colors";
-import { UserAvatarDecoration } from "#core/models/UserAvatarDecoration";
-import { AvatarDecorationList } from "#core/types/AvatarDecorations";
-import { UserBackgroundDecoration } from "#core/models/UserBackgroundDecoration";
-import { BackgroundDecorationList } from "#core/types/BackgroundDecorations";
-import { UserImageCanvasBuilder } from "#bot/ui/builders/UserImageCanvasBuilder";
-import { UserRankingCardCanvasBuilder } from "#bot/ui/builders/UserRankingCardCanvasBuilder";
-import { AvatarDecorationId, BackgroundDecorationId } from "#core/types/Ids";
-import { EmoteId } from "#bot/utils/emotes";
-import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
 
 const CATEGORY_AVATAR = "cat_avatar";
 const CATEGORY_RANKING = "cat_ranking";
@@ -164,7 +164,7 @@ module.exports = {
 		});
 
 		collector?.on("collect", async btn => {
-			await btn.deferUpdate();
+			await deferUpdate(btn);
 
 			if (btn.customId === CATEGORY_AVATAR || btn.customId === CATEGORY_RANKING) {
 				currentCategory = btn.customId;

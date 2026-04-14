@@ -6,7 +6,7 @@
 	SlashCommandBuilder,
 	type SlashCommandStringOption,
 } from "discord.js";
-import { replyWithContainer } from "#bot/utils/discordInteractions";
+import { deferUpdate, replyWithContainer } from "#bot/utils/discordInteractions";
 import { defaultComponent, formatMoney } from "#bot/utils/ui";
 import { Users } from "#core/database/Users";
 import { User } from "#core/models/User";
@@ -118,7 +118,7 @@ module.exports = {
 		});
 
 		collector?.on("collect", async btn => {
-			await btn.deferUpdate();
+			await deferUpdate(btn);
 
 			if (btn.customId === "confirm") {
 				await user.GetInfo();

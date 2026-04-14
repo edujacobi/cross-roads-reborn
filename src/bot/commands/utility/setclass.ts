@@ -1,5 +1,5 @@
 import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
-import { replyWithContainer } from "#bot/utils/discordInteractions";
+import { deferUpdate, replyWithContainer } from "#bot/utils/discordInteractions";
 import { formatMoney } from "#bot/utils/ui";
 import type { User } from "#core/models/User";
 import { Language, type Localization } from "#core/models/Language";
@@ -148,7 +148,7 @@ module.exports = {
 		});
 
 		collector?.on("collect", async btn => {
-			await btn.deferUpdate();
+			await deferUpdate(btn);
 
 			if (btn.customId === "back") {
 				let container = addContainerHeader();

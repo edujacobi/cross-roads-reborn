@@ -3,7 +3,7 @@ import { Shop } from "#core/models/Shop";
 import type { User } from "#core/models/User";
 import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
 import { formatMoney, showTime } from "#bot/utils/ui";
-import { deferReply, replyWithContainer } from "#bot/utils/discordInteractions";
+import { deferReply, deferUpdate, replyWithContainer } from "#bot/utils/discordInteractions";
 import { EmoteString } from "#bot/utils/emotes";
 import { ItemList, ItemType } from "#core/types/Items";
 import { Language, type Localization } from "#core/models/Language";
@@ -148,7 +148,7 @@ module.exports = {
 		const collector = createButtonCollector(interaction, response);
 
 		collector?.on("collect", async btn => {
-			await btn.deferUpdate();
+			await deferUpdate(btn);
 
 			if (btn.customId === "back") {
 				container = generateContainer();

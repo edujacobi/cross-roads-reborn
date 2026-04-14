@@ -1,17 +1,17 @@
-import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
-import { deferReply, replyWithContainer } from "#bot/utils/discordInteractions";
-import { defaultComponent, formatMoney, showTime } from "#bot/utils/ui";
-import { EmoteString } from "#bot/utils/emotes";
+import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
+import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
 import { CrColors } from "#bot/utils/colors";
-import type { User } from "#core/models/User";
+import { deferReply, deferUpdate, replyWithContainer } from "#bot/utils/discordInteractions";
+import { EmoteString } from "#bot/utils/emotes";
+import { defaultComponent, formatMoney, showTime } from "#bot/utils/ui";
+import { searchUser } from "#bot/utils/userUtils";
 import { Language, type Localization } from "#core/models/Language";
 import { Robbery } from "#core/models/Robbery";
-import { getLocationList, LocationList } from "#core/types/Locations";
 import { RobberyLocation } from "#core/models/RobberyLocation";
-import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
+import type { User } from "#core/models/User";
 import { getRobberyClassModifier } from "#core/types/Classes";
-import { searchUser } from "#bot/utils/userUtils";
-import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
+import { getLocationList, LocationList } from "#core/types/Locations";
+import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -105,7 +105,7 @@ module.exports = {
 			});
 
 			collector?.on("collect", async btn => {
-				await btn.deferUpdate();
+				await deferUpdate(btn);
 
 				if (btn.customId === "back") {
 					container = generateDefaultContainer();

@@ -2,7 +2,7 @@
 import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
 import { UserImageCanvasBuilder } from "#bot/ui/builders/UserImageCanvasBuilder";
 import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
-import { deferReply, replyInteraction, replyWithContainer } from "#bot/utils/discordInteractions";
+import { deferReply, deferUpdate, replyInteraction, replyWithContainer } from "#bot/utils/discordInteractions";
 import { EmoteId } from "#bot/utils/emotes";
 import { formatMoney, showTime } from "#bot/utils/ui";
 import { searchUser } from "#bot/utils/userUtils";
@@ -258,7 +258,7 @@ module.exports = {
 		});
 
 		collector?.on("collect", async btn => {
-			await btn.deferUpdate();
+			await deferUpdate(btn);
 
 			currentOption = btn.customId;
 

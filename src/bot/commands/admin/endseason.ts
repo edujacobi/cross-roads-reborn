@@ -1,3 +1,20 @@
+import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
+import { EmoteBadgeString } from "#bot/utils/badges";
+import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
+import { CrColors } from "#bot/utils/colors";
+import { deferUpdate, replyWithContainer } from "#bot/utils/discordInteractions";
+import { EmoteString } from "#bot/utils/emotes";
+import { defaultComponent, formatMoney } from "#bot/utils/ui";
+import GangMembers from "#core/database/GangMembers";
+import GangRoles from "#core/database/GangRoles";
+import Gangs from "#core/database/Gangs";
+import { Notifications } from "#core/database/Notifications";
+import { RobHistories } from "#core/database/RobHistories";
+import { UserItems } from "#core/database/UserItems";
+import { Users } from "#core/database/Users";
+import { Language } from "#core/models/Language";
+import type { User } from "#core/models/User";
+import { ClassList } from "#core/types/Classes";
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
@@ -7,24 +24,7 @@ import {
 	PermissionFlagsBits,
 	SlashCommandBuilder,
 } from "discord.js";
-import { replyWithContainer } from "#bot/utils/discordInteractions";
-import { CrColors } from "#bot/utils/colors";
-import { Users } from "#core/database/Users";
 import { Op } from "sequelize";
-import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
-import type { User } from "#core/models/User";
-import { Language } from "#core/models/Language";
-import { defaultComponent, formatMoney } from "#bot/utils/ui";
-import Gangs from "#core/database/Gangs";
-import { EmoteBadgeString } from "#bot/utils/badges";
-import { ClassList } from "#core/types/Classes";
-import { UserItems } from "#core/database/UserItems";
-import { RobHistories } from "#core/database/RobHistories";
-import { Notifications } from "#core/database/Notifications";
-import GangMembers from "#core/database/GangMembers";
-import GangRoles from "#core/database/GangRoles";
-import { EmoteString } from "#bot/utils/emotes";
-import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -55,7 +55,7 @@ module.exports = {
 		});
 
 		collector?.on("collect", async btn => {
-			await btn.deferUpdate();
+			await deferUpdate(btn);
 
 			let texts = [];
 
