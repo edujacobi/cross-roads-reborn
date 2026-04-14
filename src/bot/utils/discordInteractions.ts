@@ -97,6 +97,12 @@ export async function replyInteraction(interaction: CommandInteraction | ButtonI
 	catch (err) {
 		const error = err as Error;
 		console.debug(error);
+
+		if (error.name === "AbortError") {
+			Log.Warning(`Interaction reply timed out (AbortError) for user ${interaction.user.displayName} in server ${interaction.guild?.name}. This is usually a temporary Discord API or network issue.`);
+			return;
+		}
+
 		Log.Warning(`Something went wrong with replying interaction of user ${interaction.user.displayName} in server ${interaction.guild?.name} (Id: ${interaction.guild?.id}). Error: ${error.message}`);
 	}
 }
@@ -129,6 +135,11 @@ export async function deferReply(interaction: CommandInteraction | ButtonInterac
 		await interaction.deferReply();
 	}
 	catch (err) {
+		const error = err as Error;
+		if (error.name === "AbortError") {
+			Log.Warning(`Deferring reply timed out (AbortError) for interaction ${interaction.id} of user ${interaction.user.displayName}.`);
+			return;
+		}
 		Log.Warning(`Something went wrong with deferring interaction ${interaction.id} of user ${interaction.user.displayName} in server ${interaction.guild?.name} (Id: ${interaction.guild?.id}). Error: ${err}`);
 	}
 }
@@ -146,6 +157,11 @@ export async function deferUpdate(interaction: ButtonInteraction | MessageCompon
 		await interaction.deferUpdate();
 	}
 	catch (err) {
+		const error = err as Error;
+		if (error.name === "AbortError") {
+			Log.Warning(`Deferring update timed out (AbortError) for interaction ${interaction.id} of user ${interaction.user.displayName}.`);
+			return;
+		}
 		Log.Warning(`Something went wrong with deferring interaction ${interaction.id} of user ${interaction.user.displayName} in server ${interaction.guild?.name} (Id: ${interaction.guild?.id}). Error: ${err}`);
 	}
 }

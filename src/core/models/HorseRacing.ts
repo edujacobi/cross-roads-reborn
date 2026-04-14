@@ -751,18 +751,23 @@ export class HorseRacing {
 
 	// Check for races that should have run but haven't
 	static async CheckPendingRaces(): Promise<void> {
-		const now = new Date();
-		const pendingRaces = await HorseRaces.findAll({
-			where: {
-				raceTime: {
-					[Op.lt]: now,
+		try {
+			const now = new Date();
+			const pendingRaces = await HorseRaces.findAll({
+				where: {
+					raceTime: {
+						[Op.lt]: now,
+					},
+					isFinished: false,
 				},
-				isFinished: false,
-			},
-		});
+			});
 
-		for (const race of pendingRaces) {
-			await HorseRacing.RunRace(race.id);
+			for (const race of pendingRaces) {
+				await HorseRacing.RunRace(race.id);
+			}
+		}
+		catch (error) {
+			Log.Error(`Failed to check pending horse races: ${error}`);
 		}
 	}
 

@@ -127,7 +127,7 @@ module.exports = {
 		}
 
 		try {
-			command.execute(interaction, user, language);
+			await command.execute(interaction, user, language);
 		}
 		catch (error) {
 			logger.error(error);
