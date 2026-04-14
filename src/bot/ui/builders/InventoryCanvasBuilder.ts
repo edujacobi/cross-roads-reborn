@@ -258,7 +258,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 		const atkText = `${this.User.Attributes.Attack} ATK`;
 		const defText = `${this.User.Attributes.Defense} DEF`;
 
-		this.Ctx.font = "600 24px InterSemiBold";
+		this.Ctx.font = "600 26px InterSemiBold";
 		const defWidth = this.Ctx.measureText(defText).width;
 		const atkWidth = this.Ctx.measureText(atkText).width;
 
@@ -366,12 +366,14 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 		const spacing = 24;
 		const totalSlots = Math.ceil(this.User.Items.length / itemsPerRow) * itemsPerRow;
 
+		const itemsById = [...this.User.Items].sort((a, b) => a.Id - b.Id);
+
 		for (let i = 0; i < totalSlots; i++) {
 			const row = Math.floor(i / itemsPerRow);
 			const col = i % itemsPerRow;
 			const x = this.Padding + col * (rectWidth + spacing);
 			const y = gridStartY + row * (InventoryCanvasBuilder.GRID_ITEM_HEIGHT + spacing);
-			const item = this.User.Items[i];
+			const item = this.FullSize ? this.User.Items[i] : itemsById[i];
 
 			this.Ctx.fillStyle = "rgba(91, 91, 107, 0.25)";
 			this.Ctx.beginPath();
@@ -404,11 +406,11 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 			if (this.FullSize) {
 				this.Ctx.textBaseline = "top";
 				this.Ctx.fillStyle = "#E3E3E6";
-				this.Ctx.font = "700 21px InterBold";
+				this.Ctx.font = "700 22px InterBold";
 				this.Ctx.fillText(item.Description[this.Language], x + 126, y + 35);
 
 				const durationText = item.Type == ItemType.Consumable ? String(item.Quantity) : formatDistanceToNow(item.RemainingTime, { locale: getLocaleFromLanguage(this.Language) });
-				this.Ctx.font = "400 18px Inter";
+				this.Ctx.font = "400 20px Inter";
 				this.Ctx.fillText(durationText, x + 126, y + 73);
 
 				if (iconPath) {
@@ -473,7 +475,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 		const iconSize = 32;
 
 		await this.tryDrawImage("ui/assets/images/situations/10_DefendingInvestment.png", imgInv => {
-			this.Ctx.font = "600 18px InterSemiBold";
+			this.Ctx.font = "600 20px InterSemiBold";
 			this.Ctx.fillStyle = "#E3E3E6";
 			this.Ctx.textBaseline = "middle";
 			this.Ctx.textAlign = "left";

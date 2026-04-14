@@ -108,7 +108,7 @@ export class GangImageCanvasBuilder {
 			ctx.drawImage(image, circleX - radius, circleY - radius, imageSize, imageSize);
 			ctx.restore();
 
-			ctx.font = "600 18px InterSemiBold";
+			ctx.font = "600 20px InterSemiBold";
 			ctx.fillStyle = "#E3E3E6";
 			ctx.textBaseline = "middle";
 			ctx.textAlign = "start";
@@ -128,7 +128,7 @@ export class GangImageCanvasBuilder {
 		}
 		else {
 			// Compact mode: [Icon] [Text] (Right aligned as a group)
-			ctx.font = "600 18px InterSemiBold";
+			ctx.font = "600 20px InterSemiBold";
 			ctx.textBaseline = "middle";
 
 			const roleName = this.Gang.Members.find(member => member.UserId === this.User.Id)!.RoleName;
@@ -167,6 +167,6 @@ export async function testImage() {
 	if (!gang) return;
 	const image = await new GangImageCanvasBuilder(user, gang, Language.English).GenerateImage();
 	fs.writeFile("image.webp", image, (err) => {
-		if (err) logger.error(err); 
+		if (err) logger.error(err);
 	});
 }
