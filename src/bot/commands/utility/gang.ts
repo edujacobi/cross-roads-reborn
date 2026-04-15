@@ -38,6 +38,7 @@ enum CommandOption {
 	ChangeRole = "change_role",
 	EditRole = "edit_role",
 	Roles = "roles",
+	Transfer = "transfer",
 	RobInvestment = "rob_investment",
 }
 
@@ -479,6 +480,31 @@ module.exports = {
 				[Locale.PortugueseBR]: "Lista todos os cargos da sua gangue",
 				[Locale.SpanishES]: "Lista todos los cargos de tu cuadrilla",
 			}),
+		)
+		.addSubcommand(transfer => transfer
+			.setName(CommandOption.Transfer)
+			.setNameLocalizations({
+				[Locale.PortugueseBR]: "transferir",
+				[Locale.SpanishES]: "transferir",
+			})
+			.setDescription("Transfer the leadership of your gang to another member")
+			.setDescriptionLocalizations({
+				[Locale.PortugueseBR]: "Transfere a liderança da sua gangue para outro membro",
+				[Locale.SpanishES]: "Transfiere el liderazgo de tu cuadrilla a otro miembro",
+			})
+			.addStringOption(user => user
+				.setName("user")
+				.setNameLocalizations({
+					[Locale.PortugueseBR]: "usuario",
+					[Locale.SpanishES]: "usuario",
+				})
+				.setDescription("User to transfer the leadership to")
+				.setDescriptionLocalizations({
+					[Locale.PortugueseBR]: "Usuário para transferir a liderança",
+					[Locale.SpanishES]: "Usuario a quien transferir el liderazgo",
+				})
+				.setRequired(true),
+			),
 		)
 		.addSubcommand(robInvestment => robInvestment
 			.setName(CommandOption.RobInvestment)
@@ -1347,7 +1373,7 @@ module.exports = {
 				return warn(s.notInGang);
 			}
 
-			if (user.Id === this.LeaderId) {
+			if (user.Id === gang.LeaderId) {
 				return warn(s.errorLeaveGangLeader);
 			}
 
@@ -1437,7 +1463,7 @@ module.exports = {
 				return warn(s.errorKickGangYourself);
 			}
 
-			if (target.Id === this.LeaderId) {
+			if (target.Id === gang.LeaderId) {
 				return warn(s.errorKickGangLeader);
 			}
 
@@ -2074,6 +2100,88 @@ module.exports = {
 			return;
 		}
 
+		case CommandOption.Transfer: {
+			await deferReply(interaction);
+
+			const gang = await Gang.GetByUserId(user.Id);
+			if (!gang) {
+				return warn(s.notInGang);
+			}
+
+			if (user.Id !== gang.LeaderId) {
+				return warn(s.errorMustBeLeader);
+			}
+
+			const targetUserInput = interaction.options.getString("user", true);
+			const target = await searchUser(targetUserInput, interaction);
+
+			if (!target) {
+				return;
+			}
+
+			if (target.Id === user.Id) {
+				return warn(s.errorCantTransferToSelf);
+			}
+
+			const targetMember = gang.Members.find(m => m.UserId === target.Id);
+			if (!targetMember) {
+				return warn(s.userNotInGang(target.Nickname));
+			}
+
+			const getContainer = () => {
+				return new CustomContainerBuilder()
+					.setUser(user)
+					.setAccentColor(GangColor[gang.Color].Color)
+					.addTexts([
+						`-# ${EmoteString.Gang} ${gang.Name}`,
+					])
+					.addLargeSeparator()
+					.addTexts([
+						`# ${s.transferTitle}`,
+						s.transferDescription(target.GetNameWithImage()),
+					])
+					.addButtonRow(
+						btn => btn
+							.setLabel(s.confirm)
+							.setCustomId("confirm")
+							.setStyle(ButtonStyle.Success),
+					)
+					.addFooter();
+			};
+
+			let container = getContainer();
+
+			const response = await replyWithContainer(interaction, container);
+
+			const collector = createButtonCollector(interaction, response, { idleTime: 60_000, maxClicks: 1 });
+
+			collector?.on("collect", async btn => {
+				await deferUpdate(btn);
+
+				if (btn.customId === "confirm") {
+					const success = await gang.TransferLeadership(user, target);
+
+					if (!success) {
+						return warn(s.errorTransferLeadership);
+					}
+
+					container = defaultComponent({
+						color: GangColor[gang.Color].Color as ColorResolvable,
+						description: s.successTransferLeadership(target.GetNameWithImage()),
+						user,
+					});
+
+					return replyWithContainer(interaction, container);
+				}
+			});
+
+			collector?.on("end", async () => {
+				await disableButtons(interaction, container);
+			});
+
+			return;
+		}
+
 		case CommandOption.Roles: {
 			await deferReply(interaction);
 
@@ -2328,6 +2436,12 @@ const Strings = {
 		confirmDeleteRole: (name: string) => `Are you sure you want to delete the role **${name}**?\n-# Members with this role will be reassigned to the default **Member** role.`,
 		errorDeleteRole: `Error deleting role. It might be a protected role (like Leader or Member) or another error occurred.`,
 		cancel: "Cancel",
+		transferTitle: "Transfer Leadership",
+		transferDescription: (target: string) => `Are you sure you want to transfer the leadership of the gang to **${target}**?\n-# This action cannot be undone. You'll become a regular Member.`,
+		errorMustBeLeader: `Only the leader can transfer the leadership of the gang ${EmoteString.Gang}`,
+		errorCantTransferToSelf: `You can't transfer the leadership to yourself ${EmoteString.Gang}`,
+		errorTransferLeadership: `Error transferring the leadership. Please try again later ${EmoteString.Gang}`,
+		successTransferLeadership: (target: string) => `You've successfully transferred the leadership of the gang to **${target}**! ${EmoteString.Gang}`,
 		robInvestment: "Robbery to investment",
 		inProgress: "in progress",
 		finished: "finished",
@@ -2471,6 +2585,12 @@ const Strings = {
 		confirmDeleteRole: (name: string) => `Você tem certeza que quer deletar o cargo **${name}**?\n-# Membros com este cargo serão movidos para o cargo padrão de **Membro**.`,
 		errorDeleteRole: `Erro ao deletar cargo. Pode ser um cargo protegido (como Líder ou Membro) ou outro erro ocorreu.`,
 		cancel: "Cancelar",
+		transferTitle: "Transferir Liderança",
+		transferDescription: (target: string) => `Você tem certeza que deseja transferir a liderança da gangue para **${target}**?\n-# Esta ação não pode ser desfeita. Você se tornará um Membro regular.`,
+		errorMustBeLeader: `Apenas o líder pode transferir a liderança da gangue ${EmoteString.Gang}`,
+		errorCantTransferToSelf: `Você não pode transferir a liderança para si mesmo ${EmoteString.Gang}`,
+		errorTransferLeadership: `Erro ao transferir a liderança. Tente novamente mais tarde ${EmoteString.Gang}`,
+		successTransferLeadership: (target: string) => `Você transferiu a liderança da gangue para **${target}** com sucesso! ${EmoteString.Gang}`,
 		robInvestment: "Roubo à investimento",
 		inProgress: "em andamento",
 		finished: "finalizado",
@@ -2613,6 +2733,12 @@ const Strings = {
 		confirmDeleteRole: (name: string) => `¿Estás seguro de que quieres borrar el cargo **${name}**?\n-# Los miembros con este cargo serán reasignados al cargo de **Miembro** por defecto.`,
 		errorDeleteRole: `Error al borrar el cargo. Puede ser un cargo protegido (como Líder o Miembro) u otro error ha ocurrido.`,
 		cancel: "Cancelar",
+		transferTitle: "Transferir Liderazgo",
+		transferDescription: (target: string) => `¿Estás seguro de que deseas transferir el liderazgo de la cuadrilla a **${target}**?\n-# Esta acción no se puede deshacer. Te convertirás en un Miembro regular.`,
+		errorMustBeLeader: `Solo el líder puede transferir el liderazgo de la cuadrilla ${EmoteString.Gang}`,
+		errorCantTransferToSelf: `No puedes transferir el liderazgo a ti mismo ${EmoteString.Gang}`,
+		errorTransferLeadership: `Error al transferir el liderazgo. Inténtalo de nuevo más tarde ${EmoteString.Gang}`,
+		successTransferLeadership: (target: string) => `¡Has transferido el liderazgo de la cuadrilla a **${target}** con éxito! ${EmoteString.Gang}`,
 		robInvestment: "Robo a inversión",
 		inProgress: "en progreso",
 		finished: "finalizado",

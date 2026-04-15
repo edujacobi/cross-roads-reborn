@@ -1435,6 +1435,73 @@ export class Gang {
 			Log.Warning(`User ${user.Nickname} (Id: ${user.Id}) tried to deposit ${formatMoney(amount, user.Language)} but an error occurred (not member)`);
 		}
 	}
+	/**
+	 * Transfers leadership of the gang to another member.
+	 * @param currentUser The current leader.
+	 * @param targetUser The new leader.
+	 * @returns True if the transfer was successful, false otherwise.
+	 */
+	async TransferLeadership(currentUser: User, targetUser: User): Promise<boolean> {
+		if (currentUser.Id !== this.LeaderId) {
+			return false; // Only current leader can transfer
+		}
+
+		if (currentUser.Id === targetUser.Id) {
+			return false; // Cannot transfer to yourself
+		}
+
+		const newLeaderMember = this.Members.find(m => m.UserId === targetUser.Id);
+		if (!newLeaderMember) {
+			return false; // Target must be in the gang
+		}
+
+		try {
+			const leaderRole = this.Roles.find(r => Gang.LEADER_ROLE_NAMES.includes(r.Name));
+			const memberRole = this.Roles.find(r => Gang.MEMBER_ROLE_NAMES.includes(r.Name));
+
+			if (!leaderRole || !memberRole) {
+				return false;
+			}
+
+			// Change old leader to member
+			await GangMembers.update(
+				{ roleId: memberRole.Id },
+				{ where: { gangId: this.Id, userId: currentUser.Id } },
+			);
+
+			// Change new leader to leader role
+			await GangMembers.update(
+				{ roleId: leaderRole.Id },
+				{ where: { gangId: this.Id, userId: targetUser.Id } },
+			);
+
+			// Update Gang's leaderId
+			this.LeaderId = targetUser.Id;
+			await this.Update();
+
+			await this.LoadMembers();
+
+			const messageToMembers = {
+				[Language.English]: `**${currentUser.GetNameWithImage()}** transferred the leadership of the gang to **${targetUser.GetNameWithImage()}**.`,
+				[Language.Portuguese]: `**${currentUser.GetNameWithImage()}** transferiu a liderança da gangue para **${targetUser.GetNameWithImage()}**.`,
+				[Language.Spanish]: `**${currentUser.GetNameWithImage()}** transfirió el liderazgo de la cuadrilla a **${targetUser.GetNameWithImage()}**.`,
+			};
+
+			const promises = this.Members
+				.filter(m => m.UserId !== currentUser.Id)
+				.map(m => this.ComunicateMember(m, messageToMembers));
+
+			await Promise.all(promises);
+
+			Log.Success(`Leadership of gang ${this.Name} (Id: ${this.Id}) transferred from ${currentUser.Nickname} (Id: ${currentUser.Id}) to ${targetUser.Nickname} (Id: ${targetUser.Id})`);
+
+			return true;
+		}
+		catch (err) {
+			Log.Warning(`Failed to transfer leadership of gang ${this.Name} (Id: ${this.Id}) to ${targetUser.Nickname} (Id: ${targetUser.Id}): ${err}`);
+			return false;
+		}
+	}
 }
 
 const Strings = {
