@@ -17,7 +17,7 @@ import { Gang } from "./Gang";
 import { GangMembers } from "#core/database/GangMembers";
 import { Event, EventType } from "./Event";
 import type { GangColorId } from "#bot/utils/colors";
-import { AvatarDecorationId, BackgroundDecorationId, BundleId, type ItemId } from "#core/types/Ids";
+import { AvatarDecorationId, BackgroundDecorationId, BundleId, ItemId } from "#core/types/Ids";
 import { UserBundle } from "./UserBundle";
 import { BundleList, type SkinBundles } from "#core/types/Skins";
 import { UserAvatarDecoration } from "./UserAvatarDecoration";
@@ -643,7 +643,7 @@ export class User {
 	 * Receives the daily reward.
 	 * @param options Options for the daily reward.
 	 * @param options.isBooster Whether the user is a server booster.
-	 * @returns The amount of money received.
+	 * @returns The money received and any bonus items.
 	 */
 	async ReceiveDaily({ isBooster }: { isBooster: boolean }) {
 		const today = new Date();
@@ -652,8 +652,10 @@ export class User {
 			this.Daily.CurrentStreak = 0;
 		}
 
+
 		this.Daily.LastReceived = today;
 		this.Daily.CurrentStreak += 1;
+		this.Daily.CurrentStreak = 28;
 
 		if (this.Daily.CurrentStreak > this.Daily.MaxStreak) {
 			this.Daily.MaxStreak = this.Daily.CurrentStreak;
@@ -671,17 +673,128 @@ export class User {
 
 		this.Money += money;
 
+		const bonusItems: { item: Items; quantity?: number; days?: number }[] = [];
+
+		if (this.Daily.CurrentStreak > 0 && this.Daily.CurrentStreak % 7 === 0) {
+			const cycle = Math.floor(this.Daily.CurrentStreak / 7);
+
+			if (cycle === 1) {
+				// 7th day: 3 days of Knife, 2 days of Pistol, 1 day of Compact SMG
+				bonusItems.push({ item: ItemList[ItemId.Knife], days: 3 });
+				bonusItems.push({ item: ItemList[ItemId.Pistol], days: 2 });
+				bonusItems.push({ item: ItemList[ItemId.CompactSMG], days: 1 });
+			}
+			else if (cycle === 2) {
+				// 14th day: 3 days of Light Vest, 2 days of Baseball Bat, 1 day of best gun or Sawnoff
+				bonusItems.push({ item: ItemList[ItemId.LightVest], days: 3 });
+				bonusItems.push({ item: ItemList[ItemId.BaseballBat], days: 2 });
+
+				const fallback = ItemList[ItemId.Sawnoff];
+				const best = this.BestGun && this.BestGun.Attack > fallback.Attack ? this.BestGun : fallback;
+				bonusItems.push({ item: best, days: 1 });
+			}
+			else if (cycle === 3) {
+				// 21st day: 3 days of Advanced Scope, 2 days of Heavy Vest, 1 day of best gun or Carbine
+				bonusItems.push({ item: ItemList[ItemId.AdvancedScope], days: 3 });
+				bonusItems.push({ item: ItemList[ItemId.HeavyVest], days: 2 });
+
+				const fallback = ItemList[ItemId.Carbine];
+				const best = this.BestGun && this.BestGun.Attack > fallback.Attack ? this.BestGun : fallback;
+				bonusItems.push({ item: best, days: 1 });
+			}
+			else {
+				// 28th day and beyond: 7 days of Sunglasses, 2 Grenades, 1 day of best gun or Katana
+				bonusItems.push({ item: ItemList[ItemId.Sunglasses], days: 7 });
+				bonusItems.push({ item: ItemList[ItemId.Grenade], quantity: 2 });
+
+				const fallback = ItemList[ItemId.Katana];
+				const best = this.BestGun && this.BestGun.Attack > fallback.Attack ? this.BestGun : fallback;
+				bonusItems.push({ item: best, days: 1 });
+			}
+
+			for (const bonus of bonusItems) {
+				await this.GiveItem(bonus.item, bonus.quantity, bonus.days);
+			}
+		}
+
 		await this.Update({
 			money: this.Money,
 			lastDailyReceived: this.Daily.LastReceived,
 			dailyStreak: this.Daily.CurrentStreak,
 			maxDailyStreak: this.Daily.MaxStreak,
 		});
+
 		Log.Success(`User ${this.Nickname} (Id: ${this.Id}) received ${formatMoney(money, Language.English)} from daily. Streak: ${this.Daily.CurrentStreak}.`);
 
 		await Notification.Daily(this);
 
-		return money;
+		return { money, bonusItems };
+	}
+
+	/**
+	 * Gives an item to the user without charging money.
+	 * @param item The item to give.
+	 * @param quantity Optional quantity for consumables.
+	 * @param days Optional duration in days for non-consumables.
+	 */
+	async GiveItem(item: Items, quantity?: number, days?: number) {
+		const existingItem = await UserItems.findOne({
+			where: {
+				userId: this.Id,
+				itemId: item.Id,
+			},
+		});
+
+		const now = new Date();
+		const userItem = { ...ItemList[item.Id] } as UserItem;
+
+		if (!existingItem) {
+			const remaining = item.Type != ItemType.Consumable ? addDays(now, days ?? 3) : undefined;
+			const qty = item.Type == ItemType.Consumable ? (quantity ?? 1) : undefined;
+
+			await UserItems.create({
+				userId: this.Id,
+				itemId: item.Id,
+				remainingTime: remaining,
+				quantity: qty,
+				skin: BundleId.Default,
+			});
+
+			userItem.RemainingTime = remaining ?? new Date();
+			userItem.Quantity = qty ?? 0;
+			userItem.SelectedSkin = BundleId.Default;
+		}
+		else {
+			let remaining = addDays(existingItem.remainingTime, days ?? 3);
+			if (now > existingItem.remainingTime) {
+				remaining = addDays(now, days ?? 3);
+			}
+
+			await UserItems.update({
+				remainingTime: item.Type != ItemType.Consumable ? remaining : undefined,
+				quantity: item.Type == ItemType.Consumable ? existingItem.quantity + (quantity ?? 1) : undefined,
+			}, {
+				where: {
+					userId: this.Id,
+					itemId: item.Id,
+				},
+			});
+
+			userItem.RemainingTime = remaining;
+			userItem.Quantity = existingItem.quantity + (item.Type == ItemType.Consumable ? (quantity ?? 1) : 0);
+			userItem.SelectedSkin = existingItem.skin;
+		}
+
+		// Update local items list
+		const localIdx = this.Items.findIndex(i => i.Id === item.Id);
+		if (localIdx !== -1) {
+			this.Items[localIdx] = userItem;
+		}
+		else {
+			this.Items.push(userItem);
+		}
+
+		Log.Info(`User ${this.Nickname} (Id: ${this.Id}) received ${item.Type === ItemType.Consumable ? `${quantity}x` : `${days} days`} of ${item.Description[Language.English]} (Id: ${item.Id}).`);
 	}
 
 	/**
