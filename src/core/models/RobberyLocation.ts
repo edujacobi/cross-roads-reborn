@@ -5,7 +5,7 @@ import { replyWithContainer } from "#bot/utils/discordInteractions";
 import { formatMoney, showTime } from "#bot/utils/ui";
 import { EmoteString } from "#bot/utils/emotes";
 import { setTimeout as wait } from "timers/promises";
-import { addHours } from "date-fns/addHours";
+
 import { Notification } from "./Notification";
 import { addMinutes } from "date-fns";
 import { globalStrings, Language, type Localization } from "./Language";
@@ -16,6 +16,7 @@ import { ClashType, Robbery } from "./Robbery";
 import { type LocationId, LocationList } from "#core/types/Locations";
 import { ClassList, getRobberyClassModifier } from "#core/types/Classes";
 import { type ScavengeId, ScavengeList } from "#core/types/Scavenge";
+import { Event, EventType } from "./Event";
 
 export class RobberyLocation extends Robbery {
 	LocationId: LocationId;
@@ -151,7 +152,8 @@ export class RobberyLocation extends Robbery {
 		await wait(10_000 + (5_000 * this.LocationId));
 
 		this.Chance = Math.random() * 100;
-		this.Success = this.Chance < LocationList[this.LocationId].SuccessChance;
+		const robLocationChanceBonus = await Event.GetActiveBonusFromType(EventType.ROB_LOCATION_CHANCE_BONUS);
+		this.Success = this.Chance < (LocationList[this.LocationId].SuccessChance + robLocationChanceBonus);
 
 		await this.EndRobbery(interaction);
 	}
@@ -169,7 +171,8 @@ export class RobberyLocation extends Robbery {
 			this.Attacker.Money += this.MoneyRobbed;
 			this.Attacker.Robbery.SuccessCount += 1;
 			this.Attacker.Robbery.SuccessRobbedSum += this.MoneyRobbed;
-			this.Attacker.Wanted.Time = addHours(new Date(), 1);
+			const wantedTimeMultiplier = await Event.GetActiveFromType(EventType.WANTED_TIME_MULTIPLIER);
+			this.Attacker.Wanted.Time = addMinutes(new Date(), 60 * wantedTimeMultiplier);
 
 			await Notification.RobAgain(this.Attacker);
 
@@ -184,7 +187,8 @@ export class RobberyLocation extends Robbery {
 			Log.Success(`User ${this.Attacker.Nickname} (Id: ${this.Attacker.Id}) successfully robbed location ${LocationList[this.LocationId].Name[Language.English]} (Id: ${LocationList[this.LocationId].Id}) and got ${formatMoney(this.MoneyRobbed, Language.English)}.`);
 		}
 		else {
-			this.Attacker.Prison.Time = addMinutes(new Date(), this.AttackerTimeInPrison);
+			const prisonTimeMultiplier = await Event.GetActiveFromType(EventType.PRISON_TIME_MULTIPLIER);
+			this.Attacker.Prison.Time = addMinutes(new Date(), this.AttackerTimeInPrison * prisonTimeMultiplier);
 			this.Attacker.Prison.HasPaidBribe = false;
 			this.Attacker.Escape.HasTried = false;
 			this.Attacker.Robbery.FailureCount += 1;

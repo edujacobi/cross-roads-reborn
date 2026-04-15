@@ -1,4 +1,5 @@
 import type { User } from "./User";
+import { Event, EventType } from "./Event";
 import { Language } from "./Language";
 import {
 	type ItemRewardScavenge,
@@ -119,7 +120,8 @@ export class Scavenge {
 
 		// Check here and not in constructor, because user can change class between openning the command and executing the action
 		const userClassChanceModifier = getScavengeChanceClassModifier(this.User.Class);
-		this.SuccessChance = place.SuccessChance + userClassChanceModifier;
+		const scavengeChanceBonus = await Event.GetActiveBonusFromType(EventType.SCAVENGE_CHANCE_BONUS);
+		this.SuccessChance = place.SuccessChance + userClassChanceModifier + scavengeChanceBonus;
 
 		const userClassDurationModifier = getScavengeDurationClassModifier(this.User.Class);
 		this.RewardMoneyMin = Math.floor(place.Reward.Money.Min * userClassDurationModifier);
@@ -238,14 +240,16 @@ export class Scavenge {
 			result.inprisoned = inprisoned;
 
 			if (hospitalized) {
-				this.User.Hospital.Time = addMinutes(new Date(), this.Timer.Hospital);
+				const hospitalTimeMultiplier = await Event.GetActiveFromType(EventType.HOSPITAL_TIME_MULTIPLIER);
+				this.User.Hospital.Time = addMinutes(new Date(), this.Timer.Hospital * hospitalTimeMultiplier);
 				this.User.Hospital.Count += 1;
 				this.User.Scavenge.Found.FailureWithHospital += 1;
 				await Notification.Hospital(this.User);
 				result.hospitalTime = this.User.Hospital.Time;
 			}
 			else if (inprisoned) {
-				this.User.Prison.Time = addMinutes(new Date(), this.Timer.Prison);
+				const prisonTimeMultiplier = await Event.GetActiveFromType(EventType.PRISON_TIME_MULTIPLIER);
+				this.User.Prison.Time = addMinutes(new Date(), this.Timer.Prison * prisonTimeMultiplier);
 				this.User.Prison.Count += 1;
 				this.User.Prison.HasPaidBribe = false;
 				this.User.Escape.HasTried = false;
@@ -258,7 +262,8 @@ export class Scavenge {
 		}
 
 		this.User.Scavenge.Count += 1;
-		this.User.Scavenge.Time = addHours(new Date(), 1);
+		const scavengeTimeMultiplier = await Event.GetActiveFromType(EventType.SCAVENGE_TIME_MULTIPLIER);
+		this.User.Scavenge.Time = addMinutes(new Date(), 60 * scavengeTimeMultiplier); // 1 hour cooldown * multiplier
 		this.User.Scavenge.IsScavengingId = null;
 
 		await Notification.Scavenge(this.User);

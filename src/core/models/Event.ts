@@ -4,6 +4,13 @@ import { Log } from "#shared/log";
 
 export enum EventType {
 	JOB_TIME_MULTIPLIER = 1,
+	SCAVENGE_TIME_MULTIPLIER = 2,
+	WANTED_TIME_MULTIPLIER = 3,
+	HOSPITAL_TIME_MULTIPLIER = 4,
+	PRISON_TIME_MULTIPLIER = 5,
+	SCAVENGE_CHANCE_BONUS = 6,
+	ROB_LOCATION_CHANCE_BONUS = 7,
+	PRISON_ESCAPE_CHANCE_BONUS = 8,
 }
 
 export class Event {
@@ -114,6 +121,30 @@ export class Event {
 	}
 
 	/**
+	 * Retrieves the active event bonus value for a given event type (default 0).
+	 *
+	 * @param eventType The type of the event to retrieve.
+	 * @returns The value of the active event.
+	 */
+	static async GetActiveBonusFromType(eventType: EventType) {
+		const currentDate = new Date();
+
+		const event = await Events.findOne({
+			where: {
+				type: eventType,
+				periodStart: { [Op.lte]: currentDate },
+				periodEnd: { [Op.gte]: currentDate },
+			},
+		});
+
+		if (!event) {
+			return 0;
+		}
+
+		return event.value;
+	}
+
+	/**
 	 * Retrieves the upcoming events.
 	 *
 	 * @returns The upcoming events, or undefined if no events are found.
@@ -135,6 +166,20 @@ export class Event {
 		switch (eventType) {
 		case EventType.JOB_TIME_MULTIPLIER:
 			return "Jobs time multiplier";
+		case EventType.SCAVENGE_TIME_MULTIPLIER:
+			return "Scavenge time multiplier";
+		case EventType.WANTED_TIME_MULTIPLIER:
+			return "Wanted time multiplier";
+		case EventType.HOSPITAL_TIME_MULTIPLIER:
+			return "Hospital time multiplier";
+		case EventType.PRISON_TIME_MULTIPLIER:
+			return "Prison time multiplier";
+		case EventType.SCAVENGE_CHANCE_BONUS:
+			return "Scavenge chance bonus";
+		case EventType.ROB_LOCATION_CHANCE_BONUS:
+			return "Rob location chance bonus";
+		case EventType.PRISON_ESCAPE_CHANCE_BONUS:
+			return "Prison escape chance bonus";
 		default:
 			return "Unknown";
 		}

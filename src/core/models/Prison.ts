@@ -10,6 +10,7 @@ import { Notification, NotificationType } from "./Notification";
 import { ItemId } from "#core/types/Ids";
 import { GangBases } from "#core/types/GangBases";
 import { Gang } from "./Gang";
+import { Event, EventType } from "./Event";
 
 export enum PrisonFailureReason {
 	BribeNotInPrison,
@@ -62,8 +63,9 @@ export class Prison {
 			}
 		}
 
+		const prisonEscapeChanceBonus = await Event.GetActiveBonusFromType(EventType.PRISON_ESCAPE_CHANCE_BONUS);
 		this.Escape.UserChance = this.Escape.HasJetpack ? this.Escape.BaseJetpackChance : 0;
-		this.Escape.TotalChance = this.Escape.BaseChance + this.Escape.UserChance + userClassModifier + gangModifier;
+		this.Escape.TotalChance = this.Escape.BaseChance + this.Escape.UserChance + userClassModifier + gangModifier + prisonEscapeChanceBonus;
 	}
 
 	async GetPrisoners() {
@@ -141,13 +143,15 @@ export class Prison {
 		if (success) {
 			this.User.Escape.Count += 1;
 			this.User.Prison.Time = new Date();
-			this.User.Wanted.Time = addMinutes(new Date(), Prison.EscapeTimeInMinutesWanted);
+			const wantedTimeMultiplier = await Event.GetActiveFromType(EventType.WANTED_TIME_MULTIPLIER);
+			this.User.Wanted.Time = addMinutes(new Date(), Prison.EscapeTimeInMinutesWanted * wantedTimeMultiplier);
 
 			await Notification.RobAgain(this.User);
 			Log.Success(`User ${this.User.Nickname} (Id: ${this.User.Id}) successfully escaped from prison. Total escapes: ${this.User.Escape.Count}`);
 		}
 		else {
-			this.User.Prison.Time = addMinutes(this.User.Prison.Time, totalTime);
+			const prisonTimeMultiplier = await Event.GetActiveFromType(EventType.PRISON_TIME_MULTIPLIER);
+			this.User.Prison.Time = addMinutes(this.User.Prison.Time, totalTime * prisonTimeMultiplier);
 
 			await Notification.Free(this.User);
 			Log.Success(`User ${this.User.Nickname} (Id: ${this.User.Id}) failed in his attempt to escape from prison. Will be in prison until ${this.User.Prison.Time}`);
@@ -211,7 +215,8 @@ export class Prison {
 
 		if (success) {
 			this.User.Prison.Time = new Date();
-			this.User.Wanted.Time = addMinutes(new Date(), Prison.BribeTimeInMinutesWanted);
+			const wantedTimeMultiplier = await Event.GetActiveFromType(EventType.WANTED_TIME_MULTIPLIER);
+			this.User.Wanted.Time = addMinutes(new Date(), Prison.BribeTimeInMinutesWanted * wantedTimeMultiplier);
 
 			await Promise.all([
 				Notification.Dismiss(this.User.Id, NotificationType.Free),

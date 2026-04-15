@@ -16,7 +16,7 @@ import { CrColors } from "#bot/utils/colors";
 import { EmoteId, EmoteString } from "#bot/utils/emotes";
 import { getClient } from "#bot/client";
 import { setTimeout as wait } from "timers/promises";
-import { addHours } from "date-fns/addHours";
+
 import { Notification } from "./Notification";
 import { addMinutes } from "date-fns";
 import { globalStrings, Language, type Localization } from "./Language";
@@ -30,6 +30,7 @@ import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder"
 import { getPercent } from "#shared/utils";
 import { ItemId } from "#core/types/Ids";
 import { ItemList } from "#core/types/Items";
+import { Event, EventType } from "./Event";
 
 export enum ClashType {
 	User = 1,
@@ -515,7 +516,8 @@ export class Robbery {
 			this.Attacker.Money += this.MoneyRobbed;
 			this.Attacker.Robbery.SuccessCount += 1;
 			this.Attacker.Robbery.SuccessRobbedSum += this.MoneyRobbed;
-			this.Attacker.Wanted.Time = addHours(new Date(), 1);
+			const wantedTimeMultiplier = await Event.GetActiveFromType(EventType.WANTED_TIME_MULTIPLIER);
+			this.Attacker.Wanted.Time = addMinutes(new Date(), 60 * wantedTimeMultiplier);
 
 			this.Defender.Money -= this.MoneyRobbed;
 			this.Defender.Robbery.BeingRobbedCount += 1;
@@ -528,7 +530,8 @@ export class Robbery {
 
 			if (willBeBeatenUp) {
 				this.Defender.Hospital.Count += 1;
-				this.Defender.Hospital.Time = addMinutes(new Date(), this.DefenderTimeInHospital);
+				const hospitalTimeMultiplier = await Event.GetActiveFromType(EventType.HOSPITAL_TIME_MULTIPLIER);
+				this.Defender.Hospital.Time = addMinutes(new Date(), this.DefenderTimeInHospital * hospitalTimeMultiplier);
 				this.Defender.BeatUp.BeatedUpCount += 1;
 				this.Attacker.BeatUp.SuccessCount += 1;
 				await Notification.Hospital(this.Defender);
@@ -558,7 +561,8 @@ ${sA.beatenUp(this.Defender.Hospital.Time)} ${EmoteString.Hospital}` : ""}`,
 			Log.Success(`User ${this.Attacker.Nickname} (Id: ${this.Attacker.Id}) successfully robbed user ${this.Defender.Nickname} (Id: ${this.Defender.Id}) and got ${formatMoney(this.MoneyRobbed, Language.English)}. ${willBeBeatenUp ? "The defender was beaten up." : ""}`);
 		}
 		else {
-			this.Attacker.Prison.Time = addMinutes(new Date(), this.AttackerTimeInPrison);
+			const prisonTimeMultiplier = await Event.GetActiveFromType(EventType.PRISON_TIME_MULTIPLIER);
+			this.Attacker.Prison.Time = addMinutes(new Date(), this.AttackerTimeInPrison * prisonTimeMultiplier);
 			this.Attacker.Prison.HasPaidBribe = false;
 			this.Attacker.Escape.HasTried = false;
 			this.Attacker.Robbery.FailureCount += 1;

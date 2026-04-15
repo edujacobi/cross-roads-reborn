@@ -24,6 +24,34 @@ module.exports = {
 						name: Event.GetEventTypeText(EventType.JOB_TIME_MULTIPLIER),
 						value: EventType.JOB_TIME_MULTIPLIER,
 					},
+					{
+						name: Event.GetEventTypeText(EventType.SCAVENGE_TIME_MULTIPLIER),
+						value: EventType.SCAVENGE_TIME_MULTIPLIER,
+					},
+					{
+						name: Event.GetEventTypeText(EventType.WANTED_TIME_MULTIPLIER),
+						value: EventType.WANTED_TIME_MULTIPLIER,
+					},
+					{
+						name: Event.GetEventTypeText(EventType.HOSPITAL_TIME_MULTIPLIER),
+						value: EventType.HOSPITAL_TIME_MULTIPLIER,
+					},
+					{
+						name: Event.GetEventTypeText(EventType.PRISON_TIME_MULTIPLIER),
+						value: EventType.PRISON_TIME_MULTIPLIER,
+					},
+					{
+						name: Event.GetEventTypeText(EventType.SCAVENGE_CHANCE_BONUS),
+						value: EventType.SCAVENGE_CHANCE_BONUS,
+					},
+					{
+						name: Event.GetEventTypeText(EventType.ROB_LOCATION_CHANCE_BONUS),
+						value: EventType.ROB_LOCATION_CHANCE_BONUS,
+					},
+					{
+						name: Event.GetEventTypeText(EventType.PRISON_ESCAPE_CHANCE_BONUS),
+						value: EventType.PRISON_ESCAPE_CHANCE_BONUS,
+					},
 				]),
 		)
 		.addNumberOption((option: SlashCommandNumberOption) =>
