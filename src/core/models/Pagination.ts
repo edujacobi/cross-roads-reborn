@@ -90,7 +90,7 @@ export class Pagination {
 			files: this.Attachments,
 		});
 
-		const collector = createButtonCollector(this.Interaction, response, 30_000);
+		const collector = createButtonCollector(this.Interaction, response, { idleTime: 30_000 });
 
 		collector?.on("end", async () => {
 			if (!this.UserHasInteractedOutside) {

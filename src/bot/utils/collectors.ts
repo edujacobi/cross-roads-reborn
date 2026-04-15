@@ -20,10 +20,17 @@ import { replyWithContainer } from "#bot/utils/discordInteractions";
  *
  * @param interaction - The original interaction.
  * @param response - The message or interaction response to collect from.
- * @param idleTime - The idle time in milliseconds before the collector stops (default: 60000).
+ * @param options - Optional settings for the collector (idleTime and maxClicks).
  * @returns The collector or undefined if response is missing.
  */
-export function createButtonCollector(interaction: CommandInteraction | ButtonInteraction | MessageComponentInteraction, response: Message | InteractionResponse | undefined, idleTime = 60_000) {
+export function createButtonCollector(
+	interaction: CommandInteraction | ButtonInteraction | MessageComponentInteraction,
+	response: Message | InteractionResponse | undefined,
+	options?: {
+		idleTime?: number;
+		maxClicks?: number;
+	}
+) {
 	if (!response) {
 		return;
 	}
@@ -31,7 +38,8 @@ export function createButtonCollector(interaction: CommandInteraction | ButtonIn
 	return response.createMessageComponentCollector({
 		filter: (i: MessageComponentInteraction) => i.user.id === interaction.user.id,
 		componentType: ComponentType.Button,
-		idle: idleTime,
+		idle: options?.idleTime ?? 60_000,
+		max: options?.maxClicks,
 	});
 }
 

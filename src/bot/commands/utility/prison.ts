@@ -129,7 +129,7 @@ module.exports = {
 
 			const response = await replyWithContainer(interaction, container);
 
-			const collector = createButtonCollector(interaction, response, 30_000);
+			const collector = createButtonCollector(interaction, response, { idleTime: 30_000 });
 
 			collector?.on("collect", async btn => {
 				await deferUpdate(btn);

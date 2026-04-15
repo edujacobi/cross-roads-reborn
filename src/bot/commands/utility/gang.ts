@@ -965,7 +965,7 @@ module.exports = {
 			});
 
 			await new Promise<void>(resolve => {
-				const defendingCollector = defenderMessage?.createMessageComponentCollector({ time: 60_000 });
+				const defendingCollector = defenderMessage?.createMessageComponentCollector({ time: 60_000, max: 1 });
 
 				defendingCollector?.on("collect", async btn => {
 					if (btn.customId === "defend") {
@@ -1368,7 +1368,7 @@ module.exports = {
 
 			const response = await replyWithContainer(interaction, container);
 
-			const collector = createButtonCollector(interaction, response);
+			const collector = createButtonCollector(interaction, response, { maxClicks: 1 });
 
 			let responded = false;
 
@@ -1458,7 +1458,7 @@ module.exports = {
 
 			const response = await replyWithContainer(interaction, container);
 
-			const collector = createButtonCollector(interaction, response);
+			const collector = createButtonCollector(interaction, response, { maxClicks: 1 });
 
 			let responded = false;
 
@@ -1925,7 +1925,7 @@ module.exports = {
 
 			const response = await replyWithContainer(interaction, container);
 
-			const collector = createButtonCollector(interaction, response);
+			const collector = createButtonCollector(interaction, response, { maxClicks: 1 });
 
 			collector?.on("collect", async btn => {
 				await deferUpdate(btn);

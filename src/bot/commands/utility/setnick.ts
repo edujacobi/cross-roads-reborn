@@ -1,4 +1,4 @@
-﻿import {
+import {
 	ButtonStyle,
 	type ChatInputCommandInteraction,
 	Colors,
@@ -111,7 +111,7 @@ module.exports = {
 
 		const response = await replyWithContainer(interaction, container);
 
-		const collector = createButtonCollector(interaction, response);
+		const collector = createButtonCollector(interaction, response, { maxClicks: 1 });
 
 		collector?.on("end", async () => {
 			await disableButtons(interaction, container);
