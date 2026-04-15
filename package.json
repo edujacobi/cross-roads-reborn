@@ -15,7 +15,7 @@
     "start": "pm2 start \"npx tsx src/index.ts\" --name \"cr\"",
     "stop": "pm2 stop cr",
     "deploy": "npx tsx src/bot/deploy-commands.ts",
-    "start-dev": "set NODE_ENV=DEV&& npx tsx src/index.ts -w",
+    "dev": "set NODE_ENV=DEV&& npx tsx src/index.ts -w",
     "deploy-dev": "set NODE_ENV=DEV&& npx tsx src/bot/deploy-commands.ts",
     "clear-commands-dev": "set NODE_ENV=DEV&& npx tsx src/bot/clear-commands.ts",
     "lint": "npx eslint . --ext .ts",
