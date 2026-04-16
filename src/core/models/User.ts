@@ -662,10 +662,8 @@ export class User {
 			this.Daily.CurrentStreak = 0;
 		}
 
-
 		this.Daily.LastReceived = today;
 		this.Daily.CurrentStreak += 1;
-		this.Daily.CurrentStreak = 28;
 
 		if (this.Daily.CurrentStreak > this.Daily.MaxStreak) {
 			this.Daily.MaxStreak = this.Daily.CurrentStreak;
