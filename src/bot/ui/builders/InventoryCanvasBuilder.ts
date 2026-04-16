@@ -51,7 +51,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 	} as const;
 
 	constructor(params: InventoryCanvasBuilderOptions) {
-		super(1200, InventoryCanvasBuilder.calculateHeight(params), params.Language);
+		super(1_200, InventoryCanvasBuilder.calculateHeight(params), params.Language);
 
 		this.User = params.User;
 		this.Badges = params.Badges;

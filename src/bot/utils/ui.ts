@@ -111,7 +111,7 @@ export function formatMoney(money: number, lang: Language, prefix = "Cr$") {
  * @returns The Discord timestamp string.
  */
 export function showTime(time: number, humanized?: boolean) {
-	return `<t:${Math.round(time / 1000)}:${humanized ? "R" : "f"}>`;
+	return `<t:${Math.round(time / 1_000)}:${humanized ? "R" : "f"}>`;
 }
 
 /**

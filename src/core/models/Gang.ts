@@ -105,7 +105,7 @@ export class Gang {
 			return Math.floor(level * 1_000);
 		}
 
-		return Math.floor(level * 1000 ** (1 + ((level - 1) / 10)));
+		return Math.floor(level * 1_000 ** (1 + ((level - 1) / 10)));
 	}
 
 	/**

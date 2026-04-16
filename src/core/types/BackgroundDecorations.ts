@@ -28,7 +28,7 @@ export const BackgroundDecorationList: BackgroundDecorationListType = {
 			[Language.Spanish]: "Púrpura",
 		},
 		Shop: true,
-		Price: 1000,
+		Price: 1_000,
 	},
 	[BackgroundDecorationId.Sunset]: {
 		Id: BackgroundDecorationId.Sunset,
@@ -38,7 +38,7 @@ export const BackgroundDecorationList: BackgroundDecorationListType = {
 			[Language.Spanish]: "Puesta del sol",
 		},
 		Shop: true,
-		Price: 1000,
+		Price: 1_000,
 	},
 	[BackgroundDecorationId.Sunrise]: {
 		Id: BackgroundDecorationId.Sunrise,
@@ -48,7 +48,7 @@ export const BackgroundDecorationList: BackgroundDecorationListType = {
 			[Language.Spanish]: "Salida del sol",
 		},
 		Shop: true,
-		Price: 1000,
+		Price: 1_000,
 	},
 	[BackgroundDecorationId.Cloud]: {
 		Id: BackgroundDecorationId.Cloud,
@@ -58,7 +58,7 @@ export const BackgroundDecorationList: BackgroundDecorationListType = {
 			[Language.Spanish]: "Nube",
 		},
 		Shop: true,
-		Price: 1500,
+		Price: 1_500,
 	},
 	[BackgroundDecorationId.FrutigerAero]: {
 		Id: BackgroundDecorationId.FrutigerAero,
@@ -68,7 +68,7 @@ export const BackgroundDecorationList: BackgroundDecorationListType = {
 			[Language.Spanish]: "Frutiger Aero",
 		},
 		Shop: true,
-		Price: 1500,
+		Price: 1_500,
 	},
 	[BackgroundDecorationId.Silver]: {
 		Id: BackgroundDecorationId.Silver,
@@ -78,7 +78,7 @@ export const BackgroundDecorationList: BackgroundDecorationListType = {
 			[Language.Spanish]: "Plata",
 		},
 		Shop: true,
-		Price: 1500,
+		Price: 1_500,
 	},
 	[BackgroundDecorationId.Rainbow]: {
 		Id: BackgroundDecorationId.Rainbow,
@@ -88,7 +88,7 @@ export const BackgroundDecorationList: BackgroundDecorationListType = {
 			[Language.Spanish]: "Arcoíris",
 		},
 		Shop: true,
-		Price: 1500,
+		Price: 1_500,
 	},
 	[BackgroundDecorationId.BotanicalGarden]: {
 		Id: BackgroundDecorationId.BotanicalGarden,
@@ -98,7 +98,7 @@ export const BackgroundDecorationList: BackgroundDecorationListType = {
 			[Language.Spanish]: "Jardín botánico",
 		},
 		Shop: true,
-		Price: 1000,
+		Price: 1_000,
 	},
 } as const;
 

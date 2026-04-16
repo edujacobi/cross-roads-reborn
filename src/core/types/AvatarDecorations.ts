@@ -68,7 +68,7 @@ export const AvatarDecorationList: AvatarDecorationListType = {
 			[Language.Spanish]: "Púrpura",
 		},
 		Shop: true,
-		Price: 1000,
+		Price: 1_000,
 	},
 	[AvatarDecorationId.Sunset]: {
 		Id: AvatarDecorationId.Sunset,
@@ -78,7 +78,7 @@ export const AvatarDecorationList: AvatarDecorationListType = {
 			[Language.Spanish]: "Puesta del sol",
 		},
 		Shop: true,
-		Price: 1000,
+		Price: 1_000,
 	},
 	[AvatarDecorationId.Sunrise]: {
 		Id: AvatarDecorationId.Sunrise,
@@ -88,7 +88,7 @@ export const AvatarDecorationList: AvatarDecorationListType = {
 			[Language.Spanish]: "Salida del sol",
 		},
 		Shop: true,
-		Price: 1000,
+		Price: 1_000,
 	},
 	[AvatarDecorationId.Cloud]: {
 		Id: AvatarDecorationId.Cloud,
@@ -98,7 +98,7 @@ export const AvatarDecorationList: AvatarDecorationListType = {
 			[Language.Spanish]: "Nube",
 		},
 		Shop: true,
-		Price: 1000,
+		Price: 1_000,
 	},
 	[AvatarDecorationId.FrutigerAero]: {
 		Id: AvatarDecorationId.FrutigerAero,
@@ -108,7 +108,7 @@ export const AvatarDecorationList: AvatarDecorationListType = {
 			[Language.Spanish]: "Frutiger Aero",
 		},
 		Shop: true,
-		Price: 1500,
+		Price: 1_500,
 	},
 	[AvatarDecorationId.Silver]: {
 		Id: AvatarDecorationId.Silver,
@@ -118,7 +118,7 @@ export const AvatarDecorationList: AvatarDecorationListType = {
 			[Language.Spanish]: "Plata",
 		},
 		Shop: true,
-		Price: 1500,
+		Price: 1_500,
 	},
 	[AvatarDecorationId.Rainbow]: {
 		Id: AvatarDecorationId.Rainbow,
@@ -128,7 +128,7 @@ export const AvatarDecorationList: AvatarDecorationListType = {
 			[Language.Spanish]: "Arcoíris",
 		},
 		Shop: true,
-		Price: 1500,
+		Price: 1_500,
 	},
 	[AvatarDecorationId.BotanicalGarden]: {
 		Id: AvatarDecorationId.BotanicalGarden,
@@ -138,7 +138,7 @@ export const AvatarDecorationList: AvatarDecorationListType = {
 			[Language.Spanish]: "Jardín botánico",
 		},
 		Shop: true,
-		Price: 1000,
+		Price: 1_000,
 	},
 } as const;
 

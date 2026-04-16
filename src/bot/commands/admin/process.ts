@@ -31,8 +31,8 @@ module.exports = {
 		});
 
 		const onlineUsers = client.userLastCommand.filter(time => new Date(time) > subMinutes(new Date(), 15)).size;
-		const uptime = client.uptime ? Math.floor(client.uptime / 1000 / 60) : 0;
-		const memoryUsage = process.memoryUsage().heapUsed / 1024 / 1024; // Convert to MB
+		const uptime = client.uptime ? Math.floor(client.uptime / 1_000 / 60) : 0;
+		const memoryUsage = process.memoryUsage().heapUsed / 1_024 / 1_024; // Convert to MB
 
 		const container = new CustomContainerBuilder()
 			.setAccentColor(CrColors.Admin)

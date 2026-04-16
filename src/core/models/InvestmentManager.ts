@@ -19,7 +19,7 @@ export class InvestmentManager {
 
 	static Initialize() {
 		// Checks every minute if the hour has turned
-		setInterval(InvestmentManager.ProcessHourlyYield, 60 * 1000);
+		setInterval(InvestmentManager.ProcessHourlyYield, 60 * 1_000);
 	}
 
 	/**
@@ -77,7 +77,7 @@ export class InvestmentManager {
 
 						// Final proportional yield: calculate how many minutes elapsed since last process until expiration
 						const lastYieldPoint = currentInvestment.lastYieldAt || currentInvestment.createdAt;
-						const minutesRemaining = (currentInvestment.expiresAt.getTime() - lastYieldPoint.getTime()) / (1000 * 60);
+						const minutesRemaining = (currentInvestment.expiresAt.getTime() - lastYieldPoint.getTime()) / (1_000 * 60);
 
 						let expirationYield = 0;
 						let expirationFee = 0;

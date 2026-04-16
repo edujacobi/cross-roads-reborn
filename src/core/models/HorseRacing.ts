@@ -108,7 +108,7 @@ export class HorseRacing {
 		}
 
 		// Check if race is still open for betting
-		if (race.raceTime.getTime() - Date.now() < 5 * 60 * 1000) { // 5 minutes before race
+		if (race.raceTime.getTime() - Date.now() < 5 * 60 * 1_000) { // 5 minutes before race
 			return { success: false, message: s.raceClosed };
 		}
 
@@ -233,17 +233,17 @@ export class HorseRacing {
 			});
 
 		// If user already bet or race is closed, don't show betting options
-		if (userBet || race.raceTime.getTime() - Date.now() < 5 * 60 * 1000) {
+		if (userBet || race.raceTime.getTime() - Date.now() < 5 * 60 * 1_000) {
 			return replyWithContainer(interaction, container);
 		}
 
 		// Create bet amount options
 		const betAmounts = [
-			1000,
-			5000,
-			10000,
-			Math.min(50000, maxBet),
-			Math.min(100000, maxBet),
+			1_000,
+			5_000,
+			1_0000,
+			Math.min(50_000, maxBet),
+			Math.min(100_000, maxBet),
 			maxBet,
 		].filter((value, index, self) =>
 			// Remove duplicates and ensure values are within limits
@@ -495,7 +495,7 @@ export class HorseRacing {
 			const notification = new Notification();
 			notification.UserId = bet.userId;
 			notification.Type = NotificationType.HorseRace;
-			notification.Date = new Date(race.raceTime.getTime() - 30 * 60 * 1000);
+			notification.Date = new Date(race.raceTime.getTime() - 30 * 60 * 1_000);
 			await notification.Create();
 		}
 
@@ -784,7 +784,7 @@ export class HorseRacing {
 		}
 
 		// Set up interval to check for races that should run
-		setInterval(HorseRacing.CheckPendingRaces, 60 * 1000); // Check every minute
+		setInterval(HorseRacing.CheckPendingRaces, 60 * 1_000); // Check every minute
 
 		Log.Info("Horse racing system initialized.");
 	}
@@ -805,7 +805,7 @@ No race is currently scheduled. A new race has been scheduled to start ${time}.
 
 Place your bets using the horse selector below.`,
 		nextRace: (time: Date, totalAmount: string, totalBets: number, betInfo: string, maxBet: string, horseList: string, hasUserBet: boolean) => `# Horse Racing
-Next race starts ${showTime(time.getTime(), true)}. ${time.getTime() - Date.now() < 5 * 60 * 1000 ? "**Bets closed!**" : ""}
+Next race starts ${showTime(time.getTime(), true)}. ${time.getTime() - Date.now() < 5 * 60 * 1_000 ? "**Bets closed!**" : ""}
 ### Race Information
 Total pot: ${totalAmount}
 Total bets: ${totalBets}
@@ -857,7 +857,7 @@ Nenhuma corrida está agendada no momento. Uma nova corrida foi agendada para co
 
 Faça suas apostas usando o seletor de cavalos abaixo.`,
 		nextRace: (time: Date, totalAmount: string, totalBets: number, betInfo: string, maxBet: string, horseList: string, hasUserBet: boolean) => `# Corrida de Cavalos
-Próxima corrida começa ${showTime(time.getTime(), true)}. ${time.getTime() - Date.now() < 5 * 60 * 1000 ? "**Apostas encerradas!**" : ""}
+Próxima corrida começa ${showTime(time.getTime(), true)}. ${time.getTime() - Date.now() < 5 * 60 * 1_000 ? "**Apostas encerradas!**" : ""}
 ### Informações da Corrida
 Valor total: ${totalAmount}
 Total de apostas: ${totalBets}
@@ -909,7 +909,7 @@ No hay ninguna carrera programada actualmente. Se ha programado una nueva carrer
 
 Haz tus apuestas usando el selector de caballos a continuación.`,
 		nextRace: (time: Date, totalAmount: string, totalBets: number, betInfo: string, maxBet: string, horseList: string, hasUserBet: boolean) => `# Carrera de Caballos
-La próxima carrera comienza ${showTime(time.getTime(), true)}. ${time.getTime() - Date.now() < 5 * 60 * 1000 ? "**Apuestas cerradas!**" : ""}
+La próxima carrera comienza ${showTime(time.getTime(), true)}. ${time.getTime() - Date.now() < 5 * 60 * 1_000 ? "**Apuestas cerradas!**" : ""}
 ### Información de la Carrera
 Bote total: ${totalAmount}
 Total de apuestas: ${totalBets}

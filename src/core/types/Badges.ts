@@ -110,7 +110,7 @@ export enum BadgeId {
 	DefeatedCoroamuru,
 
 	// Just for /badges command
-	S_Top1Money = 1000,
+	S_Top1Money = 1_000,
 	S_Top2Money,
 	S_Top3Money,
 	S_Top1BeatUp,

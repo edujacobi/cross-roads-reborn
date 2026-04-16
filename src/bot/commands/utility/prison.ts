@@ -227,7 +227,7 @@ module.exports = {
 
 					await replyWithContainer(interaction, container);
 
-					await wait(prison.Escape.DefaultDuration * 1000);
+					await wait(prison.Escape.DefaultDuration * 1_000);
 
 					const { success, totalTime } = await prison.EndEscape();
 

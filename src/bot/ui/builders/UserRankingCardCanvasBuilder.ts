@@ -20,7 +20,7 @@ interface CachedDecoratedAvatar {
 
 const DECORATED_CACHE = new Map<string, CachedDecoratedAvatar>();
 
-const TTL_AVATAR = 60 * 60 * 1000; // 1 hour in ms
+const TTL_AVATAR = 60 * 60 * 1_000; // 1 hour in ms
 
 export class UserRankingCardCanvasBuilder {
 	User: User;

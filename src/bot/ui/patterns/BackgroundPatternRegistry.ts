@@ -3,7 +3,7 @@ import { BackgroundDecorationId } from "#core/types/Ids";
 import { Canvas, type Image, loadImage, type SKRSContext2D } from "@napi-rs/canvas";
 import { Log } from "#shared/log";
 
-export const CARD_WIDTH = 1200;
+export const CARD_WIDTH = 1_200;
 export const CARD_HEIGHT = 150;
 export const CARD_BACKGROUND_OPACITY = 0.35;
 export const CARD_AVATAR_SIZE = 130;
@@ -220,7 +220,7 @@ export class BackgroundPatternRegistry {
 		ctx.fillRect(0, y, width, height);
 
 		// 2. Procedural "Glitter" Grain
-		for (let i = 0; i < 4000; i++) {
+		for (let i = 0; i < 4_000; i++) {
 			const px = Math.random() * width;
 			const py = y + Math.random() * height;
 			const size = Math.random() > 0.98 ? 2 : 1;

@@ -69,7 +69,7 @@ module.exports = {
 		const now = Date.now();
 		const timestamps = cooldowns.get(command.data.name);
 		const defaultCooldownDuration = user.IsVip() || isBooster ? 1 : 5;
-		const cooldownAmount = (command.cooldown ?? defaultCooldownDuration) * 1000;
+		const cooldownAmount = (command.cooldown ?? defaultCooldownDuration) * 1_000;
 
 		if (!timestamps) {
 			return;
@@ -112,7 +112,7 @@ module.exports = {
 
 		// Throttled server synchronization (once every 4 hours)
 		const lastSync = interaction.client.userLastSync?.get(interaction.user.id) || 0;
-		const fourHours = 4 * 60 * 60 * 1000;
+		const fourHours = 4 * 60 * 60 * 1_000;
 
 		if (now - lastSync > fourHours) {
 			try {

@@ -8,6 +8,7 @@ This document serves as a guide for agents and developers working on the `cross-
 *   **Language**: TypeScript 6.0
 *   **Framework**: Discord.js 14
 *   **Database**: Sequelize with SQLite (JSON strings for array-like structures)
+*   **Dev Setup**: Windows 11 with Powershell
 
 **Note**: Do not suggest or implement code patterns compatible only with older versions of Discord.js (e.g., v12/v13) or TypeScript.
 
@@ -107,3 +108,9 @@ const Strings = {
     },
 } as const satisfies Localization;
 ```
+
+## Coding Standards
+
+### Number Representation
+Always separate thousands with an underscore (`_`) for better readability.
+*   **Example**: `1_000_000` instead of `1000000`.
