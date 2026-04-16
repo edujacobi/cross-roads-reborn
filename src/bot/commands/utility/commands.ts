@@ -7,8 +7,6 @@ import { CrColors } from "#bot/utils/colors";
 import type { User } from "#core/models/User";
 import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
 
-const environmentFile = process.env.NODE_ENV === "DEV" ? ".ts" : ".js";
-
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("commands")
@@ -20,7 +18,7 @@ module.exports = {
 
 		const s = Strings[language];
 
-		const commandFiles = fs.readdirSync(__dirname).filter((file: string) => file.endsWith(environmentFile));
+		const commandFiles = fs.readdirSync(__dirname).filter((file: string) => file.endsWith(".ts"));
 
 		let text = "";
 		for (const file of commandFiles) {
