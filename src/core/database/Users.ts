@@ -104,6 +104,9 @@ export class Users extends Model<
 	declare notifyInvestmentYield: boolean;
 	declare investmentTotalProfit: number;
 
+	declare lastVoteClaim: CreationOptional<Date | null>;
+	declare voteCount: number;
+
 	declare createdAt: CreationOptional<Date>;
 	declare updatedAt: CreationOptional<Date>;
 }
@@ -460,6 +463,16 @@ Users.init(
 			defaultValue: true,
 		},
 		investmentTotalProfit: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0,
+		},
+		lastVoteClaim: {
+			type: DataTypes.DATE,
+			allowNull: true,
+			defaultValue: null,
+		},
+		voteCount: {
 			type: DataTypes.INTEGER,
 			allowNull: false,
 			defaultValue: 0,

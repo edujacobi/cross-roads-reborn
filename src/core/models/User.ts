@@ -60,6 +60,10 @@ export class User {
 	SpecialCoin = 0;
 	AvatarDecoration = AvatarDecorationList[AvatarDecorationId.Default];
 	BackgroundDecoration = BackgroundDecorationList[BackgroundDecorationId.Default];
+	Vote = {
+		LastClaim: null as Date | null,
+		Count: 0,
+	};
 	Daily = {
 		CurrentStreak: 0,
 		MaxStreak: 0,
@@ -202,6 +206,8 @@ export class User {
 				dailyStreak: this.Daily.CurrentStreak,
 				maxDailyStreak: this.Daily.MaxStreak,
 				lastDailyReceived: this.Daily.LastReceived,
+				lastVoteClaim: this.Vote.LastClaim,
+				voteCount: this.Vote.Count,
 				specialCoin: 0,
 				avatarDecoration: AvatarDecorationId.Default,
 				backgroundDecoration: BackgroundDecorationId.Default,
@@ -308,6 +314,10 @@ export class User {
 		this.Job.EndsIn = new Date(user.jobTime);
 		this.Job.ReceivedCount = user.jobReceivedCount;
 		this.Job.ReceivedSum = user.jobReceivedSum;
+
+		// Vote
+		this.Vote.LastClaim = user.lastVoteClaim;
+		this.Vote.Count = user.voteCount;
 
 		// Daily
 		this.Daily.CurrentStreak = user.dailyStreak;
@@ -729,6 +739,34 @@ export class User {
 		await Notification.Daily(this);
 
 		return { money, bonusItems };
+	}
+
+	/**
+	 * Checks if the user can claim a new vote reward.
+	 * @returns True if eligible, false otherwise.
+	 */
+	CanClaimVote() {
+		const today = new Date();
+		// If last vote was over 11 hours ago, we allow them to check with top.gg again
+		return this.Vote.LastClaim == null || differenceInHours(today, this.Vote.LastClaim) >= 11;
+	}
+
+	/**
+	 * Claims the vote reward from Top.gg.
+	 */
+	async ClaimVoteReward() {
+		const reward = 10;
+		this.Vote.LastClaim = new Date();
+		this.Vote.Count += 1;
+		this.SpecialCoin += reward;
+
+		await this.Update({
+			lastVoteClaim: this.Vote.LastClaim,
+			voteCount: this.Vote.Count,
+			specialCoin: this.SpecialCoin,
+		});
+
+		Log.Success(`User ${this.Nickname} (Id: ${this.Id}) received ${reward} Special Coins for voting! Total votes: ${this.Vote.Count}`);
 	}
 
 	/**

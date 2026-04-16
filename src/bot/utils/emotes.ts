@@ -146,6 +146,10 @@ export const EmoteId = {
 	AllPermission: "1392589951757062294",
 
 	SpecialCoinShop: "1454137203163791598",
+
+	// TopGG UI
+	TopGG_Star: "1494312069103747212",
+	TopGG_Chart: "1494312090821857431",
 };
 
 export const EmoteString = {
@@ -296,4 +300,8 @@ export const EmoteString = {
 	AllPermission: `<:leader:${EmoteId.AllPermission}>`,
 
 	SpecialCoinShop: `<:SpecialCoinShop:${EmoteId.SpecialCoinShop}>`,
+
+	// TopGG UI
+	TopGG_Star: `<:topgg_star:${EmoteId.TopGG_Star}>`,
+	TopGG_Chart: `<:topgg_chart:${EmoteId.TopGG_Chart}>`,
 };
