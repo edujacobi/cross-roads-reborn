@@ -17,7 +17,6 @@ export function setClient() {
 			PresenceManager: 0,
 			ReactionManager: 0,
 			GuildBanManager: 0,
-			GuildEmojiManager: 0,
 			GuildInviteManager: 0,
 			GuildScheduledEventManager: 0,
 			GuildStickerManager: 0,
