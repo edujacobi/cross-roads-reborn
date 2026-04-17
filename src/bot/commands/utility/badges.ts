@@ -11,7 +11,9 @@ module.exports = {
 		.setName("badges")
 		.setDescription("Check all the existing badges")
 		.setNameLocalization(Locale.PortugueseBR, "insígnias")
-		.setDescriptionLocalization(Locale.PortugueseBR, "Conheça todas as insígnias existentes"),
+		.setNameLocalization(Locale.SpanishES, "insignias")
+		.setDescriptionLocalization(Locale.PortugueseBR, "Conheça todas as insígnias existentes")
+		.setDescriptionLocalization(Locale.SpanishES, "Conoce todas las insignias existentes"),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 		await deferReply(interaction);

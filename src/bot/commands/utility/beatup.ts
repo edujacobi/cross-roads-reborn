@@ -1,4 +1,4 @@
-﻿import { type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+import { type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
 import { deferReply, replyWithContainer } from "#bot/utils/discordInteractions";
 import { defaultComponent, showTime } from "#bot/utils/ui";
 import { EmoteString } from "#bot/utils/emotes";
@@ -14,13 +14,17 @@ module.exports = {
 		.setName("beatup")
 		.setDescription("Beat a user and let it in Hospital")
 		.setNameLocalization(Locale.PortugueseBR, "espancar")
+		.setNameLocalization(Locale.SpanishES, "golpiza")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Espanque um usuário e deixe-o no Hospital")
+		.setDescriptionLocalization(Locale.SpanishES, "Darle una paliza a un usuario y dejarlo en el Hospital")
 		.addStringOption(target => target
 			.setName("target")
 			.setNameLocalization(Locale.PortugueseBR, "alvo")
+			.setNameLocalization(Locale.SpanishES, "objetivo")
 			.setDescription("The user to beat up")
 			.setMinLength(3)
-			.setDescriptionLocalization(Locale.PortugueseBR, "O usuário para espancar"),
+			.setDescriptionLocalization(Locale.PortugueseBR, "O usuário para espancar")
+			.setDescriptionLocalization(Locale.SpanishES, "El usuario para golpear"),
 		),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {

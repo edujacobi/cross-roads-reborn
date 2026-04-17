@@ -28,12 +28,15 @@ module.exports = {
 		.setName("bet")
 		.setDescription("Bet on a coin flip. Win 1.5x your bet if you are right")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Aposte em cara ou coroa. Ganhe 1.5x sua aposta se acertar")
+		.setDescriptionLocalization(Locale.SpanishES, "Apuesta en cara o cruz. Gana 1.5x tu apuesta si aciertas")
 		.addIntegerOption((option: SlashCommandIntegerOption) =>
 			option
 				.setName("side")
 				.setNameLocalization(Locale.PortugueseBR, "lado")
+				.setNameLocalization(Locale.SpanishES, "lado")
 				.setDescription("The side of the coin")
 				.setDescriptionLocalization(Locale.PortugueseBR, "O lado da moeda")
+				.setDescriptionLocalization(Locale.SpanishES, "El lado de la moneda")
 				.setRequired(true)
 				.addChoices([
 					{
@@ -41,6 +44,7 @@ module.exports = {
 						value: CoinSide.Heads,
 						name_localizations: {
 							[Locale.PortugueseBR]: "Cara",
+							[Locale.SpanishES]: "Cara",
 						},
 					},
 					{
@@ -48,6 +52,7 @@ module.exports = {
 						value: CoinSide.Tails,
 						name_localizations: {
 							[Locale.PortugueseBR]: "Coroa",
+							[Locale.SpanishES]: "Cruz",
 						},
 					},
 				]),
@@ -56,8 +61,10 @@ module.exports = {
 			option
 				.setName("value")
 				.setNameLocalization(Locale.PortugueseBR, "valor")
+				.setNameLocalization(Locale.SpanishES, "valor")
 				.setDescription("The value of the bet")
 				.setDescriptionLocalization(Locale.PortugueseBR, "O valor da aposta")
+				.setDescriptionLocalization(Locale.SpanishES, "El valor de la apuesta")
 				.setRequired(true)
 				.setMinValue(500),
 		),

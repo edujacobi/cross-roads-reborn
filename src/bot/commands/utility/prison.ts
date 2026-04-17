@@ -22,7 +22,9 @@ module.exports = {
 		.setName("prison")
 		.setDescription("Visit the prison and meet the inmates")
 		.setNameLocalization(Locale.PortugueseBR, "prisao")
-		.setDescriptionLocalization(Locale.PortugueseBR, "Conheça a prisão e seus presidiários"),
+		.setNameLocalization(Locale.SpanishES, "prision")
+		.setDescriptionLocalization(Locale.PortugueseBR, "Conheça a prisão e seus presidiários")
+		.setDescriptionLocalization(Locale.SpanishES, "Visitar la prisión y conocer a los reclusos"),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User) {
 		const prison = new Prison(user);

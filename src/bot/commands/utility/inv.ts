@@ -31,12 +31,15 @@ import {
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("inv")
+		.setNameLocalization(Locale.SpanishES, "inv")
 		.setDescription("See the inventory of a user")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Veja o inventário de um usuário")
+		.setDescriptionLocalization(Locale.SpanishES, "Ver el inventario de un usuario")
 		.addStringOption(target => target
 			.setName("target")
 			.setDescription("The user")
 			.setNameLocalization(Locale.PortugueseBR, "alvo")
+			.setNameLocalization(Locale.SpanishES, "objetivo")
 			.setMinLength(3)
 			.setDescriptionLocalization(Locale.PortugueseBR, "O usuário"),
 		),

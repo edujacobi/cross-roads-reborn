@@ -20,13 +20,17 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("setnick")
 		.setNameLocalization(Locale.PortugueseBR, "mudanick")
+		.setNameLocalization(Locale.SpanishES, "apodo")
 		.setDescription("Set a nickname for you")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Muda o seu nick")
+		.setDescriptionLocalization(Locale.SpanishES, "Establece un apodo para ti")
 		.addStringOption((option: SlashCommandStringOption) =>
 			option
 				.setName("nick")
+				.setNameLocalization(Locale.SpanishES, "apodo")
 				.setDescription("The new nickname")
 				.setDescriptionLocalization(Locale.PortugueseBR, "O novo nick")
+				.setDescriptionLocalization(Locale.SpanishES, "Tu nuevo apodo")
 				.setMinLength(3)
 				.setMaxLength(18)
 				.setRequired(true),

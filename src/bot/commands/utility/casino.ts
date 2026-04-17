@@ -11,7 +11,9 @@ module.exports = {
 		.setName("casino")
 		.setDescription("Check the casino games")
 		.setNameLocalization(Locale.PortugueseBR, "cassino")
-		.setDescriptionLocalization(Locale.PortugueseBR, "Conheça os jogos do cassino"),
+		.setNameLocalization(Locale.SpanishES, "casino")
+		.setDescriptionLocalization(Locale.PortugueseBR, "Conheça os jogos do cassino")
+		.setDescriptionLocalization(Locale.SpanishES, "Conoce los juegos del casino"),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 		const s = Strings[language];

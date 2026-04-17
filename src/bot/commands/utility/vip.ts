@@ -8,8 +8,10 @@ import { type ChatInputCommandInteraction, Colors, Locale, SlashCommandBuilder }
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("vip")
+		.setNameLocalization(Locale.SpanishES, "vip")
 		.setDescription("Acquire VIP, get benefits and contribute to development!")
-		.setDescriptionLocalization(Locale.PortugueseBR, "Adquira VIP, tenha vantagens e contribua com o desenvolvimento"),
+		.setDescriptionLocalization(Locale.PortugueseBR, "Adquira VIP, tenha vantagens e contribua com o desenvolvimento")
+		.setDescriptionLocalization(Locale.SpanishES, "¡Adquiere VIP, obtén beneficios y contribuye al desarrollo!"),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 

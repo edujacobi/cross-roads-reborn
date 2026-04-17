@@ -1,4 +1,4 @@
-﻿import { type ChatInputCommandInteraction, Locale, SlashCommandBuilder, type SlashCommandUserOption } from "discord.js";
+import { type ChatInputCommandInteraction, Locale, SlashCommandBuilder, type SlashCommandUserOption } from "discord.js";
 import { replyInteraction } from "#bot/utils/discordInteractions";
 import type { User } from "#core/models/User";
 import { Language, type Localization } from "#core/models/Language";
@@ -6,12 +6,18 @@ import { Language, type Localization } from "#core/models/Language";
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("avatar")
-		.setDescription("Get the avatar URL of the selected user, or your own avatar.")
-		.setDescriptionLocalization(Locale.PortugueseBR, "Obtenha o URL do avatar do usuário selecionado, ou o seu próprio avatar.")
-		.addUserOption((option: SlashCommandUserOption) =>
+		.setNameLocalization(Locale.SpanishES, "avatar")
+		.setDescription("View user avatar")
+		.setDescriptionLocalization(Locale.PortugueseBR, "Veja o avatar do usuário")
+		.setDescriptionLocalization(Locale.SpanishES, "Ver el avatar del usuario")
+		.addUserOption((option) =>
 			option
 				.setName("target")
-				.setDescription("The user's avatar to show")),
+				.setNameLocalization(Locale.PortugueseBR, "alvo")
+				.setNameLocalization(Locale.SpanishES, "objetivo")
+				.setDescription("The user")
+				.setDescriptionLocalization(Locale.PortugueseBR, "O usuário")
+				.setDescriptionLocalization(Locale.SpanishES, "El usuario")),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 		const target = interaction.options.getUser("target");

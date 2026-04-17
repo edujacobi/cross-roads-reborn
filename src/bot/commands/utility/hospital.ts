@@ -17,7 +17,9 @@ module.exports = {
 		.setName("hospital")
 		.setDescription("Visit the hospital and meet the sick, broken and bedridden")
 		.setNameLocalization(Locale.PortugueseBR, "hospital")
-		.setDescriptionLocalization(Locale.PortugueseBR, "Visite o hospital e conheça os doentes, os quebrados e os acamados"),
+		.setNameLocalization(Locale.SpanishES, "hospital")
+		.setDescriptionLocalization(Locale.PortugueseBR, "Visite o hospital e conheça os doentes, os quebrados e os acamados")
+		.setDescriptionLocalization(Locale.SpanishES, "Visita el hospital y conoce a los enfermos, los rotos y los encamados"),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User) {
 		const hospital = new Hospital(user);

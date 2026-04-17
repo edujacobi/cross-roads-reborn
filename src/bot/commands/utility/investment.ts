@@ -24,7 +24,9 @@ module.exports = {
 		.setName("investment")
 		.setDescription("Manage or buy an investment")
 		.setNameLocalization(Locale.PortugueseBR, "investimento")
+		.setNameLocalization(Locale.SpanishES, "inversion")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Gerencie ou compre um investimento")
+		.setDescriptionLocalization(Locale.SpanishES, "Gestiona o compra una inversión")
 		.addSubcommand((sub) => sub
 			.setName("buy")
 			.setDescription("Buy a new investment")

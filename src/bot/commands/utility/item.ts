@@ -1,4 +1,4 @@
-﻿import {
+import {
 	ButtonBuilder,
 	ButtonStyle,
 	type ChatInputCommandInteraction,
@@ -24,19 +24,24 @@ import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder"
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("item")
+		.setNameLocalization(Locale.SpanishES, "item")
 		.setDescription("Check all the stats of a given item!")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Veja todos os dados de um determinado item!")
+		.setDescriptionLocalization(Locale.SpanishES, "¡Consulta todas las estadísticas de un artículo!")
 		.addIntegerOption((option: SlashCommandIntegerOption) =>
 			option
 				.setName("item")
+				.setNameLocalization(Locale.SpanishES, "artículo")
 				.setDescription("Which item")
 				.setDescriptionLocalization(Locale.PortugueseBR, "Qual item")
+				.setDescriptionLocalization(Locale.SpanishES, "Cual artículo")
 				.setRequired(true)
 				.addChoices(Object.values(ItemList).map(item => ({
 					name: item.Description[Language.English],
 					value: item.Id,
 					name_localizations: {
 						[Locale.PortugueseBR]: item.Description[Language.Portuguese],
+						[Locale.SpanishES]: item.Description[Language.Spanish],
 					},
 				} as {
 					name: string; value: number; name_localizations: Record<Locale, string>

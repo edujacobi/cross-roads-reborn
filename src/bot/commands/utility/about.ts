@@ -16,7 +16,9 @@ module.exports = {
 		.setName("about")
 		.setDescription("Informations about Cross Roads Reborn!")
 		.setNameLocalization(Locale.PortugueseBR, "sobre")
-		.setDescriptionLocalization(Locale.PortugueseBR, "Informações sobre Cross Roads Reborn!"),
+		.setNameLocalization(Locale.SpanishES, "sobre")
+		.setDescriptionLocalization(Locale.PortugueseBR, "Informações sobre Cross Roads Reborn!")
+		.setDescriptionLocalization(Locale.SpanishES, "Información sobre Cross Roads Reborn!"),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 		const s = Strings[language];

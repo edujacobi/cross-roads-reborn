@@ -13,7 +13,9 @@ module.exports = {
 		.setName("blackmarket")
 		.setDescription("Open the Black market to buy something")
 		.setNameLocalization(Locale.PortugueseBR, "mercadonegro")
-		.setDescriptionLocalization(Locale.PortugueseBR, "Abra o Mercado negro para comprar alguma coisa"),
+		.setNameLocalization(Locale.SpanishES, "mercadonegro")
+		.setDescriptionLocalization(Locale.PortugueseBR, "Abra o Mercado negro para comprar alguma coisa")
+		.setDescriptionLocalization(Locale.SpanishES, "Abrir el mercado negro para comprar artículos ilegales"),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 

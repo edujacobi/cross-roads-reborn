@@ -14,8 +14,10 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("setclass")
 		.setNameLocalization(Locale.PortugueseBR, "mudaclasse")
+		.setNameLocalization(Locale.SpanishES, "clase")
 		.setDescription("Set a class for you")
-		.setDescriptionLocalization(Locale.PortugueseBR, "Muda a sua classe"),
+		.setDescriptionLocalization(Locale.PortugueseBR, "Muda a sua classe")
+		.setDescriptionLocalization(Locale.SpanishES, "Elige una clase para ti"),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 		const s = Strings[language];

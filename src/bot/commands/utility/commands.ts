@@ -12,7 +12,9 @@ module.exports = {
 		.setName("commands")
 		.setDescription("See all the commands and their descriptions!")
 		.setNameLocalization(Locale.PortugueseBR, "comandos")
-		.setDescriptionLocalization(Locale.PortugueseBR, "Veja todos os comandos e suas descrições!"),
+		.setNameLocalization(Locale.SpanishES, "comandos")
+		.setDescriptionLocalization(Locale.PortugueseBR, "Veja todos os comandos e suas descrições!")
+		.setDescriptionLocalization(Locale.SpanishES, "Ver la lista de comandos disponibles"),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 

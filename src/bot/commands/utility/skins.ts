@@ -1,4 +1,4 @@
-﻿import {
+import {
 	ActionRowBuilder,
 	type ButtonBuilder,
 	ButtonStyle,
@@ -22,8 +22,10 @@ import { createButtonCollector, createStringSelectCollector, disableButtons } fr
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("skins")
+		.setNameLocalization(Locale.SpanishES, "skins")
 		.setDescription("Choose the skins for your items")
-		.setDescriptionLocalization(Locale.PortugueseBR, "Escolha as skins para seus itens"),
+		.setDescriptionLocalization(Locale.PortugueseBR, "Escolha as skins para seus itens")
+		.setDescriptionLocalization(Locale.SpanishES, "Elige las skins para tus artículos"),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 

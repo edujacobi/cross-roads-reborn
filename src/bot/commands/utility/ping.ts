@@ -7,7 +7,8 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("ping")
 		.setDescription("Replies with Pong!")
-		.setDescriptionLocalization(Locale.PortugueseBR, "Responde com Pong!"),
+		.setDescriptionLocalization(Locale.PortugueseBR, "Responde com Pong!")
+		.setDescriptionLocalization(Locale.SpanishES, "¡Responde con Pong!"),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User) {
 

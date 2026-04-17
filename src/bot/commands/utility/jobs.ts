@@ -21,7 +21,9 @@ module.exports = {
 		.setName("jobs")
 		.setDescription("Open the job list to work")
 		.setNameLocalization(Locale.PortugueseBR, "trabalhos")
-		.setDescriptionLocalization(Locale.PortugueseBR, "Abra a lista de trabalhos para ter um emprego"),
+		.setNameLocalization(Locale.SpanishES, "trabajos")
+		.setDescriptionLocalization(Locale.PortugueseBR, "Abra a lista de trabalhos para ter um emprego")
+		.setDescriptionLocalization(Locale.SpanishES, "Abrir la lista de trabajos para trabajar"),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 		await deferReply(interaction);

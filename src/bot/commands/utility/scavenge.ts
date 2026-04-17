@@ -20,7 +20,9 @@ module.exports = {
 		.setName("scavenge")
 		.setDescription("Many things to find in the most unexpected places")
 		.setNameLocalization(Locale.PortugueseBR, "vasculhar")
-		.setDescriptionLocalization(Locale.PortugueseBR, "Muitas coisas para encontrar nos lugares mais inesperados"),
+		.setNameLocalization(Locale.SpanishES, "buscar")
+		.setDescriptionLocalization(Locale.PortugueseBR, "Muitas coisas para encontrar nos lugares mais inesperados")
+		.setDescriptionLocalization(Locale.SpanishES, "Muchas cosas por encontrar en los lugares más inesperados"),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User) {
 		let container = new CustomContainerBuilder();

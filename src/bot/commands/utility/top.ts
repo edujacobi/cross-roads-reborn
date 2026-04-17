@@ -65,85 +65,113 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("top")
 		.setNameLocalization(Locale.PortugueseBR, "top")
+		.setNameLocalization(Locale.SpanishES, "top")
 		.setDescription("View various top rankings")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Veja vários rankings de top")
+		.setDescriptionLocalization(Locale.SpanishES, "Ver varios rankings de top")
 		.addSubcommand(money => money
 			.setName(TopSubcommand.Money)
 			.setNameLocalization(Locale.PortugueseBR, "grana")
+			.setNameLocalization(Locale.SpanishES, "dinero")
 			.setDescription("List the top users with money")
-			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários com mais dinheiro"),
+			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários com mais dinheiro")
+			.setDescriptionLocalization(Locale.SpanishES, "Lista de usuarios con más dinero"),
 		)
 		.addSubcommand(gamblers => gamblers
 			.setName(TopSubcommand.Gamblers)
 			.setNameLocalization(Locale.PortugueseBR, "apostadores")
+			.setNameLocalization(Locale.SpanishES, "apostadores")
 			.setDescription("List of users who have won the most at the casino")
-			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários que mais ganharam no cassino"),
+			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários que mais ganharam no cassino")
+			.setDescriptionLocalization(Locale.SpanishES, "Lista de usuarios que más han ganado en el casino"),
 		)
 		.addSubcommand(spenders => spenders
 			.setName(TopSubcommand.Spenders)
 			.setNameLocalization(Locale.PortugueseBR, "gastadores")
+			.setNameLocalization(Locale.SpanishES, "gastadores")
 			.setDescription("List the users who spend the most in the shops")
-			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários que mais gastaram nas lojas"),
+			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários que mais gastaram nas lojas")
+			.setDescriptionLocalization(Locale.SpanishES, "Lista de usuarios que más gastan en las tiendas"),
 		)
 		.addSubcommand(thieves => thieves
 			.setName(TopSubcommand.Thieves)
 			.setNameLocalization(Locale.PortugueseBR, "ladroes")
+			.setNameLocalization(Locale.SpanishES, "ladrones")
 			.setDescription("List the users who stole the most")
-			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários que mais roubaram"),
+			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários que mais roubaram")
+			.setDescriptionLocalization(Locale.SpanishES, "Lista de usuarios que más robaron"),
 		)
 		.addSubcommand(workers => workers
 			.setName(TopSubcommand.Workers)
 			.setNameLocalization(Locale.PortugueseBR, "trabalhadores")
+			.setNameLocalization(Locale.SpanishES, "trabajadores")
 			.setDescription("List the users who work the most")
-			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários que mais trabalharam"),
+			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários que mais trabalharam")
+			.setDescriptionLocalization(Locale.SpanishES, "Lista de usuarios que más trabajaron"),
 		)
 		.addSubcommand(drunkers => drunkers
 			.setName(TopSubcommand.Drunkers)
 			.setNameLocalization(Locale.PortugueseBR, "bêbados")
+			.setNameLocalization(Locale.SpanishES, "bebedores")
 			.setDescription("List the users who drank the most")
-			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários que mais beberam"),
+			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários que mais beberam")
+			.setDescriptionLocalization(Locale.SpanishES, "Lista de usuarios que más bebieron"),
 		)
 		.addSubcommand(beaters => beaters
 			.setName(TopSubcommand.Beaters)
 			.setNameLocalization(Locale.PortugueseBR, "espancadores")
+			.setNameLocalization(Locale.SpanishES, "golpeadores")
 			.setDescription("List the users who beat up the most")
-			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários que mais espancaram"),
+			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários que mais espancaram")
+			.setDescriptionLocalization(Locale.SpanishES, "Lista de usuarios que más golpearon"),
 		)
 		.addSubcommand(scavengers => scavengers
 			.setName(TopSubcommand.Scavengers)
 			.setNameLocalization(Locale.PortugueseBR, "vasculhadores")
+			.setNameLocalization(Locale.SpanishES, "buscadores")
 			.setDescription("List the users who scavenge the most")
-			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários que mais vasculharam"),
+			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários que mais vasculharam")
+			.setDescriptionLocalization(Locale.SpanishES, "Lista de usuarios que más buscaron"),
 		)
 		.addSubcommand(hospital => hospital
 			.setName(TopSubcommand.Hospital)
 			.setNameLocalization(Locale.PortugueseBR, "doentes")
+			.setNameLocalization(Locale.SpanishES, "enfermos")
 			.setDescription("List the users who paid the most in hospital treatments")
-			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários que mais pagaram por tratamentos no hospital"),
+			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários que mais pagaram por tratamentos no hospital")
+			.setDescriptionLocalization(Locale.SpanishES, "Lista de usuarios que más pagaron por tratamientos"),
 		)
 		.addSubcommand(bribers => bribers
 			.setName(TopSubcommand.Bribers)
 			.setNameLocalization(Locale.PortugueseBR, "subornadores")
+			.setNameLocalization(Locale.SpanishES, "sobornadores")
 			.setDescription("List the users who paid the most in prison bribes")
-			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários que mais pagaram por subornos na prisão"),
+			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários que mais pagaram por subornos na prisão")
+			.setDescriptionLocalization(Locale.SpanishES, "Lista de usuarios que más pagaron por sobornos"),
 		)
 		.addSubcommand(escapers => escapers
 			.setName(TopSubcommand.Escapers)
 			.setNameLocalization(Locale.PortugueseBR, "fujões")
+			.setNameLocalization(Locale.SpanishES, "fugitivos")
 			.setDescription("List the users who escape the most in prison")
-			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários que mais fugiram da prisão"),
+			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários que mais fugiram da prisão")
+			.setDescriptionLocalization(Locale.SpanishES, "Lista de usuarios que más escaparon de prisión"),
 		)
 		.addSubcommand(gang => gang
 			.setName(TopSubcommand.Gangs)
 			.setNameLocalization(Locale.PortugueseBR, "gangues")
+			.setNameLocalization(Locale.SpanishES, "cuadrillas")
 			.setDescription("List the gangs")
-			.setDescriptionLocalization(Locale.PortugueseBR, "Lista as gangues"),
+			.setDescriptionLocalization(Locale.PortugueseBR, "Lista as gangues")
+			.setDescriptionLocalization(Locale.SpanishES, "Lista de cuadrillas"),
 		)
 		.addSubcommand(investors => investors
 			.setName(TopSubcommand.Investors)
 			.setNameLocalization(Locale.PortugueseBR, "investidores")
+			.setNameLocalization(Locale.SpanishES, "inversores")
 			.setDescription("List the users who earned the most from investments")
-			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários que mais ganharam com investimentos"),
+			.setDescriptionLocalization(Locale.PortugueseBR, "Lista os usuários que mais ganharam com investimentos")
+			.setDescriptionLocalization(Locale.SpanishES, "Lista de usuarios que más ganaron con inversiones"),
 		),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {

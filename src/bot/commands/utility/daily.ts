@@ -11,8 +11,10 @@ import { isUserBoosterInOfficialServer } from "#bot/utils/officialServer";
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("daily")
+		.setNameLocalization(Locale.SpanishES, "diario")
 		.setDescription("Receives a small ammount of money. Keep a streak and the money grows!")
-		.setDescriptionLocalization(Locale.PortugueseBR, "Recebe uma pequena quantidade de grana. Mantenha uma sequência e a grana aumenta!"),
+		.setDescriptionLocalization(Locale.PortugueseBR, "Recebe uma pequena quantidade de grana. Mantenha uma sequência e a grana aumenta!")
+		.setDescriptionLocalization(Locale.SpanishES, "Recibe una pequeña cantidad de dinero. ¡Mantén una racha y el dinero aumenta!"),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 		const s = Strings[language];

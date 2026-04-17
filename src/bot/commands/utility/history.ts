@@ -19,7 +19,9 @@ module.exports = {
 		.setName("history")
 		.setDescription("Shows the history of your robberies")
 		.setNameLocalization(Locale.PortugueseBR, "historico")
+		.setNameLocalization(Locale.SpanishES, "historial")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Mostra o seu histórico de roubos")
+		.setDescriptionLocalization(Locale.SpanishES, "Muestra el historial de tus robos")
 		.addStringOption(target => target
 			.setName("target")
 			.setDescription("The user to show")

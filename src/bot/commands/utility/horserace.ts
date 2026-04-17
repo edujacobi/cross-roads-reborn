@@ -7,7 +7,9 @@ module.exports = {
 		.setName("horserace")
 		.setDescription("View and bet on horse races")
 		.setNameLocalization(Locale.PortugueseBR, "corridadecavalos")
-		.setDescriptionLocalization(Locale.PortugueseBR, "Veja e aposte em corridas de cavalos"),
+		.setNameLocalization(Locale.SpanishES, "carreradecaballos")
+		.setDescriptionLocalization(Locale.PortugueseBR, "Veja e aposte em corridas de cavalos")
+		.setDescriptionLocalization(Locale.SpanishES, "Ver y apostar en carreras de caballos"),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User) {
 		// Initialize horse racing for this user

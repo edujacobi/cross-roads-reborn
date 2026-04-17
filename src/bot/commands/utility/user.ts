@@ -1,4 +1,4 @@
-﻿import { getClient } from "#bot/client";
+import { getClient } from "#bot/client";
 import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
 import { UserImageCanvasBuilder } from "#bot/ui/builders/UserImageCanvasBuilder";
 import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
@@ -25,15 +25,19 @@ import {
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("user")
+		.setNameLocalization(Locale.SpanishES, "usuario")
 		.setDescription("Relevant informations about the user!")
 		.setNameLocalization(Locale.PortugueseBR, "usuario")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Informações relevantes sobre o jogador!")
+		.setDescriptionLocalization(Locale.SpanishES, "¡Información relevante sobre el usuario!")
 		.addStringOption(target => target
 			.setName("target")
+			.setNameLocalization(Locale.PortugueseBR, "alvo")
+			.setNameLocalization(Locale.SpanishES, "objetivo")
 			.setDescription("The user")
 			.setMinLength(3)
-			.setNameLocalization(Locale.PortugueseBR, "alvo")
-			.setDescriptionLocalization(Locale.PortugueseBR, "O usuário"),
+			.setDescriptionLocalization(Locale.PortugueseBR, "O usuário")
+			.setDescriptionLocalization(Locale.SpanishES, "El usuario"),
 		),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {

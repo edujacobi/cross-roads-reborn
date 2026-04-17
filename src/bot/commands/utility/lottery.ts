@@ -16,7 +16,9 @@ module.exports = {
 		.setName("lottery")
 		.setDescription("Buy a ticket and hope to be the winner!")
 		.setNameLocalization(Locale.PortugueseBR, "bilhete")
-		.setDescriptionLocalization(Locale.PortugueseBR, "Compre um bilhete e torça para ser o vencedor!"),
+		.setNameLocalization(Locale.SpanishES, "loteria")
+		.setDescriptionLocalization(Locale.PortugueseBR, "Compre um bilhete e torça para ser o vencedor!")
+		.setDescriptionLocalization(Locale.SpanishES, "¡Compra un boleto y espera ser el ganador!"),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 		const s = Strings[language];

@@ -16,15 +16,19 @@ import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Locale, S
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("rob")
+		.setNameLocalization(Locale.SpanishES, "robar")
 		.setDescription("Rob a user or a location")
 		.setNameLocalization(Locale.PortugueseBR, "roubar")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Roube um usuário ou um lugar")
+		.setDescriptionLocalization(Locale.SpanishES, "Robar a un usuario o un lugar")
 		.addStringOption(target => target
 			.setName("target")
 			.setNameLocalization(Locale.PortugueseBR, "alvo")
+			.setNameLocalization(Locale.SpanishES, "objetivo")
 			.setDescription("The user to rob")
 			.setMinLength(3)
-			.setDescriptionLocalization(Locale.PortugueseBR, "O usuário para roubar"),
+			.setDescriptionLocalization(Locale.PortugueseBR, "O usuário para roubar")
+			.setDescriptionLocalization(Locale.SpanishES, "El usuario a robar"),
 		),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {

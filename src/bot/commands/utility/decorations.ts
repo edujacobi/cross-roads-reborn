@@ -29,8 +29,10 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("decorations")
 		.setNameLocalization(Locale.PortugueseBR, "decorações")
+		.setNameLocalization(Locale.SpanishES, "decoraciones")
 		.setDescription("Choose the decoration for your avatar or ranking card")
-		.setDescriptionLocalization(Locale.PortugueseBR, "Escolha a decoração para seu avatar ou cartão de ranking"),
+		.setDescriptionLocalization(Locale.PortugueseBR, "Escolha a decoração para seu avatar ou cartão de ranking")
+		.setDescriptionLocalization(Locale.SpanishES, "Elige la decoración para tu avatar o tarjeta de ranking"),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 

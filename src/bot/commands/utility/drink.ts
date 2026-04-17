@@ -1,4 +1,4 @@
-﻿import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
+import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
 import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
 import { CrColors } from "#bot/utils/colors";
 import { deferReply, deferUpdate, replyWithContainer } from "#bot/utils/discordInteractions";
@@ -24,7 +24,9 @@ module.exports = {
 		.setName("drink")
 		.setDescription("Drinks a refreshing beverage!")
 		.setNameLocalization(Locale.PortugueseBR, "beber")
-		.setDescriptionLocalization(Locale.PortugueseBR, "Bebe uma refrescante bebida!"),
+		.setNameLocalization(Locale.SpanishES, "beber")
+		.setDescriptionLocalization(Locale.PortugueseBR, "Bebe uma refrescante bebida!")
+		.setDescriptionLocalization(Locale.SpanishES, "¡Bebe una bebida refrescante!"),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 		await deferReply(interaction);

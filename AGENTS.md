@@ -114,3 +114,6 @@ const Strings = {
 ### Number Representation
 Always separate thousands with an underscore (`_`) for better readability.
 *   **Example**: `1_000_000` instead of `1000000`.
+
+### New Line
+Always use CRLF as End of Line Sequence in files.

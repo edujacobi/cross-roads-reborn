@@ -14,7 +14,9 @@ module.exports = {
 		.setName("shop")
 		.setDescription("Open the shop to buy something")
 		.setNameLocalization(Locale.PortugueseBR, "loja")
-		.setDescriptionLocalization(Locale.PortugueseBR, "Abra a loja para comprar alguma coisa"),
+		.setNameLocalization(Locale.SpanishES, "tienda")
+		.setDescriptionLocalization(Locale.PortugueseBR, "Abra a loja para comprar alguma coisa")
+		.setDescriptionLocalization(Locale.SpanishES, "Abrir la tienda para comprar algo"),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language, shopOverride?: Shop) {
 		await deferReply(interaction);

@@ -11,7 +11,9 @@ module.exports = {
 		.setName("help")
 		.setDescription("A few tips to start your adventure!")
 		.setNameLocalization(Locale.PortugueseBR, "ajuda")
-		.setDescriptionLocalization(Locale.PortugueseBR, "Algumas dicas para começar a sua aventura"),
+		.setNameLocalization(Locale.SpanishES, "ayuda")
+		.setDescriptionLocalization(Locale.PortugueseBR, "Algumas dicas para começar a sua aventura")
+		.setDescriptionLocalization(Locale.SpanishES, "Algunos consejos para comenzar tu aventura"),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 

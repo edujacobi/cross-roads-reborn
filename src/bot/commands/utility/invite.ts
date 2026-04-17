@@ -17,7 +17,9 @@ module.exports = {
 		.setName("invite")
 		.setDescription("Invite Cross Roads Reborn to your server!")
 		.setNameLocalization(Locale.PortugueseBR, "convite")
-		.setDescriptionLocalization(Locale.PortugueseBR, "Convide Cross Roads Reborn para o seu servidor!"),
+		.setDescriptionLocalization(Locale.PortugueseBR, "Convide Cross Roads Reborn para o seu servidor!")
+		.setNameLocalization(Locale.SpanishES, "invitar")
+		.setDescriptionLocalization(Locale.SpanishES, "¡Invita a Cross Roads Reborn a tu servidor!"),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 

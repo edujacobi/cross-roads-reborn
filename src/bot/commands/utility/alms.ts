@@ -13,12 +13,16 @@ module.exports = {
 		.setName("alms")
 		.setDescription("Donate some money to another user")
 		.setNameLocalization(Locale.PortugueseBR, "esmola")
+		.setNameLocalization(Locale.SpanishES, "limosna")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Doe algum dinheiro para outro usuário")
+		.setDescriptionLocalization(Locale.SpanishES, "Dona algo de dinero a otro usuario")
 		.addStringOption(target => target
 			.setName("target")
 			.setDescription("The user to donate")
 			.setNameLocalization(Locale.PortugueseBR, "alvo")
+			.setNameLocalization(Locale.SpanishES, "objetivo")
 			.setDescriptionLocalization(Locale.PortugueseBR, "O alvo para doar")
+			.setDescriptionLocalization(Locale.SpanishES, "El usuario al que donar")
 			.setMinLength(3)
 			.setRequired(true)),
 
