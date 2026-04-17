@@ -46,8 +46,8 @@ const Strings = {
 - Access to development channel
 - Less cooldown between commands
 - 50% larger alms delivery
+- 25% discount on Prize Tickets
 - 25% discount on Class and Nickname change
-- ~~Exclusive Prize Ticket draws~~
 - Access to VIP category in Cross Roads Reborn server
 - VIP role in Cross Roads Reborn server
 - Many more to come!`,
@@ -62,8 +62,8 @@ In \`/specialshop\`, using the ${EmoteString.SpecialCoinShop}Special Coins!`,
 - Acesso ao canal de desenvolvimento
 - Menos cooldown entre comandos
 - Entrega esmolas 50% maiores
+- 25% de desconto no Bilhete Premiado
 - 25% de desconto na troca de Classe e Nickname
-- ~~Sorteios do Bilhete premiado exclusivos~~
 - Acesso à categoria VIP no servidor Cross Roads Reborn
 - Cargo VIP no servidor Cross Roads Reborn
 - Muitos mais por vir!`,
@@ -78,8 +78,8 @@ Na \`/lojaespecial\`, utilizando as ${EmoteString.SpecialCoinShop}Moedas Especia
 - Acceso al canal de desarrollo
 - Menos tiempo de espera entre comandos
 - Entrega de limosnas 50% mayores
+- 25% de descuento en el Billete Premiado
 - 25% de descuento en el cambio de Clase y Nickname
-- ~~Sorteos exclusivos del Billete premiado~~
 - Acceso a la categoría VIP en el servidor Cross Roads Reborn
 - Rol VIP en el servidor Cross Roads Reborn
 - ¡Muchos más por venir!`,

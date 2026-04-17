@@ -47,6 +47,12 @@ module.exports = {
 				s.russianRouletteDescription,
 				`-# ${s.russianRouletteDescription2}`,
 			])
+			.addLargeSeparator()
+			.addTexts([
+				`### ${EmoteString.Ticket} ${s.lotteryTitle}`,
+				s.lotteryDescription,
+				`-# ${s.lotteryDescription2}`,
+			])
 			.addFooter();
 
 		return replyWithContainer(interaction, container);
@@ -67,6 +73,9 @@ const Strings = {
 		russianRouletteTitle: `Russian Roulette`,
 		russianRouletteDescription: `Bet an amount and compete against your friends. Only one will walk away with the cash and all others will be ${EmoteString.Hospital} Hospitalized!`,
 		russianRouletteDescription2: `Use \`/russianroulette <value>\` to start a new roulette.`,
+		lotteryTitle: `Winning Ticket`,
+		lotteryDescription: `Buy a ticket for the daily draw at 18h! The more people buy, the bigger the prize! VIPs have a 25% discount on tickets!`,
+		lotteryDescription2: `Use \`/lottery\` to see the next draw and buy your ticket.`,
 	},
 	[Language.Portuguese]: {
 		title: "Cassino",
@@ -81,6 +90,9 @@ const Strings = {
 		russianRouletteTitle: `Roleta Russa`,
 		russianRouletteDescription: `Aposte um valor e dispute contra seus amigos. Apenas um sairá com a grana e todos os outros ficarão ${EmoteString.Hospital} Hospitalizados!`,
 		russianRouletteDescription2: `Use \`/roletarussa <valor>\` para iniciar uma nova roleta.`,
+		lotteryTitle: `Bilhete Premiado`,
+		lotteryDescription: `Compre um bilhete para o sorteio diário às 18h! Quanto mais compram, maior o prêmio! VIPs possuem 25% de desconto no bilhete!`,
+		lotteryDescription2: `Use \`/bilhete\` para ver o próximo sorteio e comprar seu ingresso.`,
 	},
 	[Language.Spanish]: {
 		title: "Casino",
@@ -95,5 +107,8 @@ const Strings = {
 		russianRouletteTitle: `Roleta Russa`,
 		russianRouletteDescription: `Apuesta una cantidad y compete contra tus amigos. ¡Solo uno se llevará el dinero y todos los demás quedarán ${EmoteString.Hospital} Hospitalizados!`,
 		russianRouletteDescription2: `Usa \`/ruletarusa <apuesta>\` para iniciar una nueva ruleta.`,
+		lotteryTitle: `Billete Premiado`,
+		lotteryDescription: `¡Compra un billete para el sorteo diario a las 18h! ¡Cuantos más compren, mayor será el premio! ¡Los VIP tienen un 25% de descuento en el billete!`,
+		lotteryDescription2: `Usa \`/billete\` para ver el próximo sorteo y comprar tu billete.`,
 	},
 } as const satisfies Localization;

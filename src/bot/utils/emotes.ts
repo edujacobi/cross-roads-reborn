@@ -107,6 +107,8 @@ export const EmoteId = {
 	React: "1343948089249103945",
 	Escape: "1345061962437890129",
 	RussianRoulette: "1464352585220751593",
+	Ticket: "1494364062354640957",
+	MegaTicket: "1494437314389213184",
 
 	VIP: "778572312215027744",
 
@@ -261,6 +263,8 @@ export const EmoteString = {
 	React: `<:React:${EmoteId.React}>`,
 	Escape: `<:Escape:${EmoteId.Escape}>`,
 	RussianRoulette: `<:RussianRoulette:${EmoteId.RussianRoulette}>`,
+	Ticket: `<:Ticket:${EmoteId.Ticket}>`,
+	MegaTicket: `<:MegaTicket:${EmoteId.MegaTicket}>`,
 
 	VIP: `<:vip:${EmoteId.VIP}>`,
 

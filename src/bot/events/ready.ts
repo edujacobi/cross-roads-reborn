@@ -3,6 +3,7 @@ import { sequelize } from "#core/database/Database";
 import { changeActivity } from "#bot/utils/ui";
 import { Notification } from "#core/models/Notification";
 import { HorseRacing } from "#core/models/HorseRacing";
+import { Lottery } from "#core/models/Lottery";
 import { removeAllFromActions } from "#bot/utils/userUtils";
 import { InvestmentManager } from "#core/models/InvestmentManager";
 
@@ -19,6 +20,7 @@ module.exports = {
 			InvestmentManager.Initialize(),
 			// startVIPProcedure(),
 			HorseRacing.Initialize(),
+			Lottery.Initialize(),
 		]);
 	},
 };
