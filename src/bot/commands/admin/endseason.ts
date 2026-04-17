@@ -8,10 +8,14 @@ import { defaultComponent, formatMoney } from "#bot/utils/ui";
 import GangMembers from "#core/database/GangMembers";
 import GangRoles from "#core/database/GangRoles";
 import Gangs from "#core/database/Gangs";
+import { LotteryTickets } from "#core/database/LotteryTickets";
 import { Notifications } from "#core/database/Notifications";
 import { RobHistories } from "#core/database/RobHistories";
 import { UserItems } from "#core/database/UserItems";
 import { Users } from "#core/database/Users";
+import { UserInvestments } from "#core/database/UserInvestments";
+import { HorseRaceBets } from "#core/database/HorseRaceBets";
+import { HorseRaces } from "#core/database/HorseRaces";
 import { Language } from "#core/models/Language";
 import type { User } from "#core/models/User";
 import { ClassList } from "#core/types/Classes";
@@ -120,6 +124,7 @@ module.exports = {
 					topBriber,
 					topEscaper,
 					topDrunk,
+					topInvestor,
 					topGang,
 				] = await Promise.all([
 					getFromRanking("money", 3),
@@ -133,6 +138,7 @@ module.exports = {
 					getFromRanking("prisonBriberySum"),
 					getFromRanking("escapeCount"),
 					getFromRanking("drinkHappyHour"),
+					getFromRanking("investmentTotalProfit"),
 					getTopGang(),
 				]);
 
@@ -181,6 +187,10 @@ module.exports = {
 					`-# Max beers drank before getting drunk during Happy Hour `,
 					topDrunk.map(user => getUserRow(user, user.drinkHappyHour)).join("\n"),
 					``,
+					`## ${EmoteBadgeString.Season6.Invester} Top Investor`,
+					`-# Total profit from investments`,
+					topInvestor.map(user => getUserRow(user, formatMoney(user.investmentTotalProfit, Language.English))).join("\n"),
+					``,
 					`## ${EmoteBadgeString.Season6.TopGang} Top Gang`,
 					`-# Greater level`,
 					topGang.map(gang => getGangRow(gang, gang.level)).join("\n"),
@@ -211,6 +221,9 @@ module.exports = {
 					howManyItems,
 					robberies,
 					notifications,
+					lotteryTickets,
+					investments,
+					horseRaceBets,
 				] = await Promise.all([
 					Users.count({ where: { class: { [Op.not]: 0 } } }),
 					Gangs.count(),
@@ -219,6 +232,9 @@ module.exports = {
 					UserItems.count(),
 					RobHistories.count(),
 					Notifications.count(),
+					LotteryTickets.count(),
+					UserInvestments.count(),
+					HorseRaceBets.count(),
 				]);
 
 				texts = [
@@ -229,10 +245,13 @@ module.exports = {
 					`###  \`${howManyItems}\` Items`,
 					`###  \`${robberies}\` Robberies`,
 					`###  \`${notifications}\` Notifications`,
+					`###  \`${lotteryTickets}\` Lottery tickets`,
+					`###  \`${investments}\` Investments`,
+					`###  \`${horseRaceBets}\` Horse race bets`,
 					``,
-					`-# - Clicking "END SEASON" will erase database rows from Gangs, GangMembers, GangRoles, UserItems, RobHistories and Notifications.`,
-					`-# - UserBadges, UserBundles and UserAvatarDecorations will NOT be erased.`,
-					"-# - Columns `id`, `nickname`, `language`, `specialCoin`, `avatarDecoration`, `vipTime`, `vipEternal` and `createdAt` from Users will NOT be erased.",
+					`-# - Clicking "END SEASON" will erase database rows from Gangs, GangMembers, GangRoles, UserItems, RobHistories, Notifications, LotteryTickets, UserInvestments, HorseRaceBets and HorseRaces.`,
+					`-# - UserBadges, UserBundles, UserAvatarDecorations and UserBackgroundDecorations will NOT be erased.`,
+					"-# - Columns `id`, `nickname`, `language`, `specialCoin`, `avatarDecoration`, `backgroundDecoration`, `vipTime`, `vipEternal`, `lastVoteClaim`, `voteCount`, `notifyInvestmentYield` and `createdAt` from Users will NOT be erased.",
 				];
 
 				container
@@ -289,6 +308,7 @@ module.exports = {
 							robberyFailureCount: 0,
 							robberySuccessCount: 0,
 							robberySuccessRobbedSum: 0,
+							casinoIsInGame: false,
 							beatUpSuccessCount: 0,
 							beatUpFailureCount: 0,
 							beatUpBeatedUpCount: 0,
@@ -309,6 +329,7 @@ module.exports = {
 							drinkNormal: 0,
 							drinkHappyHour: 0,
 							drunkCount: 0,
+							investmentTotalProfit: 0,
 							// actions
 							beingRobbedByUserId: null,
 							robbingUserId: null,
@@ -316,6 +337,8 @@ module.exports = {
 							scavengingId: null,
 							beatingUserId: null,
 							beingBeatUpByUserId: null,
+							robberyInvestmentDefending: false,
+							robberyParticipatingInGangAction: false,
 							// timers
 							almsGiveTime: date,
 							almsReceiveTime: date,
@@ -333,6 +356,10 @@ module.exports = {
 					UserItems.destroy({ where: {} }),
 					RobHistories.destroy({ where: {} }),
 					Notifications.destroy({ where: {} }),
+					LotteryTickets.destroy({ where: {} }),
+					UserInvestments.destroy({ where: {} }),
+					HorseRaceBets.destroy({ where: {} }),
+					HorseRaces.destroy({ where: {} }),
 				]);
 
 				texts = [
