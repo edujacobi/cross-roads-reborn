@@ -53,7 +53,8 @@ module.exports = {
 
 		const { isOpen } = blackMarket.IsBlackMarketOpen();
 
-		const jobList = isOpen ? getJobList() : getJobList().filter(jobs => !jobs.Special);
+		const jobList = (isOpen ? getJobList() : getJobList().filter(jobs => !jobs.Special))
+			.sort((a, b) => Number(a.Special) - Number(b.Special));
 
 		const eventActiveValue = await Event.GetActiveFromType(EventType.JOB_TIME_MULTIPLIER);
 
@@ -75,7 +76,7 @@ module.exports = {
 				const job = currentPageJobs[i];
 				const weaponsNeeded = getItemList().filter(item => job.NeedItem?.includes(item.Id));
 				const jobDuration = job.Duration * eventActiveValue;
-				const jobSalary = Math.floor(job.Salary * userClassModifier);
+				const jobSalary = Math.round(job.Salary * userClassModifier);
 				const hasAllItems = job.NeedItem?.every(neededItem => user.Items.some(userItem => userItem.Id === neededItem));
 
 				const textSalary = `${s.salary}: ${formatMoney(jobSalary, language)}`;
@@ -122,7 +123,7 @@ module.exports = {
 			if (user.IsWorking()) {
 				const job = JobList[user.Job.Id!];
 				const jobDuration = job.Duration * eventActiveValue;
-				const jobSalary = Math.floor(job.Salary * userClassModifier);
+				const jobSalary = Math.round(job.Salary * userClassModifier);
 
 				container
 					.addLargeSeparator()
@@ -236,7 +237,7 @@ module.exports = {
 				}
 
 				const jobDuration = job.Duration * eventActiveValue;
-				const jobSalary = Math.floor(job.Salary * userClassModifier);
+				const jobSalary = Math.round(job.Salary * userClassModifier);
 
 				await user.StartJob(job.Id);
 
