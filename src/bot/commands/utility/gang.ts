@@ -813,11 +813,12 @@ module.exports = {
 				])
 				.addLargeSeparator()
 				.addSectionComponents(section => section
+					.setId(1)
 					.addTexts([
 						s.robberyInitiated(robbery.InvestmentBase!.Name[user.Language], targetUser.GetNameWithImage()),
 						`-# ${s.participants(robbery.Participants.size)} • ${EmoteString.Attack}${calculateTotalAtk()} ATK`,
 						Array.from(robbery.Participants.values()).map(p => `- ${p.GetNameWithImage()}`).join("\n"),
-					])
+					], 2)
 					.setThumbnailAccessory(thumb => thumb
 						.setURL(robbery.InvestmentBase!.ImageUrl),
 					),
@@ -882,7 +883,7 @@ module.exports = {
 							Array.from(robbery.Participants.values()).map(p => `- ${p.GetNameWithImage()}`).join("\n"),
 						]);
 
-						await btn.update({ components: [container] });
+						await replyWithContainer(btn, container);
 					}
 
 					else if (btn.customId === "abort_robbery") {
