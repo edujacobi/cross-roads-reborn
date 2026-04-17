@@ -1,6 +1,6 @@
 import { Notifications } from "#core/database/Notifications";
 import { Op } from "sequelize";
-import { addDays } from "date-fns";
+import { addDays, addHours } from "date-fns";
 import { Log, logger } from "#shared/log";
 import { JobList } from "#core/types/Jobs";
 import { User } from "./User";
@@ -25,6 +25,7 @@ export enum NotificationType {
 	GangDepositAgain,
 	InvestmentYield,
 	InvestmentExpired,
+	Vote,
 }
 
 const NotificationMapper = {
@@ -41,6 +42,7 @@ const NotificationMapper = {
 	[NotificationType.GangDepositAgain]: "Gang Deposit Again",
 	[NotificationType.InvestmentYield]: "Investment Yield",
 	[NotificationType.InvestmentExpired]: "Investment Expired",
+	[NotificationType.Vote]: "Top.gg Vote",
 };
 
 export class Notification {
@@ -152,6 +154,20 @@ export class Notification {
 		notification.UserId = user.Id;
 		notification.Type = NotificationType.GangDepositAgain;
 		notification.Date = nextDeposit;
+		await notification.Create();
+	}
+
+	static async Vote(user: User, votedAt: Date) {
+		const date = addHours(votedAt, 12);
+
+		if (date <= new Date()) {
+			return;
+		}
+
+		const notification = new Notification();
+		notification.UserId = user.Id;
+		notification.Type = NotificationType.Vote;
+		notification.Date = date;
 		await notification.Create();
 	}
 
@@ -332,6 +348,10 @@ export class Notification {
 						}
 					}
 
+					else if (notification.Type == NotificationType.Vote) {
+						await sendPrivateMessage(user.Id, s.vote, CrColors.Default);
+					}
+
 					else {
 						Log.Warning(`Notification type ${notification.Type} not implemented.`);
 					}
@@ -370,6 +390,7 @@ const Strings = {
 		investmentYield: (name: string, amount: string) => `You received **${amount}** from your investment **${name}**! ${EmoteString.InvestmentActive}`,
 		investmentExpired: (name: string, amount: string) => `Your investment **${name}** has expired! You received **${amount}** as a final profit. ${EmoteString.InvestmentInactive}`,
 		henchmanFeeInfo: (amount: string, percent: number) => `Henchman took **${amount}** (${percent}%) as payment`,
+		vote: `You can vote again on Top.gg! Claim your coins now ${EmoteString.SpecialCoinShop}`,
 	},
 	[Language.Portuguese]: {
 		daily: `Você pode receber sua grana diária novamente! ${EmoteString.Experience}`,
@@ -386,6 +407,7 @@ const Strings = {
 		investmentYield: (name: string, amount: string) => `Você recebeu **${amount}** do seu investimento **${name}**! ${EmoteString.InvestmentActive}`,
 		investmentExpired: (name: string, amount: string) => `Seu investimento **${name}** expirou! Você recebeu **${amount}** como lucro final. ${EmoteString.InvestmentInactive}`,
 		henchmanFeeInfo: (amount: string, percent: number) => `O capanga cobrou **${amount}** (${percent}%) como pagamento`,
+		vote: `Você pode votar novamente no Top.gg! Reivindique suas moedas agora ${EmoteString.SpecialCoinShop}`,
 	},
 	[Language.Spanish]: {
 		daily: `¡Puedes recibir tu dinero diario de nuevo! ${EmoteString.Experience}`,
@@ -402,5 +424,6 @@ const Strings = {
 		investmentYield: (name: string, amount: string) => `¡Recibiste **${amount}** de tu inversión **${name}**! ${EmoteString.InvestmentActive}`,
 		investmentExpired: (name: string, amount: string) => `¡Tu inversión **${name}** ha expirado! Recibiste **${amount}** como lucro final. ${EmoteString.InvestmentInactive}`,
 		henchmanFeeInfo: (amount: string, percent: number) => `El secuaz cobró **${amount}** (${percent}%) como pago`,
+		vote: `¡Puedes votar de nuevo en Top.gg! Reclama tus monedas ahora ${EmoteString.SpecialCoinShop}`,
 	},
 } as const satisfies Localization;

@@ -6,7 +6,7 @@ import { formatMoney, showTime } from "#bot/utils/ui";
 import { Language, type Localization } from "#core/models/Language";
 import type { User } from "#core/models/User";
 import { Log } from "#shared/log";
-import { addHours } from "date-fns";
+import { addHours, differenceInHours } from "date-fns";
 import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
 
 interface TopGGCheckResponse {
@@ -99,21 +99,24 @@ module.exports = {
 		}
 
 		// Fetch Top.gg API
-		let hasVoted = false;
+		let votedAt: Date | null = null;
 
 		try {
 			const response = await fetch(`https://top.gg/api/v1/projects/@me/votes/${interaction.user.id}?source=discord`, {
 				headers: { Authorization: `Bearer ${token}` }
 			});
-
 			if (response.ok) {
 				const data = await response.json() as TopGGCheckResponse;
-				hasVoted = data.created_at !== null;
+				if (data.created_at) {
+					const date = new Date(data.created_at);
+					const diff = differenceInHours(new Date(), date);
+
+					if (diff < 12) {
+						votedAt = date;
+					}
+				}
 			}
-			else if (response.status === 404) {
-				hasVoted = false;
-			}
-			else {
+			else if (response.status !== 404) {
 				const errorData = await response.json() as TopGGErrorResponse;
 				Log.Warning(`Failed to fetch from Top.gg API: ${response.status} ${errorData.detail ?? response.statusText}`);
 			}
@@ -123,8 +126,8 @@ module.exports = {
 		}
 
 
-		if (hasVoted) {
-			await user.ClaimVoteReward();
+		if (votedAt) {
+			await user.ClaimVoteReward(votedAt);
 
 			container
 				.addTexts([
@@ -160,7 +163,7 @@ const Strings = {
 		cooldown: (time: string) => `You have already received your vote reward in the last 12 hours!\n-# You can receive again ${time}.`,
 		success: `Thank you for your vote! You have received ${EmoteString.SpecialCoinShop}10 Special Coins.\n-# Wait 12 hours to vote again.`,
 		needsToVote: `You haven't voted for us in the last 12 hours!\n-# Click the button below to vote and return here to receive your ${EmoteString.SpecialCoinShop}10 Special Coins.`,
-		voteHere: "Vote Here",
+		voteHere: "Vote",
 		stats: (total: number, score: number, reviews: number, userVotes: number) => `${EmoteString.TopGG_Chart} ${total.toLocaleString("en-US")} Votes  • ${EmoteString.TopGG_Star} ${score.toFixed(1)}/5 (${reviews.toLocaleString("en-US")} reviews)\n-# You voted ${userVotes} times`,
 	},
 
@@ -170,7 +173,7 @@ const Strings = {
 		cooldown: (time: string) => `Você já recebeu sua recompensa de voto nas últimas 12 horas!\n-# Você poderá receber novamente ${time}.`,
 		success: `Obrigado pelo seu voto! Você recebeu ${EmoteString.SpecialCoinShop}10 Moedas Especiais.\n-# Aguarde 12 horas para votar novamente.`,
 		needsToVote: `Você não votou em nós nas últimas 12 horas!\n-# Clique no botão abaixo para votar e volte aqui para receber suas ${EmoteString.SpecialCoinShop}10 Moedas Especiais.`,
-		voteHere: "Votar Aqui",
+		voteHere: "Votar",
 		stats: (total: number, score: number, reviews: number, userVotes: number) => `${EmoteString.TopGG_Chart} ${total.toLocaleString("pt-BR")} Votos • ${EmoteString.TopGG_Star} ${score.toFixed(1)}/5 (${reviews.toLocaleString("pt-BR")} avaliações)\n-# Você votou ${userVotes} vezes`,
 	},
 	[Language.Spanish]: {
@@ -179,7 +182,7 @@ const Strings = {
 		cooldown: (time: string) => `¡Ya has recibido tu recompensa de voto en las últimas 12 horas!\n-# Puedes recibir de nuevo ${time}.`,
 		success: `¡Gracias por tu voto! Has recibido ${EmoteString.SpecialCoinShop}10 Special Coins.\n-# Espera 12 horas para votar de nuevo.`,
 		needsToVote: `¡No has votado por nosotros en las últimas 12 horas!\n-# Haz clic en el botón de abajo para votar y vuelve aquí para recibir tus ${EmoteString.SpecialCoinShop}10 Monedas Especiales.`,
-		voteHere: "Vota Aquí",
+		voteHere: "Votar",
 		stats: (total: number, score: number, reviews: number, userVotes: number) => `${EmoteString.TopGG_Chart} ${total.toLocaleString("es-ES")} Votos • ${EmoteString.TopGG_Star} ${score.toFixed(1)}/5 (${reviews.toLocaleString("es-ES")} reseñas)\n-# Votaste ${userVotes} veces`,
 	},
 } as const satisfies Localization;

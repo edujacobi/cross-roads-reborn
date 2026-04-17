@@ -751,10 +751,11 @@ export class User {
 
 	/**
 	 * Claims the vote reward from Top.gg.
+	 * @param votedAt Optional timestamp of the vote from Top.gg.
 	 */
-	async ClaimVoteReward() {
+	async ClaimVoteReward(votedAt?: Date) {
 		const reward = 10;
-		this.Vote.LastClaim = new Date();
+		this.Vote.LastClaim = votedAt || new Date();
 		this.Vote.Count += 1;
 		this.SpecialCoin += reward;
 
@@ -763,6 +764,8 @@ export class User {
 			voteCount: this.Vote.Count,
 			specialCoin: this.SpecialCoin,
 		});
+
+		await Notification.Vote(this, this.Vote.LastClaim);
 
 		Log.Success(`User ${this.Nickname} (Id: ${this.Id}) received ${reward} Special Coins for voting! Total votes: ${this.Vote.Count}`);
 	}
