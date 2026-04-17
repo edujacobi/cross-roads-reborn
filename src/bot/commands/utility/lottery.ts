@@ -32,7 +32,6 @@ module.exports = {
 
 		const ticketPrice = Lottery.GetTicketPrice(draw.drawTime);
 		const ticketCost = Lottery.GetTicketCost(draw.drawTime, user.IsVip());
-		const isVipOnly = Lottery.IsVipOnly(draw.drawTime);
 		const isMega = Lottery.IsMegaDraw(draw.drawTime);
 		const hasVipDiscount = user.IsVip() && ticketCost < ticketPrice;
 
@@ -80,9 +79,7 @@ module.exports = {
 			.addTexts([
 				isMega ?
 					`## ${EmoteString.MegaTicket} ${s.megaDrawTitle}` :
-					isVipOnly ?
-						`### ${EmoteString.VIP} ${s.vipDrawTitle}` :
-						`### ${EmoteString.Ticket} ${s.nextDrawTitle}`,
+					`### ${EmoteString.Ticket} ${s.nextDrawTitle}`,
 				s.nextDrawInfo(showTime(draw.drawTime.getTime(), true), formatMoney(ticketCost, language), hasVipDiscount ? formatMoney(ticketPrice, language) : undefined),
 				s.accumulated(accumulatorText),
 				lastWinnerText
@@ -171,7 +168,6 @@ const Strings = {
 		confirmTitle: "Confirm purchase",
 		confirmDescription: (price: string) => `Are you sure you want to buy a ticket for **${price}**?`,
 		confirmButton: "Confirm",
-		vipDrawTitle: "VIP weekend draw",
 		nextDrawTitle: "Next draw",
 		megaDrawTitle: "Mega Draw!",
 		nextDrawInfo: (time: string, price: string, originalPrice?: string) => `Takes place ${time}\nTicket Price: ${originalPrice ? `~~${originalPrice}~~ → ` : ""}**${price}**`,
@@ -190,7 +186,6 @@ const Strings = {
 		confirmTitle: "Confirmar compra",
 		confirmDescription: (price: string) => `Você tem certeza de que deseja comprar um bilhete por **${price}**?`,
 		confirmButton: "Confirmar",
-		vipDrawTitle: "Sorteio VIP de fim de semana",
 		nextDrawTitle: "Próximo sorteio",
 		megaDrawTitle: "Mega da Virada!",
 		nextDrawInfo: (time: string, price: string, originalPrice?: string) => `Acontece ${time}\nPreço do Bilhete: ${originalPrice ? `~~${originalPrice}~~ → ` : ""}**${price}**`,
@@ -209,7 +204,6 @@ const Strings = {
 		confirmTitle: "Confirmar compra",
 		confirmDescription: (price: string) => `¿Estás seguro de que quieres comprar un billete por **${price}**?`,
 		confirmButton: "Confirmar",
-		vipDrawTitle: "Sorteio VIP de fin de semana",
 		nextDrawTitle: "Próximo sorteio",
 		megaDrawTitle: "¡Mega Sorteio!",
 		nextDrawInfo: (time: string, price: string, originalPrice?: string) => `Ocurre ${time}\nPrecio del Billete: ${originalPrice ? `~~${originalPrice}~~ → ` : ""}**${price}**`,

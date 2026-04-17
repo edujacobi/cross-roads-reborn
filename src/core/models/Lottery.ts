@@ -24,11 +24,6 @@ export class Lottery {
 		return 5_000 * day;
 	}
 
-	static IsVipOnly(drawDate: Date): boolean {
-		const day = drawDate.getDay();
-		return day === 0 || day === 6;
-	}
-
 	/** Returns what the user actually pays (VIPs get 25% off). */
 	static GetTicketCost(drawDate: Date, isVip: boolean): number {
 		const full = this.GetTicketPrice(drawDate);
@@ -249,7 +244,6 @@ export class Lottery {
 
 const Strings = {
 	[Language.English]: {
-		vipOnly: `This draw is exclusive for ${EmoteString.VIP} VIP members! You cannot buy a ticket.`,
 		alreadyBought: "You already bought a ticket for the next draw.",
 		noDraw: "No draw is currently active.",
 		buySuccess: (price: string) => `You bought a ticket for ${price}! Good luck!`,
@@ -257,7 +251,6 @@ const Strings = {
 		youLost: (winnerName: string) => `${EmoteString.Ticket} **Winning Ticket!**\nThe lottery draw is over. The winner was **${winnerName}**! Better luck next time.`
 	},
 	[Language.Portuguese]: {
-		vipOnly: `Este sorteio é exclusivo para ${EmoteString.VIP} VIP members! Você não pode comprar um bilhete.`,
 		alreadyBought: "Você já comprou um bilhete para o próximo sorteio.",
 		noDraw: "Não há sorteio ativo no momento.",
 		buySuccess: (price: string) => `Você comprou um bilhete por ${price}! Boa sorte!`,
@@ -265,8 +258,7 @@ const Strings = {
 		youLost: (winnerName: string) => `${EmoteString.Ticket} **Bilhete Premiado!**\nO sorteio acabou. O vencedor foi **${winnerName}**! Mais sorte na próxima vez.`
 	},
 	[Language.Spanish]: {
-		vipOnly: `Este sorteo es exclusivo para ${EmoteString.VIP} VIP members! No puedes comprar un billete.`,
-		alreadyBought: "Ya has comprado un billete para el próximo sorteo.",
+		alreadyBought: "Ya has comprado un billete para el próximo sorteio.",
 		noDraw: "No hay sorteo activo en este momento.",
 		buySuccess: (price: string) => `¡Has comprado un billete por ${price}! ¡Buena suerte!`,
 		youWon: (prize: string) => `${EmoteString.Ticket} **Billete Premiado!**\n¡Felicidades! ¡Has ganado el sorteo y recibido **${prize}**!`,
