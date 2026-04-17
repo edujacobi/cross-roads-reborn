@@ -235,7 +235,7 @@ module.exports = {
 			await replyWithContainer(interaction, container);
 
 			let winner: User | null = null;
-			await wait(5000);
+			await wait(5_000);
 
 			while (winner == null) {
 				for (const player of participantsStatus) {
@@ -266,7 +266,7 @@ module.exports = {
 					}
 					container = showStatus(player.user.Id);
 					await replyWithContainer(interaction, container);
-					await wait(3000);
+					await wait(3_000);
 				}
 			}
 

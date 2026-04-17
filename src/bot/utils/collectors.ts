@@ -48,7 +48,7 @@ export function createButtonCollector(
  *
  * @param interaction - The original interaction.
  * @param response - The message or interaction response to collect from.
- * @param idleTime - The idle time in milliseconds before the collector stops (default: 60000).
+ * @param idleTime - The idle time in milliseconds before the collector stops (default: 60_000).
  * @returns The collector or undefined if response is missing.
  */
 export function createStringSelectCollector(interaction: CommandInteraction | ButtonInteraction | MessageComponentInteraction, response: Message | InteractionResponse | undefined, idleTime = 60_000) {
