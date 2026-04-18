@@ -338,7 +338,7 @@ export const LocationList: LocationListType = {
 		},
 		SuccessChance: 27,
 		NeedAttack: 90,
-		Special: true,
+		Special: false,
 		Prison: {
 			Text: [{
 				[Language.English]: "The Mayor's personal security team neutralized you.",

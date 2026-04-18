@@ -118,7 +118,7 @@ module.exports = {
 				}
 
 				if (btn.customId === "available") {
-					const locationList = getLocationList().filter(location => !location.Special);
+					const locationList = getLocationList();
 
 					container = generateDefaultHeader();
 
