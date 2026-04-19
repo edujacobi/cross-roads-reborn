@@ -80,16 +80,18 @@ export class BaseCanvasBuilder {
 	protected async tryDrawImage(
 		imagePath: string,
 		draw: (img: Image) => void
-	): Promise<void> {
+	): Promise<boolean> {
 		try {
 			const img = await this.LoadLocalImage(imagePath);
 			draw(img);
+			return true;
 		}
 		catch {
 			// Log only in development
 			if (process.env.NODE_ENV === "DEV") {
 				logger.warn(`[Canvas] Missing asset: ${imagePath}`);
 			}
+			return false;
 		}
 	}
 }

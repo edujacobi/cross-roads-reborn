@@ -33,12 +33,20 @@ async function testInventory() {
 		ComplexUI: "Hospitalizado",
 		EmoteId: "Hospital"
 	} as any;
-	userBase.Items = [{
-		ItemId: ItemId.Knife,
-		Description: { [Language.Portuguese]: "Faca" },
-		Quantity: 10,
-		RemainingTime: new Date(Date.now() + 1_000 * 60 * 60 * 24 * 7)
-	} as any];
+	userBase.Items = [
+		{
+			Id: ItemId.Knife,
+			Description: { [Language.Portuguese]: "Faca" },
+			Quantity: 10,
+			RemainingTime: new Date(Date.now() + 1_000 * 60 * 60 * 24 * 7)
+		} as any,
+		{
+			Id: ItemId.Sunglasses,
+			Description: { [Language.Portuguese]: "Óculos de Sol" },
+			Quantity: 1,
+			RemainingTime: new Date(Date.now() + 1_000 * 60 * 60 * 24 * 7)
+		} as any
+	];
 	userBase.Investment = {
 		Id: InvestmentId.ChurrosCart,
 		ExpiresAt: new Date(Date.now() + 1_000 * 60 * 60 * 24 * 7)

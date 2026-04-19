@@ -385,17 +385,14 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 			const ITEM_IMAGE_SIZE = 81; // Design token for item icons, addressing review point #10
 			const OFFSET = (InventoryCanvasBuilder.GRID_ITEM_HEIGHT - ITEM_IMAGE_SIZE) / 2;
 
-			try {
-				const imgPath = AssetPaths.getItemImage(item.Id, item.SelectedSkin);
-				const imgItem = await this.LoadLocalImage(imgPath);
+			const success = await this.tryDrawImage(AssetPaths.getItemImage(item.Id, item.SelectedSkin), imgItem => {
 				this.Ctx.drawImage(imgItem, x + OFFSET, y + OFFSET, ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE);
-			}
-			catch (e) {
-				if (item.SelectedSkin !== 0) {
-					await this.tryDrawImage(AssetPaths.getItemImage(item.Id, 0), imgDefault =>
-						this.Ctx.drawImage(imgDefault, x + OFFSET, y + OFFSET, ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE)
-					);
-				}
+			});
+
+			if (!success && item.SelectedSkin !== 0) {
+				await this.tryDrawImage(AssetPaths.getItemImage(item.Id, 0), imgDefault =>
+					this.Ctx.drawImage(imgDefault, x + OFFSET, y + OFFSET, ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE)
+				);
 			}
 
 			const consumable = item.Type === ItemType.Consumable;
