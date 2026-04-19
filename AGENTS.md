@@ -109,6 +109,34 @@ const Strings = {
 } as const satisfies Localization;
 ```
 
+## Image Assets
+
+### Item Icon Art Style
+
+All item icons located in `src/bot/ui/assets/images/items/` must follow these rules to remain visually consistent:
+
+*   **Style**: Smooth cartoon illustration. **Never** pixel art, 8-bit, or 16-bit style.
+*   **Outlines**: Thick, bold black outlines on all elements.
+*   **Shading**: Flat cel-shading. No complex gradients or realistic rendering.
+*   **Background**: Fully transparent (PNG with alpha channel).
+*   **Canvas**: ~128×128 px. All elements (including fire effects, flames, or any decoration) must be **fully contained within the canvas bounds** — nothing may be clipped at the edges.
+*   **Colors**: Vibrant and saturated. Avoid dull or washed-out palettes.
+
+### Item Skin Naming Convention
+
+Skins are named as `{id}_{ItemName}_{SkinName}.png`, e.g.:
+*   `0_Knife_Flaming.png`
+*   `6_AssaultRifle_Steampunk.png`
+*   `9_Katana_Void.png`
+
+### Skin Bundles
+
+When creating a new skin bundle (a themed set of skins), all items in the bundle must share the same visual theme and art style consistently.
+
+*   **Flaming**: blade/weapon IS the fire — orange-to-yellow gradient, white-yellow core, flame wisps. Transformed items: Grenade → Molotov, Minigun → Flamethrower.
+*   **Rusted**: brown-orange rust patches, chipped paint, cracked/worn wood stocks, same thick outlines as non-rusted counterparts.
+*   **Steampunk**: brass/copper/bronze body, exposed pipes, gears, rivets, pressure gauges, Victorian industrial aesthetic.
+
 ## Coding Standards
 
 ### Number Representation
