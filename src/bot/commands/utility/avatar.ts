@@ -1,12 +1,11 @@
-import { type ChatInputCommandInteraction, Locale, SlashCommandBuilder, type SlashCommandUserOption } from "discord.js";
 import { replyInteraction } from "#bot/utils/discordInteractions";
-import type { User } from "#core/models/User";
 import { Language, type Localization } from "#core/models/Language";
+import type { User } from "#core/models/User";
+import { type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
 
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("avatar")
-		.setNameLocalization(Locale.SpanishES, "avatar")
 		.setDescription("View user avatar")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Veja o avatar do usuário")
 		.setDescriptionLocalization(Locale.SpanishES, "Ver el avatar del usuario")

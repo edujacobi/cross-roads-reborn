@@ -239,7 +239,7 @@ export const EmoteString = {
 	BaseballBat: `<:BaseballBat:${EmoteId.BaseballBat}>`,
 	BrassKnuckles: `<:BrassKnuckles:${EmoteId.BrassKnuckles}>`,
 	AdvancedScope: `<:AdvancedScope:${EmoteId.AdvancedScope}>`,
-	Sunglasses: `<:SunGlasses:${EmoteId.Sunglasses}>`,
+	Sunglasses: `<:Sunglasses:${EmoteId.Sunglasses}>`,
 
 	CloseInv: `<:Fechar_Inventario:${EmoteId.CloseInv}>`,
 	OpenInv: `<:Abrir_Inventario:${EmoteId.OpenInv}>`,
