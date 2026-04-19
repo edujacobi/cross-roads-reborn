@@ -67,6 +67,10 @@ export const ItemList: ItemListType = {
 				Id: "1455275871563677780",
 				String: "<:Canivete:1455275871563677780>",
 			},
+			[BundleId.Oxidated]: {
+				Id: "1495465821118398484",
+				String: "<:OxidatedKnife:1495465821118398484>",
+			},
 		},
 		Price: 2_000,
 		Attack: 15,
@@ -104,6 +108,10 @@ export const ItemList: ItemListType = {
 			[BundleId.Brazilian]: {
 				Id: "1455561434619711508",
 				String: "<:Taurus_24_7:1455561434619711508>",
+			},
+			[BundleId.Oxidated]: {
+				Id: "1495465788683976855",
+				String: "<:OxidatedPistol:1495465788683976855>",
 			},
 		},
 		Price: 5_900,
@@ -143,6 +151,10 @@ export const ItemList: ItemListType = {
 				Id: "1454163361402065017",
 				String: "<:tec9BR:1454163361402065017>",
 			},
+			[BundleId.Oxidated]: {
+				Id: "1495465753745428690",
+				String: "<:OxidatedMachinePistol:1495465753745428690>",
+			},
 		},
 		Price: 15_000,
 		Attack: 25,
@@ -176,6 +188,10 @@ export const ItemList: ItemListType = {
 			[BundleId.Traditional]: {
 				Id: "1454922924518670418",
 				String: "<:micro_uzi:1454922924518670418>",
+			},
+			[BundleId.Oxidated]: {
+				Id: "1495466873469276261",
+				String: "<:OxidatedCompactSMG:1495466873469276261>",
 			},
 		},
 		Price: 0,
@@ -211,6 +227,10 @@ export const ItemList: ItemListType = {
 				Id: "937170774727475242",
 				String: "<:rifle:937170774727475242>",
 			},
+			[BundleId.Oxidated]: {
+				Id: "1495465705347481831",
+				String: "<:OxidatedHuntRifle:1495465705347481831>",
+			},
 		},
 		Price: 27_000,
 		Attack: 30,
@@ -245,6 +265,10 @@ export const ItemList: ItemListType = {
 				Id: "937170774983319552",
 				String: "<:escopeta:937170774983319552>",
 			},
+			[BundleId.Oxidated]: {
+				Id: "1495465854345810001",
+				String: "<:OxidatedShotgun:1495465854345810001>",
+			},
 		},
 		Price: 40_000,
 		Attack: 35,
@@ -278,6 +302,10 @@ export const ItemList: ItemListType = {
 			[BundleId.Traditional]: {
 				Id: "1454922962947014770",
 				String: "<:sawnoff:1454922962947014770>",
+			},
+			[BundleId.Oxidated]: {
+				Id: "1495466906503614656",
+				String: "<:OxidatedSawnoff:1495466906503614656>",
 			},
 		},
 		Price: 40_000,

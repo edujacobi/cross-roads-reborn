@@ -3,6 +3,7 @@ export enum BundleId {
 	Traditional,
 	Brazilian,
 	Flaming,
+	Oxidated
 }
 
 export enum ItemId {

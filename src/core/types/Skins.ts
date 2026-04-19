@@ -116,6 +116,25 @@ export const BundleList: SkinBundleListType = {
 		Shop: false,
 		Price: 5_000,
 	},
+	[BundleId.Oxidated]: {
+		Id: BundleId.Oxidated,
+		Description: {
+			[Language.English]: "Oxidated",
+			[Language.Portuguese]: "Oxidado",
+			[Language.Spanish]: "Oxidado",
+		},
+		Items: [
+			ItemId.Knife,
+			ItemId.Pistol,
+			ItemId.MachinePistol,
+			ItemId.CompactSMG,
+			ItemId.HuntRifle,
+			ItemId.Shotgun,
+			ItemId.Sawnoff,
+		],
+		Shop: true,
+		Price: 2_000,
+	},
 } as const;
 
 export function getSkinBundleList(): SkinBundles[] {
