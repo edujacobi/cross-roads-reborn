@@ -6,6 +6,7 @@ import { EmoteString } from "#bot/utils/emotes";
 import { defaultComponent, formatMoney, showTime } from "#bot/utils/ui";
 import { searchUser } from "#bot/utils/userUtils";
 import { Language, type Localization } from "#core/models/Language";
+import { Pagination } from "#core/models/Pagination";
 import { Robbery } from "#core/models/Robbery";
 import { RobberyLocation } from "#core/models/RobberyLocation";
 import type { User } from "#core/models/User";
@@ -108,47 +109,52 @@ module.exports = {
 				}
 			});
 
+			const pagination = new Pagination(interaction, language);
+			pagination.HowManyRecords = getLocationList().length;
+			pagination.Limit = 4;
+
+			pagination.CustomizeContainer = async () => {
+				const locationList = getLocationList();
+				const currentPageLocations = locationList.slice(pagination.Offset, pagination.Offset + pagination.Limit);
+
+				const container = generateDefaultHeader();
+
+				for (let i = 0; i < currentPageLocations.length; i++) {
+					const location = currentPageLocations[i];
+					container
+						.addSectionComponents(section => section
+							.addTexts([
+								`### ${location.Emote.String} ${location.Name[language]}`,
+								location.Description[language],
+							])
+							.setButtonAccessory(new ButtonBuilder()
+								.setLabel(s.title)
+								.setEmoji(location.Emote.Id)
+								.setStyle(location.NeedAttack > user.Attributes.Attack ? ButtonStyle.Secondary : ButtonStyle.Success)
+								.setCustomId(`location${location.Id}`),
+							),
+						);
+
+					if (i < currentPageLocations.length - 1) {
+						container.addLargeSeparator();
+					}
+				}
+
+				return container;
+			};
+
 			collector?.on("collect", async btn => {
 				await deferUpdate(btn);
 
-				if (btn.customId === "back") {
-					container = generateDefaultContainer();
-
-					return replyWithContainer(interaction, container);
-				}
-
-				if (btn.customId === "available") {
-					const locationList = getLocationList();
-
-					container = generateDefaultHeader();
-
-					for (let i = 0; i < locationList.length; i++) {
-						const location = locationList[i];
-						container
-							.addSectionComponents(section => section
-								.addTexts([
-									`### ${location.Emote.String} ${location.Name[language]}`,
-									location.Description[language],
-								])
-								.setButtonAccessory(new ButtonBuilder()
-									.setLabel(s.title)
-									.setEmoji(location.Emote.Id)
-									.setStyle(location.NeedAttack > user.Attributes.Attack ? ButtonStyle.Secondary : ButtonStyle.Success)
-									.setCustomId(`location${location.Id}`),
-								),
-							)
-							.addLargeSeparator();
+				if (btn.customId === "available" || btn.customId === "next" || btn.customId === "prev") {
+					if (btn.customId === "next") {
+						pagination.Offset += pagination.Limit;
+					}
+					else if (btn.customId === "prev") {
+						pagination.Offset -= pagination.Limit;
 					}
 
-					container
-						.addButtonRow(btn => btn
-							.setLabel(s.goBack)
-							.setStyle(ButtonStyle.Secondary)
-							.setCustomId("back"),
-						)
-						.addFooter({
-							text: user.Situation.Simple,
-						});
+					container = await pagination.BuildContainerWithRow();
 
 					return replyWithContainer(interaction, container);
 				}
@@ -265,6 +271,8 @@ There is a small chance the target will also be beaten up!`,
 		goBack: "Go back",
 		need: "Needed",
 		canRob: "You can rob:",
+		next: "Next",
+		previous: "Previous",
 	},
 	[Language.Portuguese]: {
 		userFree: "Você pode roubar!",
@@ -286,6 +294,8 @@ Há uma pequena chance do alvo ser também espancado!`,
 		goBack: "Voltar",
 		need: "Necessário",
 		canRob: "Pode roubar:",
+		next: "Próximo",
+		previous: "Anterior",
 	},
 	[Language.Spanish]: {
 		userFree: "¡Puedes robar!",
@@ -307,5 +317,7 @@ Si lo consigues, serás buscado por la policía y tendrás que esperar 1 hora pa
 		goBack: "Volver",
 		need: "Necesario",
 		canRob: "Puedes robar:",
+		next: "Siguiente",
+		previous: "Anterior",
 	},
 } as const satisfies Localization;
