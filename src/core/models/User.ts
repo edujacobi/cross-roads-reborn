@@ -1523,7 +1523,7 @@ export class User {
 			jobId: this.Job.Id,
 			jobTime: this.Job.EndsIn,
 		});
-		Log.Info(`User ${this.Nickname} (Id: ${this.Id}) started job ${job.Description[this.Language]} (Id: ${jobId}), will finish in ${formatDate(this.Job.EndsIn, Language.English)}.`);
+		Log.Info(`User ${this.Nickname} (Id: ${this.Id}) started job ${job.Description[Language.English]} (Id: ${jobId}), will finish in ${formatDate(this.Job.EndsIn, Language.English)}.`);
 	}
 
 	/**
@@ -1795,10 +1795,7 @@ const Strings = {
 		idling: "Idling",
 		workingSimple: "Working",
 		workingComplex: (description: string, jobTime: Date) => `Working as ${description}. Will finish ${showTime(jobTime.getTime(), true)}`,
-		workingComplexUI: (description: string, jobTime: Date) => `Working as ${description}. Will finish in ${formatDistanceToNow(jobTime, {
-			locale: getLocaleFromLanguage(Language.English),
-			includeSeconds: true,
-		})}`,
+		workingComplexUI: (description: string, jobTime: Date) => `Working as ${description} until ${formatDate(jobTime, Language.English)}`,
 		robbing: "Robbing",
 		beingRobbedSimple: "Being robbed",
 		beingRobbedComplex: "Being robbed by",
@@ -1828,10 +1825,7 @@ const Strings = {
 		idling: "Vadiando",
 		workingSimple: "Trabalhando",
 		workingComplex: (description: string, jobTime: Date) => `Trabalhando como ${description}. Terminará ${showTime(jobTime.getTime(), true)}`,
-		workingComplexUI: (description: string, jobTime: Date) => `Trabalhando como ${description}. Terminará em ${formatDistanceToNow(jobTime, {
-			locale: getLocaleFromLanguage(Language.Portuguese),
-			includeSeconds: true,
-		})}`,
+		workingComplexUI: (description: string, jobTime: Date) => `Trabalhando como ${description} até ${formatDate(jobTime, Language.Portuguese)}`,
 		robbing: "Roubando",
 		beingRobbedSimple: "Sendo roubado",
 		beingRobbedComplex: "Sendo roubado por",
@@ -1861,10 +1855,7 @@ const Strings = {
 		idling: "Vagando",
 		workingSimple: "",
 		workingComplex: (description: string, jobTime: Date) => `Trabajando como ${description}. Terminará ${showTime(jobTime.getTime(), true)}`,
-		workingComplexUI: (description: string, jobTime: Date) => `Trabajando como ${description}. Terminará en ${formatDistanceToNow(jobTime, {
-			locale: getLocaleFromLanguage(Language.Spanish),
-			includeSeconds: true,
-		})}`,
+		workingComplexUI: (description: string, jobTime: Date) => `Trabajando como ${description} hasta ${formatDate(jobTime, Language.Spanish)}`,
 		robbing: "Robando",
 		beingRobbedSimple: "Siendo robado",
 		beingRobbedComplex: "Siendo robado por",
