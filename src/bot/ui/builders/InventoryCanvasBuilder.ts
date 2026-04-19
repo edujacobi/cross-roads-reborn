@@ -3,12 +3,12 @@ import { getLocaleFromLanguage, Language, type Localization } from "#core/models
 import { type User } from "#core/models/User";
 import { type UserBadge } from "#core/models/UserBadge";
 import { ClassList } from "#core/types/Classes";
-import { InvestmentList } from "#core/types/Investments";
+import { type InvestmentId, InvestmentList } from "#core/types/Investments";
 import { ItemType } from "#core/types/Items";
 import { differenceInHours, formatDistanceToNow } from "date-fns";
 import { type User as DUser } from "discord.js";
-import { formatMoney } from "../../utils/ui";
 import { AssetPaths } from "../../utils/assetPaths";
+import { formatMoney } from "../../utils/ui";
 import { BaseCanvasBuilder } from "./BaseCanvasBuilder";
 import { GangImageCanvasBuilder } from "./GangImageCanvasBuilder";
 import { UserImageCanvasBuilder } from "./UserImageCanvasBuilder";
@@ -21,6 +21,13 @@ export interface InventoryCanvasBuilderOptions {
 	Language: Language,
 	FullSize: boolean,
 	IsOnline: boolean,
+}
+
+export enum FooterType {
+	None,
+	GangOnly,
+	InvestmentOnly,
+	Both,
 }
 
 export class InventoryCanvasBuilder extends BaseCanvasBuilder {
@@ -61,6 +68,17 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 		this.IsOnline = params.IsOnline;
 	}
 
+	public static getFooterType(params: { User: { Investment: { Id: InvestmentId | null } }, Gang: Gang | null }): FooterType {
+		const hasInvestment = params.User.Investment.Id != null;
+		const hasGang = params.Gang != null;
+
+		if (hasInvestment && hasGang) return FooterType.Both;
+		if (hasInvestment) return FooterType.InvestmentOnly;
+		if (hasGang) return FooterType.GangOnly;
+
+		return FooterType.None;
+	}
+
 	/**
 	 * Calculates the required canvas height (changes based on FullSize and lenght of items)
 	 */
@@ -71,13 +89,17 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 		const subHeaderEnd = params.FullSize ? this.Layout.SUBHEADER_END_OPEN : this.Layout.SUBHEADER_END_CLOSED;
 		const gridStartY = params.FullSize ? this.Layout.GRID_START_Y_OPEN : this.Layout.GRID_START_Y_CLOSED;
 
+		const footerType = this.getFooterType(params);
+
 		// Footer dimensions
 		let footerHeight = 0;
+
 		if (params.FullSize) {
-			if (params.User.Investment.Id != null) footerHeight += 32;
-			if (params.Gang) footerHeight += 100;
+			if (footerType === FooterType.Both) footerHeight = 132;
+			else if (footerType === FooterType.InvestmentOnly) footerHeight = 32;
+			else if (footerType === FooterType.GangOnly) footerHeight = 64;
 		}
-		else if (params.Gang || params.User.Investment.Id != null) {
+		else if (footerType !== FooterType.None) {
 			footerHeight = 32;
 		}
 
@@ -159,7 +181,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 		this.Ctx.font = "700 42px InterBold";
 		this.Ctx.letterSpacing = "1px";
 		this.Ctx.textBaseline = "top";
-		this.Ctx.shadowColor = "rgba(0, 0, 0, 0.3)";
+		this.Ctx.shadowColor = "rgba(0, 0, 0, 0.4)";
 		this.Ctx.shadowBlur = 8;
 		this.Ctx.fillText(`${Strings[this.Language].inventoryOf} ${this.User.Nickname}`, currentX, titleY);
 		this.Ctx.letterSpacing = "0px";
@@ -242,13 +264,15 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 		// Class
 		const statsY = subHeaderY + 83;
 		await this.tryDrawImage(AssetPaths.getClassImage(this.User.Class), imgClass => {
-			this.Ctx.fillStyle = "#363640";
+			this.Ctx.fillStyle = "rgba(91, 91, 107, 0.25)";
+			this.Ctx.shadowBlur = 0;
 			this.Ctx.beginPath();
 			this.Ctx.roundRect(this.Padding, statsY, 48, 48, 24);
 			this.Ctx.fill();
 			this.Ctx.drawImage(imgClass, this.Padding, statsY, 48, 48);
 		});
 
+		this.Ctx.shadowBlur = 8;
 		this.Ctx.fillStyle = "#E3E3E6";
 		this.Ctx.font = "600 24px InterSemiBold";
 		this.Ctx.fillText(ClassList[this.User.Class].Name[this.Language], this.Padding + 60, statsY + 24);
@@ -285,7 +309,8 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 
 		// Class
 		await this.tryDrawImage(AssetPaths.getClassImage(this.User.Class), imgClass => {
-			this.Ctx.fillStyle = "#363640";
+			this.Ctx.fillStyle = "rgba(91, 91, 107, 0.25)";
+			this.Ctx.shadowBlur = 0;
 			this.Ctx.beginPath();
 			this.Ctx.roundRect(this.Padding, subHeaderY, 48, 48, 24);
 			this.Ctx.fill();
@@ -293,6 +318,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 		});
 
 		const className = ClassList[this.User.Class].Name[this.Language];
+		this.Ctx.shadowBlur = 8;
 		this.Ctx.fillStyle = "#E3E3E6";
 		this.Ctx.font = "600 24px InterSemiBold";
 		this.Ctx.textBaseline = "middle";
@@ -404,7 +430,15 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 				this.Ctx.textBaseline = "top";
 				this.Ctx.fillStyle = "#E3E3E6";
 				this.Ctx.font = "700 22px InterBold";
-				this.Ctx.fillText(item.Description[this.Language], x + 126, y + 35);
+				// if text is larger than 230px, truncate it and add "..."
+				let itemName = item.Description[this.Language];
+				while (this.Ctx.measureText(itemName).width > 230) {
+					itemName = itemName.substring(0, itemName.length - 1);
+				}
+				if (itemName.length < item.Description[this.Language].length) {
+					itemName += "...";
+				}
+				this.Ctx.fillText(itemName, x + 126, y + 35);
 
 				const durationText = item.Type == ItemType.Consumable ? String(item.Quantity) : formatDistanceToNow(item.RemainingTime, { locale: getLocaleFromLanguage(this.Language) });
 				this.Ctx.font = "400 20px Inter";
@@ -431,29 +465,33 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 	 * Footer can be clear (no gang and no investment), with gang (on the right) and with investment (on the left), or with both
 	 */
 	async AddFooters() {
-		if (!this.Gang && this.User.Investment.Id == null) return this;
-
 		const itemsPerRow = this.FullSize ? InventoryCanvasBuilder.MAX_ITEMS_PER_ROW_FULL_SIZE : InventoryCanvasBuilder.MAX_ITEMS_PER_ROW;
 		const rowCount = Math.ceil(this.User.Items.length / itemsPerRow);
 		const subHeaderEnd = this.FullSize ? InventoryCanvasBuilder.Layout.SUBHEADER_END_OPEN : InventoryCanvasBuilder.Layout.SUBHEADER_END_CLOSED;
 		const gridStartY = this.FullSize ? InventoryCanvasBuilder.Layout.GRID_START_Y_OPEN : InventoryCanvasBuilder.Layout.GRID_START_Y_CLOSED;
 
 		const extraSpace = this.FullSize ? 0 : 36;
-		this.Ctx.shadowBlur = 8;
+		this.Ctx.shadowBlur = 0;
+
+		const footerType = InventoryCanvasBuilder.getFooterType(this);
 
 		let footerY = rowCount > 0
 			? gridStartY + (rowCount * InventoryCanvasBuilder.Layout.GRID_ROW_STRIDE) + extraSpace - 24
 			: subHeaderEnd + 36;
 
-		if (this.User.Investment.Id != null) {
+		if (footerType === FooterType.Both || footerType === FooterType.InvestmentOnly) {
 			await this.DrawInvestmentBar(this.Padding, footerY);
 			if (this.FullSize) {
 				footerY += 36 + 36 + 32;
 			};
 		}
 
-		if (this.Gang) {
-			await new GangImageCanvasBuilder(this.User, this.Gang, this.Language, this.FullSize)
+		if (this.FullSize && footerType === FooterType.GangOnly) {
+			footerY += 36;
+		}
+
+		if (footerType === FooterType.Both || footerType === FooterType.GangOnly) {
+			await new GangImageCanvasBuilder(this.User, this.Gang!, this.Language, this.FullSize)
 				.DrawGangInfo(this.Ctx, this.Padding, footerY);
 		}
 
@@ -476,6 +514,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 			this.Ctx.fillStyle = "#E3E3E6";
 			this.Ctx.textBaseline = "middle";
 			this.Ctx.textAlign = "left";
+			this.Ctx.shadowBlur = 8;
 
 			const textX = x + iconSize + 10;
 			const nameText = InvestmentList[this.User.Investment.Id!].Name[this.Language];
@@ -490,8 +529,11 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 			}
 			else {
 				this.Ctx.drawImage(imgInv, x, centerY - iconSize / 2, iconSize, iconSize);
+				this.Ctx.shadowBlur = 8;
 				this.Ctx.fillText(nameText, textX, centerY);
 			}
+
+			this.Ctx.shadowBlur = 0;
 		});
 	}
 }

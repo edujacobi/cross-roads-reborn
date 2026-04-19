@@ -115,6 +115,7 @@ export class GangImageCanvasBuilder {
 
 			const textMargin = circleX + radius + 16;
 			const roleText = `${this.Gang.Members.find(member => member.UserId === this.User.Id)!.RoleName} ${Strings[this.Language].of} `;
+			ctx.shadowBlur = 8;
 			ctx.fillText(roleText, textMargin, circleY);
 
 			const roleWidth = ctx.measureText(roleText).width;
@@ -152,11 +153,14 @@ export class GangImageCanvasBuilder {
 			const textMargin = startX + imageSize + 10;
 			ctx.textAlign = "left";
 			ctx.fillStyle = "#E3E3E6";
+			ctx.shadowBlur = 8;
 			ctx.fillText(roleText, textMargin, circleY);
 
 			ctx.fillStyle = colorString;
 			ctx.fillText(this.Gang.Name, textMargin + ctx.measureText(roleText).width, circleY);
 		}
+
+		ctx.shadowBlur = 0;
 	}
 }
 

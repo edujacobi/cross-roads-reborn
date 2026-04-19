@@ -10,6 +10,7 @@ import { BadgeId } from "./src/core/types/Badges";
 import { ClassId } from "./src/core/types/Classes";
 import { ItemId } from "./src/core/types/Ids";
 import { InvestmentId } from "./src/core/types/Investments";
+import { logger } from "#shared/log";
 
 // Register fonts
 GlobalFonts.registerFromPath(path.join(process.cwd(), "src", "bot", "ui", "assets", "fonts", "Inter.ttf"), "Inter");
@@ -42,12 +43,16 @@ async function testInventory() {
 		} as any,
 		{
 			Id: ItemId.Sunglasses,
-			Description: { [Language.Portuguese]: "Óculos de Sol" },
+			Description: { [Language.Portuguese]: "Óculos de Sol comprido pra caralho" },
 			Quantity: 1,
 			RemainingTime: new Date(Date.now() + 1_000 * 60 * 60 * 24 * 7)
 		} as any
 	];
-	userBase.Investment = {
+	const noInvestment = {
+		Id: null,
+	} as any;
+
+	const withInvestment = {
 		Id: InvestmentId.ChurrosCart,
 		ExpiresAt: new Date(Date.now() + 1_000 * 60 * 60 * 24 * 7)
 	} as any;
@@ -72,17 +77,18 @@ async function testInventory() {
 	} as any;
 
 	const testCases = [
-		{ name: "none_closed", full: false, gang: null, isOnline: false },
-		{ name: "gang_only_closed", full: false, gang: mockGang, isOnline: false },
-		{ name: "inv_only_closed", full: false, gang: null, isOnline: false },
-		{ name: "both_closed", full: false, gang: mockGang, isOnline: false },
-		{ name: "both_open", full: true, gang: mockGang, isOnline: true },
-		{ name: "gang_only_open", full: true, gang: mockGang, isOnline: true },
-		{ name: "inv_only_open", full: true, gang: null, isOnline: true }
+		{ name: "none_closed", full: false, gang: null, isOnline: false, investment: noInvestment },
+		{ name: "gang_only_closed", full: false, gang: mockGang, isOnline: false, investment: noInvestment },
+		{ name: "inv_only_closed", full: false, gang: null, isOnline: false, investment: withInvestment },
+		{ name: "both_closed", full: false, gang: mockGang, isOnline: false, investment: withInvestment },
+		{ name: "both_open", full: true, gang: mockGang, isOnline: true, investment: withInvestment },
+		{ name: "gang_only_open", full: true, gang: mockGang, isOnline: true, investment: noInvestment },
+		{ name: "inv_only_open", full: true, gang: null, isOnline: true, investment: withInvestment }
 	];
 
 	for (const tc of testCases) {
-		console.log(`Generating ${tc.name}...`);
+		logger.info(`Generating ${tc.name}...`);
+		userBase.Investment = tc.investment;
 		const builder = new InventoryCanvasBuilder({
 			User: userBase,
 			Badges: badges,
@@ -96,8 +102,8 @@ async function testInventory() {
 		await builder.GetCanvas();
 		const buffer = await builder.GenerateImage();
 		fs.writeFileSync(`test_inventory_${tc.name}.webp`, buffer);
-		console.log(`Saved test_inventory_${tc.name}.webp`);
+		logger.info(`Saved test_inventory_${tc.name}.webp`);
 	}
 }
 
-testInventory().catch(console.error);
+testInventory().catch(logger.error);
