@@ -21,6 +21,8 @@ export class Users extends Model<
 	declare lastDailyReceived: Date | null;
 	declare dailyStreak: number;
 	declare maxDailyStreak: number;
+	declare nicknameChangeCount: number;
+	declare classChangeCount: number;
 
 	declare vipTime: CreationOptional<Date | null>;
 	declare vipEternal: CreationOptional<boolean>;
@@ -147,6 +149,16 @@ Users.init(
 			defaultValue: 0,
 		},
 		maxDailyStreak: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0,
+		},
+		nicknameChangeCount: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0,
+		},
+		classChangeCount: {
 			type: DataTypes.INTEGER,
 			allowNull: false,
 			defaultValue: 0,

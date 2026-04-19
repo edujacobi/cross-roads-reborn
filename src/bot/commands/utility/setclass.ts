@@ -29,8 +29,6 @@ module.exports = {
 			ClassList[ClassId.Thief],
 		];
 
-		const CHANGE_COST = user.IsVip() ? 75_000 : 100_000;
-
 		function getModifierText(modifier?: ClassModifier) {
 			const text = [];
 			const getMultiplicative = (value: number) => Math.round(value * 100) - 100;
@@ -171,7 +169,6 @@ module.exports = {
 					return disableButtons(interaction, container);
 				}
 
-				// TODO: Aumentar custo de acordo com quantas mudanças já realizou
 				const hasClass = user.Class !== ClassId.None;
 
 				container = addContainerHeader()
@@ -180,7 +177,7 @@ module.exports = {
 					])
 					.addLargeSeparator()
 					.addTexts([
-						hasClass ? s.costToChange(CHANGE_COST) : s.firstFree,
+						hasClass ? s.costToChange(user.GetClassChangeCost()) : s.firstFree,
 					])
 					.addButtonRow(
 						btn => btn
@@ -189,8 +186,8 @@ module.exports = {
 							.setStyle(ButtonStyle.Secondary),
 						btn => btn
 							.setCustomId(`confirm${classId}`)
-							.setDisabled(hasClass && user.Money < CHANGE_COST)
-							.setLabel(hasClass ? formatMoney(CHANGE_COST, language) : s.confirm)
+							.setDisabled(user.Money < user.GetClassChangeCost())
+							.setLabel(hasClass ? formatMoney(user.GetClassChangeCost(), language) : s.confirm)
 							.setStyle(ButtonStyle.Success),
 					)
 					.addFooter({
@@ -211,9 +208,9 @@ module.exports = {
 					return disableButtons(interaction, container);
 				}
 
-				const hasClass = user.Class !== ClassId.None;
+				const currentCost = user.GetClassChangeCost();
 
-				const success = await user.SetClass(newClass, hasClass ? CHANGE_COST : undefined);
+				const success = await user.SetClass(newClass, currentCost || undefined);
 
 				container = addContainerHeader()
 					.addTexts([

@@ -40,8 +40,7 @@ module.exports = {
 		const newNick = interaction.options.getString("nick", true);
 
 		const s = Strings[language];
-
-		const CHANGE_COST = user.IsVip() ? 75_000 : 100_000;
+		const CHANGE_COST = user.GetNicknameChangeCost();
 
 		if (!/^[A-Za-z]+(?: [A-Za-z]+)*$/.test(newNick)) {
 			const tempUser = new User("0");
@@ -126,8 +125,9 @@ module.exports = {
 
 			if (btn.customId === "confirm") {
 				await user.GetInfo();
+				const currentCost = user.GetNicknameChangeCost();
 
-				const success = await user.SetNickname(newNick, CHANGE_COST);
+				const success = await user.SetNickname(newNick, currentCost);
 
 				const description = success ? s.nickChanged(oldNick, newNick) : s.errorChange;
 

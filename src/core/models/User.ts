@@ -60,6 +60,8 @@ export class User {
 	SpecialCoin = 0;
 	AvatarDecoration = AvatarDecorationList[AvatarDecorationId.Default];
 	BackgroundDecoration = BackgroundDecorationList[BackgroundDecorationId.Default];
+	NicknameChangeCount = 0;
+	ClassChangeCount = 0;
 	Vote = {
 		LastClaim: null as Date | null,
 		Count: 0,
@@ -257,6 +259,8 @@ export class User {
 				drunkCount: 0,
 				notifyInvestmentYield: true,
 				investmentTotalProfit: 0,
+				nicknameChangeCount: 0,
+				classChangeCount: 0,
 			});
 			Log.Success(`User ${this.Id} created.`);
 
@@ -301,6 +305,8 @@ export class User {
 		this.SpecialCoin = user.specialCoin;
 		this.AvatarDecoration = AvatarDecorationList[user.avatarDecoration];
 		this.BackgroundDecoration = BackgroundDecorationList[user.backgroundDecoration];
+		this.NicknameChangeCount = user.nicknameChangeCount;
+		this.ClassChangeCount = user.classChangeCount;
 
 		// Verificar se o usuário está em uma gangue
 		const gangMember = await GangMembers.findOne({
@@ -509,12 +515,14 @@ export class User {
 			this.Money -= cost;
 		}
 
+		this.NicknameChangeCount += 1;
 		await this.Update({
 			nickname: this.Nickname,
 			money: this.Money,
+			nicknameChangeCount: this.NicknameChangeCount,
 		});
 
-		Log.Success(`User ${oldNickname} (Id: ${this.Id}) changed nickname to ${nickname}.`);
+		Log.Success(`User ${oldNickname} (Id: ${this.Id}) changed nickname to ${nickname}. ${cost ? ` for ${formatMoney(cost, Language.English)}` : ""}`);
 		return true;
 	}
 
@@ -534,13 +542,47 @@ export class User {
 			this.Money -= cost;
 		}
 
+		this.ClassChangeCount += 1;
 		await this.Update({
 			class: this.Class,
 			money: this.Money,
+			classChangeCount: this.ClassChangeCount,
 		});
 
-		Log.Success(`User ${this.Nickname} (Id: ${this.Id}) changed class from ${ClassList[oldClass].Name[Language.English]} to ${ClassList[classId].Name[Language.English]}.`);
+		Log.Success(`User ${this.Nickname} (Id: ${this.Id}) changed class from ${ClassList[oldClass].Name[Language.English]} to ${ClassList[classId].Name[Language.English]}${cost ? ` for ${formatMoney(cost, Language.English)}` : ""}.`);
 		return true;
+	}
+
+	/**
+	 * Gets the cost to change the nickname.
+	 * @returns The cost.
+	 */
+	GetNicknameChangeCost() {
+		if (this.Nickname === "") {
+			return 0;
+		}
+
+		const base = 100_000;
+		const multiplier = Math.pow(10, Math.max(0, this.NicknameChangeCount - 1));
+		const discount = this.IsVip() ? 0.75 : 1;
+
+		return Math.floor(base * multiplier * discount);
+	}
+
+	/**
+	 * Gets the cost to change the class.
+	 * @returns The cost.
+	 */
+	GetClassChangeCost() {
+		if (this.Class === ClassId.None) {
+			return 0;
+		}
+
+		const base = 100_000;
+		const multiplier = Math.pow(10, Math.max(0, this.ClassChangeCount - 1));
+		const discount = this.IsVip() ? 0.75 : 1;
+
+		return Math.floor(base * multiplier * discount);
 	}
 
 	/**

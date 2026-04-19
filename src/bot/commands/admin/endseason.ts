@@ -330,6 +330,8 @@ module.exports = {
 							drinkHappyHour: 0,
 							drunkCount: 0,
 							investmentTotalProfit: 0,
+							nicknameChangeCount: 0,
+							classChangeCount: 0,
 							// actions
 							beingRobbedByUserId: null,
 							robbingUserId: null,
