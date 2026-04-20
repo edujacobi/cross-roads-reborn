@@ -90,7 +90,7 @@ module.exports = {
 					),
 				)
 				.addFooter({
-					text: user.Situation.Simple,
+					text: `${formatMoney(user.Money, language)} • ${user.Situation.Simple}`,
 				});
 		}
 
@@ -195,7 +195,9 @@ module.exports = {
 							.setStyle(ButtonStyle.Secondary)
 							.setCustomId("available"),
 						)
-						.addFooter();
+						.addFooter({
+							text: formatMoney(user.Money, language),
+						});
 
 					return replyWithContainer(interaction, container);
 
@@ -214,6 +216,7 @@ module.exports = {
 							user,
 							color: CrColors.Robbery,
 							description: message,
+							footer: formatMoney(user.Money, language),
 						});
 
 						return replyWithContainer(interaction, container);
@@ -239,6 +242,7 @@ module.exports = {
 				user,
 				color: CrColors.Robbery,
 				description: message,
+				footer: formatMoney(user.Money, language),
 			});
 
 			return replyWithContainer(interaction, container);

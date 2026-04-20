@@ -1,12 +1,12 @@
-import { type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
-import { replyWithContainer } from "#bot/utils/discordInteractions";
-import { formatMoney, showTime } from "#bot/utils/ui";
-import { addDays } from "date-fns";
-import { Language, type Localization } from "#core/models/Language";
-import { CrColors } from "#bot/utils/colors";
-import type { User } from "#core/models/User";
 import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
+import { CrColors } from "#bot/utils/colors";
+import { replyWithContainer } from "#bot/utils/discordInteractions";
 import { isUserBoosterInOfficialServer } from "#bot/utils/officialServer";
+import { formatMoney, showTime } from "#bot/utils/ui";
+import { Language, type Localization } from "#core/models/Language";
+import type { User } from "#core/models/User";
+import { addDays } from "date-fns";
+import { type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -33,7 +33,9 @@ module.exports = {
 				.addTexts([
 					s.descriptionReceived(showTime(addDays(user.Daily.LastReceived, 1).getTime(), true)),
 				])
-				.addFooter();
+				.addFooter({
+					text: formatMoney(user.Money, language),
+				});
 
 			return replyWithContainer(interaction, container);
 		}
@@ -57,7 +59,7 @@ module.exports = {
 		container
 			.addTexts(texts)
 			.addFooter({
-				text: s.footer(user.Daily.MaxStreak),
+				text: `${formatMoney(user.Money, language)} • ${s.footer(user.Daily.MaxStreak)}`,
 			});
 
 		return replyWithContainer(interaction, container);

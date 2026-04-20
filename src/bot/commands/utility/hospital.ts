@@ -1,16 +1,16 @@
-import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
-import type { User } from "#core/models/User";
-import { Hospital, HospitalFailureReason } from "#core/models/Hospital";
 import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
-import { CrColors } from "#bot/utils/colors";
 import { EmoteBadgeString } from "#bot/utils/badges";
-import { EmoteString } from "#bot/utils/emotes";
-import { deferUpdate, replyWithContainer } from "#bot/utils/discordInteractions";
-import { Pagination } from "#core/models/Pagination";
-import { ClassList } from "#core/types/Classes";
-import { defaultComponent, formatMoney, showTime } from "#bot/utils/ui";
-import { Language, type Localization } from "#core/models/Language";
 import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
+import { CrColors } from "#bot/utils/colors";
+import { deferUpdate, replyWithContainer } from "#bot/utils/discordInteractions";
+import { EmoteString } from "#bot/utils/emotes";
+import { defaultComponent, formatMoney, showTime } from "#bot/utils/ui";
+import { Hospital, HospitalFailureReason } from "#core/models/Hospital";
+import { Language, type Localization } from "#core/models/Language";
+import { Pagination } from "#core/models/Pagination";
+import type { User } from "#core/models/User";
+import { ClassList } from "#core/types/Classes";
+import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -84,6 +84,7 @@ module.exports = {
 					`-# ${text}`,
 				])
 				.addFooter({
+					text: formatMoney(user.Money, user.Language),
 					button: buttonHospitalized,
 				});
 
@@ -157,6 +158,7 @@ module.exports = {
 							user: user,
 							color: CrColors.Hospital,
 							description: `${message} ${EmoteString.Hospital}`,
+							footer: formatMoney(user.Money, user.Language),
 						});
 
 						return replyWithContainer(interaction, container);
@@ -203,6 +205,7 @@ module.exports = {
 							user: user,
 							color: CrColors.Hospital,
 							description: `${message} ${EmoteString.Hospital}`,
+							footer: formatMoney(user.Money, user.Language),
 						});
 
 						return replyWithContainer(interaction, container);

@@ -211,6 +211,7 @@ module.exports = {
 							user: user,
 							color: CrColors.Police,
 							description: `${message} ${EmoteString.Prison}`,
+							footer: formatMoney(user.Money, user.Language),
 						});
 
 						return replyWithContainer(interaction, container);
@@ -408,6 +409,7 @@ module.exports = {
 							user: user,
 							color: CrColors.Police,
 							description: `${message} ${EmoteString.Prison}`,
+							footer: formatMoney(user.Money, user.Language),
 						});
 
 						return replyWithContainer(interaction, container);
@@ -473,6 +475,7 @@ module.exports = {
 							user: user,
 							color: CrColors.Police,
 							description: `${message} ${EmoteString.Prison}`,
+							footer: formatMoney(user.Money, user.Language),
 						});
 
 						return replyWithContainer(interaction, container);
@@ -488,7 +491,7 @@ module.exports = {
 								`### ${EmoteString.Police} ${s.briberyAccepted}`,
 								s.briberyAcceptedDescription,
 							])
-							.addFooter({ text: s.briberyAcceptedFooter });
+							.addFooter({ text: `${s.briberyAcceptedFooter} • ${formatMoney(user.Money, user.Language)}` });
 					}
 					else {
 						container
@@ -496,7 +499,7 @@ module.exports = {
 								`### ${EmoteString.Police} ${s.briberyRejected}`,
 								s.briberyRejectedDescription,
 							])
-							.addFooter({ text: s.briberyRejectedFooter });
+							.addFooter({ text: `${s.briberyRejectedFooter} • ${formatMoney(user.Money, user.Language)}` });
 					}
 
 					return replyWithContainer(interaction, container);

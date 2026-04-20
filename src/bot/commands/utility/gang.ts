@@ -547,7 +547,9 @@ module.exports = {
 					.setURL("https://cdn.discordapp.com/attachments/1233604589064818808/1457724304383938611/GangImage.png"),
 				),
 			)
-			.addFooter();
+			.addFooter({
+				text: formatMoney(user.Money, language),
+			});
 
 		const subCommand = interaction.options.getSubcommand();
 
@@ -1757,6 +1759,7 @@ module.exports = {
 				color: GangColor[gang.Color].Color as ColorResolvable,
 				description: s.depositSuccess(formatMoney(amount, language), gang.Name),
 				user,
+				footer: formatMoney(user.Money, language),
 			});
 
 			return replyWithContainer(interaction, container);

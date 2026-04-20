@@ -117,7 +117,9 @@ module.exports = {
 				.setCustomId("start")
 				.setStyle(ButtonStyle.Primary),
 			)
-			.addFooter();
+			.addFooter({
+				text: formatMoney(user.Money, language),
+			});
 
 		const response = await replyWithContainer(interaction, container);
 
@@ -224,7 +226,7 @@ module.exports = {
 					.addLargeSeparator()
 					.addTexts(participantsStatus.map(p => `-# ${emote(p.user.Id)} ${p.user.GetNameWithImage()} ${p.alive ? EmoteString.Victory : EmoteString.Hospital}`))
 					.addFooter({
-						text: s.betPrize(formatMoney(betValue, participants[0].Language), formatMoney(prize, participants[0].Language)),
+						text: `${formatMoney(user.Money, language)} • ${s.betPrize(formatMoney(betValue, participants[0].Language), formatMoney(prize, participants[0].Language))}`,
 					});
 			}
 

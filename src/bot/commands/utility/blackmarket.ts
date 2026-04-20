@@ -1,10 +1,10 @@
-import { type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
-import { replyWithContainer } from "#bot/utils/discordInteractions";
-import { BlackMarket } from "#core/models/BlackMarket";
-import { defaultComponent } from "#bot/utils/ui";
 import { CrColors } from "#bot/utils/colors";
-import type { User } from "#core/models/User";
+import { replyWithContainer } from "#bot/utils/discordInteractions";
+import { defaultComponent, formatMoney } from "#bot/utils/ui";
+import { BlackMarket } from "#core/models/BlackMarket";
 import type { Language } from "#core/models/Language";
+import type { User } from "#core/models/User";
+import { type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const shopCommand = require("./shop");
 
@@ -28,6 +28,7 @@ module.exports = {
 				user,
 				color: CrColors.BlackMarket,
 				description: message,
+				footer: formatMoney(user.Money, language),
 			});
 
 			return replyWithContainer(interaction, container);

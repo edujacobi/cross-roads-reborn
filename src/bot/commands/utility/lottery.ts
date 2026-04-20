@@ -93,7 +93,9 @@ module.exports = {
 				.addTexts([
 					s.alreadyBought(hasBought.id)
 				])
-				.addFooter();
+				.addFooter({
+					text: formatMoney(user.Money, language),
+				});
 
 			return replyWithContainer(interaction, container);
 		}

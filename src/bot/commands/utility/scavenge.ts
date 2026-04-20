@@ -60,7 +60,7 @@ module.exports = {
 			const s = Strings[user.Language];
 			container
 				.addFooter({
-					text: s.moreAtk,
+					text: `${formatMoney(user.Money, user.Language)} • ${s.moreAtk}`,
 				});
 		};
 
@@ -279,7 +279,9 @@ module.exports = {
 						.addTexts([
 							`${s.scavenging} ${placeName} ${EmoteString.Waiting}`,
 						])
-						.addFooter();
+						.addFooter({
+							text: formatMoney(user.Money, user.Language),
+						});
 
 					await replyWithContainer(interaction, container);
 
@@ -298,7 +300,9 @@ module.exports = {
 								`${s.youFound(result.rewardDescription)} ${placeName} ${EmoteString.Scavenge}`,
 								`-# ${s.willBeAbleAgain} ${showTime(addHours(new Date(), 1).getTime(), true)}`,
 							])
-							.addFooter();
+							.addFooter({
+								text: formatMoney(user.Money, user.Language),
+							});
 					}
 					else {
 						let hospitalText = "";
