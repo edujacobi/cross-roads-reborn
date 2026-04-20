@@ -182,17 +182,17 @@ export class Lottery {
 
 	static async ScheduleNextDraw() {
 		const now = new Date();
-		const nextDrawTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 18, 0, 0);
+		const nextDrawTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 19, 0, 0);
 
 		if (this.IsMegaDraw(nextDrawTime)) {
-			nextDrawTime.setHours(23, 59, 0, 0);
+			nextDrawTime.setHours(23, 59, 59, 0);
 		}
 
 		if (now.getTime() >= nextDrawTime.getTime()) {
 			nextDrawTime.setDate(nextDrawTime.getDate() + 1);
-			nextDrawTime.setHours(18, 0, 0, 0);
+			nextDrawTime.setHours(19, 0, 0, 0);
 			if (this.IsMegaDraw(nextDrawTime)) {
-				nextDrawTime.setHours(23, 59, 0, 0);
+				nextDrawTime.setHours(23, 59, 59, 0);
 			}
 		}
 
