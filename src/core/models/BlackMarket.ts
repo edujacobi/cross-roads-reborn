@@ -1,9 +1,11 @@
-import type { User } from "./User";
+import { CrColors } from "#bot/utils/colors";
+import { EmoteString } from "#bot/utils/emotes";
+import { showTime } from "#bot/utils/ui";
+import { getItemList } from "#core/types/Items";
+import { nextFriday, set } from "date-fns";
 import { Language, type Localization } from "./Language";
 import { Shop } from "./Shop";
-import { getItemList } from "#core/types/Items";
-import { CrColors } from "#bot/utils/colors";
-import { addHours } from "date-fns";
+import type { User } from "./User";
 
 export class BlackMarket extends Shop {
 	constructor(user: User) {
@@ -18,12 +20,12 @@ export class BlackMarket extends Shop {
 	}
 
 	IsBlackMarketOpen() {
-		const now = addHours(new Date(), -3);
+		const OPENNING_HOUR = 21;
+		const now = new Date();
 		const day = now.getDay();
 		const hours = now.getHours();
 
 		let isOpen = false;
-		let message = Strings[this.User.Language].hey as string;
 
 		const isUserJacobi = this.User.Id === process.env.JACOBI_ID;
 
@@ -33,12 +35,23 @@ export class BlackMarket extends Shop {
 
 		if (day === SUNDAY ||
 			day === SATURDAY ||
-			(day === FRIDAY && hours >= 20) ||
+			(day === FRIDAY && hours >= OPENNING_HOUR) ||
 			isUserJacobi
 		) {
 			isOpen = true;
-			message = "";
+			return { isOpen, message: "" };
 		}
+
+		let nextOpeningDate: Date;
+		if (day === FRIDAY && hours < OPENNING_HOUR) {
+			nextOpeningDate = set(now, { hours: OPENNING_HOUR, minutes: 0, seconds: 0, milliseconds: 0 });
+		}
+		else {
+			nextOpeningDate = nextFriday(now);
+			nextOpeningDate = set(nextOpeningDate, { hours: OPENNING_HOUR, minutes: 0, seconds: 0, milliseconds: 0 });
+		}
+
+		const message = `${EmoteString.BlackMarket} ${Strings[this.User.Language].hey(nextOpeningDate)}`;
 
 		return { isOpen, message };
 	}
@@ -48,19 +61,19 @@ export class BlackMarket extends Shop {
 const Strings = {
 	[Language.English]: {
 		title: "Black Market",
-		description: "Look at these beauties!",
-		hey: "Hey, psst... Come back here at 8 PM on Friday and I will have some cool stuff to show you...",
+		description: "Look at these beauties!\nThe Black Market is open on Sundays, Saturdays and Fridays after 9pm",
+		hey: (time: Date) => `Hey, psst...\nCome back here ${showTime(time.getTime(), true)} and I will have some cool stuff to show you...`,
 	},
 
 	[Language.Portuguese]: {
 		title: "Mercado Negro",
-		description: "Olhe para essas belezinhas!",
-		hey: "Hey, psst... Volte aqui às 20h de sexta-feira que eu terei umas coisinhas bem legais pra te mostrar...",
+		description: "Olhe para essas belezinhas!\nO Mercado Negro é aberto aos domingos, sábados e sextas após as 18h",
+		hey: (time: Date) => `Ei, psst...\nVolte aqui ${showTime(time.getTime(), true)} que eu terei umas coisinhas bem legais pra te mostrar...`,
 	},
 
 	[Language.Spanish]: {
 		title: "Mercado Negro",
-		description: "¡Mira estas bellezas!",
-		hey: "Oye, psst... Vuelve aquí a las 8 PM del viernes y tendré algunas cosas geniales para mostrarte...",
+		description: "¡Mira estas bellezas!\nEl mercado negro es abierto los domingos, sábados y viernes después de las 21h (GMT0)",
+		hey: (time: Date) => `Oye, psst...\nVuelve aquí ${showTime(time.getTime(), true)} y tendré algunas cosas geniales para mostrarte...`,
 	},
 } as const satisfies Localization;
