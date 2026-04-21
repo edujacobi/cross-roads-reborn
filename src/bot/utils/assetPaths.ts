@@ -9,8 +9,14 @@ export class AssetPaths {
 	}
 
 	static getSituationImage(situationId: SituationId) {
-		let name = SituationId[situationId];
 		let id = situationId;
+
+		if (situationId === SituationId.PrisonAndHospital) {
+			id = SituationId.Prison;
+		}
+
+		let name = SituationId[id];
+
 		if (!name) {
 			name = SituationId[SituationId.Idling];
 			id = SituationId.Idling;
