@@ -1,9 +1,13 @@
+import type { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
+import { Language, type Localization } from "#core/models/Language";
+import { Log, logger } from "#shared/log";
 import {
 	ButtonInteraction,
 	type ColorResolvable,
 	Colors,
 	type CommandInteraction,
 	type ContainerBuilder,
+	type DiscordAPIError,
 	EmbedBuilder,
 	type InteractionEditReplyOptions,
 	type InteractionReplyOptions,
@@ -14,9 +18,6 @@ import {
 	type Snowflake,
 } from "discord.js";
 import { getClient } from "../client";
-import { Log } from "#shared/log";
-import { Language, type Localization } from "#core/models/Language";
-import type { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
 
 /**
  * Sends a private message (DM) to a user with a simple embed.
@@ -95,15 +96,26 @@ export async function replyInteraction(interaction: CommandInteraction | ButtonI
 		return await interaction.reply(options as InteractionReplyOptions);
 	}
 	catch (err) {
-		const error = err as Error;
-		console.debug(error);
+		const error = err as DiscordAPIError;
+		logger.debug(error);
 
-		if (error.name === "AbortError") {
-			Log.Warning(`Interaction reply timed out (AbortError) for user ${interaction.user.displayName} in server ${interaction.guild?.name}. This is usually a temporary Discord API or network issue.`);
+		// Handle specific Discord errors gracefully (Console only)
+		if (error.code === 10_008) {
+			logger.warn(`[CONSOLE] Interaction reply failed: Deleted Message (Code 10008) for user ${interaction.user.displayName} (Id: ${interaction.user.id}) in server ${interaction.guild?.name} (Id: ${interaction.guild?.id}).`);
 			return;
 		}
 
-		Log.Warning(`Something went wrong with replying interaction of user ${interaction.user.displayName} in server ${interaction.guild?.name} (Id: ${interaction.guild?.id}). Error: ${error.message}`);
+		if (error.code === 50_027) {
+			logger.warn(`[CONSOLE] Interaction reply failed: Token Expired (Code 50027) for user ${interaction.user.displayName} (Id: ${interaction.user.id}) in server ${interaction.guild?.name} (Id: ${interaction.guild?.id}).`);
+			return;
+		}
+
+		if (error.name === "AbortError") {
+			logger.warn(`[CONSOLE] Interaction reply timed out (AbortError) for user ${interaction.user.displayName} (Id: ${interaction.user.id}) in server ${interaction.guild?.name} (Id: ${interaction.guild?.id}). This is usually a temporary Discord API or network issue.`);
+			return;
+		}
+
+		Log.Warning(`Something went wrong with replying interaction of user ${interaction.user.displayName} (Id: ${interaction.user.id}) in server ${interaction.guild?.name} (Id: ${interaction.guild?.id}). Error: ${error.message}`);
 	}
 }
 
