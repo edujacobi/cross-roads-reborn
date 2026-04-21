@@ -727,6 +727,10 @@ export const ItemList: ItemListType = {
 				Id: EmoteId.Exoskeleton,
 				String: EmoteString.Exoskeleton,
 			},
+			[BundleId.Traditional]: {
+				Id: "1496188261973102692",
+				String: "<:TraditionalExoSkeleton:1496188261973102692>",
+			},
 		},
 		Price: 20_000_000,
 		Shop: false,
@@ -828,6 +832,10 @@ export const ItemList: ItemListType = {
 			[BundleId.Default]: {
 				Id: EmoteId.Sunglasses,
 				String: EmoteString.Sunglasses,
+			},
+			[BundleId.Traditional]: {
+				Id: "1496188306394845184",
+				String: "<:TraditionalSunglasses:1496188306394845184>",
 			},
 		},
 		Price: 0,
@@ -934,6 +942,10 @@ export const ItemList: ItemListType = {
 			[BundleId.Default]: {
 				Id: EmoteId.AdvancedScope,
 				String: EmoteString.AdvancedScope,
+			},
+			[BundleId.Traditional]: {
+				Id: "1496188286178296049",
+				String: "<:TraditionalAdvancedScope:1496188286178296049>",
 			},
 		},
 		Price: 1_000_000,
