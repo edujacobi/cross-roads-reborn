@@ -57,14 +57,21 @@ module.exports = {
 			return container;
 		}
 
-		async function generateDefaultContainer() {
+		async function generateDefaultContainer(itemPage = 0) {
 			await user.GetInfo();
 
-			// separate itemsWithSkins in different arrays with length = 5
+			// Split items into chunks of 4 buttons, then show 2 chunks per page
+			const CHUNKS_PER_PAGE = 2;
+			const ITEMS_PER_CHUNK = 4;
 			const itemsWithSkinsChunks = [];
-			for (let i = 0; i < itemsWithSkins.length; i += 5) {
-				itemsWithSkinsChunks.push(itemsWithSkins.slice(i, i + 5));
+
+			for (let i = 0; i < itemsWithSkins.length; i += ITEMS_PER_CHUNK) {
+				itemsWithSkinsChunks.push(itemsWithSkins.slice(i, i + ITEMS_PER_CHUNK));
 			}
+
+			const totalItemPages = Math.ceil(itemsWithSkinsChunks.length / CHUNKS_PER_PAGE);
+			const clampedItemPage = Math.max(0, Math.min(itemPage, totalItemPages - 1));
+			const pageChunks = itemsWithSkinsChunks.slice(clampedItemPage * CHUNKS_PER_PAGE, (clampedItemPage + 1) * CHUNKS_PER_PAGE);
 
 			const container = addHeader();
 
@@ -73,7 +80,7 @@ module.exports = {
 				s.choose,
 			]);
 
-			for (const chunk of itemsWithSkinsChunks) {
+			for (const chunk of pageChunks) {
 				container.addButtonRow(
 					...chunk.map(item => (btn: ButtonBuilder) => btn
 						.setLabel(item.Description[language])
@@ -84,6 +91,33 @@ module.exports = {
 				);
 			}
 
+			// Item pagination nav — only shown when there is more than one page
+			if (totalItemPages > 1) {
+				const navButtons: ((btn: ButtonBuilder) => ButtonBuilder)[] = [];
+
+				if (clampedItemPage > 0) {
+					navButtons.push(btn => btn
+						.setCustomId("items-prev")
+						.setLabel(s.previous)
+						.setStyle(ButtonStyle.Secondary)
+						.setEmoji("⬅️"),
+					);
+				}
+
+				if (clampedItemPage < totalItemPages - 1) {
+					navButtons.push(btn => btn
+						.setCustomId("items-next")
+						.setLabel(s.next)
+						.setStyle(ButtonStyle.Secondary)
+						.setEmoji("➡️"),
+					);
+				}
+
+				if (navButtons.length > 0) {
+					container.addButtonRow(...navButtons);
+				}
+			}
+
 			container.addLargeSeparator();
 
 			container.addTexts([
@@ -91,17 +125,11 @@ module.exports = {
 				s.allItems,
 			]);
 
-			// separate bundles in different arrays with length = 5
-			const bundlesChunks = [];
+			// Bundles are always shown in full (few enough to never hit the limit)
 			const bundleList = getSkinBundleList();
 			const userOwnedBundles = bundleList.filter(bundle => bundle.Id === BundleId.Default || userBundles.some(ub => ub.BundleId === bundle.Id));
 			for (let i = 0; i < userOwnedBundles.length; i += 5) {
-				if (userOwnedBundles[i]) {
-					bundlesChunks.push(userOwnedBundles.slice(i, i + 5));
-				}
-			}
-
-			for (const chunk of bundlesChunks) {
+				const chunk = userOwnedBundles.slice(i, i + 5);
 				container.addButtonRow(
 					...chunk.map(bundle => (btn: ButtonBuilder) => btn
 						.setLabel(bundle.Description[language])
@@ -115,10 +143,10 @@ module.exports = {
 
 			container.addFooter();
 
-			return container;
+			return { container, itemPage: clampedItemPage };
 		}
 
-		let container = await generateDefaultContainer();
+		let { container, itemPage: currentItemPage } = await generateDefaultContainer();
 
 		const response = await replyWithContainer(interaction, container);
 
@@ -135,8 +163,14 @@ module.exports = {
 		collectorButton?.on("collect", async btn => {
 			await deferUpdate(btn);
 
-			if (btn.customId === "back") {
-				container = await generateDefaultContainer();
+			if (btn.customId === "items-prev" || btn.customId === "items-next") {
+				const nextPage = btn.customId === "items-prev" ? currentItemPage - 1 : currentItemPage + 1;
+				({ container, itemPage: currentItemPage } = await generateDefaultContainer(nextPage));
+				return replyWithContainer(interaction, container);
+			}
+
+			else if (btn.customId === "back") {
+				({ container, itemPage: currentItemPage } = await generateDefaultContainer(currentItemPage));
 
 				selectedItem = null;
 
@@ -274,6 +308,8 @@ const Strings = {
 		willApplyTo: "Will apply to items",
 		select: "Select",
 		applied: "Applied to all items",
+		previous: "Previous",
+		next: "Next",
 	},
 	[Language.Portuguese]: {
 		subtitle: "Mostre à todos que você é diferentão!",
@@ -287,6 +323,8 @@ const Strings = {
 		willApplyTo: "Irá aplicar aos itens",
 		select: "Selecionar",
 		applied: "Aplicado a todos os itens",
+		previous: "Anterior",
+		next: "Próximo",
 	},
 	[Language.Spanish]: {
 		subtitle: "Muestra a todos lo diferente que eres",
@@ -300,5 +338,7 @@ const Strings = {
 		willApplyTo: "Irá aplicar a los artículos",
 		select: "Seleccionar",
 		applied: "Aplicado a todos los artículos",
+		previous: "Anterior",
+		next: "Siguiente",
 	},
 } as const satisfies Localization;
