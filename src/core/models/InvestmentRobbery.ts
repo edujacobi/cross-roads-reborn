@@ -22,6 +22,8 @@ export enum InvestmentRobberyReason {
 	TargetNoYield,
 	NotInGang,
 	ParticipateNotIdling,
+	LeaderIsWanted,
+	ParticipateIsWanted,
 }
 
 export interface InvestmentRobberyValidation {
@@ -73,6 +75,9 @@ export class InvestmentRobbery {
 		if (this.Target.GangId === this.Gang.Id) {
 			return { success: false, reason: InvestmentRobberyReason.TargetSameGang };
 		}
+		if (this.Initializer.IsWanted()) {
+			return { success: false, reason: InvestmentRobberyReason.LeaderIsWanted };
+		}
 		if (!this.Initializer.BestGun) {
 			return { success: false, reason: InvestmentRobberyReason.WithoutItem };
 		}
@@ -116,6 +121,9 @@ export class InvestmentRobbery {
 		}
 		if (!participant.IsIdling()) {
 			return { success: false, reason: InvestmentRobberyReason.ParticipateNotIdling };
+		}
+		if (participant.IsWanted()) {
+			return { success: false, reason: InvestmentRobberyReason.ParticipateIsWanted };
 		}
 		return { success: true };
 	}

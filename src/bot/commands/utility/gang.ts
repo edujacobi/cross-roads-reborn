@@ -2470,6 +2470,8 @@ const Strings = {
 				[InvestmentRobberyReason.TargetNoYield]: "The target's investment has no profit.",
 				[InvestmentRobberyReason.NotInGang]: "You are not in this gang.",
 				[InvestmentRobberyReason.ParticipateNotIdling]: "You must be idling to participate.",
+				[InvestmentRobberyReason.LeaderIsWanted]: "You are wanted by the police and cannot start a robbery.",
+				[InvestmentRobberyReason.ParticipateIsWanted]: "You are wanted by the police and cannot participate.",
 			};
 			return reasons[type] || "Unknown error while starting the robbery.";
 		},
@@ -2619,6 +2621,8 @@ const Strings = {
 				[InvestmentRobberyReason.TargetNoYield]: "O investimento do alvo não tem lucros.",
 				[InvestmentRobberyReason.NotInGang]: "Você não está nesta gangue.",
 				[InvestmentRobberyReason.ParticipateNotIdling]: "Você precisa estar vadiando para participar.",
+				[InvestmentRobberyReason.LeaderIsWanted]: "Você está sendo procurado pela polícia e não pode iniciar um assalto.",
+				[InvestmentRobberyReason.ParticipateIsWanted]: "Você está sendo procurado pela polícia e não pode participar.",
 			};
 			return reasons[type] || "Erro desconhecido ao iniciar o roubo.";
 		},
@@ -2767,6 +2771,8 @@ const Strings = {
 				[InvestmentRobberyReason.TargetNoYield]: "El investimento del objetivo no tiene lucros.",
 				[InvestmentRobberyReason.NotInGang]: "No estás en esta cuadrilla.",
 				[InvestmentRobberyReason.ParticipateNotIdling]: "Debes estar vagando para participar.",
+				[InvestmentRobberyReason.LeaderIsWanted]: "Estás siendo buscado por la policía y no puedes iniciar un atraco.",
+				[InvestmentRobberyReason.ParticipateIsWanted]: "Estás siendo buscado por la policía y no puedes participar.",
 			};
 			return reasons[type] || "Error desconocido al iniciar el robo.";
 		},
