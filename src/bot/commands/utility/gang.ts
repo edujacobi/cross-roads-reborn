@@ -1376,14 +1376,17 @@ module.exports = {
 				return warn(s.notInGang);
 			}
 
-			if (user.Id === gang.LeaderId) {
+			const isLeader = user.Id === gang.LeaderId;
+			const isAlone = gang.Members.length === 1;
+
+			if (isLeader && !isAlone) {
 				return warn(s.errorLeaveGangLeader);
 			}
 
 			const buttonConfirm = new ButtonBuilder()
 				.setCustomId("confirm")
 				.setLabel(s.confirm)
-				.setStyle(ButtonStyle.Success);
+				.setStyle(isLeader ? ButtonStyle.Danger : ButtonStyle.Success);
 
 			const row = new ActionRowBuilder<ButtonBuilder>()
 				.addComponents([buttonConfirm]);
@@ -1391,7 +1394,7 @@ module.exports = {
 			const container = defaultComponent({
 				user,
 				color: GangColor[gang.Color].Color as ColorResolvable,
-				description: s.confirmLeave(gang.Name),
+				description: isLeader ? s.confirmDisband(gang.Name) : s.confirmLeave(gang.Name),
 				buttons: row,
 			});
 
@@ -1412,12 +1415,12 @@ module.exports = {
 					const success = await gang.LeaveGang(user);
 
 					if (!success) {
-						return warn(s.errorLeaveGang);
+						return warn(isLeader ? s.errorDisbandGang : s.errorLeaveGang);
 					}
 
 					const container = defaultComponent({
 						color: GangColor[gang.Color].Color as ColorResolvable,
-						description: s.successLeaveGang(gang.Name),
+						description: isLeader ? s.successDisband(gang.Name) : s.successLeaveGang(gang.Name),
 						user,
 					});
 
@@ -2388,9 +2391,12 @@ const Strings = {
 		confirm: `Confirm`,
 		confirmLeave: (gangName: string) => `Confirm leaving the gang **${gangName}**? ${EmoteString.Gang}`,
 		errorLeaveGang: `Error leaving the gang. Please try again later ${EmoteString.Gang}`,
-		errorLeaveGangLeader: `You cannot leave the gang as the leader. You need to transfer leadership or disband the gang ${EmoteString.Gang}`,
+		errorLeaveGangLeader: `You cannot leave the gang as the leader. You need to transfer leadership or be the only member ${EmoteString.Gang}`,
 		successLeaveGang: (gangName: string) => `You have left gang **${gangName}** successfully ${EmoteString.Gang}`,
 		noResponseLeaveGang: (gangName: string) => `You took too long to respond and did not leave gang **${gangName}** ${EmoteString.Gang}`,
+		confirmDisband: (gangName: string) => `Are you sure you want to disband the gang **${gangName}**? This action cannot be undone and all gang progress will be lost. ${EmoteString.Gang}`,
+		successDisband: (gangName: string) => `The gang **${gangName}** has been disbanded successfully ${EmoteString.Gang}`,
+		errorDisbandGang: `Error while disbanding the gang. Try again later ${EmoteString.Gang}`,
 		confirmKick: (nickname: string, gangName: string) => `Are you sure you want to kick **${nickname}** from the gang **${gangName}**? ${EmoteString.Gang}`,
 		errorKickGangPermission: `You don't have permission to kick users from the gang ${EmoteString.Gang}`,
 		errorKickGangYourself: `You cannot kick yourself from the gang ${EmoteString.Gang}`,
@@ -2539,9 +2545,12 @@ const Strings = {
 		confirm: `Confirmar`,
 		confirmLeave: (gangName: string) => `Confirmar saída da gangue **${gangName}**? ${EmoteString.Gang}`,
 		errorLeaveGang: `Erro ao sair da gangue. Tente novamente mais tarde ${EmoteString.Gang}`,
-		errorLeaveGangLeader: `Você não pode sair da gangue como líder. Você precisa transferir a liderança ou dissolver a gangue ${EmoteString.Gang}`,
+		errorLeaveGangLeader: `Você não pode sair da gangue como líder. Você precisa transferir a liderança ou ser o único membro ${EmoteString.Gang}`,
 		successLeaveGang: (gangName: string) => `Você saiu da gangue **${gangName}** com sucesso ${EmoteString.Gang}`,
 		noResponseLeaveGang: (gangName: string) => `Você demorou para responder e não saiu da gangue **${gangName}** ${EmoteString.Gang}`,
+		confirmDisband: (gangName: string) => `Tem certeza que deseja dissolver a gangue **${gangName}**? Esta ação não pode ser desfeita e todo o progresso da gangue será perdido. ${EmoteString.Gang}`,
+		successDisband: (gangName: string) => `A gangue **${gangName}** foi dissolvida com sucesso ${EmoteString.Gang}`,
+		errorDisbandGang: `Erro ao dissolver a gangue. Tente novamente mais tarde ${EmoteString.Gang}`,
 		confirmKick: (nickname: string, gangName: string) => `Você tem certeza que deseja expulsar **${nickname}** da gangue **${gangName}**? ${EmoteString.Gang}`,
 		errorKickGangPermission: `Você não possui permissão para expulsar usuários da gangue ${EmoteString.Gang}`,
 		errorKickGangYourself: `Você não pode expulsar a si mesmo da gangue ${EmoteString.Gang}`,
@@ -2689,9 +2698,12 @@ const Strings = {
 		confirm: `Confirmar`,
 		confirmLeave: (gangName: string) => `¿Confirmar salida de la cuadrilla **${gangName}**? ${EmoteString.Gang}`,
 		errorLeaveGang: `Error al salir de la cuadrilla. Inténtalo de nuevo más tarde ${EmoteString.Gang}`,
-		errorLeaveGangLeader: `No puedes salir de la cuadrilla como líder. Necesitas transferir el liderazgo o disolver la cuadrilla ${EmoteString.Gang}`,
+		errorLeaveGangLeader: `No puedes salir de la cuadrilla como líder. Necesitas transferir el liderazgo o ser el único miembro ${EmoteString.Gang}`,
 		successLeaveGang: (gangName: string) => `Has salido de la cuadrilla **${gangName}** con éxito ${EmoteString.Gang}`,
 		noResponseLeaveGang: (gangName: string) => `Te demoraste en responder y no saliste de la cuadrilla **${gangName}** ${EmoteString.Gang}`,
+		confirmDisband: (gangName: string) => `¿Estás seguro de que quieres disolver la cuadrilla **${gangName}**? Esta acción no se puede deshacer y todo el progreso de la cuadrilla se perderá. ${EmoteString.Gang}`,
+		successDisband: (gangName: string) => `La cuadrilla **${gangName}** ha sido disuelta con éxito ${EmoteString.Gang}`,
+		errorDisbandGang: `Error al disolver la cuadrilla. Inténtalo de nuevo más tarde ${EmoteString.Gang}`,
 		confirmKick: (nickname: string, gangName: string) => `¿Estás seguro de que deseas expulsar a **${nickname}** de la cuadrilla **${gangName}**? ${EmoteString.Gang}`,
 		errorKickGangPermission: `No tienes permiso para expulsar usuarios de la cuadrilla ${EmoteString.Gang}`,
 		errorKickGangYourself: `No puedes expulsarte a ti mismo de la cuadrilla ${EmoteString.Gang}`,

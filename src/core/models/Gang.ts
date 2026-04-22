@@ -1128,9 +1128,14 @@ export class Gang {
 	 * @returns True if the user left successfully, false otherwise.
 	 */
 	async LeaveGang(user: User): Promise<boolean> {
-		// Leader cannot leave, must transfer leadership first
-		if (user.Id === this.LeaderId) {
+		// Leader cannot leave if there are other members
+		if (user.Id === this.LeaderId && this.Members.length > 1) {
 			return false;
+		}
+
+		// If leader is the only member, delete the gang
+		if (user.Id === this.LeaderId && this.Members.length === 1) {
+			return await this.DeleteGang(user.Id);
 		}
 
 		try {
@@ -1195,7 +1200,7 @@ export class Gang {
 			return true;
 		}
 		catch (err) {
-			Log.Warning(`Failed to delete gang ${this.Id}: ${err}`);
+			Log.Warning(`Failed to delete gang ${this.Name} (Id: ${this.Id}): ${err}`);
 			return false;
 		}
 	}
