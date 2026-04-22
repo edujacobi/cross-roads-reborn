@@ -11,6 +11,18 @@ import { AvatarDecorationRegistry } from "#bot/ui/patterns/AvatarDecorationRegis
 
 const client = setClient();
 
+process.on("unhandledRejection", (reason) => {
+	logger.error("Unhandled Rejection at Promise", reason);
+});
+
+process.on("uncaughtException", (err) => {
+	logger.error("Uncaught Exception thrown", err);
+});
+
+client.on("error", (error) => {
+	logger.error("Discord Client Error:", error);
+});
+
 dotenv.config();
 
 // Events
@@ -96,4 +108,6 @@ AvatarDecorationRegistry.initialize().catch(err => {
 	Log.Error(`Failed to initialize avatar decoration frames: ${err}`);
 });
 
-client.login(token).then(() => logger.info(`Cross Roads Reborn Online! ENV: ${process.env.NODE_ENV}`));
+client.login(token)
+	.then(() => logger.info(`Cross Roads Reborn Online! ENV: ${process.env.NODE_ENV}`))
+	.catch((err) => logger.error("Failed to login to Discord:", err));

@@ -9,6 +9,10 @@ export function getClient() {
 export function setClient() {
 	client = new Client({
 		intents: [GatewayIntentBits.Guilds],
+		rest: {
+			timeout: 30_000,
+			retries: 5,
+		},
 		makeCache: Options.cacheWithLimits({
 			MessageManager: 0,
 			ThreadManager: 0,
