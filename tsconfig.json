@@ -19,11 +19,10 @@
 		},
 		"resolveJsonModule": true,
 		/* Emit */
-		"outDir": "./build",
-		"inlineSourceMap": true,
-		"inlineSources": true,
+		"noEmit": true,
 		/* Interop Constraints */
 		"allowSyntheticDefaultImports": true,
+		"allowImportingTsExtensions": true,
 		"esModuleInterop": true,
 		"forceConsistentCasingInFileNames": true,
 		/* Type Checking */
