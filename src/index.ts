@@ -23,6 +23,15 @@ client.on("error", (error) => {
 	logger.error("Discord Client Error:", error);
 });
 
+const handleExit = (signal: string) => {
+	logger.info(`Received ${signal}. Shutting down gracefully...`);
+	client.destroy();
+	process.exit(0);
+};
+
+process.on("SIGINT", () => handleExit("SIGINT"));
+process.on("SIGTERM", () => handleExit("SIGTERM"));
+
 dotenv.config();
 
 // Events

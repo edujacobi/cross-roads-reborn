@@ -1,0 +1,6 @@
+node_modules
+database.sqlite
+database.sqlite-journal
+logs
+*.log
+src/bot/ui/assets/*
