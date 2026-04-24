@@ -544,7 +544,9 @@ module.exports = {
 					])
 					.addLargeSeparator();
 
-				const cardBuffers = await Promise.all(users.map(async (u, i) => {
+				const cardBuffers: Buffer[] = [];
+				for (let i = 0; i < users.length; i++) {
+					const u = users[i];
 					const position = i + pagination.Offset + 1;
 					const value = u[currentConfig.valueField as keyof Users] as number;
 					const valueModified = currentConfig.valueModifier ? currentConfig.valueModifier(value, language) : value;
@@ -571,8 +573,9 @@ module.exports = {
 						avatarUrl,
 					)
 						.SetDecoration(u.backgroundDecoration);
-					return cardBuilder.GenerateImage();
-				}));
+
+					cardBuffers.push(await cardBuilder.GenerateImage());
+				}
 
 				const attachments: AttachmentBuilder[] = [];
 
