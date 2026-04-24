@@ -47,7 +47,7 @@ module.exports = {
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 		const nameOrId = interaction.options.getString("target");
 
-		const FEATURE_FLAG_NEW_INV = true;
+		const FEATURE_FLAG_NEW_INV = false;
 
 		await deferReply(interaction);
 
@@ -227,7 +227,7 @@ module.exports = {
 				else {
 					if (gang) {
 						if (!gangImageFile) {
-							gangImage = await new GangImageCanvasBuilder(target, gang, language).GenerateImage();
+							gangImage = await new GangImageCanvasBuilder(target, gang, language, true).GenerateImage();
 							gangImageFile = new AttachmentBuilder(gangImage, { name: "gang.webp" });
 						}
 
