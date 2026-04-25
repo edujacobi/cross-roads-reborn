@@ -23,6 +23,22 @@ client.on("error", (error) => {
 	logger.error("Discord Client Error:", error);
 });
 
+client.on("shardError", (error, shardId) => {
+	logger.error(`Discord Shard ${shardId} Error (Network issue):`, error);
+});
+
+client.on("shardDisconnect", (event, shardId) => {
+	logger.warn(`Discord Shard ${shardId} Disconnected (Code: ${event.code}, Reason: ${event.reason || "None"}). Waiting to reconnect...`);
+});
+
+client.on("shardReconnecting", (shardId) => {
+	logger.info(`Discord Shard ${shardId} Reconnecting to Discord Gateway...`);
+});
+
+client.on("shardResume", (shardId, replayedEvents) => {
+	logger.info(`Discord Shard ${shardId} Successfully Resumed. Replayed ${replayedEvents} events.`);
+});
+
 const handleExit = (signal: string) => {
 	logger.info(`Received ${signal}. Shutting down gracefully...`);
 	client.destroy();
