@@ -8,7 +8,7 @@
   },
   "scripts": {
     "clear-commands": "npx tsx src/bot/clear-commands.ts",
-    "start": "pm2 start src/index.ts --name \"cr\" --interpreter npx --interpreter-args tsx",
+    "start": "pm2 start src/index.ts --name \"cr\" --interpreter ./node_modules/.bin/tsx --max-memory-restart 450M",
     "stop": "pm2 stop cr",
     "deploy": "npx tsx src/bot/deploy-commands.ts",
     "dev": "set NODE_ENV=DEV&& npx tsx src/index.ts -w",
