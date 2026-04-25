@@ -270,25 +270,37 @@ export class Notification {
 		}
 	}
 
+	private static isProcessing = false;
+
 	static async SendTimedNotification() {
+		if (Notification.isProcessing) {
+			return;
+		}
+
+		Notification.isProcessing = true;
+
 		try {
 			const now = new Date();
-			const hasNotification = await Notification.HasNotificationsToSend(now);
+			const list = await Notification.GetNextNotifications(now);
 
-			// return Log.Info(`No notifications to send. Ignoring procedure.`);
-			if (!hasNotification) {
+			if (list.length === 0) {
 				return;
 			}
 
-			// Log.Info(`Starting notification procedure ↓`);
-			const list = await Notification.GetNextNotifications(now);
+			// Mark all fetched notifications as notified immediately to prevent duplication
+			// in case of overlapping intervals or fast restarts.
+			const ids = list.map(n => n.Id);
+			await Notifications.update({
+				notified: true,
+			}, {
+				where: { id: ids },
+			});
 
 			for (const notification of list) {
 				const user = await new User(notification.UserId).GetInfo();
 
 				if (!user) {
-					Log.Warning(`Cannot send private message if the user was deleted (UserId: ${notification.UserId}).`);
-					await notification.SetAsNotified();
+					Log.Warning(`Cannot send private message if the user was deleted (UserId: ${notification.UserId}). Notification (Id: ${notification.Id}) marked as notified.`);
 					continue;
 				}
 
@@ -355,22 +367,24 @@ export class Notification {
 					else {
 						Log.Warning(`Notification type ${notification.Type} not implemented.`);
 					}
+
+					Log.Info(`Notification Timer (Id: ${notification.Id}) Type ${NotificationMapper[notification.Type]} (Id: ${notification.Type}) to user ${notification.UserId} notified.`);
 				}
 				catch (err) {
-					logger.error(err);
-				}
-				finally {
-					await notification.SetAsNotified();
+					logger.error(`Error processing notification ${notification.Id} for user ${notification.UserId}:`, err);
 				}
 			}
 		}
 		catch (error) {
 			Log.Error(`Critical error in SendTimedNotification procedure: ${error}`);
 		}
+		finally {
+			Notification.isProcessing = false;
+		}
 	}
 
 	static StartProcedure() {
-		setInterval(Notification.SendTimedNotification, 20_000);
+		setInterval(Notification.SendTimedNotification, 30_000);
 	}
 }
 
