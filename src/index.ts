@@ -52,7 +52,7 @@ dotenv.config();
 
 // Events
 const eventsPath = path.join(__dirname, "bot", "events");
-const eventFiles = fs.readdirSync(eventsPath).filter((file: string) => file.endsWith(".ts"));
+const eventFiles = fs.readdirSync(eventsPath).filter((file: string) => (file.endsWith(".ts") || file.endsWith(".js")) && !file.endsWith(".d.ts") && !file.endsWith(".map"));
 
 for (const file of eventFiles) {
 	const filePath = path.join(eventsPath, file);
@@ -84,7 +84,7 @@ const commandFolders = fs.readdirSync(foldersPath);
 
 for (const folder of commandFolders) {
 	const commandsPath = path.join(foldersPath, folder);
-	const commandFiles = fs.readdirSync(commandsPath).filter((file: string) => file.endsWith(".ts"));
+	const commandFiles = fs.readdirSync(commandsPath).filter((file: string) => (file.endsWith(".ts") || file.endsWith(".js")) && !file.endsWith(".d.ts") && !file.endsWith(".map"));
 
 	for (const file of commandFiles) {
 		const filePath = path.join(commandsPath, file);

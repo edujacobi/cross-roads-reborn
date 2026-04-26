@@ -20,7 +20,7 @@ module.exports = {
 
 		const s = Strings[language];
 
-		const commandFiles = fs.readdirSync(__dirname).filter((file: string) => file.endsWith(".ts"));
+		const commandFiles = fs.readdirSync(__dirname).filter((file: string) => (file.endsWith(".ts") || file.endsWith(".js")) && !file.endsWith(".d.ts") && !file.endsWith(".map"));
 
 		let text = "";
 		for (const file of commandFiles) {

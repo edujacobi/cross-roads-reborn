@@ -8,7 +8,9 @@
   },
   "scripts": {
     "clear-commands": "npx tsx src/bot/clear-commands.ts",
-    "start": "pm2 start src/index.ts --name \"cr\" --interpreter ./node_modules/.bin/tsx --max-memory-restart 450M",
+    "build": "npm run lint && rimraf build && tsc",
+    "start": "pm2 start build/src/index.js --name \"cr\" --max-memory-restart 450M",
+    "start:tsx": "pm2 start src/index.ts --name \"cr\" --interpreter ./node_modules/.bin/tsx --max-memory-restart 450M",
     "stop": "pm2 stop cr",
     "deploy": "npx tsx src/bot/deploy-commands.ts",
     "dev": "set NODE_ENV=DEV&& npx tsx src/index.ts -w",
