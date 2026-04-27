@@ -56,7 +56,7 @@ module.exports = {
 
 				const timeText = user.vipEternal ? "**Eternal**" : `Ends in ${showTime(new Date(user.vipTime!).getTime())}`;
 
-				text += `### ${emoteClass} ${user.nickname}\n${timeText}\n-# \`d: ${user.id}\`\n`;
+				text += `### ${emoteClass} ${user.nickname}\n${timeText}\n-# \`Id: ${user.id}\`\n`;
 			}
 
 			return new CustomContainerBuilder()
