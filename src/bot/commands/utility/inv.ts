@@ -47,7 +47,7 @@ module.exports = {
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 		const nameOrId = interaction.options.getString("target");
 
-		const FEATURE_FLAG_NEW_INV = false;
+		const FEATURE_FLAG_NEW_INV = true;
 
 		await deferReply(interaction);
 
