@@ -122,10 +122,11 @@ export class DashboardCanvasBuilder extends BaseCanvasBuilder {
 		const minPlayers = Math.max(0, Math.min(...history.map(h => h.totalPlayers)) - 5);
 
 		// Calculate coordinates
-		const points = history.reverse().map((stat, i) => {
-			const px = x + (i / Math.max(1, history.length - 1)) * width;
+		const reversedHistory = [...history].reverse();
+		const points = reversedHistory.map((stat, i) => {
+			const px = x + (i / Math.max(1, reversedHistory.length - 1)) * width;
 			const py = y + height - ((stat.totalPlayers - minPlayers) / (maxPlayers - minPlayers)) * height;
-			return { px, py, value: stat.totalPlayers };
+			return { px, py, value: stat.totalPlayers, date: stat.date };
 		});
 
 		// Draw lines
@@ -140,12 +141,18 @@ export class DashboardCanvasBuilder extends BaseCanvasBuilder {
 		}
 		ctx.stroke();
 
-		// Draw points
-		ctx.fillStyle = "#E3E3E6";
+		// Draw points and their values
 		for (const point of points) {
+			ctx.fillStyle = "#E3E3E6";
 			ctx.beginPath();
 			ctx.arc(point.px, point.py, 4, 0, 2 * Math.PI);
 			ctx.fill();
+
+			ctx.font = "10px Inter";
+			ctx.fillStyle = "#ffffff";
+			ctx.textAlign = "center";
+			ctx.textBaseline = "bottom";
+			ctx.fillText(`${point.value}`, point.px, point.py - 6);
 		}
 
 		// Draw Y axis labels
@@ -153,7 +160,27 @@ export class DashboardCanvasBuilder extends BaseCanvasBuilder {
 		ctx.textAlign = "right";
 		ctx.textBaseline = "middle";
 		ctx.fillStyle = "#bdc3c7";
+
+		const p25 = Math.round(minPlayers + 0.25 * (maxPlayers - minPlayers));
+		const p50 = Math.round(minPlayers + 0.50 * (maxPlayers - minPlayers));
+		const p75 = Math.round(minPlayers + 0.75 * (maxPlayers - minPlayers));
+
 		ctx.fillText(`${maxPlayers}`, x - 5, y);
+		ctx.fillText(`${p75}`, x - 5, y + height * 0.25);
+		ctx.fillText(`${p50}`, x - 5, y + height * 0.50);
+		ctx.fillText(`${p25}`, x - 5, y + height * 0.75);
 		ctx.fillText(`${minPlayers}`, x - 5, y + height);
+
+		// Draw X axis dates
+		ctx.textAlign = "center";
+		ctx.textBaseline = "top";
+		ctx.font = "10px Inter";
+
+		for (let i = 0; i < points.length; i++) {
+			const point = points[i];
+			const dateObj = new Date(point.date);
+			const dateStr = `${dateObj.getDate().toString().padStart(2, "0")}/${(dateObj.getMonth() + 1).toString().padStart(2, "0")}`;
+			ctx.fillText(dateStr, point.px, y + height + 5);
+		}
 	}
 }
