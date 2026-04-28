@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { Collection } from "discord.js";
+import { Collection, Events } from "discord.js";
 import type { SlashCommand } from "#bot/types";
 import dotenv from "dotenv";
 import { setClient } from "#bot/client";
@@ -19,23 +19,23 @@ process.on("uncaughtException", (err) => {
 	logger.error("Uncaught Exception thrown", err);
 });
 
-client.on("error", (error) => {
+client.on(Events.Error, (error) => {
 	logger.error("Discord Client Error:", error);
 });
 
-client.on("shardError", (error, shardId) => {
+client.on(Events.ShardError, (error, shardId) => {
 	logger.error(`Discord Shard ${shardId} Error (Network issue):`, error);
 });
 
-client.on("shardDisconnect", (event, shardId) => {
+client.on(Events.ShardDisconnect, (event, shardId) => {
 	logger.warn(`Discord Shard ${shardId} Disconnected (Code: ${event.code}, Reason: ${event.reason || "None"}). Waiting to reconnect...`);
 });
 
-client.on("shardReconnecting", (shardId) => {
+client.on(Events.ShardReconnecting, (shardId) => {
 	logger.info(`Discord Shard ${shardId} Reconnecting to Discord Gateway...`);
 });
 
-client.on("shardResume", (shardId, replayedEvents) => {
+client.on(Events.ShardResume, (shardId, replayedEvents) => {
 	logger.info(`Discord Shard ${shardId} Successfully Resumed. Replayed ${replayedEvents} events.`);
 });
 
