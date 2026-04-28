@@ -1,16 +1,17 @@
+import { CustomContainerBuilder, CustomSectionBuilder } from "#bot/ui/builders/CustomContainerBuilder";
+import { Language } from "#core/models/Language";
+import type { User } from "#core/models/User";
+import { formatDistanceToNow } from "date-fns";
+import { enUS, es, ptBR } from "date-fns/locale";
 import {
-	type ActionRowBuilder,
 	ActivityType,
+	type ActionRowBuilder,
+	type ActivityOptions,
 	type ButtonBuilder,
 	type Client,
 	type ColorResolvable,
 	type RGBTuple,
 } from "discord.js";
-import { Language } from "#core/models/Language";
-import { enUS, es, ptBR } from "date-fns/locale";
-import { formatDistanceToNow } from "date-fns";
-import type { User } from "#core/models/User";
-import { CustomContainerBuilder, CustomSectionBuilder } from "#bot/ui/builders/CustomContainerBuilder";
 
 interface ComponentParams {
 	user?: User;
@@ -128,26 +129,25 @@ export function formatDate(date: Date, language: Language) {
 	return `${String(date.getDate()).padStart(2, "0")}/${String(date.getMonth() + 1).padStart(2, "0")}/${date.getFullYear()} ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
 }
 
-interface ClientActivity {
-	type: ActivityType,
-	label: string
-}
-
-export const clientActivities: ClientActivity[] = [{
+export const clientActivities: ActivityOptions[] = [{
 	type: ActivityType.Playing,
-	label: "Playing 🐓 Battle Roosters Arena",
+	name: "Jogando 🐓 Battle Roosters Arena",
+	state: "Playing Battle Roosters Arena",
 }, {
 	type: ActivityType.Custom,
-	label: "🪙 Betting in Casino",
+	name: "🪙 Apostando no Cassino",
+	state: "Betting at the Casino",
 }, {
 	type: ActivityType.Custom,
-	label: "🔪 Robbing an old lady",
+	name: "🔪 Roubando a velhinha na esquina",
+	state: "Robbing an old lady",
 }, {
 	type: ActivityType.Custom,
-	label: "🏃‍➡️ Escaping from prison",
+	name: "🏃‍➡️ Fugindo da prisão",
+	state: "Escaping from prison",
 }, {
 	type: ActivityType.Watching,
-	label: "Netflix",
+	name: "Netflix",
 }];
 
 /**
@@ -159,8 +159,10 @@ export function changeActivity(client: Client) {
 	let currentActivityId = 0;
 	const currentActivity = clientActivities[currentActivityId];
 
-	client.user?.setActivity(currentActivity.label, {
+	client.user?.setActivity({
+		name: currentActivity.name,
 		type: currentActivity.type,
+		state: currentActivity.state,
 	});
 
 	setInterval(() => {
@@ -172,8 +174,10 @@ export function changeActivity(client: Client) {
 
 		const newActivity = clientActivities[currentActivityId];
 
-		client.user?.setActivity(newActivity.label, {
+		client.user?.setActivity({
+			name: newActivity.name,
 			type: newActivity.type,
+			state: newActivity.state,
 		});
 
 	}, 30_000_000);
