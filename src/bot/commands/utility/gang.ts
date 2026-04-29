@@ -900,7 +900,7 @@ module.exports = {
 							Array.from(robbery.Participants.values()).map(p => `- ${p.GetNameWithImage()}`).join("\n"),
 						]);
 
-						await replyWithContainer(btn, container);
+						await replyWithContainer(interaction, container);
 					}
 
 					else if (btn.customId === "abort_robbery") {
