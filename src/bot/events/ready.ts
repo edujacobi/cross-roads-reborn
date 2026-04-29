@@ -5,7 +5,7 @@ import { Notification } from "#core/models/Notification";
 import { HorseRacing } from "#core/models/HorseRacing";
 import { Lottery } from "#core/models/Lottery";
 import { removeAllFromActions } from "#bot/utils/userUtils";
-import { InvestmentManager } from "#core/models/InvestmentManager";
+import { Investment } from "#core/models/Investment";
 import { Dashboard } from "#core/models/Dashboard";
 import { Gang } from "#core/models/Gang";
 
@@ -19,7 +19,7 @@ module.exports = {
 		Notification.StartProcedure();
 		await Promise.all([
 			removeAllFromActions(),
-			InvestmentManager.Initialize(),
+			Investment.Initialize(),
 			// startVIPProcedure(),
 			HorseRacing.Initialize(),
 			Lottery.Initialize(),

@@ -4,7 +4,7 @@ import { CrColors } from "#bot/utils/colors";
 import { deferReply, deferUpdate, replyWithContainer } from "#bot/utils/discordInteractions";
 import { EmoteString } from "#bot/utils/emotes";
 import { formatMoney, showTime } from "#bot/utils/ui";
-import { InvestmentManager } from "#core/models/InvestmentManager";
+import { Investment } from "#core/models/Investment";
 import { Language, type Localization } from "#core/models/Language";
 import { Pagination } from "#core/models/Pagination";
 import { type User } from "#core/models/User";
@@ -83,36 +83,36 @@ async function handleBuy(interaction: ChatInputCommandInteraction, user: User, l
 			container.addLargeSeparator();
 		}
 
-		const currentPageItems = investments.slice(pagination.Offset, pagination.Offset + pagination.Limit);
+		const currentPageInvestments = investments.slice(pagination.Offset, pagination.Offset + pagination.Limit);
 
-		for (let i = 0; i < currentPageItems.length; i++) {
-			const item = currentPageItems[i];
+		for (let i = 0; i < currentPageInvestments.length; i++) {
+			const investment = currentPageInvestments[i];
 			const classModifier = getInvestmentYieldClassModifier(user.Class);
-			const hourly = formatMoney(Math.round(item.HourlyYield * classModifier), language);
+			const hourly = formatMoney(Math.round(investment.HourlyYield * classModifier), language);
 
 			container
 				.addSectionComponents(section => section
 					.addTexts([
-						`### ${item.Name[language]}`,
-						`-# ${item.Description[language]}`,
+						`### ${investment.Name[language]}`,
+						`-# ${investment.Description[language]}`,
 						`${s.profit}: **${hourly}/h**`,
 					])
-					.setThumbnailAccessory(thumb => thumb.setURL(item.ImageUrl)),
+					.setThumbnailAccessory(thumb => thumb.setURL(investment.ImageUrl)),
 				)
 				.addSectionComponents(section => section
 					.addTexts([
-						`${EmoteString.Defense}${item.BaseDefense} DEF`,
-						`-# ${EmoteString.Henchman} -${item.HenchmanFee}% ${s.henchmanFee}`,
+						`${EmoteString.Defense}${investment.BaseDefense} DEF`,
+						`-# ${EmoteString.Henchman} -${investment.HenchmanFee}% ${s.henchmanFee}`,
 					])
 					.setButtonAccessory(new ButtonBuilder()
-						.setLabel(formatMoney(item.Price, language))
-						.setCustomId(`buy${item.Id}`)
-						.setDisabled(item.Price > user.Money || userHasInvestment)
+						.setLabel(formatMoney(investment.Price, language))
+						.setCustomId(`buy${investment.Id}`)
+						.setDisabled(investment.Price > user.Money || userHasInvestment)
 						.setStyle(ButtonStyle.Secondary),
 					),
 				);
 
-			if (i !== currentPageItems.length - 1) {
+			if (i !== currentPageInvestments.length - 1) {
 				container.addLargeSeparator();
 			}
 		}
@@ -135,19 +135,19 @@ async function handleBuy(interaction: ChatInputCommandInteraction, user: User, l
 	collector?.on("collect", async btn => {
 		if (btn.customId.startsWith("buy")) {
 			await deferUpdate(btn);
-			const itemId = Number(btn.customId.replace("buy", "")) as InvestmentId;
-			const item = InvestmentList[itemId];
+			const investmentId = Number(btn.customId.replace("buy", "")) as InvestmentId;
+			const investment = InvestmentList[investmentId];
 
 			const buyConfirmContainer = addBuyHeader()
 				.addTexts([
 					s.buyConfirmationTitle,
-					s.buyConfirmationDesc(item.Name[language], formatMoney(item.Price, language)),
+					s.buyConfirmationDesc(investment.Name[language], formatMoney(investment.Price, language)),
 				])
 				.addButtonRow(
 					(btn) => btn
 						.setLabel(s.confirmBuy)
 						.setStyle(ButtonStyle.Success)
-						.setCustomId(`confirm_buy${itemId}`),
+						.setCustomId(`confirm_buy${investmentId}`),
 					(btn) => btn
 						.setLabel(s.cancelBuy)
 						.setStyle(ButtonStyle.Secondary)
@@ -162,8 +162,8 @@ async function handleBuy(interaction: ChatInputCommandInteraction, user: User, l
 		}
 		else if (btn.customId.startsWith("confirm_buy")) {
 			await deferUpdate(btn);
-			const itemId = Number(btn.customId.replace("confirm_buy", "")) as InvestmentId;
-			const item = InvestmentList[itemId];
+			const investmentId = Number(btn.customId.replace("confirm_buy", "")) as InvestmentId;
+			const investment = InvestmentList[investmentId];
 
 			await user.GetInfo();
 
@@ -177,7 +177,7 @@ async function handleBuy(interaction: ChatInputCommandInteraction, user: User, l
 
 
 			// Process buy
-			const result = await InvestmentManager.Buy(user, itemId);
+			const result = await Investment.Buy(user, investmentId);
 
 			if (!result.success) {
 				const errorContainer = addBuyHeader()
@@ -195,7 +195,7 @@ async function handleBuy(interaction: ChatInputCommandInteraction, user: User, l
 			// Success
 			const successContainer = addBuyHeader()
 				.addTexts([
-					`${s.buySuccess} **${item.Name[language]}**!`,
+					`${s.buySuccess} **${investment.Name[language]}**!`,
 				])
 				.addFooter({
 					text: formatMoney(user.Money, language),
@@ -242,7 +242,7 @@ async function handleManage(interaction: ChatInputCommandInteraction, user: User
 	function generateManageContainer() {
 		const classModifier = getInvestmentYieldClassModifier(user.Class);
 		const hourly = formatMoney(Math.round(investment.HourlyYield * classModifier), language);
-		const henchmanBonus = InvestmentManager.HasActiveHenchman(user) ? 10 : 0;
+		const henchmanBonus = Investment.HasActiveHenchman(user) ? 10 : 0;
 
 		const container = addContainerHeader()
 			.addTexts([
@@ -257,7 +257,7 @@ async function handleManage(interaction: ChatInputCommandInteraction, user: User
 		let hasHenchman = false;
 		let henchmanText = `${s.henchmanInactive}`;
 
-		if (InvestmentManager.HasContractHenchman(user)) {
+		if (Investment.HasContractHenchman(user)) {
 			hasHenchman = true;
 			const timeObj = showTime(new Date(user.Investment.HenchmanEndsAt!).getTime(), true);
 			henchmanText = `${s.henchmanActive} ${timeObj}` + (user.Investment.HenchmanHospitalized
@@ -287,7 +287,7 @@ async function handleManage(interaction: ChatInputCommandInteraction, user: User
 		}
 
 		// Next payment: based on InvestmentManager's last processed hour
-		const nextPaymentDate = InvestmentManager.GetNextPaymentTime();
+		const nextPaymentDate = Investment.GetNextPaymentTime();
 
 		const infoTexts = [
 			`**${s.accumulatedYield}**: ${accumulated}`,
@@ -355,7 +355,7 @@ async function handleManage(interaction: ChatInputCommandInteraction, user: User
 
 		}
 		else if (btn.customId === "confirm_hire") {
-			const result = await InvestmentManager.HireHenchman(user);
+			const result = await Investment.HireHenchman(user);
 			if (!result.success) {
 				const errorContainer = addContainerHeader()
 					.setAccentColor(Colors.Red)
@@ -377,7 +377,7 @@ async function handleManage(interaction: ChatInputCommandInteraction, user: User
 
 		}
 		else if (btn.customId === "toggle_notify") {
-			await InvestmentManager.ToggleNotifyYield(user);
+			await Investment.ToggleNotifyYield(user);
 			container = generateManageContainer();
 			return replyWithContainer(interaction, container);
 
@@ -417,7 +417,7 @@ async function handleManage(interaction: ChatInputCommandInteraction, user: User
 				);
 			}
 
-			const result = await InvestmentManager.Abandon(user);
+			const result = await Investment.Abandon(user);
 
 			if (!result.success) {
 				const errorContainer = addContainerHeader()

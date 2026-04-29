@@ -13,13 +13,13 @@ import { Notification } from "./Notification";
 import { Language } from "./Language";
 import { type ClassId, getInvestmentYieldClassModifier } from "#core/types/Classes";
 
-export class InvestmentManager {
+export class Investment {
 	static readonly DURATION_DAYS = 7;
-	private static isProcessing = false;
+	private static IsProcessing = false;
 
 	static Initialize() {
 		// Checks every minute if the hour has turned
-		setInterval(InvestmentManager.ProcessHourlyYield, 60 * 1_000);
+		setInterval(Investment.ProcessHourlyYield, 60 * 1_000);
 	}
 
 	/**
@@ -33,8 +33,8 @@ export class InvestmentManager {
 	}
 
 	static async ProcessHourlyYield() {
-		if (InvestmentManager.isProcessing) return; // Still running from earlier?
-		InvestmentManager.isProcessing = true;
+		if (Investment.IsProcessing) return; // Still running from earlier?
+		Investment.IsProcessing = true;
 
 		try {
 			const activeInvestments = await UserInvestments.findAll();
@@ -69,7 +69,7 @@ export class InvestmentManager {
 
 					if (!userRow) return;
 
-					const isIdling = InvestmentManager.IsUserIdling(userRow);
+					const isIdling = Investment.IsUserIdling(userRow);
 
 					// Check 7-day expiration (Process expiration only if the current moment is past expiration)
 					if (isPast(currentInvestment.expiresAt)) {
@@ -207,7 +207,7 @@ export class InvestmentManager {
 			await Promise.allSettled(tasks);
 		}
 		finally {
-			InvestmentManager.isProcessing = false;
+			Investment.IsProcessing = false;
 		}
 	}
 
@@ -255,7 +255,7 @@ export class InvestmentManager {
 		user.Money -= investmentData.Price;
 		await user.Update({ money: user.Money });
 
-		const expiresAt = addDays(new Date(), InvestmentManager.DURATION_DAYS);
+		const expiresAt = addDays(new Date(), Investment.DURATION_DAYS);
 
 		await UserInvestments.create({
 			userId: user.Id,
