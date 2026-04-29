@@ -283,6 +283,8 @@ export class Robbery {
 						componentType: ComponentType.Button,
 					});
 
+					await confirmation.deferUpdate();
+
 					if (confirmation.customId === "use_grenade") {
 						usedGrenade = true;
 					}
