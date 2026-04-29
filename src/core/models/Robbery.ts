@@ -36,6 +36,7 @@ export enum ClashType {
 	User = 1,
 	Location,
 	BeatUp,
+	Investment,
 }
 
 export class Robbery {

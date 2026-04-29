@@ -8,6 +8,7 @@ import { ClassId } from "#core/types/Classes";
 import { logger } from "#shared/log";
 import { Language } from "./Language";
 import { formatMoney } from "#bot/utils/ui";
+import { RobHistories } from "#core/database/RobHistories";
 
 export enum InvestmentRobberyReason {
 	NoPermission,
@@ -285,6 +286,8 @@ export class InvestmentRobbery {
 		}
 
 		logger.info(`Investment Robbery Finished! Result for Gang ${this.Gang.Name} (Id: ${this.Gang.Id}) vs Target ${this.Target.Nickname} (Id: ${this.Target.Id}): ${JSON.stringify(result)}`);
+		
+		await RobHistories.CreateInvestmentHistory(this, win, result.robbedAmount);
 
 		return result;
 	}

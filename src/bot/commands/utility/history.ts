@@ -9,6 +9,7 @@ import { Language, type Localization } from "#core/models/Language";
 import { Pagination } from "#core/models/Pagination";
 import { ClassList } from "#core/types/Classes";
 import { LocationList } from "#core/types/Locations";
+import { InvestmentList, type InvestmentId } from "#core/types/Investments";
 import { ClashType } from "#core/models/Robbery";
 import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
 import { searchUser } from "#bot/utils/userUtils";
@@ -77,18 +78,30 @@ module.exports = {
 
 				let opponentName = "";
 
-				if ((rob.type == ClashType.User || rob.type == ClashType.BeatUp) && defender) {
+				if ((rob.type == ClashType.User || rob.type == ClashType.BeatUp || rob.type == ClashType.Investment) && defender) {
 					const boldOs = `${defender.id == user.Id ? "**__" : ""}`;
 					const boldOe = `${defender.id == user.Id ? "__**" : ""}`;
 					opponentName = `${ClassList[defender.class].Image.Emote.String} ${boldOs}${defender.nickname}${boldOe}`;
+
+					if (rob.type == ClashType.Investment && rob.locationId != null) {
+						const inv = InvestmentList[rob.locationId as InvestmentId];
+						if (inv) {
+							opponentName = `${inv.Name[user.Language]} ${s.of} ${opponentName}`;
+						}
+					}
 				}
 				if (rob.type == ClashType.Location && location) {
 					opponentName = `${location.Emote.String} ${location.Name[user.Language]}`;
 				}
 
-				const emoteShow = rob.type == ClashType.BeatUp ? EmoteString.BaseballBat : EmoteString.React;
+				let emoteShow = EmoteString.React;
+				if (rob.type == ClashType.BeatUp) emoteShow = EmoteString.BaseballBat;
+				if (rob.type == ClashType.Investment) emoteShow += EmoteString.InvestmentActive;
 
-				const textMoney = rob.success && rob.type != ClashType.BeatUp ? ` • **${formatMoney(rob.money, user.Language)}**` : "";
+				let textMoney = rob.success && rob.type != ClashType.BeatUp ? ` • **${formatMoney(rob.money, user.Language)}**` : "";
+				if (rob.type == ClashType.Investment) {
+					textMoney = ` • ${s.gangAction}`;
+				}
 
 				historyList += `### ${challengerName} ${emoteShow} ${opponentName}\n-# ${emoji} ${text}${textMoney} • ${formatDate(rob.createdAt, language)}\n`;
 			}
@@ -122,6 +135,8 @@ const Strings = {
 		robbedTotal: "Robbed total of",
 		robbedTimes: (beingRobbedCount: number) => `Robbed \`${beingRobbedCount}\` times`,
 		lost: "Lost",
+		of: "of",
+		gangAction: "Gang action",
 	},
 	[Language.Portuguese]: {
 		empty: "Este usuário não possui histórico",
@@ -136,6 +151,8 @@ const Strings = {
 		robbedTotal: "Roubou um total de",
 		robbedTimes: (beingRobbedCount: number) => `Foi roubado \`${beingRobbedCount}\` vezes`,
 		lost: "Perdeu",
+		of: "de",
+		gangAction: "Ação em Gangue",
 	},
 	[Language.Spanish]: {
 		empty: "Este usuario no tiene historial",
@@ -150,5 +167,7 @@ const Strings = {
 		robbedTotal: "Robó un total de",
 		robbedTimes: (beingRobbedCount: number) => `Fue robado \`${beingRobbedCount}\` veces`,
 		lost: "Perdió",
+		of: "de",
+		gangAction: "Acción en cuadrilla",
 	},
 } as const satisfies Localization;

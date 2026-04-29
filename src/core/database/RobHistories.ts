@@ -11,6 +11,7 @@ import { sequelize } from "./Database";
 import type { User } from "#core/models/User";
 import type { Users } from "./Users";
 import { ClashType, type Robbery } from "#core/models/Robbery";
+import type { InvestmentRobbery } from "#core/models/InvestmentRobbery";
 import { Log } from "#shared/log";
 import type { RobberyLocation } from "#core/models/RobberyLocation";
 import { Language } from "#core/models/Language";
@@ -99,6 +100,26 @@ export class RobHistories extends Model<
 		}
 		catch (err) {
 			Log.Warning(`Something went wrong with adding Beat Up History for ${beatup.Attacker.Nickname} (Id: ${beatup.Attacker.Id}) and ${beatup.Defender.Nickname} (Id: ${beatup.Defender.Id}).`);
+		}
+	}
+
+	static async CreateInvestmentHistory(robbery: InvestmentRobbery, win: boolean, robbedAmount: number) {
+		try {
+			const histories = Array.from(robbery.Participants.values()).map(participant => ({
+				attackerId: participant.Id,
+				defenderId: robbery.Target.Id,
+				locationId: robbery.InvestmentBase?.Id,
+				success: win,
+				money: Math.floor(robbedAmount / robbery.Participants.size),
+				type: ClashType.Investment,
+			}));
+
+			await RobHistories.bulkCreate(histories);
+
+			Log.Success(`Investment Robbery History for Gang ${robbery.Gang.Name} and target ${robbery.Target.Nickname} (Id: ${robbery.Target.Id}) added successfully.`);
+		}
+		catch (err) {
+			Log.Warning(`Something went wrong with adding Investment Robbery History for Gang ${robbery.Gang.Name} and target ${robbery.Target.Nickname} (Id: ${robbery.Target.Id}). ${err}`);
 		}
 	}
 }

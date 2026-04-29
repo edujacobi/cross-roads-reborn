@@ -1882,7 +1882,7 @@ const Strings = {
 		wantedComplexUI: `y Buscado hasta`,
 		hospitalSimple: "Hospitalizado",
 		hospitalComplex: `Hospitalizado hasta`,
-		gangActionSimple: "Participando en acción de pandilla",
-		gangActionComplex: "Participando en acción de pandilla",
+		gangActionSimple: "Participando en acción de cuadrilla",
+		gangActionComplex: "Participando en acción de cuadrilla",
 	},
 } as const satisfies Localization;
