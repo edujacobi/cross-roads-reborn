@@ -1,14 +1,20 @@
-import { Gangs } from "#core/database/Gangs";
-import { GangMembers } from "#core/database/GangMembers";
-import { GangRoles } from "#core/database/GangRoles";
-import { Log } from "#shared/log";
-import type { User } from "./User";
-import { Language, type Localization } from "./Language";
-import { defaultComponent, formatMoney, showTime } from "#bot/utils/ui";
-import { Users } from "#core/database/Users";
-import { Op } from "sequelize";
+import { getClient } from "#bot/client";
+import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
 import { GangColor, GangColorId } from "#bot/utils/colors";
 import { sendComplexPrivateMessage } from "#bot/utils/discordInteractions";
+import { EmoteString } from "#bot/utils/emotes";
+import { defaultComponent, formatMoney, showTime } from "#bot/utils/ui";
+import { GangMembers } from "#core/database/GangMembers";
+import { GangRoles } from "#core/database/GangRoles";
+import { Gangs } from "#core/database/Gangs";
+import { Users } from "#core/database/Users";
+import { GangBaseId } from "#core/types/GangBases";
+import { GangImportTiers, type ImportReward } from "#core/types/GangImportPools";
+import { BundleId } from "#core/types/Ids";
+import type { IDescription } from "#core/types/Interfaces";
+import { ItemList } from "#core/types/Items";
+import { Log } from "#shared/log";
+import { addHours, isFuture } from "date-fns";
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
@@ -19,19 +25,24 @@ import {
 	type MessageComponentInteraction,
 	MessageFlags,
 } from "discord.js";
-import { getClient } from "#bot/client";
-import { EmoteString } from "#bot/utils/emotes";
-import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
-import { GangBaseId } from "#core/types/GangBases";
-import type { IDescription } from "#core/types/Interfaces";
-import { addHours } from "date-fns";
+import { Op } from "sequelize";
+import { Language, type Localization } from "./Language";
 import { Notification, NotificationType } from "./Notification";
+import { User } from "./User";
 
 export enum GangPermission {
 	Invite,
 	Kick,
 	Promote,
 	EditGang
+}
+
+export enum GangImportFailureReason {
+	NoBase,
+	ActiveImport,
+	Cooldown,
+	CancelCooldown,
+	NotEnoughMoney
 }
 
 export interface GangMember {
@@ -65,10 +76,24 @@ export class Gang {
 	Level = 1;
 	LeaderId = "";
 	LastInvestmentRobbery: Date | null = null;
+	ImportArrivesAt: Date | null = null;
+	LastImportSuccess: Date | null = null;
+	LastImportCancelled: Date | null = null;
 	CreatedAt = new Date();
 	UpdatedAt = new Date();
 	Members: GangMember[] = [];
 	Roles: GangRole[] = [];
+
+	static IMPORT_COOLDOWN_HOURS = 24; // cooldown after success
+	static IMPORT_CANCEL_COOLDOWN_HOURS = 6; // cooldown after cancellation
+	static IMPORT_WAIT_HOURS = 24;
+	static IMPORT_BASE_SUCCESS_CHANCE = 0.60; // 60% at level 1
+	static IMPORT_SUCCESS_DECREASE_PER_LEVEL = 0.03; // -3% per level
+	static IMPORT_COST_BASE = 150_000;
+	static IMPORT_COST_PER_LEVEL = 350_000;
+	static IMPORT_CANCEL_REFUND_RATIO = 2 / 3;
+	static IMPORT_MIN_REWARDS = 1;
+	static IMPORT_MAX_REWARDS = 3;
 
 	static CREATION_COST = 1_000_000;
 	static JOIN_COST = 100_000;
@@ -311,6 +336,9 @@ export class Gang {
 			result.Level = gang.level;
 			result.LeaderId = gang.leaderId;
 			result.LastInvestmentRobbery = gang.lastInvestmentRobbery;
+			result.ImportArrivesAt = gang.shipmentArrivesAt;
+			result.LastImportSuccess = gang.lastShipmentSuccess;
+			result.LastImportCancelled = gang.lastShipmentCancelled;
 			result.CreatedAt = gang.createdAt;
 			result.UpdatedAt = gang.updatedAt;
 
@@ -342,6 +370,9 @@ export class Gang {
 		result.Level = gang.level;
 		result.LeaderId = gang.leaderId;
 		result.LastInvestmentRobbery = gang.lastInvestmentRobbery;
+		result.ImportArrivesAt = gang.shipmentArrivesAt;
+		result.LastImportSuccess = gang.lastShipmentSuccess;
+		result.LastImportCancelled = gang.lastShipmentCancelled;
 		result.CreatedAt = gang.createdAt;
 		result.UpdatedAt = gang.updatedAt;
 
@@ -913,6 +944,9 @@ export class Gang {
 					level: this.Level,
 					leaderId: this.LeaderId,
 					lastInvestmentRobbery: this.LastInvestmentRobbery,
+					shipmentArrivesAt: this.ImportArrivesAt,
+					lastShipmentSuccess: this.LastImportSuccess,
+					lastShipmentCancelled: this.LastImportCancelled,
 					updatedAt: new Date(),
 				},
 				{ where: { id: this.Id } },
@@ -922,6 +956,305 @@ export class Gang {
 		catch (err) {
 			Log.Warning(`Failed to update gang ${this.Name} (Id: ${this.Id}): ${err}`);
 			return false;
+		}
+	}
+
+	/**
+	 * Gets the cost for starting a import.
+	 * @returns The cost.
+	 */
+	GetImportCost(): number {
+		return Gang.IMPORT_COST_BASE + (Gang.IMPORT_COST_PER_LEVEL * this.Level);
+	}
+
+	/**
+	 * Gets the success chance for a import based on gang level.
+	 * @returns The success chance (0.0 - 1.0).
+	 */
+	GetImportSuccessChance(): number {
+		const chance = Gang.IMPORT_BASE_SUCCESS_CHANCE - (Gang.IMPORT_SUCCESS_DECREASE_PER_LEVEL * (this.Level - 1));
+		return Math.max(0.20, chance); // Min 20%
+	}
+
+	/**
+	 * Checks if a import is currently active.
+	 * @returns True if active, false otherwise.
+	 */
+	IsImportActive(): boolean {
+		return this.ImportArrivesAt !== null;
+	}
+
+	/**
+	 * Checks if the gang can start a new import.
+	 * @returns An object with a boolean and an optional reason.
+	 */
+	async CanStartImport(): Promise<{ can: boolean; reason?: GangImportFailureReason }> {
+		if (this.BaseId === GangBaseId.None) {
+			return { can: false, reason: GangImportFailureReason.NoBase };
+		}
+
+		if (this.IsImportActive()) {
+			return { can: false, reason: GangImportFailureReason.ActiveImport };
+		}
+
+		if (this.LastImportSuccess) {
+			const cooldownEnd = addHours(this.LastImportSuccess, Gang.IMPORT_COOLDOWN_HOURS);
+			if (isFuture(cooldownEnd)) {
+				return { can: false, reason: GangImportFailureReason.Cooldown };
+			}
+		}
+
+		if (this.LastImportCancelled) {
+			const cooldownEnd = addHours(this.LastImportCancelled, Gang.IMPORT_CANCEL_COOLDOWN_HOURS);
+			if (isFuture(cooldownEnd)) {
+				return { can: false, reason: GangImportFailureReason.CancelCooldown };
+			}
+		}
+
+		const cost = this.GetImportCost();
+		if (this.Money < cost) {
+			return { can: false, reason: GangImportFailureReason.NotEnoughMoney };
+		}
+
+		return { can: true };
+	}
+
+	/**
+	 * Starts a new import.
+	 */
+	async StartImport() {
+		const cost = this.GetImportCost();
+		this.Money -= cost;
+
+		const waitHours = Gang.IMPORT_WAIT_HOURS;
+		this.ImportArrivesAt = addHours(new Date(), waitHours);
+		await this.Update();
+
+		Log.Success(`Gang ${this.Name} (Id: ${this.Id}) started an import. Arrives at: ${this.ImportArrivesAt}`);
+
+		// Schedule resolution
+		setTimeout(() => {
+			this.ResolveImport().catch(err => Log.Error(`Failed to resolve import for gang ${this.Id}: ${err}`));
+		}, waitHours * 3_600_000);
+	}
+
+	/**
+	 * Cancels the active import and refunds 2/3 of the cost.
+	 * @returns The amount refunded.
+	 */
+	async CancelImport(): Promise<number> {
+		if (!this.IsImportActive()) return 0;
+
+		const cost = this.GetImportCost();
+		const refund = Math.floor(cost * Gang.IMPORT_CANCEL_REFUND_RATIO);
+
+		this.Money += refund;
+		this.ImportArrivesAt = null;
+		this.LastImportCancelled = new Date();
+
+		await this.Update();
+
+		Log.Info(`Gang ${this.Name} (Id: ${this.Id}) cancelled their shipment. Refunded: ${refund}`);
+
+		return refund;
+	}
+
+	/**
+	 * Resolves the active import (success or failure).
+	 */
+	async ResolveImport() {
+		if (!this.ImportArrivesAt) return;
+
+		await this.LoadMembers();
+		const successChance = this.GetImportSuccessChance();
+		const success = Math.random() < successChance;
+
+		const rewardTexts: string[] = [];
+
+		// Notify all members
+		const title = {
+			[Language.English]: "Gang import",
+			[Language.Portuguese]: "Importação da gangue",
+			[Language.Spanish]: "Importación de cuadrilla",
+		};
+
+		if (success) {
+			const tier = GangImportTiers.find(t => this.Level >= t.minLevel && this.Level <= t.maxLevel);
+			if (tier) {
+				const rewardsCount = Math.floor(Math.random() * (Gang.IMPORT_MAX_REWARDS - Gang.IMPORT_MIN_REWARDS + 1)) + Gang.IMPORT_MIN_REWARDS;
+				const selectedRewards: { reward: ImportReward; time: number }[] = [];
+
+				const shuffledPool = [...tier.pool].sort(() => 0.5 - Math.random());
+				const selectedPoolItems = shuffledPool.slice(0, rewardsCount);
+
+				for (const reward of selectedPoolItems) {
+					const time = reward.time ?? Math.floor(Math.random() * (72 - 24 + 1)) + 24;
+					selectedRewards.push({ reward, time });
+
+					const item = ItemList[reward.item];
+					rewardTexts.push(`${item.Description[Language.English]} (${reward.quantity ? `x${reward.quantity}` : `${time}h`})`);
+				}
+
+				this.LastImportSuccess = new Date();
+
+				for (const member of this.Members) {
+					const user = new User(member.UserId);
+					await user.GetInfo();
+					if (!user) continue;
+
+					// Give items
+					for (const sr of selectedRewards) {
+						await user.GiveItem(ItemList[sr.reward.item], sr.reward.quantity, sr.time ? sr.time / 24 : undefined);
+					}
+
+					// Give 1 day of best gun
+					let bestGunText = "";
+					if (user.BestGun) {
+						await user.GiveItem(ItemList[user.BestGun.Id], undefined, 1);
+						const item = ItemList[user.BestGun.Id];
+						const emote = item.Skin[user.BestGun.SelectedSkin]?.String || item.Skin[BundleId.Default].String;
+						const name = item.Description[user.Language];
+						bestGunText = `\n- ${emote} **${name}** (24h) [Bonus]`;
+					}
+
+					// Build personalized reward list
+					let itemsText = selectedRewards.map(sr => {
+						const item = ItemList[sr.reward.item];
+						const userItem = user.Items.find(i => i.Id === item.Id);
+						const skinId = userItem?.SelectedSkin ?? BundleId.Default;
+						const emote = item.Skin[skinId]?.String || item.Skin[BundleId.Default].String;
+						const name = item.Description[user.Language];
+						const qty = sr.reward.quantity ? `x${sr.reward.quantity}` : `(${sr.time}h)`;
+						return `- ${emote} **${name}** ${qty}`;
+					}).join("\n");
+
+					if (bestGunText) {
+						itemsText += bestGunText;
+					}
+
+					const successMessage = {
+						[Language.English]: `The gang import has arrived! You received:\n${itemsText}`,
+						[Language.Portuguese]: `A importação da gangue chegou! Você recebeu:\n${itemsText}`,
+						[Language.Spanish]: `¡La importación de la cuadrilla ha llegado! Has recibido:\n${itemsText}`,
+					};
+
+					await this.ComunicateMember(member, successMessage, undefined, title);
+				}
+
+				Log.Success(`Gang ${this.Name} (Id: ${this.Id}) import succeeded. Rewards: ${rewardTexts.join(", ")}`);
+			}
+		}
+		else {
+			const transport = {
+				[GangBaseId.None]: {
+					[Language.English]: "shipment",
+					[Language.Portuguese]: "carregamento",
+					[Language.Spanish]: "cargamento",
+				},
+				[GangBaseId.Airport]: {
+					[Language.English]: "cargo airplane",
+					[Language.Portuguese]: "avião de carga",
+					[Language.Spanish]: "avión de carga",
+				},
+				[GangBaseId.Bunker]: {
+					[Language.English]: "convoy of trucks",
+					[Language.Portuguese]: "comboio de caminhões",
+					[Language.Spanish]: "convoy de camiones",
+				},
+				[GangBaseId.BikeClub]: {
+					[Language.English]: "group of bikers",
+					[Language.Portuguese]: "grupo de motoqueiros",
+					[Language.Spanish]: "grupo de motociclistas",
+				},
+			}[this.BaseId as GangBaseId];
+
+			const failureMessages = [
+				{
+					[Language.English]: `The ${transport[Language.English]} was intercepted by the police! All items were lost.`,
+					[Language.Portuguese]: `O ${transport[Language.Portuguese]} foi interceptado pela polícia! Todos os itens foram perdidos.`,
+					[Language.Spanish]: `¡El ${transport[Language.Spanish]} fue interceptado por la policía! Todos los objetos se perdieron.`,
+				},
+				{
+					[Language.English]: this.BaseId === GangBaseId.Airport
+						? `The ${transport[Language.English]} was lost in a heavy storm!`
+						: `The ${transport[Language.English]} was involved in a tragic road accident!`,
+					[Language.Portuguese]: this.BaseId === GangBaseId.Airport
+						? `O ${transport[Language.Portuguese]} se perdeu em uma forte tempestade!`
+						: `O ${transport[Language.Portuguese]} se envolveu em um trágico acidente na estrada!`,
+					[Language.Spanish]: this.BaseId === GangBaseId.Airport
+						? `¡El ${transport[Language.Spanish]} se perdió en una fuerte tormenta!`
+						: `¡El ${transport[Language.Spanish]} se vio involucrado en un trágico accidente de carretera!`,
+				},
+				{
+					[Language.English]: `A rival gang hijacked the ${transport[Language.English]}! We've lost everything.`,
+					[Language.Portuguese]: `Uma gangue rival sequestrou o ${transport[Language.Portuguese]}! Perdemos tudo.`,
+					[Language.Spanish]: `¡Una cuadrilla rival secuestró el ${transport[Language.Spanish]}! Lo hemos perdido todo.`,
+				},
+				{
+					[Language.English]: `The ${transport[Language.English]} was seized by customs due to suspicious paperwork.`,
+					[Language.Portuguese]: `O ${transport[Language.Portuguese]} foi apreendido pela alfândega devido a documentos suspeitos.`,
+					[Language.Spanish]: `El ${transport[Language.Spanish]} fue incautado por la aduana debido a trámites sospechosos.`,
+				},
+			];
+
+			const failureMessage = failureMessages[Math.floor(Math.random() * failureMessages.length)];
+
+			for (const member of this.Members) {
+				const user = new User(member.UserId);
+				await user.GetInfo();
+				if (!user) continue;
+
+				await this.ComunicateMember(member, failureMessage, undefined, title);
+			}
+
+			Log.Info(`Gang ${this.Name} (Id: ${this.Id}) import failed.`);
+		}
+
+		this.ImportArrivesAt = null;
+		await this.Update();
+	}
+
+	/**
+	 * Schedules all active shipments on bot startup.
+	 */
+	static async ScheduleAllActiveShipments() {
+		try {
+			const gangs = await Gangs.findAll({
+				where: {
+					shipmentArrivesAt: {
+						[Op.ne]: null,
+					},
+				},
+			});
+
+			for (const g of gangs) {
+				try {
+					const gang = await Gang.GetInfo(g);
+					if (!gang.ImportArrivesAt) continue;
+
+					const now = new Date();
+					const waitMs = gang.ImportArrivesAt.getTime() - now.getTime();
+
+					if (waitMs <= 0) {
+						// Already arrived, process now sequentially
+						await gang.ResolveImport();
+					}
+					else {
+						// Schedule resolution
+						setTimeout(() => {
+							gang.ResolveImport().catch(err => Log.Error(`Failed to resolve scheduled import for gang ${gang.Id}: ${err}`));
+						}, waitMs);
+					}
+				}
+				catch (err) {
+					Log.Error(`Error processing gang import for ID ${g.id}: ${err}`);
+				}
+			}
+
+			Log.Info(`Scheduled ${gangs.length} active gang imports.`);
+		}
+		catch (err) {
+			Log.Warning(`Failed to schedule active imports: ${err}`);
 		}
 	}
 

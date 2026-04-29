@@ -1,12 +1,13 @@
 import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
 import { DEFAULT_GANG_IMAGE } from "#bot/ui/builders/GangImageCanvasBuilder";
+import { ProgressBarCanvasBuilder } from "#bot/ui/builders/ProgressBarCanvasBuilder";
 import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
 import { CrColors, GangColor, type IGangColor } from "#bot/utils/colors";
-import { deferReply, deferUpdate, replyWithContainer, sendComplexPrivateMessage } from "#bot/utils/discordInteractions";
+import { deferReply, deferUpdate, replyInteraction, replyWithContainer, sendComplexPrivateMessage } from "#bot/utils/discordInteractions";
 import { EmoteId, EmoteString } from "#bot/utils/emotes";
 import { convertHexNumberToString, defaultComponent, formatMoney, hexToRGB, showTime } from "#bot/utils/ui";
 import { checkUser, searchUser } from "#bot/utils/userUtils";
-import { Gang, GangPermission } from "#core/models/Gang";
+import { Gang, GangPermission, GangImportFailureReason } from "#core/models/Gang";
 import { InvestmentRobbery, InvestmentRobberyReason } from "#core/models/InvestmentRobbery";
 import { Language, type Localization } from "#core/models/Language";
 import { type User } from "#core/models/User";
@@ -14,6 +15,7 @@ import { GangBaseId, GangBases, type GangModifier, getGangBases } from "#core/ty
 import { addHours, isFuture } from "date-fns";
 import {
 	ActionRowBuilder,
+	AttachmentBuilder,
 	ButtonBuilder,
 	ButtonStyle,
 	type ChatInputCommandInteraction,
@@ -40,6 +42,7 @@ enum CommandOption {
 	Roles = "roles",
 	Transfer = "transfer",
 	RobInvestment = "rob_investment",
+	Import = "import",
 }
 
 module.exports = {
@@ -73,6 +76,18 @@ module.exports = {
 					[Locale.SpanishES]: "Nombre o acrónimo de la cuadrilla para buscar",
 				}),
 			),
+		)
+		.addSubcommand(importCmd => importCmd
+			.setName(CommandOption.Import)
+			.setNameLocalizations({
+				[Locale.PortugueseBR]: "importar",
+				[Locale.SpanishES]: "importar",
+			})
+			.setDescription("Manage gang item imports")
+			.setDescriptionLocalizations({
+				[Locale.PortugueseBR]: "Gerencie importações de itens da gangue",
+				[Locale.SpanishES]: "Gestiona las importaciones de objetos de la cuadrilla",
+			}),
 		)
 		.addSubcommand(create => create
 			.setName(CommandOption.Create)
@@ -1150,6 +1165,231 @@ module.exports = {
 				components: [resultDm],
 				flags: MessageFlags.IsComponentsV2,
 			});
+			return;
+		}
+
+		case CommandOption.Import: {
+			await deferReply(interaction);
+
+			let gang = await Gang.GetByUserId(user.Id);
+			if (!gang) {
+				return warn(s.notInGang);
+			}
+
+			if (gang.BaseId === GangBaseId.None) {
+				return warn(s.gangHasNoBase);
+			}
+
+			const isLeader = user.Id === gang.LeaderId;
+			const gangBase = GangBases[gang.BaseId];
+
+			const importImageMapper = {
+				[GangBaseId.None]: "",
+				[GangBaseId.Airport]: "ui/assets/images/ui_elements/airport.png",
+				[GangBaseId.BikeClub]: "ui/assets/images/ui_elements/bikeclub.png",
+				[GangBaseId.Bunker]: "ui/assets/images/ui_elements/bunker.png",
+			};
+
+			const getStatusContainer = async (currentGang: Gang) => {
+				const container = new CustomContainerBuilder()
+					.setAccentColor(GangColor[currentGang.Color].Color)
+					.addSectionComponents(section => section
+						.addTexts([
+							`# ${s.importTitle}`,
+							s.importDescription,
+						])
+						.setThumbnailAccessory(thumb => thumb
+							.setURL(gangBase.ImageUrl!),
+						),
+					)
+					.addLargeSeparator();
+
+				const files: AttachmentBuilder[] = [];
+
+				if (currentGang.ImportArrivesAt) {
+					const now = Date.now();
+					const total = 24 * 60 * 60 * 1000;
+					const start = currentGang.ImportArrivesAt.getTime() - total;
+					const current = now - start;
+
+					const imagePath = importImageMapper[currentGang.BaseId];
+					const colorHex = convertHexNumberToString(GangColor[currentGang.Color].Color);
+
+					const progressBarBuilder = new ProgressBarCanvasBuilder(600, 40, current / total, imagePath, colorHex, language);
+					const buffer = await progressBarBuilder.GenerateImage();
+					files.push(new AttachmentBuilder(buffer, { name: "progress.webp" }));
+
+					container
+						.addSectionComponents(section => section
+							.addTexts([
+								s.importActive,
+								`-# ${s.importInfoArrivesIn(showTime(currentGang.ImportArrivesAt!.getTime(), true))}`,
+								`-# ${s.importInfoSuccessChance(`${Math.floor(currentGang.GetImportSuccessChance() * 100)}%`)}`,
+							])
+							.setButtonAccessory(btn => btn
+								.setCustomId("cancel_import")
+								.setLabel(s.cancelImport)
+								.setDisabled(!isLeader)
+								.setStyle(ButtonStyle.Secondary),
+							),
+						)
+						.addImage("attachment://progress.webp");
+				}
+				else {
+					const successChance = currentGang.GetImportSuccessChance();
+					const cost = currentGang.GetImportCost();
+
+					// Check cooldowns
+					if (currentGang.LastImportSuccess) {
+						const cooldownEnd = addHours(currentGang.LastImportSuccess, Gang.IMPORT_COOLDOWN_HOURS);
+						if (isFuture(cooldownEnd)) {
+							container
+								.addTexts([s.importCooldown(showTime(cooldownEnd.getTime(), true))])
+								.addFooter({
+									text: `${currentGang.Name} • ${formatMoney(currentGang.Money, language)}`,
+								});
+							return { container, files };
+						}
+					}
+
+					if (currentGang.LastImportCancelled) {
+						const cooldownEnd = addHours(currentGang.LastImportCancelled, Gang.IMPORT_CANCEL_COOLDOWN_HOURS);
+						if (isFuture(cooldownEnd)) {
+							container
+								.addTexts([s.importCancelCooldown(showTime(cooldownEnd.getTime(), true))])
+								.addFooter({
+									text: `${currentGang.Name} • ${formatMoney(currentGang.Money, language)}`,
+								});
+							return { container, files };
+						}
+					}
+
+					container
+						.addSectionComponents(section => section
+							.addTexts([
+								`# ${s.importTitle}`,
+								s.importReady(formatMoney(cost, language), Gang.IMPORT_WAIT_HOURS.toString(), `${Math.floor(successChance * 100)}%`),
+							])
+							.setButtonAccessory(btn => btn
+								.setCustomId("start_import")
+								.setLabel(s.startImport)
+								.setStyle(ButtonStyle.Success)
+								.setDisabled(!isLeader || currentGang.Money < cost),
+							),
+						);
+				}
+
+				container.addFooter({
+					text: `${currentGang.Name} • ${formatMoney(currentGang.Money, language)}`,
+				});
+				return { container, files };
+			};
+
+			let { container, files } = await getStatusContainer(gang);
+			const response = await replyInteraction(interaction, {
+				components: [container],
+				files: files,
+				flags: MessageFlags.IsComponentsV2,
+			});
+
+			if (!isLeader) return;
+
+			const collector = createButtonCollector(interaction, response);
+
+			collector?.on("collect", async btn => {
+				await deferUpdate(btn);
+
+				gang = await Gang.GetByUserId(user.Id);
+
+				if (!gang) {
+					return warn(s.notInGang);
+				}
+
+				if (btn.customId === "start_import") {
+					const check = await gang.CanStartImport();
+					if (!check.can && check.reason !== undefined) {
+						let data = {};
+						if (check.reason === GangImportFailureReason.Cooldown && gang.LastImportSuccess) {
+							data = { time: showTime(addHours(gang.LastImportSuccess, Gang.IMPORT_COOLDOWN_HOURS).getTime()) };
+						}
+						else if (check.reason === GangImportFailureReason.CancelCooldown && gang.LastImportCancelled) {
+							data = { time: showTime(addHours(gang.LastImportCancelled, Gang.IMPORT_CANCEL_COOLDOWN_HOURS).getTime()) };
+						}
+						else if (check.reason === GangImportFailureReason.NotEnoughMoney) {
+							data = { cost: formatMoney(gang.GetImportCost(), language) };
+						}
+
+						const container = defaultComponent({
+							user,
+							color: GangColor[gang.Color].Color as ColorResolvable,
+							description: s.importReason(check.reason, data),
+						});
+
+						return replyWithContainer(interaction, container);
+					}
+
+					await gang.StartImport();
+
+					const status = await getStatusContainer(gang);
+					container = status.container;
+					files = status.files;
+
+					return replyInteraction(interaction, {
+						components: [container],
+						files: files,
+					});
+				}
+
+				if (btn.customId === "cancel_import") {
+					const refund = Math.floor(gang.GetImportCost() * Gang.IMPORT_CANCEL_REFUND_RATIO);
+
+					// Confirm cancel
+					container = new CustomContainerBuilder()
+						.setUser(user)
+						.setAccentColor(Colors.Red)
+						.addTexts([s.confirmCancelImport(formatMoney(refund, language))])
+						.addButtonRow(
+							btn => btn
+								.setCustomId("confirm_cancel")
+								.setLabel(s.confirm)
+								.setStyle(ButtonStyle.Danger),
+							btn => btn
+								.setCustomId("back")
+								.setLabel(s.back)
+								.setStyle(ButtonStyle.Secondary),
+						)
+						.addFooter();
+
+					return replyWithContainer(interaction, container);
+				}
+
+				if (btn.customId === "confirm_cancel") {
+					const refund = await gang.CancelImport();
+
+					container = defaultComponent({
+						user,
+						color: GangColor[gang.Color].Color as ColorResolvable,
+						description: s.successCancelImport(formatMoney(refund, language)),
+					});
+
+					return replyWithContainer(interaction, container);
+				}
+
+				if (btn.customId === "back") {
+					const status = await getStatusContainer(gang);
+					container = status.container;
+					files = status.files;
+					return replyInteraction(interaction, {
+						components: [container],
+						files: files,
+					});
+				}
+			});
+
+			collector?.on("end", async () => {
+				await disableButtons(interaction, container);
+			});
+
 			return;
 		}
 
@@ -2506,6 +2746,31 @@ const Strings = {
 		robberyResultWon: "You successfully defended your investment!",
 		henchmanStillActive: "Your henchman protected you and remains active!",
 		robberyCooldown: (time: number) => `${EmoteString.Police} The police is searching for your gang. You can rob again ${showTime(time, true)}`,
+		importTitle: "Gang import",
+		importReady: (cost: string, time: string, chance: string) => `Ready to start a new item import.\n\n- **Cost:** ${cost}\n- **Wait time:** ${time}h\n- **Success chance:** ${chance}`,
+		importActive: `A import is currently in transit.`,
+		importInfoArrivesIn: (time: string) => `Arrives ${time}`,
+		importInfoSuccessChance: (chance: string) => `Success chance: ${chance}`,
+		importCooldown: (time: string) => `Your gang recently had a successful import.\n-# Next one available ${time}.`,
+		importCancelCooldown: (time: string) => `Your gang recently cancelled an import.\n-# Next one available ${time}.`,
+		startImport: "Start import",
+		cancelImport: "Cancel import",
+		confirmCancelImport: (refund: string) => `Are you sure you want to cancel the active import? You will receive a partial refund of **${refund}**.`,
+		successStartImport: (time: string) => `Import started! It will arrive ${time}.`,
+		successCancelImport: (refund: string) => `Import cancelled. **${refund}** has been refunded to the gang treasury.`,
+		onlyLeaderImport: "Only the gang leader can start or cancel imports.",
+		importReason: (type: GangImportFailureReason, data: { cost?: string; time?: string } = {}) => {
+			const reasons = {
+				[GangImportFailureReason.NoBase]: "Your gang must have a base to import items.",
+				[GangImportFailureReason.ActiveImport]: "There is already an active import in transit.",
+				[GangImportFailureReason.Cooldown]: `You must wait until ${data.time} to start another import.`,
+				[GangImportFailureReason.CancelCooldown]: `You cancelled an import recently. You must wait until ${data.time} to start another.`,
+				[GangImportFailureReason.NotEnoughMoney]: `The gang treasury does not have enough money. Cost: ${data.cost}`,
+			};
+			return reasons[type] || "Unknown error while starting the import.";
+		},
+		gangHasNoBase: "Your gang must have a base to start an import.",
+		importDescription: "Import weapons and equipment from abroad. With luck, the shipment will arrive and all members will receive items!",
 	},
 	[Language.Portuguese]: {
 		gangTitle: `Gangues`,
@@ -2659,6 +2924,31 @@ const Strings = {
 		robberyResultWon: "Você defendeu seu investimento com sucesso!",
 		henchmanStillActive: "Seu capanga protegeu você e continua ativo!",
 		robberyCooldown: (time: number) => `${EmoteString.Police} A polícia está procurando por sua gangue. Você poderá roubar novamente ${showTime(time, true)}`,
+		importTitle: "Importação da gangue",
+		importReady: (cost: string, time: string, chance: string) => `Pronto para iniciar uma nova importação de itens.\n\n- **Custo:** ${cost}\n- **Tempo de espera:** ${time}h\n- **Chance de sucesso:** ${chance}`,
+		importActive: "Uma importação está atualmente em trânsito.",
+		importInfoArrivesIn: (time: string) => `Chega ${time}`,
+		importInfoSuccessChance: (chance: string) => `Chance de sucesso: ${chance}`,
+		importCooldown: (time: string) => `Sua gangue teve uma importação bem-sucedida recentemente.\n-# Próxima disponível ${time}.`,
+		importCancelCooldown: (time: string) => `Sua gangue cancelou uma importação recentemente.\n-# Próxima disponível ${time}.`,
+		startImport: "Iniciar importação",
+		cancelImport: "Cancelar importação",
+		confirmCancelImport: (refund: string) => `Tem certeza que deseja cancelar a importação ativa? Você receberá um reembolso parcial de **${refund}**.`,
+		successStartImport: (time: string) => `Importação iniciada! Chegará em ${time}.`,
+		successCancelImport: (refund: string) => `Importação cancelada. **${refund}** foi reembolsado para o caixa da gangue.`,
+		onlyLeaderImport: "Apenas o líder da gangue pode iniciar ou cancelar importações.",
+		importReason: (type: GangImportFailureReason, data: { cost?: string; time?: string } = {}) => {
+			const reasons = {
+				[GangImportFailureReason.NoBase]: "Sua gangue precisa ter uma base para importar itens.",
+				[GangImportFailureReason.ActiveImport]: "Já existe uma importação ativa em trânsito.",
+				[GangImportFailureReason.Cooldown]: `Você precisa esperar até ${data.time} para iniciar outra importação.`,
+				[GangImportFailureReason.CancelCooldown]: `Você cancelou uma importação recentemente. Você precisa esperar até ${data.time} para iniciar outra.`,
+				[GangImportFailureReason.NotEnoughMoney]: `O caixa da gangue não tem dinheiro suficiente. Custo: ${data.cost}`,
+			};
+			return reasons[type] || "Erro desconhecido ao iniciar a importação.";
+		},
+		gangHasNoBase: "Sua gangue precisa ter uma base para iniciar uma importação.",
+		importDescription: "Importe armas e equipamentos do exterior. Com sorte, o carregamento chegará e todos os membros receberão itens!",
 	},
 	[Language.Spanish]: {
 		gangTitle: `Cuadrillas`,
@@ -2812,5 +3102,30 @@ const Strings = {
 		robberyResultWon: "¡Defendiste tu inversión con éxito!",
 		henchmanStillActive: "¡Tu secuaz te protegió y sigue activo!",
 		robberyCooldown: (time: number) => `${EmoteString.Police} La policía está buscando a tu cuadrilla. Podrás robar de nuevo ${showTime(time, true)}`,
+		importTitle: "Importación de cuadrilla",
+		importReady: (cost: string, time: string, chance: string) => `Listo para iniciar una nueva importación de objetos.\n\n- **Costo:** ${cost}\n- **Tiempo de espera:** ${time}h\n- **Probabilidad de éxito:** ${chance}`,
+		importActive: `Una importación está actualmente en tránsito.`,
+		importInfoArrivesIn: (time: string) => `Llega ${time}`,
+		importInfoSuccessChance: (chance: string) => `Probabilidad de éxito: ${chance}`,
+		importCooldown: (time: string) => `Tu cuadrilla tuvo una importación exitosa recientemente.\n-# Próxima disponible ${time}.`,
+		importCancelCooldown: (time: string) => `Tu cuadrilla canceló una importación recientemente.\n-# Próxima disponible ${time}.`,
+		startImport: "Iniciar importación",
+		cancelImport: "Cancelar importación",
+		confirmCancelImport: (refund: string) => `¿Estás seguro de que deseas cancelar la importación activa? Recibirás un reembolso parcial de **${refund}**.`,
+		successStartImport: (time: string) => `¡Importación iniciada! Llegará en ${time}.`,
+		successCancelImport: (refund: string) => `Importación cancelada. **${refund}** ha sido reembolsado al banco de la cuadrilla.`,
+		onlyLeaderImport: "Solo el líder de la cuadrilla puede iniciar o cancelar importaciones.",
+		importReason: (type: GangImportFailureReason, data: { cost?: string; time?: string } = {}) => {
+			const reasons = {
+				[GangImportFailureReason.NoBase]: "Tu cuadrilla debe tener una base para importar objetos.",
+				[GangImportFailureReason.ActiveImport]: "Ya hay una importación activa en tránsito.",
+				[GangImportFailureReason.Cooldown]: `Debes esperar hasta las ${data.time} para iniciar otra importación.`,
+				[GangImportFailureReason.CancelCooldown]: `Cancelaste una importación recientemente. Debes esperar hasta las ${data.time} para iniciar otra.`,
+				[GangImportFailureReason.NotEnoughMoney]: `El banco de la cuadrilla no tiene suficiente dinero. Costo: ${data.cost}`,
+			};
+			return reasons[type] || "Error desconocido al iniciar la importación.";
+		},
+		gangHasNoBase: "Tu cuadrilla debe tener una base para iniciar una importación.",
+		importDescription: "¡Importa armas y equipos del extranjero. Con suerte, el cargamento llegará y todos los miembros recibirán objetos!",
 	},
 } as const satisfies Localization;

@@ -7,6 +7,7 @@ import { Lottery } from "#core/models/Lottery";
 import { removeAllFromActions } from "#bot/utils/userUtils";
 import { InvestmentManager } from "#core/models/InvestmentManager";
 import { Dashboard } from "#core/models/Dashboard";
+import { Gang } from "#core/models/Gang";
 
 module.exports = {
 	name: Events.ClientReady,
@@ -22,6 +23,7 @@ module.exports = {
 			// startVIPProcedure(),
 			HorseRacing.Initialize(),
 			Lottery.Initialize(),
+			Gang.ScheduleAllActiveShipments(),
 			Dashboard.ScheduleMidnightSnapshot(),
 		]);
 	},

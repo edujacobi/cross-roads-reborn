@@ -146,6 +146,9 @@ export const EmoteId = {
 	ThreePermission: "1392589946958905344",
 	FourPermission: "1392589949005467888",
 	AllPermission: "1392589951757062294",
+	Airport: "1496940345987039242",
+	Bikeclub: "1496940372516012216",
+	Bunker: "1496940405671858378",
 
 	SpecialCoinShop: "1454137203163791598",
 
@@ -302,6 +305,9 @@ export const EmoteString = {
 	ThreePermission: `<:3_permission:${EmoteId.ThreePermission}>`,
 	FourPermission: `<:4_permission:${EmoteId.FourPermission}>`,
 	AllPermission: `<:leader:${EmoteId.AllPermission}>`,
+	Airport: `<:Airport:${EmoteId.Airport}>`,
+	Bikeclub: `<:Bikeclub:${EmoteId.Bikeclub}>`,
+	Bunker: `<:Bunker:${EmoteId.Bunker}>`,
 
 	SpecialCoinShop: `<:SpecialCoinShop:${EmoteId.SpecialCoinShop}>`,
 

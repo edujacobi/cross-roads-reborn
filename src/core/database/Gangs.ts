@@ -18,6 +18,9 @@ export class Gangs extends Model<
 	declare level: number;
 	declare leaderId: string;
 	declare lastInvestmentRobbery: CreationOptional<Date | null>;
+	declare shipmentArrivesAt: CreationOptional<Date | null>;
+	declare lastShipmentSuccess: CreationOptional<Date | null>;
+	declare lastShipmentCancelled: CreationOptional<Date | null>;
 	declare createdAt: CreationOptional<Date>;
 	declare updatedAt: CreationOptional<Date>;
 }
@@ -81,6 +84,18 @@ Gangs.init(
 			},
 		},
 		lastInvestmentRobbery: {
+			type: DataTypes.DATE,
+			allowNull: true,
+		},
+		shipmentArrivesAt: {
+			type: DataTypes.DATE,
+			allowNull: true,
+		},
+		lastShipmentSuccess: {
+			type: DataTypes.DATE,
+			allowNull: true,
+		},
+		lastShipmentCancelled: {
 			type: DataTypes.DATE,
 			allowNull: true,
 		},

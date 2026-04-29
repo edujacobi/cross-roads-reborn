@@ -13,7 +13,7 @@ import { EmoteId, EmoteString } from "#bot/utils/emotes";
 import { ClassId, ClassList, getJobClassModifier } from "#core/types/Classes";
 import { type LocationId, LocationList } from "#core/types/Locations";
 import { type ScavengeId, ScavengeList } from "#core/types/Scavenge";
-import { Gang } from "./Gang";
+import type { Gang } from "./Gang";
 import { GangMembers } from "#core/database/GangMembers";
 import { Event, EventType } from "./Event";
 import type { GangColorId } from "#bot/utils/colors";
@@ -1228,6 +1228,7 @@ export class User {
 
 		// Gang Modifiers
 		if (this.GangId) {
+			const { Gang } = await import("./Gang.js");
 			const gang = await Gang.GetBasicById(this.GangId);
 
 			if (gang) {
@@ -1697,6 +1698,7 @@ export class User {
 			return null;
 		}
 
+		const { Gang } = await import("./Gang.js");
 		return await Gang.GetById(this.GangId!);
 	}
 
@@ -1710,6 +1712,7 @@ export class User {
 	 * @returns The created gang or null if failed.
 	 */
 	async CreateGang(name: string, acronym: string, description: string, color: GangColorId, image: string | null = null): Promise<Gang | null> {
+		const { Gang } = await import("./Gang.js");
 		if (this.IsInGang()) {
 			Log.Warning(`User ${this.Nickname} (Id: ${this.Id}) tried to create a gang, but already is in one.`);
 			return null;
@@ -1738,6 +1741,7 @@ export class User {
 			return false;
 		}
 
+		const { Gang } = await import("./Gang.js");
 		const gang = await Gang.GetById(this.GangId!);
 
 		if (!gang) {
