@@ -17,6 +17,10 @@ export class DashboardStats extends Model<
 	declare robberyCount: number;
 	declare beatUpCount: number;
 	declare idleCount: number;
+
+	declare englishCount: number;
+	declare portugueseCount: number;
+	declare spanishCount: number;
 }
 
 DashboardStats.init(
@@ -67,6 +71,18 @@ DashboardStats.init(
 			allowNull: false,
 		},
 		idleCount: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+		},
+		englishCount: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+		},
+		portugueseCount: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+		},
+		spanishCount: {
 			type: DataTypes.INTEGER,
 			allowNull: false,
 		},

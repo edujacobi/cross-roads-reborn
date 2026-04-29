@@ -34,6 +34,9 @@ export class DashboardCanvasBuilder extends BaseCanvasBuilder {
 		const chartRadius = 100;
 		this.drawPieChart(stats, this.Width - chartRadius - this.Padding, 170, chartRadius);
 
+		// Draw Language Stats
+		this.drawLanguageStats(stats, this.Padding, 160);
+
 		// Draw Line Chart
 		if (history.length > 0) {
 			this.drawLineChart(history, 50, 350, 700, 200);
@@ -94,6 +97,35 @@ export class DashboardCanvasBuilder extends BaseCanvasBuilder {
 			const percentage = ((item.value / total) * 100).toFixed(1);
 			ctx.fillText(`${item.label}: ${item.value} (${percentage}%)`, legendX + 20, legendY);
 			legendY += 25;
+		}
+	}
+
+	private drawLanguageStats(stats: DashboardStats, x: number, y: number) {
+		const ctx = this.Ctx;
+		const total = (stats.englishCount ?? 0) + (stats.portugueseCount ?? 0) + (stats.spanishCount ?? 0) || 1;
+
+		ctx.font = "18px InterBold";
+		ctx.fillStyle = "#E3E3E6";
+		ctx.textAlign = "left";
+		ctx.textBaseline = "top";
+		ctx.fillText("Language Distribution", x, y);
+
+		const languages = [
+			{ label: "English", count: stats.englishCount ?? 0, color: "#3498db" },
+			{ label: "Portuguese", count: stats.portugueseCount ?? 0, color: "#2ecc71" },
+			{ label: "Spanish", count: stats.spanishCount ?? 0, color: "#e67e22" },
+		];
+
+		let currentY = y + 35;
+		ctx.font = "14px Inter";
+		ctx.textBaseline = "middle";
+		for (const lang of languages) {
+			const percentage = ((lang.count / total) * 100).toFixed(1);
+			ctx.fillStyle = lang.color;
+			ctx.fillRect(x, currentY - 6, 12, 12);
+			ctx.fillStyle = "#bbbbbb";
+			ctx.fillText(`${lang.label}: ${lang.count} (${percentage}%)`, x + 20, currentY);
+			currentY += 25;
 		}
 	}
 

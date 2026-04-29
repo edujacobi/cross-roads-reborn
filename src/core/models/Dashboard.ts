@@ -4,6 +4,7 @@ import { Gangs } from "#core/database/Gangs";
 import { DashboardStats } from "#core/database/DashboardStats";
 import { Log } from "#shared/log";
 import { ClassId } from "#core/types/Classes";
+import { Language } from "#core/models/Language";
 
 export class Dashboard {
 	static async GetCurrentStats() {
@@ -56,6 +57,18 @@ export class Dashboard {
 		let idleCount = totalPlayers - (prisonCount + hospitalCount + jobCount + scavengeCount + casinoCount + robberyCount + beatUpCount);
 		if (idleCount < 0) idleCount = 0;
 
+		const englishCount = await Users.count({
+			where: { language: Language.English, class: { [Op.not]: ClassId.None } }
+		});
+
+		const portugueseCount = await Users.count({
+			where: { language: Language.Portuguese, class: { [Op.not]: ClassId.None } }
+		});
+
+		const spanishCount = await Users.count({
+			where: { language: Language.Spanish, class: { [Op.not]: ClassId.None } }
+		});
+
 		return DashboardStats.build({
 			date: now,
 			totalPlayers,
@@ -68,6 +81,9 @@ export class Dashboard {
 			robberyCount,
 			beatUpCount,
 			idleCount,
+			englishCount,
+			portugueseCount,
+			spanishCount,
 		});
 	}
 
