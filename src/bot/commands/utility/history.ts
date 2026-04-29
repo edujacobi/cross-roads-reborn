@@ -100,7 +100,7 @@ module.exports = {
 
 				let textMoney = rob.success && rob.type != ClashType.BeatUp ? ` • **${formatMoney(rob.money, user.Language)}**` : "";
 				if (rob.type == ClashType.Investment) {
-					textMoney = ` • ${s.gangAction}`;
+					textMoney += ` • ${s.gangAction}`;
 				}
 
 				historyList += `### ${challengerName} ${emoteShow} ${opponentName}\n-# ${emoji} ${text}${textMoney} • ${formatDate(rob.createdAt, language)}\n`;
