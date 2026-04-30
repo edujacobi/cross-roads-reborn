@@ -17,6 +17,21 @@ const BADGE_MAP: Partial<Record<AvatarDecorationId, string>> = {
 	[AvatarDecorationId.VIP]: "vip.png",
 };
 
+const WEAPON_MAP: Partial<Record<AvatarDecorationId, string>> = {
+	[AvatarDecorationId.Pistol]: "1_Pistol.png",
+	[AvatarDecorationId.MachinePistol]: "2_MachinePistol.png",
+	[AvatarDecorationId.HuntRifle]: "3_HuntRifle.png",
+	[AvatarDecorationId.Shotgun]: "4_Shotgun.png",
+	[AvatarDecorationId.SMG]: "5_SMG.png",
+	[AvatarDecorationId.AssaultRifle]: "6_AssaultRifle.png",
+	[AvatarDecorationId.Carbine]: "7_Carbine.png",
+	[AvatarDecorationId.Sniper]: "8_Sniper.png",
+	[AvatarDecorationId.Katana]: "9_Katana.png",
+	[AvatarDecorationId.RPG]: "10_RPG.png",
+	[AvatarDecorationId.Minigun]: "11_Minigun.png",
+	[AvatarDecorationId.Bazooka]: "12_Bazooka.png",
+};
+
 interface SecondaryStyle {
 	style: string | ((ctx: SKRSContext2D, x: number, y: number, r: number) => string | CanvasGradient);
 	alpha: number;
@@ -44,6 +59,7 @@ export class AvatarDecorationRegistry {
 		const startTime = Date.now();
 
 		const badgePath = path.join(process.cwd(), "src", "bot", "ui", "assets", "images", "badges");
+		const itemPath = path.join(process.cwd(), "src", "bot", "ui", "assets", "images", "items");
 
 		for (const decorationId of Object.keys(AvatarDecorationList).map(Number) as AvatarDecorationId[]) {
 			const canvas = new Canvas(AVATAR_CANVAS_SIZE, AVATAR_CANVAS_SIZE);
@@ -55,7 +71,7 @@ export class AvatarDecorationRegistry {
 			// 1. Primary Border
 			ctx.lineWidth = AVATAR_BORDER_WIDTH;
 			ctx.strokeStyle = style;
-			ctx.globalAlpha = decorationId === AvatarDecorationId.Default ? 0.25 : 1.0;
+			ctx.globalAlpha = (decorationId === AvatarDecorationId.Default || decorationId in WEAPON_MAP) ? 0.25 : 1.0;
 			ctx.beginPath();
 			ctx.arc(AVATAR_CENTER_X, AVATAR_CENTER_Y, AVATAR_RADIUS, 0, Math.PI * 2);
 			ctx.stroke();
@@ -97,6 +113,93 @@ export class AvatarDecorationRegistry {
 				}
 				catch (e) {
 					Log.Warning(`Failed to load badge ${badgeFile} for avatar decoration ${decorationId}`);
+				}
+			}
+
+			// 5. Weapon Rendering (Baking weapon into the frame)
+			const weaponFile = WEAPON_MAP[decorationId];
+			if (weaponFile) {
+				try {
+					const weaponImg = await loadImage(path.join(itemPath, weaponFile));
+					const weaponSize = 180;
+					const offsetX = 90;
+					const offsetY = 140;
+
+					// Right weapon
+					ctx.drawImage(
+						weaponImg,
+						AVATAR_CENTER_X + offsetX - weaponSize / 2,
+						AVATAR_CENTER_Y + offsetY - weaponSize / 2,
+						weaponSize,
+						weaponSize,
+					);
+
+					// Left weapon (flipped)
+					ctx.save();
+					ctx.translate(AVATAR_CENTER_X - offsetX, AVATAR_CENTER_Y + offsetY);
+					ctx.scale(-1, 1);
+					ctx.drawImage(
+						weaponImg,
+						-weaponSize / 2,
+						-weaponSize / 2,
+						weaponSize,
+						weaponSize,
+					);
+					ctx.restore();
+				}
+				catch (e) {
+					Log.Warning(`Failed to load weapon image ${weaponFile} for avatar decoration ${decorationId}`);
+				}
+			}
+
+			// 6. Master of Arms Rendering
+			if (decorationId === AvatarDecorationId.MasterOfArms) {
+				const IMAGE_SIZE = 36;
+
+				const FIRST_ROW_X = 2;
+				const SECOND_ROW_X = 10;
+				const THIRD_ROW_X = 20;
+
+				const FIRST_ROW_Y = 70;
+				const SECOND_ROW_Y = 85;
+				const THIRD_ROW_Y = 104;
+
+				const layout = [
+					// left
+					{ file: "8_Sniper.png", x: FIRST_ROW_X, y: FIRST_ROW_Y, w: IMAGE_SIZE, h: IMAGE_SIZE, flipped: true },
+					{ file: "6_AssaultRifle.png", x: SECOND_ROW_X, y: SECOND_ROW_Y, w: IMAGE_SIZE, h: IMAGE_SIZE, flipped: true },
+					{ file: "11_Minigun.png", x: THIRD_ROW_X, y: THIRD_ROW_Y, w: IMAGE_SIZE, h: IMAGE_SIZE, flipped: true },
+
+					// right
+					{ file: "5_SMG.png", x: 100 - FIRST_ROW_X, y: FIRST_ROW_Y, w: IMAGE_SIZE, h: IMAGE_SIZE, flipped: false },
+					{ file: "7_Carbine.png", x: 100 - SECOND_ROW_X, y: SECOND_ROW_Y, w: IMAGE_SIZE, h: IMAGE_SIZE, flipped: false },
+					{ file: "4_Shotgun.png", x: 100 - THIRD_ROW_X, y: THIRD_ROW_Y, w: IMAGE_SIZE, h: IMAGE_SIZE, flipped: false },
+
+					// center
+					{ file: "18_Grenade.png", x: 53, y: 105, w: IMAGE_SIZE, h: IMAGE_SIZE, flipped: false },
+				];
+
+				const scale = AVATAR_CANVAS_SIZE / 140;
+
+				for (const item of layout) {
+					try {
+						const img = await loadImage(path.join(itemPath, item.file));
+						const size = item.w * scale;
+
+						if (item.flipped) {
+							ctx.save();
+							ctx.translate((item.x * scale) + 140, item.y * scale);
+							ctx.scale(-1, 1);
+							ctx.drawImage(img, 0, 0, size, size);
+							ctx.restore();
+						}
+						else {
+							ctx.drawImage(img, item.x * scale, item.y * scale, size, size);
+						}
+					}
+					catch (e) {
+						Log.Warning(`Failed to load weapon ${item.file} for Master of Arms decoration`);
+					}
 				}
 			}
 
@@ -144,6 +247,9 @@ export class AvatarDecorationRegistry {
 			return createLinearGradient(ctx, ["#9C4F96", "#FF6355", "#FBA949", "#FAE442", "#8BD448", "#2AA8F2"], 45);
 		case AvatarDecorationId.Cat:
 			return "#6A4931";
+
+		case AvatarDecorationId.MasterOfArms:
+			return createLinearGradient(ctx, ["#5C6444", "#3C4814"]);
 		default:
 			return "#6C6C93";
 		}

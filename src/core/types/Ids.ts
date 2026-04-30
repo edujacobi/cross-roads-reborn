@@ -49,6 +49,19 @@ export enum AvatarDecorationId {
 	Rainbow,
 	BotanicalGarden,
 	Cat,
+	Pistol,
+	MachinePistol,
+	HuntRifle,
+	Shotgun,
+	SMG,
+	AssaultRifle,
+	Carbine,
+	Sniper,
+	Katana,
+	RPG,
+	Minigun,
+	Bazooka,
+	MasterOfArms,
 }
 
 export enum BackgroundDecorationId {

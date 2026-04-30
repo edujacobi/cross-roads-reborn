@@ -1,6 +1,7 @@
-import { AvatarDecorationId } from "./Ids";
+import { AvatarDecorationId, ItemId } from "./Ids";
 import { defaultSkinDescription, type IDescription } from "./Interfaces";
 import { Language } from "#core/models/Language";
+import { ItemList } from "./Items";
 
 export interface AvatarDecorations {
 	readonly Id: AvatarDecorationId,
@@ -139,6 +140,88 @@ export const AvatarDecorationList: AvatarDecorationListType = {
 		},
 		Shop: true,
 		Price: 1_000,
+	},
+	[AvatarDecorationId.Pistol]: {
+		Id: AvatarDecorationId.Pistol,
+		Description: ItemList[ItemId.Pistol].Description,
+		Shop: true,
+		Price: 750,
+	},
+	[AvatarDecorationId.MachinePistol]: {
+		Id: AvatarDecorationId.MachinePistol,
+		Description: ItemList[ItemId.MachinePistol].Description,
+		Shop: true,
+		Price: 750,
+	},
+	[AvatarDecorationId.Carbine]: {
+		Id: AvatarDecorationId.Carbine,
+		Description: ItemList[ItemId.Carbine].Description,
+		Shop: true,
+		Price: 750,
+	},
+	[AvatarDecorationId.Katana]: {
+		Id: AvatarDecorationId.Katana,
+		Description: ItemList[ItemId.Katana].Description,
+		Shop: true,
+		Price: 750,
+	},
+	[AvatarDecorationId.AssaultRifle]: {
+		Id: AvatarDecorationId.AssaultRifle,
+		Description: ItemList[ItemId.AssaultRifle].Description,
+		Shop: true,
+		Price: 750,
+	},
+	[AvatarDecorationId.HuntRifle]: {
+		Id: AvatarDecorationId.HuntRifle,
+		Description: ItemList[ItemId.HuntRifle].Description,
+		Shop: true,
+		Price: 750,
+	},
+	[AvatarDecorationId.Shotgun]: {
+		Id: AvatarDecorationId.Shotgun,
+		Description: ItemList[ItemId.Shotgun].Description,
+		Shop: true,
+		Price: 750,
+	},
+	[AvatarDecorationId.SMG]: {
+		Id: AvatarDecorationId.SMG,
+		Description: ItemList[ItemId.SMG].Description,
+		Shop: true,
+		Price: 750,
+	},
+	[AvatarDecorationId.Sniper]: {
+		Id: AvatarDecorationId.Sniper,
+		Description: ItemList[ItemId.Sniper].Description,
+		Shop: true,
+		Price: 750,
+	},
+	[AvatarDecorationId.RPG]: {
+		Id: AvatarDecorationId.RPG,
+		Description: ItemList[ItemId.RPG].Description,
+		Shop: true,
+		Price: 750,
+	},
+	[AvatarDecorationId.Minigun]: {
+		Id: AvatarDecorationId.Minigun,
+		Description: ItemList[ItemId.Minigun].Description,
+		Shop: true,
+		Price: 750,
+	},
+	[AvatarDecorationId.Bazooka]: {
+		Id: AvatarDecorationId.Bazooka,
+		Description: ItemList[ItemId.Bazooka].Description,
+		Shop: true,
+		Price: 750,
+	},
+	[AvatarDecorationId.MasterOfArms]: {
+		Id: AvatarDecorationId.MasterOfArms,
+		Description: {
+			[Language.English]: "Master of Arms",
+			[Language.Portuguese]: "Mestre das Armas",
+			[Language.Spanish]: "Maestro de las Armas",
+		},
+		Shop: true,
+		Price: 2000,
 	},
 } as const;
 

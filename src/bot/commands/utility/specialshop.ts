@@ -36,6 +36,7 @@ enum SpecialShopCategory {
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("specialshop")
+		.setNameLocalization(Locale.PortugueseBR, "lojaespecial")
 		.setNameLocalization(Locale.SpanishES, "tiendaespecial")
 		.setDescription("Buy permanent customizations using the special coin")
 		.setDescriptionLocalization(Locale.PortugueseBR, "Compre customizações permanentes utilizando a moeda especial")

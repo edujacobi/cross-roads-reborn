@@ -23,11 +23,7 @@ async function testAvatarImage() {
 	user.Id = "332228051871989761";
 
 	const decorations = [
-		AvatarDecorationId.Default,
-		AvatarDecorationId.VIP,
-		AvatarDecorationId.FrutigerAero,
-		AvatarDecorationId.Silver,
-		AvatarDecorationId.BotanicalGarden,
+		AvatarDecorationId.MasterOfArms,
 	];
 
 	for (const decoId of decorations) {

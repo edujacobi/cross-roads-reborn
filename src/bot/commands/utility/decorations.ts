@@ -65,12 +65,25 @@ module.exports = {
 			case AvatarDecorationId.Silver:
 			case AvatarDecorationId.FrutigerAero:
 			case AvatarDecorationId.Rainbow:
+			case AvatarDecorationId.MasterOfArms:
 				return EmoteId.Rare;
 
 			case AvatarDecorationId.VIP:
 				return EmoteId.VIP;
 
 			case AvatarDecorationId.Default:
+			case AvatarDecorationId.Pistol:
+			case AvatarDecorationId.MachinePistol:
+			case AvatarDecorationId.HuntRifle:
+			case AvatarDecorationId.Shotgun:
+			case AvatarDecorationId.SMG:
+			case AvatarDecorationId.AssaultRifle:
+			case AvatarDecorationId.Carbine:
+			case AvatarDecorationId.Sniper:
+			case AvatarDecorationId.Katana:
+			case AvatarDecorationId.RPG:
+			case AvatarDecorationId.Minigun:
+			case AvatarDecorationId.Bazooka:
 				return EmoteId.Common;
 
 			default:
