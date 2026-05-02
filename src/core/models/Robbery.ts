@@ -1,6 +1,6 @@
 import { getClient } from "#bot/client";
 import { CrColors } from "#bot/utils/colors";
-import { replyWithContainer, sendComplexPrivateMessage } from "#bot/utils/discordInteractions";
+import { deferUpdate, replyWithContainer, sendComplexPrivateMessage } from "#bot/utils/discordInteractions";
 import { EmoteId, EmoteString } from "#bot/utils/emotes";
 import { defaultComponent, formatMoney, showTime } from "#bot/utils/ui";
 import { Log } from "#shared/log";
@@ -283,7 +283,7 @@ export class Robbery {
 						componentType: ComponentType.Button,
 					});
 
-					await confirmation.deferUpdate();
+					await deferUpdate(confirmation);
 
 					if (confirmation.customId === "use_grenade") {
 						usedGrenade = true;

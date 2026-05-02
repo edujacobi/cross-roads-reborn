@@ -621,6 +621,8 @@ module.exports = {
 		let position: number;
 
 		collector?.on("collect", async btn => {
+			await btn.deferUpdate();
+
 			if (btn.customId.includes("position")) {
 				const positionId = Number(btn.customId.replace("position", ""));
 				position = (positionId - 1) % pagination.Limit;

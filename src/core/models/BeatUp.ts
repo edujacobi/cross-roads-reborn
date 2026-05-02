@@ -10,7 +10,7 @@ import {
 	MessageFlags,
 	type User as DUser,
 } from "discord.js";
-import { replyWithContainer, sendComplexPrivateMessage } from "#bot/utils/discordInteractions";
+import { deferUpdate, replyWithContainer, sendComplexPrivateMessage } from "#bot/utils/discordInteractions";
 import { defaultComponent, formatMoney, showTime } from "#bot/utils/ui";
 import { CrColors } from "#bot/utils/colors";
 import { EmoteId, EmoteString } from "#bot/utils/emotes";
@@ -300,7 +300,7 @@ export class BeatUp {
 						componentType: ComponentType.Button,
 					});
 
-					await confirmation.deferUpdate();
+					await deferUpdate(confirmation);
 
 					if (confirmation.customId === "use_grenade") {
 						usedGrenade = true;
