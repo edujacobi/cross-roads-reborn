@@ -100,13 +100,14 @@ module.exports = {
 
 				const remainigTime = userItem?.RemainingTime;
 				const quantity = userItem?.Quantity;
+				const isConsumable = item.Type === ItemType.Consumable;
 
 				container.addSectionComponents(section => section
 					.addTexts([
 						`### ${user.GetItemSkin(item)} ${item.Description[user.Language]}`,
 						value,
-						remainigTime ? `-# ${s.yourItemEnds} ${showTime(remainigTime.getTime(), true)}` : "",
-						quantity ? `-# ${s.youHave} ${quantity}` : "",
+						(!isConsumable && remainigTime) ? `-# ${s.yourItemEnds} ${showTime(remainigTime.getTime(), true)}` : "",
+						(isConsumable && quantity) ? `-# ${s.youHave} ${quantity}` : "",
 					].filter(Boolean))
 					.setButtonAccessory(new ButtonBuilder()
 						.setLabel(formatMoney(item.Price, user.Language))
@@ -189,14 +190,15 @@ module.exports = {
 
 				const remainigTime = userItem?.RemainingTime;
 				const quantity = userItem?.Quantity;
+				const isConsumable = item.Type === ItemType.Consumable;
 
 				container = addContainerHeader();
 
 				container
 					.addTexts([
 						s.itemBought(`${user.GetItemSkin(item)} ${item.Description[user.Language]}`),
-						remainigTime ? `-# ${s.yourItemEnds} ${showTime(remainigTime.getTime(), true)}` : "",
-						quantity ? `-# ${s.youHave} ${quantity}` : "",
+						(!isConsumable && remainigTime) ? `-# ${s.yourItemEnds} ${showTime(remainigTime.getTime(), true)}` : "",
+						(isConsumable && quantity) ? `-# ${s.youHave} ${quantity}` : "",
 					].filter(Boolean))
 					.addButtonRow(
 						btn => btn

@@ -827,23 +827,19 @@ export class User {
 		});
 
 		const now = new Date();
-		const userItem = { ...ItemList[item.Id] } as UserItem;
+		const isConsumable = item.Type === ItemType.Consumable;
 
 		if (!existingItem) {
-			const remaining = item.Type != ItemType.Consumable ? addDays(now, days ?? 3) : undefined;
-			const qty = item.Type == ItemType.Consumable ? (quantity ?? 1) : undefined;
+			const remainingTime = !isConsumable ? addDays(now, days ?? 3) : undefined;
+			const currentQuantity = isConsumable ? (quantity ?? 1) : undefined;
 
 			await UserItems.create({
 				userId: this.Id,
 				itemId: item.Id,
-				remainingTime: remaining,
-				quantity: qty,
+				remainingTime,
+				quantity: currentQuantity,
 				skin: BundleId.Default,
 			});
-
-			userItem.RemainingTime = remaining ?? new Date();
-			userItem.Quantity = qty ?? 0;
-			userItem.SelectedSkin = BundleId.Default;
 		}
 		else {
 			let remaining = addDays(existingItem.remainingTime, days ?? 3);
@@ -852,30 +848,20 @@ export class User {
 			}
 
 			await UserItems.update({
-				remainingTime: item.Type != ItemType.Consumable ? remaining : undefined,
-				quantity: item.Type == ItemType.Consumable ? existingItem.quantity + (quantity ?? 1) : undefined,
+				remainingTime: !isConsumable ? remaining : undefined,
+				quantity: isConsumable ? existingItem.quantity + (quantity ?? 1) : undefined,
 			}, {
 				where: {
 					userId: this.Id,
 					itemId: item.Id,
 				},
 			});
-
-			userItem.RemainingTime = remaining;
-			userItem.Quantity = existingItem.quantity + (item.Type == ItemType.Consumable ? (quantity ?? 1) : 0);
-			userItem.SelectedSkin = existingItem.skin;
 		}
 
-		// Update local items list
-		const localIdx = this.Items.findIndex(i => i.Id === item.Id);
-		if (localIdx !== -1) {
-			this.Items[localIdx] = userItem;
-		}
-		else {
-			this.Items.push(userItem);
-		}
+		// Update local items list from database to ensure consistency
+		await this.GetItems();
 
-		Log.Info(`User ${this.Nickname} (Id: ${this.Id}) received ${item.Type === ItemType.Consumable ? `${quantity}x` : `${days} days`} of ${item.Description[Language.English]} (Id: ${item.Id}).`);
+		Log.Info(`User ${this.Nickname} (Id: ${this.Id}) received ${isConsumable ? `${quantity}x` : `${days ?? 3} days`} of ${item.Description[Language.English]} (Id: ${item.Id}).`);
 	}
 
 	/**
@@ -894,22 +880,18 @@ export class User {
 		});
 
 		const now = new Date();
-		const userItem = { ...ItemList[item.Id] } as UserItem;
+		const isConsumable = item.Type === ItemType.Consumable;
 
 		if (!existingItem) {
-			const remaining = userItem.Type != ItemType.Consumable ? addHours(now, 72) : undefined;
-			const quantity = userItem.Type == ItemType.Consumable ? 1 : undefined;
+			const remainingTime = !isConsumable ? addHours(now, 72) : undefined;
+			const quantity = isConsumable ? 1 : undefined;
 			await UserItems.create({
 				userId: this.Id,
 				itemId: item.Id,
-				remainingTime: remaining,
-				quantity: quantity,
+				remainingTime,
+				quantity,
 				skin: BundleId.Default,
 			});
-
-			userItem.RemainingTime = remaining ?? new Date();
-			userItem.Quantity = quantity ?? 0;
-			userItem.SelectedSkin = BundleId.Default;
 
 			Log.Info(`User ${this.Nickname} (Id: ${this.Id}) bought item ${item.Description[Language.English]} (Id: ${item.Id}) for ${formatMoney(item.Price, Language.English)} [FIRST TIME!].`);
 		}
@@ -920,8 +902,8 @@ export class User {
 			}
 
 			await UserItems.update({
-				remainingTime: userItem.Type != ItemType.Consumable ? remaining : undefined,
-				quantity: userItem.Type == ItemType.Consumable ? existingItem.quantity += 1 : undefined,
+				remainingTime: !isConsumable ? remaining : undefined,
+				quantity: isConsumable ? existingItem.quantity + 1 : undefined,
 			}, {
 				where: {
 					userId: this.Id,
@@ -929,16 +911,14 @@ export class User {
 				},
 			});
 
-			userItem.RemainingTime = remaining;
-			userItem.Quantity = existingItem.quantity += 1;
-			userItem.SelectedSkin = existingItem.skin;
-
 			Log.Info(`User ${this.Nickname} (Id: ${this.Id}) bought item ${item.Description[Language.English]} (Id: ${item.Id}) for ${formatMoney(item.Price, Language.English)}. Total time: ${differenceInHours(remaining, new Date())}h.`);
 		}
 
 		this.Shop.SpentCount += 1;
 		this.Shop.SpentSum += item.Price;
-		this.Items.push(userItem);
+
+		// Refresh local items list to ensure UI shows correct values
+		await this.GetItems();
 
 		await this.Update({
 			money: this.Money,
