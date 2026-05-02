@@ -1386,7 +1386,7 @@ export class User {
 				Simple: this.Situation.Simple + ` ${s.wantedSimple}`,
 				SimpleEmote: this.Situation.SimpleEmote + ` ${s.wantedSimpleEmote}`,
 				Complex: this.Situation.Complex + ` ${s.wantedComplex} ${showTime(this.Wanted.Time.getTime())}`,
-				ComplexUI: this.Situation.ComplexUI + `${s.wantedComplexUI} ${formatDistanceToNow(this.Wanted.Time, {
+				ComplexUI: this.Situation.ComplexUI + ` ${s.wantedComplexUI} ${formatDistanceToNow(this.Wanted.Time, {
 					locale: getLocaleFromLanguage(lang),
 					includeSeconds: true,
 				})}`,
