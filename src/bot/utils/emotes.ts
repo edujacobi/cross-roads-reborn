@@ -106,9 +106,17 @@ export const EmoteId = {
 	Bank: "539497634826551307",
 	React: "1343948089249103945",
 	Escape: "1345061962437890129",
+
+	// Casino
 	RussianRoulette: "1464352585220751593",
 	Ticket: "1494364062354640957",
 	MegaTicket: "1494437314389213184",
+	HorseRacing: "1499580886767632385",
+	HorseLightning: "1499464739414085853",
+	HorseThunder: "1499464761044373534",
+	HorseGhost: "1499464467791216820",
+	HorseShadow: "1499464784012378162",
+	HorseMystic: "1499463150796538077",
 
 	VIP: "778572312215027744",
 
@@ -265,9 +273,17 @@ export const EmoteString = {
 	Bank: `<:Banco:${EmoteId.Bank}>`,
 	React: `<:React:${EmoteId.React}>`,
 	Escape: `<:Escape:${EmoteId.Escape}>`,
+
+	// Casino
 	RussianRoulette: `<:RussianRoulette:${EmoteId.RussianRoulette}>`,
 	Ticket: `<:Ticket:${EmoteId.Ticket}>`,
 	MegaTicket: `<:MegaTicket:${EmoteId.MegaTicket}>`,
+	HorseRacing: `<:HorseRacing:${EmoteId.HorseRacing}>`,
+	HorseLightning: `<:HorseLightning:${EmoteId.HorseLightning}>`,
+	HorseThunder: `<:HorseThunder:${EmoteId.HorseThunder}>`,
+	HorseShadow: `<:HorseShadow:${EmoteId.HorseShadow}>`,
+	HorseGhost: `<:HorseGhost:${EmoteId.HorseGhost}>`,
+	HorseMystic: `<:HorseMystic:${EmoteId.HorseMystic}>`,
 
 	VIP: `<:vip:${EmoteId.VIP}>`,
 

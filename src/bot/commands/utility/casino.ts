@@ -40,7 +40,7 @@ module.exports = {
 			])
 			.addLargeSeparator()
 			.addTexts([
-				`### 🏇 ${s.horseRaceTitle}`,
+				`### ${EmoteString.HorseRacing} ${s.horseRaceTitle}`,
 				s.horseRaceDescription,
 				`-# ${s.horseRaceDescription2}`,
 			])
@@ -73,8 +73,8 @@ const Strings = {
 		headTailsDescription: `Bet an amount on a coin that must fall on the same side that you choose. You have a 50% chance of winning. If you win, you get 1.5x the amount bet!`,
 		headTailsDescription2: `Use \`/bet <side> <value>\` to bet on heads or tails.`,
 		horseRaceTitle: `Horse Racing`,
-		horseRaceDescription: `Bet on one of the horses in a race. Races are held every 6 hours. If your horse wins, you share the prize pool with other winners. Maximum bet is based on your ${EmoteString.Attack}ATK.`,
-		horseRaceDescription2: `Use \`/horserace\` to see the next race and to place your bet.`,
+		horseRaceDescription: `Bet on your favorite horse! Races run every 4 hours. Winners receive fixed-odds payouts based on the horse's rarity and multiplier.`,
+		horseRaceDescription2: `Use \`/horserace <amount>\` to place your bet.`,
 		russianRouletteTitle: `Russian Roulette`,
 		russianRouletteDescription: `Bet an amount and compete against your friends. Only one will walk away with the cash and all others will be ${EmoteString.Hospital} Hospitalized!`,
 		russianRouletteDescription2: `Use \`/russianroulette <value>\` to start a new roulette.`,
@@ -90,8 +90,8 @@ const Strings = {
 		headTailsDescription: `Aposte um valor em uma moeda que deve cair no mesmo lado que você escolheu. Você tem 50% de chance de vencer. Se vencer, ganha 1.5x o valor apostado!`,
 		headTailsDescription2: `Use \`/bet <lado> <valor>\` para apostar em cara ou coroa.`,
 		horseRaceTitle: `Corrida de Cavalos`,
-		horseRaceDescription: `Aposte em um dos cavalos em uma corrida. As corridas acontecem a cada 6 horas. Se seu cavalo vencer, você divide o prêmio com outros vencedores. A aposta máxima é baseada no seu ${EmoteString.Attack}ATK.`,
-		horseRaceDescription2: `Use \`/corridadecavalos\` para ver a próxima corrida e para fazer sua aposta.`,
+		horseRaceDescription: `Aposte no seu cavalo favorito! As corridas acontecem a cada 4 horas. Os vencedores recebem prêmios fixos baseados no multiplicador e raridade do cavalo.`,
+		horseRaceDescription2: `Use \`/corridadecavalos <valor>\` para fazer sua aposta.`,
 		russianRouletteTitle: `Roleta Russa`,
 		russianRouletteDescription: `Aposte um valor e dispute contra seus amigos. Apenas um sairá com a grana e todos os outros ficarão ${EmoteString.Hospital} Hospitalizados!`,
 		russianRouletteDescription2: `Use \`/roletarussa <valor>\` para iniciar uma nova roleta.`,
@@ -107,8 +107,8 @@ const Strings = {
 		headTailsDescription: `Apostar una cantidad en una moneda que debe caer del mismo lado que elijas. Tienes un 50% de posibilidades de ganar. ¡Si ganas, obtienes 1.5 veces la cantidad apostada!`,
 		headTailsDescription2: `Usa \`/bet <lado> <valor>\` para apostar en cara o cruz.`,
 		horseRaceTitle: `Carrera de Caballos`,
-		horseRaceDescription: `Apuesta a uno de los caballos en una carrera. Las carreras se celebran cada 6 horas. Si tu caballo gana, compartes el premio con otros ganadores. La apuesta máxima se basa en tu ${EmoteString.Attack}ATK.`,
-		horseRaceDescription2: `Usa \`/horserace\` para ver la próxima carrera y para hacer tu apuesta.`,
+		horseRaceDescription: `¡Apuesta por tu caballo favorito! Las carreras se celebran cada 4 horas. ¡Los ganadores reciben pagos fijos basados en el multiplicador y la rareza del caballo!`,
+		horseRaceDescription2: `Usa \`/carreradecaballos <cantidad>\` para realizar tu apuesta.`,
 		russianRouletteTitle: `Roleta Russa`,
 		russianRouletteDescription: `Apuesta una cantidad y compete contra tus amigos. ¡Solo uno se llevará el dinero y todos los demás quedarán ${EmoteString.Hospital} Hospitalizados!`,
 		russianRouletteDescription2: `Usa \`/ruletarusa <apuesta>\` para iniciar una nueva ruleta.`,
