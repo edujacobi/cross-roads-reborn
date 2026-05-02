@@ -169,7 +169,7 @@ export class Lottery {
 				const s = Strings[loserUser.Language];
 				await sendPrivateMessage(
 					loserUser.Id,
-					s.youLost(winnerUser?.Nickname || "Unknown"),
+					s.youLost(winnerUser?.GetNameWithImage() || "Unknown", formatMoney(finalPrize, loserUser.Language)),
 					CrColors.Casino,
 				);
 			}
@@ -248,20 +248,20 @@ const Strings = {
 		noDraw: "No draw is currently active.",
 		buySuccess: (price: string) => `You bought a ticket for ${price}! Good luck!`,
 		youWon: (prize: string) => `${EmoteString.Ticket} **Winning Ticket!**\nCongratulations! You won the lottery draw and received **${prize}**!`,
-		youLost: (winnerName: string) => `${EmoteString.Ticket} **Winning Ticket!**\nThe lottery draw is over. The winner was **${winnerName}**! Better luck next time.`
+		youLost: (winnerName: string, prize: string) => `${EmoteString.Ticket} **Winning Ticket!**\nThe lottery draw is over. The winner was **${winnerName}**, winning **${prize}**! Better luck next time.`
 	},
 	[Language.Portuguese]: {
 		alreadyBought: "Você já comprou um bilhete para o próximo sorteio.",
 		noDraw: "Não há sorteio ativo no momento.",
 		buySuccess: (price: string) => `Você comprou um bilhete por ${price}! Boa sorte!`,
 		youWon: (prize: string) => `${EmoteString.Ticket} **Bilhete Premiado!**\nParabéns! Você ganhou o sorteio e recebeu **${prize}**!`,
-		youLost: (winnerName: string) => `${EmoteString.Ticket} **Bilhete Premiado!**\nO sorteio acabou. O vencedor foi **${winnerName}**! Mais sorte na próxima vez.`
+		youLost: (winnerName: string, prize: string) => `${EmoteString.Ticket} **Bilhete Premiado!**\nO sorteio acabou. O vencedor foi **${winnerName}**, ganhando **${prize}**! Mais sorte na próxima vez.`
 	},
 	[Language.Spanish]: {
 		alreadyBought: "Ya has comprado un billete para el próximo sorteio.",
 		noDraw: "No hay sorteo activo en este momento.",
 		buySuccess: (price: string) => `¡Has comprado un billete por ${price}! ¡Buena suerte!`,
 		youWon: (prize: string) => `${EmoteString.Ticket} **Billete Premiado!**\n¡Felicidades! ¡Has ganado el sorteo y recibido **${prize}**!`,
-		youLost: (winnerName: string) => `${EmoteString.Ticket} **Bilhete Premiado!**\nEl sorteo ha terminado. El ganador fue **${winnerName}**! Mejor suerte la próxima vez.`
+		youLost: (winnerName: string, prize: string) => `${EmoteString.Ticket} **Billete Premiado!**\nEl sorteo ha terminado. El ganador fue **${winnerName}**, ganando **${prize}**! Mejor suerte la próxima vez.`
 	},
 } as const satisfies Localization;
