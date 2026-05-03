@@ -181,7 +181,7 @@ export async function deferUpdate(interaction: ButtonInteraction | MessageCompon
 			Log.Warning(`Deferring update timed out (AbortError) for interaction ${interaction.id} of user ${interaction.user.displayName}.`);
 			return;
 		}
-		Log.Warning(`Something went wrong with deferring interaction ${interaction.id} of user ${interaction.user.displayName} in server ${interaction.guild?.name} (Id: ${interaction.guild?.id}). Error: ${err}`);
+		// logger.warn(`[CONSOLE] Something went wrong with deferring interaction ${interaction.id} of user ${interaction.user.displayName} in server ${interaction.guild?.name} (Id: ${interaction.guild?.id}). Error: ${err}`);
 	}
 }
 

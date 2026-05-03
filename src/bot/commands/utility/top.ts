@@ -1,9 +1,12 @@
+import { getClient } from "#bot/client";
 import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
 import { DEFAULT_GANG_IMAGE } from "#bot/ui/builders/GangImageCanvasBuilder";
+import { UserRankingCardCanvasBuilder } from "#bot/ui/builders/UserRankingCardCanvasBuilder";
 import { EmoteBadgeString } from "#bot/utils/badges";
 import { CrColors, GangColor } from "#bot/utils/colors";
 import { deferReply, replyWithContainer } from "#bot/utils/discordInteractions";
 import { EmoteId, EmoteString } from "#bot/utils/emotes";
+import { Inventory } from "#bot/utils/invUtils";
 import { defaultComponent, formatMoney } from "#bot/utils/ui";
 import { searchUser } from "#bot/utils/userUtils";
 import Gangs from "#core/database/Gangs";
@@ -24,7 +27,6 @@ import {
 	SlashCommandBuilder,
 } from "discord.js";
 import { Op } from "sequelize";
-import { UserRankingCardCanvasBuilder } from "#bot/ui/builders/UserRankingCardCanvasBuilder";
 
 enum TopSubcommand {
 	Money = "money",
@@ -644,6 +646,11 @@ module.exports = {
 							.setCustomId("goback")
 							.setStyle(ButtonStyle.Secondary),
 						btn => btn
+							.setLabel(s.inv)
+							.setEmoji(EmoteId.CloseInv)
+							.setCustomId("inv")
+							.setStyle(ButtonStyle.Secondary),
+						btn => btn
 							.setLabel(s.rob)
 							.setEmoji(EmoteId.Robbery)
 							.setCustomId("rob")
@@ -662,7 +669,7 @@ module.exports = {
 			else if (btn.customId === "rob") {
 				pagination.UserHasInteractedOutside = true;
 
-				const target = await searchUser(users[position].id, interaction);
+				const target = await searchUser(users[position].id, interaction, language);
 				if (!target) {
 					return;
 				}
@@ -692,7 +699,7 @@ module.exports = {
 			else if (btn.customId === "beat") {
 				pagination.UserHasInteractedOutside = true;
 
-				const target = await searchUser(users[position].id, interaction);
+				const target = await searchUser(users[position].id, interaction, language);
 				if (!target) {
 					return;
 				}
@@ -719,6 +726,21 @@ module.exports = {
 
 			}
 
+			else if (btn.customId === "inv") {
+				pagination.UserHasInteractedOutside = true;
+
+				const target = await searchUser(users[position].id, interaction, language);
+				const _user = target ? await getClient().users.fetch(target.Id) : interaction.user;
+				if (!target) {
+					return;
+				}
+
+				const inventory = new Inventory(interaction, target, _user, language);
+				await inventory.Load();
+				await inventory.Generate();
+				return;
+			}
+
 			else if (btn.customId === "goback") {
 				const container = await pagination.BuildContainerWithRow();
 				return replyWithContainer(interaction, container);
@@ -733,18 +755,21 @@ const Strings = {
 		options: "Options",
 		rob: "Rob",
 		beat: "Beat",
+		inv: "Inventory",
 		goback: "Go back",
 	},
 	[Language.Portuguese]: {
 		options: "Opções",
 		rob: "Roubar",
 		beat: "Espancar",
+		inv: "Inventário",
 		goback: "Voltar",
 	},
 	[Language.Spanish]: {
 		options: "Opciones",
 		rob: "Robar",
 		beat: "Golpear",
+		inv: "Inventario",
 		goback: "Volver",
 	},
 } as const satisfies Localization;
