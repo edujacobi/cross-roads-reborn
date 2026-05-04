@@ -984,20 +984,17 @@ module.exports = {
 					`${EmoteString.InvestmentActive} ${sDef.defendDMTitle}`,
 				])
 				.addLargeSeparator()
-				.addTexts([
-					sDef.defendDMDescription(gang.Name, robbery.InvestmentBase!.Name[defenderLang]),
-				]);
-
-			if (hasHenchman) {
-				dmContainer.addTexts([`-# ${EmoteString.Henchman} ${sDef.targetHasHenchman}`]);
-			}
-
-			dmContainer
-				.addButtonRow(btn => btn
-					.setLabel(sDef.defend)
-					.setEmoji(EmoteId.Defense)
-					.setStyle(ButtonStyle.Secondary)
-					.setCustomId("defend"),
+				.addSectionComponents(section => section
+					.addTexts([
+						sDef.defendDMDescription(gang.Name, robbery.InvestmentBase!.Name[defenderLang]),
+						hasHenchman ? `-# ${EmoteString.Henchman} ${sDef.targetHasHenchman}` : "",
+					])
+					.setButtonAccessory(new ButtonBuilder()
+						.setLabel(sDef.defend)
+						.setEmoji(EmoteId.Defense)
+						.setStyle(ButtonStyle.Secondary)
+						.setCustomId("defend"),
+					),
 				)
 				.addFooter({
 					text: `${sDef.nextYield}: ${formatMoney(robbery.InvestmentData!.accumulatedYield, defenderLang)}`,
@@ -1009,15 +1006,16 @@ module.exports = {
 			});
 
 			await new Promise<void>(resolve => {
-				const defendingCollector = defenderMessage?.createMessageComponentCollector({ time: 60_000, max: 1 });
+				const defendingCollector = defenderMessage?.createMessageComponentCollector({ time: 60_000 });
 
 				defendingCollector?.on("collect", async btn => {
 					if (btn.customId === "defend") {
-						if (!targetUser.IsIdling()) {
-							return btn.reply({ content: `**${sDef.youMustBeIdling}**`, flags: MessageFlags.Ephemeral });
-						}
-
 						await deferUpdate(btn);
+						await targetUser.GetInfo();
+
+						if (!targetUser.IsIdling()) {
+							return btn.followUp({ content: sDef.youMustBeIdling, flags: MessageFlags.Ephemeral });
+						}
 
 						defenderJoined = true;
 						await robbery.ApplyDefenderState();
@@ -1027,7 +1025,7 @@ module.exports = {
 
 						const updatedDm = new CustomContainerBuilder()
 							.setUser(targetUser)
-							.setAccentColor(Colors.Green)
+							.setAccentColor(CrColors.Robbery)
 							.addTexts([
 								`${EmoteString.InvestmentActive} ${sDef.defendDMTitle}`,
 							])
@@ -1037,7 +1035,7 @@ module.exports = {
 								text: `${sDef.nextYield}: ${formatMoney(robbery.InvestmentData!.accumulatedYield, defenderLang)}`,
 							});
 
-						await btn.editReply({ components: [updatedDm] });
+						await replyWithContainer(btn, updatedDm);
 					}
 				});
 
@@ -1059,7 +1057,7 @@ module.exports = {
 
 			if (result.win) {
 				resultContainer
-					.setAccentColor(Colors.Green)
+					.setAccentColor(CrColors.Robbery)
 					.addSectionComponents(section => section
 						.addTexts([
 							`### ${EmoteString.Victory} ${s.successWin}!`,
@@ -1093,9 +1091,9 @@ module.exports = {
 
 				resultContainer
 					.addTexts([
-						`### ${EmoteString.Defeat} ${s.failureLose}`,
+						`### ${EmoteString.Defeat} ${s.failureLose}.`,
 					])
-					.setAccentColor(CrColors.Police)
+					.setAccentColor(CrColors.Robbery)
 					.addSectionComponents(section => section
 						.addTexts(mainTexts)
 						.setThumbnailAccessory(thumb => thumb
@@ -1116,15 +1114,16 @@ module.exports = {
 			const resultDm = new CustomContainerBuilder()
 				.setUser(targetUser)
 				.addTexts([
-					`-# ${EmoteString.Gang} ${sDef.defendDMTitle}`,
+					`${EmoteString.InvestmentActive} ${sDef.defendDMTitle}`,
 				])
 				.addLargeSeparator();
 
 			if (result.win) {
 				resultDm
-					.setAccentColor(Colors.Red)
+					.setAccentColor(CrColors.Robbery)
 					.addTexts([
-						`### ${EmoteString.Defeat} ${sDef.robberyResultLost}`,
+						`### ${EmoteString.Defeat} ${sDef.successWin}.`,
+						`${sDef.robberyResultLost(gang.Name)}`,
 						`**${sDef.stolen}**: ${formatMoney(result.robbedAmount, defenderLang)}`,
 						`**${sDef.nextYield}**: ${formatMoney(result.remainingYield, defenderLang)}`,
 					]);
@@ -1139,7 +1138,8 @@ module.exports = {
 			}
 			else {
 				const dmTexts = [
-					`### ${EmoteString.Victory} ${sDef.robberyResultWon}`,
+					`### ${EmoteString.Victory} ${sDef.failureLose}!`,
+					`${sDef.robberyResultWon}`,
 					`${EmoteString.Police} ${sDef.attackersImprisoned(result.prisonHours)}`,
 				];
 				if (result.attackersHospitalized) {
@@ -1147,7 +1147,7 @@ module.exports = {
 				}
 
 				resultDm
-					.setAccentColor(Colors.Green)
+					.setAccentColor(CrColors.Robbery)
 					.addTexts(dmTexts);
 
 				if (result.henchmanHospitalized === false && hasHenchman) {
@@ -2726,7 +2726,7 @@ const Strings = {
 		defendDMTitle: "Investment Attack!",
 		defendDMDescription: (gangName: string, invName: string) => `The gang **${gangName}** is attacking your investment **${invName}**! You can defend, gaining ${EmoteString.Defense}+5 DEF, but if you lose, you'll be hospitalized for 30 minutes.`,
 		defend: "Defend",
-		youMustBeIdling: "You must be idling to join the defense.",
+		youMustBeIdling: `You must be ${EmoteString.Idle} idling to join the defense.`,
 		defendingSuccess: "You are now defending your investment! Await results.",
 		chance: "Success chance",
 		successWin: "Success",
@@ -2742,7 +2742,7 @@ const Strings = {
 		targetIsDefending: (name: string) => `**${name}** is defending! ${EmoteString.Defense}`,
 		targetHasHenchman: `Target has an active henchman`,
 		nextYield: "Next profit",
-		robberyResultLost: "Your investment was successfully robbed!",
+		robberyResultLost: (gangName: string) => `${EmoteString.Gang} Gang **${gangName}** robbed your investment!`,
 		robberyResultWon: "You successfully defended your investment!",
 		henchmanStillActive: "Your henchman protected you and remains active!",
 		robberyCooldown: (time: number) => `${EmoteString.Police} The police is searching for your gang. You can rob again ${showTime(time, true)}`,
@@ -2905,7 +2905,7 @@ const Strings = {
 		defendDMTitle: "Ataque ao Investimento!",
 		defendDMDescription: (gangName: string, invName: string) => `A gangue **${gangName}** está atacando o seu investimento **${invName}**! Você pode defender, ganhando ${EmoteString.Defense}+5 DEF, mas se perder, será hospitalizado por 30 minutos.`,
 		defend: "Defender",
-		youMustBeIdling: "Você precisa estar Vadiando para defender.",
+		youMustBeIdling: `Você precisa estar ${EmoteString.Idle} Vadiando para defender.`,
 		defendingSuccess: "Você está ajudando na defesa! Aguarde os resultados.",
 		chance: "Chance de sucesso",
 		successWin: "Sucesso",
@@ -2914,13 +2914,13 @@ const Strings = {
 		henchmanHospitalized: "O capanga foi hospitalizado.",
 		defenderHospitalized: (name: string, date: Date) => `**${name}** foi hospitalizado! Será curado ${showTime(date.getTime(), true)}`,
 		youWereHospitalized: (date: Date) => `Você foi hospitalizado! Será curado ${showTime(date.getTime(), true)}`,
-		failureLose: "Fracasso",
+		failureLose: "Falha",
 		attackersImprisoned: (hours: number) => `Todos os atacantes foram presos!\n-# Eles serão liberados ${showTime(addHours(Date.now(), hours).getTime(), true)}`,
 		attackersHospitalized: "Também foram hospitalizados por 30 minutos.",
 		targetIsDefending: (name: string) => `**${name}** está defendendo! ${EmoteString.Defense}`,
 		targetHasHenchman: `O alvo tem um capanga ativo!`,
 		nextYield: "Próximo lucro",
-		robberyResultLost: "Seu investimento foi roubado com sucesso!",
+		robberyResultLost: (gangName: string) => `${EmoteString.Gang} Gangue **${gangName}** roubou seu investimento!`,
 		robberyResultWon: "Você defendeu seu investimento com sucesso!",
 		henchmanStillActive: "Seu capanga protegeu você e continua ativo!",
 		robberyCooldown: (time: number) => `${EmoteString.Police} A polícia está procurando por sua gangue. Você poderá roubar novamente ${showTime(time, true)}`,
@@ -3083,7 +3083,7 @@ const Strings = {
 		defendDMTitle: "¡Ataque a Inversión!",
 		defendDMDescription: (gangName: string, invName: string) => `¡La cuadrilla **${gangName}** está atacando tu inversión **${invName}**! Puedes defender, ganando ${EmoteString.Defense}+5 DEF, pero si pierdes, serás hospitalizado por 30 minutos.`,
 		defend: "Defender",
-		youMustBeIdling: "Debes estar vagando para unirte a la defensa.",
+		youMustBeIdling: `Debes estar ${EmoteString.Idle} vagando para unirte a la defensa.`,
 		defendingSuccess: "¡Ahora estás defendiendo tu inversión! Espera los resultados.",
 		chance: "Probabilidad de éxito",
 		successWin: "Éxito",
@@ -3098,7 +3098,7 @@ const Strings = {
 		targetIsDefending: (name: string) => `¡**${name}** está defendiendo! ${EmoteString.Defense}`,
 		targetHasHenchman: `¡El objetivo tiene un secuaz activo!`,
 		nextYield: "Próximo lucro",
-		robberyResultLost: "¡Tu inversión fue robada con éxito!",
+		robberyResultLost: (gangName: string) => `${EmoteString.Gang} La pandilla **${gangName}** robó tu inversión!`,
 		robberyResultWon: "¡Defendiste tu inversión con éxito!",
 		henchmanStillActive: "¡Tu secuaz te protegió y sigue activo!",
 		robberyCooldown: (time: number) => `${EmoteString.Police} La policía está buscando a tu cuadrilla. Podrás robar de nuevo ${showTime(time, true)}`,
