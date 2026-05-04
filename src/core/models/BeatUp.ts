@@ -497,126 +497,136 @@ export class BeatUp {
 	}
 
 	async EndBeating(interaction: ChatInputCommandInteraction, privateMessage: Message | undefined) {
-		await Promise.all([
-			this.Attacker.GetInfo(),
-			this.Defender.GetInfo(),
-		]);
-
-		// Re-apply consumables bonuses because GetInfo resets attributes
-		await this.Attacker.GetAttributes(true, this.UsedConsumables);
-
-		const sA = Strings[this.Attacker.Language];
-		const sD = Strings[this.Defender.Language];
-
-		this.Container.Private = new CustomContainerBuilder()
-			.setAccentColor(CrColors.BeatUp)
-			.addTexts([
-				`${EmoteString.Beat} ${sD.finishedBeatUpDefender}`,
-			])
-			.addLargeSeparator();
-
-		if (this.Success) {
-			this.Attacker.BeatUp.SuccessCount += 1;
-			this.Defender.BeatUp.BeatedUpCount += 1;
-
-			this.Attacker.BeatUp.Time = addMinutes(new Date(), 60);
-			this.Attacker.Wanted.Time = addMinutes(new Date(), 60);
-			this.Attacker.Wanted.Count += 1;
-
-			this.Defender.Hospital.Time = addMinutes(new Date(), this.TimeInHospital.Base);
-			this.Defender.Hospital.Count += 1;
-
+		try {
 			await Promise.all([
-				Notification.Hospital(this.Defender),
-				Notification.BeatAgain(this.Attacker),
+				this.Attacker.GetInfo(),
+				this.Defender.GetInfo(),
 			]);
 
-			this.Container.Private
+			// Re-apply consumables bonuses because GetInfo resets attributes
+			await this.Attacker.GetAttributes(true, this.UsedConsumables);
+
+			const sA = Strings[this.Attacker.Language];
+			const sD = Strings[this.Defender.Language];
+
+			this.Container.Private = new CustomContainerBuilder()
+				.setAccentColor(CrColors.BeatUp)
 				.addTexts([
-					sD.wereBeated(this.Attacker.GetNameWithImage(), this.Defender.Hospital.Time),
+					`${EmoteString.Beat} ${sD.finishedBeatUpDefender}`,
+				])
+				.addLargeSeparator();
+
+			if (this.Success) {
+				this.Attacker.BeatUp.SuccessCount += 1;
+				this.Defender.BeatUp.BeatedUpCount += 1;
+
+				this.Attacker.BeatUp.Time = addMinutes(new Date(), 60);
+				this.Attacker.Wanted.Time = addMinutes(new Date(), 60);
+				this.Attacker.Wanted.Count += 1;
+
+				this.Defender.Hospital.Time = addMinutes(new Date(), this.TimeInHospital.Base);
+				this.Defender.Hospital.Count += 1;
+
+				await Promise.all([
+					Notification.Hospital(this.Defender),
+					Notification.BeatAgain(this.Attacker),
 				]);
 
-			const texts = [
-				`### ${EmoteString.Victory} ${sA.success}!`,
-				`${sA.youBeated(this.Defender.GetNameWithImage(), this.Defender.Hospital.Time)}`,
-				`-# ${sA.willBeAbleAgain} ${showTime(this.Attacker.BeatUp.Time.getTime(), true)}`,
-			].join("\n");
+				this.Container.Private
+					.addTexts([
+						sD.wereBeated(this.Attacker.GetNameWithImage(), this.Defender.Hospital.Time),
+					]);
 
-			this.Container.Channel.changeTextFromSectionId(50, texts);
+				const texts = [
+					`### ${EmoteString.Victory} ${sA.success}!`,
+					`${sA.youBeated(this.Defender.GetNameWithImage(), this.Defender.Hospital.Time)}`,
+					`-# ${sA.willBeAbleAgain} ${showTime(this.Attacker.BeatUp.Time.getTime(), true)}`,
+				].join("\n");
 
-			Log.Success(`User ${this.Attacker.Nickname} (Id: ${this.Attacker.Id}) successfully beated user ${this.Defender.Nickname} (Id: ${this.Defender.Id})`);
-		}
-		else {
-			this.Attacker.BeatUp.BeatedUpCount += 1;
-			this.Attacker.BeatUp.FailureCount += 1;
-			this.Defender.BeatUp.SuccessCount += 1;
+				this.Container.Channel.changeTextFromSectionId(50, texts);
 
-			this.Attacker.Hospital.Count += 1;
-			this.Attacker.Hospital.Time = addMinutes(new Date(), this.TimeInHospital.Base);
-			this.Attacker.BeatUp.Time = addMinutes(new Date(), 60);
+				Log.Success(`User ${this.Attacker.Nickname} (Id: ${this.Attacker.Id}) successfully beated user ${this.Defender.Nickname} (Id: ${this.Defender.Id})`);
+			}
+			else {
+				this.Attacker.BeatUp.BeatedUpCount += 1;
+				this.Attacker.BeatUp.FailureCount += 1;
+				this.Defender.BeatUp.SuccessCount += 1;
 
-			await Promise.all([
-				Notification.Hospital(this.Attacker),
-				Notification.BeatAgain(this.Attacker),
-			]);
+				this.Attacker.Hospital.Count += 1;
+				this.Attacker.Hospital.Time = addMinutes(new Date(), this.TimeInHospital.Base);
+				this.Attacker.BeatUp.Time = addMinutes(new Date(), 60);
 
-			this.Container.Private
-				.addTexts([
-					sD.youBeated(this.Attacker.GetNameWithImage(), this.Attacker.Hospital.Time),
+				await Promise.all([
+					Notification.Hospital(this.Attacker),
+					Notification.BeatAgain(this.Attacker),
 				]);
 
-			const texts = [
-				`### ${EmoteString.Defeat} ${sA.failure}!`,
-				sA.youFailed(this.Attacker.Hospital.Time),
-			].join("\n");
+				this.Container.Private
+					.addTexts([
+						sD.youBeated(this.Attacker.GetNameWithImage(), this.Attacker.Hospital.Time),
+					]);
+
+				const texts = [
+					`### ${EmoteString.Defeat} ${sA.failure}!`,
+					sA.youFailed(this.Attacker.Hospital.Time),
+				].join("\n");
+
+				this.Container.Channel
+					.changeTextFromSectionId(50, texts);
+
+				Log.Success(`User ${this.Attacker.Nickname} (Id: ${this.Attacker.Id}) failed to beat user ${this.Defender.Nickname} (Id: ${this.Defender.Id}).`);
+			}
 
 			this.Container.Channel
-				.changeTextFromSectionId(50, texts);
+				.changeTextFromSectionId(1, `${EmoteString.Beat} ${sA.finishedBeatUpAttacker(this.Success)}`)
+				.changeFooterText(formatMoney(this.Attacker.Money, this.Attacker.Language));
 
-			Log.Success(`User ${this.Attacker.Nickname} (Id: ${this.Attacker.Id}) failed to beat user ${this.Defender.Nickname} (Id: ${this.Defender.Id}).`);
-		}
+			await replyWithContainer(interaction, this.Container.Channel);
 
-		this.Container.Channel
-			.changeTextFromSectionId(1, `${EmoteString.Beat} ${sA.finishedBeatUpAttacker(this.Success)}`)
-			.changeFooterText(formatMoney(this.Attacker.Money, this.Attacker.Language));
+			if (privateMessage) {
+				this.Container.Private
+					.addFooter({
+						text: formatMoney(this.Defender.Money, this.Defender.Language),
+					});
 
-		await replyWithContainer(interaction, this.Container.Channel);
-
-		if (privateMessage) {
-			this.Container.Private
-				.addFooter({
-					text: formatMoney(this.Defender.Money, this.Defender.Language),
+				await privateMessage.edit({
+					components: [this.Container.Private],
+					flags: MessageFlags.IsComponentsV2,
 				});
-
-			await privateMessage.edit({ components: [this.Container.Private] });
+			}
 		}
+		catch (error) {
+			Log.Error(`Error during EndBeating: ${error}`);
+		}
+		finally {
+			this.Attacker.BeatUp.IsBeatingId = null;
+			this.Defender.BeatUp.IsBeingBeatUpById = null;
 
-		this.Attacker.BeatUp.IsBeatingId = null;
-		this.Defender.BeatUp.IsBeingBeatUpById = null;
-		await Promise.all([
-			this.Attacker.Update({
-				beatingUserId: this.Attacker.BeatUp.IsBeatingId,
-				beatUpBeatedUpCount: this.Attacker.BeatUp.BeatedUpCount,
-				beatUpFailureCount: this.Attacker.BeatUp.FailureCount,
-				beatUpSuccessCount: this.Attacker.BeatUp.SuccessCount,
-				hospitalCount: this.Attacker.Hospital.Count,
-				hospitalTime: this.Attacker.Hospital.Time,
-				beatUpTime: this.Attacker.BeatUp.Time,
-				wantedCount: this.Attacker.Wanted.Count,
-				wantedTime: this.Attacker.Wanted.Time,
-			}),
-			this.Defender.Update({
-				beingBeatUpByUserId: this.Defender.BeatUp.IsBeingBeatUpById,
-				beatUpBeatedUpCount: this.Defender.BeatUp.BeatedUpCount,
-				beatUpFailureCount: this.Defender.BeatUp.FailureCount,
-				beatUpSuccessCount: this.Defender.BeatUp.SuccessCount,
-				hospitalCount: this.Defender.Hospital.Count,
-				hospitalTime: this.Defender.Hospital.Time,
-				beatUpTime: this.Defender.BeatUp.Time,
-			}),
-		]);
+			await Promise.all([
+				this.Attacker.Update({
+					beatingUserId: this.Attacker.BeatUp.IsBeatingId,
+					beatUpBeatedUpCount: this.Attacker.BeatUp.BeatedUpCount,
+					beatUpFailureCount: this.Attacker.BeatUp.FailureCount,
+					beatUpSuccessCount: this.Attacker.BeatUp.SuccessCount,
+					hospitalCount: this.Attacker.Hospital.Count,
+					hospitalTime: this.Attacker.Hospital.Time,
+					beatUpTime: this.Attacker.BeatUp.Time,
+					wantedCount: this.Attacker.Wanted.Count,
+					wantedTime: this.Attacker.Wanted.Time,
+				}),
+				this.Defender.Update({
+					beingBeatUpByUserId: this.Defender.BeatUp.IsBeingBeatUpById,
+					beatUpBeatedUpCount: this.Defender.BeatUp.BeatedUpCount,
+					beatUpFailureCount: this.Defender.BeatUp.FailureCount,
+					beatUpSuccessCount: this.Defender.BeatUp.SuccessCount,
+					hospitalCount: this.Defender.Hospital.Count,
+					hospitalTime: this.Defender.Hospital.Time,
+					beatUpTime: this.Defender.BeatUp.Time,
+				}),
+			]);
 
-		await RobHistories.CreateUserBeatUpHistory(this);
+			await RobHistories.CreateUserBeatUpHistory(this);
+		}
 	}
 }
 

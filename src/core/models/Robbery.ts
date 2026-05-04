@@ -487,154 +487,164 @@ export class Robbery {
 	}
 
 	async EndRobbery(interaction: ChatInputCommandInteraction, privateMessage: Message | undefined) {
-		await Promise.all([
-			this.Attacker.GetInfo(),
-			this.Defender.GetInfo(),
-		]);
+		try {
+			await Promise.all([
+				this.Attacker.GetInfo(),
+				this.Defender.GetInfo(),
+			]);
 
-		// Re-apply consumables bonuses because GetInfo resets attributes
-		await this.Attacker.GetAttributes(false, this.UsedConsumables);
+			// Re-apply consumables bonuses because GetInfo resets attributes
+			await this.Attacker.GetAttributes(false, this.UsedConsumables);
 
-		const sA = Strings[this.Attacker.Language];
-		const sD = Strings[this.Defender.Language];
+			const sA = Strings[this.Attacker.Language];
+			const sD = Strings[this.Defender.Language];
 
-		this.Container.Private = new CustomContainerBuilder()
-			.setAccentColor(CrColors.Robbery)
-			.addTexts([
-				`${EmoteString.Robbery} ${sD.finishedRobberyDefender}`,
-			])
-			.addLargeSeparator();
+			this.Container.Private = new CustomContainerBuilder()
+				.setAccentColor(CrColors.Robbery)
+				.addTexts([
+					`${EmoteString.Robbery} ${sD.finishedRobberyDefender}`,
+				])
+				.addLargeSeparator();
 
-		if (this.Success) {
-			if (this.Defender.Attributes.Defense > 0) {
-				this.Attacker.Attributes.MoneyAttack -= getPercent(this.Defender.Attributes.MoneyDefense, this.Attacker.Attributes.MoneyAttack);
+			if (this.Success) {
+				if (this.Defender.Attributes.Defense > 0) {
+					this.Attacker.Attributes.MoneyAttack -= getPercent(this.Defender.Attributes.MoneyDefense, this.Attacker.Attributes.MoneyAttack);
+				}
+
+				this.MoneyRobbed = Math.floor(getPercent(this.Attacker.Attributes.MoneyAttack, this.Defender.Money));
+
+				const userClassModifier = getRobberyClassModifier(this.Attacker.Class);
+
+				this.MoneyRobbed = Math.floor(this.MoneyRobbed * userClassModifier);
+
+				this.Attacker.Money += this.MoneyRobbed;
+				this.Attacker.Robbery.SuccessCount += 1;
+				this.Attacker.Robbery.SuccessRobbedSum += this.MoneyRobbed;
+				const wantedTimeMultiplier = await Event.GetActiveFromType(EventType.WANTED_TIME_MULTIPLIER);
+				this.Attacker.Wanted.Time = addMinutes(new Date(), 60 * wantedTimeMultiplier);
+
+				this.Defender.Money -= this.MoneyRobbed;
+				this.Defender.Robbery.BeingRobbedCount += 1;
+				this.Defender.Robbery.BeingRobbedSum += this.MoneyRobbed;
+
+				const willBeBeatenUp = Math.random() < this.BeatUpChance &&
+					!this.Defender.IsWorking() &&
+					!this.Defender.IsInPrison() &&
+					!this.Defender.IsInHospital();
+
+				if (willBeBeatenUp) {
+					this.Defender.Hospital.Count += 1;
+					const hospitalTimeMultiplier = await Event.GetActiveFromType(EventType.HOSPITAL_TIME_MULTIPLIER);
+					this.Defender.Hospital.Time = addMinutes(new Date(), this.DefenderTimeInHospital * hospitalTimeMultiplier);
+					this.Defender.BeatUp.BeatedUpCount += 1;
+					this.Attacker.BeatUp.SuccessCount += 1;
+					await Notification.Hospital(this.Defender);
+				}
+
+				await Notification.RobAgain(this.Attacker);
+
+				this.Container.Private
+					.addTexts([
+						`### ${EmoteString.Defeat} ${sD.success}.`,
+						`${sD.wereRobbed(formatMoney(this.MoneyRobbed, this.Defender.Language), this.Attacker.GetNameWithImage())}${willBeBeatenUp ? `
+	${sD.beatedUp(this.Defender.Hospital.Time)} ${EmoteString.Hospital}` : ""}`,
+					]);
+
+				const randomSuccessMessage = sA.successMessages[Math.floor(Math.random() * sA.successMessages.length)];
+				const successMessage = randomSuccessMessage(formatMoney(this.MoneyRobbed, this.Attacker.Language), this.Defender.GetNameWithImage());
+
+				const texts = [
+					`### ${EmoteString.Victory} ${sA.success}!`,
+					`${successMessage}${willBeBeatenUp ? `
+	${sA.beatenUp(this.Defender.Hospital.Time)} ${EmoteString.Hospital}` : ""}`,
+					`-# ${sA.willBeAbleAgain} ${showTime(this.Attacker.Wanted.Time.getTime(), true)}`,
+				].join("\n");
+
+				this.Container.Channel.changeTextFromSectionId(50, texts);
+
+				Log.Success(`User ${this.Attacker.Nickname} (Id: ${this.Attacker.Id}) successfully robbed user ${this.Defender.Nickname} (Id: ${this.Defender.Id}) and got ${formatMoney(this.MoneyRobbed, Language.English)}. ${willBeBeatenUp ? "The defender was beaten up." : ""}`);
+			}
+			else {
+				const prisonTimeMultiplier = await Event.GetActiveFromType(EventType.PRISON_TIME_MULTIPLIER);
+				this.Attacker.Prison.Time = addMinutes(new Date(), this.AttackerTimeInPrison * prisonTimeMultiplier);
+				this.Attacker.Prison.HasPaidBribe = false;
+				this.Attacker.Escape.HasTried = false;
+				this.Attacker.Robbery.FailureCount += 1;
+				this.Attacker.Prison.Count += 1;
+
+				await Notification.Free(this.Attacker);
+
+				this.Container.Private
+					.addTexts([
+						`### ${EmoteString.Victory} ${sD.failure}!`,
+						`**${this.Attacker.GetNameWithImage()}** ${sD.robFailed} ${EmoteString.Police}
+	-# ${sD.prisonUntil(this.Attacker.Prison.Time)}!`,
+					]);
+
+				const randomFailureMessage = sA.failureMessages[Math.floor(Math.random() * sA.failureMessages.length)];
+
+				const texts = [
+					`### ${EmoteString.Defeat} ${sA.failure}!`,
+					`${sA.youFailed}!`,
+					`-# ${EmoteString.Prison} ${randomFailureMessage} ${sA.prisonTime(this.Attacker.Prison.Time)}`,
+				].join("\n");
+
+				this.Container.Channel.changeTextFromSectionId(50, texts);
+
+				Log.Success(`User ${this.Attacker.Nickname} (Id: ${this.Attacker.Id}) failed to rob user ${this.Defender.Nickname} (Id: ${this.Defender.Id}).`);
 			}
 
-			this.MoneyRobbed = Math.floor(getPercent(this.Attacker.Attributes.MoneyAttack, this.Defender.Money));
+			this.Container.Channel
+				.changeTextFromSectionId(1, `${EmoteString.Robbery} ${sA.finishedRobberyAttacker(this.Success)}`)
+				.changeFooterText(formatMoney(this.Attacker.Money, this.Attacker.Language));
 
-			const userClassModifier = getRobberyClassModifier(this.Attacker.Class);
+			await replyWithContainer(interaction, this.Container.Channel);
 
-			this.MoneyRobbed = Math.floor(this.MoneyRobbed * userClassModifier);
-
-			this.Attacker.Money += this.MoneyRobbed;
-			this.Attacker.Robbery.SuccessCount += 1;
-			this.Attacker.Robbery.SuccessRobbedSum += this.MoneyRobbed;
-			const wantedTimeMultiplier = await Event.GetActiveFromType(EventType.WANTED_TIME_MULTIPLIER);
-			this.Attacker.Wanted.Time = addMinutes(new Date(), 60 * wantedTimeMultiplier);
-
-			this.Defender.Money -= this.MoneyRobbed;
-			this.Defender.Robbery.BeingRobbedCount += 1;
-			this.Defender.Robbery.BeingRobbedSum += this.MoneyRobbed;
-
-			const willBeBeatenUp = Math.random() < this.BeatUpChance &&
-				!this.Defender.IsWorking() &&
-				!this.Defender.IsInPrison() &&
-				!this.Defender.IsInHospital();
-
-			if (willBeBeatenUp) {
-				this.Defender.Hospital.Count += 1;
-				const hospitalTimeMultiplier = await Event.GetActiveFromType(EventType.HOSPITAL_TIME_MULTIPLIER);
-				this.Defender.Hospital.Time = addMinutes(new Date(), this.DefenderTimeInHospital * hospitalTimeMultiplier);
-				this.Defender.BeatUp.BeatedUpCount += 1;
-				this.Attacker.BeatUp.SuccessCount += 1;
-				await Notification.Hospital(this.Defender);
-			}
-
-			await Notification.RobAgain(this.Attacker);
-
-			this.Container.Private
-				.addTexts([
-					`### ${EmoteString.Defeat} ${sD.success}.`,
-					`${sD.wereRobbed(formatMoney(this.MoneyRobbed, this.Defender.Language), this.Attacker.GetNameWithImage())}${willBeBeatenUp ? `
-${sD.beatedUp(this.Defender.Hospital.Time)} ${EmoteString.Hospital}` : ""}`,
-				]);
-
-			const randomSuccessMessage = sA.successMessages[Math.floor(Math.random() * sA.successMessages.length)];
-			const successMessage = randomSuccessMessage(formatMoney(this.MoneyRobbed, this.Attacker.Language), this.Defender.GetNameWithImage());
-
-			const texts = [
-				`### ${EmoteString.Victory} ${sA.success}!`,
-				`${successMessage}${willBeBeatenUp ? `
-${sA.beatenUp(this.Defender.Hospital.Time)} ${EmoteString.Hospital}` : ""}`,
-				`-# ${sA.willBeAbleAgain} ${showTime(this.Attacker.Wanted.Time.getTime(), true)}`,
-			].join("\n");
-
-			this.Container.Channel.changeTextFromSectionId(50, texts);
-
-			Log.Success(`User ${this.Attacker.Nickname} (Id: ${this.Attacker.Id}) successfully robbed user ${this.Defender.Nickname} (Id: ${this.Defender.Id}) and got ${formatMoney(this.MoneyRobbed, Language.English)}. ${willBeBeatenUp ? "The defender was beaten up." : ""}`);
-		}
-		else {
-			const prisonTimeMultiplier = await Event.GetActiveFromType(EventType.PRISON_TIME_MULTIPLIER);
-			this.Attacker.Prison.Time = addMinutes(new Date(), this.AttackerTimeInPrison * prisonTimeMultiplier);
-			this.Attacker.Prison.HasPaidBribe = false;
-			this.Attacker.Escape.HasTried = false;
-			this.Attacker.Robbery.FailureCount += 1;
-			this.Attacker.Prison.Count += 1;
-
-			await Notification.Free(this.Attacker);
-
-			this.Container.Private
-				.addTexts([
-					`### ${EmoteString.Victory} ${sD.failure}!`,
-					`**${this.Attacker.GetNameWithImage()}** ${sD.robFailed} ${EmoteString.Police}
--# ${sD.prisonUntil(this.Attacker.Prison.Time)}!`,
-				]);
-
-			const randomFailureMessage = sA.failureMessages[Math.floor(Math.random() * sA.failureMessages.length)];
-
-			const texts = [
-				`### ${EmoteString.Defeat} ${sA.failure}!`,
-				`${sA.youFailed}!`,
-				`-# ${EmoteString.Prison} ${randomFailureMessage} ${sA.prisonTime(this.Attacker.Prison.Time)}`,
-			].join("\n");
-
-			this.Container.Channel.changeTextFromSectionId(50, texts);
-
-			Log.Success(`User ${this.Attacker.Nickname} (Id: ${this.Attacker.Id}) failed to rob user ${this.Defender.Nickname} (Id: ${this.Defender.Id}).`);
-		}
-
-		this.Container.Channel
-			.changeTextFromSectionId(1, `${EmoteString.Robbery} ${sA.finishedRobberyAttacker(this.Success)}`)
-			.changeFooterText(formatMoney(this.Attacker.Money, this.Attacker.Language));
-
-		await replyWithContainer(interaction, this.Container.Channel);
-
-		if (privateMessage) {
-			this.Container.Private
-				.addFooter({
-					text: formatMoney(this.Defender.Money, this.Defender.Language),
+			if (privateMessage) {
+				this.Container.Private
+					.addFooter({
+						text: formatMoney(this.Defender.Money, this.Defender.Language),
+					});
+				await privateMessage.edit({
+					components: [this.Container.Private],
+					flags: MessageFlags.IsComponentsV2,
 				});
-			await privateMessage.edit({ components: [this.Container.Private] });
+			}
 		}
+		catch (error) {
+			Log.Error(`Error during EndRobbery: ${error}`);
+		}
+		finally {
+			this.Attacker.Robbery.IsRobbingId = null;
+			this.Defender.Robbery.IsBeingRobbedById = null;
 
-		this.Attacker.Robbery.IsRobbingId = null;
-		this.Defender.Robbery.IsBeingRobbedById = null;
-		await Promise.all([
-			this.Attacker.Update({
-				money: this.Attacker.Money,
-				robberySuccessCount: this.Attacker.Robbery.SuccessCount,
-				robberySuccessRobbedSum: this.Attacker.Robbery.SuccessRobbedSum,
-				wantedTime: this.Attacker.Wanted.Time,
-				beatUpSuccessCount: this.Attacker.BeatUp.SuccessCount,
-				prisonTime: this.Attacker.Prison.Time,
-				prisonHasPaidBribe: this.Attacker.Prison.HasPaidBribe,
-				escapeHasTried: this.Attacker.Escape.HasTried,
-				robberyFailureCount: this.Attacker.Robbery.FailureCount,
-				prisonCount: this.Attacker.Prison.Count,
-				robbingUserId: this.Attacker.Robbery.IsRobbingId,
-			}),
-			this.Defender.Update({
-				money: this.Defender.Money,
-				robberyBeingRobbedCount: this.Defender.Robbery.BeingRobbedCount,
-				robberyBeingRobbedSum: this.Defender.Robbery.BeingRobbedSum,
-				hospitalCount: this.Defender.Hospital.Count,
-				hospitalTime: this.Defender.Hospital.Time,
-				beatUpBeatedUpCount: this.Defender.BeatUp.BeatedUpCount,
-				beingRobbedByUserId: this.Defender.Robbery.IsBeingRobbedById,
-			}),
-		]);
+			await Promise.all([
+				this.Attacker.Update({
+					money: this.Attacker.Money,
+					robberySuccessCount: this.Attacker.Robbery.SuccessCount,
+					robberySuccessRobbedSum: this.Attacker.Robbery.SuccessRobbedSum,
+					wantedTime: this.Attacker.Wanted.Time,
+					beatUpSuccessCount: this.Attacker.BeatUp.SuccessCount,
+					prisonTime: this.Attacker.Prison.Time,
+					prisonHasPaidBribe: this.Attacker.Prison.HasPaidBribe,
+					escapeHasTried: this.Attacker.Escape.HasTried,
+					robberyFailureCount: this.Attacker.Robbery.FailureCount,
+					prisonCount: this.Attacker.Prison.Count,
+					robbingUserId: this.Attacker.Robbery.IsRobbingId,
+				}),
+				this.Defender.Update({
+					money: this.Defender.Money,
+					robberyBeingRobbedCount: this.Defender.Robbery.BeingRobbedCount,
+					robberyBeingRobbedSum: this.Defender.Robbery.BeingRobbedSum,
+					hospitalCount: this.Defender.Hospital.Count,
+					hospitalTime: this.Defender.Hospital.Time,
+					beatUpBeatedUpCount: this.Defender.BeatUp.BeatedUpCount,
+					beingRobbedByUserId: this.Defender.Robbery.IsBeingRobbedById,
+				}),
+			]);
 
-		await RobHistories.CreateUserRobberyHistory(this);
+			await RobHistories.CreateUserRobberyHistory(this);
+		}
 	}
 }
 
