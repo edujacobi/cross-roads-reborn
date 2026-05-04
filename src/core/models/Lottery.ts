@@ -129,14 +129,7 @@ export class Lottery {
 			winningTicket.winnings = finalPrize;
 			await winningTicket.save();
 
-			winnerUser.Money += finalPrize;
-			winnerUser.Casino.WinCount += 1;
-			winnerUser.Casino.WinSum += finalPrize;
-			await winnerUser.Update({
-				money: winnerUser.Money,
-				casinoWinCount: winnerUser.Casino.WinCount,
-				casinoWinSum: winnerUser.Casino.WinSum,
-			});
+			await Casino.FinishUserGameWithWin(winnerUser, finalPrize);
 
 			const s = Strings[winnerUser.Language];
 			await sendPrivateMessage(
@@ -157,14 +150,9 @@ export class Lottery {
 			ticket.hasWon = false;
 			await ticket.save();
 
-			const loserUser = await new User(ticket.userId).GetSimpleInfo();
+			const loserUser = await new User(ticket.userId).GetInfo();
 			if (loserUser) {
-				loserUser.Casino.LoseCount += 1;
-				loserUser.Casino.LoseSum += ticket.amount;
-				await loserUser.Update({
-					casinoLoseCount: loserUser.Casino.LoseCount,
-					casinoLoseSum: loserUser.Casino.LoseSum,
-				});
+				await Casino.FinishUserGameWithLoss(loserUser, ticket.amount);
 
 				const s = Strings[loserUser.Language];
 				await sendPrivateMessage(

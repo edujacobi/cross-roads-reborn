@@ -255,26 +255,12 @@ export class HorseRacing {
 			const user = await new User(bet.userId).GetInfo();
 			if (!user) continue;
 
-			user.Money += prize;
-			user.Casino.WinCount += 1;
-			user.Casino.WinSum += prize;
-			await user.Update({
-				money: user.Money,
-				casinoWinCount: user.Casino.WinCount,
-				casinoWinSum: user.Casino.WinSum,
-			});
+			await Casino.FinishUserGameWithWin(user, prize);
 
 			winners.push({ nameWithImage: user.GetNameWithImage(), prize });
-		}
-
-		// --- Notify winners ---
-		for (const bet of winningBets) {
-			const user = await new User(bet.userId).GetSimpleInfo();
-			if (!user) continue;
 
 			const s = Strings[user.Language];
 			const horseName = winningHorse.Name[user.Language];
-			const prize = Math.floor(bet.amount * winningHorse.Multiplier);
 
 			const otherWinners = winners.filter(w => w.nameWithImage !== user.GetNameWithImage());
 			const winnersSection = otherWinners.length > 0
@@ -296,12 +282,7 @@ export class HorseRacing {
 			const user = await new User(bet.userId).GetInfo();
 			if (!user) continue;
 
-			user.Casino.LoseCount += 1;
-			user.Casino.LoseSum += bet.amount;
-			await user.Update({
-				casinoLoseCount: user.Casino.LoseCount,
-				casinoLoseSum: user.Casino.LoseSum,
-			});
+			await Casino.FinishUserGameWithLoss(user, bet.amount);
 
 			const userHorse = HorseList.find(h => h.Id === bet.horseNumber)!;
 			const winningHorseName = winningHorse.Name[user.Language];
