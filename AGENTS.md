@@ -8,7 +8,8 @@ This document serves as a guide for agents and developers working on the `cross-
 *   **Language**: TypeScript 6.0
 *   **Framework**: Discord.js 14
 *   **Database**: Sequelize with SQLite (JSON strings for array-like structures)
-*   **Dev Setup**: Windows 11 with Powershell
+*   **Dev Setup**: Windows 11 with Powershell (Always use Windows/Powershell commands, **NEVER** linux/bash terminal commands).
+*   **Production Setup**: Cloud EC2 VM in Google Cloud.
 
 **Note**: Do not suggest or implement code patterns compatible only with older versions of Discord.js (e.g., v12/v13) or TypeScript.
 
@@ -23,7 +24,9 @@ The project follows a strict separation between the "Frontend" (Commands) and th
 *   **Restrictions**:
     *   **NEVER** use `EmbedBuilder` directly. Use `CustomContainerBuilder`.
     *   **NEVER** implement core business logic here. Delegate to `Models`.
+    *   **Interaction Rules**: `MessageFlags.IsComponentsV2` is immutable. **NEVER** include `flags` in `editReply()` or `update()` calls (PATCH requests), as this will cause an "Invalid Form Body" error.
 *   **Localization**: All user-facing text must be localized (English, Portuguese, Spanish).
+*   **Administrative Patterns**: Admin commands should use the `checkUser` utility for target acquisition and always `await target.GetInfo()` before updates to ensure data consistency.
 
 ### 2. Models ("Backend")
 *   **Location**: `src/core/models/`
@@ -32,7 +35,8 @@ The project follows a strict separation between the "Frontend" (Commands) and th
 *   **Restrictions**:
     *   **NEVER** import `discord.js` UI classes (e.g., `EmbedBuilder`, `ButtonBuilder`, `ActionRowBuilder`, `ModalBuilder`).
     *   **Database Access**: This is the **ONLY** layer allowed to import and interact with files in `src/core/database/`.
-*   **Logging**: Internal logs should be in English (using `Log` utility).
+*   **State Management**: Methods that set database "locks" (e.g., `robbingUserId`, `isBeatingUserId`) **MUST** use `try...finally` blocks to ensure these locks are cleared even if a Discord interaction fails or times out.
+*   **Logging**: Internal logs should be in English (using `logger` from `#shared/log` for technical info or the `Log` utility for business events).
 
 ### 3. Types ("Contracts")
 *   **Location**: `src/core/types/`
@@ -143,5 +147,11 @@ When creating a new skin bundle (a themed set of skins), all items in the bundle
 Always separate thousands with an underscore (`_`) for better readability.
 *   **Example**: `1_000_000` instead of `1000000`.
 
+### Readability & Performance
+Always focus on both readability and performance. Code can be verbose if it improves human understanding.
+*   **Naming**: Use descriptive and meaningful names for variables, methods, and functions (e.g., `calculateTotalBalance` instead of `calcBal`).
+*   **Comments**: Do not clutter the code with excessive comments. Instead, write self-documenting code through good naming conventions.
+*   **Performance**: Optimize logic for speed where possible, but not at the expense of readability.
+
 ### New Line
-Always use CRLF as End of Line Sequence in files.
+**Always** use CRLF as End of Line Sequence in files.
