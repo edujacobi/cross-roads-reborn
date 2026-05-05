@@ -124,7 +124,7 @@ export class Investment {
 							);
 						}
 
-						logs.push(`Investment of user ${userRow.nickname} (Id: ${currentInvestment.userId}) (${investmentData.Name[0]}) expired. Payout: ${formatMoney(payout, Language.English)}.`);
+						logs.push(`- Investment of user ${userRow.nickname} (Id: ${currentInvestment.userId}) (${investmentData.Name[0]}) expired. Payout: ${formatMoney(payout, Language.English)}.`);
 						return;
 					}
 
@@ -177,7 +177,7 @@ export class Investment {
 							lastYieldAt: nowHour,
 						});
 
-						logs.push(`Investment yield (${hoursToPay}h) paid to ${userRow.nickname} (Id: ${currentInvestment.userId}). Total: ${formatMoney(finalPayout, Language.English)}.`);
+						logs.push(`- Payed ${hoursToPay}h to ${userRow.nickname} (Id: ${currentInvestment.userId}). Total: ${formatMoney(finalPayout, Language.English)}.`);
 
 						if (userRow.notifyInvestmentYield) {
 							const user = await new User(currentInvestment.userId).GetInfo();
@@ -210,7 +210,7 @@ export class Investment {
 		finally {
 			Investment.IsProcessing = false;
 			if (logs.length > 0) {
-				Log.Info(logs.join("\n"));
+				Log.Info(`Investment yield (${logs.length} investments):\n${logs.join("\n")}`);
 			}
 		}
 	}
