@@ -265,7 +265,7 @@ module.exports = {
 		});
 
 		collectorSelect?.on("collect", async select => {
-			await select.deferUpdate();
+			await deferUpdate(select);
 
 			await user.GetInfo();
 

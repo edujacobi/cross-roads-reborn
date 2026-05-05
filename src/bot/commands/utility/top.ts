@@ -4,7 +4,7 @@ import { DEFAULT_GANG_IMAGE } from "#bot/ui/builders/GangImageCanvasBuilder";
 import { UserRankingCardCanvasBuilder } from "#bot/ui/builders/UserRankingCardCanvasBuilder";
 import { EmoteBadgeString } from "#bot/utils/badges";
 import { CrColors, GangColor } from "#bot/utils/colors";
-import { deferReply, replyWithContainer } from "#bot/utils/discordInteractions";
+import { deferReply, deferUpdate, replyWithContainer } from "#bot/utils/discordInteractions";
 import { EmoteId, EmoteString } from "#bot/utils/emotes";
 import { Inventory } from "#bot/utils/invUtils";
 import { defaultComponent, formatMoney } from "#bot/utils/ui";
@@ -623,7 +623,11 @@ module.exports = {
 		let position: number;
 
 		collector?.on("collect", async btn => {
-			await btn.deferUpdate();
+			if (["next", "prev"].includes(btn.customId)) {
+				return;
+			}
+
+			await deferUpdate(btn);
 
 			if (btn.customId.includes("position")) {
 				const positionId = Number(btn.customId.replace("position", ""));
