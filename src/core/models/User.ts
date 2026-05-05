@@ -861,7 +861,7 @@ export class User {
 		// Update local items list from database to ensure consistency
 		await this.GetItems();
 
-		Log.Info(`User ${this.Nickname} (Id: ${this.Id}) received ${isConsumable ? `${quantity}x` : `${days ?? 3} days`} of ${item.Description[Language.English]} (Id: ${item.Id}).`);
+		Log.Success(`User ${this.Nickname} (Id: ${this.Id}) received ${isConsumable ? `${quantity}x` : `${days ?? 3} days`} of ${item.Description[Language.English]} (Id: ${item.Id}).`);
 	}
 
 	/**
@@ -893,7 +893,7 @@ export class User {
 				skin: BundleId.Default,
 			});
 
-			Log.Info(`User ${this.Nickname} (Id: ${this.Id}) bought item ${item.Description[Language.English]} (Id: ${item.Id}) for ${formatMoney(item.Price, Language.English)} [FIRST TIME!].`);
+			Log.Success(`User ${this.Nickname} (Id: ${this.Id}) bought item ${item.Description[Language.English]} (Id: ${item.Id}) for ${formatMoney(item.Price, Language.English)} [FIRST TIME!].`);
 		}
 		else {
 			let remaining = addHours(existingItem.remainingTime, 72);
@@ -911,7 +911,7 @@ export class User {
 				},
 			});
 
-			Log.Info(`User ${this.Nickname} (Id: ${this.Id}) bought item ${item.Description[Language.English]} (Id: ${item.Id}) for ${formatMoney(item.Price, Language.English)}. Total time: ${differenceInHours(remaining, new Date())}h.`);
+			Log.Success(`User ${this.Nickname} (Id: ${this.Id}) bought item ${item.Description[Language.English]} (Id: ${item.Id}) for ${formatMoney(item.Price, Language.English)}. Total time: ${differenceInHours(remaining, new Date())}h.`);
 		}
 
 		this.Shop.SpentCount += 1;
@@ -1074,7 +1074,7 @@ export class User {
 			});
 		}
 
-		Log.Info(`User ${this.Nickname} (Id: ${this.Id}) has set skin ${bundle.Description[Language.English]} (Id: ${bundle.Id}) for item ${item.Description[Language.English]} (Id: ${item.Id}).`);
+		Log.Success(`User ${this.Nickname} (Id: ${this.Id}) has set skin ${bundle.Description[Language.English]} (Id: ${bundle.Id}) for item ${item.Description[Language.English]} (Id: ${item.Id}).`);
 	}
 
 	/**
@@ -1122,7 +1122,7 @@ export class User {
 			});
 		}
 
-		Log.Info(`User ${this.Nickname} (Id: ${this.Id}) has set skin ${bundle.Description[Language.English]} (Id: ${bundle.Id}) for all items in bundle.`);
+		Log.Success(`User ${this.Nickname} (Id: ${this.Id}) has set skin ${bundle.Description[Language.English]} (Id: ${bundle.Id}) for all items in bundle.`);
 	}
 
 	/**
@@ -1135,7 +1135,7 @@ export class User {
 			avatarDecoration: this.AvatarDecoration.Id,
 		});
 
-		Log.Info(`User ${this.Nickname} (Id: ${this.Id}) has set avatar decoration ${decoration.Description[Language.English]} (Id: ${decoration.Id}).`);
+		Log.Success(`User ${this.Nickname} (Id: ${this.Id}) has set avatar decoration ${decoration.Description[Language.English]} (Id: ${decoration.Id}).`);
 	}
 
 	/**
@@ -1523,7 +1523,7 @@ export class User {
 				jobId: this.Job.Id,
 			}),
 		]);
-		Log.Info(`User ${this.Nickname} (Id: ${this.Id}) canceled his job ${job.Description[this.Language]} (Id: ${job.Id}).`);
+		Log.Warning(`User ${this.Nickname} (Id: ${this.Id}) canceled his job ${job.Description[this.Language]} (Id: ${job.Id}).`);
 	}
 
 	/**

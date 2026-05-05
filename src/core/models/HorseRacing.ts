@@ -240,7 +240,7 @@ export class HorseRacing {
 		const winningBets = allBets.filter(b => b.horseNumber === winningHorse.Id);
 		const losingBets = allBets.filter(b => b.horseNumber !== winningHorse.Id);
 
-		Log.Info(`Horse race ${raceId}: ${winningHorse.Name[Language.English]} (x${winningHorse.Multiplier}) won. ${winningBets.length} winner(s), ${losingBets.length} loser(s).`);
+		Log.Success(`Horse race ${raceId}: ${winningHorse.Name[Language.English]} (x${winningHorse.Multiplier}) won. ${winningBets.length} winner(s), ${losingBets.length} loser(s).`);
 
 		// Collect winner data (shown in notifications)
 		const winners: { nameWithImage: string; prize: number }[] = [];

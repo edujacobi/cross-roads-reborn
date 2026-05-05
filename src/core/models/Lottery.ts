@@ -163,7 +163,7 @@ export class Lottery {
 			}
 		}
 
-		Log.Info(`Lottery draw ${drawId} finished. ${winnerUser?.Nickname || "Unknown"} won ${formatMoney(finalPrize, Language.English)}.`);
+		Log.Success(`Lottery draw ${drawId} finished. ${winnerUser?.Nickname || "Unknown"} won ${formatMoney(finalPrize, Language.English)}.`);
 
 		await this.ScheduleNextDraw();
 	}

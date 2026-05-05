@@ -228,7 +228,7 @@ export class Scavenge {
 			}
 			result.rewardDescription = rewardDescription;
 
-			Log.Info(`User ${this.User.Nickname} (Id: ${this.User.Id}) found ${rewardDescriptionLog} while scavenging at ${place.Description[Language.English]} (Id: ${place.Id})`);
+			Log.Success(`User ${this.User.Nickname} (Id: ${this.User.Id}) found ${rewardDescriptionLog} while scavenging at ${place.Description[Language.English]} (Id: ${place.Id})`);
 		}
 		else {
 			const hospitalized = Math.random() * 100 < place.Hospital.Chance;

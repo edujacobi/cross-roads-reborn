@@ -8,6 +8,7 @@ import { removeAllFromActions } from "#bot/utils/userUtils";
 import { Investment } from "#core/models/Investment";
 import { Dashboard } from "#core/models/Dashboard";
 import { Gang } from "#core/models/Gang";
+import { LogManager } from "#shared/log";
 
 module.exports = {
 	name: Events.ClientReady,
@@ -17,6 +18,7 @@ module.exports = {
 		await sequelize.sync();
 		changeActivity(client);
 		Notification.StartProcedure();
+		LogManager.Initialize();
 		await Promise.all([
 			removeAllFromActions(),
 			Investment.Initialize(),

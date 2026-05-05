@@ -1,7 +1,7 @@
-import { ChannelType, type ColorResolvable, Colors, MessageFlags } from "discord.js";
 import { getClient } from "#bot/client";
-import pino from "pino";
 import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
+import { ChannelType, MessageFlags } from "discord.js";
+import pino from "pino";
 
 export const logger = pino({
 	transport: {
@@ -26,74 +26,101 @@ export enum LogType {
 	Success
 }
 
-export class Log {
-	Message: string;
-	Type: LogType;
-	Date: Date;
-	Title = "Title";
-	Color: ColorResolvable = Colors.DarkButNotBlack;
+export class LogManager {
+	private static Queue: Log[] = [];
+	private static Interval: NodeJS.Timeout;
 
-	constructor(type: LogType, message: string) {
-		this.Type = type;
-		this.Message = message;
-		this.Date = new Date;
+	static Initialize() {
+		this.Interval = setInterval(() => this.Flush(), 10000);
+	}
 
-		switch (this.Type) {
-		case LogType.Info:
-			logger.info(`\x1b[34m${message}\x1b[0m`);
-			this.Title = "ℹ️ INFO";
-			this.Color = Colors.Blue;
-			break;
+	static Push(log: Log) {
+		this.Queue.push(log);
+	}
 
-		case LogType.Warning:
-			logger.warn(`\x1b[33m${message}\x1b[0m`);
-			this.Title = "⚠️ WARNING";
-			this.Color = Colors.Yellow;
-			break;
+	private static async Flush() {
+		if (this.Queue.length === 0) return;
 
-		case LogType.Error:
-			logger.error(`\x1b[31m${message}\x1b[0m`);
-			this.Title = "⛔ ERROR";
-			this.Color = Colors.Red;
-			break;
+		const logsToSend = [...this.Queue];
+		this.Queue = [];
 
-		case LogType.Success:
-			logger.info(`\x1b[32m${message}\x1b[0m`);
-			this.Title = "❇️ SUCCESS";
-			this.Color = Colors.Green;
-			break;
+		if (process.env.NODE_ENV !== "PROD") return;
+
+		const LOG_CHANNEL_ID = process.env.LOG_CHANNEL_ID;
+		const channel = LOG_CHANNEL_ID ? getClient().channels.cache.get(LOG_CHANNEL_ID) : null;
+
+		if (!channel || channel.type !== ChannelType.GuildText) return;
+
+		let currentLength = 0;
+		let currentTexts: string[] = [];
+		const chunks: string[][] = [];
+
+		for (const log of logsToSend) {
+			const text = `\\${log.Title} ${log.Message}`;
+
+			if (currentLength + text.length > 3800) {
+				chunks.push(currentTexts);
+				currentTexts = [];
+				currentLength = 0;
+			}
+
+			currentTexts.push(text);
+			currentLength += text.length;
 		}
 
-		const container = new CustomContainerBuilder()
-			.setAccentColor(this.Color)
-			.addTexts([
-				`### ${this.Title}`,
-				this.Message,
-				`-# Cross Roads Reborn`,
-			]);
+		if (currentTexts.length > 0) {
+			chunks.push(currentTexts);
+		}
 
-		try {
-			if (process.env.NODE_ENV !== "PROD") {
-				return;
-			}
-			const LOG_CHANNEL_ID = process.env.LOG_CHANNEL_ID;
-			const channel = LOG_CHANNEL_ID ? getClient().channels.cache.get(LOG_CHANNEL_ID) : null;
+		for (const chunk of chunks) {
+			const container = new CustomContainerBuilder()
+				.addTexts(chunk);
 
-			if (!channel) {
-				return;
-			}
-
-			if (channel.type == ChannelType.GuildText) {
-				channel.send({
+			try {
+				await channel.send({
 					components: [container],
 					flags: MessageFlags.IsComponentsV2,
 				});
 			}
+			catch (err) {
+				logger.error("Error sending batched log to log channel", err);
+			}
 		}
-		catch (err) {
-			logger.error("Error sending log to log channel", err);
+	}
+}
+
+export class Log {
+	Message: string;
+	Type: LogType;
+	Title = "Title";
+
+	constructor(type: LogType, message: string) {
+		this.Type = type;
+		this.Message = message;
+
+		switch (this.Type) {
+		case LogType.Info:
+			logger.info(`\x1b[34m${message}\x1b[0m`);
+			this.Title = "ℹ️";
+			break;
+
+		case LogType.Warning:
+			logger.warn(`\x1b[33m${message}\x1b[0m`);
+			this.Title = "⚠️";
+			break;
+
+		case LogType.Error:
+			logger.error(`\x1b[31m${message}\x1b[0m`);
+			this.Title = "⛔";
+			break;
+
+		case LogType.Success:
+			logger.info(`\x1b[32m${message}\x1b[0m`);
+			this.Title = "❇️";
+			break;
 		}
 
+		LogManager.Push(this);
 	}
 
 	static Info(message: string) {

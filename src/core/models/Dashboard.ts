@@ -95,7 +95,7 @@ export class Dashboard {
 			const stats = await this.GetCurrentStats();
 			await stats.save();
 
-			Log.Info("Dashboard snapshot taken successfully.");
+			Log.Success("Dashboard snapshot taken successfully.");
 		}
 		catch (error) {
 			Log.Error(`Failed to take dashboard snapshot: ${error}`);
