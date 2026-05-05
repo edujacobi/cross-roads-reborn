@@ -5,7 +5,7 @@ import { formatMoney } from "#bot/utils/ui";
 import { HorseRaceBets } from "#core/database/HorseRaceBets";
 import { HorseRaces } from "#core/database/HorseRaces";
 import { HorseList, type IHorse } from "#core/types/Horses";
-import { Log } from "#shared/log";
+import { Log, logger } from "#shared/log";
 import { addHours } from "date-fns/addHours";
 import { Op } from "sequelize";
 import { Casino } from "./Casino";
@@ -333,7 +333,7 @@ export class HorseRacing {
 		}
 
 		setInterval(HorseRacing.CheckPendingRaces, 60_000);
-		Log.Info("Horse racing system initialized.");
+		logger.info("Horse racing system initialized.");
 	}
 }
 

@@ -13,7 +13,7 @@ import { GangImportTiers, type ImportReward } from "#core/types/GangImportPools"
 import { BundleId } from "#core/types/Ids";
 import type { IDescription } from "#core/types/Interfaces";
 import { ItemList } from "#core/types/Items";
-import { Log } from "#shared/log";
+import { Log, logger } from "#shared/log";
 import { addHours, isFuture } from "date-fns";
 import {
 	ActionRowBuilder,
@@ -1242,19 +1242,19 @@ export class Gang {
 					else {
 						// Schedule resolution
 						setTimeout(() => {
-							gang.ResolveImport().catch(err => Log.Error(`Failed to resolve scheduled import for gang ${gang.Id}: ${err}`));
+							gang.ResolveImport().catch(err => logger.warn(`Failed to resolve scheduled import for gang ${gang.Id}: ${err}`));
 						}, waitMs);
 					}
 				}
 				catch (err) {
-					Log.Error(`Error processing gang import for ID ${g.id}: ${err}`);
+					logger.error(`Error processing gang import for ID ${g.id}: ${err}`);
 				}
 			}
 
-			Log.Info(`Scheduled ${gangs.length} active gang imports.`);
+			logger.info(`Scheduled ${gangs.length} active gang imports.`);
 		}
 		catch (err) {
-			Log.Warning(`Failed to schedule active imports: ${err}`);
+			logger.warn(`Failed to schedule active imports: ${err}`);
 		}
 	}
 

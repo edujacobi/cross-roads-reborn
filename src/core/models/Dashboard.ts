@@ -2,7 +2,7 @@ import { Op } from "sequelize";
 import { Users } from "#core/database/Users";
 import { Gangs } from "#core/database/Gangs";
 import { DashboardStats } from "#core/database/DashboardStats";
-import { Log } from "#shared/log";
+import { Log, logger } from "#shared/log";
 import { ClassId } from "#core/types/Classes";
 import { Language } from "#core/models/Language";
 
@@ -131,6 +131,6 @@ export class Dashboard {
 			setInterval(Dashboard.TakeSnapshot, 24 * 60 * 60 * 1000);
 		}, timeUntilMidnight);
 
-		Log.Info(`Scheduled next dashboard snapshot for ${nextMidnight.toISOString()}`);
+		logger.info(`Scheduled next dashboard snapshot for ${nextMidnight.toISOString()}`);
 	}
 }

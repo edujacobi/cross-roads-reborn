@@ -6,7 +6,7 @@ import { CrColors } from "#bot/utils/colors";
 import { sendPrivateMessage } from "#bot/utils/discordInteractions";
 import { Op } from "sequelize";
 import { Casino } from "./Casino";
-import { Log } from "#shared/log";
+import { Log, logger } from "#shared/log";
 import { getCasinoClassModifier } from "#core/types/Classes";
 import { LotteryDraws } from "#core/database/LotteryDraws";
 import { LotteryTickets } from "#core/database/LotteryTickets";
@@ -226,7 +226,7 @@ export class Lottery {
 		}
 
 		setInterval(Lottery.CheckPendingDraws, 60 * 1_000);
-		Log.Info("Lottery system initialized.");
+		logger.info("Lottery system initialized.");
 	}
 }
 

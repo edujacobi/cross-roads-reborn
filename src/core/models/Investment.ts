@@ -35,6 +35,7 @@ export class Investment {
 	static async ProcessHourlyYield() {
 		if (Investment.IsProcessing) return; // Still running from earlier?
 		Investment.IsProcessing = true;
+		const logs: string[] = [];
 
 		try {
 			const activeInvestments = await UserInvestments.findAll();
@@ -123,7 +124,7 @@ export class Investment {
 							);
 						}
 
-						Log.Info(`Investment of user ${userRow.nickname} (Id: ${currentInvestment.userId}) (${investmentData.Name[0]}) expired. Payout: ${formatMoney(payout, Language.English)}.`);
+						logs.push(`Investment of user ${userRow.nickname} (Id: ${currentInvestment.userId}) (${investmentData.Name[0]}) expired. Payout: ${formatMoney(payout, Language.English)}.`);
 						return;
 					}
 
@@ -176,7 +177,7 @@ export class Investment {
 							lastYieldAt: nowHour,
 						});
 
-						Log.Info(`Investment yield (${hoursToPay}h) paid to ${userRow.nickname} (Id: ${currentInvestment.userId}). Total: ${formatMoney(finalPayout, Language.English)}.`);
+						logs.push(`Investment yield (${hoursToPay}h) paid to ${userRow.nickname} (Id: ${currentInvestment.userId}). Total: ${formatMoney(finalPayout, Language.English)}.`);
 
 						if (userRow.notifyInvestmentYield) {
 							const user = await new User(currentInvestment.userId).GetInfo();
@@ -200,7 +201,7 @@ export class Investment {
 					}
 				}
 				catch (e) {
-					Log.Warning(`Failed to process investment yield for userId: ${currentInvestment.userId}: ${e}`);
+					logs.push(`Failed to process investment yield for userId: ${currentInvestment.userId}: ${e}`);
 				}
 			});
 
@@ -208,6 +209,9 @@ export class Investment {
 		}
 		finally {
 			Investment.IsProcessing = false;
+			if (logs.length > 0) {
+				Log.Info(logs.join("\n"));
+			}
 		}
 	}
 
