@@ -577,8 +577,8 @@ export class Robbery {
 				this.Container.Private
 					.addTexts([
 						`### ${EmoteString.Victory} ${sD.failure}!`,
-						`**${this.Attacker.GetNameWithImage()}** ${sD.robFailed} ${EmoteString.Police}
-	-# ${sD.prisonUntil(this.Attacker.Prison.Time)}!`,
+						`**${this.Attacker.GetNameWithImage()}** ${sD.robFailed} ${EmoteString.Police}`,
+						`-# ${sD.prisonUntil(this.Attacker.Prison.Time)}!`,
 					]);
 
 				const randomFailureMessage = sA.failureMessages[Math.floor(Math.random() * sA.failureMessages.length)];
