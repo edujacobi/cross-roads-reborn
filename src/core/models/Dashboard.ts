@@ -1,10 +1,10 @@
-import { Op } from "sequelize";
-import { Users } from "#core/database/Users";
-import { Gangs } from "#core/database/Gangs";
 import { DashboardStats } from "#core/database/DashboardStats";
-import { Log, logger } from "#shared/log";
-import { ClassId } from "#core/types/Classes";
+import { Gangs } from "#core/database/Gangs";
+import { Users } from "#core/database/Users";
 import { Language } from "#core/models/Language";
+import { ClassId } from "#core/types/Classes";
+import { Log } from "#shared/log";
+import { Op } from "sequelize";
 
 export class Dashboard {
 	static async GetCurrentStats() {
@@ -92,7 +92,7 @@ export class Dashboard {
 	 */
 	static async TakeSnapshot() {
 		try {
-			const stats = await this.GetCurrentStats();
+			const stats = await Dashboard.GetCurrentStats();
 			await stats.save();
 
 			Log.Success("Dashboard snapshot taken successfully.");
@@ -131,6 +131,6 @@ export class Dashboard {
 			setInterval(Dashboard.TakeSnapshot, 24 * 60 * 60 * 1000);
 		}, timeUntilMidnight);
 
-		logger.info(`Scheduled next dashboard snapshot for ${nextMidnight.toISOString()}`);
+		Log.Info(`Scheduled next dashboard snapshot for ${nextMidnight.toISOString()}`);
 	}
 }
