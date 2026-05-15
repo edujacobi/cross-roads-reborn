@@ -1,3 +1,8 @@
+import { BaseCanvasBuilder } from "#bot/ui/builders/BaseCanvasBuilder";
+import { GangImageCanvasBuilder } from "#bot/ui/builders/GangImageCanvasBuilder";
+import { UserImageCanvasBuilder } from "#bot/ui/builders/UserImageCanvasBuilder";
+import { AssetPaths } from "#bot/utils/assetPaths";
+import { formatMoney } from "#bot/utils/ui";
 import { type Gang } from "#core/models/Gang";
 import { getLocaleFromLanguage, Language, type Localization } from "#core/models/Language";
 import { type User } from "#core/models/User";
@@ -7,11 +12,6 @@ import { type InvestmentId, InvestmentList } from "#core/types/Investments";
 import { ItemType } from "#core/types/Items";
 import { differenceInHours, formatDistanceToNow } from "date-fns";
 import { type User as DUser } from "discord.js";
-import { AssetPaths } from "../../utils/assetPaths";
-import { formatMoney } from "../../utils/ui";
-import { BaseCanvasBuilder } from "./BaseCanvasBuilder";
-import { GangImageCanvasBuilder } from "./GangImageCanvasBuilder";
-import { UserImageCanvasBuilder } from "./UserImageCanvasBuilder";
 
 export interface InventoryCanvasBuilderOptions {
 	User: User,
@@ -121,6 +121,20 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 	 * Builds the inventory canvas.
 	 */
 	async GetCanvas() {
+		// Collect all potential local image paths to preload in parallel for performance
+		const pathsToPreload = [
+			...this.Badges.map(b => AssetPaths.getBadgeImage(b.BadgeId)),
+			...this.User.Items.map(item => AssetPaths.getItemImage(item.Id, item.SelectedSkin)),
+			AssetPaths.getSituationImage(this.User.Situation.Id),
+			AssetPaths.getClassImage(this.User.Class),
+			"ui/assets/images/attributes/attack.png",
+			"ui/assets/images/attributes/defense.png",
+			"ui/assets/images/ui_elements/infoDanger.png",
+			"ui/assets/images/ui_elements/infoWarning.png",
+		];
+
+		await BaseCanvasBuilder.PreloadLocalImages(pathsToPreload);
+
 		await this.AddHeader();
 		await this.AddSubHeader();
 		await this.AddItemGrid();

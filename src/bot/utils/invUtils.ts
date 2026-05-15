@@ -27,6 +27,8 @@ export class Inventory {
 	DiscordUser: DiscordUser;
 	Gang: Gang | null = null;
 	IsOnline: boolean = false;
+	Attachments: AttachmentBuilder[] = [];
+	Medias: MediaGalleryBuilder[] = [];
 
 	constructor(interaction: ChatInputCommandInteraction, target: User, discordUser: DiscordUser, language: Language) {
 		this.Interaction = interaction;
@@ -62,7 +64,6 @@ export class Inventory {
 
 		const s = Strings[this.Language];
 
-		await builder.GetCanvas();
 		const buffer = await builder.GenerateImage();
 		const name = `inventory${this.FullSize ? "_full" : ""}.webp`;
 		const media = new MediaGalleryBuilder().addItems(image => image
@@ -80,15 +81,17 @@ export class Inventory {
 
 		const row = new ActionRowBuilder<ButtonBuilder>().setComponents(button);
 
-		return { attachment, row, media };
+		this.Attachments = [attachment];
+		this.Medias = [media];
+		return { row };
 	}
 
 	public async Generate() {
 		const render = await this.Render();
 
 		const response = await replyInteraction(this.Interaction, {
-			components: [render.media, render.row],
-			files: [render.attachment],
+			components: [...this.Medias, render.row],
+			files: this.Attachments,
 			flags: MessageFlags.IsComponentsV2,
 		});
 
@@ -98,18 +101,18 @@ export class Inventory {
 			await deferUpdate(btn);
 
 			this.FullSize = btn.customId === "moreInfo";
-			const { attachment, row, media } = await this.Render();
+			const { row } = await this.Render();
 
 			return replyInteraction(this.Interaction, {
-				components: [media, row],
-				files: [attachment],
+				files: this.Attachments,
+				components: [...this.Medias, row],
 			});
 		});
 
 		collector?.on("end", async () => {
 			await replyInteraction(this.Interaction, {
-				files: [render.attachment],
-				components: [render.media],
+				files: this.Attachments,
+				components: this.Medias,
 			});
 		});
 	}

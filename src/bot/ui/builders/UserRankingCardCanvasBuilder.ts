@@ -1,15 +1,17 @@
-import { Canvas, type Image, loadImage } from "@napi-rs/canvas";
+import { GangColor } from "#bot/utils/colors";
+import { Gang } from "#core/models/Gang";
+import { Language } from "#core/models/Language";
+import type { User } from "#core/models/User";
+import { type AvatarDecorationId, BackgroundDecorationId } from "#core/types/Ids";
+import { type Canvas, type Image, loadImage } from "@napi-rs/canvas";
 import {
 	BackgroundPatternRegistry,
 	CARD_AVATAR_SIZE,
 	CARD_HEIGHT,
 	CARD_WIDTH,
 } from "../patterns/BackgroundPatternRegistry";
+import { BaseCanvasBuilder } from "./BaseCanvasBuilder";
 import { UserImageCanvasBuilder } from "./UserImageCanvasBuilder";
-import { Gang } from "#core/models/Gang";
-import { GangColor } from "#bot/utils/colors";
-import type { User } from "#core/models/User";
-import { type AvatarDecorationId, BackgroundDecorationId } from "#core/types/Ids";
 
 interface CachedDecoratedAvatar {
 	image: Image;
@@ -22,14 +24,15 @@ const DECORATED_CACHE = new Map<string, CachedDecoratedAvatar>();
 
 const TTL_AVATAR = 60 * 60 * 1_000; // 1 hour in ms
 
-export class UserRankingCardCanvasBuilder {
+export class UserRankingCardCanvasBuilder extends BaseCanvasBuilder {
 	User: User;
 	Rank: number;
 	Value: string;
 	AvatarUrl: string | null;
 	Decoration: BackgroundDecorationId = BackgroundDecorationId.Default;
 
-	constructor(user: User, rank: number, value: string, avatarUrl: string | null) {
+	constructor(user: User, rank: number, value: string, avatarUrl: string | null, language: Language = Language.English) {
+		super(CARD_WIDTH, CARD_HEIGHT, language);
 		this.User = user;
 		this.Rank = rank;
 		this.Value = value;
@@ -80,9 +83,8 @@ export class UserRankingCardCanvasBuilder {
 		return this;
 	}
 
-	async GenerateImage(): Promise<Buffer> {
-		const canvas = new Canvas(CARD_WIDTH, CARD_HEIGHT);
-		const ctx = canvas.getContext("2d");
+	async GetCanvas(): Promise<Canvas> {
+		const ctx = this.Ctx;
 
 		const radius = CARD_HEIGHT / 2;
 		let gangName = "";
@@ -183,7 +185,7 @@ export class UserRankingCardCanvasBuilder {
 		const avatarY = (CARD_HEIGHT - CARD_AVATAR_SIZE) / 2 + 7; // Perfectly centered vertically
 		ctx.drawImage(decoratedAvatar, avatarX, avatarY, CARD_AVATAR_SIZE, CARD_AVATAR_SIZE);
 
-		return canvas.encode("webp");
+		return this.Canvas;
 	}
 }
 

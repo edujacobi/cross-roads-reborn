@@ -1,8 +1,8 @@
 import { type Language } from "#core/models/Language";
-import { Canvas, type SKRSContext2D, loadImage, type Image } from "@napi-rs/canvas";
-import path from "node:path";
-import fs from "node:fs";
 import { logger } from "#shared/log";
+import { Canvas, loadImage, type Image, type SKRSContext2D } from "@napi-rs/canvas";
+import fs from "node:fs";
+import path from "node:path";
 
 export class BaseCanvasBuilder {
 	Width: number;
@@ -11,6 +11,7 @@ export class BaseCanvasBuilder {
 	Ctx: SKRSContext2D;
 	Padding = 8;
 	Language: Language;
+	protected IsBuilt = false;
 
 	// Centralized cache for decoded Image objects
 	private static AssetCache = new Map<string, Image>();
@@ -25,11 +26,59 @@ export class BaseCanvasBuilder {
 	}
 
 	/**
+	 * Builds the canvas content. Subclasses should override this.
+	 * @returns The built canvas.
+	 */
+	async GetCanvas(): Promise<Canvas> {
+		return this.Canvas;
+	}
+
+	/**
+	 * Internal method to ensure the canvas is built only once.
+	 */
+	protected async build(): Promise<Canvas> {
+		if (this.IsBuilt) return this.Canvas;
+		const canvas = await this.GetCanvas();
+		this.IsBuilt = true;
+		return canvas;
+	}
+
+	/**
 	 * Generates the image buffer.
+	 * @param quality WebP quality (0-100), defaults to 80 for optimal balance.
 	 * @returns The image buffer.
 	 */
-	async GenerateImage(): Promise<Buffer> {
-		return this.Canvas.encode("webp");
+	async GenerateImage(quality = 80): Promise<Buffer> {
+		const canvas = await this.build();
+		return canvas.encode("webp", quality);
+	}
+
+	/**
+	 * Preloads multiple local images into the cache in parallel.
+	 * @param imagePaths Array of paths relative to src/bot/
+	 */
+	static async PreloadLocalImages(imagePaths: (string | null | undefined)[]) {
+		const paths = imagePaths.filter((p): p is string => !!p);
+		const uniquePaths = [...new Set(paths)];
+
+		await Promise.all(uniquePaths.map(async (imagePath) => {
+			const fullPath = imagePath.startsWith("src/bot")
+				? path.join(process.cwd(), imagePath)
+				: path.join(process.cwd(), "src/bot", imagePath);
+
+			if (BaseCanvasBuilder.AssetCache.has(fullPath)) return;
+
+			try {
+				if (fs.existsSync(fullPath)) {
+					const buffer = fs.readFileSync(fullPath);
+					const image = await loadImage(buffer);
+					BaseCanvasBuilder.AssetCache.set(fullPath, image);
+				}
+			}
+			catch (error) {
+				logger.error(`[Canvas] Failed to preload asset: ${imagePath}`, error);
+			}
+		}));
 	}
 
 	/**

@@ -1,27 +1,30 @@
+import { Language } from "#core/models/Language";
 import { User } from "#core/models/User";
+import type { UserBadge } from "#core/models/UserBadge";
+import { ClassList } from "#core/types/Classes";
+import { AvatarDecorationId } from "#core/types/Ids";
+import { logger } from "#shared/log";
 import { Canvas, type Image, loadImage } from "@napi-rs/canvas";
+import fs from "node:fs";
 import {
 	AVATAR_BORDER_WIDTH,
 	AVATAR_CANVAS_SIZE,
 	AVATAR_RADIUS,
 	AvatarDecorationRegistry,
 } from "../patterns/AvatarDecorationRegistry";
-import { logger } from "#shared/log";
-import { ClassList } from "#core/types/Classes";
-import fs from "node:fs";
-import type { UserBadge } from "#core/models/UserBadge";
-import { AvatarDecorationId } from "#core/types/Ids";
+import { BaseCanvasBuilder } from "./BaseCanvasBuilder";
 import { DEFAULT_GANG_IMAGE } from "./GangImageCanvasBuilder";
 
 const AVATAR_CENTER = { x: 284, y: 228 }; // Center position of the avatar on the canvas - Control padding changing center
 
-export class UserImageCanvasBuilder {
+export class UserImageCanvasBuilder extends BaseCanvasBuilder {
 	User: User;
 	AvatarUrl: string;
 	Badges: UserBadge[] | null = null;
 	Decoration: AvatarDecorationId = AvatarDecorationId.Default;
 
-	constructor(user: User, avatarUrl: string | null) {
+	constructor(user: User, avatarUrl: string | null, language: Language = Language.English) {
+		super(AVATAR_CANVAS_SIZE, AVATAR_CANVAS_SIZE, language);
 		this.User = user;
 		this.AvatarUrl = avatarUrl ?? ClassList[this.User.Class].Image.Url;
 	}
@@ -39,23 +42,23 @@ export class UserImageCanvasBuilder {
 		return this;
 	}
 
-	// Cache for fully rendered decorated avatars
-	private static AvatarCache = new Map<string, Canvas>();
-
-	async GenerateImage() {
-		const canvas = await this.GetCanvas();
-		return canvas.encode("webp");
-	}
+	// Cache for fully rendered decorated avatars as Buffers
+	private static AvatarCache = new Map<string, Buffer>();
 
 	async GetCanvas(): Promise<Canvas> {
 		// Cache Key: Unique combination of avatar source and aesthetic choices
 		const cacheKey = `${this.AvatarUrl}_${this.Decoration}`;
-		const cached = UserImageCanvasBuilder.AvatarCache.get(cacheKey);
-		if (cached) return cached;
+		const cachedBuffer = UserImageCanvasBuilder.AvatarCache.get(cacheKey);
 
-		const canvas = new Canvas(AVATAR_CANVAS_SIZE, AVATAR_CANVAS_SIZE);
-		const ctx = canvas.getContext("2d");
+		if (cachedBuffer) {
+			const cachedImage = await loadImage(cachedBuffer);
+			this.Ctx.drawImage(cachedImage, 0, 0);
+			return this.Canvas;
+		}
 
+		const ctx = this.Ctx;
+
+		// 1. Create a temporary layer for the avatar and its decoration
 		const userCanvas = new Canvas(AVATAR_CANVAS_SIZE, AVATAR_CANVAS_SIZE);
 		const userCtx = userCanvas.getContext("2d");
 
@@ -74,6 +77,7 @@ export class UserImageCanvasBuilder {
 
 		const imageDrawSize = (AVATAR_RADIUS - AVATAR_BORDER_WIDTH / 2) * 2 + 4;
 
+		// 2. Clip and draw the user's avatar
 		userCtx.save();
 		userCtx.beginPath();
 		userCtx.arc(LAYER_CENTER_X, LAYER_CENTER_Y, AVATAR_RADIUS - AVATAR_BORDER_WIDTH / 2, 0, Math.PI * 2);
@@ -89,18 +93,20 @@ export class UserImageCanvasBuilder {
 		);
 		userCtx.restore();
 
+		// 3. Draw the decoration frame on top
 		const frame = AvatarDecorationRegistry.get(this.Decoration);
 		userCtx.drawImage(frame, 0, 0, AVATAR_CANVAS_SIZE, AVATAR_CANVAS_SIZE);
 
+		// 4. Draw the layer onto our main canvas
 		const offsetX = AVATAR_CENTER.x - LAYER_CENTER_X;
 		const offsetY = AVATAR_CENTER.y - LAYER_CENTER_Y;
 
 		ctx.drawImage(userCanvas, offsetX, offsetY);
 
-		// Store in cache
-		UserImageCanvasBuilder.AvatarCache.set(cacheKey, canvas);
+		const resultBuffer = await this.Canvas.encode("webp", 80);
+		UserImageCanvasBuilder.AvatarCache.set(cacheKey, resultBuffer);
 
-		return canvas;
+		return this.Canvas;
 	}
 }
 

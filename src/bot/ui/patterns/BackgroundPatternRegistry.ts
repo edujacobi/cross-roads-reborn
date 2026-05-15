@@ -89,7 +89,7 @@ export class BackgroundPatternRegistry {
 			}
 
 			// Encode and store as Image for performance
-			const buffer = canvas.toBuffer("image/webp");
+			const buffer = canvas.toBuffer("image/webp", 80);
 			const image = await loadImage(buffer);
 			this.patterns.set(bgId, image);
 		}

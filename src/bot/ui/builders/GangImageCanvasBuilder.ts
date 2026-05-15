@@ -1,42 +1,35 @@
-import { User } from "#core/models/User";
+import { GangColor } from "#bot/utils/colors";
+import { convertHexNumberToString, hexToRGB } from "#bot/utils/ui";
 import type { Gang } from "#core/models/Gang";
 import { Language, type Localization } from "#core/models/Language";
-import { Canvas, type Image, loadImage, type SKRSContext2D } from "@napi-rs/canvas";
+import { User } from "#core/models/User";
 import { logger } from "#shared/log";
-import { convertHexNumberToString, hexToRGB } from "#bot/utils/ui";
-import { GangColor } from "#bot/utils/colors";
+import { type Canvas, type Image, loadImage, type SKRSContext2D } from "@napi-rs/canvas";
 import fs from "node:fs";
+import { BaseCanvasBuilder } from "./BaseCanvasBuilder";
 
 export const DEFAULT_GANG_IMAGE = "https://i.imgur.com/xOUjOlZ.png";
 
-export class GangImageCanvasBuilder {
+export class GangImageCanvasBuilder extends BaseCanvasBuilder {
 	User: User;
 	Gang: Gang;
-	Language: Language;
 	IsFullSize: boolean;
-	Width: number = 1184;
-	Height: number;
 
 	constructor(user: User, gang: Gang, language: Language, isFullSize: boolean = false) {
+		const width = 1184;
+		const height = isFullSize ? 64 : 32;
+		super(width, height, language);
 		this.User = user;
 		this.Gang = gang;
-		this.Language = language;
 		this.IsFullSize = isFullSize;
-		this.Height = isFullSize ? 64 : 32;
 	}
 
 	private static GangImageCache = new Map<string, Image>();
 
-	async GenerateImage() {
-		const canvas = await this.GetCanvas();
-		return canvas.encode("webp");
-	}
-
 	async GetCanvas(): Promise<Canvas> {
-		const canvas = new Canvas(this.Width, this.Height);
-		const ctx = canvas.getContext("2d");
+		const ctx = this.Ctx;
 		await this.DrawGangInfo(ctx, 0, 0);
-		return canvas;
+		return this.Canvas;
 	}
 
 	async DrawGangInfo(ctx: SKRSContext2D, x: number, y: number): Promise<void> {
