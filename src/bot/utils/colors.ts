@@ -166,7 +166,7 @@ export const GangColor: IGangColorList = {
 		},
 		Emote: {
 			Id: "1426278280717271081",
-			String: "<:ColorPink:1426275360433242192>",
+			String: "<:ColorPink:1426278280717271081>",
 		},
 		Special: false,
 	},
