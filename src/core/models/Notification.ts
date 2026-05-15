@@ -67,11 +67,12 @@ export class Notification {
 
 		}
 		catch (err) {
-			Log.Warning(`Something went wrong with adding Notification Timer for UserId${this.UserId} Type ${NotificationMapper[this.Type]} (Id: ${this.Type}).`);
+			Log.Warning(`Something went wrong with adding Notification Timer for UserId ${this.UserId} Type ${NotificationMapper[this.Type]} (Id: ${this.Type}).`);
 		}
 	}
 
 	static async Daily(user: User) {
+		await Notification.Dismiss(user.Id, NotificationType.Daily);
 		const notification = new Notification();
 		notification.UserId = user.Id;
 		notification.Type = NotificationType.Daily;
@@ -83,6 +84,7 @@ export class Notification {
 	}
 
 	static async Job(user: User) {
+		await Notification.Dismiss(user.Id, NotificationType.Job);
 		const notification = new Notification();
 		notification.UserId = user.Id;
 		notification.Type = NotificationType.Job;
@@ -94,6 +96,7 @@ export class Notification {
 	}
 
 	static async RobAgain(user: User) {
+		await Notification.Dismiss(user.Id, NotificationType.RobAgain);
 		const notification = new Notification();
 		notification.UserId = user.Id;
 		notification.Type = NotificationType.RobAgain;
@@ -102,6 +105,7 @@ export class Notification {
 	}
 
 	static async Free(user: User) {
+		await Notification.Dismiss(user.Id, NotificationType.Free);
 		const notification = new Notification();
 		notification.UserId = user.Id;
 		notification.Type = NotificationType.Free;
@@ -110,6 +114,7 @@ export class Notification {
 	}
 
 	static async Hospital(user: User) {
+		await Notification.Dismiss(user.Id, NotificationType.Hospital);
 		const notification = new Notification();
 		notification.UserId = user.Id;
 		notification.Type = NotificationType.Hospital;
@@ -118,6 +123,7 @@ export class Notification {
 	}
 
 	static async AlmsGive(user: User) {
+		await Notification.Dismiss(user.Id, NotificationType.AlmsGive);
 		const notification = new Notification();
 		notification.UserId = user.Id;
 		notification.Type = NotificationType.AlmsGive;
@@ -126,6 +132,7 @@ export class Notification {
 	}
 
 	static async AlmsReceive(user: User) {
+		await Notification.Dismiss(user.Id, NotificationType.AlmsReceive);
 		const notification = new Notification();
 		notification.UserId = user.Id;
 		notification.Type = NotificationType.AlmsReceive;
@@ -134,6 +141,7 @@ export class Notification {
 	}
 
 	static async Scavenge(user: User) {
+		await Notification.Dismiss(user.Id, NotificationType.Scavenge);
 		const notification = new Notification();
 		notification.UserId = user.Id;
 		notification.Type = NotificationType.Scavenge;
@@ -142,6 +150,7 @@ export class Notification {
 	}
 
 	static async BeatAgain(user: User) {
+		await Notification.Dismiss(user.Id, NotificationType.BeatAgain);
 		const notification = new Notification();
 		notification.UserId = user.Id;
 		notification.Type = NotificationType.BeatAgain;
@@ -150,6 +159,7 @@ export class Notification {
 	}
 
 	static async GangDepositAgain(user: User, nextDeposit: Date) {
+		await Notification.Dismiss(user.Id, NotificationType.GangDepositAgain);
 		const notification = new Notification();
 		notification.UserId = user.Id;
 		notification.Type = NotificationType.GangDepositAgain;
@@ -164,6 +174,7 @@ export class Notification {
 			return;
 		}
 
+		await Notification.Dismiss(user.Id, NotificationType.Vote);
 		const notification = new Notification();
 		notification.UserId = user.Id;
 		notification.Type = NotificationType.Vote;
@@ -246,24 +257,13 @@ export class Notification {
 
 	static async Dismiss(userId: string, type: NotificationType) {
 		try {
-			const notification = await Notifications.findOne({
+			await Notifications.destroy({
 				where: {
 					userId,
 					type,
 					notified: false,
 				},
 			});
-
-			if (!notification) {
-				return;
-			}
-
-			const notificationTimer = new Notification();
-
-			notificationTimer.Id = notification.id;
-			await notificationTimer.SetAsNotified();
-
-			Log.Info(`Notification Timer (Id: ${notification.id}) Type ${NotificationMapper[notification.type]} (Id: ${notification.type}) dismissed.`);
 		}
 		catch (err) {
 			Log.Warning(`Something went wrong with dismissing Notification Type ${NotificationMapper[type]} (Id: ${type}) of userId ${userId}.`);
@@ -290,23 +290,26 @@ export class Notification {
 			// Mark all fetched notifications as notified immediately to prevent duplication
 			// in case of overlapping intervals or fast restarts.
 			const ids = list.map(n => n.Id);
-			await Notifications.update({
+			const [updatedCount] = await Notifications.update({
 				notified: true,
 			}, {
 				where: { id: ids },
 			});
 
+			if (updatedCount === 0) {
+				return;
+			}
+
 			for (const notification of list) {
-				const user = await new User(notification.UserId).GetInfo();
-
-				if (!user) {
-					Log.Warning(`Cannot send private message if the user was deleted (UserId: ${notification.UserId}). Notification (Id: ${notification.Id}) marked as notified.`);
-					continue;
-				}
-
-				const s = Strings[user.Language];
-
 				try {
+					const user = await new User(notification.UserId).GetInfo();
+
+					if (!user) {
+						Log.Warning(`Cannot send private message if the user was deleted (UserId: ${notification.UserId}). Notification (Id: ${notification.Id}) marked as notified.`);
+						continue;
+					}
+
+					const s = Strings[user.Language];
 
 					if (notification.Type == NotificationType.Daily) {
 						await sendPrivateMessage(user.Id, s.daily);
@@ -369,6 +372,9 @@ export class Notification {
 					}
 
 					Log.Info(`Notification Timer (Id: ${notification.Id}) Type ${NotificationMapper[notification.Type]} (Id: ${notification.Type}) to user ${notification.UserId} notified.`);
+
+					// Delete processed notification to keep DB clean
+					await Notifications.destroy({ where: { id: notification.Id } });
 				}
 				catch (err) {
 					logger.error(`Error processing notification ${notification.Id} for user ${notification.UserId}:`, err);
