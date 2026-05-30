@@ -1,5 +1,5 @@
 import { DashboardCanvasBuilder } from "#bot/ui/builders/DashboardCanvasBuilder";
-import { replyInteraction } from "#bot/utils/discordInteractions";
+import { deferReply, replyInteraction } from "#bot/utils/discordInteractions";
 import { Dashboard } from "#core/models/Dashboard";
 import { AttachmentBuilder, type ChatInputCommandInteraction, Locale, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
 
@@ -11,7 +11,7 @@ module.exports = {
 		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
 	async execute(interaction: ChatInputCommandInteraction) {
-		await interaction.deferReply();
+		await deferReply(interaction);
 
 		const stats = await Dashboard.GetCurrentStats();
 		const history = await Dashboard.GetLast30Days();
