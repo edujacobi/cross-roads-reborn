@@ -389,7 +389,7 @@ module.exports = {
 					[Locale.PortugueseBR]: "Quantidade para depositar",
 					[Locale.SpanishES]: "Cantidad para depositar",
 				})
-				.setRequired(true)
+				.setRequired(false)
 				.setMinValue(1),
 			),
 		)
@@ -1987,7 +1987,14 @@ module.exports = {
 				return warn(s.notInGang);
 			}
 
-			const amount = interaction.options.getInteger("amount", true);
+			let amount = interaction.options.getInteger("amount");
+			if (amount === null) {
+				amount = Math.min(user.Money, Gang.MAX_DEPOSIT_PER_DAY * gang.Level);
+			}
+
+			if (amount <= 0) {
+				return warn(s.notEnoughMoneyDeposit(formatMoney(1, language)));
+			}
 
 			const { canDeposit, text } = await gang.CanDeposit(user, amount);
 
@@ -1995,17 +2002,70 @@ module.exports = {
 				return warn(`${text} ${EmoteString.Gang}`);
 			}
 
-			await gang.Deposit(user, amount);
+			const buttonConfirm = new ButtonBuilder()
+				.setCustomId("confirm")
+				.setLabel(s.confirm)
+				.setStyle(ButtonStyle.Success);
 
+			const row = new ActionRowBuilder<ButtonBuilder>()
+				.addComponents([buttonConfirm]);
 
 			const container = defaultComponent({
-				color: GangColor[gang.Color].Color as ColorResolvable,
-				description: s.depositSuccess(formatMoney(amount, language), gang.Name),
 				user,
-				footer: formatMoney(user.Money, language),
+				color: GangColor[gang.Color].Color as ColorResolvable,
+				description: s.confirmDeposit(formatMoney(amount, language), gang.Name),
+				buttons: row,
 			});
 
-			return replyWithContainer(interaction, container);
+			const response = await replyWithContainer(interaction, container);
+
+			const collector = createButtonCollector(interaction, response, { maxClicks: 1 });
+
+			let responded = false;
+
+			collector?.on("collect", async btn => {
+				responded = true;
+				await deferUpdate(btn);
+
+				const currentGang = await Gang.GetByUserId(user.Id);
+				if (!currentGang) {
+					return warn(s.notInGang);
+				}
+
+				await user.GetInfo();
+
+				const { canDeposit: canDepositAgain, text: failText } = await currentGang.CanDeposit(user, amount);
+				if (!canDepositAgain) {
+					return warn(`${failText} ${EmoteString.Gang}`);
+				}
+
+				if (btn.customId === "confirm") {
+					await currentGang.Deposit(user, amount);
+
+					const successContainer = defaultComponent({
+						color: GangColor[currentGang.Color].Color as ColorResolvable,
+						description: s.depositSuccess(formatMoney(amount, language), currentGang.Name),
+						user,
+						footer: formatMoney(user.Money, language),
+					});
+
+					return replyWithContainer(interaction, successContainer);
+				}
+			});
+
+			collector?.on("end", async () => {
+				if (responded) return;
+
+				const endContainer = defaultComponent({
+					color: GangColor[gang.Color].Color as ColorResolvable,
+					description: s.noResponseDeposit(gang.Name),
+					user,
+				});
+
+				await disableButtons(interaction, endContainer);
+			});
+
+			return;
 		}
 
 		case CommandOption.CreateRole: {
@@ -2654,6 +2714,9 @@ const Strings = {
 		back: `Back`,
 		baseBought: (baseName: string, gangName: string) => `You bought the base **${baseName}** for the gang **${gangName}** ${EmoteString.Gang}`,
 		depositSuccess: (amount: string, gangName: string) => `You deposited **${amount}** into the gang **${gangName}** ${EmoteString.Gang}`,
+		confirmDeposit: (amount: string, gangName: string) => `Are you sure you want to deposit **${amount}** into the gang **${gangName}**? ${EmoteString.Gang}`,
+		noResponseDeposit: (gangName: string) => `You took too long to respond and did not deposit into the gang **${gangName}** ${EmoteString.Gang}`,
+		notEnoughMoneyDeposit: (amount: string) => `You don't have **${amount}** to deposit`,
 		deposits: "Deposits",
 		canDeposit: "Can deposit",
 		canDepositAgain: "Can deposit again",
@@ -2833,6 +2896,9 @@ const Strings = {
 		back: `Voltar`,
 		baseBought: (baseName: string, gangName: string) => `Você comprou a base **${baseName}** para a gangue **${gangName}** ${EmoteString.Gang}`,
 		depositSuccess: (amount: string, gangName: string) => `Você depositou **${amount}** na gangue **${gangName}** ${EmoteString.Gang}`,
+		confirmDeposit: (amount: string, gangName: string) => `Tem certeza de que deseja depositar **${amount}** na gangue **${gangName}**? ${EmoteString.Gang}`,
+		noResponseDeposit: (gangName: string) => `Você demorou para responder e não depositou na gangue **${gangName}** ${EmoteString.Gang}`,
+		notEnoughMoneyDeposit: (amount: string) => `Você não tem **${amount}** para depositar`,
 		deposits: "Depósitos",
 		canDeposit: "Pode depositar",
 		canDepositAgain: "Pode depositar novamente",
@@ -3011,6 +3077,9 @@ const Strings = {
 		back: `Volver`,
 		baseBought: (baseName: string, gangName: string) => `Compraste la base **${baseName}** para la cuadrilla **${gangName}** ${EmoteString.Gang}`,
 		depositSuccess: (amount: string, gangName: string) => `Depositaste **${amount}** en la cuadrilla **${gangName}** ${EmoteString.Gang}`,
+		confirmDeposit: (amount: string, gangName: string) => `¿Estás seguro de que deseas depositar **${amount}** en la cuadrilla **${gangName}**? ${EmoteString.Gang}`,
+		noResponseDeposit: (gangName: string) => `Te demoraste en responder y no depositaste en la cuadrilla **${gangName}** ${EmoteString.Gang}`,
+		notEnoughMoneyDeposit: (amount: string) => `No tienes **${amount}** para depositar`,
 		deposits: "Depósitos",
 		canDeposit: "Puede depositar",
 		canDepositAgain: "Puede depositar nuevamente",
