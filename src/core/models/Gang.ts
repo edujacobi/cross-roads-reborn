@@ -523,7 +523,15 @@ export class Gang {
 				}
 			}
 
-			this.Members.sort((a, b) => b.PermissionCount - a.PermissionCount);
+			this.Members.sort((a, b) => {
+				const aIsLeader = a.UserId === this.LeaderId;
+				const bIsLeader = b.UserId === this.LeaderId;
+
+				if (aIsLeader && !bIsLeader) return -1;
+				if (!aIsLeader && bIsLeader) return 1;
+
+				return b.PermissionCount - a.PermissionCount;
+			});
 		}
 		catch (err) {
 			Log.Warning(`Failed to load members for gang ${this.Name} (Id: ${this.Id}): ${err}`);
