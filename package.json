@@ -18,6 +18,7 @@
     "clear-commands-dev": "set NODE_ENV=DEV&& npx tsx src/bot/clear-commands.ts",
     "lint": "npx eslint . --ext .ts",
     "lint-fix": "eslint . --ext .ts --fix",
+    "index": "npx tsx scripts/index-codebase.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"

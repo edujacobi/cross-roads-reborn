@@ -10,6 +10,8 @@ config.json
 commands/**/*.js
 events/**/*.js
 *.js
+codebase_graph.*
+codebase_index.*
 
 # User-specific stuff
 .idea/**/workspace.xml

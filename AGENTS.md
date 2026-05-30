@@ -155,3 +155,15 @@ Always focus on both readability and performance. Code can be verbose if it impr
 
 ### New Line
 **Always** use CRLF as End of Line Sequence in files.
+
+## Codebase Index & Knowledge Graph
+
+To avoid burning tokens through recursive file-by-file searches (like `grep`/`glob`/`read`), this project maintains a local codebase index:
+* **JSON Graph**: [codebase_graph.json](file:///c:/Users/Pichau/Documents/GitHub/cross-roads-reborn/codebase_graph.json) contains a structured representation of the codebase's files, classes, methods, functions, calls, and imports.
+* **Architecture Map**: [codebase_index.md](file:///c:/Users/Pichau/Documents/GitHub/cross-roads-reborn/codebase_index.md) provides a human-readable list of bot commands, model methods, and call paths.
+
+Before performing extensive file searches or tracing call chains manually, **ALWAYS** check `codebase_graph.json` or `codebase_index.md` first.
+To regenerate the index files, run:
+```powershell
+npm run index
+```
