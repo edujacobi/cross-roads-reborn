@@ -1,4 +1,4 @@
-import type { User } from "./User";
+import { type AvailabilityReason, type User } from "./User";
 import { Log } from "#shared/log";
 import {
 	ButtonBuilder,
@@ -23,7 +23,7 @@ import { RobHistories } from "#core/database/RobHistories";
 import { Users } from "#core/database/Users";
 import { ClassId, ClassList } from "#core/types/Classes";
 import { type JobId, JobList } from "#core/types/Jobs";
-import { LocationList } from "#core/types/Locations";
+import { type LocationId, LocationList } from "#core/types/Locations";
 import { type ScavengeId, ScavengeList } from "#core/types/Scavenge";
 import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
 import { ItemId } from "#core/types/Ids";
@@ -96,154 +96,133 @@ export class BeatUp {
 			canBeat = false;
 		}
 
-		if (this.Attacker.IsScavenging()) {
-			message = s.scavengingA(this.Attacker.Scavenge.IsScavengingId!);
-			canBeat = false;
-		}
-
-		if (this.Defender.IsScavenging()) {
-			message = `**${this.Defender.GetNameWithImage()}** ${s.scavengingD(this.Defender.Scavenge.IsScavengingId!)}`;
-			canBeat = false;
-		}
-
-		if (this.Attacker.IsWorking()) {
-			message = s.inJobA(this.Attacker.Job.EndsIn, this.Attacker.Job.Id!);
-			canBeat = false;
-		}
-
-		if (this.Defender.IsWorking()) {
-			message = `**${this.Defender.GetNameWithImage()}** ${s.inJobD(this.Defender.Job.EndsIn, this.Defender.Job.Id!)}`;
-			canBeat = false;
-		}
-
-		if (this.Attacker.IsInPrison() && !this.Defender.IsInPrison()) {
-			message = s.inPrison(this.Attacker.Prison.Time);
-			canBeat = false;
-		}
-
-		if (this.Defender.IsInPrison() && !this.Attacker.IsInPrison()) {
-			message = `**${this.Defender.GetNameWithImage()}** ${s.inPrisonDefender(this.Defender.Prison.Time)}`;
-			canBeat = false;
-		}
-
-		if (this.Attacker.IsWanted()) {
-			message = s.isWanted(this.Attacker.Wanted.Time);
-			canBeat = false;
-		}
-
-		if (this.Attacker.IsInHospital()) {
-			message = s.isInHospital(this.Attacker.Hospital.Time);
-			canBeat = false;
-		}
-
-		if (this.Defender.IsInHospital()) {
-			message = s.isInHospitalDefender(this.Defender.GetNameWithImage(), this.Defender.Hospital.Time);
-			canBeat = false;
-		}
-
-		if (this.Attacker.IsInCasinoGame()) {
-			message = s.casinoAttacker;
-			canBeat = false;
-		}
-
-		if (this.Defender.IsInCasinoGame()) {
-			message = `${this.Defender.GetNameWithImage()} ${s.casinoDefender}`;
-			canBeat = false;
-		}
-
 		if (this.Attacker.BeatUp.Time > new Date()) {
 			message = s.isWaitingBeat(this.Attacker.BeatUp.Time);
 			canBeat = false;
 		}
 
-		if (this.Attacker.BeatUp.IsBeatingId) {
-			const user = await Users.findByPk(this.Attacker.BeatUp.IsBeatingId, { attributes: ["class", "nickname"] });
-			message = globalStrings[this.Attacker.Language].attackerIsBeatingId(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname!}`);
-			canBeat = false;
+		if (canBeat) {
+			const bothInPrison = this.Attacker.IsInPrison() && this.Defender.IsInPrison();
+			const attackerIgnore: AvailabilityReason[] = bothInPrison ? ["prison"] : [];
+			const attackerCheck = this.Attacker.CheckAvailability(attackerIgnore);
+			if (!attackerCheck.available) {
+				canBeat = false;
+				switch (attackerCheck.reason) {
+				case "scavenging":
+					message = s.scavengingA(attackerCheck.referenceId as ScavengeId);
+					break;
+				case "working":
+					message = s.inJobA(attackerCheck.time!, attackerCheck.referenceId as JobId);
+					break;
+				case "prison":
+					message = s.inPrison(attackerCheck.time!);
+					break;
+				case "wanted":
+					message = s.isWanted(attackerCheck.time!);
+					break;
+				case "hospital":
+					message = s.isInHospital(attackerCheck.time!);
+					break;
+				case "escaping":
+					message = s.isEscapingA;
+					break;
+				case "casino":
+					message = s.casinoAttacker;
+					break;
+				case "defendingInvestment":
+					message = globalStrings[this.Attacker.Language].attackerIsDefendingInvestment;
+					break;
+				case "gangAction":
+					message = globalStrings[this.Attacker.Language].attackerIsParticipatingInGangAction;
+					break;
+				case "beating": {
+					const user = await Users.findByPk(attackerCheck.targetId!, { attributes: ["class", "nickname"] });
+					message = globalStrings[this.Attacker.Language].attackerIsBeatingId(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname!}`);
+					break;
+				}
+				case "beingBeatUp": {
+					const user = await Users.findByPk(attackerCheck.targetId!, { attributes: ["class", "nickname"] });
+					message = globalStrings[this.Attacker.Language].attackerIsBeingBeatedById(`${ClassList[user!.class!].Image.Emote.String} ${user!.nickname!}`);
+					break;
+				}
+				case "robbing": {
+					const user = await Users.findByPk(attackerCheck.targetId!, { attributes: ["class", "nickname"] });
+					message = globalStrings[this.Attacker.Language].attackerIsRobbingId(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname!}`);
+					break;
+				}
+				case "beingRobbed": {
+					const user = await Users.findByPk(attackerCheck.targetId!, { attributes: ["class", "nickname"] });
+					message = globalStrings[this.Attacker.Language].attackerIsBeingRobbedById(`${ClassList[user!.class!].Image.Emote.String} ${user!.nickname!}`);
+					break;
+				}
+				case "robbingLocation": {
+					const location = LocationList[attackerCheck.referenceId as LocationId];
+					message = globalStrings[this.Attacker.Language].attackerIsRobbingId(location.Name[this.Attacker.Language]);
+					break;
+				}
+				}
+			}
 		}
 
-		if (this.Attacker.BeatUp.IsBeingBeatUpById) {
-			const user = await Users.findByPk(this.Attacker.BeatUp.IsBeingBeatUpById, { attributes: ["class", "nickname"] });
-			message = globalStrings[this.Attacker.Language].attackerIsBeingBeatedById(`${ClassList[user!.class!].Image.Emote.String} ${user!.nickname!}`);
-			canBeat = false;
-		}
-
-		if (this.Defender.BeatUp.IsBeatingId) {
-			const user = await Users.findByPk(this.Defender.BeatUp.IsBeatingId, { attributes: ["class", "nickname"] });
-			message = `**${this.Defender.GetNameWithImage()}** ${globalStrings[this.Attacker.Language].defenderIsBeatingId(`${ClassList[user!.class!].Image.Emote.String} ${user!.nickname!}`)}`;
-			canBeat = false;
-		}
-
-		if (this.Defender.BeatUp.IsBeingBeatUpById) {
-			const user = await Users.findByPk(this.Defender.BeatUp.IsBeingBeatUpById, { attributes: ["class", "nickname"] });
-			message = `**${this.Defender.GetNameWithImage()}** ${globalStrings[this.Attacker.Language].defenderIsBeingBeatedById(`${ClassList[user!.class!].Image.Emote.String} ${user!.nickname!}`)}`;
-			canBeat = false;
-		}
-
-		if (this.Attacker.Robbery.IsRobbingId) {
-			const user = await Users.findByPk(this.Attacker.Robbery.IsRobbingId, { attributes: ["class", "nickname"] });
-			message = globalStrings[this.Attacker.Language].attackerIsRobbingId(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname!}`);
-			canBeat = false;
-		}
-
-		if (this.Attacker.Robbery.IsBeingRobbedById) {
-			const user = await Users.findByPk(this.Attacker.Robbery.IsBeingRobbedById, { attributes: ["class", "nickname"] });
-			message = globalStrings[this.Attacker.Language].attackerIsBeingRobbedById(`${ClassList[user!.class!].Image.Emote.String} ${user!.nickname!}`);
-			canBeat = false;
-		}
-
-		if (this.Defender.Robbery.IsRobbingId) {
-			const user = await Users.findByPk(this.Defender.Robbery.IsRobbingId, { attributes: ["class", "nickname"] });
-			message = `**${this.Defender.GetNameWithImage()}** ${globalStrings[this.Attacker.Language].defenderIsRobbingId(`${ClassList[user!.class!].Image.Emote.String} ${user!.nickname!}`)}`;
-			canBeat = false;
-		}
-
-		if (this.Defender.Robbery.IsBeingRobbedById) {
-			const user = await Users.findByPk(this.Defender.Robbery.IsBeingRobbedById, { attributes: ["class", "nickname"] });
-			message = `**${this.Defender.GetNameWithImage()}** ${globalStrings[this.Attacker.Language].defenderIsBeingRobbedById(`${ClassList[user!.class!].Image.Emote.String} ${user!.nickname!}`)}`;
-			canBeat = false;
-		}
-
-		if (this.Attacker.Robbery.IsRobbingLocationId !== null) {
-			const location = LocationList[this.Attacker.Robbery.IsRobbingLocationId];
-			message = globalStrings[this.Attacker.Language].attackerIsRobbingId(location.Name[this.Attacker.Language]);
-			canBeat = false;
-		}
-
-		if (this.Defender.Robbery.IsRobbingLocationId !== null) {
-			const location = LocationList[this.Defender.Robbery.IsRobbingLocationId];
-			message = `**${this.Defender.GetNameWithImage()}** ${globalStrings[this.Attacker.Language].defenderIsRobbingId(location.Name[this.Attacker.Language])}`;
-			canBeat = false;
-		}
-
-		if (this.Attacker.IsDefendingInvestment()) {
-			message = globalStrings[this.Attacker.Language].attackerIsDefendingInvestment;
-			canBeat = false;
-		}
-
-		if (this.Attacker.IsParticipatingInGangAction()) {
-			message = globalStrings[this.Attacker.Language].attackerIsParticipatingInGangAction;
-			canBeat = false;
-		}
-
-		if (this.Defender.IsDefendingInvestment()) {
-			message = globalStrings[this.Attacker.Language].defenderIsDefendingInvestment(this.Defender.GetNameWithImage());
-			canBeat = false;
-		}
-
-		if (this.Defender.IsParticipatingInGangAction()) {
-			message = globalStrings[this.Attacker.Language].defenderIsParticipatingInGangAction(this.Defender.GetNameWithImage());
-			canBeat = false;
-		}
-
-		if (this.Attacker.IsEscaping()) {
-			message = s.isEscapingA;
-			canBeat = false;
-		}
-
-		if (this.Defender.IsEscaping()) {
-			message = `**${this.Defender.GetNameWithImage()}** ${s.isEscapingD}`;
-			canBeat = false;
+		if (canBeat) {
+			const bothInPrison = this.Attacker.IsInPrison() && this.Defender.IsInPrison();
+			const defenderIgnore: AvailabilityReason[] = bothInPrison ? ["prison", "wanted"] : ["wanted"];
+			const defenderCheck = this.Defender.CheckAvailability(defenderIgnore);
+			if (!defenderCheck.available) {
+				canBeat = false;
+				const defName = this.Defender.GetNameWithImage();
+				switch (defenderCheck.reason) {
+				case "scavenging":
+					message = `**${defName}** ${s.scavengingD(defenderCheck.referenceId as ScavengeId)}`;
+					break;
+				case "working":
+					message = `**${defName}** ${s.inJobD(defenderCheck.time!, defenderCheck.referenceId as JobId)}`;
+					break;
+				case "prison":
+					message = `**${defName}** ${s.inPrisonDefender(defenderCheck.time!)}`;
+					break;
+				case "hospital":
+					message = s.isInHospitalDefender(defName, defenderCheck.time!);
+					break;
+				case "escaping":
+					message = `**${defName}** ${s.isEscapingD}`;
+					break;
+				case "casino":
+					message = `${defName} ${s.casinoDefender}`;
+					break;
+				case "defendingInvestment":
+					message = globalStrings[this.Attacker.Language].defenderIsDefendingInvestment(defName);
+					break;
+				case "gangAction":
+					message = globalStrings[this.Attacker.Language].defenderIsParticipatingInGangAction(defName);
+					break;
+				case "beating": {
+					const user = await Users.findByPk(defenderCheck.targetId!, { attributes: ["class", "nickname"] });
+					message = `**${defName}** ${globalStrings[this.Attacker.Language].defenderIsBeatingId(`${ClassList[user!.class!].Image.Emote.String} ${user!.nickname!}`)}`;
+					break;
+				}
+				case "beingBeatUp": {
+					const user = await Users.findByPk(defenderCheck.targetId!, { attributes: ["class", "nickname"] });
+					message = `**${defName}** ${globalStrings[this.Attacker.Language].defenderIsBeingBeatedById(`${ClassList[user!.class!].Image.Emote.String} ${user!.nickname!}`)}`;
+					break;
+				}
+				case "robbing": {
+					const user = await Users.findByPk(defenderCheck.targetId!, { attributes: ["class", "nickname"] });
+					message = `**${defName}** ${globalStrings[this.Attacker.Language].defenderIsRobbingId(`${ClassList[user!.class!].Image.Emote.String} ${user!.nickname!}`)}`;
+					break;
+				}
+				case "beingRobbed": {
+					const user = await Users.findByPk(defenderCheck.targetId!, { attributes: ["class", "nickname"] });
+					message = `**${defName}** ${globalStrings[this.Attacker.Language].defenderIsBeingRobbedById(`${ClassList[user!.class!].Image.Emote.String} ${user!.nickname!}`)}`;
+					break;
+				}
+				case "robbingLocation": {
+					const location = LocationList[defenderCheck.referenceId as LocationId];
+					message = `**${defName}** ${globalStrings[this.Attacker.Language].defenderIsRobbingId(location.Name[this.Attacker.Language])}`;
+					break;
+				}
+				}
+			}
 		}
 
 		return { canBeat, message };

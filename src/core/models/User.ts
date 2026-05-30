@@ -44,6 +44,32 @@ export enum SituationId {
 	GangAction,
 }
 
+export type AvailabilityReason =
+	| "scavenging"
+	| "working"
+	| "prison"
+	| "wanted"
+	| "hospital"
+	| "escaping"
+	| "casino"
+	| "defendingInvestment"
+	| "gangAction"
+	| "beating"
+	| "beingBeatUp"
+	| "robbing"
+	| "beingRobbed"
+	| "robbingLocation";
+
+export type AvailabilityResult =
+	| { available: true }
+	| {
+			available: false;
+			reason: AvailabilityReason;
+			time?: Date;
+			targetId?: string;
+			referenceId?: string | number;
+	  };
+
 export class User {
 	static VIP_BASE_PRICE = 5_000; // special coins
 
@@ -1409,6 +1435,56 @@ export class User {
 			!this.IsInBeatUp() &&
 			!this.IsDefendingInvestment() &&
 			!this.IsParticipatingInGangAction();
+	}
+
+	/**
+	 * Checks user availability to perform actions based on active states.
+	 * Allows bypassing specific checks via ignoreReasons array.
+	 */
+	CheckAvailability(ignoreReasons: AvailabilityReason[] = []): AvailabilityResult {
+		if (!ignoreReasons.includes("scavenging") && this.IsScavenging()) {
+			return { available: false, reason: "scavenging", referenceId: this.Scavenge.IsScavengingId! };
+		}
+		if (!ignoreReasons.includes("working") && this.IsWorking()) {
+			return { available: false, reason: "working", time: this.Job.EndsIn, referenceId: this.Job.Id! };
+		}
+		if (!ignoreReasons.includes("prison") && this.IsInPrison()) {
+			return { available: false, reason: "prison", time: this.Prison.Time };
+		}
+		if (!ignoreReasons.includes("wanted") && this.IsWanted()) {
+			return { available: false, reason: "wanted", time: this.Wanted.Time };
+		}
+		if (!ignoreReasons.includes("hospital") && this.IsInHospital()) {
+			return { available: false, reason: "hospital", time: this.Hospital.Time };
+		}
+		if (!ignoreReasons.includes("escaping") && this.IsEscaping()) {
+			return { available: false, reason: "escaping", time: this.Escape.Time };
+		}
+		if (!ignoreReasons.includes("casino") && this.IsInCasinoGame()) {
+			return { available: false, reason: "casino" };
+		}
+		if (!ignoreReasons.includes("defendingInvestment") && this.IsDefendingInvestment()) {
+			return { available: false, reason: "defendingInvestment" };
+		}
+		if (!ignoreReasons.includes("gangAction") && this.IsParticipatingInGangAction()) {
+			return { available: false, reason: "gangAction" };
+		}
+		if (!ignoreReasons.includes("beating") && this.BeatUp.IsBeatingId) {
+			return { available: false, reason: "beating", targetId: this.BeatUp.IsBeatingId };
+		}
+		if (!ignoreReasons.includes("beingBeatUp") && this.BeatUp.IsBeingBeatUpById) {
+			return { available: false, reason: "beingBeatUp", targetId: this.BeatUp.IsBeingBeatUpById };
+		}
+		if (!ignoreReasons.includes("robbing") && this.Robbery.IsRobbingId) {
+			return { available: false, reason: "robbing", targetId: this.Robbery.IsRobbingId };
+		}
+		if (!ignoreReasons.includes("beingRobbed") && this.Robbery.IsBeingRobbedById) {
+			return { available: false, reason: "beingRobbed", targetId: this.Robbery.IsBeingRobbedById };
+		}
+		if (!ignoreReasons.includes("robbingLocation") && this.Robbery.IsRobbingLocationId !== null) {
+			return { available: false, reason: "robbingLocation", referenceId: this.Robbery.IsRobbingLocationId };
+		}
+		return { available: true };
 	}
 
 	/**

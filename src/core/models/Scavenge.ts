@@ -9,7 +9,7 @@ import {
 	ScavengeRewardType,
 } from "#core/types/Scavenge";
 import { ItemList, type Items, ItemType } from "#core/types/Items";
-import { LocationList } from "#core/types/Locations";
+import { type LocationId, LocationList } from "#core/types/Locations";
 import { Users } from "#core/database/Users";
 import { getScavengeChanceClassModifier, getScavengeDurationClassModifier } from "#core/types/Classes";
 import { addHours, addMinutes } from "date-fns";
@@ -41,61 +41,48 @@ export class Scavenge {
 			return { canScavenge: false, reason: ScavengeFailureReason.UserScavengeTime };
 		}
 
-		if (this.User.IsScavenging()) {
-			return { canScavenge: false, reason: ScavengeFailureReason.UserScavenging };
-		}
-
-		if (this.User.IsWorking()) {
-			return { canScavenge: false, reason: ScavengeFailureReason.UserWorking };
-		}
-
-		if (this.User.IsInPrison()) {
-			return { canScavenge: false, reason: ScavengeFailureReason.UserPrison };
-		}
-
-		if (this.User.IsInHospital()) {
-			return { canScavenge: false, reason: ScavengeFailureReason.UserHospital };
-		}
-
-		if (this.User.IsDefendingInvestment()) {
-			return { canScavenge: false, reason: ScavengeFailureReason.UserDefendingInvestment };
-		}
-
-		if (this.User.IsParticipatingInGangAction()) {
-			return { canScavenge: false, reason: ScavengeFailureReason.UserParticipatingInGangAction };
-		}
-
-		if (this.User.IsInCasinoGame()) {
-			return { canScavenge: false, reason: ScavengeFailureReason.UserCasino };
-		}
-
-		if (this.User.BeatUp.IsBeatingId) {
-			const user = await Users.findByPk(this.User.BeatUp.IsBeatingId, { attributes: ["class", "nickname"] });
-			return { canScavenge: false, reason: ScavengeFailureReason.AttackerIsBeatingId, attacker: user };
-		}
-
-		if (this.User.BeatUp.IsBeingBeatUpById) {
-			const user = await Users.findByPk(this.User.BeatUp.IsBeingBeatUpById, { attributes: ["class", "nickname"] });
-			return { canScavenge: false, reason: ScavengeFailureReason.AttackerIsBeingBeatedById, attacker: user };
-		}
-
-		if (this.User.Robbery.IsRobbingId) {
-			const user = await Users.findByPk(this.User.Robbery.IsRobbingId, { attributes: ["nickname", "class"] });
-			return { canScavenge: false, reason: ScavengeFailureReason.AttackerIsRobbingId, attacker: user };
-		}
-
-		if (this.User.Robbery.IsBeingRobbedById) {
-			const user = await Users.findByPk(this.User.Robbery.IsBeingRobbedById, { attributes: ["nickname", "class"] });
-			return { canScavenge: false, reason: ScavengeFailureReason.AttackerIsBeingRobbedById, attacker: user };
-		}
-
-		if (this.User.Robbery.IsRobbingLocationId !== null) {
-			const location = LocationList[this.User.Robbery.IsRobbingLocationId];
-			return {
-				canScavenge: false,
-				reason: ScavengeFailureReason.AttackerIsRobbingLocationId,
-				location: location,
-			};
+		const availability = this.User.CheckAvailability(["wanted", "escaping"]);
+		if (!availability.available) {
+			switch (availability.reason) {
+			case "scavenging":
+				return { canScavenge: false, reason: ScavengeFailureReason.UserScavenging };
+			case "working":
+				return { canScavenge: false, reason: ScavengeFailureReason.UserWorking };
+			case "prison":
+				return { canScavenge: false, reason: ScavengeFailureReason.UserPrison };
+			case "hospital":
+				return { canScavenge: false, reason: ScavengeFailureReason.UserHospital };
+			case "defendingInvestment":
+				return { canScavenge: false, reason: ScavengeFailureReason.UserDefendingInvestment };
+			case "gangAction":
+				return { canScavenge: false, reason: ScavengeFailureReason.UserParticipatingInGangAction };
+			case "casino":
+				return { canScavenge: false, reason: ScavengeFailureReason.UserCasino };
+			case "beating": {
+				const user = await Users.findByPk(availability.targetId!, { attributes: ["class", "nickname"] });
+				return { canScavenge: false, reason: ScavengeFailureReason.AttackerIsBeatingId, attacker: user };
+			}
+			case "beingBeatUp": {
+				const user = await Users.findByPk(availability.targetId!, { attributes: ["class", "nickname"] });
+				return { canScavenge: false, reason: ScavengeFailureReason.AttackerIsBeingBeatedById, attacker: user };
+			}
+			case "robbing": {
+				const user = await Users.findByPk(availability.targetId!, { attributes: ["nickname", "class"] });
+				return { canScavenge: false, reason: ScavengeFailureReason.AttackerIsRobbingId, attacker: user };
+			}
+			case "beingRobbed": {
+				const user = await Users.findByPk(availability.targetId!, { attributes: ["nickname", "class"] });
+				return { canScavenge: false, reason: ScavengeFailureReason.AttackerIsBeingRobbedById, attacker: user };
+			}
+			case "robbingLocation": {
+				const location = LocationList[availability.referenceId as LocationId];
+				return {
+					canScavenge: false,
+					reason: ScavengeFailureReason.AttackerIsRobbingLocationId,
+					location: location,
+				};
+			}
+			}
 		}
 
 		return { canScavenge: true };
