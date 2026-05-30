@@ -47,6 +47,7 @@ module.exports = {
 
 		const s = Strings[language];
 		let currentCategory = SpecialShopCategory.Menu;
+		let skinsOffset = 0;
 
 		function addHeader(container = new CustomContainerBuilder()) {
 			container.setUser(user)
@@ -66,8 +67,15 @@ module.exports = {
 		}
 
 		function addFooter(container: CustomContainerBuilder) {
+			let footerText = s.youHaveCoins(user.SpecialCoin);
+			if (currentCategory === SpecialShopCategory.Skins) {
+				const skinBundles = getSkinBundleList().filter(bundle => bundle.Shop);
+				const start = skinsOffset + 1;
+				const end = Math.min(skinsOffset + 5, skinBundles.length);
+				footerText += ` | ${s.showing(start, end, skinBundles.length)}`;
+			}
 			container.addFooter({
-				text: s.youHaveCoins(user.SpecialCoin),
+				text: footerText,
 			});
 
 			return container;
@@ -122,8 +130,10 @@ module.exports = {
 				container.addTexts([`## ${s.skinBundles}`]);
 
 				const skinBundles = getSkinBundleList().filter(bundle => bundle.Shop);
-				for (let idx = 0; idx < skinBundles.length; idx++) {
-					const bundle = skinBundles[idx];
+				const pageBundles = skinBundles.slice(skinsOffset, skinsOffset + 5);
+
+				for (let idx = 0; idx < pageBundles.length; idx++) {
+					const bundle = pageBundles[idx];
 					if (bundle.Items.length > 0) {
 						const itemEmotes = bundle.Items.map(item => ItemList[item].Skin[bundle.Id].String);
 						const userHasBundle = await UserBundle.HasBundle(user.Id, bundle.Id);
@@ -157,7 +167,7 @@ module.exports = {
 								.setCustomId("buy" + bundle.Id)),
 						);
 
-						if (idx !== skinBundles.length - 1) {
+						if (idx !== pageBundles.length - 1) {
 							container.addLargeSeparator();
 						}
 					}
@@ -250,13 +260,35 @@ module.exports = {
 			}
 
 			if (currentCategory !== SpecialShopCategory.Menu) {
-				container
-					.addLargeSeparator()
-					.addButtonRow(btn => btn
+				container.addLargeSeparator();
+				if (currentCategory === SpecialShopCategory.Skins) {
+					const skinBundles = getSkinBundleList().filter(bundle => bundle.Shop);
+					container.addButtonRow(
+						btn => btn
+							.setLabel(s.previous)
+							.setStyle(ButtonStyle.Secondary)
+							.setEmoji("⬅️")
+							.setCustomId("prev_skins")
+							.setDisabled(skinsOffset === 0),
+						btn => btn
+							.setLabel(s.goBack)
+							.setStyle(ButtonStyle.Secondary)
+							.setCustomId("back"),
+						btn => btn
+							.setLabel(s.next)
+							.setStyle(ButtonStyle.Secondary)
+							.setEmoji("➡️")
+							.setCustomId("next_skins")
+							.setDisabled(skinsOffset + 5 >= skinBundles.length),
+					);
+				}
+				else {
+					container.addButtonRow(btn => btn
 						.setLabel(s.goBack)
 						.setStyle(ButtonStyle.Secondary)
 						.setCustomId("back"),
 					);
+				}
 			}
 
 			container = addFooter(container);
@@ -287,6 +319,18 @@ module.exports = {
 
 			if (btn.customId === "back") {
 				currentCategory = SpecialShopCategory.Menu;
+				skinsOffset = 0;
+				container = await generateDefaultContainer();
+				return replyWithContainer(interaction, container);
+			}
+
+			else if (btn.customId === "prev_skins") {
+				skinsOffset = Math.max(0, skinsOffset - 5);
+				container = await generateDefaultContainer();
+				return replyWithContainer(interaction, container);
+			}
+			else if (btn.customId === "next_skins") {
+				skinsOffset += 5;
 				container = await generateDefaultContainer();
 				return replyWithContainer(interaction, container);
 			}
@@ -616,7 +660,10 @@ const Strings = {
 		alreadyHaveBackground: "You already own the ranking background",
 		backgroundBought: "You bought the ranking background",
 		howToAcquireTitle: "How to acquire",
-		howToAcquireDescription: "On the official server, in the #vip-special-coins channel",
+		howToAcquireDescription: "On the official server, in the #special-coins channel",
+		showing: (start: number, end: number, howMany: number) => `Showing ${start} - ${end} of ${howMany}`,
+		previous: "Previous",
+		next: "Next",
 	},
 	[Language.Portuguese]: {
 		title: "Loja especial",
@@ -650,7 +697,10 @@ const Strings = {
 		alreadyHaveBackground: "Você já possui o fundo de ranking",
 		backgroundBought: "Você comprou o fundo de ranking",
 		howToAcquireTitle: "Como adquirir",
-		howToAcquireDescription: "No servidor oficial, no canal #vip-moedas-especiais",
+		howToAcquireDescription: "No servidor oficial, no canal #moedas-especiais",
+		showing: (start: number, end: number, howMany: number) => `Exibindo ${start} - ${end} de ${howMany}`,
+		previous: "Anterior",
+		next: "Próximo",
 	},
 	[Language.Spanish]: {
 		title: "Comercio especial",
@@ -684,6 +734,9 @@ const Strings = {
 		alreadyHaveBackground: "Ya tienes el fondo de ranking",
 		backgroundBought: "Compraste el fondo de ranking",
 		howToAcquireTitle: "Cómo adquirir",
-		howToAcquireDescription: "En el servidor oficial, en el canal #vip-special-coins.",
+		howToAcquireDescription: "En el servidor oficial, en el canal #special-coins.",
+		showing: (start: number, end: number, howMany: number) => `Mostrando ${start} - ${end} de ${howMany}`,
+		previous: "Anterior",
+		next: "Siguiente",
 	},
 } as const satisfies Localization;
