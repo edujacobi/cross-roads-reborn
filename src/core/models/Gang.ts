@@ -15,16 +15,7 @@ import type { IDescription } from "#core/types/Interfaces";
 import { ItemList } from "#core/types/Items";
 import { Log, logger } from "#shared/log";
 import { addHours, isFuture } from "date-fns";
-import {
-	ActionRowBuilder,
-	ButtonBuilder,
-	ButtonStyle,
-	Collection,
-	ComponentType,
-	type Message,
-	type MessageComponentInteraction,
-	MessageFlags,
-} from "discord.js";
+import { MessageFlags } from "discord.js";
 import { Op } from "sequelize";
 import { Language, type Localization } from "./Language";
 import { Notification, NotificationType } from "./Notification";
@@ -587,175 +578,22 @@ export class Gang {
 		return inviterRole.Permissions.includes(GangPermission.Invite);
 	}
 
-	/**
-	 * Invites a user to the gang.
-	 * @param inviter The user sending the invite.
-	 * @param targetUser The user being invited.
-	 * @returns True if the invite was sent successfully, false otherwise.
-	 */
-	async InviteUser(inviter: User, targetUser: User): Promise<boolean> {
-		const COOLDOWN_INVITE = 3 * 60_000;
-		const sI = Strings[inviter.Language];
-		const sT = Strings[targetUser.Language];
-
+	async CanInviteUser(targetUser: User): Promise<{ canInvite: boolean; reason?: string }> {
 		// Check if target is already in a gang
 		const existingMembership = await GangMembers.findOne({
 			where: { userId: targetUser.Id },
 		});
 
 		if (existingMembership) {
-			return false;
+			return { canInvite: false, reason: "alreadyInGang" };
 		}
 
 		// Check if gang has space
 		if (!this.CanAddMember()) {
-			return false;
+			return { canInvite: false, reason: "gangFull" };
 		}
 
-		// Check cooldown
-		const cooldownInvite = getClient().invites;
-		if (!cooldownInvite.has(this.Id)) {
-			cooldownInvite.set(this.Id, new Collection());
-		}
-
-		const timestamp = cooldownInvite.get(this.Id);
-		const now = Date.now();
-
-		if (!timestamp) {
-			return false;
-		}
-
-		if (timestamp.has(targetUser.Id)) {
-			const lastInviteTime = timestamp.get(targetUser.Id) || 0;
-
-			if (now - lastInviteTime < COOLDOWN_INVITE) {
-				return false; // Still in cooldown
-			}
-		}
-
-		timestamp.set(targetUser.Id, now);
-
-		const buttonAccept = new ButtonBuilder()
-			.setCustomId("accept")
-			.setLabel(sT.acceptText)
-			.setStyle(ButtonStyle.Success);
-
-		const buttonDecline = new ButtonBuilder()
-			.setCustomId("decline")
-			.setLabel(sT.declineText)
-			.setStyle(ButtonStyle.Secondary);
-
-		const row = new ActionRowBuilder<ButtonBuilder>()
-			.addComponents([buttonAccept, buttonDecline]);
-
-		const response = await sendComplexPrivateMessage(targetUser.Id, {
-			components: [
-				defaultComponent({
-					user: inviter,
-					description: sT.invitation.description(this.Name, this.Acronym),
-					footer: sT.invitation.footer,
-					buttons: row,
-				}),
-			],
-			flags: [MessageFlags.IsComponentsV2],
-		});
-
-		Log.Info(`${inviter.Nickname} (Id: ${inviter.Id}) invited ${targetUser.Nickname} (Id: ${targetUser.Id}) to join gang ${this.Name} (Id: ${this.Id})`);
-
-		const collector = response?.createMessageComponentCollector({
-			filter: (i: MessageComponentInteraction) => i.user.id === targetUser.Id,
-			max: 1,
-			componentType: ComponentType.Button,
-			idle: COOLDOWN_INVITE,
-		});
-
-		let responded = false;
-
-		collector?.on("collect", async btn => {
-			let descriptionPrivate = "";
-			let descriptionChannel = "";
-
-			responded = true;
-
-			await targetUser.GetInfo();
-
-			collector?.stop();
-
-			if (btn.customId === "accept") {
-				if (targetUser.Money < Gang.JOIN_COST) {
-					descriptionPrivate = sT.notEnoughMoney.private(this.Name, this.Acronym);
-					descriptionChannel = sI.notEnoughMoney.channel(targetUser.GetNameWithImage());
-
-					Log.Warning(`User ${targetUser.Nickname} (Id: ${targetUser.Id}) tried to accept invite to gang ${this.Name} (Id: ${this.Id}), but doesn't have enough money.`);
-				}
-				else {
-					const success = await this.AcceptInvite(targetUser);
-
-					if (!success) {
-						descriptionPrivate = sT.notSuccess.private(this.Name, this.Acronym);
-						descriptionChannel = sI.notSuccess.channel(targetUser.GetNameWithImage());
-
-						Log.Warning(`Failed to accept invite for user ${targetUser.Nickname} (Id: ${targetUser.Id}) to gang ${this.Name} (Id: ${this.Id})`);
-					}
-					else {
-						descriptionPrivate = sT.success.private(this.Name, this.Acronym);
-						descriptionChannel = sI.success.channel(targetUser.GetNameWithImage());
-
-						Log.Success(`${targetUser.Nickname} (Id: ${targetUser.Id}) accepted the invite to gang ${this.Name} (Id: ${this.Id})`);
-					}
-				}
-			}
-			else if (btn.customId === "decline") {
-				descriptionPrivate = sT.decline.private(this.Name, this.Acronym);
-				descriptionChannel = sI.decline.channel(targetUser.GetNameWithImage());
-
-				Log.Info(`${targetUser.Nickname} (Id: ${targetUser.Id}) declined the invite to gang ${this.Name} (Id: ${this.Id})`);
-			}
-
-			response?.edit({
-				components: [defaultComponent({
-					user: inviter,
-					description: descriptionPrivate,
-				})],
-			});
-
-			await sendComplexPrivateMessage(inviter.Id, {
-				components: [
-					defaultComponent({
-						user: inviter,
-						description: descriptionChannel,
-						footer: this.Name,
-					}),
-				],
-				flags: [MessageFlags.IsComponentsV2],
-			});
-		});
-
-		collector?.on("end", async () => {
-			if (responded) return;
-
-			response?.edit({
-				components: [defaultComponent({
-					user: inviter,
-					description: sT.timeout.private(this.Name, this.Acronym),
-				})],
-			});
-
-			await sendComplexPrivateMessage(inviter.Id, {
-				components: [
-					defaultComponent({
-						user: inviter,
-						description: sI.timeout.channel(targetUser.GetNameWithImage(), this.Name, this.Acronym),
-						footer: this.Name,
-					}),
-				],
-				flags: [MessageFlags.IsComponentsV2],
-			});
-
-			Log.Info(`${targetUser.Nickname} (Id: ${targetUser.Id}) did not respond to the invite to gang ${this.Name} (Id: ${this.Id})`);
-		});
-
-		return true;
+		return { canInvite: true };
 	}
 
 	/**
@@ -1850,7 +1688,7 @@ export class Gang {
 	}
 }
 
-const Strings = {
+export const Strings = {
 	[Language.English]: {
 		acceptText: "Accept",
 		declineText: "Decline",

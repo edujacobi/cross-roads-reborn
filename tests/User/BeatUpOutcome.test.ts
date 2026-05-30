@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { User } from "#core/models/User";
 import { Language } from "#core/models/Language";
@@ -16,12 +15,6 @@ vi.mock("#core/database/Users", () => ({
 		findOne: vi.fn(),
 		findByPk: vi.fn(() => Promise.resolve({ class: ClassId.Entrepreneur, nickname: "OtherUser" })),
 	},
-}));
-
-vi.mock("#bot/utils/discordInteractions", () => ({
-	replyWithContainer: vi.fn(() => Promise.resolve({ edit: vi.fn() })),
-	sendComplexPrivateMessage: vi.fn(() => Promise.resolve({ edit: vi.fn() })),
-	deferUpdate: vi.fn(() => Promise.resolve()),
 }));
 
 describe("BeatUp Outcome Logic", () => {
@@ -54,6 +47,7 @@ describe("BeatUp Outcome Logic", () => {
 		// Spy on GetAttributes BEFORE calling BeatUp constructor
 		vi.spyOn(attacker, "GetAttributes").mockResolvedValue(undefined as any);
 		vi.spyOn(defender, "GetAttributes").mockResolvedValue(undefined as any);
+		vi.spyOn(attacker, "GetItemSkin").mockReturnValue("🔪");
 
 		beatUp = new BeatUp(attacker, defender);
 
@@ -67,42 +61,83 @@ describe("BeatUp Outcome Logic", () => {
 	});
 
 	it("should calculate correct beatup outcome when successful", async () => {
-		beatUp.Success = true;
-		beatUp.TimeInHospital = { Base: 45, Aditional: 5 };
+		// Mock Math.random to return 0.9 on first call (Attacker: 0.9 * 20 = 18) and 0.1 on second call (Defender: 0.1 * 10 = 1) -> Success = true
+		const randomSpy = vi.spyOn(Math, "random")
+			.mockReturnValueOnce(0.9)
+			.mockReturnValueOnce(0.1);
 
-		const mockInteraction = {
-			client: {},
-			user: { id: "111" },
-		} as any;
-		const mockPrivateMsg = {
-			edit: vi.fn(() => Promise.resolve({})),
-		} as any;
+		await beatUp.LockStates(false);
+		const outcome = await beatUp.Resolve("nothing");
 
-		await beatUp.EndBeating(mockInteraction, mockPrivateMsg);
-
+		expect(outcome.success).toBe(true);
 		expect(attacker.BeatUp.SuccessCount).toBe(1);
 		expect(defender.BeatUp.BeatedUpCount).toBe(1);
 		expect(defender.Hospital.Count).toBe(1);
 		expect(defender.Hospital.Time.getTime()).toBeGreaterThan(Date.now());
 		expect(attacker.Wanted.Count).toBe(1);
 		expect(attacker.Wanted.Time.getTime()).toBeGreaterThan(Date.now());
+
+		randomSpy.mockRestore();
 	});
 
 	it("should hospitalize attacker when unsuccessful", async () => {
-		beatUp.Success = false;
-		beatUp.TimeInHospital = { Base: 45, Aditional: 5 };
+		// Mock Math.random to return 0.1 on first call (Attacker: 0.1 * 20 = 2) and 0.9 on second call (Defender: 0.9 * 10 = 9) -> Success = false
+		const randomSpy = vi.spyOn(Math, "random")
+			.mockReturnValueOnce(0.1)
+			.mockReturnValueOnce(0.9);
 
-		const mockInteraction = {
-			client: {},
-			user: { id: "111" },
-		} as any;
+		await beatUp.LockStates(false);
+		const outcome = await beatUp.Resolve("nothing");
 
-		await beatUp.EndBeating(mockInteraction, undefined);
-
+		expect(outcome.success).toBe(false);
 		expect(attacker.BeatUp.FailureCount).toBe(1);
 		expect(attacker.BeatUp.BeatedUpCount).toBe(1);
 		expect(defender.BeatUp.SuccessCount).toBe(1);
 		expect(attacker.Hospital.Count).toBe(1);
 		expect(attacker.Hospital.Time.getTime()).toBeGreaterThan(Date.now());
+
+		randomSpy.mockRestore();
+	});
+
+	it("should increase defender attack and hospital time when defender fights", async () => {
+		// Mock Math.random for success = false
+		const randomSpy = vi.spyOn(Math, "random")
+			.mockReturnValueOnce(0.1) // Attacker chance low
+			.mockReturnValueOnce(0.9); // Defender chance high
+
+		await beatUp.LockStates(false);
+		
+		const originalAttack = defender.Attributes.Attack;
+		const originalBaseTime = beatUp.TimeInHospital.Base;
+		const additionalTime = beatUp.TimeInHospital.Aditional;
+
+		const outcome = await beatUp.Resolve("fight");
+
+		expect(defender.Attributes.Attack).toBe(originalAttack + 5);
+		expect(beatUp.TimeInHospital.Base).toBe(originalBaseTime + additionalTime);
+		expect(outcome.success).toBe(false);
+
+		randomSpy.mockRestore();
+	});
+
+	it("should decrease defender attack and hospital time when defender runs", async () => {
+		// Mock Math.random for success = false
+		const randomSpy = vi.spyOn(Math, "random")
+			.mockReturnValueOnce(0.1)
+			.mockReturnValueOnce(0.9);
+
+		await beatUp.LockStates(false);
+		
+		const originalAttack = defender.Attributes.Attack;
+		const originalBaseTime = beatUp.TimeInHospital.Base;
+		const additionalTime = beatUp.TimeInHospital.Aditional;
+
+		const outcome = await beatUp.Resolve("run");
+
+		expect(defender.Attributes.Attack).toBe(originalAttack - 5);
+		expect(beatUp.TimeInHospital.Base).toBe(originalBaseTime - additionalTime);
+		expect(outcome.success).toBe(false);
+
+		randomSpy.mockRestore();
 	});
 });

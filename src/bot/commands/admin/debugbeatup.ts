@@ -5,6 +5,7 @@ import { CrColors } from "#bot/utils/colors";
 import type { User } from "#core/models/User";
 import { BeatUp } from "#core/models/BeatUp";
 import { searchUser } from "#bot/utils/userUtils";
+import { runUserBeatUp } from "#bot/utils/beatupHelper";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -31,9 +32,9 @@ module.exports = {
 			return;
 		}
 
-		const robbery = new BeatUp(target, user);
+		const beatUp = new BeatUp(target, user);
 
-		const { canBeat, message } = await robbery.CanBeatUser();
+		const { canBeat, message } = await beatUp.CanBeatUser();
 
 		if (!canBeat) {
 			const container = defaultComponent({
@@ -45,8 +46,6 @@ module.exports = {
 			return replyWithContainer(interaction, container);
 		}
 
-		await robbery.GetDiscordUser();
-
-		await robbery.StartBeating(interaction);
+		await runUserBeatUp(interaction, beatUp, target, user);
 	},
 };

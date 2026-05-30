@@ -17,12 +17,6 @@ vi.mock("#core/database/Users", () => ({
 	},
 }));
 
-vi.mock("#bot/utils/discordInteractions", () => ({
-	replyWithContainer: vi.fn(() => Promise.resolve({ edit: vi.fn() })),
-	sendComplexPrivateMessage: vi.fn(() => Promise.resolve({ edit: vi.fn() })),
-	deferUpdate: vi.fn(() => Promise.resolve()),
-}));
-
 describe("Robbery Outcome Logic", () => {
 	let attacker: User;
 	let defender: User;
@@ -66,45 +60,82 @@ describe("Robbery Outcome Logic", () => {
 		// Spy on GetAttributes to prevent resetting attributes to 0
 		vi.spyOn(attacker, "GetAttributes").mockResolvedValue(undefined as any);
 		vi.spyOn(defender, "GetAttributes").mockResolvedValue(undefined as any);
+		vi.spyOn(attacker, "GetItemSkin").mockReturnValue("🔪");
 	});
 
 	it("should calculate correct robbery outcome when successful", async () => {
-		robbery.Success = true;
+		// Mock Math.random to guarantee success (Chance = 0, which is < Attack = 10)
+		const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0);
 
-		const mockInteraction = {
-			client: {},
-			user: { id: "111" },
-		} as any;
-		const mockPrivateMsg = {
-			edit: vi.fn(() => Promise.resolve({})),
-		} as any;
+		await robbery.LockStates(false);
+		const outcome = await robbery.Resolve("nothing");
 
-		await robbery.EndRobbery(mockInteraction, mockPrivateMsg);
-
+		expect(outcome.success).toBe(true);
 		// 20% of defender's 2000 money = 400.
 		// Class modifier for Thief is 1.15
 		// 400 * 1.15 = 460, but due to floating-point precision (400 * 1.15 = 459.99999999999994)
 		// Math.floor truncates this to 459.
-		expect(robbery.MoneyRobbed).toBe(459);
+		expect(outcome.moneyRobbed).toBe(459);
 		expect(attacker.Money).toBe(1459);
 		expect(defender.Money).toBe(1541);
 		expect(attacker.Robbery.SuccessCount).toBe(1);
 		expect(defender.Robbery.BeingRobbedCount).toBe(1);
+
+		randomSpy.mockRestore();
 	});
 
 	it("should apply prison time to attacker when unsuccessful", async () => {
-		robbery.Success = false;
-		robbery.AttackerTimeInPrison = 45; // minutes
+		// Mock Math.random to guarantee failure (Chance = 99, which is >= Attack = 10)
+		const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.99);
 
-		const mockInteraction = {
-			client: {},
-			user: { id: "111" },
-		} as any;
+		await robbery.LockStates(false);
+		const outcome = await robbery.Resolve("nothing");
 
-		await robbery.EndRobbery(mockInteraction, undefined);
-
+		expect(outcome.success).toBe(false);
 		expect(attacker.Prison.Count).toBe(1);
 		expect(attacker.Robbery.FailureCount).toBe(1);
 		expect(attacker.Prison.Time.getTime()).toBeGreaterThan(Date.now());
+
+		randomSpy.mockRestore();
+	});
+
+	it("should apply +5 defense and 100% beat up chance when defender reacts", async () => {
+		// Mock Math.random to guarantee success (5 < 8.5) and beat up (0.05 < 1)
+		const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.05);
+
+		await robbery.LockStates(false);
+		
+		const originalDefense = defender.Attributes.Defense;
+		const outcome = await robbery.Resolve("react");
+
+		expect(defender.Attributes.Defense).toBe(originalDefense + 5);
+		expect(robbery.BeatUpChance).toBe(1);
+		expect(outcome.success).toBe(true);
+		expect(outcome.willBeBeatenUp).toBe(true);
+
+		randomSpy.mockRestore();
+	});
+
+	it("should decrease defender defense and increase attacker prison time when defender calls police", async () => {
+		// Mock Math.random to guarantee failure
+		const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.99);
+
+		await robbery.LockStates(false);
+		
+		const originalDefense = defender.Attributes.Defense;
+		const originalPrisonTime = robbery.AttackerTimeInPrison;
+		const additionalPoliceTime = robbery.AttackerAditionalTimeCallPolice;
+
+		const outcome = await robbery.Resolve("police");
+
+		expect(defender.Attributes.Defense).toBe(originalDefense - 5);
+		expect(robbery.AttackerTimeInPrison).toBe(originalPrisonTime + additionalPoliceTime);
+		expect(outcome.success).toBe(false);
+		// Assuming Event.GetActiveFromType(EventType.PRISON_TIME_MULTIPLIER) is 1 based on mocks
+		const expectedPrisonTime = new Date(Date.now() + (originalPrisonTime + additionalPoliceTime) * 60000);
+		// Check that the time is roughly correct (allow some ms difference)
+		expect(attacker.Prison.Time.getTime()).toBeCloseTo(expectedPrisonTime.getTime(), -4);
+
+		randomSpy.mockRestore();
 	});
 });

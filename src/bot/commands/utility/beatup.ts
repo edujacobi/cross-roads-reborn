@@ -8,6 +8,7 @@ import { Language, type Localization } from "#core/models/Language";
 import { BeatUp } from "#core/models/BeatUp";
 import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
 import { searchUser } from "#bot/utils/userUtils";
+import { runUserBeatUp } from "#bot/utils/beatupHelper";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -101,9 +102,7 @@ module.exports = {
 			return replyWithContainer(interaction, container);
 		}
 
-		await robbery.GetDiscordUser();
-
-		await robbery.StartBeating(interaction);
+		await runUserBeatUp(interaction, robbery, user, target);
 	},
 };
 

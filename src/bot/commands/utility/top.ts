@@ -18,6 +18,8 @@ import { Pagination } from "#core/models/Pagination";
 import { Robbery } from "#core/models/Robbery";
 import { User } from "#core/models/User";
 import type { IDescription } from "#core/types/Interfaces";
+import { runUserRobbery } from "#bot/utils/robberyHelper";
+import { runUserBeatUp } from "#bot/utils/beatupHelper";
 import {
 	AttachmentBuilder,
 	ButtonStyle,
@@ -694,9 +696,7 @@ module.exports = {
 					return replyWithContainer(interaction, container);
 				}
 
-				await robbery.GetDiscordUser();
-
-				await robbery.StartRobbery(interaction);
+				await runUserRobbery(interaction, robbery, user, target);
 
 			}
 
@@ -724,9 +724,7 @@ module.exports = {
 					return replyWithContainer(interaction, container);
 				}
 
-				await beatUp.GetDiscordUser();
-
-				await beatUp.StartBeating(interaction);
+				await runUserBeatUp(interaction, beatUp, user, target);
 
 			}
 

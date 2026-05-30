@@ -1,10 +1,7 @@
 import { User } from "./User";
 import { Log } from "#shared/log";
-import type { ChatInputCommandInteraction } from "discord.js";
-import { replyWithContainer } from "#bot/utils/discordInteractions";
 import { formatMoney, showTime } from "#bot/utils/ui";
 import { EmoteString } from "#bot/utils/emotes";
-import { setTimeout as wait } from "timers/promises";
 
 import { Notification } from "./Notification";
 import { addMinutes } from "date-fns";
@@ -12,11 +9,18 @@ import { globalStrings, Language, type Localization } from "./Language";
 import { RobHistories } from "#core/database/RobHistories";
 import { Users } from "#core/database/Users";
 import { type JobId, JobList } from "#core/types/Jobs";
-import { ClashType, Robbery } from "./Robbery";
+import { ClashType, Robbery, type RobberyInitData } from "./Robbery";
 import { type LocationId, LocationList } from "#core/types/Locations";
 import { ClassList, getRobberyClassModifier } from "#core/types/Classes";
 import { type ScavengeId, ScavengeList } from "#core/types/Scavenge";
 import { Event, EventType } from "./Event";
+
+export interface RobberyLocationOutcomeData {
+	success: boolean;
+	moneyRobbed: number;
+	attackerPrisonTime?: Date;
+	attackerWantedTime?: Date;
+}
 
 export class RobberyLocation extends Robbery {
 	LocationId: LocationId;
@@ -109,9 +113,7 @@ export class RobberyLocation extends Robbery {
 		return { canRob, message };
 	}
 
-	async StartRobbery(interaction: ChatInputCommandInteraction) {
-		const s = Strings[this.Attacker.Language];
-
+	async LockStates(): Promise<RobberyInitData> {
 		this.AttackerTimeInPrison = 20 * (this.LocationId + 1);
 
 		this.Attacker.Robbery.IsRobbingLocationId = this.LocationId;
@@ -120,106 +122,100 @@ export class RobberyLocation extends Robbery {
 			robbingLocationId: this.Attacker.Robbery.IsRobbingLocationId,
 		});
 
-		Log.Info(`User ${this.Attacker.Nickname} (Id: ${this.Attacker.Id}) started a robbery to location ${LocationList[this.LocationId].Name[Language.English]} (Id: ${LocationList[this.LocationId].Id}).`);
+		Log.Info(`User ${this.Attacker.Nickname} (Id: ${this.Attacker.Id}) locked states for robbing location ${LocationList[this.LocationId].Name[Language.English]} (Id: ${LocationList[this.LocationId].Id}).`);
 
-		this.Container.Channel
-			.setUser(this.Attacker)
-			.addTexts([
-				`${EmoteString.Robbery} ${s.robberyInProgress}`,
-			], 1)
-			.addLargeSeparator()
-			.addTexts([
-				`${s.tryingToRob} ${LocationList[this.LocationId].Emote.String} **${LocationList[this.LocationId].Name[this.Attacker.Language]}** ${EmoteString.Waiting}`,
-			], 50)
-			.addFooter();
+		const usedGunSkin = this.Attacker.GetItemSkin(this.Attacker.BestGun!);
+		const usedGunName = this.Attacker.BestGun?.Description[this.Attacker.Language] || "";
 
-		await replyWithContainer(interaction, this.Container.Channel);
-
-		await wait(10_000 + (5_000 * this.LocationId));
-
-		this.Chance = Math.random() * 100;
-		const robLocationChanceBonus = await Event.GetActiveBonusFromType(EventType.ROB_LOCATION_CHANCE_BONUS);
-		this.Success = this.Chance < (LocationList[this.LocationId].SuccessChance + robLocationChanceBonus);
-
-		await this.EndRobbery(interaction);
+		return {
+			attackerTimeInPrison: this.AttackerTimeInPrison,
+			attackerAditionalTimeCallPolice: 0,
+			defenderTimeInHospital: 0,
+			cannotReact: true,
+			cannotCallPolice: true,
+			usedGunSkin,
+			usedGunName,
+		};
 	}
 
-	async EndRobbery(interaction: ChatInputCommandInteraction) {
-		await this.Attacker.GetInfo();
+	async ResolveLocation(): Promise<RobberyLocationOutcomeData> {
+		try {
+			await this.Attacker.GetInfo();
 
-		const s = Strings[this.Attacker.Language];
+			this.Chance = Math.random() * 100;
+			const robLocationChanceBonus = await Event.GetActiveBonusFromType(EventType.ROB_LOCATION_CHANCE_BONUS);
+			this.Success = this.Chance < (LocationList[this.LocationId].SuccessChance + robLocationChanceBonus);
 
-		const locationEmote = LocationList[this.LocationId].Emote.String;
-		const locationName = LocationList[this.LocationId].Name[this.Attacker.Language];
+			if (this.Success) {
+				this.MoneyRobbed = Math.floor(Math.random() * (this.RewardMax - this.RewardMin + 1)) + this.RewardMin;
+				this.Attacker.Money += this.MoneyRobbed;
+				this.Attacker.Robbery.SuccessCount += 1;
+				this.Attacker.Robbery.SuccessRobbedSum += this.MoneyRobbed;
+				const wantedTimeMultiplier = await Event.GetActiveFromType(EventType.WANTED_TIME_MULTIPLIER);
+				this.Attacker.Wanted.Time = addMinutes(new Date(), 60 * wantedTimeMultiplier);
 
-		if (this.Success) {
-			this.MoneyRobbed = Math.floor(Math.random() * (this.RewardMax - this.RewardMin + 1)) + this.RewardMin;
-			this.Attacker.Money += this.MoneyRobbed;
-			this.Attacker.Robbery.SuccessCount += 1;
-			this.Attacker.Robbery.SuccessRobbedSum += this.MoneyRobbed;
-			const wantedTimeMultiplier = await Event.GetActiveFromType(EventType.WANTED_TIME_MULTIPLIER);
-			this.Attacker.Wanted.Time = addMinutes(new Date(), 60 * wantedTimeMultiplier);
+				await Notification.RobAgain(this.Attacker);
 
-			await Notification.RobAgain(this.Attacker);
+				Log.Success(`User ${this.Attacker.Nickname} (Id: ${this.Attacker.Id}) successfully robbed location ${LocationList[this.LocationId].Name[Language.English]} (Id: ${LocationList[this.LocationId].Id}) and got ${formatMoney(this.MoneyRobbed, Language.English)}.`);
 
-			const texts = [
-				`### ${EmoteString.Victory} ${s.success}!`,
-				s.youRobbed(formatMoney(this.MoneyRobbed, this.Attacker.Language), `${locationEmote} ${locationName}`),
-				`-# ${s.willBeAbleAgain} ${showTime(this.Attacker.Wanted.Time.getTime(), true)}`,
-			].join("\n");
+				return {
+					success: true,
+					moneyRobbed: this.MoneyRobbed,
+					attackerWantedTime: this.Attacker.Wanted.Time,
+				};
+			}
+			else {
+				const prisonTimeMultiplier = await Event.GetActiveFromType(EventType.PRISON_TIME_MULTIPLIER);
+				this.Attacker.Prison.Time = addMinutes(new Date(), this.AttackerTimeInPrison * prisonTimeMultiplier);
+				this.Attacker.Prison.HasPaidBribe = false;
+				this.Attacker.Escape.HasTried = false;
+				this.Attacker.Robbery.FailureCount += 1;
+				this.Attacker.Prison.Count += 1;
 
-			this.Container.Channel.changeTextFromSectionId(50, texts);
+				await Notification.Free(this.Attacker);
 
-			Log.Success(`User ${this.Attacker.Nickname} (Id: ${this.Attacker.Id}) successfully robbed location ${LocationList[this.LocationId].Name[Language.English]} (Id: ${LocationList[this.LocationId].Id}) and got ${formatMoney(this.MoneyRobbed, Language.English)}.`);
+				Log.Success(`User ${this.Attacker.Nickname} (Id: ${this.Attacker.Id}) failed to rob location ${LocationList[this.LocationId].Name[Language.English]} (Id: ${LocationList[this.LocationId].Id}).`);
+
+				return {
+					success: false,
+					moneyRobbed: 0,
+					attackerPrisonTime: this.Attacker.Prison.Time,
+				};
+			}
 		}
-		else {
-			const prisonTimeMultiplier = await Event.GetActiveFromType(EventType.PRISON_TIME_MULTIPLIER);
-			this.Attacker.Prison.Time = addMinutes(new Date(), this.AttackerTimeInPrison * prisonTimeMultiplier);
-			this.Attacker.Prison.HasPaidBribe = false;
-			this.Attacker.Escape.HasTried = false;
-			this.Attacker.Robbery.FailureCount += 1;
-			this.Attacker.Prison.Count += 1;
-
-			await Notification.Free(this.Attacker);
-
-			const prisonText = LocationList[this.LocationId].Prison.Text[Math.floor(Math.random() * LocationList[this.LocationId].Prison.Text.length)][this.Attacker.Language];
-
-			const texts = [
-				`### ${EmoteString.Defeat} ${s.failure}!`,
-				`${s.youFailed(`${locationEmote} ${locationName}`)}!`,
-				`-# ${EmoteString.Prison} ${prisonText} ${s.prisonTime(this.Attacker.Prison.Time)}`,
-			].join("\n");
-
-			this.Container.Channel.changeTextFromSectionId(50, texts);
-
-			Log.Success(`User ${this.Attacker.Nickname} (Id: ${this.Attacker.Id}) failed to rob location ${LocationList[this.LocationId].Name[Language.English]} (Id: ${LocationList[this.LocationId].Id}).`);
+		catch (error) {
+			Log.Error(`Error during ResolveLocation: ${error}`);
+			throw error;
 		}
+		finally {
+			this.Attacker.Robbery.IsRobbingLocationId = null;
+			await this.Attacker.Update({
+				money: this.Attacker.Money,
+				robberySuccessCount: this.Attacker.Robbery.SuccessCount,
+				robberySuccessRobbedSum: this.Attacker.Robbery.SuccessRobbedSum,
+				wantedTime: this.Attacker.Wanted.Time,
+				prisonTime: this.Attacker.Prison.Time,
+				prisonHasPaidBribe: this.Attacker.Prison.HasPaidBribe,
+				escapeHasTried: this.Attacker.Escape.HasTried,
+				robberyFailureCount: this.Attacker.Robbery.FailureCount,
+				prisonCount: this.Attacker.Prison.Count,
+				robbingLocationId: this.Attacker.Robbery.IsRobbingLocationId,
+			});
 
-		this.Container.Channel
-			.changeTextFromSectionId(1, `${EmoteString.Robbery} ${s.finishedRobberyAttacker(this.Success)}`)
-			.changeFooterText(formatMoney(this.Attacker.Money, this.Attacker.Language));
+			await RobHistories.CreateLocationHistory(this);
+		}
+	}
 
-		await replyWithContainer(interaction, this.Container.Channel);
-
+	async ReleaseLocks(): Promise<void> {
 		this.Attacker.Robbery.IsRobbingLocationId = null;
-		await this.Attacker.Update({
-			money: this.Attacker.Money,
-			robberySuccessCount: this.Attacker.Robbery.SuccessCount,
-			robberySuccessRobbedSum: this.Attacker.Robbery.SuccessRobbedSum,
-			wantedTime: this.Attacker.Wanted.Time,
-			prisonTime: this.Attacker.Prison.Time,
-			prisonHasPaidBribe: this.Attacker.Prison.HasPaidBribe,
-			escapeHasTried: this.Attacker.Escape.HasTried,
-			robberyFailureCount: this.Attacker.Robbery.FailureCount,
-			prisonCount: this.Attacker.Prison.Count,
-			robbingLocationId: this.Attacker.Robbery.IsRobbingLocationId,
-		});
 
-		await RobHistories.CreateLocationHistory(this);
+		await this.Attacker.Update({
+			robbingLocationId: null,
+		});
 	}
 }
 
-const Strings = {
+export const Strings = {
 	[Language.English]: {
 		// CanRob
 		needMoreAttack: `You need more ${EmoteString.Attack}ATK to rob this location!`,

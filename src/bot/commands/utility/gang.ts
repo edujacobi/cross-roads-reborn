@@ -7,7 +7,7 @@ import { deferReply, deferUpdate, replyInteraction, replyWithContainer, sendComp
 import { EmoteId, EmoteString } from "#bot/utils/emotes";
 import { convertHexNumberToString, defaultComponent, formatMoney, hexToRGB, showTime } from "#bot/utils/ui";
 import { checkUser, searchUser } from "#bot/utils/userUtils";
-import { Gang, GangPermission, GangImportFailureReason } from "#core/models/Gang";
+import { Gang, GangPermission, GangImportFailureReason, Strings as GangStrings } from "#core/models/Gang";
 import { InvestmentRobbery, InvestmentRobberyReason } from "#core/models/InvestmentRobbery";
 import { Language, type Localization } from "#core/models/Language";
 import { type User } from "#core/models/User";
@@ -24,6 +24,9 @@ import {
 	Locale,
 	MessageFlags,
 	SlashCommandBuilder,
+	Collection,
+	ComponentType,
+	type MessageComponentInteraction,
 } from "discord.js";
 
 enum CommandOption {
@@ -1589,15 +1592,145 @@ module.exports = {
 				return warn(s.errorInviteGangYourself);
 			}
 
-			if (target.IsInGang()) {
-				return warn(s.userAlreadyInGang(target));
-			}
-
-			const success = await gang.InviteUser(user, target);
-
-			if (!success) {
+			const validation = await gang.CanInviteUser(target);
+			if (!validation.canInvite) {
 				return warn(s.errorInviteGangGeneric);
 			}
+
+			const COOLDOWN_INVITE = 3 * 60_000;
+			const sI = GangStrings[user.Language];
+			const sT = GangStrings[target.Language];
+
+			// Check cooldown
+			const cooldownInvite = interaction.client.invites;
+			if (!cooldownInvite.has(gang.Id)) {
+				cooldownInvite.set(gang.Id, new Collection());
+			}
+
+			const timestamp = cooldownInvite.get(gang.Id);
+			const now = Date.now();
+
+			if (!timestamp) {
+				return warn(s.errorInviteGangGeneric);
+			}
+
+			if (timestamp.has(target.Id)) {
+				const lastInviteTime = timestamp.get(target.Id) || 0;
+
+				if (now - lastInviteTime < COOLDOWN_INVITE) {
+					return warn(s.errorInviteGangGeneric);
+				}
+			}
+
+			timestamp.set(target.Id, now);
+
+			const buttonAccept = new ButtonBuilder()
+				.setCustomId("accept")
+				.setLabel(sT.acceptText)
+				.setStyle(ButtonStyle.Success);
+
+			const buttonDecline = new ButtonBuilder()
+				.setCustomId("decline")
+				.setLabel(sT.declineText)
+				.setStyle(ButtonStyle.Secondary);
+
+			const row = new ActionRowBuilder<ButtonBuilder>()
+				.addComponents([buttonAccept, buttonDecline]);
+
+			const response = await sendComplexPrivateMessage(target.Id, {
+				components: [
+					defaultComponent({
+						user,
+						description: sT.invitation.description(gang.Name, gang.Acronym),
+						footer: sT.invitation.footer,
+						buttons: row,
+					}),
+				],
+				flags: [MessageFlags.IsComponentsV2],
+			});
+
+			const collector = response?.createMessageComponentCollector({
+				filter: (i: MessageComponentInteraction) => i.user.id === target.Id,
+				max: 1,
+				componentType: ComponentType.Button,
+				idle: COOLDOWN_INVITE,
+			});
+
+			let responded = false;
+
+			collector?.on("collect", async btn => {
+				let descriptionPrivate = "";
+				let descriptionChannel = "";
+
+				responded = true;
+
+				await target.GetInfo();
+
+				collector?.stop();
+
+				if (btn.customId === "accept") {
+					if (target.Money < Gang.JOIN_COST) {
+						descriptionPrivate = sT.notEnoughMoney.private(gang.Name, gang.Acronym);
+						descriptionChannel = sI.notEnoughMoney.channel(target.GetNameWithImage());
+					}
+					else {
+						const success = await gang.AcceptInvite(target);
+
+						if (!success) {
+							descriptionPrivate = sT.notSuccess.private(gang.Name, gang.Acronym);
+							descriptionChannel = sI.notSuccess.channel(target.GetNameWithImage());
+						}
+						else {
+							descriptionPrivate = sT.success.private(gang.Name, gang.Acronym);
+							descriptionChannel = sI.success.channel(target.GetNameWithImage());
+						}
+					}
+				}
+				else if (btn.customId === "decline") {
+					descriptionPrivate = sT.decline.private(gang.Name, gang.Acronym);
+					descriptionChannel = sI.decline.channel(target.GetNameWithImage());
+				}
+
+				response?.edit({
+					components: [defaultComponent({
+						user,
+						description: descriptionPrivate,
+					})],
+				});
+
+				await sendComplexPrivateMessage(user.Id, {
+					components: [
+						defaultComponent({
+							user,
+							description: descriptionChannel,
+							footer: gang.Name,
+						}),
+					],
+					flags: [MessageFlags.IsComponentsV2],
+				});
+			});
+
+			collector?.on("end", async () => {
+				if (responded) return;
+
+				response?.edit({
+					components: [defaultComponent({
+						user,
+						description: sT.timeout.private(gang.Name, gang.Acronym),
+					})],
+				});
+
+				await sendComplexPrivateMessage(user.Id, {
+					components: [
+						defaultComponent({
+							user,
+							description: sI.timeout.channel(target.GetNameWithImage(), gang.Name, gang.Acronym),
+							footer: gang.Name,
+						}),
+					],
+					flags: [MessageFlags.IsComponentsV2],
+				});
+			});
 
 			const container = defaultComponent({
 				color: GangColor[gang.Color].Color as ColorResolvable,

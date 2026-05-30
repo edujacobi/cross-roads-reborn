@@ -8,11 +8,13 @@ import { searchUser } from "#bot/utils/userUtils";
 import { Language, type Localization } from "#core/models/Language";
 import { Pagination } from "#core/models/Pagination";
 import { Robbery } from "#core/models/Robbery";
-import { RobberyLocation } from "#core/models/RobberyLocation";
+import { RobberyLocation, Strings as RobberyLocationStrings } from "#core/models/RobberyLocation";
 import type { User } from "#core/models/User";
 import { getRobberyClassModifier } from "#core/types/Classes";
 import { getLocationList, LocationList } from "#core/types/Locations";
 import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+import { setTimeout as wait } from "timers/promises";
+import { runUserRobbery } from "#bot/utils/robberyHelper";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -224,7 +226,76 @@ module.exports = {
 
 					robLocationStarted = true;
 
-					await robbery.StartRobbery(interaction);
+					const sRL = RobberyLocationStrings[user.Language];
+					const location = LocationList[locationId];
+
+					await robbery.LockStates();
+
+					try {
+						const channelContainer = new CustomContainerBuilder()
+							.setUser(user)
+							.setAccentColor(CrColors.Robbery)
+							.addSectionComponents(section => section
+								.addTexts([
+									`# ${s.title}`,
+									s.description,
+								])
+								.setThumbnailAccessory(thumb => thumb
+									.setURL("https://media.discordapp.net/attachments/691019843159326757/791444366727708672/roubar_20201223201323.png"),
+								),
+							)
+							.addLargeSeparator()
+							.addTexts([
+								`${EmoteString.Robbery} ${sRL.robberyInProgress}`,
+							], 1)
+							.addLargeSeparator()
+							.addTexts([
+								`${sRL.tryingToRob} ${location.Emote.String} **${location.Name[user.Language]}** ${EmoteString.Waiting}`,
+							], 50)
+							.addFooter({
+								text: `${formatMoney(user.Money, language)} • ${user.Situation.Simple}`,
+							});
+
+						await replyWithContainer(interaction, channelContainer);
+
+						await wait(10_000 + (5_000 * locationId));
+
+						const outcome = await robbery.ResolveLocation();
+
+						const locationEmote = location.Emote.String;
+						const locationName = location.Name[user.Language];
+
+						if (outcome.success) {
+							const resultTexts = [
+								`### ${EmoteString.Victory} ${sRL.success}!`,
+								sRL.youRobbed(formatMoney(outcome.moneyRobbed, user.Language), `${locationEmote} ${locationName}`),
+								`-# ${sRL.willBeAbleAgain} ${showTime(outcome.attackerWantedTime!.getTime(), true)}`,
+							].join("\n");
+
+							channelContainer.changeTextFromSectionId(50, resultTexts);
+						}
+						else {
+							const prisonTextList = location.Prison.Text;
+							const prisonText = prisonTextList[Math.floor(Math.random() * prisonTextList.length)][user.Language];
+
+							const resultTexts = [
+								`### ${EmoteString.Defeat} ${sRL.failure}!`,
+								`${sRL.youFailed(`${locationEmote} ${locationName}`)}!`,
+								`-# ${EmoteString.Prison} ${prisonText} ${sRL.prisonTime(outcome.attackerPrisonTime!)}`,
+							].join("\n");
+
+							channelContainer.changeTextFromSectionId(50, resultTexts);
+						}
+
+						channelContainer
+							.changeTextFromSectionId(1, `${EmoteString.Robbery} ${sRL.finishedRobberyAttacker(outcome.success)}`)
+							.changeFooterText(formatMoney(user.Money, user.Language));
+
+						await replyWithContainer(interaction, channelContainer);
+					}
+					finally {
+						await robbery.ReleaseLocks();
+					}
 				}
 			});
 		}
@@ -248,9 +319,7 @@ module.exports = {
 			return replyWithContainer(interaction, container);
 		}
 
-		await robbery.GetDiscordUser();
-
-		await robbery.StartRobbery(interaction);
+		await runUserRobbery(interaction, robbery, user, target);
 	},
 };
 

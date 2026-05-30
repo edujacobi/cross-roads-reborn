@@ -1,21 +1,5 @@
 import { type AvailabilityReason, type User } from "./User";
 import { Log } from "#shared/log";
-import {
-	ButtonBuilder,
-	ButtonStyle,
-	type ChatInputCommandInteraction,
-	ComponentType,
-	type Message,
-	type MessageComponentInteraction,
-	MessageFlags,
-	type User as DUser,
-} from "discord.js";
-import { deferUpdate, replyWithContainer, sendComplexPrivateMessage } from "#bot/utils/discordInteractions";
-import { defaultComponent, formatMoney, showTime } from "#bot/utils/ui";
-import { CrColors } from "#bot/utils/colors";
-import { EmoteId, EmoteString } from "#bot/utils/emotes";
-import { getClient } from "#bot/client";
-import { setTimeout as wait } from "timers/promises";
 import { Notification } from "./Notification";
 import { addMinutes } from "date-fns";
 import { globalStrings, Language, type Localization } from "./Language";
@@ -25,9 +9,25 @@ import { ClassId, ClassList } from "#core/types/Classes";
 import { type JobId, JobList } from "#core/types/Jobs";
 import { type LocationId, LocationList } from "#core/types/Locations";
 import { type ScavengeId, ScavengeList } from "#core/types/Scavenge";
-import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
 import { ItemId } from "#core/types/Ids";
 import { ItemList } from "#core/types/Items";
+import { EmoteString } from "#bot/utils/emotes";
+import { showTime } from "#bot/utils/ui";
+
+export interface BeatUpInitData {
+	cannotRun: boolean;
+	usedGunSkin: string;
+	usedGunName: string;
+	timeInHospitalBase: number;
+	timeInHospitalAditional: number;
+}
+
+export interface BeatUpOutcomeData {
+	success: boolean;
+	attackerHospitalTime?: Date;
+	defenderHospitalTime?: Date;
+	attackerBeatUpTime?: Date;
+}
 
 export class BeatUp {
 	Id = 0;
@@ -41,24 +41,12 @@ export class BeatUp {
 	Success = false;
 	UsedConsumables: ItemId[] = [];
 
-	DiscordUser: DUser | undefined;
-
-	Container = {
-		Private: new CustomContainerBuilder().setAccentColor(CrColors.BeatUp),
-		Channel: new CustomContainerBuilder().setAccentColor(CrColors.BeatUp),
-	};
-
 	constructor(attacker: User, defender: User) {
 		this.Attacker = attacker;
 		this.Defender = defender;
 		this.Date = new Date();
 		this.Attacker.GetAttributes(true);
 		this.Defender.GetAttributes(true);
-	}
-
-	async GetDiscordUser() {
-		const client = getClient();
-		this.DiscordUser = await client.users.fetch(this.Defender.Id);
 	}
 
 	async CanBeatUser() {
@@ -228,89 +216,12 @@ export class BeatUp {
 		return { canBeat, message };
 	}
 
-	async StartBeating(interaction: ChatInputCommandInteraction) {
-		const sA = Strings[this.Attacker.Language];
-		const sD = Strings[this.Defender.Language];
-
-		// Check for Grenade
-		const grenade = this.Attacker.Items.find(i => i.Id === ItemId.Grenade);
-		if (grenade && grenade.Quantity > 0) {
-			const grenadeContainer = new CustomContainerBuilder()
-				.setUser(this.Attacker)
-				.setAccentColor(CrColors.BeatUp)
-				.addTexts([
-					`-# ${EmoteString.Beat} ${sA.preparingToBeat(this.Defender.GetNameWithImage())}`,
-				])
-				.addSectionComponents(row => row
-					.addTexts([
-						`### ${EmoteString.Granade} **${sA.useGrenade}**`,
-						sA.useGrenadeEffect,
-					])
-					.setButtonAccessory(new ButtonBuilder()
-						.setCustomId("use_grenade")
-						.setLabel(sA.useGrenade)
-						.setStyle(ButtonStyle.Success)
-						.setEmoji(EmoteId.Granade),
-					),
-				)
-				.addSectionComponents(row => row
-					.addTexts([
-						`### **${sA.dontUseGrenade}**`,
-						sA.dontUseGrenadeDescription,
-					])
-					.setButtonAccessory(new ButtonBuilder()
-						.setCustomId("dont_use_grenade")
-						.setLabel(sA.dontUseGrenade)
-						.setStyle(ButtonStyle.Secondary),
-					),
-				)
-				.addFooter({
-					text: sA.useGrenadeDescription(grenade.Quantity),
-				});
-
-			const grenadeMessage = await replyWithContainer(interaction, grenadeContainer);
-
-			if (grenadeMessage) {
-				let usedGrenade = false;
-				try {
-					const confirmation = await grenadeMessage.awaitMessageComponent({
-						filter: (i) => i.user.id === this.Attacker.Id,
-						time: 30_000,
-						componentType: ComponentType.Button,
-					});
-
-					await deferUpdate(confirmation);
-
-					if (confirmation.customId === "use_grenade") {
-						usedGrenade = true;
-					}
-				}
-				catch (e) {
-					// Time out, do nothing
-				}
-
-				await this.Attacker.GetInfo();
-
-				const { canBeat, message } = await this.CanBeatUser();
-
-				if (!canBeat) {
-					const container = defaultComponent({
-						user: this.Attacker,
-						color: CrColors.BeatUp,
-						description: message,
-					});
-
-					await replyWithContainer(interaction, container);
-					return;
-				}
-
-				if (usedGrenade) {
-					const consumed = await this.Attacker.ConsumeItem(ItemId.Grenade);
-					if (consumed) {
-						this.UsedConsumables.push(ItemId.Grenade);
-						await this.Attacker.GetAttributes(true, this.UsedConsumables);
-					}
-				}
+	async LockStates(useGrenade: boolean): Promise<BeatUpInitData> {
+		if (useGrenade) {
+			const consumed = await this.Attacker.ConsumeItem(ItemId.Grenade);
+			if (consumed) {
+				this.UsedConsumables.push(ItemId.Grenade);
+				await this.Attacker.GetAttributes(true, this.UsedConsumables);
 			}
 		}
 
@@ -335,165 +246,43 @@ export class BeatUp {
 			}),
 		]);
 
-		Log.Info(`User ${this.Attacker.Nickname} (Id: ${this.Attacker.Id}) started beating up user ${this.Defender.Nickname} (Id: ${this.Defender.Id}).`);
-
-		let usedGun = `${this.Attacker.GetItemSkin(this.Attacker.BestGun!)} **${this.Attacker.BestGun?.Description[this.Defender.Language]}**`;
-		if (this.UsedConsumables.includes(ItemId.Grenade)) {
-			usedGun += ` ${sD.andAGrenade}`;
-		}
+		Log.Info(`User ${this.Attacker.Nickname} (Id: ${this.Attacker.Id}) locked states for beating up user ${this.Defender.Nickname} (Id: ${this.Defender.Id}).`);
 
 		const cannotRun = this.Defender.Attributes.Attack < 5;
+		const usedGunSkin = this.Attacker.GetItemSkin(this.Attacker.BestGun!);
+		const usedGunName = this.Attacker.BestGun?.Description[this.Defender.Language] || "";
 
-		this.Container.Private
-			.addTexts([
-				`${EmoteString.Beat} ${sD.beatingInProgress}`,
-			])
-			.addLargeSeparator()
-			.addTexts([
-				`**${this.Attacker.GetNameWithImage()}** ${sD.tryingToBeatYou} ${usedGun} • ${EmoteString.Attack}${this.Attacker.Attributes.Attack} ATK`,
-				``,
-				`-# ${sD.decide}:`,
-			])
-			.addSectionComponents(fight => fight
-				.addTexts([
-					`### 💪 **${sD.fight}**`,
-					`${sD.fightDescription(this.TimeInHospital.Aditional)}`,
-				])
-				.setButtonAccessory(new ButtonBuilder()
-					.setCustomId("fight")
-					.setLabel(sD.fight)
-					.setStyle(ButtonStyle.Secondary)
-					.setEmoji("💪"),
-				),
-			)
-			.addLargeSeparator()
-			.addSectionComponents(run => run
-				.addTexts([
-					`### 👟 **${sD.run}**`,
-					`${sD.runDescription(this.TimeInHospital.Aditional)}`,
-				])
-				.setButtonAccessory(new ButtonBuilder()
-					.setCustomId("run")
-					.setLabel(sD.run)
-					.setStyle(ButtonStyle.Secondary)
-					.setEmoji("👟")
-					.setDisabled(cannotRun),
-				),
-			)
-			.addLargeSeparator()
-			.addSectionComponents(nothing => nothing
-				.addTexts([
-					`### 🏳️ **${sD.doNothing}**`,
-					`${sD.doNothingDescription}`,
-				])
-				.setButtonAccessory(new ButtonBuilder()
-					.setCustomId("nothing")
-					.setLabel(sD.doNothing)
-					.setStyle(ButtonStyle.Secondary)
-					.setEmoji("🏳️"),
-				),
-			)
-			.addFooter({ text: sD.secondsToRespond });
-
-		const defenderMessage = await sendComplexPrivateMessage(this.DiscordUser?.id, {
-			components: [this.Container.Private],
-			flags: MessageFlags.IsComponentsV2,
-		});
-
-		this.Container.Channel
-			.setUser(this.Attacker)
-			.addTexts([
-				`${EmoteString.Beat} ${sA.beatingInProgress}`,
-			], 1)
-			.addLargeSeparator()
-			.addTexts([
-				`${sA.tryingToBeatUp} **${this.Defender.GetNameWithImage()}** ${EmoteString.Waiting}`,
-			], 50)
-			.addFooter();
-
-		await replyWithContainer(interaction, this.Container.Channel);
-
-		const collectorPrivate = defenderMessage?.createMessageComponentCollector({
-			filter: (i: MessageComponentInteraction) => i.user.id === this.Defender.Id,
-			max: 1,
-			componentType: ComponentType.Button,
-			time: 45_000,
-		});
-
-		collectorPrivate?.on("collect", async btn => {
-			let descriptionPrivate = "";
-			let descriptionChannel = "";
-
-			collectorPrivate?.stop();
-
-			if (btn.customId === "fight") {
-				this.Defender.Attributes.Attack += 5;
-				this.TimeInHospital.Base += this.TimeInHospital.Aditional;
-
-				descriptionPrivate = `### 💪 ${sD.fighting} ${EmoteString.Waiting}`;
-				descriptionChannel = `### 💪 ${this.Defender.GetNameWithImage()} ${sA.isFighting}!`;
-			}
-			else if (btn.customId === "run") {
-				this.Defender.Attributes.Attack -= 5;
-				this.TimeInHospital.Base -= this.TimeInHospital.Aditional;
-
-				descriptionPrivate = `### 👟 ${sD.running} ${EmoteString.Waiting}`;
-				descriptionChannel = `### 👟 ${this.Defender.GetNameWithImage()} ${sA.isRunning}!`;
-			}
-			else if (btn.customId === "nothing") {
-				descriptionPrivate = `### 🏳️ ${sD.doingNothing} ${EmoteString.Waiting}`;
-				descriptionChannel = `### 🏳️ ${this.Defender.GetNameWithImage()} ${sA.isDoingNothing}!`;
-			}
-
-			this.Container.Private = new CustomContainerBuilder()
-				.setAccentColor(CrColors.BeatUp)
-				.addTexts([
-					`${EmoteString.Beat} ${sD.beatingInProgress}`,
-				])
-				.addLargeSeparator()
-				.addTexts([
-					descriptionPrivate,
-				])
-				.addFooter({ text: sD.secondsToRespond });
-
-			this.Container.Channel.changeTextFromSectionId(50, descriptionChannel);
-
-			defenderMessage?.edit({
-				components: [this.Container.Private],
-			});
-
-			await replyWithContainer(interaction, this.Container.Channel);
-		});
-
-		await wait(45_000);
-
-		const attackerChance = Math.random() * this.Attacker.Attributes.Attack;
-		const defenderChance = Math.random() * this.Defender.Attributes.Attack;
-
-		this.Success = attackerChance > defenderChance;
-
-		await this.EndBeating(interaction, defenderMessage);
+		return {
+			cannotRun,
+			usedGunSkin,
+			usedGunName,
+			timeInHospitalBase: this.TimeInHospital.Base,
+			timeInHospitalAditional: this.TimeInHospital.Aditional,
+		};
 	}
 
-	async EndBeating(interaction: ChatInputCommandInteraction, privateMessage: Message | undefined) {
+	async Resolve(defenderReaction: "fight" | "run" | "nothing"): Promise<BeatUpOutcomeData> {
 		try {
 			await Promise.all([
 				this.Attacker.GetInfo(),
 				this.Defender.GetInfo(),
 			]);
 
-			// Re-apply consumables bonuses because GetInfo resets attributes
 			await this.Attacker.GetAttributes(true, this.UsedConsumables);
 
-			const sA = Strings[this.Attacker.Language];
-			const sD = Strings[this.Defender.Language];
+			if (defenderReaction === "fight") {
+				this.Defender.Attributes.Attack += 5;
+				this.TimeInHospital.Base += this.TimeInHospital.Aditional;
+			}
+			else if (defenderReaction === "run") {
+				this.Defender.Attributes.Attack -= 5;
+				this.TimeInHospital.Base -= this.TimeInHospital.Aditional;
+			}
 
-			this.Container.Private = new CustomContainerBuilder()
-				.setAccentColor(CrColors.BeatUp)
-				.addTexts([
-					`${EmoteString.Beat} ${sD.finishedBeatUpDefender}`,
-				])
-				.addLargeSeparator();
+			const attackerChance = Math.random() * this.Attacker.Attributes.Attack;
+			const defenderChance = Math.random() * this.Defender.Attributes.Attack;
+
+			this.Success = attackerChance > defenderChance;
 
 			if (this.Success) {
 				this.Attacker.BeatUp.SuccessCount += 1;
@@ -511,20 +300,13 @@ export class BeatUp {
 					Notification.BeatAgain(this.Attacker),
 				]);
 
-				this.Container.Private
-					.addTexts([
-						sD.wereBeated(this.Attacker.GetNameWithImage(), this.Defender.Hospital.Time),
-					]);
-
-				const texts = [
-					`### ${EmoteString.Victory} ${sA.success}!`,
-					`${sA.youBeated(this.Defender.GetNameWithImage(), this.Defender.Hospital.Time)}`,
-					`-# ${sA.willBeAbleAgain} ${showTime(this.Attacker.BeatUp.Time.getTime(), true)}`,
-				].join("\n");
-
-				this.Container.Channel.changeTextFromSectionId(50, texts);
-
 				Log.Success(`User ${this.Attacker.Nickname} (Id: ${this.Attacker.Id}) successfully beated user ${this.Defender.Nickname} (Id: ${this.Defender.Id})`);
+
+				return {
+					success: true,
+					attackerBeatUpTime: this.Attacker.BeatUp.Time,
+					defenderHospitalTime: this.Defender.Hospital.Time,
+				};
 			}
 			else {
 				this.Attacker.BeatUp.BeatedUpCount += 1;
@@ -540,50 +322,18 @@ export class BeatUp {
 					Notification.BeatAgain(this.Attacker),
 				]);
 
-				this.Container.Private
-					.addTexts([
-						sD.youBeated(this.Attacker.GetNameWithImage(), this.Attacker.Hospital.Time),
-					]);
-
-				const texts = [
-					`### ${EmoteString.Defeat} ${sA.failure}!`,
-					sA.youFailed(this.Attacker.Hospital.Time),
-				].join("\n");
-
-				this.Container.Channel
-					.changeTextFromSectionId(50, texts);
-
 				Log.Success(`User ${this.Attacker.Nickname} (Id: ${this.Attacker.Id}) failed to beat user ${this.Defender.Nickname} (Id: ${this.Defender.Id}).`);
+
+				return {
+					success: false,
+					attackerHospitalTime: this.Attacker.Hospital.Time,
+					attackerBeatUpTime: this.Attacker.BeatUp.Time,
+				};
 			}
-
-			this.Container.Channel
-				.changeTextFromSectionId(1, `${EmoteString.Beat} ${sA.finishedBeatUpAttacker(this.Success)}`)
-				.changeFooterText(formatMoney(this.Attacker.Money, this.Attacker.Language));
-
-			await replyWithContainer(interaction, this.Container.Channel);
-
-			if (privateMessage) {
-				this.Container.Private
-					.addFooter({
-						text: formatMoney(this.Defender.Money, this.Defender.Language),
-					});
-
-				await privateMessage.edit({
-					components: [this.Container.Private],
-					flags: MessageFlags.IsComponentsV2,
-				});
-			}
-		}
-		catch (error) {
-			Log.Error(`Error during EndBeating: ${error}`);
 		}
 		finally {
-			this.Attacker.BeatUp.IsBeatingId = null;
-			this.Defender.BeatUp.IsBeingBeatUpById = null;
-
 			await Promise.all([
 				this.Attacker.Update({
-					beatingUserId: this.Attacker.BeatUp.IsBeatingId,
 					beatUpBeatedUpCount: this.Attacker.BeatUp.BeatedUpCount,
 					beatUpFailureCount: this.Attacker.BeatUp.FailureCount,
 					beatUpSuccessCount: this.Attacker.BeatUp.SuccessCount,
@@ -594,7 +344,6 @@ export class BeatUp {
 					wantedTime: this.Attacker.Wanted.Time,
 				}),
 				this.Defender.Update({
-					beingBeatUpByUserId: this.Defender.BeatUp.IsBeingBeatUpById,
 					beatUpBeatedUpCount: this.Defender.BeatUp.BeatedUpCount,
 					beatUpFailureCount: this.Defender.BeatUp.FailureCount,
 					beatUpSuccessCount: this.Defender.BeatUp.SuccessCount,
@@ -607,11 +356,24 @@ export class BeatUp {
 			await RobHistories.CreateUserBeatUpHistory(this);
 		}
 	}
+
+	async ReleaseLocks(): Promise<void> {
+		this.Attacker.BeatUp.IsBeatingId = null;
+		this.Defender.BeatUp.IsBeingBeatUpById = null;
+
+		await Promise.all([
+			this.Attacker.Update({
+				beatingUserId: null,
+			}),
+			this.Defender.Update({
+				beingBeatUpByUserId: null,
+			}),
+		]);
+	}
 }
 
-const Strings = {
+export const Strings = {
 	[Language.English]: {
-		// CanBeat
 		sameId: `You can't beat yourself up, idiot! ${EmoteString.Beat}`,
 		sameGang: `You can't beat up a member of your own gang! ${EmoteString.Beat}`,
 		withoutNick: `This user hasn't set a nickname yet! ${EmoteString.Beat}`,
@@ -773,12 +535,12 @@ const Strings = {
 		scavengingA: (placeId: ScavengeId) => `¡No puedes golpear a alguien mientras buscas en ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Spanish]}** ${EmoteString.Scavenge}`,
 		scavengingD: (placeId: ScavengeId) => `está buscando en ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Spanish]}**. ¡Espera unos segundos más para iniciar tu acción! ${EmoteString.Scavenge}`,
 		inJobA: (jobTime: Date, jobId: JobId) => `¡No puedes golpear a alguien mientras trabajas! ${EmoteString.Jobs}\n-# Terminarás tu trabajo de **${JobList[jobId].Description[Language.Spanish]}** ${showTime(jobTime.getTime(), true)}!`,
-		inJobD: (jobTime: Date, jobId: JobId) => `Juan está trabajando. No podrás golpearlo! ${EmoteString.Jobs}\n-# Terminarás el trabajo de **${JobList[jobId].Description[Language.Spanish]}** ${showTime(jobTime.getTime(), true)}!`,
+		inJobD: (jobTime: Date, jobId: JobId) => `está trabajando. ¡No podrás golpearlo! ${EmoteString.Jobs}\n-# Terminará el trabajo de **${JobList[jobId].Description[Language.Spanish]}** ${showTime(jobTime.getTime(), true)}!`,
 		inPrison: (prisonTime: Date) => `¡No puedes golpear a alguien mientras estás en prisión! ${EmoteString.Prison}\n-# Serás liberado ${showTime(prisonTime.getTime(), true)}!`,
 		inPrisonDefender: (prisonTime: Date) => `está en prisión y será liberado ${showTime(prisonTime.getTime(), true)} ${EmoteString.Prison}\n-# Podrás golpearlo si tú también estás en prisión.`,
 		isWanted: (wantedTime: Date) => `¡No puedes golpear a alguien mientras eres buscado por la policía! ${EmoteString.Police}\n-# Podrás golpear a alguien de nuevo ${showTime(wantedTime.getTime(), true)}!`,
 		isInHospital: (hospitalTime: Date) => `¡No puedes golpear a alguien mientras estás hospitalizado! ${EmoteString.Hospital}\n-# Serás curado ${showTime(hospitalTime.getTime(), true)}!`,
-		isInHospitalDefender: (nickname: string, hospitalTime: Date) => `¡No puedes golpear a alguien que está hospitalizado! ${EmoteString.Hospital}\n-# **${nickname}** serás curado ${showTime(hospitalTime.getTime(), true)}!`,
+		isInHospitalDefender: (nickname: string, hospitalTime: Date) => `¡No puedes golpear a alguien que está hospitalizado! ${EmoteString.Hospital}\n-# **${nickname}** será curado ${showTime(hospitalTime.getTime(), true)}!`,
 		isWaitingBeat: (beatTime: Date) => `Puedes golpear de nuevo ${showTime(beatTime.getTime(), true)} ${EmoteString.Beat}`,
 		isEscapingA: `¡Estás intentando escapar de la prisión y no puedes golpear! ${EmoteString.Escape}\n-# "¡Enfócate!"`,
 		isEscapingD: `está intentando escapar de la prisión y no puede ser golpeado. ${EmoteString.Escape}`,

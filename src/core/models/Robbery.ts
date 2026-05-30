@@ -1,23 +1,8 @@
-import { getClient } from "#bot/client";
-import { CrColors } from "#bot/utils/colors";
-import { deferUpdate, replyWithContainer, sendComplexPrivateMessage } from "#bot/utils/discordInteractions";
-import { EmoteId, EmoteString } from "#bot/utils/emotes";
-import { defaultComponent, formatMoney, showTime } from "#bot/utils/ui";
+import { EmoteString } from "#bot/utils/emotes";
+import { formatMoney, showTime } from "#bot/utils/ui";
 import { Log } from "#shared/log";
-import {
-	ButtonBuilder,
-	ButtonStyle,
-	type ChatInputCommandInteraction,
-	ComponentType,
-	type User as DUser,
-	type Message,
-	type MessageComponentInteraction,
-	MessageFlags,
-} from "discord.js";
-import { setTimeout as wait } from "timers/promises";
 import type { User } from "./User";
 
-import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
 import { RobHistories } from "#core/database/RobHistories";
 import { Users } from "#core/database/Users";
 import { ClassId, ClassList, getRobberyClassModifier } from "#core/types/Classes";
@@ -39,6 +24,25 @@ export enum ClashType {
 	Investment,
 }
 
+export interface RobberyInitData {
+	attackerTimeInPrison: number;
+	attackerAditionalTimeCallPolice: number;
+	defenderTimeInHospital: number;
+	cannotReact: boolean;
+	cannotCallPolice: boolean;
+	usedGunSkin: string;
+	usedGunName: string;
+}
+
+export interface RobberyOutcomeData {
+	success: boolean;
+	moneyRobbed: number;
+	willBeBeatenUp: boolean;
+	attackerPrisonTime?: Date;
+	defenderHospitalTime?: Date;
+	attackerWantedTime?: Date;
+}
+
 export class Robbery {
 	Id = 0;
 	Attacker: User;
@@ -54,22 +58,10 @@ export class Robbery {
 	Type = ClashType.User;
 	UsedConsumables: ItemId[] = [];
 
-	DiscordUser: DUser | undefined;
-
-	Container = {
-		Private: new CustomContainerBuilder().setAccentColor(CrColors.Robbery),
-		Channel: new CustomContainerBuilder().setAccentColor(CrColors.Robbery),
-	};
-
 	constructor(attacker: User, defender: User) {
 		this.Attacker = attacker;
 		this.Defender = defender;
 		this.Date = new Date();
-	}
-
-	async GetDiscordUser() {
-		const client = getClient();
-		this.DiscordUser = await client.users.fetch(this.Defender.Id);
 	}
 
 	async CanRobUser() {
@@ -107,61 +99,59 @@ export class Robbery {
 			canRob = false;
 		}
 
-		if (canRob) {
-			const attackerCheck = this.Attacker.CheckAvailability();
-			if (!attackerCheck.available) {
-				canRob = false;
-				switch (attackerCheck.reason) {
-				case "scavenging":
-					message = s.scavengingA(attackerCheck.referenceId as ScavengeId);
-					break;
-				case "working":
-					message = s.inJob(attackerCheck.time!, attackerCheck.referenceId as JobId);
-					break;
-				case "prison":
-					message = s.inPrison(attackerCheck.time!);
-					break;
-				case "wanted":
-					message = s.isWanted(attackerCheck.time!);
-					break;
-				case "hospital":
-					message = s.isInHospital(attackerCheck.time!);
-					break;
-				case "casino":
-					message = s.casinoAttacker;
-					break;
-				case "defendingInvestment":
-					message = globalStrings[this.Attacker.Language].attackerIsDefendingInvestment;
-					break;
-				case "gangAction":
-					message = globalStrings[this.Attacker.Language].attackerIsParticipatingInGangAction;
-					break;
-				case "beating": {
-					const user = await Users.findByPk(attackerCheck.targetId!, { attributes: ["class", "nickname"] });
-					message = globalStrings[this.Attacker.Language].attackerIsBeatingId(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname!}`);
-					break;
-				}
-				case "beingBeatUp": {
-					const user = await Users.findByPk(attackerCheck.targetId!, { attributes: ["class", "nickname"] });
-					message = globalStrings[this.Attacker.Language].attackerIsBeingBeatedById(`${ClassList[user!.class!].Image.Emote.String} ${user!.nickname!}`);
-					break;
-				}
-				case "robbing": {
-					const user = await Users.findByPk(attackerCheck.targetId!, { attributes: ["class", "nickname"] });
-					message = globalStrings[this.Attacker.Language].attackerIsRobbingId(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname!}`);
-					break;
-				}
-				case "beingRobbed": {
-					const user = await Users.findByPk(attackerCheck.targetId!, { attributes: ["class", "nickname"] });
-					message = globalStrings[this.Attacker.Language].attackerIsBeingRobbedById(`${ClassList[user!.class!].Image.Emote.String} ${user!.nickname!}`);
-					break;
-				}
-				case "robbingLocation": {
-					const location = LocationList[attackerCheck.referenceId as LocationId];
-					message = globalStrings[this.Attacker.Language].attackerIsRobbingId(location.Name[this.Attacker.Language]);
-					break;
-				}
-				}
+		const attackerCheck = this.Attacker.CheckAvailability();
+		if (!attackerCheck.available) {
+			canRob = false;
+			switch (attackerCheck.reason) {
+			case "scavenging":
+				message = s.scavengingA(attackerCheck.referenceId as ScavengeId);
+				break;
+			case "working":
+				message = s.inJob(attackerCheck.time!, attackerCheck.referenceId as JobId);
+				break;
+			case "prison":
+				message = s.inPrison(attackerCheck.time!);
+				break;
+			case "wanted":
+				message = s.isWanted(attackerCheck.time!);
+				break;
+			case "hospital":
+				message = s.isInHospital(attackerCheck.time!);
+				break;
+			case "casino":
+				message = s.casinoAttacker;
+				break;
+			case "defendingInvestment":
+				message = globalStrings[this.Attacker.Language].attackerIsDefendingInvestment;
+				break;
+			case "gangAction":
+				message = globalStrings[this.Attacker.Language].attackerIsParticipatingInGangAction;
+				break;
+			case "beating": {
+				const user = await Users.findByPk(attackerCheck.targetId!, { attributes: ["class", "nickname"] });
+				message = globalStrings[this.Attacker.Language].attackerIsBeatingId(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname!}`);
+				break;
+			}
+			case "beingBeatUp": {
+				const user = await Users.findByPk(attackerCheck.targetId!, { attributes: ["class", "nickname"] });
+				message = globalStrings[this.Attacker.Language].attackerIsBeingBeatedById(`${ClassList[user!.class!].Image.Emote.String} ${user!.nickname!}`);
+				break;
+			}
+			case "robbing": {
+				const user = await Users.findByPk(attackerCheck.targetId!, { attributes: ["class", "nickname"] });
+				message = globalStrings[this.Attacker.Language].attackerIsRobbingId(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname!}`);
+				break;
+			}
+			case "beingRobbed": {
+				const user = await Users.findByPk(attackerCheck.targetId!, { attributes: ["class", "nickname"] });
+				message = globalStrings[this.Attacker.Language].attackerIsBeingRobbedById(`${ClassList[user!.class!].Image.Emote.String} ${user!.nickname!}`);
+				break;
+			}
+			case "robbingLocation": {
+				const location = LocationList[attackerCheck.referenceId as LocationId];
+				message = globalStrings[this.Attacker.Language].attackerIsRobbingId(location.Name[this.Attacker.Language]);
+				break;
+			}
 			}
 		}
 
@@ -215,91 +205,12 @@ export class Robbery {
 		return { canRob, message };
 	}
 
-	async StartRobbery(interaction: ChatInputCommandInteraction) {
-		const sA = Strings[this.Attacker.Language];
-		const sD = Strings[this.Defender.Language];
-
-		// Check for Grenade
-		const grenade = this.Attacker.Items.find(i => i.Id === ItemId.Grenade);
-		if (grenade && grenade.Quantity > 0) {
-			const grenadeContainer = new CustomContainerBuilder()
-				.setUser(this.Attacker)
-				.setAccentColor(CrColors.Robbery)
-				.addTexts([
-					`-# ${EmoteString.Robbery} ${sA.preparingToRob(this.Defender.GetNameWithImage())}`,
-				])
-				.addLargeSeparator()
-				.addSectionComponents(row => row
-					.addTexts([
-						`### ${EmoteString.Granade} **${sA.useGrenade}**`,
-						sA.useGrenadeEffect,
-					])
-					.setButtonAccessory(new ButtonBuilder()
-						.setCustomId("use_grenade")
-						.setLabel(sA.useGrenade)
-						.setStyle(ButtonStyle.Success)
-						.setEmoji(EmoteId.Granade),
-					),
-				)
-				.addLargeSeparator()
-				.addSectionComponents(row => row
-					.addTexts([
-						`### **${sA.dontUseGrenade}**`,
-						sA.dontUseGrenadeDescription,
-					])
-					.setButtonAccessory(new ButtonBuilder()
-						.setCustomId("dont_use_grenade")
-						.setLabel(sA.dontUseGrenade)
-						.setStyle(ButtonStyle.Secondary),
-					),
-				)
-				.addFooter({
-					text: sA.useGrenadeDescription(grenade.Quantity),
-				});
-
-			const grenadeMessage = await replyWithContainer(interaction, grenadeContainer);
-
-			if (grenadeMessage) {
-				let usedGrenade = false;
-				try {
-					const confirmation = await grenadeMessage.awaitMessageComponent({
-						filter: (i) => i.user.id === this.Attacker.Id,
-						time: 30_000,
-						componentType: ComponentType.Button,
-					});
-
-					await deferUpdate(confirmation);
-
-					if (confirmation.customId === "use_grenade") {
-						usedGrenade = true;
-					}
-				}
-				catch (e) {
-					// Time out, do nothing
-				}
-
-				await this.Attacker.GetInfo();
-
-				const { canRob, message } = await this.CanRobUser();
-
-				if (!canRob) {
-					const container = defaultComponent({
-						user: this.Attacker,
-						color: CrColors.Robbery,
-						description: message,
-					});
-
-					await replyWithContainer(interaction, container);
-					return;
-				}
-
-				if (usedGrenade) {
-					const consumed = await this.Attacker.ConsumeItem(ItemId.Grenade);
-					if (consumed) {
-						this.UsedConsumables.push(ItemId.Grenade);
-						await this.Attacker.GetAttributes(false, this.UsedConsumables);
-					}
-				}
+	async LockStates(useGrenade: boolean): Promise<RobberyInitData> {
+		if (useGrenade) {
+			const consumed = await this.Attacker.ConsumeItem(ItemId.Grenade);
+			if (consumed) {
+				this.UsedConsumables.push(ItemId.Grenade);
+				await this.Attacker.GetAttributes(false, this.UsedConsumables);
 			}
 		}
 
@@ -323,12 +234,7 @@ export class Robbery {
 			}),
 		]);
 
-		Log.Info(`User ${this.Attacker.Nickname} (Id: ${this.Attacker.Id}) started a robbery to user ${this.Defender.Nickname} (Id: ${this.Defender.Id}).`);
-
-		let usedGun = `${this.Attacker.GetItemSkin(this.Attacker.BestGun!)} **${this.Attacker.BestGun?.Description[this.Defender.Language]}**`;
-		if (this.UsedConsumables.includes(ItemId.Grenade)) {
-			usedGun += ` ${sD.andAGrenade}`;
-		}
+		Log.Info(`User ${this.Attacker.Nickname} (Id: ${this.Attacker.Id}) locked states for robbing user ${this.Defender.Nickname} (Id: ${this.Defender.Id}).`);
 
 		const cannotReact = this.Defender.IsWorking() ||
 			this.Defender.IsInPrison() ||
@@ -337,141 +243,21 @@ export class Robbery {
 
 		const cannotCallPolice = this.Defender.IsInHospital() || this.Defender.Attributes.Defense < 5;
 
-		this.Container.Private
-			.addTexts([
-				`${EmoteString.Robbery} ${sD.robberyInProgress}`,
-			])
-			.addLargeSeparator()
-			.addTexts([
-				`**${this.Attacker.GetNameWithImage()}** ${sD.tryingToRobYou} ${usedGun} • ${EmoteString.Attack}${this.Attacker.Attributes.Attack} ATK`,
-				``,
-				`-# ${sD.decide}:`,
-			])
-			.addSectionComponents(react => react
-				.addTexts([
-					`### ${EmoteString.React} **${sD.react}**`,
-					`${sD.reactDescription(this.DefenderTimeInHospital)}`,
-				])
-				.setButtonAccessory(new ButtonBuilder()
-					.setCustomId("react")
-					.setLabel(sD.react)
-					.setStyle(ButtonStyle.Secondary)
-					.setEmoji(EmoteId.React)
-					.setDisabled(cannotReact),
-				),
-			)
-			.addLargeSeparator()
-			.addSectionComponents(callPolice => callPolice
-				.addTexts([
-					`### ${EmoteString.Police} **${sD.callPolice}**`,
-					`${sD.callPoliceDescription(this.AttackerAditionalTimeCallPolice)}`,
-				])
-				.setButtonAccessory(new ButtonBuilder()
-					.setCustomId("police")
-					.setLabel(sD.callPolice)
-					.setStyle(ButtonStyle.Secondary)
-					.setEmoji(EmoteId.Police)
-					.setDisabled(cannotCallPolice),
-				),
-			)
-			.addLargeSeparator()
-			.addSectionComponents(nothing => nothing
-				.addTexts([
-					`### 🏳️ **${sD.doNothing}**`,
-					`${sD.doNothingDescription}`,
-				])
-				.setButtonAccessory(new ButtonBuilder()
-					.setCustomId("nothing")
-					.setLabel(sD.doNothing)
-					.setStyle(ButtonStyle.Secondary)
-					.setEmoji("🏳️"),
-				),
-			)
-			.addFooter({ text: `${formatMoney(this.Defender.Money, this.Defender.Language)} • ${sD.secondsToRespond}` });
+		const usedGunSkin = this.Attacker.GetItemSkin(this.Attacker.BestGun!);
+		const usedGunName = this.Attacker.BestGun?.Description[this.Defender.Language] || "";
 
-		const defenderMessage = await sendComplexPrivateMessage(this.DiscordUser?.id, {
-			components: [this.Container.Private],
-			flags: MessageFlags.IsComponentsV2,
-		});
-
-		this.Container.Channel
-			.setUser(this.Attacker)
-			.addTexts([
-				`${EmoteString.Robbery} ${sA.robberyInProgress}`,
-			], 1)
-			.addLargeSeparator()
-			.addTexts([
-				`${sA.tryingToRob} **${this.Defender.GetNameWithImage()}** ${EmoteString.Waiting}`,
-			], 50)
-			.addFooter();
-
-		await replyWithContainer(interaction, this.Container.Channel);
-
-		const collectorPrivate = defenderMessage?.createMessageComponentCollector({
-			filter: (i: MessageComponentInteraction) => i.user.id === this.Defender.Id,
-			max: 1,
-			componentType: ComponentType.Button,
-			time: 60_000,
-		});
-
-		collectorPrivate?.on("collect", async btn => {
-			let descriptionPrivate = "";
-			let descriptionChannel = "";
-
-			collectorPrivate?.stop();
-
-			if (btn.customId === "react") {
-				this.Defender.Attributes.Defense += 5;
-				this.BeatUpChance = 1;
-
-				descriptionPrivate = `### ${EmoteString.React} ${sD.reacting} ${EmoteString.Waiting}`;
-				descriptionChannel = `### ${EmoteString.React} ${this.Defender.GetNameWithImage()} ${sA.isReacting}!`;
-				// this.Defender.Robbery.ReactedCount += 1;
-			}
-			else if (btn.customId === "police") {
-				this.Defender.Attributes.Defense -= 5;
-				this.AttackerTimeInPrison += this.AttackerAditionalTimeCallPolice;
-
-				descriptionPrivate = `### ${EmoteString.Police} ${sD.callingPolice} ${EmoteString.Waiting}`;
-				descriptionChannel = `### ${EmoteString.Police} ${this.Defender.GetNameWithImage()} ${sA.isCallingPolice}!`;
-				// this.Defender.Robbery.CallPoliceCount += 1;
-			}
-			else if (btn.customId === "nothing") {
-				descriptionPrivate = `### 🏳️ ${sD.doingNothing} ${EmoteString.Waiting}`;
-				descriptionChannel = `### 🏳️ ${this.Defender.GetNameWithImage()} ${sA.isDoingNothing}!`;
-			}
-
-			this.Container.Private = new CustomContainerBuilder()
-				.setAccentColor(CrColors.Robbery)
-				.addTexts([
-					`${EmoteString.Robbery} ${sD.robberyInProgress}`,
-				])
-				.addLargeSeparator()
-				.addTexts([
-					descriptionPrivate,
-				])
-				.addFooter({ text: `${formatMoney(this.Defender.Money, this.Defender.Language)} • ${sD.secondsToRespond}` });
-
-			this.Container.Channel.changeTextFromSectionId(50, descriptionChannel);
-
-			defenderMessage?.edit({
-				components: [this.Container.Private],
-			});
-
-			await replyWithContainer(interaction, this.Container.Channel);
-		});
-
-		await wait(60_000);
-
-		this.Attacker.Attributes.Attack -= getPercent(this.Defender.Attributes.Defense, this.Attacker.Attributes.Attack);
-
-		this.Chance = Math.random() * 100;
-		this.Success = this.Chance < this.Attacker.Attributes.Attack;
-
-		await this.EndRobbery(interaction, defenderMessage);
+		return {
+			attackerTimeInPrison: this.AttackerTimeInPrison,
+			attackerAditionalTimeCallPolice: this.AttackerAditionalTimeCallPolice,
+			defenderTimeInHospital: this.DefenderTimeInHospital,
+			cannotReact,
+			cannotCallPolice,
+			usedGunSkin,
+			usedGunName,
+		};
 	}
 
-	async EndRobbery(interaction: ChatInputCommandInteraction, privateMessage: Message | undefined) {
+	async Resolve(defenderReaction: "react" | "police" | "nothing"): Promise<RobberyOutcomeData> {
 		try {
 			await Promise.all([
 				this.Attacker.GetInfo(),
@@ -481,15 +267,19 @@ export class Robbery {
 			// Re-apply consumables bonuses because GetInfo resets attributes
 			await this.Attacker.GetAttributes(false, this.UsedConsumables);
 
-			const sA = Strings[this.Attacker.Language];
-			const sD = Strings[this.Defender.Language];
+			if (defenderReaction === "react") {
+				this.Defender.Attributes.Defense += 5;
+				this.BeatUpChance = 1;
+			}
+			else if (defenderReaction === "police") {
+				this.Defender.Attributes.Defense -= 5;
+				this.AttackerTimeInPrison += this.AttackerAditionalTimeCallPolice;
+			}
 
-			this.Container.Private = new CustomContainerBuilder()
-				.setAccentColor(CrColors.Robbery)
-				.addTexts([
-					`${EmoteString.Robbery} ${sD.finishedRobberyDefender}`,
-				])
-				.addLargeSeparator();
+			this.Attacker.Attributes.Attack -= getPercent(this.Defender.Attributes.Defense, this.Attacker.Attributes.Attack);
+
+			this.Chance = Math.random() * 100;
+			this.Success = this.Chance < this.Attacker.Attributes.Attack;
 
 			if (this.Success) {
 				if (this.Defender.Attributes.Defense > 0) {
@@ -528,26 +318,15 @@ export class Robbery {
 
 				await Notification.RobAgain(this.Attacker);
 
-				this.Container.Private
-					.addTexts([
-						`### ${EmoteString.Defeat} ${sD.success}.`,
-						`${sD.wereRobbed(formatMoney(this.MoneyRobbed, this.Defender.Language), this.Attacker.GetNameWithImage())}${willBeBeatenUp ? `
-	${sD.beatedUp(this.Defender.Hospital.Time)} ${EmoteString.Hospital}` : ""}`,
-					]);
-
-				const randomSuccessMessage = sA.successMessages[Math.floor(Math.random() * sA.successMessages.length)];
-				const successMessage = randomSuccessMessage(formatMoney(this.MoneyRobbed, this.Attacker.Language), this.Defender.GetNameWithImage());
-
-				const texts = [
-					`### ${EmoteString.Victory} ${sA.success}!`,
-					`${successMessage}${willBeBeatenUp ? `
-	${sA.beatenUp(this.Defender.Hospital.Time)} ${EmoteString.Hospital}` : ""}`,
-					`-# ${sA.willBeAbleAgain} ${showTime(this.Attacker.Wanted.Time.getTime(), true)}`,
-				].join("\n");
-
-				this.Container.Channel.changeTextFromSectionId(50, texts);
-
 				Log.Success(`User ${this.Attacker.Nickname} (Id: ${this.Attacker.Id}) successfully robbed user ${this.Defender.Nickname} (Id: ${this.Defender.Id}) and got ${formatMoney(this.MoneyRobbed, Language.English)}. ${willBeBeatenUp ? "The defender was beaten up." : ""}`);
+
+				return {
+					success: true,
+					moneyRobbed: this.MoneyRobbed,
+					willBeBeatenUp,
+					attackerWantedTime: this.Attacker.Wanted.Time,
+					defenderHospitalTime: willBeBeatenUp ? this.Defender.Hospital.Time : undefined,
+				};
 			}
 			else {
 				const prisonTimeMultiplier = await Event.GetActiveFromType(EventType.PRISON_TIME_MULTIPLIER);
@@ -559,50 +338,17 @@ export class Robbery {
 
 				await Notification.Free(this.Attacker);
 
-				this.Container.Private
-					.addTexts([
-						`### ${EmoteString.Victory} ${sD.failure}!`,
-						`**${this.Attacker.GetNameWithImage()}** ${sD.robFailed} ${EmoteString.Police}`,
-						`-# ${sD.prisonUntil(this.Attacker.Prison.Time)}!`,
-					]);
-
-				const randomFailureMessage = sA.failureMessages[Math.floor(Math.random() * sA.failureMessages.length)];
-
-				const texts = [
-					`### ${EmoteString.Defeat} ${sA.failure}!`,
-					`${sA.youFailed}!`,
-					`-# ${EmoteString.Prison} ${randomFailureMessage} ${sA.prisonTime(this.Attacker.Prison.Time)}`,
-				].join("\n");
-
-				this.Container.Channel.changeTextFromSectionId(50, texts);
-
 				Log.Success(`User ${this.Attacker.Nickname} (Id: ${this.Attacker.Id}) failed to rob user ${this.Defender.Nickname} (Id: ${this.Defender.Id}).`);
+
+				return {
+					success: false,
+					moneyRobbed: 0,
+					willBeBeatenUp: false,
+					attackerPrisonTime: this.Attacker.Prison.Time,
+				};
 			}
-
-			this.Container.Channel
-				.changeTextFromSectionId(1, `${EmoteString.Robbery} ${sA.finishedRobberyAttacker(this.Success)}`)
-				.changeFooterText(formatMoney(this.Attacker.Money, this.Attacker.Language));
-
-			await replyWithContainer(interaction, this.Container.Channel);
-
-			if (privateMessage) {
-				this.Container.Private
-					.addFooter({
-						text: formatMoney(this.Defender.Money, this.Defender.Language),
-					});
-				await privateMessage.edit({
-					components: [this.Container.Private],
-					flags: MessageFlags.IsComponentsV2,
-				});
-			}
-		}
-		catch (error) {
-			Log.Error(`Error during EndRobbery: ${error}`);
 		}
 		finally {
-			this.Attacker.Robbery.IsRobbingId = null;
-			this.Defender.Robbery.IsBeingRobbedById = null;
-
 			await Promise.all([
 				this.Attacker.Update({
 					money: this.Attacker.Money,
@@ -615,7 +361,6 @@ export class Robbery {
 					escapeHasTried: this.Attacker.Escape.HasTried,
 					robberyFailureCount: this.Attacker.Robbery.FailureCount,
 					prisonCount: this.Attacker.Prison.Count,
-					robbingUserId: this.Attacker.Robbery.IsRobbingId,
 				}),
 				this.Defender.Update({
 					money: this.Defender.Money,
@@ -624,16 +369,29 @@ export class Robbery {
 					hospitalCount: this.Defender.Hospital.Count,
 					hospitalTime: this.Defender.Hospital.Time,
 					beatUpBeatedUpCount: this.Defender.BeatUp.BeatedUpCount,
-					beingRobbedByUserId: this.Defender.Robbery.IsBeingRobbedById,
 				}),
 			]);
 
 			await RobHistories.CreateUserRobberyHistory(this);
 		}
 	}
+
+	async ReleaseLocks(): Promise<void> {
+		this.Attacker.Robbery.IsRobbingId = null;
+		this.Defender.Robbery.IsBeingRobbedById = null;
+
+		await Promise.all([
+			this.Attacker.Update({
+				robbingUserId: null,
+			}),
+			this.Defender.Update({
+				beingRobbedByUserId: null,
+			}),
+		]);
+	}
 }
 
-const Strings = {
+export const Strings = {
 	[Language.English]: {
 		// CanRob
 		sameId: "You can't rob yourself, idiot!",

@@ -5,6 +5,7 @@ import { CrColors } from "#bot/utils/colors";
 import type { User } from "#core/models/User";
 import { Robbery } from "#core/models/Robbery";
 import { searchUser } from "#bot/utils/userUtils";
+import { runUserRobbery } from "#bot/utils/robberyHelper";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -45,8 +46,6 @@ module.exports = {
 			return replyWithContainer(interaction, container);
 		}
 
-		await robbery.GetDiscordUser();
-
-		await robbery.StartRobbery(interaction);
+		await runUserRobbery(interaction, robbery, target, user);
 	},
 };
