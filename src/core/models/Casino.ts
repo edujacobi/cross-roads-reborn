@@ -126,6 +126,21 @@ export class Casino {
 		});
 		Log.Success(`User ${user.Nickname} (Id: ${user.Id}) lost ${formatMoney(amount, Language.English)} in a Casino Game.`);
 	}
+
+	static async FinishUserGameWithLossNoSubtraction(user: User, amount: number) {
+		user.Casino.IsInGame = false;
+		user.Casino.LoseSum += amount;
+		user.Casino.LoseCount += 1;
+		await user.Update({
+			casinoIsInGame: user.Casino.IsInGame,
+			casinoLoseCount: user.Casino.LoseCount,
+			casinoLoseSum: user.Casino.LoseSum,
+			// Russian Roulette
+			hospitalTime: user.Hospital.Time,
+			hospitalCount: user.Hospital.Count,
+		});
+		Log.Success(`User ${user.Nickname} (Id: ${user.Id}) lost ${formatMoney(amount, Language.English)} in a Casino Game.`);
+	}
 }
 
 const Strings = {

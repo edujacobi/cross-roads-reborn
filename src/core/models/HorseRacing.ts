@@ -282,7 +282,7 @@ export class HorseRacing {
 			const user = await new User(bet.userId).GetInfo();
 			if (!user) continue;
 
-			await Casino.FinishUserGameWithLoss(user, bet.amount);
+			await Casino.FinishUserGameWithLossNoSubtraction(user, bet.amount);
 
 			const userHorse = HorseList.find(h => h.Id === bet.horseNumber)!;
 			const winningHorseName = winningHorse.Name[user.Language];

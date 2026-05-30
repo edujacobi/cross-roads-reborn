@@ -152,7 +152,7 @@ export class Lottery {
 
 			const loserUser = await new User(ticket.userId).GetInfo();
 			if (loserUser) {
-				await Casino.FinishUserGameWithLoss(loserUser, ticket.amount);
+				await Casino.FinishUserGameWithLossNoSubtraction(loserUser, ticket.amount);
 
 				const s = Strings[loserUser.Language];
 				await sendPrivateMessage(

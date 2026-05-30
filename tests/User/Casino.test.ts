@@ -128,4 +128,35 @@ describe("Casino", () => {
 			expect(result.canPlay).toBe(true);
 		});
 	});
+
+	describe("When finishing user game with loss", () => {
+		it("Should deduct money and update stats when using FinishUserGameWithLoss", async () => {
+			user.Money = 5_000;
+			user.Casino.IsInGame = true;
+			user.Casino.LoseCount = 10;
+			user.Casino.LoseSum = 50_000;
+
+			await Casino.FinishUserGameWithLoss(user, 1_000);
+
+			expect(user.Money).toBe(4_000);
+			expect(user.Casino.IsInGame).toBe(false);
+			expect(user.Casino.LoseCount).toBe(11);
+			expect(user.Casino.LoseSum).toBe(51_000);
+		});
+
+		it("Should NOT deduct money but still update stats when using FinishUserGameWithLossNoSubtraction", async () => {
+			user.Money = 5_000;
+			user.Casino.IsInGame = true;
+			user.Casino.LoseCount = 10;
+			user.Casino.LoseSum = 50_000;
+
+			await Casino.FinishUserGameWithLossNoSubtraction(user, 1_000);
+
+			expect(user.Money).toBe(5_000);
+			expect(user.Casino.IsInGame).toBe(false);
+			expect(user.Casino.LoseCount).toBe(11);
+			expect(user.Casino.LoseSum).toBe(51_000);
+		});
+	});
 });
+
