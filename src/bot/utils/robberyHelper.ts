@@ -73,7 +73,10 @@ export async function runUserRobbery(interaction: ChatInputCommandInteraction, r
 				// Time out, do nothing
 			}
 
-			await attacker.GetInfo();
+			await Promise.all([
+				attacker.GetInfo(),
+				defender.GetInfo(),
+			]);
 
 			const availability = await robbery.CanRob();
 
