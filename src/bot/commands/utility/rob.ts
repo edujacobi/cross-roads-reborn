@@ -3,18 +3,18 @@ import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
 import { CrColors } from "#bot/utils/colors";
 import { deferReply, deferUpdate, replyWithContainer } from "#bot/utils/discordInteractions";
 import { EmoteString } from "#bot/utils/emotes";
+import { runUserRobbery } from "#bot/utils/robberyHelper";
 import { defaultComponent, formatMoney, showTime } from "#bot/utils/ui";
 import { searchUser } from "#bot/utils/userUtils";
 import { Language, type Localization } from "#core/models/Language";
 import { Pagination } from "#core/models/Pagination";
-import { UserRobberyStrategy } from "#core/models/strategies/robbery/UserRobberyStrategy";
 import { LocationRobberyStrategy, Strings as RobberyLocationStrings } from "#core/models/strategies/robbery/LocationRobberyStrategy";
+import { UserRobberyStrategy } from "#core/models/strategies/robbery/UserRobberyStrategy";
 import type { User } from "#core/models/User";
 import { getRobberyClassModifier } from "#core/types/Classes";
 import { getLocationList, LocationList } from "#core/types/Locations";
 import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
 import { setTimeout as wait } from "timers/promises";
-import { runUserRobbery } from "#bot/utils/robberyHelper";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -235,16 +235,6 @@ module.exports = {
 						const channelContainer = new CustomContainerBuilder()
 							.setUser(user)
 							.setAccentColor(CrColors.Robbery)
-							.addSectionComponents(section => section
-								.addTexts([
-									`# ${s.title}`,
-									s.description,
-								])
-								.setThumbnailAccessory(thumb => thumb
-									.setURL("https://media.discordapp.net/attachments/691019843159326757/791444366727708672/roubar_20201223201323.png"),
-								),
-							)
-							.addLargeSeparator()
 							.addTexts([
 								`${EmoteString.Robbery} ${sRL.robberyInProgress}`,
 							], 1)
