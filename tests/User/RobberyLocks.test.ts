@@ -2,7 +2,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { User } from "#core/models/User";
 import { Language } from "#core/models/Language";
-import { Robbery } from "#core/models/Robbery";
+import { UserRobberyStrategy } from "#core/models/strategies/robbery/UserRobberyStrategy";
+import { type UserRobberyStrategy } from "#core/models/strategies/robbery/UserRobberyStrategy";
 import { ClassId } from "#core/types/Classes";
 import { ItemId } from "#core/types/Ids";
 import { ItemList, type UserItem } from "#core/types/Items";
@@ -24,7 +25,7 @@ vi.mock("#core/database/Users", () => ({
 describe("Robbery — LockStates & ReleaseLocks", () => {
 	let attacker: User;
 	let defender: User;
-	let robbery: Robbery;
+	let robbery: UserRobberyStrategy;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -45,7 +46,7 @@ describe("Robbery — LockStates & ReleaseLocks", () => {
 		defender.Items = [ItemList[ItemId.Pistol] as UserItem];
 		defender.GetAttributes();
 
-		robbery = new Robbery(attacker, defender);
+		robbery = new UserRobberyStrategy(attacker, defender) as UserRobberyStrategy;
 	});
 
 	// -------------------------------------------------------------------------

@@ -1,16 +1,16 @@
+import { getClient } from "#bot/client";
 import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
+import { CrColors } from "#bot/utils/colors";
 import { deferUpdate, replyWithContainer } from "#bot/utils/discordInteractions";
 import { EmoteId, EmoteString } from "#bot/utils/emotes";
 import { defaultComponent, formatMoney, showTime } from "#bot/utils/ui";
-import { Strings as RobberyStrings, type Robbery } from "#core/models/Robbery";
+import { Strings as RobberyStrings, type UserRobberyStrategy } from "#core/models/strategies/robbery/UserRobberyStrategy";
 import type { User } from "#core/models/User";
+import { ItemId } from "#core/types/Ids";
 import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, ComponentType, type MessageComponentInteraction, MessageFlags } from "discord.js";
 import { setTimeout as wait } from "timers/promises";
-import { ItemId } from "#core/types/Ids";
-import { getClient } from "#bot/client";
-import { CrColors } from "#bot/utils/colors";
 
-export async function runUserRobbery(interaction: ChatInputCommandInteraction, robbery: Robbery, attacker: User, defender: User) {
+export async function runUserRobbery(interaction: ChatInputCommandInteraction, robbery: UserRobberyStrategy, attacker: User, defender: User) {
 	const sA = RobberyStrings[attacker.Language];
 	const sD = RobberyStrings[defender.Language];
 
@@ -75,7 +75,7 @@ export async function runUserRobbery(interaction: ChatInputCommandInteraction, r
 
 			await attacker.GetInfo();
 
-			const availability = await robbery.CanRobUser();
+			const availability = await robbery.CanRob();
 
 			if (!availability.canRob) {
 				const container = defaultComponent({

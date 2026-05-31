@@ -15,7 +15,7 @@ import { BeatUp } from "#core/models/BeatUp";
 import { Gang } from "#core/models/Gang";
 import { Language, type Localization } from "#core/models/Language";
 import { Pagination } from "#core/models/Pagination";
-import { Robbery } from "#core/models/Robbery";
+import { UserRobberyStrategy } from "#core/models/strategies/robbery/UserRobberyStrategy";
 import { User } from "#core/models/User";
 import type { IDescription } from "#core/types/Interfaces";
 import { runUserRobbery } from "#bot/utils/robberyHelper";
@@ -682,9 +682,9 @@ module.exports = {
 
 				await user.GetInfo();
 
-				const robbery = new Robbery(user, target);
+				const robbery = new UserRobberyStrategy(user, target);
 
-				const { canRob, message } = await robbery.CanRobUser();
+				const { canRob, message } = await robbery.CanRob();
 
 				if (!canRob) {
 					const container = defaultComponent({

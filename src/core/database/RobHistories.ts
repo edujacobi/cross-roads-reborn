@@ -1,3 +1,12 @@
+import type { BeatUp } from "#core/models/BeatUp";
+import type { InvestmentRobbery } from "#core/models/InvestmentRobbery";
+import { Language } from "#core/models/Language";
+import { type LocationRobberyStrategy } from "#core/models/strategies/robbery/LocationRobberyStrategy";
+import { type UserRobberyStrategy } from "#core/models/strategies/robbery/UserRobberyStrategy";
+import type { User } from "#core/models/User";
+import { LocationList } from "#core/types/Locations";
+import { ClashType } from "#core/types/Robbery";
+import { Log } from "#shared/log";
 import {
 	type CreationOptional,
 	DataTypes,
@@ -8,15 +17,7 @@ import {
 	Op,
 } from "sequelize";
 import { sequelize } from "./Database";
-import type { User } from "#core/models/User";
 import type { Users } from "./Users";
-import { ClashType, type Robbery } from "#core/models/Robbery";
-import type { InvestmentRobbery } from "#core/models/InvestmentRobbery";
-import { Log } from "#shared/log";
-import type { RobberyLocation } from "#core/models/RobberyLocation";
-import { Language } from "#core/models/Language";
-import type { BeatUp } from "#core/models/BeatUp";
-import { LocationList } from "#core/types/Locations";
 
 export class RobHistories extends Model<
 	InferAttributes<RobHistories>,
@@ -52,7 +53,7 @@ export class RobHistories extends Model<
 		});
 	}
 
-	static async CreateUserRobberyHistory(robbery: Robbery) {
+	static async CreateUserRobberyHistory(robbery: UserRobberyStrategy) {
 		try {
 			await RobHistories.create({
 				attackerId: robbery.Attacker.Id,
@@ -69,7 +70,7 @@ export class RobHistories extends Model<
 		}
 	}
 
-	static async CreateLocationHistory(robbery: RobberyLocation) {
+	static async CreateLocationHistory(robbery: LocationRobberyStrategy) {
 		try {
 			await RobHistories.create({
 				attackerId: robbery.Attacker.Id,

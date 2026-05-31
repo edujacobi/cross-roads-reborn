@@ -10,7 +10,7 @@ import { Pagination } from "#core/models/Pagination";
 import { ClassList } from "#core/types/Classes";
 import { LocationList } from "#core/types/Locations";
 import { InvestmentList, type InvestmentId } from "#core/types/Investments";
-import { ClashType } from "#core/models/Robbery";
+import { ClashType } from "#core/types/Robbery";
 import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
 import { searchUser } from "#bot/utils/userUtils";
 

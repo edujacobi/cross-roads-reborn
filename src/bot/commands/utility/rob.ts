@@ -7,8 +7,8 @@ import { defaultComponent, formatMoney, showTime } from "#bot/utils/ui";
 import { searchUser } from "#bot/utils/userUtils";
 import { Language, type Localization } from "#core/models/Language";
 import { Pagination } from "#core/models/Pagination";
-import { Robbery } from "#core/models/Robbery";
-import { RobberyLocation, Strings as RobberyLocationStrings } from "#core/models/RobberyLocation";
+import { UserRobberyStrategy } from "#core/models/strategies/robbery/UserRobberyStrategy";
+import { LocationRobberyStrategy, Strings as RobberyLocationStrings } from "#core/models/strategies/robbery/LocationRobberyStrategy";
 import type { User } from "#core/models/User";
 import { getRobberyClassModifier } from "#core/types/Classes";
 import { getLocationList, LocationList } from "#core/types/Locations";
@@ -164,8 +164,8 @@ module.exports = {
 				else if (btn.customId.includes("location")) {
 					const locationId = Number(btn.customId.replace("location", ""));
 					const location = LocationList[locationId];
-					const robbery = new RobberyLocation(user, locationId);
-					const { canRob } = await robbery.CanRobLocation();
+					const robbery = new LocationRobberyStrategy(user, locationId);
+					const { canRob } = await robbery.CanRob();
 
 					const userClassModifier = getRobberyClassModifier(user.Class);
 
@@ -209,9 +209,9 @@ module.exports = {
 					const locationId = Number(btn.customId.replace("confirm", ""));
 					await user.GetInfo();
 
-					const robbery = new RobberyLocation(user, locationId);
+					const robbery = new LocationRobberyStrategy(user, locationId);
 
-					const { canRob, message } = await robbery.CanRobLocation();
+					const { canRob, message } = await robbery.CanRob();
 
 					if (!canRob) {
 						container = defaultComponent({
@@ -260,7 +260,7 @@ module.exports = {
 
 						await wait(10_000 + (5_000 * locationId));
 
-						const outcome = await robbery.ResolveLocation();
+						const outcome = await robbery.Resolve();
 
 						const locationEmote = location.Emote.String;
 						const locationName = location.Name[user.Language];
@@ -304,9 +304,9 @@ module.exports = {
 			return;
 		}
 
-		const robbery = new Robbery(user, target);
+		const robbery = new UserRobberyStrategy(user, target);
 
-		const { canRob, message } = await robbery.CanRobUser();
+		const { canRob, message } = await robbery.CanRob();
 
 		if (!canRob) {
 			const container = defaultComponent({

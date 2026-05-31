@@ -2,7 +2,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { User } from "#core/models/User";
 import { Language } from "#core/models/Language";
-import { Robbery } from "#core/models/Robbery";
+import { UserRobberyStrategy } from "#core/models/strategies/robbery/UserRobberyStrategy";
+import { type UserRobberyStrategy } from "#core/models/strategies/robbery/UserRobberyStrategy";
 import { ClassId } from "#core/types/Classes";
 import { Event } from "#core/models/Event";
 import { Notification } from "#core/models/Notification";
@@ -20,7 +21,7 @@ vi.mock("#core/database/Users", () => ({
 describe("Robbery Outcome Logic", () => {
 	let attacker: User;
 	let defender: User;
-	let robbery: Robbery;
+	let robbery: UserRobberyStrategy;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -46,7 +47,7 @@ describe("Robbery Outcome Logic", () => {
 		defender.Money = 2_000;
 		defender.Attributes = { Attack: 5, Defense: 10, MoneyAttack: 5, MoneyDefense: 0 }; // MoneyDefense: 0 prevents reduction
 
-		robbery = new Robbery(attacker, defender);
+		robbery = new UserRobberyStrategy(attacker, defender) as UserRobberyStrategy;
 		robbery.BeatUpChance = 0; // Deterministic behavior
 
 		// Spy on GetInfo to prevent DB loading

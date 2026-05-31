@@ -1,48 +1,46 @@
-import { User } from "./User";
-import { Log } from "#shared/log";
-import { formatMoney, showTime } from "#bot/utils/ui";
 import { EmoteString } from "#bot/utils/emotes";
-
-import { Notification } from "./Notification";
-import { addMinutes } from "date-fns";
-import { globalStrings, Language, type Localization } from "./Language";
+import { formatMoney, showTime } from "#bot/utils/ui";
 import { RobHistories } from "#core/database/RobHistories";
 import { Users } from "#core/database/Users";
-import { type JobId, JobList } from "#core/types/Jobs";
-import { ClashType, Robbery, type RobberyInitData } from "./Robbery";
-import { type LocationId, LocationList } from "#core/types/Locations";
+import { Event, EventType } from "#core/models/Event";
+import { globalStrings, Language, type Localization } from "#core/models/Language";
+import { Notification } from "#core/models/Notification";
+import { type User } from "#core/models/User";
 import { ClassList, getRobberyClassModifier } from "#core/types/Classes";
+import { type JobId, JobList } from "#core/types/Jobs";
+import { type LocationId, LocationList } from "#core/types/Locations";
+import { ClashType, type RobberyInitData, type RobberyLocationOutcomeData } from "#core/types/Robbery";
 import { type ScavengeId, ScavengeList } from "#core/types/Scavenge";
-import { Event, EventType } from "./Event";
+import { Log } from "#shared/log";
+import { addMinutes } from "date-fns";
+import { type IRobberyStrategy } from "./IRobberyStrategy";
 
-export interface RobberyLocationOutcomeData {
-	success: boolean;
-	moneyRobbed: number;
-	attackerPrisonTime?: Date;
-	attackerWantedTime?: Date;
-}
-
-export class RobberyLocation extends Robbery {
+export class LocationRobberyStrategy implements IRobberyStrategy {
+	Attacker: User;
 	LocationId: LocationId;
+	Date: Date;
+	Type = ClashType.Location;
+	Success = false;
+	MoneyRobbed = 0;
+	Chance = 0;
+
 	RewardMin: number;
 	RewardMax: number;
+	AttackerTimeInPrison = 0;
 
 	constructor(attacker: User, locationId: LocationId) {
-		super(attacker, new User("0", Language.English)); // defender will not be used
 		this.Attacker = attacker;
 		this.LocationId = locationId;
-		this.Type = ClashType.Location;
 		this.Date = new Date();
 
 		const userClassModifier = getRobberyClassModifier(this.Attacker.Class);
-
 		const location = LocationList[this.LocationId];
 
 		this.RewardMin = Math.floor(location.Reward.Min * userClassModifier);
 		this.RewardMax = Math.floor(location.Reward.Max * userClassModifier);
 	}
 
-	async CanRobLocation() {
+	async CanRob(): Promise<{ canRob: boolean; message: string }> {
 		const s = Strings[this.Attacker.Language];
 		let canRob = true;
 		let message = "";
@@ -113,7 +111,7 @@ export class RobberyLocation extends Robbery {
 		return { canRob, message };
 	}
 
-	async LockStates(): Promise<RobberyInitData> {
+	async LockStates(useGrenade?: boolean): Promise<RobberyInitData> {
 		this.AttackerTimeInPrison = 20 * (this.LocationId + 1);
 
 		this.Attacker.Robbery.IsRobbingLocationId = this.LocationId;
@@ -138,7 +136,7 @@ export class RobberyLocation extends Robbery {
 		};
 	}
 
-	async ResolveLocation(): Promise<RobberyLocationOutcomeData> {
+	async Resolve(defenderReaction?: string): Promise<RobberyLocationOutcomeData> {
 		try {
 			await this.Attacker.GetInfo();
 
@@ -217,7 +215,6 @@ export class RobberyLocation extends Robbery {
 
 export const Strings = {
 	[Language.English]: {
-		// CanRob
 		needMoreAttack: `You need more ${EmoteString.Attack}ATK to rob this location!`,
 		scavenging: (placeId: ScavengeId) => `You can't rob while scavenging ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.English]}** ${EmoteString.Scavenge}`,
 		inJob: (jobTime: Date, jobId: JobId) => `You can't rob while working! ${EmoteString.Jobs}\n-# Will finish your **${JobList[jobId].Description[Language.English]}** job ${showTime(jobTime.getTime(), true)}!`,
@@ -225,7 +222,6 @@ export const Strings = {
 		isWanted: (wantedTime: Date) => `You can't rob while you're wanted by the police! ${EmoteString.Police}\n-# Will be able to rob again ${showTime(wantedTime.getTime(), true)}!`,
 		isInHospital: (hospitalTime: Date) => `You can't rob while you're hospitalized! ${EmoteString.Hospital}\n-# Will be healed ${showTime(hospitalTime.getTime(), true)}!`,
 		isInCasino: `You can't rob while you're in a casino game! ${EmoteString.Casino}`,
-		// Attacker
 		robberyInProgress: `Robbery in progress`,
 		tryingToRob: "Trying to rob",
 		youRobbed: (formattedMoney: string, placeName: string) => `You robbed ${formattedMoney} from **${placeName}**!`,
@@ -237,7 +233,6 @@ export const Strings = {
 		failure: "Failure",
 	},
 	[Language.Portuguese]: {
-		// CanRob
 		needMoreAttack: `Você precisa mais ${EmoteString.Attack}ATK para roubar este local!`,
 		scavenging: (placeId: ScavengeId) => `Você não pode roubar enquanto está vasculhando ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Portuguese]}** ${EmoteString.Scavenge}`,
 		inJob: (jobTime: Date, jobId: JobId) => `Você não pode roubar enquanto está trabalhando! ${EmoteString.Jobs}\n-# Terminará seu trabalho de **${JobList[jobId].Description[Language.Portuguese]}** ${showTime(jobTime.getTime(), true)}!`,
@@ -245,7 +240,6 @@ export const Strings = {
 		isWanted: (wantedTime: Date) => `Você não pode roubar enquanto está sendo procurado pela polícia! ${EmoteString.Police}\n-# Poderá roubar novamente ${showTime(wantedTime.getTime(), true)}!`,
 		isInHospital: (hospitalTime: Date) => `Você não pode roubar enquanto está hospitalizado! ${EmoteString.Hospital}\n-# Será curado ${showTime(hospitalTime.getTime(), true)}!`,
 		isInCasino: `Você não pode roubar enquanto está em um jogo de cassino! ${EmoteString.Casino}`,
-		// Attacker
 		robberyInProgress: `Roubo em andamento`,
 		tryingToRob: "Tentando roubar",
 		youRobbed: (formattedMoney: string, placeName: string) => `Você roubou ${formattedMoney} de **${placeName}**!`,
@@ -257,7 +251,6 @@ export const Strings = {
 		failure: "Falha",
 	},
 	[Language.Spanish]: {
-		// CanRob
 		needMoreAttack: `¡Necesitas más ${EmoteString.Attack}ATK para robar este lugar!`,
 		scavenging: (placeId: ScavengeId) => `¡No puedes robar mientras estás buscando en ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Spanish]}** ${EmoteString.Scavenge}`,
 		inJob: (jobTime: Date, jobId: JobId) => `¡No puedes robar mientras trabajas! ${EmoteString.Jobs}\n-# ¡Terminará tu trabajo de **${JobList[jobId].Description[Language.Spanish]}** ${showTime(jobTime.getTime(), true)}!`,
@@ -265,7 +258,6 @@ export const Strings = {
 		isWanted: (wantedTime: Date) => `¡No puedes robar mientras estás siendo buscado por la policía! ${EmoteString.Police}\n-# Podrá robar nuevamente ${showTime(wantedTime.getTime(), true)}!`,
 		isInHospital: (hospitalTime: Date) => `¡No puedes robar mientras estás hospitalizado! ${EmoteString.Hospital}\n-# ¡Será curado ${showTime(hospitalTime.getTime(), true)}!`,
 		isInCasino: `¡No puedes robar mientras estás en un juego de casino! ${EmoteString.Casino}`,
-		// Attacker
 		robberyInProgress: `Robo en progreso`,
 		tryingToRob: "Intentando robar",
 		youRobbed: (formattedMoney: string, placeName: string) => `¡Robaste ${formattedMoney} de **${placeName}**!`,

@@ -1,61 +1,36 @@
 import { EmoteString } from "#bot/utils/emotes";
 import { formatMoney, showTime } from "#bot/utils/ui";
-import { Log } from "#shared/log";
-import type { User } from "./User";
-
 import { RobHistories } from "#core/database/RobHistories";
 import { Users } from "#core/database/Users";
+import { Event, EventType } from "#core/models/Event";
+import { globalStrings, Language, type Localization } from "#core/models/Language";
+import { Notification } from "#core/models/Notification";
+import { type User } from "#core/models/User";
 import { ClassId, ClassList, getRobberyClassModifier } from "#core/types/Classes";
 import { ItemId } from "#core/types/Ids";
 import { ItemList } from "#core/types/Items";
 import { type JobId, JobList } from "#core/types/Jobs";
 import { type LocationId, LocationList } from "#core/types/Locations";
+import { ClashType, type RobberyInitData, type RobberyOutcomeData } from "#core/types/Robbery";
 import { type ScavengeId, ScavengeList } from "#core/types/Scavenge";
+import { Log } from "#shared/log";
 import { getPercent } from "#shared/utils";
 import { addMinutes } from "date-fns";
-import { Event, EventType } from "./Event";
-import { globalStrings, Language, type Localization } from "./Language";
-import { Notification } from "./Notification";
+import { type IRobberyStrategy } from "./IRobberyStrategy";
 
-export enum ClashType {
-	User = 1,
-	Location,
-	BeatUp,
-	Investment,
-}
-
-export interface RobberyInitData {
-	attackerTimeInPrison: number;
-	attackerAditionalTimeCallPolice: number;
-	defenderTimeInHospital: number;
-	cannotReact: boolean;
-	cannotCallPolice: boolean;
-	usedGunSkin: string;
-	usedGunName: string;
-}
-
-export interface RobberyOutcomeData {
-	success: boolean;
-	moneyRobbed: number;
-	willBeBeatenUp: boolean;
-	attackerPrisonTime?: Date;
-	defenderHospitalTime?: Date;
-	attackerWantedTime?: Date;
-}
-
-export class Robbery {
-	Id = 0;
+export class UserRobberyStrategy implements IRobberyStrategy {
 	Attacker: User;
+	Defender: User;
+	Date: Date;
+	Type = ClashType.User;
+	Success = false;
+	MoneyRobbed = 0;
+	Chance = 0;
+
 	AttackerTimeInPrison = 0;
 	AttackerAditionalTimeCallPolice = 0;
 	DefenderTimeInHospital = 0;
 	BeatUpChance = 0.25;
-	Defender: User;
-	Date: Date;
-	Chance = 0;
-	Success = false;
-	MoneyRobbed = 0;
-	Type = ClashType.User;
 	UsedConsumables: ItemId[] = [];
 
 	constructor(attacker: User, defender: User) {
@@ -64,7 +39,7 @@ export class Robbery {
 		this.Date = new Date();
 	}
 
-	async CanRobUser() {
+	async CanRob(): Promise<{ canRob: boolean; message: string }> {
 		const s = Strings[this.Attacker.Language];
 		let canRob = true;
 		let message = "";
@@ -205,7 +180,7 @@ export class Robbery {
 		return { canRob, message };
 	}
 
-	async LockStates(useGrenade: boolean): Promise<RobberyInitData> {
+	async LockStates(useGrenade: boolean = false): Promise<RobberyInitData> {
 		if (useGrenade) {
 			const consumed = await this.Attacker.ConsumeItem(ItemId.Grenade);
 			if (consumed) {
@@ -257,7 +232,7 @@ export class Robbery {
 		};
 	}
 
-	async Resolve(defenderReaction: "react" | "police" | "nothing"): Promise<RobberyOutcomeData> {
+	async Resolve(defenderReaction: "react" | "police" | "nothing" = "nothing"): Promise<RobberyOutcomeData> {
 		try {
 			await Promise.all([
 				this.Attacker.GetInfo(),
@@ -393,7 +368,6 @@ export class Robbery {
 
 export const Strings = {
 	[Language.English]: {
-		// CanRob
 		sameId: "You can't rob yourself, idiot!",
 		sameGang: "You can't rob a member of your own gang!",
 		withoutNick: "This user hasn't set a nickname yet!",
@@ -407,7 +381,6 @@ export const Strings = {
 		isWanted: (wantedTime: Date) => `You can't rob while you're wanted by the police! ${EmoteString.Police}\n-# Will be able to rob again ${showTime(wantedTime.getTime(), true)}!`,
 		isInHospital: (hospitalTime: Date) => `You can't rob while you're hospitalized! ${EmoteString.Hospital}\n-# Will be healed ${showTime(hospitalTime.getTime(), true)}!`,
 		casinoAttacker: `You can't rob while you're in a casino game! ${EmoteString.Casino}`,
-		// Defender
 		hands: "Hands up!",
 		tryingToRobYou: "is trying to rob you using",
 		andAGrenade: `and a ${EmoteString.Granade} **Grenade**`,
@@ -428,7 +401,6 @@ export const Strings = {
 		prisonUntil: (time: Date) => `He will be in prison until ${showTime(time.getTime())}`,
 		finishedRobberyDefender: "Robbery finished",
 		casinoDefender: `is in a casino game and cannot be robbed! ${EmoteString.Casino}`,
-		// Attacker
 		robberyInProgress: `Robbery in progress`,
 		tryingToRob: "Trying to rob",
 		isReacting: "is reacting",
@@ -468,7 +440,6 @@ export const Strings = {
 		],
 	},
 	[Language.Portuguese]: {
-		// CanRob
 		sameId: "Você não pode roubar a si mesmo, idiota!",
 		sameGang: "Você não pode roubar um membro da sua própria gangue!",
 		withoutNick: "Este usuário ainda não cadastrou um nickname!",
@@ -482,7 +453,6 @@ export const Strings = {
 		isWanted: (wantedTime: Date) => `Você não pode roubar enquanto está sendo procurado pela polícia! ${EmoteString.Police}\n-# Poderá roubar novamente ${showTime(wantedTime.getTime(), true)}!`,
 		isInHospital: (hospitalTime: Date) => `Você não pode roubar enquanto está hospitalizado! ${EmoteString.Hospital}\n-# Será curado ${showTime(hospitalTime.getTime(), true)}!`,
 		casinoAttacker: `Você não pode roubar enquanto está em um jogo de cassino! ${EmoteString.Casino}`,
-		// Defender
 		hands: "Mãos ao alto!",
 		tryingToRobYou: "está tentando roubar você utilizando",
 		andAGrenade: `e uma ${EmoteString.Granade} **Granada**`,
@@ -503,7 +473,6 @@ export const Strings = {
 		prisonUntil: (time: Date) => `Ele ficará preso até ${showTime(time.getTime())}`,
 		finishedRobberyDefender: "Roubo finalizado",
 		casinoDefender: `está em um jogo de cassino e não pode ser roubado! ${EmoteString.Casino}`,
-		// Attacker
 		robberyInProgress: `Roubo em andamento`,
 		tryingToRob: "Tentando roubar",
 		isReacting: "está reagindo",
@@ -543,8 +512,7 @@ export const Strings = {
 		],
 	},
 	[Language.Spanish]: {
-		// CanRob
-		sameId: "¡No puedes robarte a ti mismo, idiota!",
+		sameId: "¡No puedes robarte a ti mesmo, idiota!",
 		sameGang: "¡No puedes robar a un miembro de tu propia cuadrilla!",
 		withoutNick: "¡Este usuario aún no ha establecido un apodo!",
 		withoutClass: "¡Este usuario aún no ha elegido una clase!",
@@ -557,7 +525,6 @@ export const Strings = {
 		isWanted: (wantedTime: Date) => `¡No puedes robar mientras estás siendo buscado por la policía! ${EmoteString.Police}\n-# Podrá robar nuevamente ${showTime(wantedTime.getTime(), true)}!`,
 		isInHospital: (hospitalTime: Date) => `¡No puedes robar mientras estás hospitalizado! ${EmoteString.Hospital}\n-# ¡Será curado ${showTime(hospitalTime.getTime(), true)}!`,
 		casinoAttacker: `¡No puedes robar mientras estás en un juego de casino! ${EmoteString.Casino}`,
-		// Defender
 		hands: "¡Manos arriba!",
 		tryingToRobYou: "está intentando robarte utilizando",
 		andAGrenade: `y una ${EmoteString.Granade} **Granada**`,
@@ -578,7 +545,6 @@ export const Strings = {
 		prisonUntil: (time: Date) => `Estará en prisión hasta ${showTime(time.getTime())}`,
 		finishedRobberyDefender: "Robo finalizado",
 		casinoDefender: `está en un juego de casino y no puede ser robado! ${EmoteString.Casino}`,
-		// Attacker
 		robberyInProgress: `Robo en progreso`,
 		tryingToRob: "Intentando robar",
 		isReacting: "está reaccionando",
@@ -612,7 +578,7 @@ export const Strings = {
 		successMessages: [
 			(formattedMoney: string, defenderNick: string) => `¡Robaste ${formattedMoney} de **${defenderNick}**!`,
 			(formattedMoney: string, defenderNick: string) => `¡Dinero fácil! Le quitaste ${formattedMoney} a **${defenderNick}**.`,
-			(formattedMoney: string, defenderNick: string) => `**${defenderNick}** no tuvo ninguna oportunidad. Te escapaste con ${formattedMoney}!`,
+			(formattedMoney: string, defenderNick: string) => `**${defenderNick}** no tuvo ninguna oportunidad. ¡Te escapaste con ${formattedMoney}!`,
 			(formattedMoney: string, defenderNick: string) => `¡Otro atraco exitoso! Te embolsaste ${formattedMoney} de **${defenderNick}**.`,
 			(formattedMoney: string, defenderNick: string) => `Ahora tienes ${formattedMoney} más, cortesía de **${defenderNick}**.`,
 		],

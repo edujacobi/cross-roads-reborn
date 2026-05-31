@@ -1,11 +1,11 @@
-import { type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
-import { deferReply, replyWithContainer } from "#bot/utils/discordInteractions";
-import { defaultComponent } from "#bot/utils/ui";
 import { CrColors } from "#bot/utils/colors";
-import type { User } from "#core/models/User";
-import { Robbery } from "#core/models/Robbery";
-import { searchUser } from "#bot/utils/userUtils";
+import { deferReply, replyWithContainer } from "#bot/utils/discordInteractions";
 import { runUserRobbery } from "#bot/utils/robberyHelper";
+import { defaultComponent } from "#bot/utils/ui";
+import { searchUser } from "#bot/utils/userUtils";
+import { type User } from "#core/models/User";
+import { UserRobberyStrategy } from "#core/models/strategies/robbery/UserRobberyStrategy";
+import { type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -32,9 +32,9 @@ module.exports = {
 			return;
 		}
 
-		const robbery = new Robbery(target, user);
+		const robbery = new UserRobberyStrategy(target, user);
 
-		const { canRob, message } = await robbery.CanRobUser();
+		const { canRob, message } = await robbery.CanRob();
 
 		if (!canRob) {
 			const container = defaultComponent({
