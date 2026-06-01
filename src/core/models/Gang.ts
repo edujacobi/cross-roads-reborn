@@ -29,7 +29,8 @@ export enum GangPermission {
 	Invite,
 	Kick,
 	Promote,
-	EditGang
+	EditGang,
+	ImportShipments
 }
 
 export enum GangImportFailureReason {
@@ -239,6 +240,7 @@ export class Gang {
 				canKick: true,
 				canPromote: true,
 				canEditGang: true,
+				canImportShipments: true,
 			});
 
 			// Create member role
@@ -249,6 +251,7 @@ export class Gang {
 				canKick: false,
 				canPromote: false,
 				canEditGang: false,
+				canImportShipments: false,
 			});
 
 			// Add leader as member
@@ -505,6 +508,7 @@ export class Gang {
 					if (role?.canKick) howManyPermissions += 1;
 					if (role?.canPromote) howManyPermissions += 1;
 					if (role?.canEditGang) howManyPermissions += 1;
+					if (role?.canImportShipments) howManyPermissions += 1;
 
 					this.Members.push({
 						UserId: user.id,
@@ -553,6 +557,7 @@ export class Gang {
 				if (role.canKick) permissions.push(GangPermission.Kick);
 				if (role.canPromote) permissions.push(GangPermission.Promote);
 				if (role.canEditGang) permissions.push(GangPermission.EditGang);
+				if (role.canImportShipments) permissions.push(GangPermission.ImportShipments);
 
 				this.Roles.push({
 					Id: role.id,
@@ -1131,6 +1136,23 @@ export class Gang {
 	}
 
 	/**
+	 * Checks if a user has permission to start or cancel imports for the gang.
+	 * @param userId The Id of the user.
+	 * @returns True if the user is leader or has permission, false otherwise.
+	 */
+	CanImportShipments(userId: string): boolean {
+		if (userId === this.LeaderId) return true;
+
+		const member = this.Members.find(m => m.UserId === userId);
+		if (!member) return false;
+
+		const role = this.Roles.find(r => r.Id === member.RoleId);
+		if (!role) return false;
+
+		return role.Permissions.includes(GangPermission.ImportShipments);
+	}
+
+	/**
 	 * Edits the gang's details.
 	 * @param name New name (optional).
 	 * @param acronym New acronym (optional).
@@ -1181,6 +1203,7 @@ export class Gang {
 				canKick: permissions.includes(GangPermission.Kick),
 				canPromote: permissions.includes(GangPermission.Promote),
 				canEditGang: permissions.includes(GangPermission.EditGang),
+				canImportShipments: permissions.includes(GangPermission.ImportShipments),
 			});
 
 			await this.LoadRoles();
@@ -1233,6 +1256,7 @@ export class Gang {
 				canKick: permissions.includes(GangPermission.Kick),
 				canPromote: permissions.includes(GangPermission.Promote),
 				canEditGang: permissions.includes(GangPermission.EditGang),
+				canImportShipments: permissions.includes(GangPermission.ImportShipments),
 			});
 
 			await this.LoadRoles();

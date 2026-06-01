@@ -20,6 +20,7 @@ export class GangRoles extends Model<
 	declare canKick: boolean;
 	declare canPromote: boolean;
 	declare canEditGang: boolean;
+	declare canImportShipments: boolean;
 }
 
 GangRoles.init(
@@ -57,6 +58,11 @@ GangRoles.init(
 			defaultValue: false,
 		},
 		canEditGang: {
+			type: DataTypes.BOOLEAN,
+			allowNull: false,
+			defaultValue: false,
+		},
+		canImportShipments: {
 			type: DataTypes.BOOLEAN,
 			allowNull: false,
 			defaultValue: false,

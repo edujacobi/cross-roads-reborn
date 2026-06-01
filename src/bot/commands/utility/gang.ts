@@ -1211,7 +1211,7 @@ module.exports = {
 				return warn(s.gangHasNoBase);
 			}
 
-			const isLeader = user.Id === gang.LeaderId;
+			const hasImportPermission = gang.CanImportShipments(user.Id);
 			const gangBase = GangBases[gang.BaseId];
 
 			const importImageMapper = {
@@ -1260,7 +1260,7 @@ module.exports = {
 							.setButtonAccessory(btn => btn
 								.setCustomId("cancel_import")
 								.setLabel(s.cancelImport)
-								.setDisabled(!isLeader)
+								.setDisabled(!hasImportPermission)
 								.setStyle(ButtonStyle.Secondary),
 							),
 						)
@@ -1305,7 +1305,7 @@ module.exports = {
 								.setCustomId("start_import")
 								.setLabel(s.startImport)
 								.setStyle(ButtonStyle.Success)
-								.setDisabled(!isLeader || currentGang.Money < cost),
+								.setDisabled(!hasImportPermission || currentGang.Money < cost),
 							),
 						);
 				}
@@ -1323,7 +1323,7 @@ module.exports = {
 				flags: MessageFlags.IsComponentsV2,
 			});
 
-			if (!isLeader) return;
+			if (!hasImportPermission) return;
 
 			const collector = createButtonCollector(interaction, response);
 
@@ -2278,6 +2278,10 @@ module.exports = {
 							.setLabel(s.permissionEditGang)
 							.setCustomId("edit")
 							.setStyle(permissions.includes(GangPermission.EditGang) ? ButtonStyle.Primary : ButtonStyle.Secondary),
+						btn => btn
+							.setLabel(s.permissionImportShipments)
+							.setCustomId("import_shipments")
+							.setStyle(permissions.includes(GangPermission.ImportShipments) ? ButtonStyle.Primary : ButtonStyle.Secondary),
 					)
 					.addButtonRow(
 						btn => btn
@@ -2318,6 +2322,7 @@ module.exports = {
 					kick: GangPermission.Kick,
 					promote: GangPermission.Promote,
 					edit: GangPermission.EditGang,
+					import_shipments: GangPermission.ImportShipments,
 				};
 
 				const permission = permissionMap[btn.customId];
@@ -2504,6 +2509,10 @@ module.exports = {
 							.setLabel(s.permissionEditGang)
 							.setCustomId("edit")
 							.setStyle(permissions.includes(GangPermission.EditGang) ? ButtonStyle.Primary : ButtonStyle.Secondary),
+						btn => btn
+							.setLabel(s.permissionImportShipments)
+							.setCustomId("import_shipments")
+							.setStyle(permissions.includes(GangPermission.ImportShipments) ? ButtonStyle.Primary : ButtonStyle.Secondary),
 					)
 					.addButtonRow(
 						btn => btn
@@ -2544,6 +2553,7 @@ module.exports = {
 					kick: GangPermission.Kick,
 					promote: GangPermission.Promote,
 					edit: GangPermission.EditGang,
+					import_shipments: GangPermission.ImportShipments,
 				};
 
 				const permission = permissionMap[btn.customId];
@@ -2888,6 +2898,7 @@ const Strings = {
 		permissionKick: "Kick Members",
 		permissionPromote: "Promote Members",
 		permissionEditGang: "Edit Gang",
+		permissionImportShipments: "Import Shipments",
 		errorCreateRoleLeader: `Only the leader can create roles ${EmoteString.Gang}`,
 		errorCreateRole: `Error creating role. Please try again later ${EmoteString.Gang}`,
 		successCreateRole: (name: string) => `Role **${name}** created successfully! ${EmoteString.Gang}`,
@@ -3070,6 +3081,7 @@ const Strings = {
 		permissionKick: "Expulsar Membros",
 		permissionPromote: "Promover Membros",
 		permissionEditGang: "Editar Gangue",
+		permissionImportShipments: "Importar Carregamentos",
 		errorCreateRoleLeader: `Apenas o líder pode criar cargos ${EmoteString.Gang}`,
 		errorCreateRole: `Erro ao criar cargo. Tente novamente mais tarde ${EmoteString.Gang}`,
 		successCreateRole: (name: string) => `Cargo **${name}** criado com sucesso! ${EmoteString.Gang}`,
@@ -3251,6 +3263,7 @@ const Strings = {
 		permissionKick: "Expulsar Miembros",
 		permissionPromote: "Promover Miembros",
 		permissionEditGang: "Editar Cuadrilla",
+		permissionImportShipments: "Importar Cargamentos",
 		errorCreateRoleLeader: `Solo el líder puede crear cargos ${EmoteString.Gang}`,
 		errorCreateRole: `Error al crear cargo. Inténtalo de nuevo más tarde ${EmoteString.Gang}`,
 		successCreateRole: (name: string) => `¡Cargo **${name}** creado con éxito! ${EmoteString.Gang}`,
