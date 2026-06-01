@@ -34,19 +34,26 @@ The project follows a strict separation between the "Frontend" (Commands) and th
 *   **Behavior**: Functions like an API. Methods should return simple types (strings, enums, numbers, booleans) or data objects/interfaces.
 *   **Restrictions**:
     *   **NEVER** import `discord.js` UI classes (e.g., `EmbedBuilder`, `ButtonBuilder`, `ActionRowBuilder`, `ModalBuilder`).
-    *   **Database Access**: This is the **ONLY** layer allowed to import and interact with files in `src/core/database/`.
+    *   **Database Access**: Delegate all database queries and updates to the **Repository** layer. Models must **NEVER** import or query files in `src/core/database/` directly.
 *   **State Management**: Methods that set database "locks" (e.g., `robbingUserId`, `isBeatingUserId`) **MUST** use `try...finally` blocks to ensure these locks are cleared even if a Discord interaction fails or times out.
 *   **Logging**: Internal logs should be in English (using `logger` from `#shared/log` for technical info or the `Log` utility for business events).
 
-### 3. Types ("Contracts")
+### 3. Repositories ("Database Access Layer")
+*   **Location**: `src/core/repositories/`
+*   **Role**: Isolates and encapsulates database operations, serving as the sole interface for database queries and mutations.
+*   **Restrictions**:
+    *   This is the **ONLY** layer allowed to import and interact with files in `src/core/database/`.
+    *   Must only be called by the `Models` and `Strategies` layers, never directly by the `Commands` layer.
+
+### 4. Types ("Contracts")
 *   **Location**: `src/core/types/`
 *   **Role**: Defines the shapes of data, properties, and static lists (e.g., `ItemList`, `JobList`, `LocationList`).
-*   **Usage**: Shared by both Commands and Models to ensure type safety.
+*   **Usage**: Shared across all layers to ensure type safety.
 
-### 4. Database
+### 5. Database
 *   **Location**: `src/core/database/`
 *   **Role**: Sequelize schema definitions.
-*   **Access**: Private to the `Models` layer. Commands should never query the database directly.
+*   **Access**: Private to the `Repositories` layer. Commands, Models, and Strategies should never query the database directly.
 
 ## Localization
 

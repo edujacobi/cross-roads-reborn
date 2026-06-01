@@ -95,11 +95,12 @@ Players can earn money, fight other users, work jobs, manage inventory, and much
 | `/vips`           | See all VIPs and Remaining time      |
 ## Architecture & Development
 
-The project follows a strict **Separation of Concerns** between the interaction layer and business logic:
+The project follows a strict **Separation of Concerns** between the interaction layer, business logic, and database access:
 
 - **Frontend (Commands)**: Located in `src/bot/commands/`. Handles user interactions, input parsing, and UI formatting using `CustomContainerBuilder`. They should **never** contain core game logic.
-- **Backend (Models)**: Located in `src/core/models/`. Encapsulates all business logic, state management, and data manipulation. This is the only layer that interacts with the database.
-- **Contracts (Types)**: Located in `src/core/types/`. Shared definitions that ensure type safety between the frontend and backend.
+- **Backend (Models & Strategies)**: Located in `src/core/models/` and `src/core/models/strategies/`. Encapsulates all business logic, state management, and behavioral game rules.
+- **Database Repositories**: Located in `src/core/repositories/`. The only layer allowed to import and query database files directly, isolating models from database schemas.
+- **Contracts (Types)**: Located in `src/core/types/`. Shared definitions that ensure type safety across frontend, backend, and database repositories.
 
 ### Localization
 
@@ -214,9 +215,10 @@ Additionally, you can use the `/reload` command (Admin only) to reload a specifi
 ### Project Structure
 
 - `src/core` - Core business logic, database models, and types
-  - `database/` - Database models and configurations.
-  - `models/` - Business logic classes.
-  - `types/` - Interfaces, types, and enums.
+  - `database/` - Sequelize database schemas and model configurations.
+  - `repositories/` - Database access layer (isolating queries/mutations).
+  - `models/` - RPG business logic classes, strategies, and behavior patterns.
+  - `types/` - Shared contracts, interfaces, and static lists.
 - `src/bot` - Discord bot implementation (commands, events, UI)
   - `commands/` - Slash commands.
   - `events/` - Event handlers.
