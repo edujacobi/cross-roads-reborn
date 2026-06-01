@@ -150,6 +150,28 @@ describe("Shop", () => {
 			expect(result.message).toContain("participating in a gang action");
 		});
 
+		it("Should fail if buying a consumable and user already has 20 or more", async () => {
+			const shop = new Shop(user);
+			user.Money = 500_000;
+			const item = { ...ItemList[ItemId.Grenade] } as UserItem;
+			item.Quantity = 20;
+			user.Items = [item];
+			const result = await shop.CanUserBuyItem(ItemList[ItemId.Grenade]);
+			expect(result.canBuy).toBe(false);
+			expect(result.message).toContain("20 of the same consumable");
+		});
+
+		it("Should succeed if buying a consumable and user has less than 20", async () => {
+			const shop = new Shop(user);
+			user.Money = 500_000;
+			const item = { ...ItemList[ItemId.Grenade] } as UserItem;
+			item.Quantity = 19;
+			user.Items = [item];
+			const result = await shop.CanUserBuyItem(ItemList[ItemId.Grenade]);
+			expect(result.canBuy).toBe(true);
+			expect(result.message).toBe("");
+		});
+
 		it("Should succeed", async () => {
 			const shop = new Shop(user);
 			const result = await shop.CanUserBuyItem(ItemList[ItemId.Knife]);

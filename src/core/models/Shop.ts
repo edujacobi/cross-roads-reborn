@@ -1,5 +1,5 @@
-﻿import type { User } from "./User";
-import { getItemList, type Items } from "#core/types/Items";
+import type { User } from "./User";
+import { getItemList, type Items, ItemType } from "#core/types/Items";
 import { Users } from "#core/database/Users";
 import { differenceInHours } from "date-fns";
 import { addHours } from "date-fns/addHours";
@@ -44,7 +44,13 @@ export class Shop {
 
 		const existingItem = this.User.Items.find((i) => i.Id === item.Id);
 
-		if (existingItem && differenceInHours(addHours(existingItem.RemainingTime, 72), new Date()) > 360) {
+		if (item.Type === ItemType.Consumable) {
+			if (existingItem && existingItem.Quantity >= 20) {
+				message = s.consumableLimit(existingItem.Quantity, `${item.Skin[BundleId.Default].String} ${item.Description[this.User.Language]}`);
+				canBuy = false;
+			}
+		}
+		else if (existingItem && differenceInHours(addHours(existingItem.RemainingTime, 72), new Date()) > 360) {
 			message = s.itemPassLimit(differenceInHours(existingItem.RemainingTime, new Date()), `${item.Skin[BundleId.Default].String} ${item.Description[this.User.Language]}`);
 			canBuy = false;
 		}
@@ -132,6 +138,7 @@ All items have a duration of 72 hours!
 		inHospital: (hospitalTime: Date) => `You can't buy items while in the hospital! ${EmoteString.Hospital}\n-# Will be healed ${showTime(hospitalTime.getTime(), true)}!`,
 		inCasino: `You can't buy items while in the casino! ${EmoteString.Casino}`,
 		itemPassLimit: (hours: number, itemName: string) => `You can't have more than 360 hours of the same item!\n-# Has ${hours} hours of ${itemName}.`,
+		consumableLimit: (quantity: number, itemName: string) => `You can't have more than 20 of the same consumable!\n-# Has ${quantity} of ${itemName}.`,
 	},
 
 	[Language.Portuguese]: {
@@ -147,6 +154,7 @@ Todos os itens tem duração de 72 horas!
 		inHospital: (hospitalTime: Date) => `Você não pode comprar itens enquanto está hospitalizado! ${EmoteString.Hospital}\n-# Será curado ${showTime(hospitalTime.getTime(), true)}!`,
 		inCasino: `Você não pode comprar itens enquanto está no cassino! ${EmoteString.Casino}`,
 		itemPassLimit: (hours: number, itemName: string) => `Você não pode possuir mais de 360 horas de um mesmo item!\n-# Possui ${hours} horas de ${itemName}.`,
+		consumableLimit: (quantity: number, itemName: string) => `Você não pode possuir mais de 20 de um mesmo consumível!\n-# Possui ${quantity} de ${itemName}.`,
 	},
 
 	[Language.Spanish]: {
@@ -157,10 +165,11 @@ Todos os itens tem duração de 72 horas!
 		cantBuy: "No puedes comprar nada ahora mismo",
 		noMoney: "No tienes suficiente dinero para comprar este artículo",
 		scavenging: (placeId: ScavengeId) => `¡No puedes comprar artículos mientras estás buscando en ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Spanish]}** ${EmoteString.Scavenge}`,
-		working: (jobTime: Date, jobId: number) => `¡No puedes comprar artículos mientras trabajas! ${EmoteString.Jobs}\n-# ¡Tu trabajo de **${JobList[jobId].Description[Language.Spanish]}** terminará ${showTime(jobTime.getTime(), true)}!`,
+		working: (jobTime: Date, jobId: number) => `¡No puedes comprar artículos mientras trabajas! ${EmoteString.Jobs}\n-# ¡Tu trabalho de **${JobList[jobId].Description[Language.Spanish]}** terminará ${showTime(jobTime.getTime(), true)}!`,
 		inPrison: (prisonTime: Date) => `¡No puedes comprar artículos mientras estás en prisión! ${EmoteString.Prison}\n-# Serás liberado ${showTime(prisonTime.getTime(), true)}!`,
 		inHospital: (hospitalTime: Date) => `¡No puedes comprar artículos mientras estás en el hospital! ${EmoteString.Hospital}\n-# Serás curado ${showTime(hospitalTime.getTime(), true)}!`,
 		inCasino: `¡No puedes comprar artículos mientras estás en el casino! ${EmoteString.Casino}`,
 		itemPassLimit: (hours: number, itemName: string) => `¡No puedes tener más de 360 horas del mismo artículo!\n-# Tiene ${hours} horas de ${itemName}.`,
+		consumableLimit: (quantity: number, itemName: string) => `¡No puedes tener más de 20 del mismo consumible!\n-# Tiene ${quantity} de ${itemName}.`,
 	},
 } as const satisfies Localization;
