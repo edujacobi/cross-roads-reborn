@@ -1,4 +1,3 @@
-import { GangColor } from "#bot/utils/colors";
 import { Gang } from "#core/models/Gang";
 import { Language } from "#core/models/Language";
 import type { User } from "#core/models/User";
@@ -12,6 +11,7 @@ import {
 } from "../patterns/BackgroundPatternRegistry";
 import { BaseCanvasBuilder } from "./BaseCanvasBuilder";
 import { UserImageCanvasBuilder } from "./UserImageCanvasBuilder";
+import { GangColor } from "#core/types/GangColors";
 
 interface CachedDecoratedAvatar {
 	image: Image;

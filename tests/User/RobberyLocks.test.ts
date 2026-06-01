@@ -3,7 +3,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { User } from "#core/models/User";
 import { Language } from "#core/models/Language";
 import { UserRobberyStrategy } from "#core/models/strategies/robbery/UserRobberyStrategy";
-import { type UserRobberyStrategy } from "#core/models/strategies/robbery/UserRobberyStrategy";
 import { ClassId } from "#core/types/Classes";
 import { ItemId } from "#core/types/Ids";
 import { ItemList, type UserItem } from "#core/types/Items";

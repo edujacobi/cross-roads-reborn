@@ -1,14 +1,15 @@
 import type { User } from "./User";
 import type { Gang } from "./Gang";
 import { InvestmentList, type InvestmentId, type Investment } from "#core/types/Investments";
-import { UserInvestments } from "#core/database/UserInvestments";
+import type { UserInvestments } from "#core/database/UserInvestments";
+import { UserInvestmentRepository } from "#core/repositories/UserInvestmentRepository";
 import { getPercent } from "#shared/utils";
 import { addHours, addMinutes, isFuture } from "date-fns";
 import { ClassId } from "#core/types/Classes";
 import { logger } from "#shared/log";
 import { Language } from "./Language";
 import { formatMoney } from "#bot/utils/ui";
-import { RobHistories } from "#core/database/RobHistories";
+import { RobHistoryRepository } from "#core/repositories/RobHistoryRepository";
 
 export enum InvestmentRobberyReason {
 	NoPermission,
@@ -94,9 +95,7 @@ export class InvestmentRobbery {
 			return { success: false, reason: InvestmentRobberyReason.TargetAlreadyUnderAttack };
 		}
 
-		const investmentData = await UserInvestments.findOne({
-			where: { userId: this.Target.Id },
-		});
+		const investmentData = await UserInvestmentRepository.FindByUserId(this.Target.Id);
 		if (!investmentData) {
 			return { success: false, reason: InvestmentRobberyReason.TargetNoInvestment };
 		}
@@ -217,7 +216,8 @@ export class InvestmentRobbery {
 			const totalPercent = Math.min(100, basePercent + bonusPercent) / 100;
 
 			const robbedAmount = Math.floor(this.InvestmentData.accumulatedYield * totalPercent);
-			await this.InvestmentData.decrement("accumulatedYield", { by: robbedAmount });
+			await UserInvestmentRepository.DecrementYield(this.Target.Id, robbedAmount);
+			this.InvestmentData.accumulatedYield -= robbedAmount;
 
 			this.Gang.Money += robbedAmount;
 			await this.Gang.Update();
@@ -227,12 +227,13 @@ export class InvestmentRobbery {
 
 			result.robbedAmount = robbedAmount;
 			result.expGain = expGain;
-			result.remainingYield = this.InvestmentData.accumulatedYield - robbedAmount;
+			result.remainingYield = this.InvestmentData.accumulatedYield;
 
 			if (henchmanActive) {
-				await this.InvestmentData.update({
+				await UserInvestmentRepository.UpdateByUserId(this.Target.Id, {
 					henchmanHospitalized: true
 				});
+				this.InvestmentData.henchmanHospitalized = true;
 				result.henchmanHospitalized = true;
 			}
 
@@ -287,7 +288,7 @@ export class InvestmentRobbery {
 
 		logger.info(`Investment Robbery Finished! Result for Gang ${this.Gang.Name} (Id: ${this.Gang.Id}) vs Target ${this.Target.Nickname} (Id: ${this.Target.Id}): ${JSON.stringify(result)}`);
 		
-		await RobHistories.CreateInvestmentHistory(this, win, result.robbedAmount);
+		await RobHistoryRepository.CreateInvestmentHistory(this, win, result.robbedAmount);
 
 		return result;
 	}

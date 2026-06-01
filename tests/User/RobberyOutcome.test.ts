@@ -3,11 +3,10 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { User } from "#core/models/User";
 import { Language } from "#core/models/Language";
 import { UserRobberyStrategy } from "#core/models/strategies/robbery/UserRobberyStrategy";
-import { type UserRobberyStrategy } from "#core/models/strategies/robbery/UserRobberyStrategy";
 import { ClassId } from "#core/types/Classes";
 import { Event } from "#core/models/Event";
 import { Notification } from "#core/models/Notification";
-import { RobHistories } from "#core/database/RobHistories";
+import { RobHistoryRepository } from "#core/repositories/RobHistoryRepository";
 
 // Mock Database & External APIs
 vi.mock("#core/database/Users", () => ({
@@ -32,8 +31,8 @@ describe("Robbery Outcome Logic", () => {
 		vi.spyOn(Notification, "RobAgain").mockResolvedValue(undefined as any);
 		vi.spyOn(Notification, "Free").mockResolvedValue(undefined as any);
 		vi.spyOn(Notification, "Hospital").mockResolvedValue(undefined as any);
-		vi.spyOn(RobHistories, "CreateUserRobberyHistory").mockResolvedValue(undefined as any);
-		vi.spyOn(RobHistories, "CreateLocationHistory").mockResolvedValue(undefined as any);
+		vi.spyOn(RobHistoryRepository, "CreateUserRobberyHistory").mockResolvedValue(undefined as any);
+		vi.spyOn(RobHistoryRepository, "CreateLocationHistory").mockResolvedValue(undefined as any);
 
 		attacker = new User("111", Language.English);
 		attacker.Nickname = "Attacker";

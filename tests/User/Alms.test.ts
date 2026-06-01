@@ -10,7 +10,7 @@ vi.mock("#core/database/Users", () => ({
 	Users: {
 		update: vi.fn(),
 		findOne: vi.fn(),
-		findByPk: vi.fn(() => Promise.resolve({ class: ClassId.Entrepreneur, nickname: "OtherUser" })),
+		findByPk: vi.fn((id) => Promise.resolve({ id, class: ClassId.Entrepreneur, nickname: "OtherUser" })),
 		findAll: vi.fn(() => Promise.resolve([])),
 	},
 }));

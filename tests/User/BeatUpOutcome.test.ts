@@ -6,7 +6,7 @@ import { BeatUp } from "#core/models/BeatUp";
 import { ClassId } from "#core/types/Classes";
 import { Event } from "#core/models/Event";
 import { Notification } from "#core/models/Notification";
-import { RobHistories } from "#core/database/RobHistories";
+import { RobHistoryRepository } from "#core/repositories/RobHistoryRepository";
 
 // Mock Database & External APIs
 vi.mock("#core/database/Users", () => ({
@@ -30,7 +30,7 @@ describe("BeatUp Outcome Logic", () => {
 		vi.spyOn(Event, "GetActiveBonusFromType").mockResolvedValue(0);
 		vi.spyOn(Notification, "BeatAgain").mockResolvedValue(undefined as any);
 		vi.spyOn(Notification, "Hospital").mockResolvedValue(undefined as any);
-		vi.spyOn(RobHistories, "CreateUserBeatUpHistory").mockResolvedValue(undefined as any);
+		vi.spyOn(RobHistoryRepository, "CreateUserBeatUpHistory").mockResolvedValue(undefined as any);
 
 		attacker = new User("111", Language.English);
 		attacker.Nickname = "Attacker";

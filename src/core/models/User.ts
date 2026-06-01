@@ -1,32 +1,32 @@
-import { Users } from "#core/database/Users";
-import { Log } from "#shared/log";
-import { addDays, differenceInHours, formatDistanceToNow } from "date-fns";
-import { getLocaleFromLanguage, Language, type Localization } from "./Language";
-import { UserItems } from "#core/database/UserItems";
-import { addHours } from "date-fns/addHours";
-import { type InferAttributes, Op } from "sequelize";
+import { EmoteId, EmoteString } from "#bot/utils/emotes";
+import { formatDate, formatMoney, showTime } from "#bot/utils/ui";
+import type { Users } from "#core/database/Users";
+import { GangMemberRepository } from "#core/repositories/GangMemberRepository";
+import { UserInvestmentRepository } from "#core/repositories/UserInvestmentRepository";
+import { UserItemRepository } from "#core/repositories/UserItemRepository";
+import { UserRepository, type UserUpdateParam } from "#core/repositories/UserRepository";
+import { AvatarDecorationList, type AvatarDecorations } from "#core/types/AvatarDecorations";
+import { BackgroundDecorationList, type BackgroundDecorations } from "#core/types/BackgroundDecorations";
+import { ClassId, ClassList, getJobClassModifier } from "#core/types/Classes";
+import { GangBases } from "#core/types/GangBases";
+import type { GangColorId } from "#core/types/GangColors";
+import { AvatarDecorationId, BackgroundDecorationId, BundleId, ItemId } from "#core/types/Ids";
 import { ItemList, type Items, ItemType, type UserItem } from "#core/types/Items";
 import { type JobId, JobList } from "#core/types/Jobs";
-import { Notification, NotificationType } from "./Notification";
-import { formatDate, formatMoney, showTime } from "#bot/utils/ui";
-import { EmoteId, EmoteString } from "#bot/utils/emotes";
-import { ClassId, ClassList, getJobClassModifier } from "#core/types/Classes";
 import { type LocationId, LocationList } from "#core/types/Locations";
 import { type ScavengeId, ScavengeList } from "#core/types/Scavenge";
-import type { Gang } from "./Gang";
-import { GangMembers } from "#core/database/GangMembers";
-import { Event, EventType } from "./Event";
-import type { GangColorId } from "#bot/utils/colors";
-import { AvatarDecorationId, BackgroundDecorationId, BundleId, ItemId } from "#core/types/Ids";
-import { UserBundle } from "./UserBundle";
 import { BundleList, type SkinBundles } from "#core/types/Skins";
+import { Log } from "#shared/log";
+import { addDays, differenceInHours, formatDistanceToNow } from "date-fns";
+import { addHours } from "date-fns/addHours";
+import { Event, EventType } from "./Event";
+import type { Gang } from "./Gang";
+import { getLocaleFromLanguage, Language, type Localization } from "./Language";
+import { Notification, NotificationType } from "./Notification";
 import { UserAvatarDecoration } from "./UserAvatarDecoration";
-import { AvatarDecorationList, type AvatarDecorations } from "#core/types/AvatarDecorations";
 import { UserBackgroundDecoration } from "./UserBackgroundDecoration";
-import { BackgroundDecorationList, type BackgroundDecorations } from "#core/types/BackgroundDecorations";
-import { GangBases } from "#core/types/GangBases";
-import type { Col, Fn, Literal } from "sequelize/lib/utils";
-import { UserInvestments } from "#core/database/UserInvestments";
+import { UserBundle } from "./UserBundle";
+
 import { type InvestmentId } from "#core/types/Investments";
 
 export enum SituationId {
@@ -63,12 +63,12 @@ export type AvailabilityReason =
 export type AvailabilityResult =
 	| { available: true }
 	| {
-			available: false;
-			reason: AvailabilityReason;
-			time?: Date;
-			targetId?: string;
-			referenceId?: string | number;
-	  };
+		available: false;
+		reason: AvailabilityReason;
+		time?: Date;
+		targetId?: string;
+		referenceId?: string | number;
+	};
 
 export class User {
 	static VIP_BASE_PRICE = 5_000; // special coins
@@ -225,7 +225,7 @@ export class User {
 	 */
 	async Create() {
 		try {
-			await Users.create({
+			await UserRepository.Create({
 				id: this.Id,
 				nickname: this.Nickname,
 				money: this.Money,
@@ -309,11 +309,7 @@ export class User {
 			user = fromUser;
 		}
 		else {
-			user = await Users.findOne({
-				where: {
-					id: this.Id,
-				},
-			});
+			user = await UserRepository.FindById(this.Id);
 		}
 
 		if (!user) {
@@ -335,9 +331,7 @@ export class User {
 		this.ClassChangeCount = user.classChangeCount;
 
 		// Verificar se o usuário está em uma gangue
-		const gangMember = await GangMembers.findOne({
-			where: { userId: this.Id },
-		});
+		const gangMember = await GangMemberRepository.FindByUserId(this.Id);
 
 		this.GangId = gangMember ? gangMember.gangId : null;
 
@@ -443,9 +437,7 @@ export class User {
 		this.Drink.DrunkCount = user.drunkCount;
 
 		// Investment
-		const investment = await UserInvestments.findOne({
-			where: { userId: this.Id },
-		});
+		const investment = await UserInvestmentRepository.FindByUserId(this.Id);
 		if (investment) {
 			this.Investment.Id = investment.investmentId as InvestmentId;
 			this.Investment.AccumulatedYield = investment.accumulatedYield;
@@ -483,18 +475,14 @@ export class User {
 	 * @param language Optional language to override.
 	 * @returns The User instance or null if not found.
 	 */
-	async GetSimpleInfo(fromUser?: Users, language?: Language) {
+	async GetSimpleInfo(fromUser?: Users, language?: Language, options?: { skipGangLookup?: boolean }) {
 		let user: Users | null;
 
 		if (fromUser) {
 			user = fromUser;
 		}
 		else {
-			user = await Users.findOne({
-				where: {
-					id: this.Id,
-				},
-			});
+			user = await UserRepository.FindById(this.Id);
 		}
 
 		if (!user) {
@@ -514,11 +502,25 @@ export class User {
 		if (user.createdAt !== undefined) this.CreatedAt = user.createdAt;
 		if (user.updatedAt !== undefined) this.UpdatedAt = user.updatedAt;
 
+		// Idling status fields mapping
+		if (user.jobId !== undefined) this.Job.Id = user.jobId;
+		if (user.prisonTime !== undefined) this.Prison.Time = user.prisonTime ? new Date(user.prisonTime) : new Date(0);
+		if (user.hospitalTime !== undefined) this.Hospital.Time = user.hospitalTime ? new Date(user.hospitalTime) : new Date(0);
+		if (user.scavengingId !== undefined) this.Scavenge.IsScavengingId = user.scavengingId;
+		if (user.casinoIsInGame !== undefined) this.Casino.IsInGame = user.casinoIsInGame;
+		if (user.robbingUserId !== undefined) this.Robbery.IsRobbingId = user.robbingUserId;
+		if (user.robbingLocationId !== undefined) this.Robbery.IsRobbingLocationId = user.robbingLocationId;
+		if (user.beingRobbedByUserId !== undefined) this.Robbery.IsBeingRobbedById = user.beingRobbedByUserId;
+		if (user.beatingUserId !== undefined) this.BeatUp.IsBeatingId = user.beatingUserId;
+		if (user.beingBeatUpByUserId !== undefined) this.BeatUp.IsBeingBeatUpById = user.beingBeatUpByUserId;
+		if (user.robberyInvestmentDefending !== undefined) this.Robbery.InvestmentIsDefending = user.robberyInvestmentDefending;
+		if (user.robberyParticipatingInGangAction !== undefined) this.Robbery.ParticipatingInGangAction = user.robberyParticipatingInGangAction;
+
 		// Verificar se o usuário está em uma gangue
-		const gangMember = await GangMembers.findOne({
-			where: { userId: this.Id },
-		});
-		this.GangId = gangMember ? gangMember.gangId : null;
+		if (!options?.skipGangLookup) {
+			const gangMember = await GangMemberRepository.FindByUserId(this.Id);
+			this.GangId = gangMember ? gangMember.gangId : null;
+		}
 
 		this.Language = language ?? this.Language;
 
@@ -845,12 +847,7 @@ export class User {
 	 * @param days Optional duration in days for non-consumables.
 	 */
 	async GiveItem(item: Items, quantity?: number, days?: number) {
-		const existingItem = await UserItems.findOne({
-			where: {
-				userId: this.Id,
-				itemId: item.Id,
-			},
-		});
+		const existingItem = await UserItemRepository.FindByUserAndItem(this.Id, item.Id);
 
 		const now = new Date();
 		const isConsumable = item.Type === ItemType.Consumable;
@@ -859,7 +856,7 @@ export class User {
 			const remainingTime = !isConsumable ? addDays(now, days ?? 3) : undefined;
 			const currentQuantity = isConsumable ? (quantity ?? 1) : undefined;
 
-			await UserItems.create({
+			await UserItemRepository.Create({
 				userId: this.Id,
 				itemId: item.Id,
 				remainingTime,
@@ -873,14 +870,9 @@ export class User {
 				remaining = addDays(now, days ?? 3);
 			}
 
-			await UserItems.update({
+			await UserItemRepository.UpdateDurationOrQuantity(this.Id, item.Id, {
 				remainingTime: !isConsumable ? remaining : undefined,
 				quantity: isConsumable ? existingItem.quantity + (quantity ?? 1) : undefined,
-			}, {
-				where: {
-					userId: this.Id,
-					itemId: item.Id,
-				},
 			});
 		}
 
@@ -898,12 +890,7 @@ export class User {
 	async BuyItem(item: Items) {
 		this.Money -= item.Price;
 
-		const existingItem = await UserItems.findOne({
-			where: {
-				userId: this.Id,
-				itemId: item.Id,
-			},
-		});
+		const existingItem = await UserItemRepository.FindByUserAndItem(this.Id, item.Id);
 
 		const now = new Date();
 		const isConsumable = item.Type === ItemType.Consumable;
@@ -911,7 +898,7 @@ export class User {
 		if (!existingItem) {
 			const remainingTime = !isConsumable ? addHours(now, 72) : undefined;
 			const quantity = isConsumable ? 1 : undefined;
-			await UserItems.create({
+			await UserItemRepository.Create({
 				userId: this.Id,
 				itemId: item.Id,
 				remainingTime,
@@ -927,14 +914,9 @@ export class User {
 				remaining = addHours(now, 72);
 			}
 
-			await UserItems.update({
+			await UserItemRepository.UpdateDurationOrQuantity(this.Id, item.Id, {
 				remainingTime: !isConsumable ? remaining : undefined,
 				quantity: isConsumable ? existingItem.quantity + 1 : undefined,
-			}, {
-				where: {
-					userId: this.Id,
-					itemId: item.Id,
-				},
 			});
 
 			Log.Success(`User ${this.Nickname} (Id: ${this.Id}) bought item ${item.Description[Language.English]} (Id: ${item.Id}) for ${formatMoney(item.Price, Language.English)}. Total time: ${differenceInHours(remaining, new Date())}h.`);
@@ -961,15 +943,10 @@ export class User {
 	 * @returns True if successful.
 	 */
 	async ConsumeItem(itemId: ItemId, quantity = 1) {
-		const item = await UserItems.findOne({
-			where: {
-				userId: this.Id,
-				itemId: itemId,
-			},
-		});
+		const item = await UserItemRepository.FindByUserAndItem(this.Id, itemId);
 
 		if (item && (item.quantity ?? 0) >= quantity) {
-			await item.decrement("quantity", { by: quantity });
+			await UserItemRepository.DecrementQuantity(this.Id, itemId, quantity);
 			const localItem = this.Items.find(i => i.Id === itemId);
 			if (localItem) {
 				localItem.Quantity -= quantity;
@@ -984,20 +961,7 @@ export class User {
 	 */
 	private async GetItems() {
 		this.Items = [];
-		const items = await UserItems.findAll({
-			where: {
-				userId: this.Id,
-				[Op.or]: {
-					remainingTime: {
-						[Op.gt]: new Date(),
-					},
-					quantity: {
-						[Op.gt]: 0,
-					},
-				},
-			},
-			order: [["remainingTime", "ASC"]],
-		});
+		const items = await UserItemRepository.FindActiveByUser(this.Id);
 
 		for (const item of items) {
 			const foundWeapon = { ...ItemList[item.itemId] } as UserItem;
@@ -1013,11 +977,7 @@ export class User {
 	 * Get all items from user, even if quantity is 0 and remaining time is less than now (expired)
 	 */
 	async GetAllItems() {
-		const items = await UserItems.findAll({
-			where: {
-				userId: this.Id,
-			},
-		});
+		const items = await UserItemRepository.FindAllByUser(this.Id);
 
 		const itemList: UserItem[] = [];
 
@@ -1038,12 +998,7 @@ export class User {
 	 * @param itemId
 	 */
 	async GetSpecificItem(itemId: number) {
-		const item = await UserItems.findOne({
-			where: {
-				userId: this.Id,
-				itemId,
-			},
-		});
+		const item = await UserItemRepository.FindByUserAndItem(this.Id, itemId);
 
 		const foundWeapon = { ...ItemList[itemId] } as UserItem;
 		foundWeapon.RemainingTime = <Date>item?.remainingTime ?? 0;
@@ -1073,15 +1028,10 @@ export class User {
 	 * @param bundle The skin bundle.
 	 */
 	async SetItemSkin(item: Items, bundle: SkinBundles) {
-		const existingItem = await UserItems.findOne({
-			where: {
-				userId: this.Id,
-				itemId: item.Id,
-			},
-		});
+		const existingItem = await UserItemRepository.FindByUserAndItem(this.Id, item.Id);
 
 		if (!existingItem) {
-			await UserItems.create({
+			await UserItemRepository.Create({
 				userId: this.Id,
 				itemId: item.Id,
 				remainingTime: undefined,
@@ -1090,14 +1040,7 @@ export class User {
 			});
 		}
 		else {
-			await UserItems.update({
-				skin: bundle.Id,
-			}, {
-				where: {
-					userId: this.Id,
-					itemId: item.Id,
-				},
-			});
+			await UserItemRepository.UpdateSkin(this.Id, item.Id, bundle.Id);
 		}
 
 		Log.Success(`User ${this.Nickname} (Id: ${this.Id}) has set skin ${bundle.Description[Language.English]} (Id: ${bundle.Id}) for item ${item.Description[Language.English]} (Id: ${item.Id}).`);
@@ -1111,14 +1054,7 @@ export class User {
 		const itemsToCreate = [];
 		const itemsToUpdate = [];
 
-		const existingItems = await UserItems.findAll({
-			where: {
-				userId: this.Id,
-				itemId: {
-					[Op.in]: bundle.Items,
-				},
-			},
-		});
+		const existingItems = await UserItemRepository.FindAllByUserAndItems(this.Id, bundle.Items);
 
 		const existingItemIds = new Set(existingItems.map(item => item.itemId));
 
@@ -1136,16 +1072,11 @@ export class User {
 		}
 
 		if (itemsToCreate.length > 0) {
-			await UserItems.bulkCreate(itemsToCreate);
+			await UserItemRepository.BulkCreate(itemsToCreate);
 		}
 
 		if (itemsToUpdate.length > 0) {
-			await UserItems.update({ skin: bundle.Id }, {
-				where: {
-					userId: this.Id,
-					itemId: { [Op.in]: itemsToUpdate },
-				},
-			});
+			await UserItemRepository.UpdateBundleSkins(this.Id, itemsToUpdate, bundle.Id);
 		}
 
 		Log.Success(`User ${this.Nickname} (Id: ${this.Id}) has set skin ${bundle.Description[Language.English]} (Id: ${bundle.Id}) for all items in bundle.`);
@@ -1310,7 +1241,7 @@ export class User {
 			};
 		}
 		else if (this.BeatUp.IsBeingBeatUpById) {
-			const user = await Users.findByPk(this.BeatUp.IsBeingBeatUpById, { attributes: ["id", "nickname"] });
+			const user = await UserRepository.FindById(this.BeatUp.IsBeingBeatUpById, ["id", "nickname"]);
 			this.Situation = {
 				Id: SituationId.BeatUp,
 				Simple: s.beingBeatedUpSimple,
@@ -1321,7 +1252,7 @@ export class User {
 			};
 		}
 		else if (this.BeatUp.IsBeatingId) {
-			const user = await Users.findByPk(this.BeatUp.IsBeatingId, { attributes: ["id", "nickname"] });
+			const user = await UserRepository.FindById(this.BeatUp.IsBeatingId, ["id", "nickname"]);
 			this.Situation = {
 				Id: SituationId.BeatUp,
 				Simple: s.beating,
@@ -1352,7 +1283,7 @@ export class User {
 			};
 		}
 		else if (this.Robbery.IsBeingRobbedById) {
-			const user = await Users.findByPk(this.Robbery.IsBeingRobbedById, { attributes: ["id", "nickname"] });
+			const user = await UserRepository.FindById(this.Robbery.IsBeingRobbedById, ["id", "nickname"]);
 			this.Situation = {
 				Id: SituationId.Robbery,
 				Simple: s.beingRobbedSimple,
@@ -1374,7 +1305,7 @@ export class User {
 			};
 		}
 		else if (this.Robbery.IsRobbingId) {
-			const user = await Users.findByPk(this.Robbery.IsRobbingId, { attributes: ["id", "nickname"] });
+			const user = await UserRepository.FindById(this.Robbery.IsRobbingId, ["id", "nickname"]);
 			this.Situation = {
 				Id: SituationId.Robbery,
 				Simple: s.robbing,
@@ -1707,11 +1638,9 @@ export class User {
 	/**
 	 * Updates the user in the database.
 	 */
-	async Update(values: { [key in keyof InferAttributes<Users>]?: InferAttributes<Users>[key] | Fn | Col | Literal }) {
+	async Update(values: UserUpdateParam) {
 		try {
-			await Users.update(values, {
-				where: { id: this.Id },
-			});
+			await UserRepository.Update(this.Id, values);
 		}
 		catch (err) {
 			Log.Warning(`Something went wrong with updating user Id: ${this.Id}.`);
@@ -1831,16 +1760,7 @@ export class User {
 	 * @returns The User instance or null if not found.
 	 */
 	static async Search(nameOrId: string, language?: Language): Promise<User | null> {
-		const user = await Users.findOne({
-			where: {
-				[Op.or]: {
-					nickname: {
-						[Op.like]: nameOrId,
-					},
-					id: nameOrId,
-				},
-			},
-		});
+		const user = await UserRepository.SearchByNameOrId(nameOrId);
 
 		if (!user) {
 			return null;

@@ -2,7 +2,8 @@ import { type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "d
 import { deferReply } from "#bot/utils/discordInteractions";
 import { formatDate, formatMoney } from "#bot/utils/ui";
 import type { User } from "#core/models/User";
-import { RobHistories } from "#core/database/RobHistories";
+import type { RobHistories } from "#core/database/RobHistories";
+import { RobHistoryRepository } from "#core/repositories/RobHistoryRepository";
 import { EmoteString } from "#bot/utils/emotes";
 import { Users } from "#core/database/Users";
 import { Language, type Localization } from "#core/models/Language";
@@ -48,10 +49,10 @@ module.exports = {
 
 		let robHistories: RobHistories[] = [];
 
-		pagination.HowManyRecords = await RobHistories.Count(target.Id);
+		pagination.HowManyRecords = await RobHistoryRepository.Count(target.Id);
 
 		pagination.CustomizeContainer = async () => {
-			robHistories = await RobHistories.GetList(target.Id, pagination.Limit, pagination.Offset);
+			robHistories = await RobHistoryRepository.GetList(target.Id, pagination.Limit, pagination.Offset);
 
 			let historyList = "";
 

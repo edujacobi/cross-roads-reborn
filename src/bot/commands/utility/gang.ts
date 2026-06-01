@@ -2,7 +2,7 @@ import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder"
 import { DEFAULT_GANG_IMAGE } from "#bot/ui/builders/GangImageCanvasBuilder";
 import { ProgressBarCanvasBuilder } from "#bot/ui/builders/ProgressBarCanvasBuilder";
 import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
-import { CrColors, GangColor, type IGangColor } from "#bot/utils/colors";
+import { CrColors } from "#bot/utils/colors";
 import { deferReply, deferUpdate, replyInteraction, replyWithContainer, sendComplexPrivateMessage } from "#bot/utils/discordInteractions";
 import { EmoteId, EmoteString } from "#bot/utils/emotes";
 import { convertHexNumberToString, defaultComponent, formatMoney, hexToRGB, showTime } from "#bot/utils/ui";
@@ -10,8 +10,9 @@ import { checkUser, searchUser } from "#bot/utils/userUtils";
 import { Gang, GangPermission, GangImportFailureReason, Strings as GangStrings } from "#core/models/Gang";
 import { InvestmentRobbery, InvestmentRobberyReason } from "#core/models/InvestmentRobbery";
 import { Language, type Localization } from "#core/models/Language";
-import { type User } from "#core/models/User";
+import { User } from "#core/models/User";
 import { GangBaseId, GangBases, type GangModifier, getGangBases } from "#core/types/GangBases";
+import { GangColor, type IGangColor } from "#core/types/GangColors";
 import { addHours, isFuture } from "date-fns";
 import {
 	ActionRowBuilder,
@@ -28,6 +29,33 @@ import {
 	ComponentType,
 	type MessageComponentInteraction,
 } from "discord.js";
+
+Gang.Notifier = async (userId, gangInfo, message, sender, specialMessage) => {
+	const recipient = new User(userId);
+	await recipient.GetSimpleInfo();
+	const language = recipient.Language;
+
+	const messageText = typeof message === "string" ? message : message[language];
+	let specialMessageText = "";
+	if (specialMessage) {
+		specialMessageText = typeof specialMessage === "string" ? specialMessage : specialMessage[language];
+	}
+
+	const container = new CustomContainerBuilder()
+		.setAccentColor(GangColor[gangInfo.colorId].Color)
+		.addTexts([
+			messageText,
+		])
+		.addLargeSeparator()
+		.addTexts([
+			`-# ${sender ? `${sender.GetNameWithImage()} • ` : ""}${EmoteString.Gang} ${gangInfo.name} (${gangInfo.acronym})${specialMessageText ? ` • **${specialMessageText}**` : ""}`,
+		]);
+
+	return await sendComplexPrivateMessage(userId, {
+		components: [container],
+		flags: [MessageFlags.IsComponentsV2],
+	});
+};
 
 enum CommandOption {
 	Info = "info",

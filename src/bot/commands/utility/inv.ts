@@ -3,7 +3,6 @@ import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder"
 import { GangImageCanvasBuilder } from "#bot/ui/builders/GangImageCanvasBuilder";
 import { UserImageCanvasBuilder } from "#bot/ui/builders/UserImageCanvasBuilder";
 import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
-import { GangColor } from "#bot/utils/colors";
 import { deferReply, deferUpdate, replyInteraction, replyWithContainer } from "#bot/utils/discordInteractions";
 import { EmoteId, EmoteString } from "#bot/utils/emotes";
 import { Inventory } from "#bot/utils/invUtils";
@@ -13,6 +12,7 @@ import { Language, type Localization } from "#core/models/Language";
 import type { User } from "#core/models/User";
 import { UserBadge } from "#core/models/UserBadge";
 import { ClassList } from "#core/types/Classes";
+import { GangColor } from "#core/types/GangColors";
 import { InvestmentList } from "#core/types/Investments";
 import { ItemType } from "#core/types/Items";
 import { differenceInHours, subMinutes } from "date-fns";

@@ -2,7 +2,7 @@ import { type ChatInputCommandInteraction, PermissionFlagsBits, SlashCommandBuil
 import { User } from "#core/models/User";
 import { Language } from "#core/models/Language";
 import { addHours } from "date-fns";
-import { UserItems } from "#core/database/UserItems";
+import { UserItemRepository } from "#core/repositories/UserItemRepository";
 import { ItemList, ItemType, type UserItem } from "#core/types/Items";
 import { Log } from "#shared/log";
 import { EmoteString } from "#bot/utils/emotes";
@@ -73,9 +73,7 @@ module.exports = {
 		}
 
 		// 3. Find the existing item directly in the database
-		const existingItem = await UserItems.findOne({
-			where: { userId: targetUserId, itemId: itemId },
-		});
+		const existingItem = await UserItemRepository.FindByUserAndItem(targetUserId, itemId);
 
 		const now = new Date();
 		let replyMessage = "";
@@ -87,10 +85,10 @@ module.exports = {
 
 			if (mode === Mode.Set) {
 				if (existingItem) {
-					await existingItem.update({ remainingTime: newExpiryDate });
+					await UserItemRepository.UpdateDurationOrQuantity(targetUserId, itemId, { remainingTime: newExpiryDate });
 				}
 				else {
-					await UserItems.create({
+					await UserItemRepository.Create({
 						userId: targetUserId,
 						itemId,
 						remainingTime: newExpiryDate,
@@ -105,10 +103,10 @@ module.exports = {
 				if (existingItem) {
 					const baseDate = existingItem.remainingTime > now ? existingItem.remainingTime : now;
 					const extendedExpiryDate = addHours(baseDate, hoursOrQuantity);
-					await existingItem.update({ remainingTime: extendedExpiryDate });
+					await UserItemRepository.UpdateDurationOrQuantity(targetUserId, itemId, { remainingTime: extendedExpiryDate });
 				}
 				else {
-					await UserItems.create({
+					await UserItemRepository.Create({
 						userId: targetUserId,
 						itemId,
 						remainingTime: newExpiryDate,
@@ -121,10 +119,10 @@ module.exports = {
 		}
 		else if (mode === Mode.Set) {
 			if (existingItem) {
-				await existingItem.update({ quantity: hoursOrQuantity });
+				await UserItemRepository.UpdateDurationOrQuantity(targetUserId, itemId, { quantity: hoursOrQuantity });
 			}
 			else {
-				await UserItems.create({
+				await UserItemRepository.Create({
 					userId: targetUserId,
 					itemId,
 					quantity: hoursOrQuantity,
@@ -139,10 +137,10 @@ module.exports = {
 			const newQuantity = (existingItem?.quantity || 0) + hoursOrQuantity;
 
 			if (existingItem) {
-				await existingItem.update({ quantity: newQuantity });
+				await UserItemRepository.UpdateDurationOrQuantity(targetUserId, itemId, { quantity: newQuantity });
 			}
 			else {
-				await UserItems.create({
+				await UserItemRepository.Create({
 					userId: targetUserId,
 					itemId,
 					quantity: newQuantity,

@@ -1,6 +1,3 @@
-import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
-import { GangColor, GangColorId } from "#bot/utils/colors";
-import { sendComplexPrivateMessage } from "#bot/utils/discordInteractions";
 import { EmoteString } from "#bot/utils/emotes";
 import { formatMoney, showTime } from "#bot/utils/ui";
 import { GangMembers } from "#core/database/GangMembers";
@@ -8,17 +5,25 @@ import { GangRoles } from "#core/database/GangRoles";
 import { Gangs } from "#core/database/Gangs";
 import { Users } from "#core/database/Users";
 import { GangBaseId } from "#core/types/GangBases";
+import { GangColorId } from "#core/types/GangColors";
 import { GangImportTiers, type ImportReward } from "#core/types/GangImportPools";
 import { BundleId } from "#core/types/Ids";
 import type { IDescription } from "#core/types/Interfaces";
 import { ItemList } from "#core/types/Items";
 import { Log, logger } from "#shared/log";
 import { addHours, isFuture } from "date-fns";
-import { type Message, MessageFlags } from "discord.js";
 import { Op } from "sequelize";
 import { Language, type Localization } from "./Language";
 import { Notification, NotificationType } from "./Notification";
 import { User } from "./User";
+
+export type GangNotifier = (
+	userId: string,
+	gangInfo: { name: string; acronym: string; colorId: GangColorId },
+	message: string | Record<Language, string>,
+	sender?: User,
+	specialMessage?: string | Record<Language, string>
+) => Promise<unknown>;
 
 export enum GangPermission {
 	Invite,
@@ -54,6 +59,8 @@ export interface GangRole {
 }
 
 export class Gang {
+	static Notifier: GangNotifier | null = null;
+
 	Id = 0;
 	Name = "";
 	Acronym = "";
@@ -1466,28 +1473,9 @@ export class Gang {
 	 * @returns A promise that resolves when the message is sent.
 	 */
 	async ComunicateMember(member: GangMember, message: IDescription | string, sender?: User, specialMessage?: IDescription | string) {
-		const language = (await Users.findByPk(member.UserId, { attributes: ["language"] }))?.language ?? Language.English;
-
-		const messageText = typeof message === "string" ? message : message[language];
-		let specialMessageText = "";
-		if (specialMessage) {
-			specialMessageText = typeof specialMessage === "string" ? specialMessage : specialMessage[language];
+		if (Gang.Notifier) {
+			return await Gang.Notifier(member.UserId, { name: this.Name, acronym: this.Acronym, colorId: this.Color }, message, sender, specialMessage);
 		}
-
-		const container = new CustomContainerBuilder()
-			.setAccentColor(GangColor[this.Color].Color)
-			.addTexts([
-				messageText,
-			])
-			.addLargeSeparator()
-			.addTexts([
-				`-# ${sender ? `${sender.GetNameWithImage()} • ` : ""}${EmoteString.Gang} ${this.Name} (${this.Acronym})${specialMessageText ? ` • **${specialMessageText}**` : ""}`,
-			]);
-
-		return await sendComplexPrivateMessage(member.UserId, {
-			components: [container],
-			flags: [MessageFlags.IsComponentsV2],
-		});
 	}
 
 	/**
@@ -1498,7 +1486,7 @@ export class Gang {
 	 * @returns A promise that resolves when all messages are sent.
 	 */
 	async ComunicateAllMembers(message: IDescription | string, sender?: User, specialMessage?: IDescription | string) {
-		const promises: Promise<Message<false> | undefined>[] = [];
+		const promises: Promise<unknown>[] = [];
 
 		for (const member of this.Members) {
 			promises.push(this.ComunicateMember(member, message, sender, specialMessage));

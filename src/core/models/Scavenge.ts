@@ -10,12 +10,12 @@ import {
 } from "#core/types/Scavenge";
 import { ItemList, type Items, ItemType } from "#core/types/Items";
 import { type LocationId, LocationList } from "#core/types/Locations";
-import { Users } from "#core/database/Users";
+import { UserRepository } from "#core/repositories/UserRepository";
 import { getScavengeChanceClassModifier, getScavengeDurationClassModifier } from "#core/types/Classes";
 import { addHours, addMinutes } from "date-fns";
 import { Log } from "#shared/log";
 import { Notification } from "./Notification";
-import { UserItems } from "#core/database/UserItems";
+import { UserItemRepository } from "#core/repositories/UserItemRepository";
 import { BundleId } from "#core/types/Ids";
 import { formatMoney } from "#bot/utils/ui";
 
@@ -59,19 +59,19 @@ export class Scavenge {
 			case "casino":
 				return { canScavenge: false, reason: ScavengeFailureReason.UserCasino };
 			case "beating": {
-				const user = await Users.findByPk(availability.targetId!, { attributes: ["class", "nickname"] });
+				const user = await UserRepository.FindById(availability.targetId!, ["class", "nickname"]);
 				return { canScavenge: false, reason: ScavengeFailureReason.AttackerIsBeatingId, attacker: user };
 			}
 			case "beingBeatUp": {
-				const user = await Users.findByPk(availability.targetId!, { attributes: ["class", "nickname"] });
+				const user = await UserRepository.FindById(availability.targetId!, ["class", "nickname"]);
 				return { canScavenge: false, reason: ScavengeFailureReason.AttackerIsBeingBeatedById, attacker: user };
 			}
 			case "robbing": {
-				const user = await Users.findByPk(availability.targetId!, { attributes: ["nickname", "class"] });
+				const user = await UserRepository.FindById(availability.targetId!, ["nickname", "class"]);
 				return { canScavenge: false, reason: ScavengeFailureReason.AttackerIsRobbingId, attacker: user };
 			}
 			case "beingRobbed": {
-				const user = await Users.findByPk(availability.targetId!, { attributes: ["nickname", "class"] });
+				const user = await UserRepository.FindById(availability.targetId!, ["nickname", "class"]);
 				return { canScavenge: false, reason: ScavengeFailureReason.AttackerIsBeingRobbedById, attacker: user };
 			}
 			case "robbingLocation": {
@@ -163,12 +163,7 @@ export class Scavenge {
 				const item = this.RewardItems[Math.floor(Math.random() * this.RewardItems.length)];
 				const data = ItemList[item.Id];
 
-				const existingItem = await UserItems.findOne({
-					where: {
-						userId: this.User.Id,
-						itemId: item.Id,
-					},
-				});
+				const existingItem = await UserItemRepository.FindByUserAndItem(this.User.Id, item.Id);
 
 				const now = new Date();
 
@@ -179,7 +174,7 @@ export class Scavenge {
 					rewardDescription = `${howMany} ${this.User.GetItemSkin(data)} ${data.Description[this.User.Language]}`;
 					rewardDescriptionLog = `${howMany} ${data.Description[Language.English]}`;
 
-					await UserItems.upsert({
+					await UserItemRepository.Upsert({
 						id: existingItem?.id ?? undefined,
 						userId: this.User.Id,
 						itemId: item.Id,
@@ -201,7 +196,7 @@ export class Scavenge {
 						addHours(now, duration) :
 						addHours(remaining, duration);
 
-					await UserItems.upsert({
+					await UserItemRepository.Upsert({
 						id: existingItem?.id ?? undefined,
 						userId: this.User.Id,
 						itemId: item.Id,

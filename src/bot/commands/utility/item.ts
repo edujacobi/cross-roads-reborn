@@ -14,11 +14,11 @@ import { Language, type Localization } from "#core/models/Language";
 import type { User } from "#core/models/User";
 import { ItemList, ItemType } from "#core/types/Items";
 import { EmoteId, EmoteString } from "#bot/utils/emotes";
-import { UserItems } from "#core/database/UserItems";
-import { Op } from "sequelize";
+import { UserItemRepository } from "#core/repositories/UserItemRepository";
 import { BundleId } from "#core/types/Ids";
 import { BundleList } from "#core/types/Skins";
-import { CrColors, GangColor, GangColorId } from "#bot/utils/colors";
+import { CrColors } from "#bot/utils/colors";
+import { GangColor, GangColorId } from "#core/types/GangColors";
 import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
 
 module.exports = {
@@ -81,21 +81,7 @@ module.exports = {
 			},
 		};
 
-		const usersWithItem = await UserItems.count({
-			where: {
-				[Op.and]: {
-					itemId: item.Id,
-					[Op.or]: {
-						remainingTime: {
-							[Op.gt]: new Date(),
-						},
-						quantity: {
-							[Op.gt]: 0,
-						},
-					},
-				},
-			},
-		});
+		const usersWithItem = await UserItemRepository.CountUsersWithItem(item.Id);
 
 		interface buttonParams {
 			label: string;

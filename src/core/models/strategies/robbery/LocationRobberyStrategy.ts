@@ -1,7 +1,7 @@
 import { EmoteString } from "#bot/utils/emotes";
 import { formatMoney, showTime } from "#bot/utils/ui";
-import { RobHistories } from "#core/database/RobHistories";
-import { Users } from "#core/database/Users";
+import { RobHistoryRepository } from "#core/repositories/RobHistoryRepository";
+import { UserRepository } from "#core/repositories/UserRepository";
 import { Event, EventType } from "#core/models/Event";
 import { globalStrings, Language, type Localization } from "#core/models/Language";
 import { Notification } from "#core/models/Notification";
@@ -81,22 +81,22 @@ export class LocationRobberyStrategy implements IRobberyStrategy {
 				message = globalStrings[this.Attacker.Language].attackerIsParticipatingInGangAction;
 				break;
 			case "beating": {
-				const user = await Users.findByPk(attackerCheck.targetId!, { attributes: ["class", "nickname"] });
+				const user = await UserRepository.FindById(attackerCheck.targetId!, ["class", "nickname"]);
 				message = globalStrings[this.Attacker.Language].attackerIsBeatingId(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname!}`);
 				break;
 			}
 			case "beingBeatUp": {
-				const user = await Users.findByPk(attackerCheck.targetId!, { attributes: ["class", "nickname"] });
+				const user = await UserRepository.FindById(attackerCheck.targetId!, ["class", "nickname"]);
 				message = globalStrings[this.Attacker.Language].attackerIsBeingBeatedById(`${ClassList[user!.class!].Image.Emote.String} ${user!.nickname!}`);
 				break;
 			}
 			case "robbing": {
-				const user = await Users.findByPk(attackerCheck.targetId!, { attributes: ["class", "nickname"] });
+				const user = await UserRepository.FindById(attackerCheck.targetId!, ["class", "nickname"]);
 				message = globalStrings[this.Attacker.Language].attackerIsRobbingId(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname!}`);
 				break;
 			}
 			case "beingRobbed": {
-				const user = await Users.findByPk(attackerCheck.targetId!, { attributes: ["class", "nickname"] });
+				const user = await UserRepository.FindById(attackerCheck.targetId!, ["class", "nickname"]);
 				message = globalStrings[this.Attacker.Language].attackerIsBeingRobbedById(`${ClassList[user!.class!].Image.Emote.String} ${user!.nickname!}`);
 				break;
 			}
@@ -112,6 +112,7 @@ export class LocationRobberyStrategy implements IRobberyStrategy {
 	}
 
 	async LockStates(useGrenade?: boolean): Promise<RobberyInitData> {
+		void useGrenade;
 		this.AttackerTimeInPrison = 20 * (this.LocationId + 1);
 
 		this.Attacker.Robbery.IsRobbingLocationId = this.LocationId;
@@ -137,6 +138,7 @@ export class LocationRobberyStrategy implements IRobberyStrategy {
 	}
 
 	async Resolve(defenderReaction?: string): Promise<RobberyLocationOutcomeData> {
+		void defenderReaction;
 		try {
 			await this.Attacker.GetInfo();
 
@@ -200,7 +202,7 @@ export class LocationRobberyStrategy implements IRobberyStrategy {
 				robbingLocationId: this.Attacker.Robbery.IsRobbingLocationId,
 			});
 
-			await RobHistories.CreateLocationHistory(this);
+			await RobHistoryRepository.CreateLocationHistory(this);
 		}
 	}
 

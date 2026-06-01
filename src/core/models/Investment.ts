@@ -1,11 +1,11 @@
 import { User } from "./User";
-import { UserInvestments } from "#core/database/UserInvestments";
+import { UserInvestmentRepository } from "#core/repositories/UserInvestmentRepository";
 import {
 	type InvestmentId,
 	InvestmentList,
 	type InvestmentActionResult,
 } from "#core/types/Investments";
-import { Users } from "#core/database/Users";
+import { UserRepository } from "#core/repositories/UserRepository";
 import { addDays, addHours, differenceInHours, isFuture, isPast, startOfHour } from "date-fns";
 import { Log } from "#shared/log";
 import { formatMoney } from "#bot/utils/ui";
@@ -38,7 +38,7 @@ export class Investment {
 		const logs: string[] = [];
 
 		try {
-			const activeInvestments = await UserInvestments.findAll();
+			const activeInvestments = await UserInvestmentRepository.FindAll();
 			const nowHour = startOfHour(new Date());
 
 			const tasks = activeInvestments.map(async (currentInvestment) => {
@@ -55,22 +55,21 @@ export class Investment {
 					if (hoursToPay <= 0) return;
 
 					// Lightweight user loading: only fetch what we need
-					const userRow = await Users.findOne({
-						where: { id: currentInvestment.userId },
-						attributes: [
-							"id", "nickname", "money", "language", "class",
-							"prisonTime", "hospitalTime", "jobId",
-							"robbingUserId", "beingRobbedByUserId", "robbingLocationId",
-							"scavengingId", "casinoIsInGame",
-							"beatingUserId", "beingBeatUpByUserId",
-							"robberyInvestmentDefending", "robberyParticipatingInGangAction",
-							"notifyInvestmentYield",
-						],
-					});
+					const userRow = await UserRepository.FindById(currentInvestment.userId, [
+						"id", "nickname", "money", "language", "class",
+						"prisonTime", "hospitalTime", "jobId",
+						"robbingUserId", "beingRobbedByUserId", "robbingLocationId",
+						"scavengingId", "casinoIsInGame",
+						"beatingUserId", "beingBeatUpByUserId",
+						"robberyInvestmentDefending", "robberyParticipatingInGangAction",
+						"notifyInvestmentYield",
+					]);
 
 					if (!userRow) return;
 
-					const isIdling = Investment.IsUserIdling(userRow);
+					const user = new User(currentInvestment.userId);
+					await user.GetSimpleInfo(userRow, undefined, { skipGangLookup: true });
+					const isIdling = user.IsIdling();
 
 					// Check 7-day expiration (Process expiration only if the current moment is past expiration)
 					if (isPast(currentInvestment.expiresAt)) {
@@ -106,12 +105,9 @@ export class Investment {
 						const totalFee = Math.round(totalAccumulatedFee + expirationFee);
 
 						if (payout > 0) {
-							await Users.increment(
-								{ money: payout, investmentTotalProfit: payout },
-								{ where: { id: currentInvestment.userId } },
-							);
+							await UserRepository.IncrementMoneyAndProfit(currentInvestment.userId, payout);
 						}
-						await currentInvestment.destroy();
+						await UserInvestmentRepository.DestroyByUserId(currentInvestment.userId);
 
 						const user = await new User(currentInvestment.userId).GetInfo();
 						if (user) {
@@ -166,12 +162,9 @@ export class Investment {
 						const finalPayout = Math.round(totalPayout + currentInvestment.accumulatedYield);
 						const finalFee = Math.round(totalPayoutFee + currentInvestment.accumulatedFee);
 
-						await Users.increment(
-							{ money: finalPayout, investmentTotalProfit: finalPayout },
-							{ where: { id: currentInvestment.userId } },
-						);
+						await UserRepository.IncrementMoneyAndProfit(currentInvestment.userId, finalPayout);
 
-						await currentInvestment.update({
+						await UserInvestmentRepository.UpdateByUserId(currentInvestment.userId, {
 							accumulatedYield: 0,
 							accumulatedFee: 0,
 							lastYieldAt: nowHour,
@@ -193,11 +186,12 @@ export class Investment {
 						}
 					}
 					else {
-						await currentInvestment.increment({
-							accumulatedYield: Math.round(totalPayout),
-							accumulatedFee: Math.round(totalPayoutFee),
-						});
-						await currentInvestment.update({ lastYieldAt: nowHour });
+						await UserInvestmentRepository.IncrementYieldAndFee(
+							currentInvestment.userId,
+							Math.round(totalPayout),
+							Math.round(totalPayoutFee)
+						);
+						await UserInvestmentRepository.UpdateByUserId(currentInvestment.userId, { lastYieldAt: nowHour });
 					}
 				}
 				catch (e) {
@@ -216,27 +210,6 @@ export class Investment {
 	}
 
 	/**
-	 * Checks if a user is idling based on raw DB fields, without building a full User object.
-	 */
-	private static IsUserIdling(userRow: Users): boolean {
-		const now = new Date();
-		return (
-			userRow.jobId == null &&
-			(userRow.prisonTime == null || userRow.prisonTime <= now) &&
-			(userRow.hospitalTime == null || userRow.hospitalTime <= now) &&
-			userRow.scavengingId == null &&
-			!userRow.casinoIsInGame &&
-			userRow.robbingUserId == null &&
-			userRow.beingRobbedByUserId == null &&
-			userRow.robbingLocationId == null &&
-			userRow.beatingUserId == null &&
-			userRow.beingBeatUpByUserId == null &&
-			!userRow.robberyInvestmentDefending &&
-			!userRow.robberyParticipatingInGangAction
-		);
-	}
-
-	/**
 	 * Allows a user to purchase a new investment.
 	 * They can only have one active investment at a time.
 	 */
@@ -248,9 +221,7 @@ export class Investment {
 		}
 
 		// Check if user already has an investment
-		const existing = await UserInvestments.findOne({
-			where: { userId: user.Id },
-		});
+		const existing = await UserInvestmentRepository.FindByUserId(user.Id);
 
 		if (existing) {
 			return { success: false, reason: "already_has_investment" };
@@ -261,7 +232,7 @@ export class Investment {
 
 		const expiresAt = addDays(new Date(), Investment.DURATION_DAYS);
 
-		await UserInvestments.create({
+		await UserInvestmentRepository.Create({
 			userId: user.Id,
 			investmentId,
 			accumulatedYield: 0,
@@ -294,9 +265,7 @@ export class Investment {
 		}
 		const investmentData = InvestmentList[user.Investment.Id];
 
-		await UserInvestments.destroy({
-			where: { userId: user.Id },
-		});
+		await UserInvestmentRepository.DestroyByUserId(user.Id);
 
 		Log.Info(`User ${user.Nickname} (Id: ${user.Id}) abandoned investment ${investmentData.Name[Language.English]} (Id: ${user.Investment.Id}).`);
 
@@ -323,10 +292,10 @@ export class Investment {
 		}
 
 		const endsAt = addHours(new Date(), 12); // 12 hours
-		await UserInvestments.update(
-			{ henchmanEndsAt: endsAt, henchmanHospitalized: false },
-			{ where: { userId: user.Id } },
-		);
+		await UserInvestmentRepository.UpdateByUserId(user.Id, {
+			henchmanEndsAt: endsAt,
+			henchmanHospitalized: false,
+		});
 
 		user.Investment.HenchmanEndsAt = endsAt;
 		user.Investment.HenchmanHospitalized = false;

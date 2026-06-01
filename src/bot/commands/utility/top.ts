@@ -3,10 +3,12 @@ import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder"
 import { DEFAULT_GANG_IMAGE } from "#bot/ui/builders/GangImageCanvasBuilder";
 import { UserRankingCardCanvasBuilder } from "#bot/ui/builders/UserRankingCardCanvasBuilder";
 import { EmoteBadgeString } from "#bot/utils/badges";
-import { CrColors, GangColor } from "#bot/utils/colors";
+import { runUserBeatUp } from "#bot/utils/beatupHelper";
+import { CrColors } from "#bot/utils/colors";
 import { deferReply, deferUpdate, replyWithContainer } from "#bot/utils/discordInteractions";
 import { EmoteId, EmoteString } from "#bot/utils/emotes";
 import { Inventory } from "#bot/utils/invUtils";
+import { runUserRobbery } from "#bot/utils/robberyHelper";
 import { defaultComponent, formatMoney } from "#bot/utils/ui";
 import { searchUser } from "#bot/utils/userUtils";
 import Gangs from "#core/database/Gangs";
@@ -17,9 +19,8 @@ import { Language, type Localization } from "#core/models/Language";
 import { Pagination } from "#core/models/Pagination";
 import { UserRobberyStrategy } from "#core/models/strategies/robbery/UserRobberyStrategy";
 import { User } from "#core/models/User";
+import { GangColor } from "#core/types/GangColors";
 import type { IDescription } from "#core/types/Interfaces";
-import { runUserRobbery } from "#bot/utils/robberyHelper";
-import { runUserBeatUp } from "#bot/utils/beatupHelper";
 import {
 	AttachmentBuilder,
 	ButtonStyle,

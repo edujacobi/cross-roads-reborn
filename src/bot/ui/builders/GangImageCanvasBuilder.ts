@@ -1,4 +1,3 @@
-import { GangColor } from "#bot/utils/colors";
 import { convertHexNumberToString, hexToRGB } from "#bot/utils/ui";
 import type { Gang } from "#core/models/Gang";
 import { Language, type Localization } from "#core/models/Language";
@@ -7,6 +6,7 @@ import { logger } from "#shared/log";
 import { type Canvas, type Image, loadImage, type SKRSContext2D } from "@napi-rs/canvas";
 import fs from "node:fs";
 import { BaseCanvasBuilder } from "./BaseCanvasBuilder";
+import { GangColor } from "#core/types/GangColors";
 
 export const DEFAULT_GANG_IMAGE = "https://i.imgur.com/xOUjOlZ.png";
 
