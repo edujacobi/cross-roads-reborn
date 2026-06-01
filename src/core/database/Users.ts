@@ -109,6 +109,8 @@ export class Users extends Model<
 	declare lastVoteClaim: CreationOptional<Date | null>;
 	declare voteCount: number;
 
+	declare automaticGrenade: boolean;
+
 	declare createdAt: CreationOptional<Date>;
 	declare updatedAt: CreationOptional<Date>;
 }
@@ -488,6 +490,11 @@ Users.init(
 			type: DataTypes.INTEGER,
 			allowNull: false,
 			defaultValue: 0,
+		},
+		automaticGrenade: {
+			type: DataTypes.BOOLEAN,
+			allowNull: false,
+			defaultValue: false,
 		},
 		createdAt: DataTypes.DATE,
 		updatedAt: DataTypes.DATE,

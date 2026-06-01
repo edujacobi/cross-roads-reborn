@@ -209,6 +209,7 @@ export class User {
 		TotalProfit: 0,
 	};
 	Items: UserItem[] = [];
+	AutomaticGrenade = false;
 
 	/**
 	 * Creates a new instance of User.
@@ -287,6 +288,7 @@ export class User {
 				investmentTotalProfit: 0,
 				nicknameChangeCount: 0,
 				classChangeCount: 0,
+				automaticGrenade: false,
 			});
 			Log.Success(`User ${this.Id} created.`);
 
@@ -456,6 +458,7 @@ export class User {
 		}
 		this.Investment.NotifyYield = user.notifyInvestmentYield;
 		this.Investment.TotalProfit = user.investmentTotalProfit;
+		this.AutomaticGrenade = user.automaticGrenade;
 
 		await Promise.all([
 			this.GetSituation(language),
@@ -515,6 +518,7 @@ export class User {
 		if (user.beingBeatUpByUserId !== undefined) this.BeatUp.IsBeingBeatUpById = user.beingBeatUpByUserId;
 		if (user.robberyInvestmentDefending !== undefined) this.Robbery.InvestmentIsDefending = user.robberyInvestmentDefending;
 		if (user.robberyParticipatingInGangAction !== undefined) this.Robbery.ParticipatingInGangAction = user.robberyParticipatingInGangAction;
+		if (user.automaticGrenade !== undefined) this.AutomaticGrenade = user.automaticGrenade;
 
 		// Verificar se o usuário está em uma gangue
 		if (!options?.skipGangLookup) {
@@ -1767,6 +1771,18 @@ export class User {
 		}
 
 		return await new User(user.id).GetInfo(user, language);
+	}
+
+	/**
+	 * Sets the user's automatic grenade option.
+	 * @param value The new value.
+	 */
+	async SetAutomaticGrenade(value: boolean) {
+		this.AutomaticGrenade = value;
+		await this.Update({
+			automaticGrenade: value,
+		});
+		Log.Info(`User ${this.Nickname} (Id: ${this.Id}) set automaticGrenade to ${value}.`);
 	}
 }
 

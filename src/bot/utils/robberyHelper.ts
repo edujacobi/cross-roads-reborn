@@ -18,77 +18,82 @@ export async function runUserRobbery(interaction: ChatInputCommandInteraction, r
 	let usedGrenade = false;
 
 	if (grenade && grenade.Quantity > 0) {
-		const grenadeContainer = new CustomContainerBuilder()
-			.setUser(attacker)
-			.setAccentColor(CrColors.Robbery)
-			.addTexts([
-				`-# ${EmoteString.Robbery} ${sA.preparingToRob(defender.GetNameWithImage())}`,
-			])
-			.addLargeSeparator()
-			.addSectionComponents(row => row
+		if (attacker.AutomaticGrenade) {
+			usedGrenade = true;
+		}
+		else {
+			const grenadeContainer = new CustomContainerBuilder()
+				.setUser(attacker)
+				.setAccentColor(CrColors.Robbery)
 				.addTexts([
-					`### ${EmoteString.Granade} **${sA.useGrenade}**`,
-					sA.useGrenadeEffect,
+					`-# ${EmoteString.Robbery} ${sA.preparingToRob(defender.GetNameWithImage())}`,
 				])
-				.setButtonAccessory(new ButtonBuilder()
-					.setCustomId("use_grenade")
-					.setLabel(sA.useGrenade)
-					.setStyle(ButtonStyle.Success)
-					.setEmoji(EmoteId.Granade),
-				),
-			)
-			.addLargeSeparator()
-			.addSectionComponents(row => row
-				.addTexts([
-					`### **${sA.dontUseGrenade}**`,
-					sA.dontUseGrenadeDescription,
-				])
-				.setButtonAccessory(new ButtonBuilder()
-					.setCustomId("dont_use_grenade")
-					.setLabel(sA.dontUseGrenade)
-					.setStyle(ButtonStyle.Secondary),
-				),
-			)
-			.addFooter({
-				text: sA.useGrenadeDescription(grenade.Quantity),
-			});
-
-		const grenadeMessage = await replyWithContainer(interaction, grenadeContainer);
-
-		if (grenadeMessage) {
-			try {
-				const confirmation = await grenadeMessage.awaitMessageComponent({
-					filter: (i) => i.user.id === attacker.Id,
-					time: 30_000,
-					componentType: ComponentType.Button,
+				.addLargeSeparator()
+				.addSectionComponents(row => row
+					.addTexts([
+						`### ${EmoteString.Granade} **${sA.useGrenade}**`,
+						sA.useGrenadeEffect,
+					])
+					.setButtonAccessory(new ButtonBuilder()
+						.setCustomId("use_grenade")
+						.setLabel(sA.useGrenade)
+						.setStyle(ButtonStyle.Success)
+						.setEmoji(EmoteId.Granade),
+					),
+				)
+				.addLargeSeparator()
+				.addSectionComponents(row => row
+					.addTexts([
+						`### **${sA.dontUseGrenade}**`,
+						sA.dontUseGrenadeDescription,
+					])
+					.setButtonAccessory(new ButtonBuilder()
+						.setCustomId("dont_use_grenade")
+						.setLabel(sA.dontUseGrenade)
+						.setStyle(ButtonStyle.Secondary),
+					),
+				)
+				.addFooter({
+					text: sA.useGrenadeDescription(grenade.Quantity),
 				});
 
-				await deferUpdate(confirmation);
+			const grenadeMessage = await replyWithContainer(interaction, grenadeContainer);
 
-				if (confirmation.customId === "use_grenade") {
-					usedGrenade = true;
+			if (grenadeMessage) {
+				try {
+					const confirmation = await grenadeMessage.awaitMessageComponent({
+						filter: (i) => i.user.id === attacker.Id,
+						time: 30_000,
+						componentType: ComponentType.Button,
+					});
+
+					await deferUpdate(confirmation);
+
+					if (confirmation.customId === "use_grenade") {
+						usedGrenade = true;
+					}
 				}
-			}
-			catch (e) {
-				// Time out, do nothing
-			}
+				catch (e) {
+					// Time out, do nothing
+				}
 
-			await Promise.all([
-				attacker.GetInfo(),
-				defender.GetInfo(),
-			]);
+				await Promise.all([
+					attacker.GetInfo(),
+					defender.GetInfo(),
+				]);
 
-			const availability = await robbery.CanRob();
+				const availability = await robbery.CanRob();
 
-			if (!availability.canRob) {
-				const container = defaultComponent({
-					user: attacker,
-					color: CrColors.Robbery,
-					description: availability.message,
-				});
+				if (!availability.canRob) {
+					const container = defaultComponent({
+						user: attacker,
+						color: CrColors.Robbery,
+						description: availability.message,
+					});
 
-				await replyWithContainer(interaction, container);
-				return;
+					await replyWithContainer(interaction, container);
+					return;
+				}
 			}
 		}
 	}
