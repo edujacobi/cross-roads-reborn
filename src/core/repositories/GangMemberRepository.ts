@@ -67,5 +67,24 @@ export class GangMemberRepository {
 	static async Count(): Promise<number> {
 		return await GangMembers.count();
 	}
+
+	/**
+	 * Removes all members of a gang.
+	 */
+	static async RemoveAllByGangId(gangId: number): Promise<number> {
+		return await GangMembers.destroy({
+			where: { gangId },
+		});
+	}
+
+	/**
+	 * Reassigns roles from an old role ID to a new role ID in a gang.
+	 */
+	static async ReassignRole(gangId: number, oldRoleId: number, newRoleId: number): Promise<void> {
+		await GangMembers.update(
+			{ roleId: newRoleId },
+			{ where: { gangId, roleId: oldRoleId } }
+		);
+	}
 }
 
