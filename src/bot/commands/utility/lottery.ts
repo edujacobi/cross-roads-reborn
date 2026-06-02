@@ -4,12 +4,12 @@ import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
 import { CrColors } from "#bot/utils/colors";
 import { deferUpdate, replyWithContainer } from "#bot/utils/discordInteractions";
 import { EmoteId, EmoteString } from "#bot/utils/emotes";
-import { formatMoney, showTime } from "#bot/utils/ui";
+import { formatMoney } from "#bot/utils/ui";
 import { Language, type Localization } from "#core/models/Language";
 import { Lottery } from "#core/models/Lottery";
 import type { User } from "#core/models/User";
 import { ClassList, getCasinoClassModifier } from "#core/types/Classes";
-import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Colors, Locale, SlashCommandBuilder } from "discord.js";
+import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Colors, Locale, SlashCommandBuilder, time, TimestampStyles } from "discord.js";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -82,7 +82,7 @@ module.exports = {
 				isMega ?
 					`## ${EmoteString.MegaTicket} ${s.megaDrawTitle}` :
 					`### ${EmoteString.Ticket} ${s.nextDrawTitle}`,
-				s.nextDrawInfo(showTime(draw.drawTime.getTime(), true), formatMoney(ticketCost, language), hasVipDiscount ? formatMoney(ticketPrice, language) : undefined),
+				s.nextDrawInfo(time(draw.drawTime, TimestampStyles.RelativeTime), formatMoney(ticketCost, language), hasVipDiscount ? formatMoney(ticketPrice, language) : undefined),
 				s.accumulated(accumulatorText),
 				lastWinnerText
 			]);

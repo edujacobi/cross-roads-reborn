@@ -105,17 +105,6 @@ export function formatMoney(money: number, lang: Language, prefix = "Cr$") {
 }
 
 /**
- * Generates a Discord timestamp string.
- *
- * @param time - The timestamp in milliseconds.
- * @param humanized - Whether to use relative time (R) or full date/time (f).
- * @returns The Discord timestamp string.
- */
-export function showTime(time: number, humanized?: boolean) {
-	return `<t:${Math.round(time / 1_000)}:${humanized ? "R" : "f"}>`;
-}
-
-/**
  * Formats a date object into a string representation based on the language.
  *
  * @param date - The date to format.

@@ -3,7 +3,7 @@ import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
 import { CrColors } from "#bot/utils/colors";
 import { deferReply, deferUpdate, replyWithContainer } from "#bot/utils/discordInteractions";
 import { EmoteString } from "#bot/utils/emotes";
-import { formatMoney, showTime } from "#bot/utils/ui";
+import { formatMoney } from "#bot/utils/ui";
 import { UserRepository } from "#core/repositories/UserRepository";
 import { BlackMarket } from "#core/models/BlackMarket";
 import { Event, EventType } from "#core/models/Event";
@@ -14,7 +14,7 @@ import { getItemList, ItemList } from "#core/types/Items";
 import { getJobList, type JobId, JobList, type Jobs } from "#core/types/Jobs";
 import { LocationList } from "#core/types/Locations";
 import { type ScavengeId, ScavengeList } from "#core/types/Scavenge";
-import { ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+import { ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder, time, TimestampStyles } from "discord.js";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -327,14 +327,14 @@ const Strings = {
 		userParticipating: `You're participating in a gang action! ${EmoteString.Gang}`,
 		title: "Jobs",
 		description: "You cannot bet, steal or search while working!",
-		userPrison: (timerPrison: Date) => `You are in prison! ${EmoteString.Prison}\n-# You will be released ${showTime(timerPrison.getTime(), true)}`,
-		userHospital: (timerHospital: Date) => `You are hospitalized ${EmoteString.Hospital}\n-# You will be attended ${showTime(timerHospital.getTime(), true)}`,
+		userPrison: (timerPrison: Date) => `You are in prison! ${EmoteString.Prison}\n-# You will be released ${time(timerPrison, TimestampStyles.RelativeTime)}`,
+		userHospital: (timerHospital: Date) => `You are hospitalized ${EmoteString.Hospital}\n-# You will be attended ${time(timerHospital, TimestampStyles.RelativeTime)}`,
 		userCasino: `You are playing in casino! ${EmoteString.Casino}`,
 		userIsBeatingId: (nick: string) => `You're already beating **${nick}**!`,
 		userIsBeingBeatedId: (nick: string) => `You're being beated by **${nick}!`,
 		userIsRobbingId: (nick: string) => `You're already robbing **${nick}**!`,
 		userIsBeingRobbingId: (nick: string) => `You're being robbed by **${nick}**!`,
-		workingOn: (jobId: JobId, jobTime: Date) => `You are working as **${JobList[jobId].Description[Language.English]}**\n-# Will finish ${showTime(jobTime.getTime(), true)}`,
+		workingOn: (jobId: JobId, jobTime: Date) => `You are working as **${JobList[jobId].Description[Language.English]}**\n-# Will finish ${time(jobTime, TimestampStyles.RelativeTime)}`,
 		userScavenge: (placeId: ScavengeId) => `You are scavenging ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.English]}**!`,
 		stop: "Stop job",
 		cannotStop: "You can't stop what you didn't start.",
@@ -349,7 +349,7 @@ const Strings = {
 		start: "Start",
 		blackMarket: "Black Market Job",
 		withoutItems: (jobDescription: string, neededItems: string) => `You don't have the necessary items to start working as **${jobDescription}**\n-# You need ${neededItems}`,
-		jobStarted: (jobDescription: string, jobTime: Date) => `You started working as **${jobDescription}**\n-# Will finish ${showTime(jobTime.getTime(), true)}`,
+		jobStarted: (jobDescription: string, jobTime: Date) => `You started working as **${jobDescription}**\n-# Will finish ${time(jobTime, TimestampStyles.RelativeTime)}`,
 	},
 	[Language.Portuguese]: {
 		idling: "Vadiando",
@@ -357,14 +357,14 @@ const Strings = {
 		userParticipating: `Você está participando de uma ação de gangue! ${EmoteString.Gang}`,
 		title: "Trabalhos",
 		description: `Você não pode apostar, roubar nem vasculhar enquanto trabalha!`,
-		userPrison: (timerPrison: Date) => `Você está preso! ${EmoteString.Prison}\n-# Será solto ${showTime(timerPrison.getTime(), true)}`,
-		userHospital: (timerHospital: Date) => `Você está hospitalizado ${EmoteString.Hospital}\n-# Será atendido ${showTime(timerHospital.getTime(), true)}`,
+		userPrison: (timerPrison: Date) => `Você está preso! ${EmoteString.Prison}\n-# Será solto ${time(timerPrison, TimestampStyles.RelativeTime)}`,
+		userHospital: (timerHospital: Date) => `Você está hospitalizado ${EmoteString.Hospital}\n-# Será atendido ${time(timerHospital, TimestampStyles.RelativeTime)}`,
 		userCasino: `Você está jogando no cassino! ${EmoteString.Casino}`,
 		userIsBeatingId: (nick: string) => `Você já está espancando **${nick}**!`,
 		userIsBeingBeatedId: (nick: string) => `Você está sendo espancado por **${nick}**!`,
 		userIsRobbingId: (nick: string) => `Você já está roubando **${nick}**!`,
 		userIsBeingRobbingId: (nick: string) => `Você está sendo roubado por **${nick}**!`,
-		workingOn: (jobId: JobId, jobTime: Date) => `Você está trabalhando como **${JobList[jobId].Description[Language.Portuguese]}**\n-# Terminará ${showTime(jobTime.getTime(), true)}`,
+		workingOn: (jobId: JobId, jobTime: Date) => `Você está trabalhando como **${JobList[jobId].Description[Language.Portuguese]}**\n-# Terminará ${time(jobTime, TimestampStyles.RelativeTime)}`,
 		userScavenge: (placeId: ScavengeId) => `Você está vasculhando ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Portuguese]}**!`,
 		stop: "Parar trabalho",
 		cannotStop: "Você não pode parar o que não começou.",
@@ -379,7 +379,7 @@ const Strings = {
 		start: "Iniciar",
 		blackMarket: "Trabalho do Mercado Negro",
 		withoutItems: (jobDescription: string, neededItems: string) => `Você não tem os itens necessários para começar a trabalhar como **${jobDescription}**\n-# Você precisa de ${neededItems}`,
-		jobStarted: (jobDescription: string, jobTime: Date) => `Você começou a trabalhar como **${jobDescription}**\n-# Terminará ${showTime(jobTime.getTime(), true)}`,
+		jobStarted: (jobDescription: string, jobTime: Date) => `Você começou a trabalhar como **${jobDescription}**\n-# Terminará ${time(jobTime, TimestampStyles.RelativeTime)}`,
 	},
 	[Language.Spanish]: {
 		idling: "Vagando",
@@ -387,14 +387,14 @@ const Strings = {
 		userParticipating: `¡Estás participando en una acción de cuadrilla! ${EmoteString.Gang}`,
 		title: "Trabajos",
 		description: "Tu no puedes apostar, robar o buscar mientras trabajas!",
-		userPrison: (timerPrison: Date) => `¡Estás preso! ${EmoteString.Prison}\n-# ¡Serás liberado ${showTime(timerPrison.getTime(), true)}`,
-		userHospital: (timerHospital: Date) => `¡Estás hospitalizado ${EmoteString.Hospital}\n-# Serás atendido ${showTime(timerHospital.getTime(), true)}`,
+		userPrison: (timerPrison: Date) => `¡Estás preso! ${EmoteString.Prison}\n-# ¡Serás liberado ${time(timerPrison, TimestampStyles.RelativeTime)}`,
+		userHospital: (timerHospital: Date) => `¡Estás hospitalizado ${EmoteString.Hospital}\n-# Serás atendido ${time(timerHospital, TimestampStyles.RelativeTime)}`,
 		userCasino: `¡Estás jugando en el casino! ${EmoteString.Casino}`,
 		userIsBeatingId: (nick: string) => `¡Ya estás golpeando a **${nick}**!`,
 		userIsBeingBeatedId: (nick: string) => `¡Estás siendo golpeado por **${nick}**!`,
 		userIsRobbingId: (nick: string) => `¡Ya estás robando a **${nick}**!`,
 		userIsBeingRobbingId: (nick: string) => `¡Estás siendo robado por **${nick}**!`,
-		workingOn: (jobId: JobId, jobTime: Date) => `Usted está trabajando como **${JobList[jobId].Description[Language.Spanish]}**\n-# Terminará ${showTime(jobTime.getTime(), true)}`,
+		workingOn: (jobId: JobId, jobTime: Date) => `Usted está trabajando como **${JobList[jobId].Description[Language.Spanish]}**\n-# Terminará ${time(jobTime, TimestampStyles.RelativeTime)}`,
 		userScavenge: (placeId: ScavengeId) => `¡Estás buscando ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Spanish]}**!`,
 		stop: "Detener trabajo",
 		cannotStop: "Usted no puede detener lo que no comenzó.",
@@ -409,6 +409,6 @@ const Strings = {
 		start: "Comenzar",
 		blackMarket: "Trabajo del Mercado Negro",
 		withoutItems: (jobDescription: string, neededItems: string) => `Usted no tiene los elementos necesarios para comenzar a trabajar como **${jobDescription}**\n-# Usted necesita ${neededItems}`,
-		jobStarted: (jobDescription: string, jobTime: Date) => `Usted comenzó a trabajar como **${jobDescription}**\n-# Terminará ${showTime(jobTime.getTime(), true)}.`,
+		jobStarted: (jobDescription: string, jobTime: Date) => `Usted comenzó a trabajar como **${jobDescription}**\n-# Terminará ${time(jobTime, TimestampStyles.RelativeTime)}.`,
 	},
 } as const satisfies Localization;

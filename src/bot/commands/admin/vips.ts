@@ -1,4 +1,4 @@
-import { type ChatInputCommandInteraction, Colors, Locale, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
+import { type ChatInputCommandInteraction, Colors, Locale, PermissionFlagsBits, SlashCommandBuilder, time, TimestampStyles } from "discord.js";
 import { UserRepository } from "#core/repositories/UserRepository";
 import type { Users } from "#core/database/Users";
 import { EmoteString } from "#bot/utils/emotes";
@@ -6,7 +6,6 @@ import { Pagination } from "#core/models/Pagination";
 import type { Language } from "#core/models/Language";
 import type { User } from "#core/models/User";
 import { ClassList } from "#core/types/Classes";
-import { showTime } from "#bot/utils/ui";
 import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
 import { deferReply } from "#bot/utils/discordInteractions";
 
@@ -38,7 +37,7 @@ module.exports = {
 				const user = users[i];
 				const emoteClass = ClassList[user.class].Image.Emote.String;
 
-				const timeText = user.vipEternal ? "**Eternal**" : `Ends in ${showTime(new Date(user.vipTime!).getTime())}`;
+				const timeText = user.vipEternal ? "**Eternal**" : `Ends in ${time(user.vipTime!, TimestampStyles.ShortDateTime)}`;
 
 				text += `### ${emoteClass} ${user.nickname}\n${timeText}\n-# \`Id: ${user.id}\`\n`;
 			}

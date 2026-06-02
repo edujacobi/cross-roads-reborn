@@ -12,7 +12,7 @@ import { type ScavengeId, ScavengeList } from "#core/types/Scavenge";
 import { ItemId } from "#core/types/Ids";
 import { ItemList } from "#core/types/Items";
 import { EmoteString } from "#bot/utils/emotes";
-import { showTime } from "#bot/utils/ui";
+import { time, TimestampStyles } from "discord.js";
 
 export interface BeatUpInitData {
 	cannotRun: boolean;
@@ -382,14 +382,14 @@ export const Strings = {
 		lowAtk: (nick: string) => `You can't beat up ${nick} using your current weapons! ${EmoteString.Beat}\n-# Get a better weapon. You need at least 15 difference`,
 		scavengingA: (placeId: ScavengeId) => `You can't beat someone up while scavenging ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.English]}** ${EmoteString.Scavenge}`,
 		scavengingD: (placeId: ScavengeId) => `is scavenging ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.English]}**. Wait a few more seconds to start your action! ${EmoteString.Scavenge}`,
-		inJobA: (jobTime: Date, jobId: JobId) => `You can't beat someone up while working! ${EmoteString.Jobs}\n-# Will finish your **${JobList[jobId].Description[Language.English]}** job ${showTime(jobTime.getTime(), true)}!`,
-		inJobD: (jobTime: Date, jobId: JobId) => `is working. You won't be able to beat him! ${EmoteString.Jobs}\n-# Will finish his **${JobList[jobId].Description[Language.English]}** job ${showTime(jobTime.getTime(), true)}!`,
-		inPrison: (prisonTime: Date) => `You can't beat someone up while you're in prison! ${EmoteString.Prison}\n-# Will be released ${showTime(prisonTime.getTime(), true)}!`,
-		inPrisonDefender: (prisonTime: Date) => `is in prison and will be released ${showTime(prisonTime.getTime(), true)} ${EmoteString.Prison}\n-# You will be able to beat them up if you're in prison too.`,
-		isWanted: (wantedTime: Date) => `You can't beat someone up while you're wanted by the police! ${EmoteString.Police}\n-# Will be able to beat someone up again ${showTime(wantedTime.getTime(), true)}!`,
-		isInHospital: (hospitalTime: Date) => `You can't beat someone up while you're hospitalized! ${EmoteString.Hospital}\n-# Will be healed ${showTime(hospitalTime.getTime(), true)}!`,
-		isInHospitalDefender: (nickname: string, hospitalTime: Date) => `You can't beat someone who is hospitalized! ${EmoteString.Hospital}\n-# **${nickname}** will be healed ${showTime(hospitalTime.getTime(), true)}!`,
-		isWaitingBeat: (beatTime: Date) => `You can beat again ${showTime(beatTime.getTime(), true)} ${EmoteString.Beat}`,
+		inJobA: (jobTime: Date, jobId: JobId) => `You can't beat someone up while working! ${EmoteString.Jobs}\n-# Will finish your **${JobList[jobId].Description[Language.English]}** job ${time(jobTime, TimestampStyles.RelativeTime)}!`,
+		inJobD: (jobTime: Date, jobId: JobId) => `is working. You won't be able to beat him! ${EmoteString.Jobs}\n-# Will finish his **${JobList[jobId].Description[Language.English]}** job ${time(jobTime, TimestampStyles.RelativeTime)}!`,
+		inPrison: (prisonTime: Date) => `You can't beat someone up while you're in prison! ${EmoteString.Prison}\n-# Will be released ${time(prisonTime, TimestampStyles.RelativeTime)}!`,
+		inPrisonDefender: (prisonTime: Date) => `is in prison and will be released ${time(prisonTime, TimestampStyles.RelativeTime)} ${EmoteString.Prison}\n-# You will be able to beat them up if you're in prison too.`,
+		isWanted: (wantedTime: Date) => `You can't beat someone up while you're wanted by the police! ${EmoteString.Police}\n-# Will be able to beat someone up again ${time(wantedTime, TimestampStyles.RelativeTime)}!`,
+		isInHospital: (hospitalTime: Date) => `You can't beat someone up while you're hospitalized! ${EmoteString.Hospital}\n-# Will be healed ${time(hospitalTime, TimestampStyles.RelativeTime)}!`,
+		isInHospitalDefender: (nickname: string, hospitalTime: Date) => `You can't beat someone who is hospitalized! ${EmoteString.Hospital}\n-# **${nickname}** will be healed ${time(hospitalTime, TimestampStyles.RelativeTime)}!`,
+		isWaitingBeat: (beatTime: Date) => `You can beat again ${time(beatTime, TimestampStyles.RelativeTime)} ${EmoteString.Beat}`,
 		isEscapingA: `You are trying to escape and cannot beat up! ${EmoteString.Escape}\n-# Focus!`,
 		isEscapingD: `is trying to escape prison and cannot be beaten! ${EmoteString.Escape}`,
 		casinoAttacker: `You can't beat someone up while you're in a casino game! ${EmoteString.Casino}`,
@@ -409,7 +409,7 @@ export const Strings = {
 		doNothingDescription: "No additional effect",
 		doingNothing: "Doing nothing",
 		secondsToRespond: "You have 45 seconds to respond",
-		wereBeated: (attackerNick: string, time: Date) => `You were beaten up by **${attackerNick}** and will stay in the hospital! ${EmoteString.Hospital}\n-# Will be healed ${showTime(time.getTime(), true)}!`,
+		wereBeated: (attackerNick: string, date: Date) => `You were beaten up by **${attackerNick}** and will stay in the hospital! ${EmoteString.Hospital}\n-# Will be healed ${time(date, TimestampStyles.RelativeTime)}!`,
 		finishedBeatUpDefender: "Beating finished",
 		// Attacker
 		beatingInProgress: `Beating in progress`,
@@ -417,7 +417,7 @@ export const Strings = {
 		isFighting: "wants to fight",
 		isRunning: "wants to run",
 		isDoingNothing: "is doing nothing",
-		youBeated: (defenderNick: string, time: Date) => {
+		youBeated: (defenderNick: string, date: Date) => {
 			const words = [
 				"beat up",
 				"thrashed",
@@ -434,12 +434,12 @@ export const Strings = {
 
 			const word = words[Math.round(Math.random() * (words.length - 1))];
 
-			return `You ${word} **${defenderNick}**!\n-# They will stay in the hospital until ${showTime(time.getTime())}`;
+			return `You ${word} **${defenderNick}**!\n-# They will stay in the hospital until ${time(date, TimestampStyles.ShortDateTime)}`;
 		},
 		success: "Success",
 		failure: "Failure",
 		willBeAbleAgain: "Will be able to beat up again",
-		youFailed: (time: Date) => `You tried, but you were the one beaten up!\n-# Will stay in the hospital until ${showTime(time.getTime())} ${EmoteString.Hospital}`,
+		youFailed: (date: Date) => `You tried, but you were the one beaten up!\n-# Will stay in the hospital until ${time(date, TimestampStyles.ShortDateTime)} ${EmoteString.Hospital}`,
 		finishedBeatUpAttacker: (success: boolean) => `Beating ${success ? "successful" : "unsuccessful"}`,
 		preparingToBeat: (nick: string) => `Preparing to beat **${nick}**`,
 		useGrenadeDescription: (quantity: number) => `You have ${quantity} ${quantity === 1 ? "grenade" : "grenades"}`,
@@ -458,14 +458,14 @@ export const Strings = {
 		lowAtk: (nick: string) => `Você não pode espancar ${nick} usando suas armas atuais! ${EmoteString.Beat}\n-# Consiga uma arma melhor. Você precisa de pelo menos 15 de diferença`,
 		scavengingA: (placeId: ScavengeId) => `Você não pode espancar enquanto está vasculhando ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Portuguese]}** ${EmoteString.Scavenge}`,
 		scavengingD: (placeId: ScavengeId) => `está vasculhando ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Portuguese]}**. Espere mais alguns segundos para iniciar sua ação! ${EmoteString.Scavenge}`,
-		inJobA: (jobTime: Date, jobId: JobId) => `Você não pode espancar enquanto está trabalhando! ${EmoteString.Jobs}\n-# Terminará seu trabalho de **${JobList[jobId].Description[Language.Portuguese]}** ${showTime(jobTime.getTime(), true)}!`,
-		inJobD: (jobTime: Date, jobId: JobId) => `está trabalhando. Você não conseguirá espancá-lo! ${EmoteString.Jobs}\n-# Terminará o trabalho de **${JobList[jobId].Description[Language.Portuguese]}** ${showTime(jobTime.getTime(), true)}!`,
-		inPrison: (prisonTime: Date) => `Você não pode espancar enquanto está preso! ${EmoteString.Prison}\n-# Será solto ${showTime(prisonTime.getTime(), true)}!`,
-		inPrisonDefender: (prisonTime: Date) => `está preso e será solto ${showTime(prisonTime.getTime(), true)} ${EmoteString.Prison}\n-# Você conseguirá espancá-lo se estiver preso também.`,
-		isWanted: (wantedTime: Date) => `Você não pode espancar enquanto está sendo procurado pela polícia! ${EmoteString.Police}\n-# Poderá espancar novamente ${showTime(wantedTime.getTime(), true)}!`,
-		isInHospital: (hospitalTime: Date) => `Você não pode espancar enquanto está hospitalizado! ${EmoteString.Hospital}\n-# Será curado ${showTime(hospitalTime.getTime(), true)}!`,
-		isInHospitalDefender: (nickname: string, hospitalTime: Date) => `Você não pode espancar alguém hospitalizado! ${EmoteString.Hospital}\n-# **${nickname}** será curado ${showTime(hospitalTime.getTime(), true)}!`,
-		isWaitingBeat: (beatTime: Date) => `Você poderá espancar novamente ${showTime(beatTime.getTime(), true)} ${EmoteString.Beat}`,
+		inJobA: (jobTime: Date, jobId: JobId) => `Você não pode espancar enquanto está trabalhando! ${EmoteString.Jobs}\n-# Terminará seu trabalho de **${JobList[jobId].Description[Language.Portuguese]}** ${time(jobTime, TimestampStyles.RelativeTime)}!`,
+		inJobD: (jobTime: Date, jobId: JobId) => `está trabalhando. Você não conseguirá espancá-lo! ${EmoteString.Jobs}\n-# Terminará o trabalho de **${JobList[jobId].Description[Language.Portuguese]}** ${time(jobTime, TimestampStyles.RelativeTime)}!`,
+		inPrison: (prisonTime: Date) => `Você não pode espancar enquanto está preso! ${EmoteString.Prison}\n-# Será solto ${time(prisonTime, TimestampStyles.RelativeTime)}!`,
+		inPrisonDefender: (prisonTime: Date) => `está preso e será solto ${time(prisonTime, TimestampStyles.RelativeTime)} ${EmoteString.Prison}\n-# Você conseguirá espancá-lo se estiver preso também.`,
+		isWanted: (wantedTime: Date) => `Você não pode espancar enquanto está sendo procurado pela polícia! ${EmoteString.Police}\n-# Poderá espancar novamente ${time(wantedTime, TimestampStyles.RelativeTime)}!`,
+		isInHospital: (hospitalTime: Date) => `Você não pode espancar enquanto está hospitalizado! ${EmoteString.Hospital}\n-# Será curado ${time(hospitalTime, TimestampStyles.RelativeTime)}!`,
+		isInHospitalDefender: (nickname: string, hospitalTime: Date) => `Você não pode espancar alguém hospitalizado! ${EmoteString.Hospital}\n-# **${nickname}** será curado ${time(hospitalTime, TimestampStyles.RelativeTime)}!`,
+		isWaitingBeat: (beatTime: Date) => `Você poderá espancar novamente ${time(beatTime, TimestampStyles.RelativeTime)} ${EmoteString.Beat}`,
 		isEscapingA: `Você está tentando escapar da prisão e não pode espancar! ${EmoteString.Escape}\n-# "Foco!"`,
 		isEscapingD: `está tentando escapar da prisão e não pode ser espancado! ${EmoteString.Escape}`,
 		casinoAttacker: `Você não pode espancar enquanto está em um jogo de cassino! ${EmoteString.Casino}`,
@@ -485,7 +485,7 @@ export const Strings = {
 		doNothingDescription: "Nenhum efeito adicional",
 		doingNothing: "Fazendo nada",
 		secondsToRespond: "Você tem 45 segundos para responder",
-		wereBeated: (attackerNick: string, time: Date) => `Você foi espancado por **${attackerNick}** e ficará hospitalizado! ${EmoteString.Hospital}\n-# Será curado ${showTime(time.getTime(), true)}!`,
+		wereBeated: (attackerNick: string, date: Date) => `Você foi espancado por **${attackerNick}** e ficará hospitalizado! ${EmoteString.Hospital}\n-# Será curado ${time(date, TimestampStyles.RelativeTime)}!`,
 		finishedBeatUpDefender: "Espancamento finalizado",
 		// Attacker
 		beatingInProgress: `Espancamento em andamento`,
@@ -493,7 +493,7 @@ export const Strings = {
 		isFighting: "quer brigar",
 		isRunning: "quer correr",
 		isDoingNothing: "não está fazendo nada",
-		youBeated: (defenderNick: string, time: Date) => {
+		youBeated: (defenderNick: string, date: Date) => {
 			const words = [
 				"espancou",
 				"surrou",
@@ -510,12 +510,12 @@ export const Strings = {
 
 			const word = words[Math.round(Math.random() * (words.length - 1))];
 
-			return `Você ${word} **${defenderNick}**!\n-# Ele ficará hospitalizado até ${showTime(time.getTime())}`;
+			return `Você ${word} **${defenderNick}**!\n-# Ele ficará hospitalizado até ${time(date, TimestampStyles.ShortDateTime)}`;
 		},
 		success: "Sucesso",
 		failure: "Falha",
 		willBeAbleAgain: "Poderá espancar novamente",
-		youFailed: (time: Date) => `Você até tentou, mas o espancado foi você!\n-# Ficará hospitalizado até ${showTime(time.getTime())} ${EmoteString.Hospital}`,
+		youFailed: (date: Date) => `Você até tentou, mas o espancado foi você!\n-# Ficará hospitalizado até ${time(date, TimestampStyles.ShortDateTime)} ${EmoteString.Hospital}`,
 		finishedBeatUpAttacker: (success: boolean) => `Espancamento ${success ? "bem" : "mal"}-sucedido`,
 		preparingToBeat: (nick: string) => `Preparando-se para espancar **${nick}**`,
 		useGrenadeDescription: (quantity: number) => `Você tem ${quantity} ${quantity === 1 ? "granada" : "granadas"}`,
@@ -534,14 +534,14 @@ export const Strings = {
 		lowAtk: (nick: string) => `¡No puedes golpear a ${nick} usando tus armas actuales! ${EmoteString.Beat}\n-# Consigue un arma mejor. ¡Necesitas al menos 15 de diferencia!`,
 		scavengingA: (placeId: ScavengeId) => `¡No puedes golpear a alguien mientras buscas en ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Spanish]}** ${EmoteString.Scavenge}`,
 		scavengingD: (placeId: ScavengeId) => `está buscando en ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Spanish]}**. ¡Espera unos segundos más para iniciar tu acción! ${EmoteString.Scavenge}`,
-		inJobA: (jobTime: Date, jobId: JobId) => `¡No puedes golpear a alguien mientras trabajas! ${EmoteString.Jobs}\n-# Terminarás tu trabajo de **${JobList[jobId].Description[Language.Spanish]}** ${showTime(jobTime.getTime(), true)}!`,
-		inJobD: (jobTime: Date, jobId: JobId) => `está trabajando. ¡No podrás golpearlo! ${EmoteString.Jobs}\n-# Terminará el trabajo de **${JobList[jobId].Description[Language.Spanish]}** ${showTime(jobTime.getTime(), true)}!`,
-		inPrison: (prisonTime: Date) => `¡No puedes golpear a alguien mientras estás en prisión! ${EmoteString.Prison}\n-# Serás liberado ${showTime(prisonTime.getTime(), true)}!`,
-		inPrisonDefender: (prisonTime: Date) => `está en prisión y será liberado ${showTime(prisonTime.getTime(), true)} ${EmoteString.Prison}\n-# Podrás golpearlo si tú también estás en prisión.`,
-		isWanted: (wantedTime: Date) => `¡No puedes golpear a alguien mientras eres buscado por la policía! ${EmoteString.Police}\n-# Podrás golpear a alguien de nuevo ${showTime(wantedTime.getTime(), true)}!`,
-		isInHospital: (hospitalTime: Date) => `¡No puedes golpear a alguien mientras estás hospitalizado! ${EmoteString.Hospital}\n-# Serás curado ${showTime(hospitalTime.getTime(), true)}!`,
-		isInHospitalDefender: (nickname: string, hospitalTime: Date) => `¡No puedes golpear a alguien que está hospitalizado! ${EmoteString.Hospital}\n-# **${nickname}** será curado ${showTime(hospitalTime.getTime(), true)}!`,
-		isWaitingBeat: (beatTime: Date) => `Puedes golpear de nuevo ${showTime(beatTime.getTime(), true)} ${EmoteString.Beat}`,
+		inJobA: (jobTime: Date, jobId: JobId) => `¡No puedes golpear a alguien mientras trabajas! ${EmoteString.Jobs}\n-# Terminarás tu trabajo de **${JobList[jobId].Description[Language.Spanish]}** ${time(jobTime, TimestampStyles.RelativeTime)}!`,
+		inJobD: (jobTime: Date, jobId: JobId) => `está trabajando. ¡No podrás golpearlo! ${EmoteString.Jobs}\n-# Terminará el trabajo de **${JobList[jobId].Description[Language.Spanish]}** ${time(jobTime, TimestampStyles.RelativeTime)}!`,
+		inPrison: (prisonTime: Date) => `¡No puedes golpear a alguien mientras estás en prisión! ${EmoteString.Prison}\n-# Serás liberado ${time(prisonTime, TimestampStyles.RelativeTime)}!`,
+		inPrisonDefender: (prisonTime: Date) => `está en prisión y será liberado ${time(prisonTime, TimestampStyles.RelativeTime)} ${EmoteString.Prison}\n-# Podrás golpearlo si tú también estás en prisión.`,
+		isWanted: (wantedTime: Date) => `¡No puedes golpear a alguien mientras eres buscado por la policía! ${EmoteString.Police}\n-# Podrás golpear a alguien de nuevo ${time(wantedTime, TimestampStyles.RelativeTime)}!`,
+		isInHospital: (hospitalTime: Date) => `¡No puedes golpear a alguien mientras estás hospitalizado! ${EmoteString.Hospital}\n-# Serás curado ${time(hospitalTime, TimestampStyles.RelativeTime)}!`,
+		isInHospitalDefender: (nickname: string, hospitalTime: Date) => `¡No puedes golpear a alguien que está hospitalizado! ${EmoteString.Hospital}\n-# **${nickname}** será curado ${time(hospitalTime, TimestampStyles.RelativeTime)}!`,
+		isWaitingBeat: (beatTime: Date) => `Puedes golpear de nuevo ${time(beatTime, TimestampStyles.RelativeTime)} ${EmoteString.Beat}`,
 		isEscapingA: `¡Estás intentando escapar de la prisión y no puedes golpear! ${EmoteString.Escape}\n-# "¡Enfócate!"`,
 		isEscapingD: `está intentando escapar de la prisión y no puede ser golpeado. ${EmoteString.Escape}`,
 		casinoAttacker: `¡No puedes golpear mientras estás en un juego de casino! ${EmoteString.Casino}`,
@@ -561,7 +561,7 @@ export const Strings = {
 		doNothingDescription: "Sin efecto adicional",
 		doingNothing: "No haciendo nada",
 		secondsToRespond: "Tienes 45 segundos para responder",
-		wereBeated: (attackerNick: string, time: Date) => `¡Fuiste golpeado por **${attackerNick}** y permanecerás en el hospital! ${EmoteString.Hospital}\n-# Serás curado ${showTime(time.getTime(), true)}!`,
+		wereBeated: (attackerNick: string, date: Date) => `¡Fuiste golpeado por **${attackerNick}** y permanecerás en el hospital! ${EmoteString.Hospital}\n-# Serás curado ${time(date, TimestampStyles.RelativeTime)}!`,
 		finishedBeatUpDefender: "Golpiza terminada",
 		// Attacker
 		beatingInProgress: `Golpiza en progreso`,
@@ -569,7 +569,7 @@ export const Strings = {
 		isFighting: "quiere luchar",
 		isRunning: "quiere correr",
 		isDoingNothing: "no está haciendo nada",
-		youBeated: (defenderNick: string, time: Date) => {
+		youBeated: (defenderNick: string, date: Date) => {
 			const words = [
 				"Golpeaste a",
 				"Golpeó",
@@ -586,12 +586,12 @@ export const Strings = {
 
 			const word = words[Math.round(Math.random() * (words.length - 1))];
 
-			return `¡${word} **${defenderNick}**!\n-# Permanecerá en el hospital hasta ${showTime(time.getTime())}`;
+			return `¡${word} **${defenderNick}**!\n-# Permanecerá en el hospital hasta ${time(date, TimestampStyles.ShortDateTime)}`;
 		},
 		success: "Éxito",
 		failure: "Fracaso",
 		willBeAbleAgain: "Podrás golpear de nuevo",
-		youFailed: (time: Date) => `¡Lo intentaste, pero tú fuiste el golpeado!\n-# Permanecerás en el hospital hasta ${showTime(time.getTime())} ${EmoteString.Hospital}`,
+		youFailed: (date: Date) => `¡Lo intentaste, pero tú fuiste el golpeado!\n-# Permanecerás en el hospital hasta ${time(date, TimestampStyles.ShortDateTime)} ${EmoteString.Hospital}`,
 		finishedBeatUpAttacker: (success: boolean) => `Golpiza ${success ? "exitosa" : "fallida"}`,
 		preparingToBeat: (nick: string) => `Preparándose para golpear a **${nick}**`,
 		useGrenadeDescription: (quantity: number) => `Tienes ${quantity} ${quantity === 1 ? "granada" : "granadas"}`,

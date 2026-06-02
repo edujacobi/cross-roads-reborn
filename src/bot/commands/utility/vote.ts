@@ -2,12 +2,12 @@ import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder"
 import { CrColors } from "#bot/utils/colors";
 import { deferReply, replyWithContainer } from "#bot/utils/discordInteractions";
 import { EmoteString } from "#bot/utils/emotes";
-import { formatMoney, showTime } from "#bot/utils/ui";
+import { formatMoney } from "#bot/utils/ui";
 import { Language, type Localization } from "#core/models/Language";
 import type { User } from "#core/models/User";
 import { Log } from "#shared/log";
 import { addHours, differenceInHours } from "date-fns";
-import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder, time, TimestampStyles } from "discord.js";
 
 interface TopGGCheckResponse {
 	created_at: string;
@@ -87,7 +87,7 @@ module.exports = {
 
 
 		if (!user.CanClaimVote()) {
-			const nextVoteTime = user.Vote.LastClaim ? showTime(addHours(user.Vote.LastClaim, 12).getTime(), true) : s.neverVoted;
+			const nextVoteTime = user.Vote.LastClaim ? time(addHours(user.Vote.LastClaim, 12), TimestampStyles.RelativeTime) : s.neverVoted;
 
 			container
 				.addTexts([

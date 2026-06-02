@@ -3,7 +3,7 @@ import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
 import { CrColors } from "#bot/utils/colors";
 import { replyWithContainer } from "#bot/utils/discordInteractions";
 import { EmoteString } from "#bot/utils/emotes";
-import { defaultComponent, formatMoney, showTime } from "#bot/utils/ui";
+import { defaultComponent, formatMoney } from "#bot/utils/ui";
 import { BetFailureReason, HorseRacing, type RaceInfo } from "#core/models/HorseRacing";
 import { Language, type Localization } from "#core/models/Language";
 import type { User } from "#core/models/User";
@@ -15,6 +15,8 @@ import {
 	Colors,
 	Locale,
 	SlashCommandBuilder,
+	time,
+	TimestampStyles,
 } from "discord.js";
 
 module.exports = {
@@ -256,7 +258,7 @@ const Strings = {
 		horses: "Horses & Payouts",
 		payout: "payout",
 		raceStats: "Current race",
-		nextRace: (time: Date) => `Next race ${showTime(time.getTime(), true)}`,
+		nextRace: (date: Date) => `Next race ${time(date, TimestampStyles.RelativeTime)}`,
 		totalBets: "Total bets",
 		yourBet: "Your bet",
 		noBet: "None",
@@ -267,7 +269,7 @@ const Strings = {
 		betTooLow: (min: string) => `Minimum bet is **${min}** ${EmoteString.Casino}`,
 		betTooHigh: (max: string) => `Your bet exceeds the maximum of **${max}** ${EmoteString.Casino}`,
 		betPlaced: (emoji: string, name: string, amount: string, prize: string, multiplier: number, raceTime: Date) =>
-			`# Bet placed!\n### ${emoji} ${name} (${multiplier}×)\n\nYou bet **${amount}** and can win **${prize}**!\n-# Race starts ${showTime(raceTime.getTime(), true)}. You will receive a DM with the result.`,
+			`# Bet placed!\n### ${emoji} ${name} (${multiplier}×)\n\nYou bet **${amount}** and can win **${prize}**!\n-# Race starts ${time(raceTime, TimestampStyles.RelativeTime)}. You will receive a DM with the result.`,
 	},
 	[Language.Portuguese]: {
 		title: "Corrida de Cavalos",
@@ -276,7 +278,7 @@ const Strings = {
 		horses: "Cavalos & Multiplicadores",
 		payout: "de retorno",
 		raceStats: "Corrida atual",
-		nextRace: (time: Date) => `Próxima corrida ${showTime(time.getTime(), true)}`,
+		nextRace: (date: Date) => `Próxima corrida ${time(date, TimestampStyles.RelativeTime)}`,
 		totalBets: "Total de apostas",
 		yourBet: "Sua aposta",
 		noBet: "Nenhuma",
@@ -287,7 +289,7 @@ const Strings = {
 		betTooLow: (min: string) => `A aposta mínima é **${min}** ${EmoteString.Casino}`,
 		betTooHigh: (max: string) => `Sua aposta ultrapassa o máximo de **${max}** ${EmoteString.Casino}`,
 		betPlaced: (emoji: string, name: string, amount: string, prize: string, multiplier: number, raceTime: Date) =>
-			`# Aposta realizada!\n### ${emoji} ${name} (${multiplier}×)\n\nVocê apostou **${amount}** e pode ganhar **${prize}**!\n-# A corrida começa ${showTime(raceTime.getTime(), true)}. Você receberá um DM com o resultado.`,
+			`# Aposta realizada!\n### ${emoji} ${name} (${multiplier}×)\n\nVocê apostou **${amount}** e pode ganhar **${prize}**!\n-# A corrida começa ${time(raceTime, TimestampStyles.RelativeTime)}. Você receberá um DM com o resultado.`,
 	},
 	[Language.Spanish]: {
 		title: "Carrera de Caballos",
@@ -296,7 +298,7 @@ const Strings = {
 		horses: "Caballos & Multiplicadores",
 		payout: "de retorno",
 		raceStats: "Carrera actual",
-		nextRace: (time: Date) => `Próxima carrera ${showTime(time.getTime(), true)}`,
+		nextRace: (date: Date) => `Próxima carrera ${time(date, TimestampStyles.RelativeTime)}`,
 		totalBets: "Total de apuestas",
 		yourBet: "Tu apuesta",
 		noBet: "Ninguna",
@@ -307,6 +309,6 @@ const Strings = {
 		betTooLow: (min: string) => `La apuesta mínima es **${min}** ${EmoteString.Casino}`,
 		betTooHigh: (max: string) => `Tu apuesta supera el máximo de **${max}** ${EmoteString.Casino}`,
 		betPlaced: (emoji: string, name: string, amount: string, prize: string, multiplier: number, raceTime: Date) =>
-			`# ¡Apuesta realizada!\n###${emoji} ${name} (${multiplier}×)\n\n¡Apostaste **${amount}** y puedes ganar **${prize}**!\n-# La carrera comienza ${showTime(raceTime.getTime(), true)}. Recibirás un DM con el resultado.`,
+			`# ¡Apuesta realizada!\n###${emoji} ${name} (${multiplier}×)\n\n¡Apostaste **${amount}** y puedes ganar **${prize}**!\n-# La carrera comienza ${time(raceTime, TimestampStyles.RelativeTime)}. Recibirás un DM con el resultado.`,
 	},
 } as const satisfies Localization;

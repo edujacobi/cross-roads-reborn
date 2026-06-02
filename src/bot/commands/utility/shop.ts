@@ -1,8 +1,8 @@
-import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder, time, TimestampStyles } from "discord.js";
 import { Shop } from "#core/models/Shop";
 import type { User } from "#core/models/User";
 import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
-import { formatMoney, showTime } from "#bot/utils/ui";
+import { formatMoney } from "#bot/utils/ui";
 import { deferReply, deferUpdate, replyWithContainer } from "#bot/utils/discordInteractions";
 import { EmoteString } from "#bot/utils/emotes";
 import { ItemList, ItemType } from "#core/types/Items";
@@ -106,7 +106,7 @@ module.exports = {
 					.addTexts([
 						`### ${user.GetItemSkin(item)} ${item.Description[user.Language]}`,
 						value,
-						(!isConsumable && remainigTime) ? `-# ${s.yourItemEnds} ${showTime(remainigTime.getTime(), true)}` : "",
+						(!isConsumable && remainigTime) ? `-# ${s.yourItemEnds} ${time(remainigTime, TimestampStyles.RelativeTime)}` : "",
 						(isConsumable && quantity) ? `-# ${s.youHave} ${quantity}` : "",
 					].filter(Boolean))
 					.setButtonAccessory(new ButtonBuilder()
@@ -197,7 +197,7 @@ module.exports = {
 				container
 					.addTexts([
 						s.itemBought(`${user.GetItemSkin(item)} ${item.Description[user.Language]}`),
-						(!isConsumable && remainigTime) ? `-# ${s.yourItemEnds} ${showTime(remainigTime.getTime(), true)}` : "",
+						(!isConsumable && remainigTime) ? `-# ${s.yourItemEnds} ${time(remainigTime, TimestampStyles.RelativeTime)}` : "",
 						(isConsumable && quantity) ? `-# ${s.youHave} ${quantity}` : "",
 					].filter(Boolean))
 					.addButtonRow(

@@ -1,5 +1,5 @@
 import { EmoteId, EmoteString } from "#bot/utils/emotes";
-import { formatDate, formatMoney, showTime } from "#bot/utils/ui";
+import { formatDate, formatMoney } from "#bot/utils/ui";
 import type { Users } from "#core/database/Users";
 import { GangMemberRepository } from "#core/repositories/GangMemberRepository";
 import { UserInvestmentRepository } from "#core/repositories/UserInvestmentRepository";
@@ -28,6 +28,7 @@ import { UserBackgroundDecoration } from "./UserBackgroundDecoration";
 import { UserBundle } from "./UserBundle";
 
 import { type InvestmentId } from "#core/types/Investments";
+import { time, TimestampStyles } from "discord.js";
 
 export enum SituationId {
 	Idling,
@@ -1223,7 +1224,7 @@ export class User {
 				Id: SituationId.Hospital,
 				Simple: s.hospitalSimple,
 				SimpleEmote: `${EmoteString.Hospital} ${s.hospitalSimple}`,
-				Complex: `${EmoteString.Hospital} ${s.hospitalComplex} ${showTime(this.Hospital.Time.getTime())}`,
+				Complex: `${EmoteString.Hospital} ${s.hospitalComplex} ${time(this.Hospital.Time, TimestampStyles.ShortDateTime)}`,
 				ComplexUI: `${s.hospitalComplex} ${formatDistanceToNow(this.Hospital.Time, {
 					locale: getLocaleFromLanguage(lang),
 					includeSeconds: true,
@@ -1236,7 +1237,7 @@ export class User {
 				Id: SituationId.Prison,
 				Simple: s.imprisonedSimple,
 				SimpleEmote: `${EmoteString.Prison} ${s.imprisonedSimple}`,
-				Complex: `${EmoteString.Prison} ${s.imprisonedComplex} ${showTime(this.Prison.Time.getTime())}`,
+				Complex: `${EmoteString.Prison} ${s.imprisonedComplex} ${time(this.Prison.Time, TimestampStyles.ShortDateTime)}`,
 				ComplexUI: `${s.imprisonedComplex} ${formatDistanceToNow(this.Prison.Time, {
 					locale: getLocaleFromLanguage(lang),
 					includeSeconds: true,
@@ -1346,7 +1347,7 @@ export class User {
 				Id: SituationId.Wanted,
 				Simple: this.Situation.Simple + ` ${s.wantedSimple}`,
 				SimpleEmote: this.Situation.SimpleEmote + ` ${s.wantedSimpleEmote}`,
-				Complex: this.Situation.Complex + ` ${s.wantedComplex} ${showTime(this.Wanted.Time.getTime())}`,
+				Complex: this.Situation.Complex + ` ${s.wantedComplex} ${time(this.Wanted.Time, TimestampStyles.ShortDateTime)}`,
 				ComplexUI: this.Situation.ComplexUI + ` ${s.wantedComplexUI} ${formatDistanceToNow(this.Wanted.Time, {
 					locale: getLocaleFromLanguage(lang),
 					includeSeconds: true,
@@ -1790,7 +1791,7 @@ const Strings = {
 	[Language.English]: {
 		idling: "Idling",
 		workingSimple: "Working",
-		workingComplex: (description: string, jobTime: Date) => `Working as ${description}. Will finish ${showTime(jobTime.getTime(), true)}`,
+		workingComplex: (description: string, jobTime: Date) => `Working as ${description}. Will finish ${time(jobTime, TimestampStyles.RelativeTime)}`,
 		workingComplexUI: (description: string, jobTime: Date) => `Working as ${description} until ${formatDate(jobTime, Language.English)}`,
 		robbing: "Robbing",
 		beingRobbedSimple: "Being robbed",
@@ -1804,7 +1805,7 @@ const Strings = {
 		imprisonedComplex: "Imprisoned until",
 		imprisonedAndHospitalSimple: "Imprisoned and Hospitalized",
 		imprisonedAndHospitalSimpleEmote: `${EmoteString.Prison} Imprisoned and ${EmoteString.Hospital} Hospitalized`,
-		imprisonedAndHospitalComplex: (prisonTime: Date, hospitalTime: Date) => `${EmoteString.Prison} Imprisoned until ${showTime(prisonTime.getTime())} and ${EmoteString.Hospital} Hospitalized until ${showTime(hospitalTime.getTime())}`,
+		imprisonedAndHospitalComplex: (prisonTime: Date, hospitalTime: Date) => `${EmoteString.Prison} Imprisoned until ${time(prisonTime, TimestampStyles.ShortDateTime)} and ${EmoteString.Hospital} Hospitalized until ${time(hospitalTime, TimestampStyles.ShortDateTime)}`,
 		imprisonedAndHospitalComplexUI: (prisonTime: Date, hospitalTime: Date) => `Imprisoned until ${formatDate(prisonTime, Language.English)} and Hospitalized until ${formatDate(hospitalTime, Language.English)}`,
 		scavenging: `Scavenging`,
 		casinoSimple: `Playing in Casino`,
@@ -1820,7 +1821,7 @@ const Strings = {
 	[Language.Portuguese]: {
 		idling: "Vadiando",
 		workingSimple: "Trabalhando",
-		workingComplex: (description: string, jobTime: Date) => `Trabalhando como ${description}. Terminará ${showTime(jobTime.getTime(), true)}`,
+		workingComplex: (description: string, jobTime: Date) => `Trabalhando como ${description}. Terminará ${time(jobTime, TimestampStyles.RelativeTime)}`,
 		workingComplexUI: (description: string, jobTime: Date) => `Trabalhando como ${description} até ${formatDate(jobTime, Language.Portuguese)}`,
 		robbing: "Roubando",
 		beingRobbedSimple: "Sendo roubado",
@@ -1834,7 +1835,7 @@ const Strings = {
 		imprisonedComplex: "Preso até",
 		imprisonedAndHospitalSimple: "Preso e Hospitalizado",
 		imprisonedAndHospitalSimpleEmote: `${EmoteString.Prison} Preso e ${EmoteString.Hospital} Hospitalizado`,
-		imprisonedAndHospitalComplex: (prisonTime: Date, hospitalTime: Date) => `${EmoteString.Prison} Preso até ${showTime(prisonTime.getTime())} e ${EmoteString.Hospital} Hospitalizado até ${showTime(hospitalTime.getTime())}`,
+		imprisonedAndHospitalComplex: (prisonTime: Date, hospitalTime: Date) => `${EmoteString.Prison} Preso até ${time(prisonTime, TimestampStyles.ShortDateTime)} e ${EmoteString.Hospital} Hospitalizado até ${time(hospitalTime, TimestampStyles.ShortDateTime)}`,
 		imprisonedAndHospitalComplexUI: (prisonTime: Date, hospitalTime: Date) => `Preso até ${formatDate(prisonTime, Language.Portuguese)} e Hospitalizado até ${formatDate(hospitalTime, Language.Portuguese)}`,
 		scavenging: "Vasculhando",
 		casinoSimple: `Jogando no Cassino`,
@@ -1850,7 +1851,7 @@ const Strings = {
 	[Language.Spanish]: {
 		idling: "Vagando",
 		workingSimple: "",
-		workingComplex: (description: string, jobTime: Date) => `Trabajando como ${description}. Terminará ${showTime(jobTime.getTime(), true)}`,
+		workingComplex: (description: string, jobTime: Date) => `Trabajando como ${description}. Terminará ${time(jobTime, TimestampStyles.RelativeTime)}`,
 		workingComplexUI: (description: string, jobTime: Date) => `Trabajando como ${description} hasta ${formatDate(jobTime, Language.Spanish)}`,
 		robbing: "Robando",
 		beingRobbedSimple: "Siendo robado",
@@ -1863,7 +1864,7 @@ const Strings = {
 		imprisonedSimple: "Preso",
 		imprisonedAndHospitalSimple: "Preso y Hospitalizado",
 		imprisonedAndHospitalSimpleEmote: `${EmoteString.Prison} Preso y ${EmoteString.Hospital} Hospitalizado`,
-		imprisonedAndHospitalComplex: (prisonTime: Date, hospitalTime: Date) => `${EmoteString.Prison} Preso hasta ${showTime(prisonTime.getTime())} y ${EmoteString.Hospital} Hospitalizado hasta ${showTime(hospitalTime.getTime())}`,
+		imprisonedAndHospitalComplex: (prisonTime: Date, hospitalTime: Date) => `${EmoteString.Prison} Preso hasta ${time(prisonTime, TimestampStyles.ShortDateTime)} y ${EmoteString.Hospital} Hospitalizado hasta ${time(hospitalTime, TimestampStyles.ShortDateTime)}`,
 		imprisonedAndHospitalComplexUI: (prisonTime: Date, hospitalTime: Date) => `Preso hasta ${formatDate(prisonTime, Language.Spanish)} y Hospitalizado hasta ${formatDate(hospitalTime, Language.Spanish)}`,
 		imprisonedComplex: "Preso hasta",
 		scavenging: "Buscando",

@@ -4,7 +4,7 @@ import { CrColors } from "#bot/utils/colors";
 import { deferReply, deferUpdate, replyWithContainer } from "#bot/utils/discordInteractions";
 import { EmoteString } from "#bot/utils/emotes";
 import { runUserRobbery } from "#bot/utils/robberyHelper";
-import { defaultComponent, formatMoney, showTime } from "#bot/utils/ui";
+import { defaultComponent, formatMoney } from "#bot/utils/ui";
 import { searchUser } from "#bot/utils/userUtils";
 import { Language, type Localization } from "#core/models/Language";
 import { Pagination } from "#core/models/Pagination";
@@ -13,7 +13,7 @@ import { UserRobberyStrategy } from "#core/models/strategies/robbery/UserRobbery
 import type { User } from "#core/models/User";
 import { getRobberyClassModifier } from "#core/types/Classes";
 import { getLocationList, LocationList } from "#core/types/Locations";
-import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder, time, TimestampStyles } from "discord.js";
 import { setTimeout as wait } from "timers/promises";
 
 module.exports = {
@@ -259,7 +259,7 @@ module.exports = {
 							const resultTexts = [
 								`### ${EmoteString.Victory} ${sRL.success}!`,
 								sRL.youRobbed(formatMoney(outcome.moneyRobbed, user.Language), `${locationEmote} ${locationName}`),
-								`-# ${sRL.willBeAbleAgain} ${showTime(outcome.attackerWantedTime!.getTime(), true)}`,
+								`-# ${sRL.willBeAbleAgain} ${time(outcome.attackerWantedTime!, TimestampStyles.RelativeTime)}`,
 							].join("\n");
 
 							channelContainer.changeTextFromSectionId(50, resultTexts);
@@ -318,9 +318,9 @@ const Strings = {
 		userFree: "You can rob!",
 		userScavenging: `You can't rob while scavenging! ${EmoteString.Scavenge}`,
 		userWorking: `You can't rob while working! ${EmoteString.Jobs}`,
-		userEscaping: (timerEscape: Date) => `You can't rob while being wanted by the police! You can rob again ${showTime(timerEscape.getTime(), true)} ${EmoteString.Police}`,
-		userPrison: (timerPrison: Date) => `You can't rob while in prison! You will be released ${showTime(timerPrison.getTime(), true)} ${EmoteString.Prison}`,
-		userHospital: (timerHospital: Date) => `You can't rob while in hospital! You will be healed ${showTime(timerHospital.getTime(), true)} ${EmoteString.Hospital}`,
+		userEscaping: (timerEscape: Date) => `You can't rob while being wanted by the police! You can rob again ${time(timerEscape, TimestampStyles.RelativeTime)} ${EmoteString.Police}`,
+		userPrison: (timerPrison: Date) => `You can't rob while in prison! You will be released ${time(timerPrison, TimestampStyles.RelativeTime)} ${EmoteString.Prison}`,
+		userHospital: (timerHospital: Date) => `You can't rob while in hospital! You will be healed ${time(timerHospital, TimestampStyles.RelativeTime)} ${EmoteString.Hospital}`,
 		userCasino: `You can't rob while playing in casino! ${EmoteString.Casino}`,
 		title: `Rob`,
 		description: `### Find a target and steal everything!
@@ -341,9 +341,9 @@ There is a small chance the target will also be beaten up!`,
 		userFree: "Você pode roubar!",
 		userScavenging: `Você não pode roubar enquanto vasculha! ${EmoteString.Scavenge}`,
 		userWorking: `Você não pode roubar enquanto trabalha! ${EmoteString.Jobs}`,
-		userEscaping: (timerEscape: Date) => `Você não pode roubar enquanto estiver sendo procurado pela polícia! Poderá roubar novamente ${showTime(timerEscape.getTime(), true)} ${EmoteString.Police}`,
-		userPrison: (timerPrison: Date) => `Você não pode roubar enquanto está preso! Será solto ${showTime(timerPrison.getTime(), true)} ${EmoteString.Prison}`,
-		userHospital: (timerHospital: Date) => `Você não pode roubar enquanto está hospitalizado! Será curado ${showTime(timerHospital.getTime(), true)} ${EmoteString.Hospital}`,
+		userEscaping: (timerEscape: Date) => `Você não pode roubar enquanto estiver sendo procurado pela polícia! Poderá roubar novamente ${time(timerEscape, TimestampStyles.RelativeTime)} ${EmoteString.Police}`,
+		userPrison: (timerPrison: Date) => `Você não pode roubar enquanto está preso! Será solto ${time(timerPrison, TimestampStyles.RelativeTime)} ${EmoteString.Prison}`,
+		userHospital: (timerHospital: Date) => `Você não pode roubar enquanto está hospitalizado! Será curado ${time(timerHospital, TimestampStyles.RelativeTime)} ${EmoteString.Hospital}`,
 		userCasino: `Você não pode roubar enquanto está jogando no cassino! ${EmoteString.Casino}`,
 		title: `Roubar`,
 		description: `### Encontre um alvo e roube tudo!
@@ -364,9 +364,9 @@ Há uma pequena chance do alvo ser também espancado!`,
 		userFree: "¡Puedes robar!",
 		userScavenging: `¡No puedes robar mientras buscas! ${EmoteString.Scavenge}`,
 		userWorking: `¡No puedes robar mientras trabajas! ${EmoteString.Jobs}`,
-		userEscaping: (timerEscape: Date) => `¡No puedes robar mientras eres perseguido por la policía! ¡Puedes robar de nuevo ${showTime(timerEscape.getTime(), true)} ${EmoteString.Police}`,
-		userPrison: (timerPrison: Date) => `¡No puedes robar mientras estás en prisión! ¡Serás liberado ${showTime(timerPrison.getTime(), true)} ${EmoteString.Prison}`,
-		userHospital: (timerHospital: Date) => `¡No puedes robar mientras estás en el hospital! ¡Serás curado ${showTime(timerHospital.getTime(), true)} ${EmoteString.Hospital}`,
+		userEscaping: (timerEscape: Date) => `¡No puedes robar mientras eres perseguido por la policía! ¡Puedes robar de nuevo ${time(timerEscape, TimestampStyles.RelativeTime)} ${EmoteString.Police}`,
+		userPrison: (timerPrison: Date) => `¡No puedes robar mientras estás en prisión! ¡Serás liberado ${time(timerPrison, TimestampStyles.RelativeTime)} ${EmoteString.Prison}`,
+		userHospital: (timerHospital: Date) => `¡No puedes robar mientras estás en el hospital! ¡Serás curado ${time(timerHospital, TimestampStyles.RelativeTime)} ${EmoteString.Hospital}`,
 		userCasino: `¡No puedes robar mientras estás jugando en el casino! ${EmoteString.Casino}`,
 		title: `Robar`,
 		description: `### ¡Encuentra un objetivo y roba todo!

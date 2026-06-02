@@ -1,11 +1,12 @@
 import type { User } from "./User";
 import { EmoteString } from "#bot/utils/emotes";
-import { formatMoney, showTime } from "#bot/utils/ui";
+import { formatMoney } from "#bot/utils/ui";
 import { addHours } from "date-fns/addHours";
 import { ClassId } from "#core/types/Classes";
 import { Log } from "#shared/log";
 import { Language } from "./Language";
 import { Notification } from "./Notification";
+import { TimestampStyles, time } from "discord.js";
 
 export class Alms {
 	Giver: User;
@@ -37,12 +38,12 @@ export class Alms {
 		}
 
 		if (this.Giver.Alms.GiveTime > new Date()) {
-			message = `${s.almsGiveAgain} ${showTime(this.Giver.Alms.GiveTime.getTime(), true)} ${EmoteString.Alms}`;
+			message = `${s.almsGiveAgain} ${time(this.Giver.Alms.GiveTime, TimestampStyles.RelativeTime)} ${EmoteString.Alms}`;
 			canGive = false;
 		}
 
 		if (this.Receiver.Alms.ReceiveTime > new Date()) {
-			message = `**${this.Receiver.GetNameWithImage()}** ${s.almsReceiveAgain} ${showTime(this.Receiver.Alms.ReceiveTime.getTime(), true)} ${EmoteString.Alms}`;
+			message = `**${this.Receiver.GetNameWithImage()}** ${s.almsReceiveAgain} ${time(this.Receiver.Alms.ReceiveTime, TimestampStyles.RelativeTime)} ${EmoteString.Alms}`;
 			canGive = false;
 		}
 

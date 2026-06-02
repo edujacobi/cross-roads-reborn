@@ -2,11 +2,11 @@ import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder"
 import { CrColors } from "#bot/utils/colors";
 import { replyWithContainer } from "#bot/utils/discordInteractions";
 import { isUserBoosterInOfficialServer } from "#bot/utils/officialServer";
-import { formatMoney, showTime } from "#bot/utils/ui";
+import { formatMoney } from "#bot/utils/ui";
 import { Language, type Localization } from "#core/models/Language";
 import type { User } from "#core/models/User";
 import { addDays } from "date-fns";
-import { type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+import { type ChatInputCommandInteraction, Locale, SlashCommandBuilder, time, TimestampStyles } from "discord.js";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -31,7 +31,7 @@ module.exports = {
 
 			container
 				.addTexts([
-					s.descriptionReceived(showTime(addDays(user.Daily.LastReceived, 1).getTime(), true)),
+					s.descriptionReceived(time(addDays(user.Daily.LastReceived, 1), TimestampStyles.RelativeTime)),
 				])
 				.addFooter({
 					text: formatMoney(user.Money, language),

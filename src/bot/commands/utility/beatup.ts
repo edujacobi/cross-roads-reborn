@@ -1,6 +1,6 @@
-import { type ChatInputCommandInteraction, Locale, SlashCommandBuilder } from "discord.js";
+import { type ChatInputCommandInteraction, Locale, SlashCommandBuilder, time, TimestampStyles } from "discord.js";
 import { deferReply, replyWithContainer } from "#bot/utils/discordInteractions";
-import { defaultComponent, showTime } from "#bot/utils/ui";
+import { defaultComponent } from "#bot/utils/ui";
 import { EmoteString } from "#bot/utils/emotes";
 import { CrColors } from "#bot/utils/colors";
 import type { User } from "#core/models/User";
@@ -109,12 +109,12 @@ module.exports = {
 const Strings = {
 	[Language.English]: {
 		userFree: "You can beat up!",
-		userBeatWait: (beatTime: Date) => `You will be able to beat up again ${showTime(beatTime.getTime(), true)}`,
+		userBeatWait: (beatTime: Date) => `You will be able to beat up again ${time(beatTime, TimestampStyles.RelativeTime)}`,
 		userScavenging: `You can't beat up while scavenging! ${EmoteString.Scavenge}`,
 		userWorking: `You can't beat up while working! ${EmoteString.Jobs}`,
-		userEscaping: (timerEscape: Date) => `You can't beat up while being wanted by the police! You can beat up again ${showTime(timerEscape.getTime(), true)} ${EmoteString.Police}`,
-		userPrison: (timerPrison: Date) => `You can't beat up while in prison! You will be released ${showTime(timerPrison.getTime(), true)} ${EmoteString.Prison}`,
-		userHospital: (timerHospital: Date) => `You can't beat up while in hospital! You will be healed ${showTime(timerHospital.getTime(), true)} ${EmoteString.Hospital}`,
+		userEscaping: (timerEscape: Date) => `You can't beat up while being wanted by the police! You can beat up again ${time(timerEscape, TimestampStyles.RelativeTime)} ${EmoteString.Police}`,
+		userPrison: (timerPrison: Date) => `You can't beat up while in prison! You will be released ${time(timerPrison, TimestampStyles.RelativeTime)} ${EmoteString.Prison}`,
+		userHospital: (timerHospital: Date) => `You can't beat up while in hospital! You will be healed ${time(timerHospital, TimestampStyles.RelativeTime)} ${EmoteString.Hospital}`,
 		userCasino: `You can't beat up while playing in casino! ${EmoteString.Casino}`,
 		description: `# Beat Up
 ### Defeat your nemesis and show who's boss!
@@ -125,12 +125,12 @@ To beat up, the target must be ${EmoteString.Idle} **Idling**.
 	},
 	[Language.Portuguese]: {
 		userFree: "Você pode espancar!",
-		userBeatWait: (beatTime: Date) => `Você poderá espancar novamente ${showTime(beatTime.getTime(), true)}`,
+		userBeatWait: (beatTime: Date) => `Você poderá espancar novamente ${time(beatTime, TimestampStyles.RelativeTime)}`,
 		userScavenging: `Você não pode espancar enquanto vasculha! ${EmoteString.Scavenge}`,
 		userWorking: `Você não pode espancar enquanto trabalha! ${EmoteString.Jobs}`,
-		userEscaping: (timerEscape: Date) => `Você não pode espancar enquanto estiver sendo procurado pela polícia! Poderá espancar novamente ${showTime(timerEscape.getTime(), true)} ${EmoteString.Police}`,
-		userPrison: (timerPrison: Date) => `Você não pode espancar enquanto está preso! Será solto ${showTime(timerPrison.getTime(), true)} ${EmoteString.Prison}`,
-		userHospital: (timerHospital: Date) => `Você não pode espancar enquanto está hospitalizado! Será curado ${showTime(timerHospital.getTime(), true)} ${EmoteString.Hospital}`,
+		userEscaping: (timerEscape: Date) => `Você não pode espancar enquanto estiver sendo procurado pela polícia! Poderá espancar novamente ${time(timerEscape, TimestampStyles.RelativeTime)} ${EmoteString.Police}`,
+		userPrison: (timerPrison: Date) => `Você não pode espancar enquanto está preso! Será solto ${time(timerPrison, TimestampStyles.RelativeTime)} ${EmoteString.Prison}`,
+		userHospital: (timerHospital: Date) => `Você não pode espancar enquanto está hospitalizado! Será curado ${time(timerHospital, TimestampStyles.RelativeTime)} ${EmoteString.Hospital}`,
 		userCasino: `Você não pode espancar enquanto está jogando no cassino! ${EmoteString.Casino}`,
 		description: `# Espancar
 ### Derrote seu nêmesis e mostre quem é que manda!
@@ -141,12 +141,12 @@ Para conseguir espancar, o alvo deve estar ${EmoteString.Idle} **Vadiando**.
 	},
 	[Language.Spanish]: {
 		userFree: "¡Puedes golpear!",
-		userBeatWait: (beatTime: Date) => `Podrás volver a golpear ${showTime(beatTime.getTime(), true)}`,
+		userBeatWait: (beatTime: Date) => `Podrás volver a golpear ${time(beatTime, TimestampStyles.RelativeTime)}`,
 		userScavenging: `¡No puedes golpear mientras buscas! ${EmoteString.Scavenge}`,
 		userWorking: `¡No puedes golpear mientras trabajas! ${EmoteString.Jobs}`,
-		userEscaping: (timerEscape: Date) => `¡No puedes golpear mientras eres perseguido por la policía! ¡Puedes golpear de nuevo ${showTime(timerEscape.getTime(), true)} ${EmoteString.Police}`,
-		userPrison: (timerPrison: Date) => `¡No puedes golpear mientras estás en prisión! ¡Serás liberado ${showTime(timerPrison.getTime(), true)} ${EmoteString.Prison}`,
-		userHospital: (timerHospital: Date) => `¡No puedes golpear mientras estás en el hospital! ¡Serás curado ${showTime(timerHospital.getTime(), true)} ${EmoteString.Hospital}`,
+		userEscaping: (timerEscape: Date) => `¡No puedes golpear mientras eres perseguido por la policía! ¡Puedes golpear de nuevo ${time(timerEscape, TimestampStyles.RelativeTime)} ${EmoteString.Police}`,
+		userPrison: (timerPrison: Date) => `¡No puedes golpear mientras estás en prisión! ¡Serás liberado ${time(timerPrison, TimestampStyles.RelativeTime)} ${EmoteString.Prison}`,
+		userHospital: (timerHospital: Date) => `¡No puedes golpear mientras estás en el hospital! ¡Serás curado ${time(timerHospital, TimestampStyles.RelativeTime)} ${EmoteString.Hospital}`,
 		userCasino: `¡No puedes golpear mientras estás jugando en el casino! ${EmoteString.Casino}`,
 		description: `# Golpear
 ### ¡Derrota a tu némesis y demuestra quién manda!

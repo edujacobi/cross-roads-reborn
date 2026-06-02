@@ -1,5 +1,5 @@
 import { EmoteString } from "#bot/utils/emotes";
-import { formatMoney, showTime } from "#bot/utils/ui";
+import { formatMoney } from "#bot/utils/ui";
 import { RobHistoryRepository } from "#core/repositories/RobHistoryRepository";
 import { UserRepository } from "#core/repositories/UserRepository";
 import { Event, EventType } from "#core/models/Event";
@@ -14,6 +14,7 @@ import { type ScavengeId, ScavengeList } from "#core/types/Scavenge";
 import { Log } from "#shared/log";
 import { addMinutes } from "date-fns";
 import { type IRobberyStrategy } from "./IRobberyStrategy";
+import { time, TimestampStyles } from "discord.js";
 
 export class LocationRobberyStrategy implements IRobberyStrategy {
 	Attacker: User;
@@ -219,16 +220,16 @@ export const Strings = {
 	[Language.English]: {
 		needMoreAttack: `You need more ${EmoteString.Attack}ATK to rob this location!`,
 		scavenging: (placeId: ScavengeId) => `You can't rob while scavenging ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.English]}** ${EmoteString.Scavenge}`,
-		inJob: (jobTime: Date, jobId: JobId) => `You can't rob while working! ${EmoteString.Jobs}\n-# Will finish your **${JobList[jobId].Description[Language.English]}** job ${showTime(jobTime.getTime(), true)}!`,
-		inPrison: (prisonTime: Date) => `You can't rob while you're in prison! ${EmoteString.Prison}\n-# Will be released ${showTime(prisonTime.getTime(), true)}!`,
-		isWanted: (wantedTime: Date) => `You can't rob while you're wanted by the police! ${EmoteString.Police}\n-# Will be able to rob again ${showTime(wantedTime.getTime(), true)}!`,
-		isInHospital: (hospitalTime: Date) => `You can't rob while you're hospitalized! ${EmoteString.Hospital}\n-# Will be healed ${showTime(hospitalTime.getTime(), true)}!`,
+		inJob: (jobTime: Date, jobId: JobId) => `You can't rob while working! ${EmoteString.Jobs}\n-# Will finish your **${JobList[jobId].Description[Language.English]}** job ${time(jobTime, TimestampStyles.RelativeTime)}!`,
+		inPrison: (prisonTime: Date) => `You can't rob while you're in prison! ${EmoteString.Prison}\n-# Will be released ${time(prisonTime, TimestampStyles.RelativeTime)}!`,
+		isWanted: (wantedTime: Date) => `You can't rob while you're wanted by the police! ${EmoteString.Police}\n-# Will be able to rob again ${time(wantedTime, TimestampStyles.RelativeTime)}!`,
+		isInHospital: (hospitalTime: Date) => `You can't rob while you're hospitalized! ${EmoteString.Hospital}\n-# Will be healed ${time(hospitalTime, TimestampStyles.RelativeTime)}!`,
 		isInCasino: `You can't rob while you're in a casino game! ${EmoteString.Casino}`,
 		robberyInProgress: `Robbery in progress`,
 		tryingToRob: "Trying to rob",
 		youRobbed: (formattedMoney: string, placeName: string) => `You robbed ${formattedMoney} from **${placeName}**!`,
 		youFailed: (placeName: string) => `You failed in your attempt to rob **${placeName}**`,
-		prisonTime: (time: Date) => `Will be in prison until ${showTime(time.getTime())}`,
+		prisonTime: (date: Date) => `Will be in prison until ${time(date, TimestampStyles.ShortDateTime)}`,
 		finishedRobberyAttacker: (success: boolean) => `Robbery ${success ? "successful" : "unsuccessful"}`,
 		willBeAbleAgain: "Will be able to rob again",
 		success: "Success",
@@ -237,16 +238,16 @@ export const Strings = {
 	[Language.Portuguese]: {
 		needMoreAttack: `Você precisa mais ${EmoteString.Attack}ATK para roubar este local!`,
 		scavenging: (placeId: ScavengeId) => `Você não pode roubar enquanto está vasculhando ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Portuguese]}** ${EmoteString.Scavenge}`,
-		inJob: (jobTime: Date, jobId: JobId) => `Você não pode roubar enquanto está trabalhando! ${EmoteString.Jobs}\n-# Terminará seu trabalho de **${JobList[jobId].Description[Language.Portuguese]}** ${showTime(jobTime.getTime(), true)}!`,
-		inPrison: (prisonTime: Date) => `Você não pode roubar enquanto está preso! ${EmoteString.Prison}\n-# Será solto ${showTime(prisonTime.getTime(), true)}!`,
-		isWanted: (wantedTime: Date) => `Você não pode roubar enquanto está sendo procurado pela polícia! ${EmoteString.Police}\n-# Poderá roubar novamente ${showTime(wantedTime.getTime(), true)}!`,
-		isInHospital: (hospitalTime: Date) => `Você não pode roubar enquanto está hospitalizado! ${EmoteString.Hospital}\n-# Será curado ${showTime(hospitalTime.getTime(), true)}!`,
+		inJob: (jobTime: Date, jobId: JobId) => `Você não pode roubar enquanto está trabalhando! ${EmoteString.Jobs}\n-# Terminará seu trabalho de **${JobList[jobId].Description[Language.Portuguese]}** ${time(jobTime, TimestampStyles.RelativeTime)}!`,
+		inPrison: (prisonTime: Date) => `Você não pode roubar enquanto está preso! ${EmoteString.Prison}\n-# Será solto ${time(prisonTime, TimestampStyles.RelativeTime)}!`,
+		isWanted: (wantedTime: Date) => `Você não pode roubar enquanto está sendo procurado pela polícia! ${EmoteString.Police}\n-# Poderá roubar novamente ${time(wantedTime, TimestampStyles.RelativeTime)}!`,
+		isInHospital: (hospitalTime: Date) => `Você não pode roubar enquanto está hospitalizado! ${EmoteString.Hospital}\n-# Será curado ${time(hospitalTime, TimestampStyles.RelativeTime)}!`,
 		isInCasino: `Você não pode roubar enquanto está em um jogo de cassino! ${EmoteString.Casino}`,
 		robberyInProgress: `Roubo em andamento`,
 		tryingToRob: "Tentando roubar",
 		youRobbed: (formattedMoney: string, placeName: string) => `Você roubou ${formattedMoney} de **${placeName}**!`,
 		youFailed: (placeName: string) => `Você falhou na sua tentativa de roubar **${placeName}**`,
-		prisonTime: (time: Date) => `Ficará preso até ${showTime(time.getTime())}`,
+		prisonTime: (date: Date) => `Ficará preso até ${time(date, TimestampStyles.ShortDateTime)}`,
 		finishedRobberyAttacker: (success: boolean) => `Roubo ${success ? "bem" : "mal"}-sucedido`,
 		willBeAbleAgain: "Poderá roubar novamente",
 		success: "Sucesso",
@@ -255,16 +256,16 @@ export const Strings = {
 	[Language.Spanish]: {
 		needMoreAttack: `¡Necesitas más ${EmoteString.Attack}ATK para robar este lugar!`,
 		scavenging: (placeId: ScavengeId) => `¡No puedes robar mientras estás buscando en ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Spanish]}** ${EmoteString.Scavenge}`,
-		inJob: (jobTime: Date, jobId: JobId) => `¡No puedes robar mientras trabajas! ${EmoteString.Jobs}\n-# ¡Terminará tu trabajo de **${JobList[jobId].Description[Language.Spanish]}** ${showTime(jobTime.getTime(), true)}!`,
-		inPrison: (prisonTime: Date) => `¡No puedes robar mientras estás en prisión! ${EmoteString.Prison}\n-# Será liberado ${showTime(prisonTime.getTime(), true)}!`,
-		isWanted: (wantedTime: Date) => `¡No puedes robar mientras estás siendo buscado por la policía! ${EmoteString.Police}\n-# Podrá robar nuevamente ${showTime(wantedTime.getTime(), true)}!`,
-		isInHospital: (hospitalTime: Date) => `¡No puedes robar mientras estás hospitalizado! ${EmoteString.Hospital}\n-# ¡Será curado ${showTime(hospitalTime.getTime(), true)}!`,
+		inJob: (jobTime: Date, jobId: JobId) => `¡No puedes robar mientras trabajas! ${EmoteString.Jobs}\n-# ¡Terminará tu trabajo de **${JobList[jobId].Description[Language.Spanish]}** ${time(jobTime, TimestampStyles.RelativeTime)}!`,
+		inPrison: (prisonTime: Date) => `¡No puedes robar mientras estás en prisión! ${EmoteString.Prison}\n-# Será liberado ${time(prisonTime, TimestampStyles.RelativeTime)}!`,
+		isWanted: (wantedTime: Date) => `¡No puedes robar mientras estás siendo buscado por la policía! ${EmoteString.Police}\n-# Podrá robar nuevamente ${time(wantedTime, TimestampStyles.RelativeTime)}!`,
+		isInHospital: (hospitalTime: Date) => `¡No puedes robar mientras estás hospitalizado! ${EmoteString.Hospital}\n-# ¡Será curado ${time(hospitalTime, TimestampStyles.RelativeTime)}!`,
 		isInCasino: `¡No puedes robar mientras estás en un juego de casino! ${EmoteString.Casino}`,
 		robberyInProgress: `Robo en progreso`,
 		tryingToRob: "Intentando robar",
 		youRobbed: (formattedMoney: string, placeName: string) => `¡Robaste ${formattedMoney} de **${placeName}**!`,
 		youFailed: (placeName: string) => `Fallaste en tu intento de robar **${placeName}**`,
-		prisonTime: (time: Date) => `Estará en prisión hasta ${showTime(time.getTime())}`,
+		prisonTime: (date: Date) => `Estará en prisión hasta ${time(date, TimestampStyles.ShortDateTime)}`,
 		finishedRobberyAttacker: (success: boolean) => `Robo ${success ? "exitoso" : "fallido"}`,
 		willBeAbleAgain: "Podrás robar de nuevo",
 		success: "Éxito",

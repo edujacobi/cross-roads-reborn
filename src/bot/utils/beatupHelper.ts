@@ -1,10 +1,10 @@
 import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
 import { deferUpdate, replyWithContainer } from "#bot/utils/discordInteractions";
 import { EmoteId, EmoteString } from "#bot/utils/emotes";
-import { defaultComponent, formatMoney, showTime } from "#bot/utils/ui";
+import { defaultComponent, formatMoney } from "#bot/utils/ui";
 import { Strings as BeatUpStrings, type BeatUp } from "#core/models/BeatUp";
 import type { User } from "#core/models/User";
-import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, ComponentType, type MessageComponentInteraction, MessageFlags } from "discord.js";
+import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, ComponentType, type MessageComponentInteraction, MessageFlags, time, TimestampStyles } from "discord.js";
 import { setTimeout as wait } from "timers/promises";
 import { ItemId } from "#core/types/Ids";
 import { getClient } from "#bot/client";
@@ -250,7 +250,7 @@ export async function runUserBeatUp(interaction: ChatInputCommandInteraction, be
 			const texts = [
 				`### ${EmoteString.Victory} ${sA.success}!`,
 				`${sA.youBeated(defender.GetNameWithImage(), outcome.defenderHospitalTime!)}`,
-				`-# ${sA.willBeAbleAgain} ${showTime(outcome.attackerBeatUpTime!.getTime(), true)}`,
+				`-# ${sA.willBeAbleAgain} ${time(outcome.attackerBeatUpTime!, TimestampStyles.RelativeTime)}`,
 			].join("\n");
 
 			channelContainer.changeTextFromSectionId(50, texts);

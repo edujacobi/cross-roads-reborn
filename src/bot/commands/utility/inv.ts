@@ -6,7 +6,7 @@ import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
 import { deferReply, deferUpdate, replyInteraction, replyWithContainer } from "#bot/utils/discordInteractions";
 import { EmoteId, EmoteString } from "#bot/utils/emotes";
 import { Inventory } from "#bot/utils/invUtils";
-import { convertHexNumberToString, formatMoney, hexToRGB, showTime } from "#bot/utils/ui";
+import { convertHexNumberToString, formatMoney, hexToRGB } from "#bot/utils/ui";
 import { searchUser } from "#bot/utils/userUtils";
 import { Language, type Localization } from "#core/models/Language";
 import type { User } from "#core/models/User";
@@ -24,7 +24,9 @@ import {
 	Colors,
 	Locale,
 	MessageFlags,
-	SlashCommandBuilder
+	SlashCommandBuilder,
+	time,
+	TimestampStyles
 } from "discord.js";
 
 module.exports = {
@@ -92,7 +94,7 @@ module.exports = {
 		const textItems = target.Items.map(userItem => {
 			const name = `${userItem.Skin[userItem.SelectedSkin].String} ${userItem.Description[language]}`;
 			const consumable = userItem.Type === ItemType.Consumable;
-			const value = consumable ? String(userItem.Quantity) : showTime(userItem.RemainingTime.getTime(), true);
+			const value = consumable ? String(userItem.Quantity) : time(userItem.RemainingTime, TimestampStyles.RelativeTime);
 			const isLessThan24Hours = consumable ? userItem.Quantity <= 2 : differenceInHours(userItem.RemainingTime, Date.now()) < 24;
 			const isLessThan12Hours = consumable ? userItem.Quantity <= 1 : differenceInHours(userItem.RemainingTime, Date.now()) < 12;
 			const emote = isLessThan12Hours ? EmoteString.LessThan12Hours : isLessThan24Hours ? EmoteString.LessThan24Hours : "";
@@ -131,7 +133,7 @@ module.exports = {
 				const investEmote = target.Investment.ExpiresAt!.getTime() > Date.now() ? EmoteString.InvestmentActive : EmoteString.InvestmentInactive;
 				const investment = InvestmentList[target.Investment.Id];
 				investTextSimple = `${investEmote} ${investment.Name[language]}`;
-				investTextComplex = `${investTextSimple}: ${showTime(target.Investment.ExpiresAt!.getTime(), true)}`;
+				investTextComplex = `${investTextSimple}: ${time(target.Investment.ExpiresAt!, TimestampStyles.RelativeTime)}`;
 			}
 
 			if (isClosed) {

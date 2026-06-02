@@ -4,13 +4,13 @@ import {
 	isUserBoosterInOfficialServer,
 	syncUserInOfficialServer,
 } from "#bot/utils/officialServer";
-import { defaultComponent, showTime } from "#bot/utils/ui";
+import { defaultComponent } from "#bot/utils/ui";
 import { checkUser } from "#bot/utils/userUtils";
 import { getLanguageFromLocale, Language, type Localization } from "#core/models/Language";
 import { User } from "#core/models/User";
 import { ClassId } from "#core/types/Classes";
 import { logger } from "#shared/log";
-import { Collection, Colors, type CommandInteraction, Events, MessageFlags } from "discord.js";
+import { Collection, Colors, type CommandInteraction, Events, MessageFlags, time, TimestampStyles } from "discord.js";
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const wait = require("node:timers/promises").setTimeout;
@@ -82,7 +82,7 @@ module.exports = {
 			if (now < expirationTime) {
 				const container = defaultComponent({
 					user,
-					description: s.willBeAble(command.data.name, expirationTime),
+					description: s.willBeAble(command.data.name, new Date(expirationTime)),
 				});
 
 				await replyWithContainer(interaction, container, true);
@@ -146,7 +146,7 @@ const Strings = {
 		settingNick: "Setting nickname",
 		settingNickDescription: "You must set a nickname before using any other command! Use `/setnick` to set your nickname.",
 		settingClassDescription: "You must choose a class before using any other command! Use `/setclass` to choose your class.",
-		willBeAble: (commandName: string, expirationTime: number) => `You will be able to reuse the \`${commandName}\` command ${showTime(expirationTime, true)}.`,
+		willBeAble: (commandName: string, expirationDate: Date) => `You will be able to reuse the \`${commandName}\` command ${time(expirationDate, TimestampStyles.RelativeTime)}.`,
 		canNowUse: (commandName: string) => `You can now use the \`${commandName}\` command.`,
 		needVIP: `You need to be ${EmoteString.VIP} **VIP** to perform this action.`,
 	},
@@ -155,7 +155,7 @@ const Strings = {
 		settingNick: "Configurando nickname",
 		settingNickDescription: "Você deve definir um nickname antes de usar qualquer outro comando! Use `/mudanick` para definir seu nickname.",
 		settingClassDescription: "Você deve escolher uma classe antes de usar qualquer outro comando! Use `/mudaclasse` para definir sua classe.",
-		willBeAble: (commandName: string, expirationTime: number) => `Você poderá reutilizar o comando \`${commandName}\` ${showTime(expirationTime, true)}.`,
+		willBeAble: (commandName: string, expirationDate: Date) => `Você poderá reutilizar o comando \`${commandName}\` ${time(expirationDate, TimestampStyles.RelativeTime)}.`,
 		canNowUse: (commandName: string) => `Agora você pode usar o comando \`${commandName}\`.`,
 		needVIP: `Você precisa ser ${EmoteString.VIP} **VIP** para realizar esta ação.`,
 	},
@@ -164,7 +164,7 @@ const Strings = {
 		settingNick: "Configurando nickname",
 		settingNickDescription: "¡Debes establecer un apodo antes de usar cualquier otro comando! Use `/setnick` para establecer su apodo.",
 		settingClassDescription: "¡Debes elegir una clase antes de usar cualquier otro comando! Use `/setclass` para definir su clase.",
-		willBeAble: (commandName: string, expirationTime: number) => `Podrás reutilizar el comando \`${commandName}\` ${showTime(expirationTime, true)}.`,
+		willBeAble: (commandName: string, expirationDate: Date) => `Podrás reutilizar el comando \`${commandName}\` ${time(expirationDate, TimestampStyles.RelativeTime)}.`,
 		canNowUse: (commandName: string) => `Ahora puedes usar el comando \`${commandName}\`.`,
 		needVIP: `Necesitas ser ${EmoteString.VIP} **VIP** para realizar esta acción.`,
 	},

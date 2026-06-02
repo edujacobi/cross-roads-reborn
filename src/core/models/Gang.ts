@@ -1,5 +1,5 @@
 import { EmoteString } from "#bot/utils/emotes";
-import { formatMoney, showTime } from "#bot/utils/ui";
+import { formatMoney } from "#bot/utils/ui";
 import { GangRepository } from "#core/repositories/GangRepository";
 import { GangMemberRepository } from "#core/repositories/GangMemberRepository";
 import { GangRoleRepository } from "#core/repositories/GangRoleRepository";
@@ -16,6 +16,7 @@ import { addHours, isFuture } from "date-fns";
 import { Language, type Localization } from "./Language";
 import { Notification, NotificationType } from "./Notification";
 import { User } from "./User";
+import { time, TimestampStyles } from "discord.js";
 
 export type GangNotifier = (
 	userId: string,
@@ -1486,7 +1487,7 @@ export class Gang {
 			canDeposit = false;
 		}
 		else if (member.depositTime > new Date()) {
-			text = `${s.depositCooldown} ${showTime(member.depositTime.getTime(), true)}`;
+			text = `${s.depositCooldown} ${time(member.depositTime, TimestampStyles.RelativeTime)}`;
 			canDeposit = false;
 		}
 

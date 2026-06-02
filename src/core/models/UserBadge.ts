@@ -1,9 +1,9 @@
 import { UserBadgeRepository } from "#core/repositories/UserBadgeRepository";
 import { Log } from "#shared/log";
-import { showTime } from "#bot/utils/ui";
 import type { User } from "./User";
 import { BadgeId, BadgeList } from "#core/types/Badges";
 import { Language } from "./Language";
+import { time, TimestampStyles } from "discord.js";
 
 export class UserBadge {
 	UserId = "";
@@ -99,7 +99,7 @@ export class UserBadge {
 		b.Emoji = badgeData.Emoji.String;
 
 		if (!user.VipEternal) {
-			b.Description += `. ${showTime(user.VipTime!.getTime(), true)}`;
+			b.Description += `. ${time(user.VipTime!, TimestampStyles.RelativeTime)}`;
 		}
 
 		badgeList.unshift(b);

@@ -5,7 +5,7 @@ import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
 import { CrColors } from "#bot/utils/colors";
 import { deferReply, deferUpdate, replyInteraction, replyWithContainer, sendComplexPrivateMessage } from "#bot/utils/discordInteractions";
 import { EmoteId, EmoteString } from "#bot/utils/emotes";
-import { convertHexNumberToString, defaultComponent, formatMoney, hexToRGB, showTime } from "#bot/utils/ui";
+import { convertHexNumberToString, defaultComponent, formatMoney, hexToRGB } from "#bot/utils/ui";
 import { checkUser, searchUser } from "#bot/utils/userUtils";
 import { Gang, GangPermission, GangImportFailureReason, Strings as GangStrings } from "#core/models/Gang";
 import { InvestmentRobbery, InvestmentRobberyReason } from "#core/models/InvestmentRobbery";
@@ -28,6 +28,8 @@ import {
 	Collection,
 	ComponentType,
 	type MessageComponentInteraction,
+	time,
+	TimestampStyles,
 } from "discord.js";
 
 Gang.Notifier = async (userId, gangInfo, message, sender, specialMessage) => {
@@ -652,7 +654,7 @@ module.exports = {
 						info = member.Nickname;
 						let textDeposit = s.canDeposit as string;
 						if (member.Deposit.Time > new Date()) {
-							textDeposit = `${s.canDepositAgain} ${showTime(member.Deposit.Time.getTime(), true)}`;
+							textDeposit = `${s.canDepositAgain} ${time(member.Deposit.Time, TimestampStyles.RelativeTime)}`;
 						}
 						deposit = `\n-# ${formatMoney(member.Deposit.Amount, language)}. ${textDeposit}`;
 					}
@@ -745,7 +747,7 @@ module.exports = {
 						() => depositBtn,
 					)
 					.addFooter({
-						text: `${s.created} ${showTime(gang.CreatedAt.getTime())}${adminIdText}`,
+						text: `${s.created} ${time(gang.CreatedAt, TimestampStyles.ShortDateTime)}${adminIdText}`,
 						button: new ButtonBuilder()
 							.setLabel("Info")
 							.setCustomId("info")
@@ -827,7 +829,7 @@ module.exports = {
 			if (gang.LastInvestmentRobbery) {
 				const cooldownTime = addHours(gang.LastInvestmentRobbery, 6);
 				if (isFuture(cooldownTime)) {
-					return warn(s.robberyCooldown(cooldownTime.getTime()));
+					return warn(s.robberyCooldown(cooldownTime));
 				}
 			}
 
@@ -1259,7 +1261,7 @@ module.exports = {
 						.addSectionComponents(section => section
 							.addTexts([
 								s.importActive,
-								`-# ${s.importInfoArrivesIn(showTime(currentGang.ImportArrivesAt!.getTime(), true))}`,
+								`-# ${s.importInfoArrivesIn(time(currentGang.ImportArrivesAt!, TimestampStyles.RelativeTime))}`,
 								`-# ${s.importInfoSuccessChance(`${Math.floor(currentGang.GetImportSuccessChance() * 100)}%`)}`,
 							])
 							.setButtonAccessory(btn => btn
@@ -1280,7 +1282,7 @@ module.exports = {
 						const cooldownEnd = addHours(currentGang.LastImportSuccess, Gang.IMPORT_COOLDOWN_HOURS);
 						if (isFuture(cooldownEnd)) {
 							container
-								.addTexts([s.importCooldown(showTime(cooldownEnd.getTime(), true))])
+								.addTexts([s.importCooldown(time(cooldownEnd, TimestampStyles.RelativeTime))])
 								.addFooter({
 									text: `${currentGang.Name} • ${formatMoney(currentGang.Money, language)}`,
 								});
@@ -1292,7 +1294,7 @@ module.exports = {
 						const cooldownEnd = addHours(currentGang.LastImportCancelled, Gang.IMPORT_CANCEL_COOLDOWN_HOURS);
 						if (isFuture(cooldownEnd)) {
 							container
-								.addTexts([s.importCancelCooldown(showTime(cooldownEnd.getTime(), true))])
+								.addTexts([s.importCancelCooldown(time(cooldownEnd, TimestampStyles.RelativeTime))])
 								.addFooter({
 									text: `${currentGang.Name} • ${formatMoney(currentGang.Money, language)}`,
 								});
@@ -1346,10 +1348,10 @@ module.exports = {
 					if (!check.can && check.reason !== undefined) {
 						let data = {};
 						if (check.reason === GangImportFailureReason.Cooldown && gang.LastImportSuccess) {
-							data = { time: showTime(addHours(gang.LastImportSuccess, Gang.IMPORT_COOLDOWN_HOURS).getTime()) };
+							data = { time: time(addHours(gang.LastImportSuccess, Gang.IMPORT_COOLDOWN_HOURS), TimestampStyles.ShortDateTime) };
 						}
 						else if (check.reason === GangImportFailureReason.CancelCooldown && gang.LastImportCancelled) {
-							data = { time: showTime(addHours(gang.LastImportCancelled, Gang.IMPORT_CANCEL_COOLDOWN_HOURS).getTime()) };
+							data = { time: time(addHours(gang.LastImportCancelled, Gang.IMPORT_CANCEL_COOLDOWN_HOURS), TimestampStyles.ShortDateTime) };
 						}
 						else if (check.reason === GangImportFailureReason.NotEnoughMoney) {
 							data = { cost: formatMoney(gang.GetImportCost(), language) };
@@ -2973,10 +2975,10 @@ const Strings = {
 		stolen: "Stolen for gang bank",
 		expGained: "Gang EXP gained",
 		henchmanHospitalized: "The henchman was hospitalized.",
-		defenderHospitalized: (name: string, date: Date) => `**${name}** was hospitalized! Will be cured ${showTime(date.getTime(), true)}`,
-		youWereHospitalized: (date: Date) => `You were hospitalized! Will be cured ${showTime(date.getTime(), true)}`,
+		defenderHospitalized: (name: string, date: Date) => `**${name}** was hospitalized! Will be cured ${time(date, TimestampStyles.RelativeTime)}`,
+		youWereHospitalized: (date: Date) => `You were hospitalized! Will be cured ${time(date, TimestampStyles.RelativeTime)}`,
 		failureLose: "Failure",
-		attackersImprisoned: (hours: number) => `All attackers were sent to prison!\n-# They will be free ${showTime(addHours(Date.now(), hours).getTime(), true)}`,
+		attackersImprisoned: (hours: number) => `All attackers were sent to prison!\n-# They will be free ${time(addHours(Date.now(), hours), TimestampStyles.RelativeTime)}`,
 		attackersHospitalized: "Also hospitalized for 30 minutes.",
 		waitingForTarget: `Robbery in progress ${EmoteString.Waiting}`,
 		targetIsDefending: (name: string) => `**${name}** is defending! ${EmoteString.Defense}`,
@@ -2985,7 +2987,7 @@ const Strings = {
 		robberyResultLost: (gangName: string) => `${EmoteString.Gang} Gang **${gangName}** robbed your investment!`,
 		robberyResultWon: "You successfully defended your investment!",
 		henchmanStillActive: "Your henchman protected you and remains active!",
-		robberyCooldown: (time: number) => `${EmoteString.Police} The police is searching for your gang. You can rob again ${showTime(time, true)}`,
+		robberyCooldown: (date: Date) => `${EmoteString.Police} The police is searching for your gang. You can rob again ${time(date, TimestampStyles.RelativeTime)}`,
 		importTitle: "Gang import",
 		importReady: (cost: string, time: string, chance: string) => `Ready to start a new item import.\n\n- **Cost:** ${cost}\n- **Wait time:** ${time}h\n- **Success chance:** ${chance}`,
 		importActive: `A import is currently in transit.`,
@@ -3156,10 +3158,10 @@ const Strings = {
 		stolen: "Roubado para o caixa da gangue",
 		expGained: "EXP ganho pela gangue",
 		henchmanHospitalized: "O capanga foi hospitalizado.",
-		defenderHospitalized: (name: string, date: Date) => `**${name}** foi hospitalizado! Será curado ${showTime(date.getTime(), true)}`,
-		youWereHospitalized: (date: Date) => `Você foi hospitalizado! Será curado ${showTime(date.getTime(), true)}`,
+		defenderHospitalized: (name: string, date: Date) => `**${name}** foi hospitalizado! Será curado ${time(date, TimestampStyles.RelativeTime)}`,
+		youWereHospitalized: (date: Date) => `Você foi hospitalizado! Será curado ${time(date, TimestampStyles.RelativeTime)}`,
 		failureLose: "Falha",
-		attackersImprisoned: (hours: number) => `Todos os atacantes foram presos!\n-# Eles serão liberados ${showTime(addHours(Date.now(), hours).getTime(), true)}`,
+		attackersImprisoned: (hours: number) => `Todos os atacantes foram presos!\n-# Eles serão liberados ${time(addHours(Date.now(), hours), TimestampStyles.RelativeTime)}`,
 		attackersHospitalized: "Também foram hospitalizados por 30 minutos.",
 		targetIsDefending: (name: string) => `**${name}** está defendendo! ${EmoteString.Defense}`,
 		targetHasHenchman: `O alvo tem um capanga ativo!`,
@@ -3167,7 +3169,7 @@ const Strings = {
 		robberyResultLost: (gangName: string) => `${EmoteString.Gang} Gangue **${gangName}** roubou seu investimento!`,
 		robberyResultWon: "Você defendeu seu investimento com sucesso!",
 		henchmanStillActive: "Seu capanga protegeu você e continua ativo!",
-		robberyCooldown: (time: number) => `${EmoteString.Police} A polícia está procurando por sua gangue. Você poderá roubar novamente ${showTime(time, true)}`,
+		robberyCooldown: (date: Date) => `${EmoteString.Police} A polícia está procurando por sua gangue. Você poderá roubar novamente ${time(date, TimestampStyles.RelativeTime)}`,
 		importTitle: "Importação da gangue",
 		importReady: (cost: string, time: string, chance: string) => `Pronto para iniciar uma nova importação de itens.\n\n- **Custo:** ${cost}\n- **Tempo de espera:** ${time}h\n- **Chance de sucesso:** ${chance}`,
 		importActive: "Uma importação está atualmente em trânsito.",
@@ -3338,10 +3340,10 @@ const Strings = {
 		stolen: "Robado para el banco de cuadrilla",
 		expGained: "EXP ganada",
 		henchmanHospitalized: "El secuaz fue hospitalizado.",
-		defenderHospitalized: (name: string, date: Date) => `¡**${name}** fue hospitalizado! Será curado ${showTime(date.getTime(), true)}`,
-		youWereHospitalized: (date: Date) => `¡Fuiste hospitalizado! Serás curado ${showTime(date.getTime(), true)}`,
+		defenderHospitalized: (name: string, date: Date) => `¡**${name}** fue hospitalizado! Será curado ${time(date, TimestampStyles.RelativeTime)}`,
+		youWereHospitalized: (date: Date) => `¡Fuiste hospitalizado! Serás curado ${time(date, TimestampStyles.RelativeTime)}`,
 		failureLose: "Fracaso",
-		attackersImprisoned: (hours: number) => `Todos los atacantes fueron enviados a prisión!\n-# Serán liberados ${showTime(addHours(Date.now(), hours).getTime(), true)}`,
+		attackersImprisoned: (hours: number) => `Todos los atacantes fueron enviados a prisión!\n-# Serán liberados ${time(addHours(Date.now(), hours), TimestampStyles.RelativeTime)}`,
 		attackersHospitalized: "También fueron hospitalizados por 30 minutos.",
 		targetIsDefending: (name: string) => `¡**${name}** está defendiendo! ${EmoteString.Defense}`,
 		targetHasHenchman: `¡El objetivo tiene un secuaz activo!`,
@@ -3349,7 +3351,7 @@ const Strings = {
 		robberyResultLost: (gangName: string) => `${EmoteString.Gang} La pandilla **${gangName}** robó tu inversión!`,
 		robberyResultWon: "¡Defendiste tu inversión con éxito!",
 		henchmanStillActive: "¡Tu secuaz te protegió y sigue activo!",
-		robberyCooldown: (time: number) => `${EmoteString.Police} La policía está buscando a tu cuadrilla. Podrás robar de nuevo ${showTime(time, true)}`,
+		robberyCooldown: (date: Date) => `${EmoteString.Police} La policía está buscando a tu cuadrilla. Podrás robar de nuevo ${time(date, TimestampStyles.RelativeTime)}`,
 		importTitle: "Importación de cuadrilla",
 		importReady: (cost: string, time: string, chance: string) => `Listo para iniciar una nueva importación de objetos.\n\n- **Costo:** ${cost}\n- **Tiempo de espera:** ${time}h\n- **Probabilidad de éxito:** ${chance}`,
 		importActive: `Una importación está actualmente en tránsito.`,

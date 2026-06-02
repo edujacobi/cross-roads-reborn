@@ -3,7 +3,6 @@ import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
 import { CrColors } from "#bot/utils/colors";
 import { deferReply, deferUpdate, replyWithContainer } from "#bot/utils/discordInteractions";
 import { EmoteString } from "#bot/utils/emotes";
-import { showTime } from "#bot/utils/ui";
 import { Language, type Localization } from "#core/models/Language";
 import { Notification } from "#core/models/Notification";
 import type { User } from "#core/models/User";
@@ -17,6 +16,8 @@ import {
 	Locale,
 	SlashCommandBuilder,
 	TextDisplayBuilder,
+	time,
+	TimestampStyles,
 } from "discord.js";
 
 module.exports = {
@@ -270,7 +271,7 @@ const Strings = {
 		drankNothing: "You haven't drunk anything yet",
 		barOf: "Bar of",
 		barmanDescription: (adjective: string) => `Come on in, ${adjective}, would you like something to drink?`,
-		toHospital: (timer: Date) => `You drank too much and fell into an alcoholic coma.\n-# You will be healed ${showTime(timer.getTime(), true)}`,
+		toHospital: (timer: Date) => `You drank too much and fell into an alcoholic coma.\n-# You will be healed ${time(timer, TimestampStyles.RelativeTime)}`,
 		youDrank: (beverage: string, sensation: string) => `You drank **${beverage}** and feel **${sensation}**!`,
 		drinkCount: "You drank",
 		drankToMuch: "You drank too much.",
@@ -298,7 +299,7 @@ const Strings = {
 		drankNothing: "Você ainda não bebeu nada",
 		barOf: "Bar de",
 		barmanDescription: (adjective: string) => `Chega aí, ${adjective}, gostaria de beber alguma coisa?`,
-		toHospital: (timer: Date) => `Você bebeu demais e entrou em coma alcoólico.\n-# Será curado ${showTime(timer.getTime(), true)}`,
+		toHospital: (timer: Date) => `Você bebeu demais e entrou em coma alcoólico.\n-# Será curado ${time(timer, TimestampStyles.RelativeTime)}`,
 		youDrank: (beverage: string, sensation: string) => `Você bebeu **${beverage}** e se sente **${sensation}**!`,
 		drinkCount: "Você bebeu",
 		drankToMuch: "Você já bebeu demais.",
@@ -326,7 +327,7 @@ const Strings = {
 		drankNothing: "Aún no has bebido nada",
 		barOf: "Bar de",
 		barmanDescription: (adjective: string) => `Pase, ${adjective}, ¿le gustaría beber algo?`,
-		toHospital: (timer: Date) => `Te emborrachaste y caíste en un coma alcohólico.\n-# Serás curado ${showTime(timer.getTime(), true)}`,
+		toHospital: (timer: Date) => `Te emborrachaste y caíste en un coma alcohólico.\n-# Serás curado ${time(timer, TimestampStyles.RelativeTime)}`,
 		youDrank: (beverage: string, sensation: string) => `¡Bebiste **${beverage}** y te sientes **${sensation}**!`,
 		drinkCount: "Has bebido",
 		drankToMuch: "Te emborrachaste.",

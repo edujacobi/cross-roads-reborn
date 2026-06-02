@@ -3,7 +3,7 @@ import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
 import { CrColors } from "#bot/utils/colors";
 import { deferReply, deferUpdate, replyWithContainer } from "#bot/utils/discordInteractions";
 import { EmoteString } from "#bot/utils/emotes";
-import { formatMoney, showTime } from "#bot/utils/ui";
+import { formatMoney } from "#bot/utils/ui";
 import { Investment } from "#core/models/Investment";
 import { Language, type Localization } from "#core/models/Language";
 import { Pagination } from "#core/models/Pagination";
@@ -16,6 +16,8 @@ import {
 	Colors,
 	Locale,
 	SlashCommandBuilder,
+	time,
+	TimestampStyles,
 	type ChatInputCommandInteraction,
 } from "discord.js";
 
@@ -259,7 +261,7 @@ async function handleManage(interaction: ChatInputCommandInteraction, user: User
 
 		if (Investment.HasContractHenchman(user)) {
 			hasHenchman = true;
-			const timeObj = showTime(new Date(user.Investment.HenchmanEndsAt!).getTime(), true);
+			const timeObj = time(user.Investment.HenchmanEndsAt!, TimestampStyles.RelativeTime);
 			henchmanText = `${s.henchmanActive} ${timeObj}` + (user.Investment.HenchmanHospitalized
 				? `\n-# ${EmoteString.Hospital} ${s.henchmanHospitalized}`
 				: "");
@@ -282,7 +284,7 @@ async function handleManage(interaction: ChatInputCommandInteraction, user: User
 		// Remaining time until expiration
 		let expiresAtText = "";
 		if (user.Investment.ExpiresAt) {
-			const remaining = showTime(user.Investment.ExpiresAt.getTime(), true);
+			const remaining = time(user.Investment.ExpiresAt, TimestampStyles.RelativeTime);
 			expiresAtText = `**${s.expiresAt}**: ${remaining}`;
 		}
 
@@ -291,7 +293,7 @@ async function handleManage(interaction: ChatInputCommandInteraction, user: User
 
 		const infoTexts = [
 			`**${s.accumulatedYield}**: ${accumulated}`,
-			`**${s.nextPayment}**: ${showTime(nextPaymentDate.getTime(), true)}`,
+			`**${s.nextPayment}**: ${time(nextPaymentDate, TimestampStyles.RelativeTime)}`,
 			expiresAtText ?? undefined,
 		].filter(Boolean);
 

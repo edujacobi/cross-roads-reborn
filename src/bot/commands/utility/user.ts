@@ -4,7 +4,7 @@ import { UserImageCanvasBuilder } from "#bot/ui/builders/UserImageCanvasBuilder"
 import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
 import { deferReply, deferUpdate, replyInteraction, replyWithContainer } from "#bot/utils/discordInteractions";
 import { EmoteId } from "#bot/utils/emotes";
-import { formatMoney, showTime } from "#bot/utils/ui";
+import { formatMoney } from "#bot/utils/ui";
 import { searchUser } from "#bot/utils/userUtils";
 import { Language, type Localization } from "#core/models/Language";
 import type { User } from "#core/models/User";
@@ -20,6 +20,8 @@ import {
 	Locale,
 	MessageFlags,
 	SlashCommandBuilder,
+	time,
+	TimestampStyles,
 } from "discord.js";
 
 module.exports = {
@@ -81,7 +83,7 @@ module.exports = {
 			label: "Daily",
 			emote: EmoteId.Heads,
 			texts: [
-				target.CanReceiveDaily() ? s.available : showTime(addDays(target.Daily.LastReceived!, 1).getTime(), true),
+				target.CanReceiveDaily() ? s.available : time(addDays(target.Daily.LastReceived!, 1), TimestampStyles.RelativeTime),
 				`\`${target.Daily.CurrentStreak}\` ${s.currentStreak}`,
 				`\`${target.Daily.MaxStreak}\` ${s.maxStreak}`,
 			],
@@ -99,7 +101,7 @@ module.exports = {
 			label: s.robberies,
 			emote: EmoteId.Robbery,
 			texts: [
-				target.Wanted.Time > now ? showTime(target.Wanted.Time.getTime(), true) : s.canRob,
+				target.Wanted.Time > now ? time(target.Wanted.Time, TimestampStyles.RelativeTime) : s.canRob,
 				`\`${formatMoney(target.Robbery.SuccessRobbedSum, user.Language)}\` (\`${target.Robbery.SuccessCount}\`) ${s.robbed}`,
 				`\`${formatMoney(target.Robbery.BeingRobbedSum, user.Language)}\` (\`${target.Robbery.BeingRobbedCount}\`) ${s.robLost}`,
 				`\`${target.Robbery.FailureCount}\` ${s.beatFailure}`,
@@ -109,7 +111,7 @@ module.exports = {
 			label: s.beatUps,
 			emote: EmoteId.Beat,
 			texts: [
-				target.BeatUp.Time > now ? showTime(target.BeatUp.Time.getTime(), true) : s.canBeat,
+				target.BeatUp.Time > now ? time(target.BeatUp.Time, TimestampStyles.RelativeTime) : s.canBeat,
 				`\`${target.BeatUp.SuccessCount}\` ${s.beatSuccess}`,
 				`\`${target.BeatUp.FailureCount}\` ${s.beatFailure}`,
 				`\`${target.BeatUp.BeatedUpCount}\` ${s.beatedUp}`,
@@ -129,8 +131,8 @@ module.exports = {
 			label: s.alms,
 			emote: EmoteId.Alms,
 			texts: [
-				target.Alms.ReceiveTime > now ? `${s.almsReceive} ${showTime(target.Alms.ReceiveTime.getTime(), true)}` : s.almsCanReceive,
-				target.Alms.GiveTime > now ? `${s.almsGive} ${showTime(target.Alms.GiveTime.getTime(), true)}` : s.almsCanGive,
+				target.Alms.ReceiveTime > now ? `${s.almsReceive} ${time(target.Alms.ReceiveTime, TimestampStyles.RelativeTime)}` : s.almsCanReceive,
+				target.Alms.GiveTime > now ? `${s.almsGive} ${time(target.Alms.GiveTime, TimestampStyles.RelativeTime)}` : s.almsCanGive,
 				`${formatMoney(target.Alms.ReceivedSum, user.Language)} (\`${target.Alms.ReceivedCount}\`) ${s.almsReceived}`,
 				`${formatMoney(target.Alms.GivenSum, user.Language)} (\`${target.Alms.GivenCount}\`) ${s.almsGiven}`,
 			],
@@ -139,7 +141,7 @@ module.exports = {
 			label: s.scavenge,
 			emote: EmoteId.Scavenge,
 			texts: [
-				target.Scavenge.Time > now ? showTime(target.Scavenge.Time.getTime(), true) : s.scavengeCan,
+				target.Scavenge.Time > now ? time(target.Scavenge.Time, TimestampStyles.RelativeTime) : s.scavengeCan,
 				`\`${target.Scavenge.Found.Items + target.Scavenge.Found.MoneyCount}\` ${s.scavengeFound}`,
 				`\`${target.Scavenge.Found.Failures}\` ${s.scavengeFailures}`,
 				`\`${target.Scavenge.Found.FailureWithHospital}\` ${s.scavengeHospitalizations}`,

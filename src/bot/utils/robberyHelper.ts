@@ -3,11 +3,11 @@ import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder"
 import { CrColors } from "#bot/utils/colors";
 import { deferUpdate, replyWithContainer } from "#bot/utils/discordInteractions";
 import { EmoteId, EmoteString } from "#bot/utils/emotes";
-import { defaultComponent, formatMoney, showTime } from "#bot/utils/ui";
+import { defaultComponent, formatMoney } from "#bot/utils/ui";
 import { Strings as RobberyStrings, type UserRobberyStrategy } from "#core/models/strategies/robbery/UserRobberyStrategy";
 import type { User } from "#core/models/User";
 import { ItemId } from "#core/types/Ids";
-import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, ComponentType, type MessageComponentInteraction, MessageFlags } from "discord.js";
+import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, ComponentType, type MessageComponentInteraction, MessageFlags, time, TimestampStyles } from "discord.js";
 import { setTimeout as wait } from "timers/promises";
 
 export async function runUserRobbery(interaction: ChatInputCommandInteraction, robbery: UserRobberyStrategy, attacker: User, defender: User) {
@@ -258,7 +258,7 @@ export async function runUserRobbery(interaction: ChatInputCommandInteraction, r
 			const texts = [
 				`### ${EmoteString.Victory} ${sA.success}!`,
 				`${successMessage}${outcome.willBeBeatenUp ? `\n${sA.beatenUp(outcome.defenderHospitalTime!)} ${EmoteString.Hospital}` : ""}`,
-				`-# ${sA.willBeAbleAgain} ${showTime(outcome.attackerWantedTime!.getTime(), true)}`,
+				`-# ${sA.willBeAbleAgain} ${time(outcome.attackerWantedTime!, TimestampStyles.RelativeTime)}`,
 			].join("\n");
 
 			channelContainer.changeTextFromSectionId(50, texts);
