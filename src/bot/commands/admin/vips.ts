@@ -1,6 +1,6 @@
 import { type ChatInputCommandInteraction, Colors, Locale, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
-import { Users } from "#core/database/Users";
-import { Op } from "sequelize";
+import { UserRepository } from "#core/repositories/UserRepository";
+import type { Users } from "#core/database/Users";
 import { EmoteString } from "#bot/utils/emotes";
 import { Pagination } from "#core/models/Pagination";
 import type { Language } from "#core/models/Language";
@@ -23,27 +23,11 @@ module.exports = {
 		let users: Users[] = [];
 		const pagination = new Pagination(interaction, language);
 
-		const where = {
-			[Op.or]: {
-				vipTime: {
-					[Op.gt]: new Date(),
-				},
-				vipEternal: {
-					[Op.not]: false,
-				},
-			},
-		};
-
 		async function findList() {
-			users = await Users.findAll({
-				where,
-				limit: pagination.Limit,
-				order: [["vipTime", "DESC"]],
-				offset: pagination.Offset,
-			});
+			users = await UserRepository.FindAllVips(pagination.Limit, pagination.Offset);
 		}
 
-		pagination.HowManyRecords = await Users.count({ where });
+		pagination.HowManyRecords = await UserRepository.CountVips();
 
 		pagination.CustomizeContainer = async () => {
 			await findList();

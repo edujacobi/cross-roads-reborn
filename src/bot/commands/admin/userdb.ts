@@ -7,7 +7,7 @@ import {
 	SlashCommandBuilder,
 	TextDisplayBuilder,
 } from "discord.js";
-import { Users } from "#core/database/Users";
+import { UserRepository } from "#core/repositories/UserRepository";
 import { Op } from "sequelize";
 import { getLanguageFromLocale } from "#core/models/Language";
 import { replyInteraction, replyUserDontExist } from "#bot/utils/discordInteractions";
@@ -30,16 +30,7 @@ module.exports = {
 	async execute(interaction: ChatInputCommandInteraction) {
 		const nameOrId = interaction.options.getString("target", true);
 
-		const user = await Users.findOne({
-			where: {
-				[Op.or]: {
-					nickname: {
-						[Op.like]: nameOrId,
-					},
-					id: nameOrId,
-				},
-			},
-		});
+		const user = await UserRepository.SearchByNameOrId(nameOrId);
 
 		if (!user) {
 			return replyUserDontExist(interaction, getLanguageFromLocale(interaction.locale));

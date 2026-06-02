@@ -2,8 +2,7 @@ import { type ChatInputCommandInteraction, Locale, PermissionFlagsBits, SlashCom
 import { getClient } from "#bot/client";
 import { replyWithContainer } from "#bot/utils/discordInteractions";
 import { CrColors } from "#bot/utils/colors";
-import { Users } from "#core/database/Users";
-import { Op } from "sequelize";
+import { UserRepository } from "#core/repositories/UserRepository";
 import { subMinutes, intervalToDuration } from "date-fns";
 import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
 import type { User } from "#core/models/User";
@@ -22,13 +21,7 @@ module.exports = {
 
 		const client = getClient();
 
-		const playerCount = await Users.count({
-			where: {
-				class: {
-					[Op.not]: 0,
-				},
-			},
-		});
+		const playerCount = await UserRepository.CountActivePlayers();
 
 		const onlineUsers = client.userLastCommand.filter(time => new Date(time) > subMinutes(new Date(), 15)).size;
 

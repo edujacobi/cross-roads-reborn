@@ -5,7 +5,7 @@ import type { User } from "#core/models/User";
 import type { RobHistories } from "#core/database/RobHistories";
 import { RobHistoryRepository } from "#core/repositories/RobHistoryRepository";
 import { EmoteString } from "#bot/utils/emotes";
-import { Users } from "#core/database/Users";
+import { UserRepository } from "#core/repositories/UserRepository";
 import { Language, type Localization } from "#core/models/Language";
 import { Pagination } from "#core/models/Pagination";
 import { ClassList } from "#core/types/Classes";
@@ -65,8 +65,8 @@ module.exports = {
 
 				const emoji = rob.success ? EmoteString.Victory : EmoteString.Defeat;
 				const text = rob.success ? s.success : s.failure;
-				const attacker = await Users.findByPk(rob.attackerId, { attributes: ["id", "class", "nickname"] });
-				const defender = await Users.findByPk(rob.defenderId, { attributes: ["id", "class", "nickname"] });
+				const attacker = await UserRepository.FindById(rob.attackerId, ["id", "class", "nickname"]);
+				const defender = await UserRepository.FindById(rob.defenderId, ["id", "class", "nickname"]);
 				const location = LocationList[rob.locationId];
 
 				if (!attacker) {

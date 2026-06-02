@@ -4,7 +4,7 @@ import { CrColors } from "#bot/utils/colors";
 import { deferReply, deferUpdate, replyWithContainer } from "#bot/utils/discordInteractions";
 import { EmoteString } from "#bot/utils/emotes";
 import { formatMoney, showTime } from "#bot/utils/ui";
-import { Users } from "#core/database/Users";
+import { UserRepository } from "#core/repositories/UserRepository";
 import { BlackMarket } from "#core/models/BlackMarket";
 import { Event, EventType } from "#core/models/Event";
 import { globalStrings, Language, type Localization } from "#core/models/Language";
@@ -188,19 +188,19 @@ module.exports = {
 					textResponse = s.userCasino;
 				}
 				else if (user.BeatUp.IsBeatingId) {
-					const u = await Users.findByPk(user.BeatUp.IsBeatingId, { attributes: ["class", "nickname"] });
+					const u = await UserRepository.FindById(user.BeatUp.IsBeatingId, ["class", "nickname"]);
 					textResponse = `${s.userIsBeatingId(`${ClassList[u!.class].Image.Emote.String} ${u!.nickname!}`)} ${EmoteString.Beat}`;
 				}
 				else if (user.BeatUp.IsBeingBeatUpById) {
-					const u = await Users.findByPk(user.BeatUp.IsBeingBeatUpById, { attributes: ["class", "nickname"] });
+					const u = await UserRepository.FindById(user.BeatUp.IsBeingBeatUpById, ["class", "nickname"]);
 					textResponse = `${s.userIsBeingBeatedId(`${ClassList[u!.class].Image.Emote.String} ${u!.nickname!}`)} ${EmoteString.Beat}`;
 				}
 				else if (user.Robbery.IsRobbingId) {
-					const u = await Users.findByPk(user.Robbery.IsRobbingId, { attributes: ["class", "nickname"] });
+					const u = await UserRepository.FindById(user.Robbery.IsRobbingId, ["class", "nickname"]);
 					textResponse = `${s.userIsRobbingId(`${ClassList[u!.class].Image.Emote.String} ${u!.nickname!}`)} ${EmoteString.Robbery}`;
 				}
 				else if (user.Robbery.IsBeingRobbedById) {
-					const u = await Users.findByPk(user.Robbery.IsBeingRobbedById, { attributes: ["class", "nickname"] });
+					const u = await UserRepository.FindById(user.Robbery.IsBeingRobbedById, ["class", "nickname"]);
 					textResponse = `${s.userIsBeingRobbingId(`${ClassList[u!.class].Image.Emote.String} ${u!.nickname!}`)} ${EmoteString.Robbery}`;
 				}
 				else if (user.Robbery.IsRobbingLocationId !== null) {

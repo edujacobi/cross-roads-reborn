@@ -3,20 +3,7 @@ import { CrColors } from "#bot/utils/colors";
 import { deferUpdate, replyUserDontExist, replyWithContainer } from "#bot/utils/discordInteractions";
 import { defaultComponent } from "#bot/utils/ui";
 import { checkUser } from "#bot/utils/userUtils";
-import { sequelize } from "#core/database/Database";
-import GangMembers from "#core/database/GangMembers";
-import Gangs from "#core/database/Gangs";
-import { HorseRaceBets } from "#core/database/HorseRaceBets";
-import { LotteryTickets } from "#core/database/LotteryTickets";
-import { Notifications } from "#core/database/Notifications";
-import { RobHistories } from "#core/database/RobHistories";
-import UserAvatarDecorations from "#core/database/UserAvatarDecorations";
-import UserBackgroundDecorations from "#core/database/UserBackgroundDecorations";
-import UserBadges from "#core/database/UserBadges";
-import UserBundles from "#core/database/UserBundles";
-import { UserInvestments } from "#core/database/UserInvestments";
-import { UserItems } from "#core/database/UserItems";
-import { Users } from "#core/database/Users";
+import { UserRepository } from "#core/repositories/UserRepository";
 import type { User } from "#core/models/User";
 import { Log } from "#shared/log";
 import {
@@ -29,7 +16,6 @@ import {
 	PermissionFlagsBits,
 	SlashCommandBuilder,
 } from "discord.js";
-import { QueryTypes } from "sequelize";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -98,64 +84,11 @@ module.exports = {
 				return collector.stop();
 			}
 
-			// Proceed with swap
-			const transaction = await sequelize.transaction();
-
 			try {
-				// Defer foreign keys to allow primary key updates during the transaction
-				await sequelize.query("PRAGMA defer_foreign_keys = ON", { transaction });
-
 				// Temporary ID to avoid primary key collisions during swap
 				const tempId = `TEMP_${interaction.id.slice(0, 13)}`;
 
-				// List of tables and columns to update based on CR Reborn schema
-				const updates = [
-					{ table: Users.tableName, column: "id" },
-					{ table: Users.tableName, column: "robbingUserId" },
-					{ table: Users.tableName, column: "beingRobbedByUserId" },
-					{ table: Users.tableName, column: "beatingUserId" },
-					{ table: Users.tableName, column: "beingBeatUpByUserId" },
-					{ table: UserItems.tableName, column: "userId" },
-					{ table: UserBadges.tableName, column: "userId" },
-					{ table: UserInvestments.tableName, column: "userId" },
-					{ table: UserBundles.tableName, column: "userId" },
-					{ table: UserAvatarDecorations.tableName, column: "userId" },
-					{ table: UserBackgroundDecorations.tableName, column: "userId" },
-					{ table: Notifications.tableName, column: "userId" },
-					{ table: GangMembers.tableName, column: "userId" },
-					{ table: Gangs.tableName, column: "leaderId" },
-					{ table: HorseRaceBets.tableName, column: "userId" },
-					{ table: LotteryTickets.tableName, column: "userId" },
-					{ table: RobHistories.tableName, column: "attackerId" },
-					{ table: RobHistories.tableName, column: "defenderId" }
-				];
-
-				const details: string[] = [];
-
-				// 3-step swap process
-				for (const { table, column } of updates) {
-					// Step 1: oldId -> tempId
-					await sequelize.query(
-						`UPDATE ${table} SET ${column} = :tempId WHERE ${column} = :oldId`,
-						{ replacements: { oldId, tempId }, type: QueryTypes.UPDATE, transaction }
-					);
-
-					// Step 2: newId -> oldId
-					await sequelize.query(
-						`UPDATE ${table} SET ${column} = :oldId WHERE ${column} = :newId`,
-						{ replacements: { oldId, newId }, type: QueryTypes.UPDATE, transaction }
-					);
-
-					// Step 3: tempId -> newId
-					await sequelize.query(
-						`UPDATE ${table} SET ${column} = :newId WHERE ${column} = :tempId`,
-						{ replacements: { newId, tempId }, type: QueryTypes.UPDATE, transaction }
-					);
-
-					details.push(`- **${table}**: Swapped ${column}`);
-				}
-
-				await transaction.commit();
+				const details = await UserRepository.SwapUsers(oldId, newId, tempId);
 
 				container = defaultComponent({
 					user,
@@ -169,7 +102,6 @@ module.exports = {
 
 			}
 			catch (error) {
-				await transaction.rollback();
 				Log.Error(`Failed to swap Users ${oldUser.Nickname} (Id: ${oldId}) and ${newUser.Nickname} (Id: ${newId}): ${error}`);
 
 				container = defaultComponent({

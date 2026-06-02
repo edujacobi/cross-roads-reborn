@@ -1,9 +1,9 @@
 import { type ChatInputCommandInteraction, Locale, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
-import { Users } from "#core/database/Users";
-import { Op } from "sequelize";
+import { UserRepository } from "#core/repositories/UserRepository";
 import { Language } from "#core/models/Language";
 import type { User } from "#core/models/User";
-import { ClassId, ClassList } from "#core/types/Classes";
+import type { ClassId } from "#core/types/Classes";
+import { ClassList } from "#core/types/Classes";
 import { defaultComponent } from "#bot/utils/ui";
 import { deferReply, replyWithContainer } from "#bot/utils/discordInteractions";
 
@@ -17,15 +17,7 @@ module.exports = {
 	async execute(interaction: ChatInputCommandInteraction, user: User) {
 		await deferReply(interaction);
 
-		const groupedCountResultItems = await Users.count({
-			attributes: ["class"],
-			group: ["class"],
-			where: {
-				class: {
-					[Op.not]: ClassId.None,
-				},
-			},
-		});
+		const groupedCountResultItems = await UserRepository.CountGroupedByClass();
 
 		let text = "";
 		const total = groupedCountResultItems.reduce((acc, currentValue) => acc + currentValue.count, 0);

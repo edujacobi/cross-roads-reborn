@@ -8,7 +8,7 @@ import {
 } from "discord.js";
 import { deferUpdate, replyWithContainer } from "#bot/utils/discordInteractions";
 import { defaultComponent, formatMoney } from "#bot/utils/ui";
-import { Users } from "#core/database/Users";
+import { UserRepository } from "#core/repositories/UserRepository";
 import { User } from "#core/models/User";
 import { Language, type Localization } from "#core/models/Language";
 import { Op } from "sequelize";
@@ -56,13 +56,7 @@ module.exports = {
 			return replyWithContainer(interaction, container);
 		}
 
-		const nickExists = await Users.findOne({
-			where: {
-				nickname: {
-					[Op.like]: newNick,
-				},
-			},
-		});
+		const nickExists = await UserRepository.SearchByNameOrId(newNick);
 
 		if (nickExists) {
 			const tempUser = new User("0");

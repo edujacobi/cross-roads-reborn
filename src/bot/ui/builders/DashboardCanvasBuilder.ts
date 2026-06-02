@@ -3,13 +3,30 @@ import { BaseCanvasBuilder } from "./BaseCanvasBuilder";
 import { type DashboardStats } from "#core/database/DashboardStats";
 import { CrColors } from "#bot/utils/colors";
 
+export interface IDashboardStats {
+	date: Date;
+	totalPlayers: number;
+	totalGangs: number;
+	prisonCount: number;
+	hospitalCount: number;
+	jobCount: number;
+	scavengeCount: number;
+	casinoCount: number;
+	robberyCount: number;
+	beatUpCount: number;
+	idleCount: number;
+	englishCount: number;
+	portugueseCount: number;
+	spanishCount: number;
+}
+
 export class DashboardCanvasBuilder extends BaseCanvasBuilder {
 	constructor() {
 		super(800, 600, Language.English);
 		this.Padding = 20;
 	}
 
-	async Draw(stats: DashboardStats, history: DashboardStats[]) {
+	async Draw(stats: IDashboardStats, history: IDashboardStats[]) {
 		const ctx = this.Ctx;
 
 		// Background
@@ -45,7 +62,7 @@ export class DashboardCanvasBuilder extends BaseCanvasBuilder {
 		return await this.GenerateImage();
 	}
 
-	private drawPieChart(stats: DashboardStats, cx: number, cy: number, radius: number) {
+	private drawPieChart(stats: IDashboardStats, cx: number, cy: number, radius: number) {
 		const ctx = this.Ctx;
 
 		const data = [
@@ -100,7 +117,7 @@ export class DashboardCanvasBuilder extends BaseCanvasBuilder {
 		}
 	}
 
-	private drawLanguageStats(stats: DashboardStats, x: number, y: number) {
+	private drawLanguageStats(stats: IDashboardStats, x: number, y: number) {
 		const ctx = this.Ctx;
 		const total = (stats.englishCount ?? 0) + (stats.portugueseCount ?? 0) + (stats.spanishCount ?? 0) || 1;
 
@@ -129,7 +146,7 @@ export class DashboardCanvasBuilder extends BaseCanvasBuilder {
 		}
 	}
 
-	private drawLineChart(history: DashboardStats[], x: number, y: number, width: number, height: number) {
+	private drawLineChart(history: IDashboardStats[], x: number, y: number, width: number, height: number) {
 		const ctx = this.Ctx;
 
 		// Draw background for chart area

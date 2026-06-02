@@ -11,8 +11,9 @@ import { Inventory } from "#bot/utils/invUtils";
 import { runUserRobbery } from "#bot/utils/robberyHelper";
 import { defaultComponent, formatMoney } from "#bot/utils/ui";
 import { searchUser } from "#bot/utils/userUtils";
-import Gangs from "#core/database/Gangs";
-import { Users } from "#core/database/Users";
+import { UserRepository } from "#core/repositories/UserRepository";
+import { GangRepository } from "#core/repositories/GangRepository";
+import type { Users } from "#core/database/Users";
 import { BeatUp } from "#core/models/BeatUp";
 import { Gang } from "#core/models/Gang";
 import { Language, type Localization } from "#core/models/Language";
@@ -29,7 +30,6 @@ import {
 	Locale,
 	SlashCommandBuilder,
 } from "discord.js";
-import { Op } from "sequelize";
 
 enum TopSubcommand {
 	Money = "money",
@@ -433,31 +433,11 @@ module.exports = {
 		const pagination = new Pagination(interaction, language);
 
 		async function findList() {
-			users = await Users.findAll({
-				attributes: currentConfig.attributes,
-				limit: pagination.Limit,
-				order: [[currentConfig.orderField, "DESC"]],
-				offset: pagination.Offset,
-				where: {
-					[currentConfig.orderField]: {
-						[Op.gt]: 0,
-					},
-				},
-			});
+			users = await UserRepository.FindTopUsers(currentConfig.orderField as keyof Users, pagination.Limit, pagination.Offset);
 		}
 
 		async function findGangs() {
-			const list = await Gangs.findAll({
-				attributes: currentConfig.attributes,
-				order: [[currentConfig.orderField, "DESC"], ["experience", "DESC"]],
-				limit: pagination.Limit,
-				offset: pagination.Offset,
-				where: {
-					[currentConfig.orderField]: {
-						[Op.gt]: 0,
-					},
-				},
-			});
+			const list = await GangRepository.FindTopGangs(pagination.Limit, pagination.Offset);
 
 			gangs = [];
 
@@ -473,16 +453,10 @@ module.exports = {
 		}
 
 		if (subcommand === TopSubcommand.Gangs) {
-			pagination.HowManyRecords = await Gangs.count();
+			pagination.HowManyRecords = await GangRepository.CountAllGangs();
 		}
 		else {
-			pagination.HowManyRecords = await Users.count({
-				where: {
-					[currentConfig.orderField]: {
-						[Op.gt]: 0,
-					},
-				},
-			});
+			pagination.HowManyRecords = await UserRepository.CountTopUsers(currentConfig.orderField as keyof Users);
 		}
 
 		if (subcommand === TopSubcommand.Gangs) {
