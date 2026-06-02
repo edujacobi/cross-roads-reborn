@@ -1,7 +1,7 @@
 import { Log } from "#shared/log";
 import { Language } from "./Language";
 import { BackgroundDecorationId } from "#core/types/Ids";
-import UserBackgroundDecorations from "#core/database/UserBackgroundDecorations";
+import { UserBackgroundDecorationRepository } from "#core/repositories/UserBackgroundDecorationRepository";
 import { BackgroundDecorationList } from "#core/types/BackgroundDecorations";
 import type { User } from "./User";
 
@@ -19,19 +19,14 @@ export class UserBackgroundDecoration {
 
 		try {
 			// Check if background already exists for this user
-			const existingDecoration = await UserBackgroundDecorations.findOne({
-				where: {
-					userId,
-					backgroundDecorationId,
-				},
-			});
+			const existingDecoration = await UserBackgroundDecorationRepository.FindOne(userId, backgroundDecorationId);
 
 			if (existingDecoration) {
 				Log.Warning(`Background decoration ${backgroundDecorationId} already exists for user ${userId}.`);
 				return false;
 			}
 
-			await UserBackgroundDecorations.create({
+			await UserBackgroundDecorationRepository.Create({
 				userId,
 				backgroundDecorationId,
 			});
@@ -52,12 +47,7 @@ export class UserBackgroundDecoration {
 		}
 
 		try {
-			const existingDecoration = await UserBackgroundDecorations.findOne({
-				where: {
-					userId,
-					backgroundDecorationId,
-				},
-			});
+			const existingDecoration = await UserBackgroundDecorationRepository.FindOne(userId, backgroundDecorationId);
 
 			return !!existingDecoration;
 		}
@@ -70,12 +60,7 @@ export class UserBackgroundDecoration {
 	// Delete a user's background
 	static async Delete(userId: string, backgroundDecorationId: BackgroundDecorationId) {
 		try {
-			const deleted = await UserBackgroundDecorations.destroy({
-				where: {
-					userId,
-					backgroundDecorationId,
-				},
-			});
+			const deleted = await UserBackgroundDecorationRepository.Destroy(userId, backgroundDecorationId);
 
 			if (deleted) {
 				Log.Success(`Background decoration ${backgroundDecorationId} removed for ${userId}.`);
@@ -94,12 +79,7 @@ export class UserBackgroundDecoration {
 
 	// Get list of backgrounds for a user
 	static async GetList(user: User, language: Language = Language.English) {
-		const userBackgroundDecorations = await UserBackgroundDecorations.findAll({
-			where: {
-				userId: user.Id,
-			},
-			order: [["backgroundDecorationId", "ASC"]],
-		});
+		const userBackgroundDecorations = await UserBackgroundDecorationRepository.FindAllByUserId(user.Id);
 
 		const decorationIds: BackgroundDecorationId[] = [BackgroundDecorationId.Default];
 

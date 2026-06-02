@@ -1,75 +1,32 @@
-import { DashboardStats } from "#core/database/DashboardStats";
-import { Gangs } from "#core/database/Gangs";
-import { Users } from "#core/database/Users";
+import { DashboardRepository } from "#core/repositories/DashboardRepository";
+import { GangRepository } from "#core/repositories/GangRepository";
+import { UserRepository } from "#core/repositories/UserRepository";
 import { Language } from "#core/models/Language";
-import { ClassId } from "#core/types/Classes";
 import { Log } from "#shared/log";
-import { Op } from "sequelize";
 
 export class Dashboard {
 	static async GetCurrentStats() {
 		const now = new Date();
 
-		const totalPlayers = await Users.count({
-			where: { class: { [Op.not]: ClassId.None } }
-		});
-		const totalGangs = await Gangs.count();
+		const totalPlayers = await UserRepository.CountActivePlayers();
+		const totalGangs = await GangRepository.CountAllGangs();
 
-		const prisonCount = await Users.count({
-			where: { prisonTime: { [Op.gt]: now } }
-		});
-
-		const hospitalCount = await Users.count({
-			where: { hospitalTime: { [Op.gt]: now } }
-		});
-
-		const jobCount = await Users.count({
-			where: {
-				jobTime: { [Op.gt]: now },
-				jobId: { [Op.ne]: null }
-			}
-		});
-
-		const scavengeCount = await Users.count({
-			where: {
-				scavengeTime: { [Op.gt]: now },
-				scavengingId: { [Op.ne]: null }
-			}
-		});
-
-		const casinoCount = await Users.count({
-			where: { casinoIsInGame: true }
-		});
-
-		const robberyCount = await Users.count({
-			where: {
-				[Op.or]: [
-					{ robbingUserId: { [Op.ne]: null } },
-					{ robbingLocationId: { [Op.ne]: null } }
-				]
-			}
-		});
-
-		const beatUpCount = await Users.count({
-			where: { beatingUserId: { [Op.ne]: null } }
-		});
+		const prisonCount = await UserRepository.CountPrisoners(now);
+		const hospitalCount = await UserRepository.CountHospitalized(now);
+		const jobCount = await UserRepository.CountWorking(now);
+		const scavengeCount = await UserRepository.CountScavenging(now);
+		const casinoCount = await UserRepository.CountInCasinoGame();
+		const robberyCount = await UserRepository.CountInRobbery();
+		const beatUpCount = await UserRepository.CountInBeatUp();
 
 		let idleCount = totalPlayers - (prisonCount + hospitalCount + jobCount + scavengeCount + casinoCount + robberyCount + beatUpCount);
 		if (idleCount < 0) idleCount = 0;
 
-		const englishCount = await Users.count({
-			where: { language: Language.English, class: { [Op.not]: ClassId.None } }
-		});
+		const englishCount = await UserRepository.CountPlayersByLanguage(Language.English);
+		const portugueseCount = await UserRepository.CountPlayersByLanguage(Language.Portuguese);
+		const spanishCount = await UserRepository.CountPlayersByLanguage(Language.Spanish);
 
-		const portugueseCount = await Users.count({
-			where: { language: Language.Portuguese, class: { [Op.not]: ClassId.None } }
-		});
-
-		const spanishCount = await Users.count({
-			where: { language: Language.Spanish, class: { [Op.not]: ClassId.None } }
-		});
-
-		return DashboardStats.build({
+		return {
 			date: now,
 			totalPlayers,
 			totalGangs,
@@ -84,7 +41,7 @@ export class Dashboard {
 			englishCount,
 			portugueseCount,
 			spanishCount,
-		});
+		};
 	}
 
 	/**
@@ -93,7 +50,7 @@ export class Dashboard {
 	static async TakeSnapshot() {
 		try {
 			const stats = await Dashboard.GetCurrentStats();
-			await stats.save();
+			await DashboardRepository.Create(stats);
 
 			Log.Success("Dashboard snapshot taken successfully.");
 		}
@@ -106,10 +63,7 @@ export class Dashboard {
 	 * Retrieves the last 30 daily snapshots.
 	 */
 	static async GetLast30Days() {
-		return await DashboardStats.findAll({
-			order: [["date", "DESC"]],
-			limit: 30,
-		});
+		return await DashboardRepository.GetLast30Days();
 	}
 
 	/**

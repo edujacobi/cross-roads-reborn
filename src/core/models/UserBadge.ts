@@ -1,4 +1,4 @@
-import UserBadges from "#core/database/UserBadges";
+import { UserBadgeRepository } from "#core/repositories/UserBadgeRepository";
 import { Log } from "#shared/log";
 import { showTime } from "#bot/utils/ui";
 import type { User } from "./User";
@@ -21,19 +21,14 @@ export class UserBadge {
 
 		try {
 			// Check if badge already exists for this user
-			const existingBadge = await UserBadges.findOne({
-				where: {
-					userId,
-					badgeId,
-				},
-			});
+			const existingBadge = await UserBadgeRepository.FindOne(userId, badgeId);
 
 			if (existingBadge) {
 				Log.Warning(`Badge ${badgeId} already exists for user ${userId}.`);
 				return false;
 			}
 
-			await UserBadges.create({
+			await UserBadgeRepository.Create({
 				userId,
 				badgeId,
 			});
@@ -50,12 +45,7 @@ export class UserBadge {
 	// Delete a user's badge
 	static async Delete(userId: string, badgeId: BadgeId) {
 		try {
-			const deleted = await UserBadges.destroy({
-				where: {
-					userId,
-					badgeId,
-				},
-			});
+			const deleted = await UserBadgeRepository.Destroy(userId, badgeId);
 
 			if (deleted) {
 				Log.Success(`Badge ${badgeId} removed for ${userId}.`);
@@ -74,12 +64,7 @@ export class UserBadge {
 
 	// Get list of badges for a user
 	static async GetList(userId: string, language: Language = Language.English) {
-		const userBadges = await UserBadges.findAll({
-			where: {
-				userId,
-			},
-			order: [["badgeId", "ASC"]],
-		});
+		const userBadges = await UserBadgeRepository.FindAllByUserId(userId);
 
 		const badgeList: UserBadge[] = [];
 
@@ -134,12 +119,7 @@ export class UserBadge {
 		}
 
 		try {
-			const badge = await UserBadges.findOne({
-				where: {
-					userId,
-					badgeId: BadgeId.Moderator, // This key is defined in BadgeId.Moderator in types/Badges.ts
-				},
-			});
+			const badge = await UserBadgeRepository.FindOne(userId, BadgeId.Moderator);
 
 			return !!badge; // Convert to boolean
 		}
@@ -161,12 +141,7 @@ export class UserBadge {
 		}
 
 		try {
-			const badge = await UserBadges.findOne({
-				where: {
-					userId,
-					badgeId: BadgeId.Developer, // This key is defined in BadgeId.Developer in types/Badges.ts
-				},
-			});
+			const badge = await UserBadgeRepository.FindOne(userId, BadgeId.Developer);
 
 			return !!badge; // Convert to boolean
 		}
@@ -188,12 +163,7 @@ export class UserBadge {
 		}
 
 		try {
-			const badge = await UserBadges.findOne({
-				where: {
-					userId,
-					badgeId: BadgeId.Helper, // This key is defined in BadgeId.Helper in types/Badges.ts
-				},
-			});
+			const badge = await UserBadgeRepository.FindOne(userId, BadgeId.Helper);
 
 			return !!badge; // Convert to boolean
 		}

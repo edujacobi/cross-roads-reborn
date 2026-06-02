@@ -1,7 +1,7 @@
 import { Log } from "#shared/log";
 import { Language } from "./Language";
 import { BundleId } from "#core/types/Ids";
-import UserBundles from "#core/database/UserBundles";
+import { UserBundleRepository } from "#core/repositories/UserBundleRepository";
 import { BundleList } from "#core/types/Skins";
 import { ItemList, type Items } from "#core/types/Items";
 
@@ -20,19 +20,14 @@ export class UserBundle {
 
 		try {
 			// Check if bundle already exists for this user
-			const existingBundle = await UserBundles.findOne({
-				where: {
-					userId,
-					bundleId,
-				},
-			});
+			const existingBundle = await UserBundleRepository.FindOne(userId, bundleId);
 
 			if (existingBundle) {
 				Log.Warning(`Bundle ${bundleId} already exists for user ${userId}.`);
 				return false;
 			}
 
-			await UserBundles.create({
+			await UserBundleRepository.Create({
 				userId,
 				bundleId,
 			});
@@ -53,12 +48,7 @@ export class UserBundle {
 		}
 
 		try {
-			const existingBundle = await UserBundles.findOne({
-				where: {
-					userId,
-					bundleId,
-				},
-			});
+			const existingBundle = await UserBundleRepository.FindOne(userId, bundleId);
 
 			return !!existingBundle;
 		}
@@ -70,12 +60,7 @@ export class UserBundle {
 	// Delete a user's bundle
 	static async Delete(userId: string, bundleId: BundleId) {
 		try {
-			const deleted = await UserBundles.destroy({
-				where: {
-					userId,
-					bundleId,
-				},
-			});
+			const deleted = await UserBundleRepository.Destroy(userId, bundleId);
 
 			if (deleted) {
 				Log.Success(`Bundle ${bundleId} removed for ${userId}.`);
@@ -94,12 +79,7 @@ export class UserBundle {
 
 	// Get list of bundles for a user
 	static async GetList(userId: string, language: Language = Language.English) {
-		const userBundles = await UserBundles.findAll({
-			where: {
-				userId,
-			},
-			order: [["bundleId", "ASC"]],
-		});
+		const userBundles = await UserBundleRepository.FindAllByUserId(userId);
 
 		const defaultBundle = BundleList[BundleId.Default];
 

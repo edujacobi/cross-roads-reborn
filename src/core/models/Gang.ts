@@ -1,9 +1,10 @@
 import { EmoteString } from "#bot/utils/emotes";
 import { formatMoney, showTime } from "#bot/utils/ui";
-import { GangMembers } from "#core/database/GangMembers";
-import { GangRoles } from "#core/database/GangRoles";
-import { Gangs } from "#core/database/Gangs";
-import { Users } from "#core/database/Users";
+import { GangRepository } from "#core/repositories/GangRepository";
+import { GangMemberRepository } from "#core/repositories/GangMemberRepository";
+import { GangRoleRepository } from "#core/repositories/GangRoleRepository";
+import { UserRepository } from "#core/repositories/UserRepository";
+import type { Gangs } from "#core/database/Gangs";
 import { GangBaseId } from "#core/types/GangBases";
 import { GangColorId } from "#core/types/GangColors";
 import { GangImportTiers, type ImportReward } from "#core/types/GangImportPools";
@@ -12,7 +13,6 @@ import type { IDescription } from "#core/types/Interfaces";
 import { ItemList } from "#core/types/Items";
 import { Log, logger } from "#shared/log";
 import { addHours, isFuture } from "date-fns";
-import { Op } from "sequelize";
 import { Language, type Localization } from "./Language";
 import { Notification, NotificationType } from "./Notification";
 import { User } from "./User";
@@ -178,22 +178,14 @@ export class Gang {
 		}
 
 		// Check if user is already in a gang
-		const existingMembership = await GangMembers.findOne({
-			where: { userId: user.Id },
-		});
+		const existingMembership = await GangMemberRepository.FindByUserId(user.Id);
 
 		if (existingMembership) {
 			return null;
 		}
 
 		// Check if gang with same name exists
-		const existingGang = await Gangs.findOne({
-			where: {
-				name: {
-					[Op.eq]: name,
-				},
-			},
-		});
+		const existingGang = await GangRepository.FindByName(name);
 
 		if (existingGang) {
 			return null;
@@ -207,7 +199,7 @@ export class Gang {
 			});
 
 			// Create gang
-			const gang = await Gangs.create({
+			const gang = await GangRepository.Create({
 				name,
 				acronym,
 				description,
@@ -233,7 +225,7 @@ export class Gang {
 			};
 
 			// Create leader role
-			const leaderRole = await GangRoles.create({
+			const leaderRole = await GangRoleRepository.Create({
 				gangId: gang.id,
 				name: names.leader[user.Language],
 				canInvite: true,
@@ -244,7 +236,7 @@ export class Gang {
 			});
 
 			// Create member role
-			await GangRoles.create({
+			await GangRoleRepository.Create({
 				gangId: gang.id,
 				name: names.member[user.Language],
 				canInvite: false,
@@ -255,7 +247,7 @@ export class Gang {
 			});
 
 			// Add leader as member
-			await GangMembers.create({
+			await GangMemberRepository.Create({
 				gangId: gang.id,
 				userId: user.Id,
 				roleId: leaderRole.id,
@@ -295,7 +287,7 @@ export class Gang {
 	 */
 	static async GetById(gangId: number): Promise<Gang | null> {
 		try {
-			const gang = await Gangs.findByPk(gangId);
+			const gang = await GangRepository.FindById(gangId);
 
 			if (!gang) {
 				return null;
@@ -317,7 +309,7 @@ export class Gang {
 	 */
 	static async GetBasicById(gangId: number): Promise<Gang | null> {
 		try {
-			const gang = await Gangs.findByPk(gangId);
+			const gang = await GangRepository.FindById(gangId);
 
 			if (!gang) {
 				return null;
@@ -391,9 +383,7 @@ export class Gang {
 	 */
 	static async GetByUserId(userId: string): Promise<Gang | null> {
 		try {
-			const membership = await GangMembers.findOne({
-				where: { userId },
-			});
+			const membership = await GangMemberRepository.FindByUserId(userId);
 
 			if (!membership) {
 				return null;
@@ -414,15 +404,7 @@ export class Gang {
 	 */
 	static async CheckGangWithName(name: string): Promise<boolean> {
 		try {
-			const gang = await Gangs.findOne({
-				where: {
-					[Op.or]: {
-						name: {
-							[Op.like]: name,
-						},
-					},
-				},
-			});
+			const gang = await GangRepository.FindByName(name);
 
 			return gang !== null;
 		}
@@ -439,11 +421,7 @@ export class Gang {
 	 */
 	static async CheckGangWithAcronym(acronym: string): Promise<boolean> {
 		try {
-			const gang = await Gangs.findOne({
-				where: {
-					acronym,
-				},
-			});
+			const gang = await GangRepository.FindByAcronym(acronym);
 
 			return gang !== null;
 		}
@@ -460,18 +438,7 @@ export class Gang {
 	 */
 	static async FindByName(name: string): Promise<Gang | null> {
 		try {
-			const gang = await Gangs.findOne({
-				where: {
-					[Op.or]: {
-						name: {
-							[Op.like]: name,
-						},
-						acronym: {
-							[Op.like]: name,
-						},
-					},
-				},
-			});
+			const gang = await GangRepository.FindByNameOrAcronym(name, name);
 
 			if (!gang) {
 				return null;
@@ -490,19 +457,15 @@ export class Gang {
 	 */
 	async LoadMembers() {
 		try {
-			const members = await GangMembers.findAll({
-				where: { gangId: this.Id },
-			});
+			const members = await GangMemberRepository.FindAllByGang(this.Id);
 
 			this.Members = [];
 
 			for (const member of members) {
-				const user = await Users.findByPk(member.userId, {
-					attributes: ["id", "nickname"],
-				});
+				const user = await UserRepository.FindById(member.userId, ["id", "nickname"]);
 
 				if (user) {
-					const role = await GangRoles.findByPk(member.roleId);
+					const role = await GangRoleRepository.FindById(member.roleId);
 					let howManyPermissions = 0;
 					if (role?.canInvite) howManyPermissions += 1;
 					if (role?.canKick) howManyPermissions += 1;
@@ -544,9 +507,7 @@ export class Gang {
 	 */
 	async LoadRoles() {
 		try {
-			const roles = await GangRoles.findAll({
-				where: { gangId: this.Id },
-			});
+			const roles = await GangRoleRepository.FindAllByGangId(this.Id);
 
 			this.Roles = [];
 
@@ -591,9 +552,7 @@ export class Gang {
 
 	async CanInviteUser(targetUser: User): Promise<{ canInvite: boolean; reason?: string }> {
 		// Check if target is already in a gang
-		const existingMembership = await GangMembers.findOne({
-			where: { userId: targetUser.Id },
-		});
+		const existingMembership = await GangMemberRepository.FindByUserId(targetUser.Id);
 
 		if (existingMembership) {
 			return { canInvite: false, reason: "alreadyInGang" };
@@ -616,9 +575,7 @@ export class Gang {
 		try {
 
 			// Check if user is already in a gang
-			const existingMembership = await GangMembers.findOne({
-				where: { userId: user.Id },
-			});
+			const existingMembership = await GangMemberRepository.FindByUserId(user.Id);
 
 			if (existingMembership) {
 				return false;
@@ -645,7 +602,7 @@ export class Gang {
 					money: user.Money,
 				}),
 				this.Update(),
-				GangMembers.create({
+				GangMemberRepository.Create({
 					gangId: this.Id,
 					userId: user.Id,
 					roleId: memberRole.Id,
@@ -700,12 +657,7 @@ export class Gang {
 		}
 
 		try {
-			const deleted = await GangMembers.destroy({
-				where: {
-					gangId: this.Id,
-					userId: targetUser.Id,
-				},
-			});
+			const deleted = await GangMemberRepository.RemoveFromGang(targetUser.Id, this.Id);
 
 			if (deleted) {
 				const kickedMember = this.Members.find(m => m.UserId === targetUser.Id);
@@ -766,10 +718,7 @@ export class Gang {
 		}
 
 		try {
-			await GangMembers.update(
-				{ roleId: newRoleId },
-				{ where: { gangId: this.Id, userId: targetUserId } },
-			);
+			await GangMemberRepository.UpdateRole(targetUserId, this.Id, newRoleId);
 
 			await this.LoadMembers();
 
@@ -788,26 +737,23 @@ export class Gang {
 	 */
 	async Update(): Promise<boolean> {
 		try {
-			await Gangs.update(
-				{
-					name: this.Name,
-					acronym: this.Acronym,
-					money: this.Money,
-					baseId: this.BaseId,
-					color: this.Color,
-					image: this.Image,
-					description: this.Description,
-					experience: this.Experience,
-					level: this.Level,
-					leaderId: this.LeaderId,
-					lastInvestmentRobbery: this.LastInvestmentRobbery,
-					shipmentArrivesAt: this.ImportArrivesAt,
-					lastShipmentSuccess: this.LastImportSuccess,
-					lastShipmentCancelled: this.LastImportCancelled,
-					updatedAt: new Date(),
-				},
-				{ where: { id: this.Id } },
-			);
+			await GangRepository.Update(this.Id, {
+				name: this.Name,
+				acronym: this.Acronym,
+				money: this.Money,
+				baseId: this.BaseId,
+				color: this.Color,
+				image: this.Image,
+				description: this.Description,
+				experience: this.Experience,
+				level: this.Level,
+				leaderId: this.LeaderId,
+				lastInvestmentRobbery: this.LastInvestmentRobbery,
+				shipmentArrivesAt: this.ImportArrivesAt,
+				lastShipmentSuccess: this.LastImportSuccess,
+				lastShipmentCancelled: this.LastImportCancelled,
+				updatedAt: new Date(),
+			});
 			return true;
 		}
 		catch (err) {
@@ -1076,13 +1022,7 @@ export class Gang {
 	 */
 	static async ScheduleAllActiveShipments() {
 		try {
-			const gangs = await Gangs.findAll({
-				where: {
-					shipmentArrivesAt: {
-						[Op.ne]: null,
-					},
-				},
-			});
+			const gangs = await GangRepository.FindAllWithActiveImport();
 
 			for (const g of gangs) {
 				try {
@@ -1196,7 +1136,7 @@ export class Gang {
 		}
 
 		try {
-			await GangRoles.create({
+			await GangRoleRepository.Create({
 				gangId: this.Id,
 				name,
 				canInvite: permissions.includes(GangPermission.Invite),
@@ -1242,11 +1182,9 @@ export class Gang {
 		}
 
 		try {
-			const role = await GangRoles.findOne({
-				where: { id: roleId, gangId: this.Id },
-			});
+			const role = await GangRoleRepository.FindById(roleId);
 
-			if (!role) {
+			if (!role || role.gangId !== this.Id) {
 				return false;
 			}
 
@@ -1307,15 +1245,10 @@ export class Gang {
 			}
 
 			// Reassign members with the deleted role to the default role
-			await GangMembers.update(
-				{ roleId: defaultRole.Id },
-				{ where: { gangId: this.Id, roleId: roleId } },
-			);
+			await GangMemberRepository.ReassignRole(this.Id, roleId, defaultRole.Id);
 
 			// Delete the role
-			await GangRoles.destroy({
-				where: { id: roleId, gangId: this.Id },
-			});
+			await GangRoleRepository.Destroy(roleId);
 
 			// Reload roles and members to reflect changes
 			await this.LoadRoles();
@@ -1348,12 +1281,7 @@ export class Gang {
 		}
 
 		try {
-			const deleted = await GangMembers.destroy({
-				where: {
-					gangId: this.Id,
-					userId: user.Id,
-				},
-			});
+			const deleted = await GangMemberRepository.RemoveFromGang(user.Id, this.Id);
 
 			if (deleted) {
 				Log.Success(`User ${user.Nickname} (Id: ${user.Id}) left gang ${this.Name} (Id: ${this.Id})`);
@@ -1391,19 +1319,13 @@ export class Gang {
 
 		try {
 			// Remove all members
-			await GangMembers.destroy({
-				where: { gangId: this.Id },
-			});
+			await GangMemberRepository.RemoveAllByGangId(this.Id);
 
 			// Remove all roles
-			await GangRoles.destroy({
-				where: { gangId: this.Id },
-			});
+			await GangRoleRepository.DestroyAllByGangId(this.Id);
 
 			// Remove gang
-			await Gangs.destroy({
-				where: { id: this.Id },
-			});
+			await GangRepository.Destroy(this.Id);
 
 			Log.Success(`Gang ${this.Name} (Id: ${this.Id}) was deleted by ${userId}.`);
 			return true;
@@ -1558,11 +1480,9 @@ export class Gang {
 		let canDeposit = true;
 		let text = "";
 
-		const member = await GangMembers.findOne({
-			where: { userId: user.Id, gangId: this.Id },
-		});
+		const member = await GangMemberRepository.FindByUserId(user.Id);
 
-		if (!member) {
+		if (!member || member.gangId !== this.Id) {
 			canDeposit = false;
 		}
 		else if (member.depositTime > new Date()) {
@@ -1598,13 +1518,11 @@ export class Gang {
 		user.Money -= amount;
 		this.Money += amount;
 
-		const member = await GangMembers.findOne({
-			where: { userId: user.Id, gangId: this.Id },
-		});
+		const member = await GangMemberRepository.FindByUserId(user.Id);
 
-		if (member) {
-			member.depositTime = addHours(new Date(), Gang.TIME_BETWEEN_DEPOSITS);
-			member.depositAmount += amount;
+		if (member && member.gangId === this.Id) {
+			const nextDepositTime = addHours(new Date(), Gang.TIME_BETWEEN_DEPOSITS);
+			const nextDepositAmount = member.depositAmount + amount;
 
 			Log.Success(`User ${user.Nickname} (Id: ${user.Id}) deposited ${formatMoney(amount, user.Language)} in gang ${this.Name} (Id: ${this.Id})`);
 
@@ -1617,8 +1535,8 @@ export class Gang {
 			};
 
 			await Promise.all([
-				member.save(),
-				Notification.GangDepositAgain(user, member.depositTime),
+				GangMemberRepository.UpdateDeposit(user.Id, this.Id, nextDepositAmount, nextDepositTime),
+				Notification.GangDepositAgain(user, nextDepositTime),
 				user.Update({
 					money: user.Money,
 				}),
@@ -1659,16 +1577,10 @@ export class Gang {
 			}
 
 			// Change old leader to member
-			await GangMembers.update(
-				{ roleId: memberRole.Id },
-				{ where: { gangId: this.Id, userId: currentUser.Id } },
-			);
+			await GangMemberRepository.UpdateRole(currentUser.Id, this.Id, memberRole.Id);
 
 			// Change new leader to leader role
-			await GangMembers.update(
-				{ roleId: leaderRole.Id },
-				{ where: { gangId: this.Id, userId: targetUser.Id } },
-			);
+			await GangMemberRepository.UpdateRole(targetUser.Id, this.Id, leaderRole.Id);
 
 			// Update Gang's leaderId
 			this.LeaderId = targetUser.Id;

@@ -4,12 +4,12 @@ import { formatMoney } from "#bot/utils/ui";
 import { Language, type Localization } from "./Language";
 import { CrColors } from "#bot/utils/colors";
 import { sendPrivateMessage } from "#bot/utils/discordInteractions";
-import { Op } from "sequelize";
 import { Casino } from "./Casino";
 import { Log, logger } from "#shared/log";
 import { getCasinoClassModifier } from "#core/types/Classes";
-import { LotteryDraws } from "#core/database/LotteryDraws";
-import { LotteryTickets } from "#core/database/LotteryTickets";
+import { LotteryRepository } from "#core/repositories/LotteryRepository";
+import type { LotteryDraws } from "#core/database/LotteryDraws";
+import type { LotteryTickets } from "#core/database/LotteryTickets";
 
 export class Lottery {
 	static IsMegaDraw(drawDate: Date): boolean {
@@ -31,25 +31,16 @@ export class Lottery {
 	}
 
 	static async GetNextDraw(): Promise<LotteryDraws | null> {
-		return await LotteryDraws.findOne({
-			where: { isFinished: false },
-			order: [["drawTime", "ASC"]],
-		});
+		return await LotteryRepository.FindNextDraw();
 	}
 
 	static async GetLastWinner(): Promise<{ draw: LotteryDraws; ticket: LotteryTickets | null; user: User | null } | null> {
-		const draw = await LotteryDraws.findOne({
-			where: {
-				isFinished: true,
-				winningTicketId: { [Op.ne]: null },
-			},
-			order: [["drawTime", "DESC"]],
-		});
+		const draw = await LotteryRepository.FindLastWinnerDraw();
 		if (!draw) return null;
 
 		if (!draw.winningTicketId) return { draw, ticket: null, user: null };
 
-		const ticket = await LotteryTickets.findByPk(draw.winningTicketId);
+		const ticket = await LotteryRepository.FindTicketById(draw.winningTicketId);
 		if (!ticket) return { draw, ticket: null, user: null };
 
 		const user = await new User(ticket.userId).GetSimpleInfo();
@@ -57,9 +48,7 @@ export class Lottery {
 	}
 
 	static async HasUserBoughtTicket(userId: string, drawId: number): Promise<LotteryTickets | null> {
-		return await LotteryTickets.findOne({
-			where: { userId, drawId },
-		});
+		return await LotteryRepository.FindTicket(userId, drawId);
 	}
 
 	static async BuyTicket(user: User): Promise<{ success: boolean; message: string; ticketId?: number; amount?: number }> {
@@ -78,7 +67,7 @@ export class Lottery {
 			return { success: false, message: s.alreadyBought };
 		}
 
-		const ticket = await LotteryTickets.create({
+		const ticket = await LotteryRepository.CreateTicket({
 			userId: user.Id,
 			drawId: draw.id,
 			amount: ticketCost,
@@ -86,7 +75,10 @@ export class Lottery {
 
 		draw.totalTickets += 1;
 		draw.totalAmount += fullPrice; // Always add full price to pot
-		await draw.save();
+		await LotteryRepository.UpdateDraw(draw.id, {
+			totalTickets: draw.totalTickets,
+			totalAmount: draw.totalAmount,
+		});
 
 		user.Money -= ticketCost;
 		await user.Update({ money: user.Money });
@@ -95,17 +87,15 @@ export class Lottery {
 	}
 
 	static async RunDraw(drawId: number) {
-		const draw = await LotteryDraws.findByPk(drawId);
+		const draw = await LotteryRepository.FindDrawById(drawId);
 		if (!draw || draw.isFinished) return;
 
-		const allTickets = await LotteryTickets.findAll({
-			where: { drawId: draw.id },
-		});
+		const allTickets = await LotteryRepository.FindAllTicketsForDraw(draw.id);
 
 		if (allTickets.length === 0) {
 			Log.Info(`Lottery draw ${drawId} had no tickets. Skipping draw.`);
 			draw.isFinished = true;
-			await draw.save();
+			await LotteryRepository.UpdateDraw(draw.id, { isFinished: true });
 			await this.ScheduleNextDraw();
 			return;
 		}
@@ -115,7 +105,10 @@ export class Lottery {
 
 		draw.winningTicketId = winningTicket.id;
 		draw.isFinished = true;
-		await draw.save();
+		await LotteryRepository.UpdateDraw(draw.id, {
+			winningTicketId: draw.winningTicketId,
+			isFinished: true,
+		});
 
 		const winnerUser = await new User(winningTicket.userId).GetInfo();
 		const basePrize = draw.totalAmount;
@@ -127,7 +120,10 @@ export class Lottery {
 
 			winningTicket.hasWon = true;
 			winningTicket.winnings = finalPrize;
-			await winningTicket.save();
+			await LotteryRepository.UpdateTicket(winningTicket.id, {
+				hasWon: true,
+				winnings: finalPrize,
+			});
 
 			await Casino.FinishUserGameWithWin(winnerUser, finalPrize);
 
@@ -141,14 +137,17 @@ export class Lottery {
 		else {
 			winningTicket.hasWon = true;
 			winningTicket.winnings = basePrize;
-			await winningTicket.save();
+			await LotteryRepository.UpdateTicket(winningTicket.id, {
+				hasWon: true,
+				winnings: basePrize,
+			});
 		}
 
 		for (const ticket of allTickets) {
 			if (ticket.id === winningTicket.id) continue;
 
 			ticket.hasWon = false;
-			await ticket.save();
+			await LotteryRepository.UpdateTicket(ticket.id, { hasWon: false });
 
 			const loserUser = await new User(ticket.userId).GetInfo();
 			if (loserUser) {
@@ -184,12 +183,10 @@ export class Lottery {
 			}
 		}
 
-		const existing = await LotteryDraws.findOne({
-			where: { drawTime: nextDrawTime }
-		});
+		const existing = await LotteryRepository.FindDrawByTime(nextDrawTime);
 
 		if (!existing) {
-			await LotteryDraws.create({
+			await LotteryRepository.CreateDraw({
 				drawTime: nextDrawTime,
 			});
 			Log.Info(`Next lottery draw scheduled for ${nextDrawTime}.`);
@@ -199,14 +196,7 @@ export class Lottery {
 	static async CheckPendingDraws() {
 		try {
 			const now = new Date();
-			const pendingDraws = await LotteryDraws.findAll({
-				where: {
-					drawTime: {
-						[Op.lt]: now,
-					},
-					isFinished: false,
-				},
-			});
+			const pendingDraws = await LotteryRepository.FindPendingDraws(now);
 
 			for (const draw of pendingDraws) {
 				await Lottery.RunDraw(draw.id);

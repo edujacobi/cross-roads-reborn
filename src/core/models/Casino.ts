@@ -4,7 +4,7 @@ import { formatMoney, showTime } from "#bot/utils/ui";
 import { JobList } from "#core/types/Jobs";
 import { globalStrings, Language, type Localization } from "./Language";
 import { type ScavengeId, ScavengeList } from "#core/types/Scavenge";
-import { Users } from "#core/database/Users";
+import { UserRepository } from "#core/repositories/UserRepository";
 import { ClassList } from "#core/types/Classes";
 import { LocationList } from "#core/types/Locations";
 import { Log } from "#shared/log";
@@ -46,25 +46,25 @@ export class Casino {
 		}
 
 		if (user.BeatUp.IsBeatingId) {
-			const _user = await Users.findByPk(user.BeatUp.IsBeatingId, { attributes: ["class", "nickname"] });
+			const _user = await UserRepository.FindById(user.BeatUp.IsBeatingId, ["class", "nickname"]);
 			message = globalStrings[user.Language].attackerIsBeatingId(`${ClassList[_user!.class].Image.Emote.String} ${_user!.nickname!}`);
 			canPlay = false;
 		}
 
 		if (user.BeatUp.IsBeingBeatUpById) {
-			const _user = await Users.findByPk(user.BeatUp.IsBeingBeatUpById, { attributes: ["class", "nickname"] });
+			const _user = await UserRepository.FindById(user.BeatUp.IsBeingBeatUpById, ["class", "nickname"]);
 			message = globalStrings[user.Language].attackerIsBeingBeatedById(`${ClassList[_user!.class!].Image.Emote.String} ${_user!.nickname!}`);
 			canPlay = false;
 		}
 
 		if (user.Robbery.IsRobbingId) {
-			const _user = await Users.findByPk(user.Robbery.IsRobbingId, { attributes: ["class", "nickname"] });
+			const _user = await UserRepository.FindById(user.Robbery.IsRobbingId, ["class", "nickname"]);
 			message = globalStrings[user.Language].attackerIsRobbingId(`${ClassList[_user!.class].Image.Emote.String} ${_user!.nickname!}`);
 			canPlay = false;
 		}
 
 		if (user.Robbery.IsBeingRobbedById) {
-			const _user = await Users.findByPk(user.Robbery.IsBeingRobbedById, { attributes: ["class", "nickname"] });
+			const _user = await UserRepository.FindById(user.Robbery.IsBeingRobbedById, ["class", "nickname"]);
 			message = globalStrings[user.Language].attackerIsBeingRobbedById(`${ClassList[_user!.class!].Image.Emote.String} ${_user!.nickname!}`);
 			canPlay = false;
 		}

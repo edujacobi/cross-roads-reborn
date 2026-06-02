@@ -2,12 +2,12 @@ import { CrColors } from "#bot/utils/colors";
 import { sendPrivateMessage } from "#bot/utils/discordInteractions";
 import { EmoteString } from "#bot/utils/emotes";
 import { formatMoney } from "#bot/utils/ui";
-import { HorseRaceBets } from "#core/database/HorseRaceBets";
-import { HorseRaces } from "#core/database/HorseRaces";
+import { HorseRacingRepository } from "#core/repositories/HorseRacingRepository";
+import type { HorseRaceBets } from "#core/database/HorseRaceBets";
+import type { HorseRaces } from "#core/database/HorseRaces";
 import { HorseList, type IHorse } from "#core/types/Horses";
 import { Log, logger } from "#shared/log";
 import { addHours } from "date-fns/addHours";
-import { Op } from "sequelize";
 import { Casino } from "./Casino";
 import { Language, type Localization } from "./Language";
 import { Notification, NotificationType } from "./Notification";
@@ -64,9 +64,7 @@ export class HorseRacing {
 			return null;
 		}
 
-		const userBet = await HorseRaceBets.findOne({
-			where: { userId: this.User.Id, raceId: race.id },
-		});
+		const userBet = await HorseRacingRepository.FindBet(this.User.Id, race.id);
 
 		const maxBet = this.CalculateMaxBet();
 		const isBettingOpen = race.raceTime.getTime() - Date.now() >= 5 * 60 * 1_000;
@@ -106,7 +104,7 @@ export class HorseRacing {
 			return { Success: false, Reason: BetFailureReason.BetTooHigh, Message: formatMoney(maxBet, this.User.Language) };
 		}
 
-		const race = await HorseRaces.findByPk(raceId);
+		const race = await HorseRacingRepository.FindRaceById(raceId);
 		if (!race || race.isFinished) {
 			return { Success: false, Reason: BetFailureReason.RaceNotFound, Message: "" };
 		}
@@ -115,14 +113,12 @@ export class HorseRacing {
 			return { Success: false, Reason: BetFailureReason.RaceClosed, Message: "" };
 		}
 
-		const existing = await HorseRaceBets.findOne({
-			where: { userId: this.User.Id, raceId },
-		});
+		const existing = await HorseRacingRepository.FindBet(this.User.Id, raceId);
 		if (existing) {
 			return { Success: false, Reason: BetFailureReason.AlreadyBet, Message: "" };
 		}
 
-		await HorseRaceBets.create({
+		await HorseRacingRepository.CreateBet({
 			userId: this.User.Id,
 			raceId,
 			horseNumber: horseId,
@@ -131,7 +127,10 @@ export class HorseRacing {
 
 		race.totalBets += 1;
 		race.totalAmount += amount;
-		await race.save();
+		await HorseRacingRepository.UpdateRace(race.id, {
+			totalBets: race.totalBets,
+			totalAmount: race.totalAmount,
+		});
 
 		this.User.Money -= amount;
 		await this.User.Update({ money: this.User.Money });
@@ -146,10 +145,7 @@ export class HorseRacing {
 	 * @returns The next unfinished race.
 	 */
 	static async GetNextRace(): Promise<HorseRaces | null> {
-		return HorseRaces.findOne({
-			where: { isFinished: false },
-			order: [["raceTime", "ASC"]],
-		});
+		return HorseRacingRepository.FindNextRace();
 	}
 
 	/**
@@ -158,7 +154,7 @@ export class HorseRacing {
 	 */
 	static async ScheduleNextRace(): Promise<HorseRaces> {
 		const raceTime = addHours(new Date(), HorseRacing.RACE_INTERVAL_HOURS);
-		const race = await HorseRaces.create({ raceTime });
+		const race = await HorseRacingRepository.CreateRace({ raceTime });
 		await HorseRacing.ScheduleRaceNotification(race);
 		Log.Info(`Next horse race scheduled for ${raceTime.toISOString()}.`);
 		return race;
@@ -169,36 +165,31 @@ export class HorseRacing {
 	 * @param race The race to schedule notifications for.
 	 */
 	static async ScheduleRaceNotification(race: HorseRaces) {
-		const previousRace = await HorseRaces.findOne({
-			where: { id: { [Op.lt]: race.id }, isFinished: true },
-			order: [["id", "DESC"]],
-		});
+		const previousRace = await HorseRacingRepository.FindPreviousRace(race.id);
 
 		if (!previousRace) {
 			Log.Info(`No previous race found — skipping notifications for race ${race.id}.`);
 			return;
 		}
 
-		const previousBets = await HorseRaceBets.findAll({
-			where: { raceId: previousRace.id },
-			attributes: ["userId"],
-			group: ["userId"],
-		});
+		const previousBets = await HorseRacingRepository.FindBetsForRace(previousRace.id);
 
 		if (previousBets.length === 0) {
 			Log.Info(`No previous participants — skipping notifications for race ${race.id}.`);
 			return;
 		}
 
-		for (const bet of previousBets) {
+		const uniqueUserIds = [...new Set(previousBets.map(b => b.userId))];
+
+		for (const userId of uniqueUserIds) {
 			const notification = new Notification();
-			notification.UserId = bet.userId;
+			notification.UserId = userId;
 			notification.Type = NotificationType.HorseRace;
 			notification.Date = new Date(race.raceTime.getTime() - 30 * 60 * 1_000);
 			await notification.Create();
 		}
 
-		Log.Info(`Scheduled horse race notifications for race ${race.id} for ${previousBets.length} users.`);
+		Log.Info(`Scheduled horse race notifications for race ${race.id} for ${uniqueUserIds.length} users.`);
 	}
 
 	/**
@@ -206,17 +197,18 @@ export class HorseRacing {
 	 * notifies all participants, and schedules the next race.
 	 */
 	static async RunRace(raceId: number) {
-		const race = await HorseRaces.findByPk(raceId);
+		const race = await HorseRacingRepository.FindRaceById(raceId);
 		if (!race || race.isFinished) {
 			return;
 		}
 
-		const allBets = await HorseRaceBets.findAll({ where: { raceId } });
+		const allBets = await HorseRacingRepository.FindBetsForRace(raceId);
 
 		// No bets → discard and move on
 		if (allBets.length === 0) {
 			Log.Info(`Horse race ${raceId} had no bets — discarding.`);
-			await race.destroy();
+			await HorseRacingRepository.DestroyAllBets(); // Clear bets
+			await HorseRacingRepository.UpdateRace(race.id, { isFinished: true }); // Finish empty race
 			await HorseRacing.ScheduleNextRace();
 			return;
 		}
@@ -235,7 +227,10 @@ export class HorseRacing {
 
 		race.winningHorse = winningHorse.Id;
 		race.isFinished = true;
-		await race.save();
+		await HorseRacingRepository.UpdateRace(race.id, {
+			winningHorse: race.winningHorse,
+			isFinished: true,
+		});
 
 		const winningBets = allBets.filter(b => b.horseNumber === winningHorse.Id);
 		const losingBets = allBets.filter(b => b.horseNumber !== winningHorse.Id);
@@ -250,7 +245,10 @@ export class HorseRacing {
 			bet.hasWon = true;
 			const prize = Math.floor(bet.amount * winningHorse.Multiplier);
 			bet.winnings = prize;
-			await bet.save();
+			await HorseRacingRepository.UpdateBet(bet.id, {
+				hasWon: true,
+				winnings: prize,
+			});
 
 			const user = await new User(bet.userId).GetInfo();
 			if (!user) continue;
@@ -277,7 +275,7 @@ export class HorseRacing {
 		// --- Notify losers ---
 		for (const bet of losingBets) {
 			bet.hasWon = false;
-			await bet.save();
+			await HorseRacingRepository.UpdateBet(bet.id, { hasWon: false });
 
 			const user = await new User(bet.userId).GetInfo();
 			if (!user) continue;
@@ -309,9 +307,8 @@ export class HorseRacing {
 	 */
 	static async CheckPendingRaces() {
 		try {
-			const pendingRaces = await HorseRaces.findAll({
-				where: { raceTime: { [Op.lt]: new Date() }, isFinished: false },
-			});
+			const now = new Date();
+			const pendingRaces = await HorseRacingRepository.FindPendingRaces(now);
 			for (const race of pendingRaces) {
 				await HorseRacing.RunRace(race.id);
 			}

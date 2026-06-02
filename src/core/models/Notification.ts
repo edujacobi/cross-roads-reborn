@@ -1,5 +1,4 @@
-import { Notifications } from "#core/database/Notifications";
-import { Op } from "sequelize";
+import { NotificationRepository } from "#core/repositories/NotificationRepository";
 import { addDays, addHours } from "date-fns";
 import { Log, logger } from "#shared/log";
 import { JobList } from "#core/types/Jobs";
@@ -57,7 +56,7 @@ export class Notification {
 		}
 
 		try {
-			await Notifications.create({
+			await NotificationRepository.Create({
 				userId: this.UserId,
 				type: this.Type,
 				date: this.Date,
@@ -201,27 +200,12 @@ export class Notification {
 	}
 
 	static async HasNotificationsToSend(time: Date) {
-		const list = await Notifications.count({
-			where: {
-				date: {
-					[Op.lt]: time,
-				},
-				notified: false,
-			},
-		});
-
-		return list > 0;
+		const count = await NotificationRepository.CountUnsentBefore(time);
+		return count > 0;
 	}
 
 	static async GetNextNotifications(time: Date) {
-		const list = await Notifications.findAll({
-			where: {
-				date: {
-					[Op.lt]: time,
-				},
-				notified: false,
-			},
-		});
+		const list = await NotificationRepository.FindUnsentBefore(time);
 
 		const notificationList: Notification[] = [];
 
@@ -241,11 +225,7 @@ export class Notification {
 
 	async SetAsNotified() {
 		try {
-			await Notifications.update({
-				notified: true,
-			}, {
-				where: { id: this.Id },
-			});
+			await NotificationRepository.MarkAsNotified(this.Id);
 
 			Log.Info(`Notification Timer (Id: ${this.Id}) Type ${NotificationMapper[this.Type]} (Id: ${this.Type}) to user ${this.UserId} notified.`);
 
@@ -257,13 +237,7 @@ export class Notification {
 
 	static async Dismiss(userId: string, type: NotificationType) {
 		try {
-			await Notifications.destroy({
-				where: {
-					userId,
-					type,
-					notified: false,
-				},
-			});
+			await NotificationRepository.DeleteUnsentByUserIdAndType(userId, type);
 		}
 		catch (err) {
 			Log.Warning(`Something went wrong with dismissing Notification Type ${NotificationMapper[type]} (Id: ${type}) of userId ${userId}.`);
@@ -290,11 +264,7 @@ export class Notification {
 			// Mark all fetched notifications as notified immediately to prevent duplication
 			// in case of overlapping intervals or fast restarts.
 			const ids = list.map(n => n.Id);
-			const [updatedCount] = await Notifications.update({
-				notified: true,
-			}, {
-				where: { id: ids },
-			});
+			const [updatedCount] = await NotificationRepository.MarkAsNotified(ids);
 
 			if (updatedCount === 0) {
 				return;
@@ -374,7 +344,7 @@ export class Notification {
 					Log.Info(`Notification Timer (Id: ${notification.Id}) Type ${NotificationMapper[notification.Type]} (Id: ${notification.Type}) to user ${notification.UserId} notified.`);
 
 					// Delete processed notification to keep DB clean
-					await Notifications.destroy({ where: { id: notification.Id } });
+					await NotificationRepository.DeleteById(notification.Id);
 				}
 				catch (err) {
 					logger.error(`Error processing notification ${notification.Id} for user ${notification.UserId}:`, err);

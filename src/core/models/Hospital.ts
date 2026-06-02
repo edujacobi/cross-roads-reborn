@@ -1,6 +1,5 @@
 import type { User } from "./User";
-import { Users } from "#core/database/Users";
-import { Op } from "sequelize";
+import { UserRepository } from "#core/repositories/UserRepository";
 import { differenceInMinutes } from "date-fns";
 import { Notification, NotificationType } from "./Notification";
 import { Log } from "#shared/log";
@@ -61,14 +60,6 @@ export class Hospital {
 	}
 
 	async GetHospitalized() {
-		return await Users.findAll({
-			attributes: ["nickname", "class", "hospitalTime", "hospitalCount"],
-			order: [["hospitalTime", "DESC"]],
-			where: {
-				hospitalTime: {
-					[Op.gt]: new Date(),
-				},
-			},
-		});
+		return await UserRepository.FindAllHospitalized();
 	}
 }

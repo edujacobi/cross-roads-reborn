@@ -1,7 +1,6 @@
 import type { User } from "./User";
 import { Language } from "./Language";
-import { Users } from "#core/database/Users";
-import { Op } from "sequelize";
+import { UserRepository } from "#core/repositories/UserRepository";
 import { formatMoney } from "#bot/utils/ui";
 import { getPrisonBribeClassModifier, getPrisonEscapeClassModifier } from "#core/types/Classes";
 import { addMinutes, addSeconds } from "date-fns";
@@ -69,15 +68,7 @@ export class Prison {
 	}
 
 	async GetPrisoners() {
-		return await Users.findAll({
-			attributes: ["nickname", "class", "prisonTime", "robberyFailureCount", "escapeCount"],
-			order: [["prisonTime", "DESC"]],
-			where: {
-				prisonTime: {
-					[Op.gt]: new Date(),
-				},
-			},
-		});
+		return await UserRepository.FindAllPrisoners();
 	}
 
 	async CanEscape() {
@@ -94,15 +85,15 @@ export class Prison {
 			return { canEscape: false, reason: PrisonFailureReason.EscapeEscaping };
 		}
 		if (this.User.Robbery.IsBeingRobbedById) {
-			const user = await Users.findByPk(this.User.Robbery.IsBeingRobbedById, { attributes: ["nickname", "class"] });
+			const user = await UserRepository.FindById(this.User.Robbery.IsBeingRobbedById, ["nickname", "class"]);
 			return { canEscape: false, reason: PrisonFailureReason.AttackerIsBeingRobbedById, attacker: user };
 		}
 		if (this.User.BeatUp.IsBeatingId) {
-			const user = await Users.findByPk(this.User.BeatUp.IsBeatingId, { attributes: ["nickname", "class"] });
+			const user = await UserRepository.FindById(this.User.BeatUp.IsBeatingId, ["nickname", "class"]);
 			return { canEscape: false, reason: PrisonFailureReason.AttackerIsBeatingId, attacker: user };
 		}
 		if (this.User.BeatUp.IsBeingBeatUpById) {
-			const user = await Users.findByPk(this.User.BeatUp.IsBeingBeatUpById, { attributes: ["nickname", "class"] });
+			const user = await UserRepository.FindById(this.User.BeatUp.IsBeingBeatUpById, ["nickname", "class"]);
 			return { canEscape: false, reason: PrisonFailureReason.AttackerIsBeingBeatedById, attacker: user };
 		}
 
@@ -180,15 +171,15 @@ export class Prison {
 			return { canBribe: false, reason: PrisonFailureReason.BribeEscaping };
 		}
 		if (this.User.Robbery.IsBeingRobbedById) {
-			const user = await Users.findByPk(this.User.Robbery.IsBeingRobbedById, { attributes: ["nickname", "class"] });
+			const user = await UserRepository.FindById(this.User.Robbery.IsBeingRobbedById, ["nickname", "class"]);
 			return { canBribe: false, reason: PrisonFailureReason.AttackerIsBeingRobbedById, attacker: user };
 		}
 		if (this.User.BeatUp.IsBeatingId) {
-			const user = await Users.findByPk(this.User.BeatUp.IsBeatingId, { attributes: ["nickname", "class"] });
+			const user = await UserRepository.FindById(this.User.BeatUp.IsBeatingId, ["nickname", "class"]);
 			return { canBribe: false, reason: PrisonFailureReason.AttackerIsBeatingId, attacker: user };
 		}
 		if (this.User.BeatUp.IsBeingBeatUpById) {
-			const user = await Users.findByPk(this.User.BeatUp.IsBeingBeatUpById, { attributes: ["nickname", "class"] });
+			const user = await UserRepository.FindById(this.User.BeatUp.IsBeingBeatUpById, ["nickname", "class"]);
 			return { canBribe: false, reason: PrisonFailureReason.AttackerIsBeingBeatedById, attacker: user };
 		}
 

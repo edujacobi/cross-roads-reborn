@@ -1,7 +1,7 @@
 import { Log } from "#shared/log";
 import { Language } from "./Language";
 import { AvatarDecorationId } from "#core/types/Ids";
-import UserAvatarDecorations from "#core/database/UserAvatarDecorations";
+import { UserAvatarDecorationRepository } from "#core/repositories/UserAvatarDecorationRepository";
 import { AvatarDecorationList } from "#core/types/AvatarDecorations";
 import { UserBadge } from "./UserBadge";
 import type { User } from "./User";
@@ -20,19 +20,14 @@ export class UserAvatarDecoration {
 
 		try {
 			// Check if bundle already exists for this user
-			const existingDecoration = await UserAvatarDecorations.findOne({
-				where: {
-					userId,
-					avatarDecorationId,
-				},
-			});
+			const existingDecoration = await UserAvatarDecorationRepository.FindOne(userId, avatarDecorationId);
 
 			if (existingDecoration) {
 				Log.Warning(`Avatar decoration ${avatarDecorationId} already exists for user ${userId}.`);
 				return false;
 			}
 
-			await UserAvatarDecorations.create({
+			await UserAvatarDecorationRepository.Create({
 				userId,
 				avatarDecorationId,
 			});
@@ -53,12 +48,7 @@ export class UserAvatarDecoration {
 		}
 
 		try {
-			const existingDecoration = await UserAvatarDecorations.findOne({
-				where: {
-					userId,
-					avatarDecorationId,
-				},
-			});
+			const existingDecoration = await UserAvatarDecorationRepository.FindOne(userId, avatarDecorationId);
 
 			return !!existingDecoration;
 		}
@@ -70,12 +60,7 @@ export class UserAvatarDecoration {
 	// Delete a user's bundle
 	static async Delete(userId: string, avatarDecorationId: AvatarDecorationId) {
 		try {
-			const deleted = await UserAvatarDecorations.destroy({
-				where: {
-					userId,
-					avatarDecorationId,
-				},
-			});
+			const deleted = await UserAvatarDecorationRepository.Destroy(userId, avatarDecorationId);
 
 			if (deleted) {
 				Log.Success(`Avatar decoration ${avatarDecorationId} removed for ${userId}.`);
@@ -94,12 +79,7 @@ export class UserAvatarDecoration {
 
 	// Get list of bundles for a user
 	static async GetList(user: User, language: Language = Language.English) {
-		const userAvatarDecorations = await UserAvatarDecorations.findAll({
-			where: {
-				userId: user.Id,
-			},
-			order: [["avatarDecorationId", "ASC"]],
-		});
+		const userAvatarDecorations = await UserAvatarDecorationRepository.FindAllByUserId(user.Id);
 
 		const [isDeveloper, isModerator, isHelper] = await Promise.all([
 			UserBadge.IsDeveloper(user.Id),

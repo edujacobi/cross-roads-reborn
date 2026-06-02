@@ -1,6 +1,6 @@
 import type { User } from "./User";
 import { getItemList, type Items, ItemType } from "#core/types/Items";
-import { Users } from "#core/database/Users";
+import { UserRepository } from "#core/repositories/UserRepository";
 import { differenceInHours } from "date-fns";
 import { addHours } from "date-fns/addHours";
 import { globalStrings, Language, type Localization } from "./Language";
@@ -81,25 +81,25 @@ export class Shop {
 		}
 
 		if (this.User.BeatUp.IsBeatingId) {
-			const user = await Users.findByPk(this.User.BeatUp.IsBeatingId, { attributes: ["class", "nickname"] });
+			const user = await UserRepository.FindById(this.User.BeatUp.IsBeatingId, ["class", "nickname"]);
 			message = globalStrings[this.User.Language].attackerIsBeatingId(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname!}`);
 			canBuy = false;
 		}
 
 		if (this.User.BeatUp.IsBeingBeatUpById) {
-			const user = await Users.findByPk(this.User.BeatUp.IsBeingBeatUpById, { attributes: ["class", "nickname"] });
+			const user = await UserRepository.FindById(this.User.BeatUp.IsBeingBeatUpById, ["class", "nickname"]);
 			message = globalStrings[this.User.Language].attackerIsBeingBeatedById(`${ClassList[user!.class!].Image.Emote.String} ${user!.nickname!}`);
 			canBuy = false;
 		}
 
 		if (this.User.Robbery.IsRobbingId) {
-			const user = await Users.findByPk(this.User.Robbery.IsRobbingId, { attributes: ["nickname", "class"] });
+			const user = await UserRepository.FindById(this.User.Robbery.IsRobbingId, ["nickname", "class"]);
 			message = globalStrings[this.User.Language].attackerIsRobbingId(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname}`);
 			canBuy = false;
 		}
 
 		if (this.User.Robbery.IsBeingRobbedById) {
-			const user = await Users.findByPk(this.User.Robbery.IsBeingRobbedById, { attributes: ["nickname", "class"] });
+			const user = await UserRepository.FindById(this.User.Robbery.IsBeingRobbedById, ["nickname", "class"]);
 			message = globalStrings[this.User.Language].attackerIsBeingRobbedById(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname}`);
 			canBuy = false;
 		}

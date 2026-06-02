@@ -1,5 +1,6 @@
 import { Op } from "sequelize";
-import { Events } from "#core/database/Events";
+import { EventRepository } from "#core/repositories/EventRepository";
+import type { Events } from "#core/database/Events";
 import { Log } from "#shared/log";
 
 export enum EventType {
@@ -25,7 +26,7 @@ export class Event {
 	 */
 	static async Create(eventType: EventType, value: number, periodStart: Date, periodEnd: Date): Promise<boolean> {
 		try {
-			await Events.create({
+			await EventRepository.Create({
 				type: eventType,
 				value: value,
 				periodStart: periodStart,
@@ -49,9 +50,7 @@ export class Event {
 	 */
 	static async Delete(eventId: number): Promise<boolean> {
 		try {
-			const result = await Events.destroy({
-				where: { id: eventId },
-			});
+			const result = await EventRepository.Destroy(eventId);
 
 			if (result) {
 				Log.Success(`Event with Id ${eventId} deleted successfully.`);
@@ -77,9 +76,7 @@ export class Event {
 	 */
 	static async Update(eventId: number, updatedData: Partial<Events>): Promise<boolean> {
 		try {
-			const result = await Events.update(updatedData, {
-				where: { id: eventId },
-			});
+			const result = await EventRepository.Update(eventId, updatedData);
 
 			if (result[0] > 0) {
 				Log.Success(`Event with Id ${eventId} updated successfully.`);
@@ -105,13 +102,7 @@ export class Event {
 	static async GetActiveFromType(eventType: EventType) {
 		const currentDate = new Date();
 
-		const event = await Events.findOne({
-			where: {
-				type: eventType,
-				periodStart: { [Op.lte]: currentDate },
-				periodEnd: { [Op.gte]: currentDate },
-			},
-		});
+		const event = await EventRepository.FindActiveEvent(eventType, currentDate);
 
 		if (!event) {
 			return 1;
@@ -129,13 +120,7 @@ export class Event {
 	static async GetActiveBonusFromType(eventType: EventType) {
 		const currentDate = new Date();
 
-		const event = await Events.findOne({
-			where: {
-				type: eventType,
-				periodStart: { [Op.lte]: currentDate },
-				periodEnd: { [Op.gte]: currentDate },
-			},
-		});
+		const event = await EventRepository.FindActiveEvent(eventType, currentDate);
 
 		if (!event) {
 			return 0;
@@ -152,14 +137,7 @@ export class Event {
 	static async GetUpcomingEvents() {
 		const currentDate = new Date();
 
-		return await Events.findAll({
-			where: {
-				[Op.or]: {
-					periodStart: { [Op.gte]: currentDate },
-					periodEnd: { [Op.gte]: currentDate },
-				},
-			},
-		});
+		return await EventRepository.FindUpcomingEvents(currentDate);
 	}
 
 	static GetEventTypeText(eventType: EventType) {
