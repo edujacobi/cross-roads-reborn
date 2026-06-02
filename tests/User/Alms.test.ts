@@ -30,6 +30,13 @@ describe("Alms", () => {
 		defender.Nickname = "Defender";
 		defender.Class = ClassId.Entrepreneur;
 		defender.Money = 5_000;
+
+		vi.spyOn(user, "GetInfo").mockImplementation(async function(this: User) {
+			return this;
+		});
+		vi.spyOn(defender, "GetInfo").mockImplementation(async function(this: User) {
+			return this;
+		});
 	});
 
 	describe("When testing if user can give alms", () => {
