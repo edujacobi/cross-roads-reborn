@@ -11,7 +11,6 @@ import { defaultComponent, formatMoney } from "#bot/utils/ui";
 import { UserRepository } from "#core/repositories/UserRepository";
 import { User } from "#core/models/User";
 import { Language, type Localization } from "#core/models/Language";
-import { Op } from "sequelize";
 import { CrColors } from "#bot/utils/colors";
 import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
 import { createButtonCollector, disableButtons } from "#bot/utils/collectors";

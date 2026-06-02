@@ -1,6 +1,5 @@
 import { Language } from "#core/models/Language";
 import { BaseCanvasBuilder } from "./BaseCanvasBuilder";
-import { type DashboardStats } from "#core/database/DashboardStats";
 import { CrColors } from "#bot/utils/colors";
 
 export interface IDashboardStats {

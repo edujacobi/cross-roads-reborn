@@ -1,10 +1,9 @@
-import { Users } from "#core/database/Users";
-import { type InferAttributes, type InferCreationAttributes, Op, type FindOptions, type CountOptions, QueryTypes, type Optional } from "sequelize";
-import { type NullishPropertiesOf } from "sequelize/lib/utils";
 import { sequelize } from "#core/database/Database";
 import GangMembers from "#core/database/GangMembers";
+import GangRoles from "#core/database/GangRoles";
 import Gangs from "#core/database/Gangs";
 import { HorseRaceBets } from "#core/database/HorseRaceBets";
+import { HorseRaces } from "#core/database/HorseRaces";
 import { LotteryTickets } from "#core/database/LotteryTickets";
 import { Notifications } from "#core/database/Notifications";
 import { RobHistories } from "#core/database/RobHistories";
@@ -12,13 +11,14 @@ import UserAvatarDecorations from "#core/database/UserAvatarDecorations";
 import UserBackgroundDecorations from "#core/database/UserBackgroundDecorations";
 import UserBadges from "#core/database/UserBadges";
 import UserBundles from "#core/database/UserBundles";
-import GangRoles from "#core/database/GangRoles";
-import { HorseRaces } from "#core/database/HorseRaces";
 import { UserInvestments } from "#core/database/UserInvestments";
 import { UserItems } from "#core/database/UserItems";
+import { Users } from "#core/database/Users";
+import { Op, QueryTypes, type InferAttributes, type InferCreationAttributes, type Optional } from "sequelize";
+import { type NullishPropertiesOf } from "sequelize/lib/utils";
 
-import { ClassId } from "#core/types/Classes";
 import type { Language } from "#core/models/Language";
+import { ClassId } from "#core/types/Classes";
 
 export type UserUpdateParam = Partial<InferAttributes<Users>>;
 

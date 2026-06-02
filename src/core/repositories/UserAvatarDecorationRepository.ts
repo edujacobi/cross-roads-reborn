@@ -1,5 +1,5 @@
 import { UserAvatarDecorations } from "#core/database/UserAvatarDecorations";
-import type { InferAttributes, InferCreationAttributes, Optional } from "sequelize";
+import type { InferCreationAttributes, Optional } from "sequelize";
 import type { NullishPropertiesOf } from "sequelize/lib/utils";
 
 export class UserAvatarDecorationRepository {

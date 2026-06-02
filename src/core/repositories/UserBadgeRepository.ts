@@ -1,5 +1,5 @@
 import { UserBadges } from "#core/database/UserBadges";
-import type { InferAttributes, InferCreationAttributes, Optional } from "sequelize";
+import type { InferCreationAttributes, Optional } from "sequelize";
 import type { NullishPropertiesOf } from "sequelize/lib/utils";
 
 export class UserBadgeRepository {

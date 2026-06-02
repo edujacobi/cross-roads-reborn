@@ -1,5 +1,5 @@
 import { DashboardStats } from "#core/database/DashboardStats";
-import type { FindOptions, InferAttributes, InferCreationAttributes, Optional } from "sequelize";
+import type { InferCreationAttributes, Optional } from "sequelize";
 import type { NullishPropertiesOf } from "sequelize/lib/utils";
 
 export class DashboardRepository {

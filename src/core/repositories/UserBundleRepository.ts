@@ -1,5 +1,5 @@
 import { UserBundles } from "#core/database/UserBundles";
-import type { InferAttributes, InferCreationAttributes, Optional } from "sequelize";
+import type { InferCreationAttributes, Optional } from "sequelize";
 import type { NullishPropertiesOf } from "sequelize/lib/utils";
 
 export class UserBundleRepository {

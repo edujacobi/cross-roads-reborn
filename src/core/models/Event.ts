@@ -1,6 +1,5 @@
-import { Op } from "sequelize";
-import { EventRepository } from "#core/repositories/EventRepository";
 import type { Events } from "#core/database/Events";
+import { EventRepository } from "#core/repositories/EventRepository";
 import { Log } from "#shared/log";
 
 export enum EventType {

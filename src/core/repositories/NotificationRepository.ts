@@ -1,6 +1,6 @@
 import { Notifications } from "#core/database/Notifications";
+import type { InferCreationAttributes, Optional } from "sequelize";
 import { Op } from "sequelize";
-import type { InferAttributes, InferCreationAttributes, Optional } from "sequelize";
 import type { NullishPropertiesOf } from "sequelize/lib/utils";
 
 export class NotificationRepository {
