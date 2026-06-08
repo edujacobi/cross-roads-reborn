@@ -109,6 +109,17 @@ export class UserRepository {
 	}
 
 	/**
+	 * Finds all users who are currently dead.
+	 */
+	static async FindAllDead(): Promise<Users[]> {
+		return await Users.findAll({
+			attributes: ["nickname", "class", "deadUntil"],
+			order: [["deadUntil", "DESC"]],
+			where: { deadUntil: { [Op.gt]: new Date() } }
+		});
+	}
+
+	/**
 	 * Finds all VIP users with pagination.
 	 */
 	static async FindAllVips(limit: number, offset: number): Promise<Users[]> {

@@ -11,6 +11,8 @@ export const CrColors = {
 	BlackMarketString: "#000001",
 	Casino: 0x8C55FF,
 	CasinoString: "#8C55FF",
+	Cemetery: 0x7e7e7e,
+	CemeteryString: "#7e7e7e",
 	Default: Colors.Green,
 	DefaultString: "#57f287",
 	Hospital: 0xe54747,

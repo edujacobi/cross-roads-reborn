@@ -106,6 +106,7 @@ export const EmoteId = {
 	Bank: "539497634826551307",
 	React: "1343948089249103945",
 	Escape: "1345061962437890129",
+	Cemetery: "1513568867581034688",
 
 	// Casino
 	RussianRoulette: "1464352585220751593",
@@ -273,6 +274,7 @@ export const EmoteString = {
 	Bank: `<:Banco:${EmoteId.Bank}>`,
 	React: `<:React:${EmoteId.React}>`,
 	Escape: `<:Escape:${EmoteId.Escape}>`,
+	Cemetery: `<:Cemitery:${EmoteId.Cemetery}>`,
 
 	// Casino
 	RussianRoulette: `<:RussianRoulette:${EmoteId.RussianRoulette}>`,

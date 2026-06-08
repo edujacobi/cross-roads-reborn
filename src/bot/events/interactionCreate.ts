@@ -39,6 +39,15 @@ module.exports = {
 			return;
 		}
 
+		if (user.IsDead()) {
+			const container = defaultComponent({
+				user,
+				description: s.deadDescription(user.DeadUntil),
+			});
+
+			return replyWithContainer(interaction, container, true);
+		}
+
 		if (!user.Nickname && command.data.name !== "setnick") {
 			const tempUser = new User("0");
 			tempUser.Nickname = s.settingNick;
@@ -149,6 +158,7 @@ const Strings = {
 		willBeAble: (commandName: string, expirationDate: Date) => `You will be able to reuse the \`${commandName}\` command ${time(expirationDate, TimestampStyles.RelativeTime)}.`,
 		canNowUse: (commandName: string) => `You can now use the \`${commandName}\` command.`,
 		needVIP: `You need to be ${EmoteString.VIP} **VIP** to perform this action.`,
+		deadDescription: (date: Date) => `You are dead! You will be revived ${time(date, TimestampStyles.RelativeTime)}.`,
 	},
 	[Language.Portuguese]: {
 		noCommand: (command: string) => `Nenhum comando correspondente a \`${command}\` foi encontrado.`,
@@ -158,6 +168,7 @@ const Strings = {
 		willBeAble: (commandName: string, expirationDate: Date) => `Você poderá reutilizar o comando \`${commandName}\` ${time(expirationDate, TimestampStyles.RelativeTime)}.`,
 		canNowUse: (commandName: string) => `Agora você pode usar o comando \`${commandName}\`.`,
 		needVIP: `Você precisa ser ${EmoteString.VIP} **VIP** para realizar esta ação.`,
+		deadDescription: (date: Date) => `Você está morto! Você ressuscitará ${time(date, TimestampStyles.RelativeTime)}.`,
 	},
 	[Language.Spanish]: {
 		noCommand: (command: string) => `No se encontró ningún comando que coincida con \`${command}\`.`,
@@ -167,5 +178,6 @@ const Strings = {
 		willBeAble: (commandName: string, expirationDate: Date) => `Podrás reutilizar el comando \`${commandName}\` ${time(expirationDate, TimestampStyles.RelativeTime)}.`,
 		canNowUse: (commandName: string) => `Ahora puedes usar el comando \`${commandName}\`.`,
 		needVIP: `Necesitas ser ${EmoteString.VIP} **VIP** para realizar esta acción.`,
+		deadDescription: (date: Date) => `¡Estás muerto! Resucitarás ${time(date, TimestampStyles.RelativeTime)}.`,
 	},
 } as const satisfies Localization;

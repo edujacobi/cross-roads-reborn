@@ -43,6 +43,7 @@ export enum SituationId {
 	Casino,
 	DefendingInvestment,
 	GangAction,
+	Dead,
 }
 
 export type AvailabilityReason =
@@ -59,7 +60,8 @@ export type AvailabilityReason =
 	| "beingBeatUp"
 	| "robbing"
 	| "beingRobbed"
-	| "robbingLocation";
+	| "robbingLocation"
+	| "dead";
 
 export type AvailabilityResult =
 	| { available: true }
@@ -132,6 +134,7 @@ export class User {
 		Count: 0,
 		Time: new Date(),
 	};
+	DeadUntil = new Date();
 	Hospital = {
 		Count: 0,
 		TreatmentCount: 0,
@@ -290,6 +293,7 @@ export class User {
 				nicknameChangeCount: 0,
 				classChangeCount: 0,
 				automaticGrenade: false,
+				deadUntil: null,
 			});
 			Log.Success(`User ${this.Id} created.`);
 
@@ -396,6 +400,9 @@ export class User {
 		// Wanted
 		this.Wanted.Count = user.wantedCount;
 		this.Wanted.Time = new Date(user.wantedTime);
+
+		// Dead
+		this.DeadUntil = user.deadUntil ? new Date(user.deadUntil) : new Date(0);
 
 		// Hospital
 		this.Hospital.Count = user.hospitalCount;
@@ -1199,7 +1206,20 @@ export class User {
 		};
 
 		// Check situations by priority (highest to lowest)
-		if (this.IsScavenging()) {
+		if (this.IsDead()) {
+			this.Situation = {
+				Id: SituationId.Dead,
+				Simple: s.deadSimple,
+				SimpleEmote: `${EmoteString.Cemetery} ${s.deadSimple}`,
+				Complex: `${EmoteString.Cemetery} ${s.deadComplex} ${time(this.DeadUntil, TimestampStyles.ShortDateTime)}`,
+				ComplexUI: `${s.deadComplex} ${formatDistanceToNow(this.DeadUntil, {
+					locale: getLocaleFromLanguage(lang),
+					includeSeconds: true,
+				})}`,
+				EmoteId: EmoteId.Lazy,
+			};
+		}
+		else if (this.IsScavenging()) {
 			this.Situation = {
 				Id: SituationId.Scavenging,
 				Simple: s.scavenging,
@@ -1378,6 +1398,9 @@ export class User {
 	 * Allows bypassing specific checks via ignoreReasons array.
 	 */
 	CheckAvailability(ignoreReasons: AvailabilityReason[] = []): AvailabilityResult {
+		if (!ignoreReasons.includes("dead") && this.IsDead()) {
+			return { available: false, reason: "dead", time: this.DeadUntil };
+		}
 		if (!ignoreReasons.includes("scavenging") && this.IsScavenging()) {
 			return { available: false, reason: "scavenging", referenceId: this.Scavenge.IsScavengingId! };
 		}
@@ -1428,6 +1451,13 @@ export class User {
 	 */
 	IsWorking() {
 		return this.Job.Id != null;
+	}
+
+	/**
+	 * Checks if the user is dead.
+	 */
+	IsDead() {
+		return this.DeadUntil > new Date();
 	}
 
 	/**
@@ -1785,6 +1815,33 @@ export class User {
 		});
 		Log.Info(`User ${this.Nickname} (Id: ${this.Id}) set automaticGrenade to ${value}.`);
 	}
+
+	/**
+	 * Kills the user for a specified number of days.
+	 * @param days The number of days to kill the user for.
+	 * @returns The time the user will be dead until.
+	 */
+	async Kill(days: number): Promise<Date> {
+		const deadUntil = addDays(new Date(), days);
+		this.DeadUntil = deadUntil;
+		this.Hospital.Time = deadUntil;
+		this.Money = 0;
+		this.Job.Id = null;
+
+		await this.Update({
+			deadUntil: this.DeadUntil,
+			hospitalTime: this.Hospital.Time,
+			money: this.Money,
+			jobId: this.Job.Id,
+		});
+
+		await Promise.all([
+			Notification.Dismiss(this.Id, NotificationType.Job),
+			Notification.Hospital(this),
+		]);
+
+		return deadUntil;
+	}
 }
 
 const Strings = {
@@ -1817,6 +1874,8 @@ const Strings = {
 		hospitalComplex: `Hospitalized until`,
 		gangActionSimple: "Participating in gang action",
 		gangActionComplex: "Participating in gang action",
+		deadSimple: "Dead",
+		deadComplex: "Dead until",
 	},
 	[Language.Portuguese]: {
 		idling: "Vadiando",
@@ -1847,6 +1906,8 @@ const Strings = {
 		hospitalComplex: `Hospitalizado até`,
 		gangActionSimple: "Participando de ação em gangue",
 		gangActionComplex: "Participando de ação em gangue",
+		deadSimple: "Morto",
+		deadComplex: "Morto até",
 	},
 	[Language.Spanish]: {
 		idling: "Vagando",
@@ -1877,5 +1938,7 @@ const Strings = {
 		hospitalComplex: `Hospitalizado hasta`,
 		gangActionSimple: "Participando en acción de cuadrilla",
 		gangActionComplex: "Participando en acción de cuadrilla",
+		deadSimple: "Muerto",
+		deadComplex: "Muerto hasta",
 	},
 } as const satisfies Localization;

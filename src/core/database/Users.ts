@@ -111,6 +111,8 @@ export class Users extends Model<
 
 	declare automaticGrenade: boolean;
 
+	declare deadUntil: CreationOptional<Date | null>;
+
 	declare createdAt: CreationOptional<Date>;
 	declare updatedAt: CreationOptional<Date>;
 }
@@ -495,6 +497,11 @@ Users.init(
 			type: DataTypes.BOOLEAN,
 			allowNull: false,
 			defaultValue: false,
+		},
+		deadUntil: {
+			type: DataTypes.DATE,
+			allowNull: true,
+			defaultValue: null,
 		},
 		createdAt: DataTypes.DATE,
 		updatedAt: DataTypes.DATE,
