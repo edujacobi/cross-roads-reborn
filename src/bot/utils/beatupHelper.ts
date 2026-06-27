@@ -4,11 +4,12 @@ import { EmoteId, EmoteString } from "#bot/utils/emotes";
 import { defaultComponent, formatMoney } from "#bot/utils/ui";
 import { Strings as BeatUpStrings, type BeatUp } from "#core/models/BeatUp";
 import type { User } from "#core/models/User";
-import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, ComponentType, type MessageComponentInteraction, MessageFlags, time, TimestampStyles } from "discord.js";
+import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, ComponentType, type Message, type MessageComponentInteraction, MessageFlags, time, TimestampStyles } from "discord.js";
 import { setTimeout as wait } from "timers/promises";
 import { ItemId } from "#core/types/Ids";
 import { getClient } from "#bot/client";
 import { CrColors } from "#bot/utils/colors";
+import { Log } from "#shared/log";
 
 export async function runUserBeatUp(interaction: ChatInputCommandInteraction, beatUp: BeatUp, attacker: User, defender: User) {
 	const sA = BeatUpStrings[attacker.Language];
@@ -99,70 +100,84 @@ export async function runUserBeatUp(interaction: ChatInputCommandInteraction, be
 	const initData = await beatUp.LockStates(usedGrenade);
 
 	try {
-		const client = getClient();
-		const defenderDiscordUser = await client.users.fetch(defender.Id);
-
-		let usedGun = `${initData.usedGunSkin} **${initData.usedGunName}**`;
-		if (usedGrenade) {
-			usedGun += ` ${sD.andAGrenade}`;
+		let defenderDiscordUser;
+		try {
+			const client = getClient();
+			defenderDiscordUser = await client.users.fetch(defender.Id);
+		}
+		catch (err) {
+			Log.Warning(`Failed to fetch defender discord user ${defender.Id}: ${err}`);
 		}
 
-		const privateContainer = new CustomContainerBuilder()
-			.setAccentColor(CrColors.BeatUp)
-			.addTexts([
-				`${EmoteString.Beat} ${sD.beatingInProgress}`,
-			])
-			.addLargeSeparator()
-			.addTexts([
-				`**${attacker.GetNameWithImage()}** ${sD.tryingToBeatYou} ${usedGun}`,
-				``,
-				`-# ${sD.decide}:`,
-			])
-			.addSectionComponents(fight => fight
-				.addTexts([
-					`### 💪 **${sD.fight}**`,
-					`${sD.fightDescription(initData.timeInHospitalAditional)}`,
-				])
-				.setButtonAccessory(new ButtonBuilder()
-					.setCustomId("fight")
-					.setLabel(sD.fight)
-					.setStyle(ButtonStyle.Secondary)
-					.setEmoji("💪"),
-				),
-			)
-			.addLargeSeparator()
-			.addSectionComponents(run => run
-				.addTexts([
-					`### 👟 **${sD.run}**`,
-					`${sD.runDescription(initData.timeInHospitalAditional)}`,
-				])
-				.setButtonAccessory(new ButtonBuilder()
-					.setCustomId("run")
-					.setLabel(sD.run)
-					.setStyle(ButtonStyle.Secondary)
-					.setEmoji("👟")
-					.setDisabled(initData.cannotRun),
-				),
-			)
-			.addLargeSeparator()
-			.addSectionComponents(nothing => nothing
-				.addTexts([
-					`### 🏳️ **${sD.doNothing}**`,
-					`${sD.doNothingDescription}`,
-				])
-				.setButtonAccessory(new ButtonBuilder()
-					.setCustomId("nothing")
-					.setLabel(sD.doNothing)
-					.setStyle(ButtonStyle.Secondary)
-					.setEmoji("🏳️"),
-				),
-			)
-			.addFooter({ text: sD.secondsToRespond });
+		let defenderMessage: Message | undefined;
+		if (defenderDiscordUser) {
+			try {
+				let usedGun = `${initData.usedGunSkin} **${initData.usedGunName}**`;
+				if (usedGrenade) {
+					usedGun += ` ${sD.andAGrenade}`;
+				}
 
-		const defenderMessage = await defenderDiscordUser.send({
-			components: [privateContainer],
-			flags: MessageFlags.IsComponentsV2,
-		});
+				const privateContainer = new CustomContainerBuilder()
+					.setAccentColor(CrColors.BeatUp)
+					.addTexts([
+						`${EmoteString.Beat} ${sD.beatingInProgress}`,
+					])
+					.addLargeSeparator()
+					.addTexts([
+						`**${attacker.GetNameWithImage()}** ${sD.tryingToBeatYou} ${usedGun}`,
+						``,
+						`-# ${sD.decide}:`,
+					])
+					.addSectionComponents(fight => fight
+						.addTexts([
+							`### 💪 **${sD.fight}**`,
+							`${sD.fightDescription(initData.timeInHospitalAditional)}`,
+						])
+						.setButtonAccessory(new ButtonBuilder()
+							.setCustomId("fight")
+							.setLabel(sD.fight)
+							.setStyle(ButtonStyle.Secondary)
+							.setEmoji("💪"),
+						),
+					)
+					.addLargeSeparator()
+					.addSectionComponents(run => run
+						.addTexts([
+							`### 👟 **${sD.run}**`,
+							`${sD.runDescription(initData.timeInHospitalAditional)}`,
+						])
+						.setButtonAccessory(new ButtonBuilder()
+							.setCustomId("run")
+							.setLabel(sD.run)
+							.setStyle(ButtonStyle.Secondary)
+							.setEmoji("👟")
+							.setDisabled(initData.cannotRun),
+						),
+					)
+					.addLargeSeparator()
+					.addSectionComponents(nothing => nothing
+						.addTexts([
+							`### 🏳️ **${sD.doNothing}**`,
+							`${sD.doNothingDescription}`,
+						])
+						.setButtonAccessory(new ButtonBuilder()
+							.setCustomId("nothing")
+							.setLabel(sD.doNothing)
+							.setStyle(ButtonStyle.Secondary)
+							.setEmoji("🏳️"),
+						),
+					)
+					.addFooter({ text: sD.secondsToRespond });
+
+				defenderMessage = await defenderDiscordUser.send({
+					components: [privateContainer],
+					flags: MessageFlags.IsComponentsV2,
+				});
+			}
+			catch (err) {
+				Log.Warning(`Failed to send beatup DM to user ${defender.Id}: ${err}`);
+			}
+		}
 
 		const channelContainer = new CustomContainerBuilder()
 			.setUser(attacker)

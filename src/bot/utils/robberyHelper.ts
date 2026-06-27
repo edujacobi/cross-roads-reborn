@@ -7,8 +7,9 @@ import { defaultComponent, formatMoney } from "#bot/utils/ui";
 import { Strings as RobberyStrings, type UserRobberyStrategy } from "#core/models/strategies/robbery/UserRobberyStrategy";
 import type { User } from "#core/models/User";
 import { ItemId } from "#core/types/Ids";
-import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, ComponentType, type MessageComponentInteraction, MessageFlags, time, TimestampStyles } from "discord.js";
+import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, ComponentType, type Message, type MessageComponentInteraction, MessageFlags, time, TimestampStyles } from "discord.js";
 import { setTimeout as wait } from "timers/promises";
+import { Log } from "#shared/log";
 
 export async function runUserRobbery(interaction: ChatInputCommandInteraction, robbery: UserRobberyStrategy, attacker: User, defender: User) {
 	const sA = RobberyStrings[attacker.Language];
@@ -101,72 +102,86 @@ export async function runUserRobbery(interaction: ChatInputCommandInteraction, r
 	const initData = await robbery.LockStates(usedGrenade);
 
 	try {
-		const client = getClient();
-		const defenderDiscordUser = await client.users.fetch(defender.Id);
-
-		let usedGun = `${initData.usedGunSkin} **${initData.usedGunName}**`;
-		if (usedGrenade) {
-			usedGun += ` ${sD.andAGrenade}`;
+		let defenderDiscordUser;
+		try {
+			const client = getClient();
+			defenderDiscordUser = await client.users.fetch(defender.Id);
+		}
+		catch (err) {
+			Log.Warning(`Failed to fetch defender discord user ${defender.Id}: ${err}`);
 		}
 
-		const privateContainer = new CustomContainerBuilder()
-			.setAccentColor(CrColors.Robbery)
-			.addTexts([
-				`${EmoteString.Robbery} ${sD.robberyInProgress}`,
-			])
-			.addLargeSeparator()
-			.addTexts([
-				`**${attacker.GetNameWithImage()}** ${sD.tryingToRobYou} ${usedGun} • ${EmoteString.Attack}${attacker.Attributes.Attack} ATK`,
-				``,
-				`-# ${sD.decide}:`,
-			])
-			.addSectionComponents(react => react
-				.addTexts([
-					`### ${EmoteString.Defense} **${sD.react}**`,
-					sD.reactDescription(initData.defenderTimeInHospital),
-				])
-				.setButtonAccessory(new ButtonBuilder()
-					.setCustomId("react")
-					.setLabel(sD.react)
-					.setStyle(ButtonStyle.Success)
-					.setEmoji(EmoteId.Defense)
-					.setDisabled(initData.cannotReact),
-				),
-			)
-			.addLargeSeparator()
-			.addSectionComponents(police => police
-				.addTexts([
-					`### ${EmoteString.Police} **${sD.callPolice}**`,
-					sD.callPoliceDescription(initData.attackerAditionalTimeCallPolice),
-				])
-				.setButtonAccessory(new ButtonBuilder()
-					.setCustomId("police")
-					.setLabel(sD.callPolice)
-					.setStyle(ButtonStyle.Danger)
-					.setEmoji(EmoteId.Police)
-					.setDisabled(initData.cannotCallPolice),
-				),
-			)
-			.addLargeSeparator()
-			.addSectionComponents(nothing => nothing
-				.addTexts([
-					`### 🏳️ **${sD.doNothing}**`,
-					sD.doNothingDescription,
-				])
-				.setButtonAccessory(new ButtonBuilder()
-					.setCustomId("nothing")
-					.setLabel(sD.doNothing)
-					.setStyle(ButtonStyle.Secondary),
-				),
-			)
-			.addFooter({
-				text: `${formatMoney(defender.Money, defender.Language)} • ${sD.secondsToRespond}`,
-			});
+		let defenderMessage: Message | undefined;
+		if (defenderDiscordUser) {
+			try {
+				let usedGun = `${initData.usedGunSkin} **${initData.usedGunName}**`;
+				if (usedGrenade) {
+					usedGun += ` ${sD.andAGrenade}`;
+				}
 
-		const defenderMessage = await defenderDiscordUser.send({
-			components: [privateContainer],
-			flags: MessageFlags.IsComponentsV2,
-		});
+				const privateContainer = new CustomContainerBuilder()
+					.setAccentColor(CrColors.Robbery)
+					.addTexts([
+						`${EmoteString.Robbery} ${sD.robberyInProgress}`,
+					])
+					.addLargeSeparator()
+					.addTexts([
+						`**${attacker.GetNameWithImage()}** ${sD.tryingToRobYou} ${usedGun} • ${EmoteString.Attack}${attacker.Attributes.Attack} ATK`,
+						``,
+						`-# ${sD.decide}:`,
+					])
+					.addSectionComponents(react => react
+						.addTexts([
+							`### ${EmoteString.Defense} **${sD.react}**`,
+							sD.reactDescription(initData.defenderTimeInHospital),
+						])
+						.setButtonAccessory(new ButtonBuilder()
+							.setCustomId("react")
+							.setLabel(sD.react)
+							.setStyle(ButtonStyle.Success)
+							.setEmoji(EmoteId.Defense)
+							.setDisabled(initData.cannotReact),
+						),
+					)
+					.addLargeSeparator()
+					.addSectionComponents(police => police
+						.addTexts([
+							`### ${EmoteString.Police} **${sD.callPolice}**`,
+							sD.callPoliceDescription(initData.attackerAditionalTimeCallPolice),
+						])
+						.setButtonAccessory(new ButtonBuilder()
+							.setCustomId("police")
+							.setLabel(sD.callPolice)
+							.setStyle(ButtonStyle.Danger)
+							.setEmoji(EmoteId.Police)
+							.setDisabled(initData.cannotCallPolice),
+						),
+					)
+					.addLargeSeparator()
+					.addSectionComponents(nothing => nothing
+						.addTexts([
+							`### 🏳️ **${sD.doNothing}**`,
+							sD.doNothingDescription,
+						])
+						.setButtonAccessory(new ButtonBuilder()
+							.setCustomId("nothing")
+							.setLabel(sD.doNothing)
+							.setStyle(ButtonStyle.Secondary),
+						),
+					)
+					.addFooter({
+						text: `${formatMoney(defender.Money, defender.Language)} • ${sD.secondsToRespond}`,
+					});
+
+				defenderMessage = await defenderDiscordUser.send({
+					components: [privateContainer],
+					flags: MessageFlags.IsComponentsV2,
+				});
+			}
+			catch (err) {
+				Log.Warning(`Failed to send robbery DM to user ${defender.Id}: ${err}`);
+			}
+		}
 
 		const channelContainer = new CustomContainerBuilder()
 			.setUser(attacker)
