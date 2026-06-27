@@ -32,8 +32,7 @@ module.exports = {
 			return replyInteraction(interaction, "Didn't find this user");
 		}
 
-		target.Hospital.Time = new Date();
-		await target.Update({ hospitalTime: target.Hospital.Time });
+		await target.Cure(user.Id);
 
 		const container = defaultComponent({
 			user,

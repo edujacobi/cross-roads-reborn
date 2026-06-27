@@ -1842,6 +1842,105 @@ export class User {
 
 		return deadUntil;
 	}
+
+	/**
+	 * Cures the user from the hospital.
+	 */
+	async Cure(adminId: string): Promise<void> {
+		this.Hospital.Time = new Date();
+		await this.Update({ hospitalTime: this.Hospital.Time });
+
+		Log.Success(`Admin ${adminId} healed ${this.Nickname} (Id: ${this.Id}) from hospital.`);
+	}
+
+	/**
+	 * Frees the user from prison.
+	 */
+	async Free(adminId: string): Promise<void> {
+		this.Prison.Time = new Date();
+		this.Prison.HasPaidBribe = false;
+		this.Escape.HasTried = false;
+		await this.Update({
+			prisonTime: this.Prison.Time,
+			prisonHasPaidBribe: this.Prison.HasPaidBribe,
+			escapeHasTried: this.Escape.HasTried
+		});
+
+		Log.Success(`Admin ${adminId} freed ${this.Nickname} (Id: ${this.Id}) from prison.`);
+	}
+
+	/**
+	 * Removes the user from a specific action.
+	 * @param action The action type ('job', 'scavenge', 'robbery', 'beatup', 'casino', 'gangaction')
+	 * @param adminId The ID of the admin who performed the action (for logging)
+	 */
+	async RemoveAction(action: string, adminId: string): Promise<void> {
+		switch (action) {
+		case "job":
+			this.Job.Id = null;
+			await this.Update({ jobId: null });
+			break;
+		case "scavenge":
+			this.Scavenge.IsScavengingId = null;
+			await this.Update({ scavengingId: null });
+			break;
+		case "robbery":
+			this.Robbery.IsRobbingId = null;
+			this.Robbery.IsBeingRobbedById = null;
+			this.Robbery.IsRobbingLocationId = null;
+			this.Robbery.InvestmentIsDefending = false;
+			await this.Update({
+				robbingUserId: null,
+				beingRobbedByUserId: null,
+				robbingLocationId: null,
+				robberyInvestmentDefending: false,
+				robberyParticipatingInGangAction: false,
+			});
+			break;
+		case "beatup":
+			this.BeatUp.IsBeatingId = null;
+			this.BeatUp.IsBeingBeatUpById = null;
+			await this.Update({
+				beatingUserId: null,
+				beingBeatUpByUserId: null,
+			});
+			break;
+		case "casino":
+			this.Casino.IsInGame = false;
+			await this.Update({ casinoIsInGame: false });
+			break;
+		case "gangaction":
+			this.Robbery.ParticipatingInGangAction = false;
+			await this.Update({ robberyParticipatingInGangAction: false });
+			break;
+		}
+
+		Log.Success(`Admin ${adminId} removed ${this.Nickname} (Id: ${this.Id}) from action ${action}.`);
+	}
+
+	/**
+	 * Resets a specific cooldown for the user.
+	 * @param cooldown The cooldown type ('scavenge', 'robbery', 'beatup')
+	 * @param adminId The ID of the admin who performed the action (for logging)
+	 */
+	async ResetCooldown(cooldown: string, adminId: string): Promise<void> {
+		switch (cooldown) {
+		case "scavenge":
+			this.Scavenge.Time = new Date();
+			await this.Update({ scavengeTime: this.Scavenge.Time });
+			break;
+		case "robbery":
+			this.Wanted.Time = new Date();
+			await this.Update({ wantedTime: this.Wanted.Time });
+			break;
+		case "beatup":
+			this.BeatUp.Time = new Date();
+			await this.Update({ beatUpTime: this.BeatUp.Time });
+			break;
+		}
+
+		Log.Success(`Admin ${adminId} reset ${cooldown} cooldown for ${this.Nickname} (Id: ${this.Id}).`);
+	}
 }
 
 const Strings = {

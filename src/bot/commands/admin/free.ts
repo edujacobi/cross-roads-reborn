@@ -32,14 +32,7 @@ module.exports = {
 			return replyInteraction(interaction, "Didn't find this user");
 		}
 
-		target.Prison.Time = new Date();
-		target.Prison.HasPaidBribe = false;
-		target.Escape.HasTried = false;
-		await target.Update({
-			prisonTime: target.Prison.Time,
-			prisonHasPaidBribe: target.Prison.HasPaidBribe,
-			escapeHasTried: target.Escape.HasTried
-		});
+		await target.Free(user.Id);
 
 		const container = defaultComponent({
 			user,

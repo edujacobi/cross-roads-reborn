@@ -43,20 +43,7 @@ module.exports = {
 			return replyInteraction(interaction, "Didn't find this user");
 		}
 
-		switch (cooldown) {
-		case "scavenge":
-			target.Scavenge.Time = new Date();
-			await target.Update({ scavengeTime: target.Scavenge.Time });
-			break;
-		case "robbery":
-			target.Wanted.Time = new Date();
-			await target.Update({ wantedTime: target.Wanted.Time });
-			break;
-		case "beatup":
-			target.BeatUp.Time = new Date();
-			await target.Update({ beatUpTime: target.BeatUp.Time });
-			break;
-		}
+		await target.ResetCooldown(cooldown, user.Id);
 
 		const container = defaultComponent({
 			user,
