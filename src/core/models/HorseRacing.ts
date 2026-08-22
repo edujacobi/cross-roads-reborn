@@ -253,7 +253,7 @@ export class HorseRacing {
 			const user = await new User(bet.userId).GetInfo();
 			if (!user) continue;
 
-			await Casino.FinishUserGameWithWin(user, prize);
+			await Casino.FinishUserGameWithWin(user, prize, bet.amount);
 
 			winners.push({ nameWithImage: user.GetNameWithImage(), prize });
 

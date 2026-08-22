@@ -294,7 +294,7 @@ module.exports = {
 
 			await Promise.all([
 				...losers.map(loser => Casino.FinishUserGameWithLoss(loser, betValue)),
-				Casino.FinishUserGameWithWin(winner, prizeToWinner),
+				Casino.FinishUserGameWithWin(winner, prizeToWinner, betValue),
 			]);
 
 			container = showStatus(winner.Id);

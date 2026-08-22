@@ -9,6 +9,7 @@ import { Investment } from "#core/models/Investment";
 import { Dashboard } from "#core/models/Dashboard";
 import { Gang } from "#core/models/Gang";
 import { LogManager } from "#shared/log";
+import { VaultRepository } from "#core/repositories/VaultRepository";
 
 module.exports = {
 	name: Events.ClientReady,
@@ -16,6 +17,7 @@ module.exports = {
 	async execute(client: Client) {
 		// await sequelize.sync({ force: true });
 		await sequelize.sync();
+		await VaultRepository.GetInstance();
 		changeActivity(client);
 		Notification.StartProcedure();
 		LogManager.Initialize();

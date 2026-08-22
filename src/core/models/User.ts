@@ -26,6 +26,7 @@ import { Notification, NotificationType } from "./Notification";
 import { UserAvatarDecoration } from "./UserAvatarDecoration";
 import { UserBackgroundDecoration } from "./UserBackgroundDecoration";
 import { UserBundle } from "./UserBundle";
+import { Vault } from "./Vault";
 
 import { type InvestmentId } from "#core/types/Investments";
 import { time, TimestampStyles } from "discord.js";
@@ -901,6 +902,11 @@ export class User {
 	 */
 	async BuyItem(item: Items) {
 		this.Money -= item.Price;
+
+		const tax = Math.floor(item.Price * 0.05);
+		if (tax > 0) {
+			await Vault.AddBankFunds(tax);
+		}
 
 		const existingItem = await UserItemRepository.FindByUserAndItem(this.Id, item.Id);
 

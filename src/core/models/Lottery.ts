@@ -125,7 +125,7 @@ export class Lottery {
 				winnings: finalPrize,
 			});
 
-			await Casino.FinishUserGameWithWin(winnerUser, finalPrize);
+			await Casino.FinishUserGameWithWin(winnerUser, finalPrize, winningTicket.amount);
 
 			const s = Strings[winnerUser.Language];
 			await sendPrivateMessage(

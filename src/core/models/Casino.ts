@@ -9,6 +9,7 @@ import { ClassList } from "#core/types/Classes";
 import { LocationList } from "#core/types/Locations";
 import { Log } from "#shared/log";
 import { time, TimestampStyles } from "discord.js";
+import { Vault } from "./Vault";
 
 export class Casino {
 	static async CanUserPlayGame(user: User, amount: number) {
@@ -97,7 +98,7 @@ export class Casino {
 		Log.Info(`User ${user.Nickname} (Id: ${user.Id}) is now in a Casino Game.`);
 	}
 
-	static async FinishUserGameWithWin(user: User, prize: number) {
+	static async FinishUserGameWithWin(user: User, prize: number, betAmount?: number) {
 		user.Casino.IsInGame = false;
 		user.Money += prize;
 		user.Casino.WinCount += 1;
@@ -109,6 +110,13 @@ export class Casino {
 			casinoWinSum: user.Casino.WinSum,
 		});
 		Log.Success(`User ${user.Nickname} (Id: ${user.Id}) won ${formatMoney(prize, Language.English)} in a Casino Game.`);
+
+		if (betAmount && betAmount > 0) {
+			const tax = Math.floor(betAmount * 0.10);
+			if (tax > 0) {
+				await Vault.AddCasinoFunds(tax);
+			}
+		}
 	}
 
 	static async FinishUserGameWithLoss(user: User, amount: number) {
@@ -126,6 +134,11 @@ export class Casino {
 			hospitalCount: user.Hospital.Count,
 		});
 		Log.Success(`User ${user.Nickname} (Id: ${user.Id}) lost ${formatMoney(amount, Language.English)} in a Casino Game.`);
+
+		const tax = Math.floor(amount * 0.10);
+		if (tax > 0) {
+			await Vault.AddCasinoFunds(tax);
+		}
 	}
 
 	static async FinishUserGameWithLossNoSubtraction(user: User, amount: number) {
@@ -141,6 +154,11 @@ export class Casino {
 			hospitalCount: user.Hospital.Count,
 		});
 		Log.Success(`User ${user.Nickname} (Id: ${user.Id}) lost ${formatMoney(amount, Language.English)} in a Casino Game.`);
+
+		const tax = Math.floor(amount * 0.10);
+		if (tax > 0) {
+			await Vault.AddCasinoFunds(tax);
+		}
 	}
 }
 

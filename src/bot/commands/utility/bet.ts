@@ -116,7 +116,7 @@ module.exports = {
 			const prize = Math.round(value * 0.5 * userClassModifier);
 
 			if (win) {
-				await Casino.FinishUserGameWithWin(user, prize);
+				await Casino.FinishUserGameWithWin(user, prize, value);
 				currentBalance += prize;
 				winStreak += 1;
 
