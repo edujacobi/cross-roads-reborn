@@ -19,7 +19,7 @@
     "clear-commands:dev": "set NODE_ENV=DEV&& npx tsx src/bot/clear-commands.ts",
     "lint": "npx eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
-    "index": "npx tsx scripts/index-codebase.ts",
+    "index": "node --experimental-strip-types scripts/index-codebase.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -77,15 +77,16 @@
     "@napi-rs/canvas": "^0.1.74",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
-    "discord-api-types": "0.38.16",
-    "discord.js": "14.21.0",
+    "discord-api-types": "^0.38.54",
+    "discord.js": "^14.27.0",
     "pino": "9.0.0",
     "pino-pretty": "^13.1.1",
-    "pm2": "^6.0.8",
+    "pm2": "^7.0.4",
     "sequelize": "^6.37.8",
-    "sqlite3": "^5.1.6"
+    "sqlite3": "^6.0.1"
   },
   "allowScripts": {
+    "sqlite3@6.0.1": true,
     "sqlite3@5.1.7": true,
     "esbuild@0.25.12": true
   }
