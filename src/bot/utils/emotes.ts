@@ -158,6 +158,7 @@ export const EmoteId = {
 	Airport: "1496940345987039242",
 	Bikeclub: "1496940372516012216",
 	Bunker: "1496940405671858378",
+	CentralBank: "1540819336560648345",
 
 	SpecialCoinShop: "1454137203163791598",
 
@@ -326,6 +327,7 @@ export const EmoteString = {
 	Airport: `<:Airport:${EmoteId.Airport}>`,
 	Bikeclub: `<:Bikeclub:${EmoteId.Bikeclub}>`,
 	Bunker: `<:Bunker:${EmoteId.Bunker}>`,
+	CentralBank: `<:CentralBank:${EmoteId.CentralBank}>`,
 
 	SpecialCoinShop: `<:SpecialCoinShop:${EmoteId.SpecialCoinShop}>`,
 
