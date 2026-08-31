@@ -1,11 +1,10 @@
 import fs from "node:fs";
 import { REST, Routes } from "discord.js";
 import path from "node:path";
-import dotenv from "dotenv";
 import type { Command, SlashCommand } from "./types";
 import { logger } from "#shared/log";
 
-dotenv.config();
+process.loadEnvFile();
 
 const commands: SlashCommand[] = [];
 const adminCommands: SlashCommand[] = [];

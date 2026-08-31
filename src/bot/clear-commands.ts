@@ -1,8 +1,7 @@
 import { REST, Routes } from "discord.js";
-import dotenv from "dotenv";
 import { logger } from "#shared/log";
 
-dotenv.config();
+process.loadEnvFile();
 
 const token = process.env.NODE_ENV === "DEV" ? process.env.TOKEN_DEV : process.env.TOKEN;
 const clientId = process.env.NODE_ENV === "DEV" ? process.env.CLIENT_ID_DEV : process.env.CLIENT_ID;

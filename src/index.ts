@@ -2,7 +2,6 @@ import fs from "node:fs";
 import path from "node:path";
 import { Collection, Events } from "discord.js";
 import type { SlashCommand } from "#bot/types";
-import dotenv from "dotenv";
 import { setClient } from "#bot/client";
 import { logger, Log } from "#shared/log";
 import { GlobalFonts } from "@napi-rs/canvas";
@@ -48,7 +47,7 @@ const handleExit = (signal: string) => {
 process.on("SIGINT", () => handleExit("SIGINT"));
 process.on("SIGTERM", () => handleExit("SIGTERM"));
 
-dotenv.config();
+process.loadEnvFile();
 
 // Events
 const eventsPath = path.join(__dirname, "bot", "events");
