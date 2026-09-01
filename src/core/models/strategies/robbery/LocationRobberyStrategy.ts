@@ -15,6 +15,7 @@ import { Log } from "#shared/log";
 import { addMinutes } from "date-fns";
 import { type IRobberyStrategy } from "./IRobberyStrategy";
 import { time, TimestampStyles } from "discord.js";
+import { Prison } from "#core/models/Prison";
 
 export class LocationRobberyStrategy implements IRobberyStrategy {
 	Attacker: User;
@@ -166,13 +167,7 @@ export class LocationRobberyStrategy implements IRobberyStrategy {
 				};
 			}
 			else {
-				const prisonTimeMultiplier = await Event.GetActiveFromType(EventType.PRISON_TIME_MULTIPLIER);
-				this.Attacker.Prison.Time = addMinutes(new Date(), this.AttackerTimeInPrison * prisonTimeMultiplier);
-				this.Attacker.Prison.HasPaidBribe = false;
-				this.Attacker.Escape.HasTried = false;
-				this.Attacker.Robbery.FailureCount += 1;
-				this.Attacker.Prison.Count += 1;
-
+				await Prison.Arrest(this.Attacker, this.AttackerTimeInPrison);
 				await Notification.Free(this.Attacker);
 
 				Log.Success(`User ${this.Attacker.Nickname} (Id: ${this.Attacker.Id}) failed to rob location ${LocationList[this.LocationId].Name[Language.English]} (Id: ${LocationList[this.LocationId].Id}).`);
@@ -195,11 +190,6 @@ export class LocationRobberyStrategy implements IRobberyStrategy {
 				robberySuccessCount: this.Attacker.Robbery.SuccessCount,
 				robberySuccessRobbedSum: this.Attacker.Robbery.SuccessRobbedSum,
 				wantedTime: this.Attacker.Wanted.Time,
-				prisonTime: this.Attacker.Prison.Time,
-				prisonHasPaidBribe: this.Attacker.Prison.HasPaidBribe,
-				escapeHasTried: this.Attacker.Escape.HasTried,
-				robberyFailureCount: this.Attacker.Robbery.FailureCount,
-				prisonCount: this.Attacker.Prison.Count,
 				robbingLocationId: this.Attacker.Robbery.IsRobbingLocationId,
 			});
 

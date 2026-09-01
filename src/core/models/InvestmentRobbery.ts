@@ -4,12 +4,13 @@ import { InvestmentList, type InvestmentId, type Investment } from "#core/types/
 import type { UserInvestments } from "#core/database/UserInvestments";
 import { UserInvestmentRepository } from "#core/repositories/UserInvestmentRepository";
 import { getPercent } from "#shared/utils";
-import { addHours, addMinutes, isFuture } from "date-fns";
+import { addMinutes, isFuture } from "date-fns";
 import { ClassId } from "#core/types/Classes";
 import { logger } from "#shared/log";
 import { Language } from "./Language";
 import { formatMoney } from "#bot/utils/ui";
 import { RobHistoryRepository } from "#core/repositories/RobHistoryRepository";
+import { Prison } from "./Prison";
 
 export enum InvestmentRobberyReason {
 	NoPermission,
@@ -259,7 +260,7 @@ export class InvestmentRobbery {
 			}
 
 			for (const participant of this.Participants.values()) {
-				participant.Prison.Time = addHours(new Date(), result.prisonHours);
+				await Prison.Arrest(participant, result.prisonHours * 60);
 
 				if (defenderJoined) {
 					participant.Hospital.Time = addMinutes(new Date(), 30);
@@ -269,11 +270,8 @@ export class InvestmentRobbery {
 				participant.Robbery.ParticipatingInGangAction = false;
 
 				await participant.Update({
-					prisonTime: participant.Prison.Time,
 					...(defenderJoined && { hospitalTime: participant.Hospital.Time }),
 					robbingUserId: null,
-					prisonHasPaidBribe: false,
-					escapeHasTried: false,
 					robberyParticipatingInGangAction: false
 				});
 			}
@@ -287,7 +285,7 @@ export class InvestmentRobbery {
 		}
 
 		logger.info(`Investment Robbery Finished! Result for Gang ${this.Gang.Name} (Id: ${this.Gang.Id}) vs Target ${this.Target.Nickname} (Id: ${this.Target.Id}): ${JSON.stringify(result)}`);
-		
+
 		await RobHistoryRepository.CreateInvestmentHistory(this, win, result.robbedAmount);
 
 		return result;

@@ -1,6 +1,7 @@
 import type { Gang } from "./Gang.js";
 import type { User } from "./User.js";
 import { Vault } from "./Vault.js";
+import { Prison } from "./Prison.js";
 import { GangHeistRepository } from "#core/repositories/GangHeistRepository";
 import { getWeeklyTarget, HeistMissionId } from "#core/types/Heist";
 import { GangBaseId } from "#core/types/GangBases";
@@ -168,17 +169,10 @@ export class Heist {
 
 			// Jail time: random 4h to 5h
 			const baseJailTime = Math.floor(Math.random() * (5 - 4 + 1) + 4);
-			const jailMs = baseJailTime * 60 * 60 * 1_000;
+			const jailMinutes = baseJailTime * 60;
 
 			for (const p of players) {
-				const factor = p.Class === ClassId.Thief ? 1.15 : 1.0;
-				const jailDuration = Math.floor(jailMs * factor);
-				p.Prison.Time = new Date(now.getTime() + jailDuration);
-				p.Robbery.FailureCount += 1;
-				await p.Update({
-					prisonTime: p.Prison.Time,
-					robberyFailureCount: p.Robbery.FailureCount,
-				});
+				await Prison.Arrest(p, jailMinutes);
 			}
 
 			return { success: false, chance, isArrested: true, time: baseJailTime };
@@ -243,17 +237,10 @@ export class Heist {
 
 			// Jail time: random 4h to 5h
 			const baseJailTime = Math.floor(Math.random() * (5 - 4 + 1) + 4);
-			const jailMs = baseJailTime * 60 * 60 * 1_000;
+			const jailMinutes = baseJailTime * 60;
 
 			for (const p of players) {
-				const factor = p.Class === ClassId.Thief ? 1.15 : 1.0;
-				const jailDuration = Math.floor(jailMs * factor);
-				p.Prison.Time = new Date(now.getTime() + jailDuration);
-				p.Robbery.FailureCount += 1;
-				await p.Update({
-					prisonTime: p.Prison.Time,
-					robberyFailureCount: p.Robbery.FailureCount,
-				});
+				await Prison.Arrest(p, jailMinutes);
 			}
 
 			return { success: false, chance, isArrested: true, time: baseJailTime };
@@ -364,17 +351,10 @@ export class Heist {
 			// Failure!
 			// Jail time: random 8h to 10h
 			const baseJailTime = Math.floor(Math.random() * (10 - 8 + 1) + 8);
-			const jailMs = baseJailTime * 60 * 60 * 1_000;
+			const jailMinutes = baseJailTime * 60;
 
 			for (const p of players) {
-				const factor = p.Class === ClassId.Thief ? 1.15 : 1.0;
-				const jailDuration = Math.floor(jailMs * factor);
-				p.Prison.Time = new Date(now.getTime() + jailDuration);
-				p.Robbery.FailureCount += 1;
-				await p.Update({
-					prisonTime: p.Prison.Time,
-					robberyFailureCount: p.Robbery.FailureCount,
-				});
+				await Prison.Arrest(p, jailMinutes);
 			}
 
 			await GangHeistRepository.Update(gang.Id, {

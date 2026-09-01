@@ -18,6 +18,7 @@ import { Notification } from "./Notification";
 import { UserItemRepository } from "#core/repositories/UserItemRepository";
 import { BundleId } from "#core/types/Ids";
 import { formatMoney } from "#bot/utils/ui";
+import { Prison } from "./Prison";
 
 export class Scavenge {
 	User: User;
@@ -230,11 +231,7 @@ export class Scavenge {
 				result.hospitalTime = this.User.Hospital.Time;
 			}
 			else if (inprisoned) {
-				const prisonTimeMultiplier = await Event.GetActiveFromType(EventType.PRISON_TIME_MULTIPLIER);
-				this.User.Prison.Time = addMinutes(new Date(), this.Timer.Prison * prisonTimeMultiplier);
-				this.User.Prison.Count += 1;
-				this.User.Prison.HasPaidBribe = false;
-				this.User.Escape.HasTried = false;
+				await Prison.Arrest(this.User, this.Timer.Prison, { isFromRobbery: false });
 				this.User.Scavenge.Found.FailureWithPrison += 1;
 				await Notification.Free(this.User);
 				result.prisonTime = this.User.Prison.Time;
@@ -257,11 +254,6 @@ export class Scavenge {
 			scavengeFoundItems: this.User.Scavenge.Found.Items,
 			scavengeFoundTotal: this.User.Scavenge.Found.Total,
 			scavengeFailures: this.User.Scavenge.Found.Failures,
-
-			prisonTime: this.User.Prison.Time,
-			prisonCount: this.User.Prison.Count,
-			prisonHasPaidBribe: this.User.Prison.HasPaidBribe,
-			escapeHasTried: this.User.Escape.HasTried,
 
 			scavengeFailureWithPrison: this.User.Scavenge.Found.FailureWithPrison,
 			hospitalTime: this.User.Hospital.Time,

@@ -2,7 +2,7 @@ import type { User } from "./User";
 import { Language } from "./Language";
 import { UserRepository } from "#core/repositories/UserRepository";
 import { formatMoney } from "#bot/utils/ui";
-import { getPrisonBribeClassModifier, getPrisonEscapeClassModifier } from "#core/types/Classes";
+import { ClassId, getPrisonBribeClassModifier, getPrisonEscapeClassModifier } from "#core/types/Classes";
 import { addMinutes, addSeconds } from "date-fns";
 import { Log } from "#shared/log";
 import { Notification, NotificationType } from "./Notification";
@@ -42,6 +42,32 @@ export class Prison {
 
 	static BribeTimeInMinutesWanted = 40;
 	static EscapeTimeInMinutesWanted = 40;
+
+	static async Arrest(user: User, durationInMinutes: number, { isFromRobbery = true }: { isFromRobbery?: boolean } = {}) {
+		const prisonTimeMultiplier = await Event.GetActiveFromType(EventType.PRISON_TIME_MULTIPLIER);
+
+		const factor = user.Class === ClassId.Thief ? 1.15 : 1.0;
+		const jailDuration = Math.floor(durationInMinutes * factor * prisonTimeMultiplier);
+
+		user.Prison.Time = addMinutes(new Date(), jailDuration);
+		user.Prison.Count += 1;
+		user.Prison.HasPaidBribe = false;
+		user.Escape.HasTried = false;
+
+		if (isFromRobbery) {
+			user.Robbery.FailureCount += 1;
+		}
+
+		await user.Update({
+			prisonTime: user.Prison.Time,
+			prisonCount: user.Prison.Count,
+			robberyFailureCount: user.Robbery.FailureCount,
+			escapeHasTried: user.Escape.HasTried,
+			prisonHasPaidBribe: user.Prison.HasPaidBribe,
+		});
+
+		Log.Info(`User ${user.Nickname} (Id: ${user.Id}) was arrested for ${jailDuration} minutes. ${isFromRobbery ? "From robbery" : ""}`);
+	}
 
 	constructor(user: User) {
 		this.User = user;

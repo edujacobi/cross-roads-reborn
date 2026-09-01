@@ -131,8 +131,9 @@ describe("Robbery Outcome Logic", () => {
 		expect(defender.Attributes.Defense).toBe(originalDefense - 5);
 		expect(robbery.AttackerTimeInPrison).toBe(originalPrisonTime + additionalPoliceTime);
 		expect(outcome.success).toBe(false);
-		// Assuming Event.GetActiveFromType(EventType.PRISON_TIME_MULTIPLIER) is 1 based on mocks
-		const expectedPrisonTime = new Date(Date.now() + (originalPrisonTime + additionalPoliceTime) * 60000);
+		// Thief class applies a 1.15 multiplier in Prison.Arrest
+		const thiefMultiplier = attacker.Class === ClassId.Thief ? 1.15 : 1.0;
+		const expectedPrisonTime = new Date(Date.now() + Math.floor((originalPrisonTime + additionalPoliceTime) * thiefMultiplier) * 60000);
 		// Check that the time is roughly correct (allow some ms difference)
 		expect(attacker.Prison.Time.getTime()).toBeCloseTo(expectedPrisonTime.getTime(), -4);
 
