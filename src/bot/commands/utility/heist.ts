@@ -144,19 +144,16 @@ module.exports = {
 			container.addButtonRow(
 				btn => btn
 					.setCustomId("m1_blueprint")
-					.setEmoji("📁")
 					.setLabel(m1Done ? s.doneLabel : (m1Cooldown ? s.cooldownLabel : s.blueprintLabel))
 					.setStyle(m1Done ? ButtonStyle.Success : ButtonStyle.Secondary)
 					.setDisabled(m1Done || m1Cooldown),
 				btn => btn
 					.setCustomId("m2_getaway")
-					.setEmoji("🚗")
 					.setLabel(m2Done ? s.doneLabel : s.getawayLabel)
 					.setStyle(m2Done ? ButtonStyle.Success : ButtonStyle.Secondary)
 					.setDisabled(m2Done || !hasEnoughMoney),
 				btn => btn
 					.setCustomId("m3_hack")
-					.setEmoji("💻")
 					.setLabel(m3Done ? s.doneLabel : (m3Cooldown ? s.cooldownLabel : s.hackLabel))
 					.setStyle(m3Done ? ButtonStyle.Success : ButtonStyle.Secondary)
 					.setDisabled(m3Done || m3Cooldown),
