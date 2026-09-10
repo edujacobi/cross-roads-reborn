@@ -150,33 +150,70 @@ module.exports = {
 
 		const collector = createButtonCollector(interaction, response);
 
+		let isProcessing = false;
 		collector?.on("collect", async btn => {
-			await deferUpdate(btn);
+			if (isProcessing) return;
+			isProcessing = true;
 
-			if (btn.customId === "back") {
-				container = generateContainer();
-				return replyWithContainer(interaction, container);
-			}
+			try {
+				await deferUpdate(btn);
 
-			if (btn.customId.includes("buy")) {
-				await user.GetInfo();
+				if (btn.customId === "back") {
+					container = generateContainer();
+					return replyWithContainer(interaction, container);
+				}
 
-				const itemId = Number(btn.customId.replace("buy", ""));
-				const item = ItemList[itemId];
+				if (btn.customId.includes("buy")) {
+					await user.GetInfo();
 
-				const { canBuy, message } = await shop.CanUserBuyItem(item);
+					const itemId = Number(btn.customId.replace("buy", ""));
+					const item = ItemList[itemId];
 
-				if (!canBuy) {
+					const { canBuy, message } = await shop.CanUserBuyItem(item);
+
+					if (!canBuy) {
+						container = addContainerHeader();
+
+						container
+							.addTexts([
+								message,
+							])
+							.addButtonRow(btn => btn
+								.setLabel(s.back)
+								.setStyle(ButtonStyle.Secondary)
+								.setCustomId("back"),
+							);
+
+						addContainerFooter(container);
+
+						return replyWithContainer(interaction, container);
+					}
+
+					await user.BuyItem(item);
+
+					const userItem = user.Items.find(i => i.Id == item.Id);
+
+					const remainigTime = userItem?.RemainingTime;
+					const quantity = userItem?.Quantity;
+					const isConsumable = item.Type === ItemType.Consumable;
+
 					container = addContainerHeader();
 
 					container
 						.addTexts([
-							message,
-						])
-						.addButtonRow(btn => btn
-							.setLabel(s.back)
-							.setStyle(ButtonStyle.Secondary)
-							.setCustomId("back"),
+							s.itemBought(`${user.GetItemSkin(item)} ${item.Description[user.Language]}`),
+							(!isConsumable && remainigTime) ? `-# ${s.yourItemEnds} ${time(remainigTime, TimestampStyles.RelativeTime)}` : "",
+							(isConsumable && quantity) ? `-# ${s.youHave} ${quantity}` : "",
+						].filter(Boolean))
+						.addButtonRow(
+							btn => btn
+								.setLabel(s.back)
+								.setStyle(ButtonStyle.Secondary)
+								.setCustomId("back"),
+							btn => btn
+								.setLabel(s.buyMore(item.Price))
+								.setStyle(ButtonStyle.Success)
+								.setCustomId(`buy${itemId}`),
 						);
 
 					addContainerFooter(container);
@@ -184,47 +221,19 @@ module.exports = {
 					return replyWithContainer(interaction, container);
 				}
 
-				await user.BuyItem(item);
-
-				const userItem = user.Items.find(i => i.Id == item.Id);
-
-				const remainigTime = userItem?.RemainingTime;
-				const quantity = userItem?.Quantity;
-				const isConsumable = item.Type === ItemType.Consumable;
-
-				container = addContainerHeader();
-
-				container
-					.addTexts([
-						s.itemBought(`${user.GetItemSkin(item)} ${item.Description[user.Language]}`),
-						(!isConsumable && remainigTime) ? `-# ${s.yourItemEnds} ${time(remainigTime, TimestampStyles.RelativeTime)}` : "",
-						(isConsumable && quantity) ? `-# ${s.youHave} ${quantity}` : "",
-					].filter(Boolean))
-					.addButtonRow(
-						btn => btn
-							.setLabel(s.back)
-							.setStyle(ButtonStyle.Secondary)
-							.setCustomId("back"),
-						btn => btn
-							.setLabel(s.buyMore(item.Price))
-							.setStyle(ButtonStyle.Success)
-							.setCustomId(`buy${itemId}`),
-					);
-
-				addContainerFooter(container);
-
-				return replyWithContainer(interaction, container);
+				if (btn.customId === "previous") {
+					currentPage -= 1;
+					container = generateContainer();
+					return replyWithContainer(interaction, container);
+				}
+				else if (btn.customId === "next") {
+					currentPage += 1;
+					container = generateContainer();
+					return replyWithContainer(interaction, container);
+				}
 			}
-
-			if (btn.customId === "previous") {
-				currentPage -= 1;
-				container = generateContainer();
-				return replyWithContainer(interaction, container);
-			}
-			else if (btn.customId === "next") {
-				currentPage += 1;
-				container = generateContainer();
-				return replyWithContainer(interaction, container);
+			finally {
+				isProcessing = false;
 			}
 		});
 

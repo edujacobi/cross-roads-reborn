@@ -220,6 +220,10 @@ export class Prison {
 	}
 
 	async PayBribery(bribeValue: number) {
+		if (this.User.Prison.HasPaidBribe || !this.User.IsInPrison()) {
+			return false;
+		}
+
 		const chance = Math.floor(Math.random() * 101);
 		const userClassModifier = getPrisonBribeClassModifier(this.User.Class);
 		const BRIBE_CHANCE = 75 + userClassModifier;

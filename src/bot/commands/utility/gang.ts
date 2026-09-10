@@ -2063,85 +2063,98 @@ module.exports = {
 				await disableButtons(interaction, container);
 			});
 
+			let isProcessing = false;
 			collector?.on("collect", async btn => {
-				await deferUpdate(btn);
+				if (isProcessing) return;
+				isProcessing = true;
 
-				if (btn.customId === "back") {
-					container = generateDefaultContainer();
-					return replyWithContainer(interaction, container);
-				}
+				try {
+					await deferUpdate(btn);
 
-				else if (btn.customId.startsWith("buy")) {
-					const baseId = Number(btn.customId.replace("buy", "")) as GangBaseId;
-					const base = GangBases[baseId];
-
-					if (!gang) {
-						return;
+					if (btn.customId === "back") {
+						container = generateDefaultContainer();
+						return replyWithContainer(interaction, container);
 					}
 
-					container = addBaseHeader()
-						.addSectionComponents(section => section
+					else if (btn.customId.startsWith("buy")) {
+						const baseId = Number(btn.customId.replace("buy", "")) as GangBaseId;
+						const base = GangBases[baseId];
+
+						if (!gang) {
+							return;
+						}
+
+						container = addBaseHeader()
+							.addSectionComponents(section => section
+								.addTexts([
+									`### ${base.Name[language]}`,
+									base.Description[language],
+								])
+								.setThumbnailAccessory(thumb => thumb
+									.setURL(base.ImageUrl!),
+								),
+							)
 							.addTexts([
-								`### ${base.Name[language]}`,
-								base.Description[language],
+								getModifierText(base.Modifier),
 							])
-							.setThumbnailAccessory(thumb => thumb
-								.setURL(base.ImageUrl!),
-							),
-						)
-						.addTexts([
-							getModifierText(base.Modifier),
-						])
-						.addButtonRow(
-							btn => btn
-								.setLabel(s.back)
-								.setCustomId("back")
-								.setStyle(ButtonStyle.Secondary),
-							btn => btn
-								.setStyle(ButtonStyle.Success)
-								.setLabel(s.confirm)
-								.setDisabled(gang!.Money < BASE_COST)
-								.setCustomId(`confirm${base.Id}`),
-						)
-						.addFooter({
-							text: `${gang.Name} • ${formatMoney(gang.Money, language)}`,
-						});
+							.addButtonRow(
+								btn => btn
+									.setLabel(s.back)
+									.setCustomId("back")
+									.setStyle(ButtonStyle.Secondary),
+								btn => btn
+									.setStyle(ButtonStyle.Success)
+									.setLabel(s.confirm)
+									.setDisabled(gang!.Money < BASE_COST)
+									.setCustomId(`confirm${base.Id}`),
+							)
+							.addFooter({
+								text: `${gang.Name} • ${formatMoney(gang.Money, language)}`,
+							});
 
-					return replyWithContainer(interaction, container);
+						return replyWithContainer(interaction, container);
+					}
+
+					else if (btn.customId.startsWith("confirm")) {
+						const baseId = Number(btn.customId.replace("confirm", "")) as GangBaseId;
+						const base = GangBases[baseId];
+
+						gang = await Gang.GetById(gang!.Id);
+
+						if (!gang) {
+							return;
+						}
+
+						if (gang.BaseId === base.Id) {
+							return;
+						}
+
+						if (gang.Money < BASE_COST) {
+							return warn(s.notEnoughMoneyBase(formatMoney(BASE_COST, language)));
+						}
+
+						gang.Money -= BASE_COST;
+						gang.BaseId = base.Id;
+						await gang.Update();
+
+						container = addBaseHeader()
+							.addSectionComponents(section => section
+								.addTexts([
+									s.baseBought(base.Name[language], gang!.Name),
+								])
+								.setThumbnailAccessory(thumb => thumb
+									.setURL(base.ImageUrl!),
+								),
+							)
+							.addFooter({
+								text: `${gang.Name} • ${formatMoney(gang.Money, language)}`,
+							});
+
+						return replyWithContainer(interaction, container);
+					}
 				}
-
-				else if (btn.customId.startsWith("confirm")) {
-					const baseId = Number(btn.customId.replace("confirm", "")) as GangBaseId;
-					const base = GangBases[baseId];
-
-					gang = await Gang.GetById(gang!.Id);
-
-					if (!gang) {
-						return;
-					}
-
-					if (gang.Money < BASE_COST) {
-						return warn(s.notEnoughMoneyBase(formatMoney(BASE_COST, language)));
-					}
-
-					gang.Money -= BASE_COST;
-					gang.BaseId = base.Id;
-					await gang.Update();
-
-					container = addBaseHeader()
-						.addSectionComponents(section => section
-							.addTexts([
-								s.baseBought(base.Name[language], gang!.Name),
-							])
-							.setThumbnailAccessory(thumb => thumb
-								.setURL(base.ImageUrl!),
-							),
-						)
-						.addFooter({
-							text: `${gang.Name} • ${formatMoney(gang.Money, language)}`,
-						});
-
-					return replyWithContainer(interaction, container);
+				finally {
+					isProcessing = false;
 				}
 			});
 			return;

@@ -96,8 +96,13 @@ module.exports = {
 				await disableButtons(interaction, container);
 			});
 
+			let isProcessing = false;
 			collector?.on("collect", async btn => {
-				await deferUpdate(btn);
+				if (isProcessing) return;
+				isProcessing = true;
+
+				try {
+					await deferUpdate(btn);
 
 				if (btn.customId === "hospitalized") {
 					buttonHospitalized.setDisabled(true);
@@ -226,7 +231,11 @@ module.exports = {
 
 					return replyWithContainer(interaction, container);
 				}
-			});
+			}
+			finally {
+				isProcessing = false;
+			}
+		});
 		};
 
 		await generateContainer();

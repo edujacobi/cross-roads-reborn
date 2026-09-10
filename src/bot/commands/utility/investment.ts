@@ -134,84 +134,93 @@ async function handleBuy(interaction: ChatInputCommandInteraction, user: User, l
 
 	const { collector } = await pagination.GenerateContainer();
 
+	let isProcessing = false;
 	collector?.on("collect", async btn => {
-		if (btn.customId.startsWith("buy")) {
-			await deferUpdate(btn);
-			const investmentId = Number(btn.customId.replace("buy", "")) as InvestmentId;
-			const investment = InvestmentList[investmentId];
+		if (isProcessing) return;
+		isProcessing = true;
 
-			const buyConfirmContainer = addBuyHeader()
-				.addTexts([
-					s.buyConfirmationTitle,
-					s.buyConfirmationDesc(investment.Name[language], formatMoney(investment.Price, language)),
-				])
-				.addButtonRow(
-					(btn) => btn
-						.setLabel(s.confirmBuy)
-						.setStyle(ButtonStyle.Success)
-						.setCustomId(`confirm_buy${investmentId}`),
-					(btn) => btn
-						.setLabel(s.cancelBuy)
-						.setStyle(ButtonStyle.Secondary)
-						.setCustomId("cancel_buy"),
-				)
-				.addFooter({
-					text: formatMoney(user.Money, language),
-				});
+		try {
+			if (btn.customId.startsWith("buy")) {
+				await deferUpdate(btn);
+				const investmentId = Number(btn.customId.replace("buy", "")) as InvestmentId;
+				const investment = InvestmentList[investmentId];
 
-			return replyWithContainer(interaction, buyConfirmContainer);
-
-		}
-		else if (btn.customId.startsWith("confirm_buy")) {
-			await deferUpdate(btn);
-			const investmentId = Number(btn.customId.replace("confirm_buy", "")) as InvestmentId;
-			const investment = InvestmentList[investmentId];
-
-			await user.GetInfo();
-
-			if (!user.IsIdling()) {
-				return replyWithContainer(interaction, new CustomContainerBuilder()
-					.setUser(user)
-					.setAccentColor(Colors.Red)
-					.addTexts([s.notIdlingBuy])
-					.addFooter());
-			}
-
-
-			// Process buy
-			const result = await Investment.Buy(user, investmentId);
-
-			if (!result.success) {
-				const errorContainer = addBuyHeader()
-					.setAccentColor(Colors.Red)
+				const buyConfirmContainer = addBuyHeader()
 					.addTexts([
-						s.buyError(result.reason!),
+						s.buyConfirmationTitle,
+						s.buyConfirmationDesc(investment.Name[language], formatMoney(investment.Price, language)),
+					])
+					.addButtonRow(
+						(btn) => btn
+							.setLabel(s.confirmBuy)
+							.setStyle(ButtonStyle.Success)
+							.setCustomId(`confirm_buy${investmentId}`),
+						(btn) => btn
+							.setLabel(s.cancelBuy)
+							.setStyle(ButtonStyle.Secondary)
+							.setCustomId("cancel_buy"),
+					)
+					.addFooter({
+						text: formatMoney(user.Money, language),
+					});
+
+				return replyWithContainer(interaction, buyConfirmContainer);
+
+			}
+			else if (btn.customId.startsWith("confirm_buy")) {
+				await deferUpdate(btn);
+				const investmentId = Number(btn.customId.replace("confirm_buy", "")) as InvestmentId;
+				const investment = InvestmentList[investmentId];
+
+				await user.GetInfo();
+
+				if (!user.IsIdling()) {
+					return replyWithContainer(interaction, new CustomContainerBuilder()
+						.setUser(user)
+						.setAccentColor(Colors.Red)
+						.addTexts([s.notIdlingBuy])
+						.addFooter());
+				}
+
+
+				// Process buy
+				const result = await Investment.Buy(user, investmentId);
+
+				if (!result.success) {
+					const errorContainer = addBuyHeader()
+						.setAccentColor(Colors.Red)
+						.addTexts([
+							s.buyError(result.reason!),
+						])
+						.addFooter({
+							text: formatMoney(user.Money, language),
+						});
+
+					return replyWithContainer(interaction, errorContainer);
+				}
+
+				// Success
+				const successContainer = addBuyHeader()
+					.addTexts([
+						`${s.buySuccess} **${investment.Name[language]}**!`,
 					])
 					.addFooter({
 						text: formatMoney(user.Money, language),
 					});
 
-				return replyWithContainer(interaction, errorContainer);
+				pagination.UserHasInteractedOutside = true;
+				collector.stop();
+				return replyWithContainer(interaction, successContainer);
+
 			}
-
-			// Success
-			const successContainer = addBuyHeader()
-				.addTexts([
-					`${s.buySuccess} **${investment.Name[language]}**!`,
-				])
-				.addFooter({
-					text: formatMoney(user.Money, language),
-				});
-
-			pagination.UserHasInteractedOutside = true;
-			collector.stop();
-			return replyWithContainer(interaction, successContainer);
-
+			else if (btn.customId === "cancel_buy") {
+				await deferUpdate(btn);
+				const container = await pagination.BuildContainerWithRow();
+				return replyWithContainer(interaction, container);
+			}
 		}
-		else if (btn.customId === "cancel_buy") {
-			await deferUpdate(btn);
-			const container = await pagination.BuildContainerWithRow();
-			return replyWithContainer(interaction, container);
+		finally {
+			isProcessing = false;
 		}
 	});
 }
@@ -327,123 +336,132 @@ async function handleManage(interaction: ChatInputCommandInteraction, user: User
 	const response = await replyWithContainer(interaction, container);
 	const collector = createButtonCollector(interaction, response);
 
+	let isProcessing = false;
 	collector?.on("collect", async btn => {
-		await deferUpdate(btn);
+		if (isProcessing) return;
+		isProcessing = true;
 
-		if (btn.customId === "hire_henchman") {
-			// Show confirmation
-			const feePercent = investment.HenchmanFee;
-			const confirmContainer = addContainerHeader()
-				.addTexts([
-					`### ${s.hireHenchmanConfirmTitle}`,
-					s.hireHenchmanConfirmDesc(feePercent),
-				])
-				.addButtonRow(
-					(btn) => btn
-						.setLabel(s.confirmHire)
-						.setStyle(ButtonStyle.Success)
-						.setEmoji(EmoteString.Henchman)
-						.setCustomId("confirm_hire"),
-					(btn) => btn
-						.setLabel(s.cancelAction)
-						.setStyle(ButtonStyle.Secondary)
-						.setCustomId("cancel_hire"),
-				)
-				.addFooter({
-					text: formatMoney(user.Money, language),
-				});
+		try {
+			await deferUpdate(btn);
 
-			return replyWithContainer(interaction, confirmContainer);
-
-		}
-		else if (btn.customId === "confirm_hire") {
-			const result = await Investment.HireHenchman(user);
-			if (!result.success) {
-				const errorContainer = addContainerHeader()
-					.setAccentColor(Colors.Red)
-					.addTexts([s.hireHenchmanError(result.reason || "unknown")])
+			if (btn.customId === "hire_henchman") {
+				// Show confirmation
+				const feePercent = investment.HenchmanFee;
+				const confirmContainer = addContainerHeader()
+					.addTexts([
+						`### ${s.hireHenchmanConfirmTitle}`,
+						s.hireHenchmanConfirmDesc(feePercent),
+					])
+					.addButtonRow(
+						(btn) => btn
+							.setLabel(s.confirmHire)
+							.setStyle(ButtonStyle.Success)
+							.setEmoji(EmoteString.Henchman)
+							.setCustomId("confirm_hire"),
+						(btn) => btn
+							.setLabel(s.cancelAction)
+							.setStyle(ButtonStyle.Secondary)
+							.setCustomId("cancel_hire"),
+					)
 					.addFooter({
 						text: formatMoney(user.Money, language),
 					});
-				return replyWithContainer(interaction, errorContainer);
+
+				return replyWithContainer(interaction, confirmContainer);
+
 			}
+			else if (btn.customId === "confirm_hire") {
+				const result = await Investment.HireHenchman(user);
+				if (!result.success) {
+					const errorContainer = addContainerHeader()
+						.setAccentColor(Colors.Red)
+						.addTexts([s.hireHenchmanError(result.reason || "unknown")])
+						.addFooter({
+							text: formatMoney(user.Money, language),
+						});
+					return replyWithContainer(interaction, errorContainer);
+				}
 
-			await user.GetInfo(); // Refresh state from DB
-			container = generateManageContainer();
-			return replyWithContainer(interaction, container);
+				await user.GetInfo(); // Refresh state from DB
+				container = generateManageContainer();
+				return replyWithContainer(interaction, container);
 
-		}
-		else if (btn.customId === "cancel_hire") {
-			container = generateManageContainer();
-			return replyWithContainer(interaction, container);
-
-		}
-		else if (btn.customId === "toggle_notify") {
-			await Investment.ToggleNotifyYield(user);
-			container = generateManageContainer();
-			return replyWithContainer(interaction, container);
-
-		}
-		else if (btn.customId === "abandon") {
-			const abandonConfirmation = addContainerHeader()
-				.addTexts([
-					`### ${s.abandonConfirmationTitle}`,
-					s.abandonWarning,
-				])
-				.addButtonRow(
-					(btn) => btn
-						.setLabel(s.confirmAbandon)
-						.setStyle(ButtonStyle.Danger)
-						.setCustomId("confirm_abandon"),
-					(btn) => btn
-						.setLabel(s.cancelAction)
-						.setStyle(ButtonStyle.Secondary)
-						.setCustomId("cancel_abandon"),
-				)
-				.addFooter({
-					text: formatMoney(user.Money, language),
-				});
-
-			return replyWithContainer(interaction, abandonConfirmation);
-
-		}
-		else if (btn.customId === "confirm_abandon") {
-			await user.GetInfo();
-
-			if (!user.IsIdling()) {
-				return replyWithContainer(interaction, new CustomContainerBuilder()
-					.setUser(user)
-					.setAccentColor(Colors.Red)
-					.addTexts([s.notIdlingAbandon])
-					.addFooter(),
-				);
 			}
+			else if (btn.customId === "cancel_hire") {
+				container = generateManageContainer();
+				return replyWithContainer(interaction, container);
 
-			const result = await Investment.Abandon(user);
+			}
+			else if (btn.customId === "toggle_notify") {
+				await Investment.ToggleNotifyYield(user);
+				container = generateManageContainer();
+				return replyWithContainer(interaction, container);
 
-			if (!result.success) {
-				const errorContainer = addContainerHeader()
-					.setAccentColor(Colors.Red)
-					.addTexts([s.abandonError(result.reason || "unknown")])
+			}
+			else if (btn.customId === "abandon") {
+				const abandonConfirmation = addContainerHeader()
+					.addTexts([
+						`### ${s.abandonConfirmationTitle}`,
+						s.abandonWarning,
+					])
+					.addButtonRow(
+						(btn) => btn
+							.setLabel(s.confirmAbandon)
+							.setStyle(ButtonStyle.Danger)
+							.setCustomId("confirm_abandon"),
+						(btn) => btn
+							.setLabel(s.cancelAction)
+							.setStyle(ButtonStyle.Secondary)
+							.setCustomId("cancel_abandon"),
+					)
 					.addFooter({
 						text: formatMoney(user.Money, language),
 					});
-				return replyWithContainer(interaction, errorContainer);
+
+				return replyWithContainer(interaction, abandonConfirmation);
+
 			}
+			else if (btn.customId === "confirm_abandon") {
+				await user.GetInfo();
 
-			const successContainer = addContainerHeader()
-				.addTexts([s.abandonSuccess])
-				.addFooter({
-					text: formatMoney(user.Money, language),
-				});
+				if (!user.IsIdling()) {
+					return replyWithContainer(interaction, new CustomContainerBuilder()
+						.setUser(user)
+						.setAccentColor(Colors.Red)
+						.addTexts([s.notIdlingAbandon])
+						.addFooter(),
+					);
+				}
 
-			collector?.stop();
-			return replyWithContainer(interaction, successContainer);
+				const result = await Investment.Abandon(user);
 
+				if (!result.success) {
+					const errorContainer = addContainerHeader()
+						.setAccentColor(Colors.Red)
+						.addTexts([s.abandonError(result.reason || "unknown")])
+						.addFooter({
+							text: formatMoney(user.Money, language),
+						});
+					return replyWithContainer(interaction, errorContainer);
+				}
+
+				const successContainer = addContainerHeader()
+					.addTexts([s.abandonSuccess])
+					.addFooter({
+						text: formatMoney(user.Money, language),
+					});
+
+				collector?.stop();
+				return replyWithContainer(interaction, successContainer);
+
+			}
+			else if (btn.customId === "cancel_abandon") {
+				container = generateManageContainer();
+				return replyWithContainer(interaction, container);
+			}
 		}
-		else if (btn.customId === "cancel_abandon") {
-			container = generateManageContainer();
-			return replyWithContainer(interaction, container);
+		finally {
+			isProcessing = false;
 		}
 	});
 

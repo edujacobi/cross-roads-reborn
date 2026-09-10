@@ -131,10 +131,13 @@ module.exports = {
 
 			const response = await replyWithContainer(interaction, container);
 
-			const collector = createButtonCollector(interaction, response, { idleTime: 30_000 });
-
+			let isProcessing = false;
 			collector?.on("collect", async btn => {
-				await deferUpdate(btn);
+				if (isProcessing) return;
+				isProcessing = true;
+
+				try {
+					await deferUpdate(btn);
 
 				if (btn.customId === "back") {
 					await generateDefaultContainer();
@@ -504,7 +507,11 @@ module.exports = {
 
 					return replyWithContainer(interaction, container);
 				}
-			});
+			}
+			finally {
+				isProcessing = false;
+			}
+		});
 
 			collector?.on("end", async () => {
 				await disableButtons(interaction, container);

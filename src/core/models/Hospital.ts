@@ -41,6 +41,10 @@ export class Hospital {
 	}
 
 	async PayPrivate() {
+		if (!this.User.IsInHospital()) {
+			return false;
+		}
+
 		this.User.Money -= this.PrivatePrice;
 		this.User.Hospital.TreatmentSum += this.PrivatePrice;
 		this.User.Hospital.TreatmentCount += 1;

@@ -227,21 +227,27 @@ export class Investment {
 			return { success: false, reason: "already_has_investment" };
 		}
 
-		user.Money -= investmentData.Price;
-		await user.Update({ money: user.Money });
-
+		// ponytail: SQLite's UNIQUE(userId) is our native mutex. Insert first; if duplicate, catch it before touching money.
 		const expiresAt = addDays(new Date(), Investment.DURATION_DAYS);
 
-		await UserInvestmentRepository.Create({
-			userId: user.Id,
-			investmentId,
-			accumulatedYield: 0,
-			accumulatedFee: 0,
-			henchmanEndsAt: null,
-			henchmanHospitalized: false,
-			expiresAt,
-			lastYieldAt: null,
-		});
+		try {
+			await UserInvestmentRepository.Create({
+				userId: user.Id,
+				investmentId,
+				accumulatedYield: 0,
+				accumulatedFee: 0,
+				henchmanEndsAt: null,
+				henchmanHospitalized: false,
+				expiresAt,
+				lastYieldAt: null,
+			});
+		}
+		catch {
+			return { success: false, reason: "already_has_investment" };
+		}
+
+		user.Money -= investmentData.Price;
+		await user.Update({ money: user.Money });
 
 		// Refresh user cache
 		user.Investment.Id = investmentId;
