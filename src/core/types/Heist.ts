@@ -22,7 +22,7 @@ export interface HeistTarget {
 		readonly [Language.Spanish]: string;
 	};
 	readonly VaultType: "bank" | "casino";
-	readonly BaseChanceDivisor: number; // e.g. 50 (or 40 for motoclube)
+	readonly BaseChanceDivisor: number;
 	readonly Thumbnail: string;
 	readonly Emote: {
 		readonly Id: string;
@@ -65,10 +65,10 @@ export const HeistTargets: HeistTarget[] = [
 		},
 		VaultType: "casino",
 		BaseChanceDivisor: 48,
-		Thumbnail: "https://media.discordapp.net/attachments/1233604589064818808/1460598163546312857/Casino_New.png",
+		Thumbnail: "https://media.discordapp.net/attachments/1233604589064818808/1547950330820432033/CasinoVault.png",
 		Emote: {
-			Id: EmoteId.Casino,
-			String: EmoteString.Casino,
+			Id: EmoteId.CasinoVault,
+			String: EmoteString.CasinoVault,
 		}
 	},
 ];
