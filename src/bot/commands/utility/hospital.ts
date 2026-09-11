@@ -104,138 +104,138 @@ module.exports = {
 				try {
 					await deferUpdate(btn);
 
-				if (btn.customId === "hospitalized") {
-					buttonHospitalized.setDisabled(true);
+					if (btn.customId === "hospitalized") {
+						buttonHospitalized.setDisabled(true);
 
-					const pagination = new Pagination(interaction, user.Language);
+						const pagination = new Pagination(interaction, user.Language);
 
-					pagination.HowManyRecords = hospitalized.length;
-					pagination.Limit = 10;
+						pagination.HowManyRecords = hospitalized.length;
+						pagination.Limit = 10;
 
-					const containerHospitalized = new CustomContainerBuilder()
-						.setUser(user)
-						.addTexts([
-							`# ${s.hospitalized}`,
-						])
-						.addLargeSeparator();
+						const containerHospitalized = new CustomContainerBuilder()
+							.setUser(user)
+							.addTexts([
+								`# ${s.hospitalized}`,
+							])
+							.addLargeSeparator();
 
-					pagination.CustomizeContainer = async () => {
-						const users = hospitalized.slice(pagination.Offset, pagination.Offset + pagination.Limit);
+						pagination.CustomizeContainer = async () => {
+							const users = hospitalized.slice(pagination.Offset, pagination.Offset + pagination.Limit);
 
-						for (let i = 0; i < users.length; i++) {
-							const u = users[i];
-							containerHospitalized.addTexts([
-								`### ${ClassList[u.class].Image.Emote.String} ${u.nickname}`,
-								`${s.healed} ${time(u.hospitalTime, TimestampStyles.RelativeTime)} • ${s.howManyTimes(u.hospitalCount)}`,
-							]);
+							for (let i = 0; i < users.length; i++) {
+								const u = users[i];
+								containerHospitalized.addTexts([
+									`### ${ClassList[u.class].Image.Emote.String} ${u.nickname}`,
+									`${s.healed} ${time(u.hospitalTime, TimestampStyles.RelativeTime)} • ${s.howManyTimes(u.hospitalCount)}`,
+								]);
 
-							if (i !== users.length - 1) {
-								containerHospitalized.addSmallSeparator();
+								if (i !== users.length - 1) {
+									containerHospitalized.addSmallSeparator();
+								}
 							}
+
+							return containerHospitalized;
+						};
+
+						await pagination.GenerateContainer(container);
+					}
+
+					else if (btn.customId === "private") {
+						buttonPrivate.setDisabled(true);
+
+						await user.GetInfo();
+
+						const { canPay, reason } = await hospital.CanPayPrivate();
+
+						if (!canPay) {
+							let message = "";
+							if (reason === HospitalFailureReason.UserFree) {
+								message = s.userFree;
+							}
+							else if (reason === HospitalFailureReason.NextInLine) {
+								message = s.nextInLine;
+							}
+							else if (reason === HospitalFailureReason.WithoutMoney) {
+								message = s.withoutMoney(hospital.PrivatePrice);
+							}
+
+							container = defaultComponent({
+								user: user,
+								color: CrColors.Hospital,
+								description: `${message} ${EmoteString.Hospital}`,
+								footer: formatMoney(user.Money, user.Language),
+							});
+
+							return replyWithContainer(interaction, container);
 						}
 
-						return containerHospitalized;
-					};
+						addContainerHeader();
 
-					await pagination.GenerateContainer(container);
-				}
-
-				else if (btn.customId === "private") {
-					buttonPrivate.setDisabled(true);
-
-					await user.GetInfo();
-
-					const { canPay, reason } = await hospital.CanPayPrivate();
-
-					if (!canPay) {
-						let message = "";
-						if (reason === HospitalFailureReason.UserFree) {
-							message = s.userFree;
-						}
-						else if (reason === HospitalFailureReason.NextInLine) {
-							message = s.nextInLine;
-						}
-						else if (reason === HospitalFailureReason.WithoutMoney) {
-							message = s.withoutMoney(hospital.PrivatePrice);
-						}
-
-						container = defaultComponent({
-							user: user,
-							color: CrColors.Hospital,
-							description: `${message} ${EmoteString.Hospital}`,
-							footer: formatMoney(user.Money, user.Language),
-						});
+						container
+							.addTexts([
+								`### ${EmoteBadgeString.Season6.Hypochondriac} ${s.privateCare}`,
+								`${s.treatmentCost(hospital.PrivatePrice)}`,
+								`-# ${s.confirmPayment}`,
+							])
+							.addButtonRow(btn => btn
+								.setCustomId("confirm")
+								.setLabel(s.confirm)
+								.setStyle(ButtonStyle.Success),
+							)
+							.addFooter({
+								text: formatMoney(user.Money, user.Language),
+							});
 
 						return replyWithContainer(interaction, container);
 					}
 
-					addContainerHeader();
+					else if (btn.customId === "confirm") {
+						await user.GetInfo();
 
-					container
-						.addTexts([
-							`### ${EmoteBadgeString.Season6.Hypochondriac} ${s.privateCare}`,
-							`${s.treatmentCost(hospital.PrivatePrice)}`,
-							`-# ${s.confirmPayment}`,
-						])
-						.addButtonRow(btn => btn
-							.setCustomId("confirm")
-							.setLabel(s.confirm)
-							.setStyle(ButtonStyle.Success),
-						)
-						.addFooter({
-							text: formatMoney(user.Money, user.Language),
-						});
+						const { canPay, reason } = await hospital.CanPayPrivate();
 
-					return replyWithContainer(interaction, container);
-				}
+						if (!canPay) {
+							let message = "";
+							if (reason === HospitalFailureReason.UserFree) {
+								message = s.userFree;
+							}
+							else if (reason === HospitalFailureReason.NextInLine) {
+								message = s.nextInLine;
+							}
+							else if (reason === HospitalFailureReason.WithoutMoney) {
+								message = s.withoutMoney(hospital.PrivatePrice);
+							}
 
-				else if (btn.customId === "confirm") {
-					await user.GetInfo();
+							container = defaultComponent({
+								user: user,
+								color: CrColors.Hospital,
+								description: `${message} ${EmoteString.Hospital}`,
+								footer: formatMoney(user.Money, user.Language),
+							});
 
-					const { canPay, reason } = await hospital.CanPayPrivate();
-
-					if (!canPay) {
-						let message = "";
-						if (reason === HospitalFailureReason.UserFree) {
-							message = s.userFree;
-						}
-						else if (reason === HospitalFailureReason.NextInLine) {
-							message = s.nextInLine;
-						}
-						else if (reason === HospitalFailureReason.WithoutMoney) {
-							message = s.withoutMoney(hospital.PrivatePrice);
+							return replyWithContainer(interaction, container);
 						}
 
-						container = defaultComponent({
-							user: user,
-							color: CrColors.Hospital,
-							description: `${message} ${EmoteString.Hospital}`,
-							footer: formatMoney(user.Money, user.Language),
-						});
+						await hospital.PayPrivate();
+
+						addContainerHeader();
+
+						container
+							.addTexts([
+								`### ${EmoteBadgeString.Season6.Hypochondriac} ${s.privateCare}`,
+								`${s.privateHealed}`,
+							])
+							.addFooter({
+								text: formatMoney(user.Money, user.Language),
+							});
 
 						return replyWithContainer(interaction, container);
 					}
-
-					await hospital.PayPrivate();
-
-					addContainerHeader();
-
-					container
-						.addTexts([
-							`### ${EmoteBadgeString.Season6.Hypochondriac} ${s.privateCare}`,
-							`${s.privateHealed}`,
-						])
-						.addFooter({
-							text: formatMoney(user.Money, user.Language),
-						});
-
-					return replyWithContainer(interaction, container);
 				}
-			}
-			finally {
-				isProcessing = false;
-			}
-		});
+				finally {
+					isProcessing = false;
+				}
+			});
 		};
 
 		await generateContainer();
