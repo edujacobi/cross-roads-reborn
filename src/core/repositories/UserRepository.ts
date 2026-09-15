@@ -1,9 +1,7 @@
 import { sequelize } from "#core/database/Database";
 import GangMembers from "#core/database/GangMembers";
-import GangRoles from "#core/database/GangRoles";
 import Gangs from "#core/database/Gangs";
 import { HorseRaceBets } from "#core/database/HorseRaceBets";
-import { HorseRaces } from "#core/database/HorseRaces";
 import { LotteryTickets } from "#core/database/LotteryTickets";
 import { Notifications } from "#core/database/Notifications";
 import { RobHistories } from "#core/database/RobHistories";
@@ -344,167 +342,21 @@ export class UserRepository {
 	}
 
 	/**
-	 * Gets the top rankings for end of season.
+	 * Finds all active users (who have chosen a class and are not dead/banned).
 	 */
-	static async GetEndSeasonRankingData() {
-		const defaultAttributes = ["nickname", "id", "class"];
-		const getFromRanking = (orderBy: string, limit = 1) => {
-			return Users.findAll({
-				attributes: [...defaultAttributes, orderBy],
-				limit: limit,
-				order: [[orderBy, "DESC"]],
-				where: {
-					[orderBy]: {
-						[Op.gt]: 0,
-					},
+	static async FindAllActive(attributes?: (keyof Users)[]): Promise<Users[]> {
+		return await Users.findAll({
+			where: {
+				class: {
+					[Op.not]: ClassId.None,
 				},
-			});
-		};
-
-		const getTopGang = () => {
-			return Gangs.findAll({
-				attributes: ["id", "name", "level"],
-				limit: 1,
-				order: [["level", "DESC"]],
-				where: {
-					level: {
-						[Op.gt]: 0,
-					},
-				},
-			});
-		};
-
-		return await Promise.all([
-			getFromRanking("money", 3),
-			getFromRanking("casinoWinSum"),
-			getFromRanking("shopSpentSum"),
-			getFromRanking("robberySuccessRobbedSum"),
-			getFromRanking("jobReceivedSum"),
-			getFromRanking("beatUpSuccessCount"),
-			getFromRanking("scavengeFoundTotal"),
-			getFromRanking("hospitalTreatmentSum"),
-			getFromRanking("prisonBriberySum"),
-			getFromRanking("escapeCount"),
-			getFromRanking("drinkHappyHour"),
-			getFromRanking("investmentTotalProfit"),
-			getTopGang(),
-		]);
-	}
-
-	/**
-	 * Gets general stats counts for end of season.
-	 */
-	static async GetEndSeasonStats() {
-		return await Promise.all([
-			Users.count({ where: { class: { [Op.not]: 0 } } }),
-			Gangs.count(),
-			GangMembers.count(),
-			GangRoles.count(),
-			UserItems.count(),
-			RobHistories.count(),
-			Notifications.count(),
-			LotteryTickets.count(),
-			UserInvestments.count(),
-			HorseRaceBets.count(),
-		]);
-	}
-
-	/**
-	 * Resets all progress and erases seasonal database tables.
-	 */
-	static async ResetSeasonDatabase() {
-		await Promise.all([
-			GangMembers.destroy({ where: {} }),
-			GangRoles.destroy({ where: {} }),
-		]);
-
-		const date = new Date();
-
-		await Promise.all([
-			Users.update(
-				{
-					money: 0,
-					class: 0,
-					dailyStreak: 0,
-					maxDailyStreak: 0,
-					lastDailyReceived: null,
-					casinoLoseCount: 0,
-					casinoLoseSum: 0,
-					casinoWinCount: 0,
-					casinoWinSum: 0,
-					escapeCount: 0,
-					escapeHasTried: false,
-					wantedCount: 0,
-					hospitalCount: 0,
-					hospitalTreatmentCount: 0,
-					hospitalTreatmentSum: 0,
-					jobId: null,
-					jobReceivedCount: 0,
-					jobReceivedSum: 0,
-					prisonCount: 0,
-					prisonBriberyCount: 0,
-					prisonBriberySum: 0,
-					prisonHasPaidBribe: false,
-					robberyBeingRobbedCount: 0,
-					robberyBeingRobbedSum: 0,
-					robberyFailureCount: 0,
-					robberySuccessCount: 0,
-					robberySuccessRobbedSum: 0,
-					casinoIsInGame: false,
-					beatUpSuccessCount: 0,
-					beatUpFailureCount: 0,
-					beatUpBeatedUpCount: 0,
-					shopSpentCount: 0,
-					shopSpentSum: 0,
-					almsGivenSum: 0,
-					almsGivenCount: 0,
-					almsReceivedSum: 0,
-					almsReceivedCount: 0,
-					scavengeCount: 0,
-					scavengeFoundTotal: 0,
-					scavengeFoundItems: 0,
-					scavengeMoneyCount: 0,
-					scavengeMoneySum: 0,
-					scavengeFailures: 0,
-					scavengeFailureWithHospital: 0,
-					scavengeFailureWithPrison: 0,
-					drinkNormal: 0,
-					drinkHappyHour: 0,
-					drunkCount: 0,
-					investmentTotalProfit: 0,
-					nicknameChangeCount: 0,
-					classChangeCount: 0,
-					// actions
-					beingRobbedByUserId: null,
-					robbingUserId: null,
-					robbingLocationId: null,
-					scavengingId: null,
-					beatingUserId: null,
-					beingBeatUpByUserId: null,
-					robberyInvestmentDefending: false,
-					robberyParticipatingInGangAction: false,
-					// timers
-					almsGiveTime: date,
-					almsReceiveTime: date,
-					beatUpTime: date,
-					prisonTime: date,
-					escapeTime: date,
-					wantedTime: date,
-					hospitalTime: date,
-					jobTime: date,
-					scavengeTime: date,
-				},
-				{ where: { class: { [Op.not]: 0 } } },
-			),
-			Gangs.destroy({ where: {} }),
-			UserItems.destroy({ where: {} }),
-			RobHistories.destroy({ where: {} }),
-			Notifications.destroy({ where: {} }),
-			LotteryTickets.destroy({ where: {} }),
-			UserInvestments.destroy({ where: {} }),
-			HorseRaceBets.destroy({ where: {} }),
-			HorseRaces.destroy({ where: {} }),
-		]);
+				[Op.or]: [
+					{ deadUntil: null },
+					{ deadUntil: { [Op.lte]: new Date() } },
+				],
+			},
+			attributes,
+		});
 	}
 }
 

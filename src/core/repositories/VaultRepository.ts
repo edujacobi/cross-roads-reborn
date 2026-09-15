@@ -1,4 +1,5 @@
 import { Vault } from "#core/database/Vault";
+import { type Transaction } from "sequelize";
 
 export class VaultRepository {
 	/**
@@ -33,6 +34,20 @@ export class VaultRepository {
 		await Vault.update(
 			{ mainHeistAllowed },
 			{ where: { id: 1 } },
+		);
+	}
+
+	/**
+	 * Reset the vault to default starting balances and flags.
+	 */
+	static async Reset(transaction?: Transaction): Promise<void> {
+		await Vault.update(
+			{
+				bankBalance: 50_000_000,
+				casinoBalance: 25_000_000,
+				mainHeistAllowed: true,
+			},
+			{ where: { id: 1 }, transaction },
 		);
 	}
 }
