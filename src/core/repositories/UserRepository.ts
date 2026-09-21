@@ -358,5 +358,30 @@ export class UserRepository {
 			attributes,
 		});
 	}
+
+	/**
+	 * Searches and paginates users for admin panel.
+	 */
+	static async SearchUsers(options: { search?: string; limit?: number; offset?: number }): Promise<{ users: Users[]; total: number }> {
+		const limit = Math.min(options.limit || 20, 100);
+		const offset = options.offset || 0;
+		const whereClause = options.search
+			? {
+				[Op.or]: [
+					{ id: { [Op.like]: `%${options.search}%` } },
+					{ nickname: { [Op.like]: `%${options.search}%` } },
+				],
+			}
+			: {};
+
+		const { rows, count } = await Users.findAndCountAll({
+			where: whereClause,
+			limit,
+			offset,
+			order: [["money", "DESC"]],
+		});
+
+		return { users: rows, total: count };
+	}
 }
 

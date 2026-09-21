@@ -151,6 +151,7 @@ export class UserBadge {
 		}
 	}
 
+
 	/**
 	 * Checks if a user has the Helper badge
 	 * @param userId User Id to check

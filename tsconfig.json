@@ -15,7 +15,8 @@
 		"paths": {
 			"#core/*": ["./src/core/*"],
 			"#bot/*": ["./src/bot/*"],
-			"#shared/*": ["./src/shared/*"]
+			"#shared/*": ["./src/shared/*"],
+			"#api/*": ["./src/api/*"]
 		},
 		"resolveJsonModule": true,
 		/* Emit */
@@ -33,5 +34,6 @@
 		/* Completeness */
 		"skipDefaultLibCheck": true,
 		"skipLibCheck": true
-	}
+	},
+	"exclude": ["node_modules", "build", "admin"]
 }

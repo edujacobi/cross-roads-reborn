@@ -1,0 +1,49 @@
+// Cross Roads Design Tokens & Variables
+
+// Backgrounds
+$bg-main: #0b0d13;
+$bg-sidebar: #10131c;
+$bg-card: #151924;
+$bg-card-hover: #1b2130;
+$bg-input: #0f121a;
+$bg-overlay: rgba(5, 7, 12, 0.85);
+
+// Borders
+$border-subtle: #21283a;
+$border-card: #283147;
+$border-focus: #4b5563;
+
+// Typography
+$font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+$text-primary: #f9fafb;
+$text-secondary: #9ca3af;
+$text-muted: #6b7280;
+
+// Accents & Theme Colors
+$color-brand: #eab308; // Cross Roads Gold
+$color-gold: #eab308;
+$color-vip: #a855f7;
+$color-developer: #ef4444;
+$color-moderator: #3b82f6;
+
+$color-success: #10b981;
+$color-danger: #ef4444;
+$color-warning: #f59e0b;
+$color-info: #06b6d4;
+
+// Status Specific
+$color-hospital: #f43f5e;
+$color-prison: #64748b;
+$color-working: #0284c7;
+
+// Radii
+$radius-xs: 4px;
+$radius-sm: 8px;
+$radius-md: 12px;
+$radius-lg: 16px;
+$radius-full: 9999px;
+
+// Shadows
+$shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
+$shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
+$shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.5);
