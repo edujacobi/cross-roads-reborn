@@ -20,10 +20,10 @@ $text-secondary: #9ca3af;
 $text-muted: #6b7280;
 
 // Accents & Theme Colors
-$color-brand: #eab308; // Cross Roads Gold
+$color-brand: #57f287;
 $color-gold: #eab308;
-$color-vip: #a855f7;
-$color-developer: #ef4444;
+$color-vip: #f1c40f;
+$color-developer: #80e893;
 $color-moderator: #3b82f6;
 
 $color-success: #10b981;
@@ -32,9 +32,15 @@ $color-warning: #f59e0b;
 $color-info: #06b6d4;
 
 // Status Specific
-$color-hospital: #f43f5e;
-$color-prison: #64748b;
-$color-working: #0284c7;
+$color-hospital: #e54747;
+$color-prison: lighten(#163cb6, 20%);
+$color-working: #FFE300;
+$color-casino: #8C55FF;
+$color-robbery: #AF0000;
+$color-beatup: #ff8C00;
+$color-scavenge: #88D3E4;
+$color-cemetery: #7e7e7e;
+$color-special: #03a2e9;
 
 // Radii
 $radius-xs: 4px;

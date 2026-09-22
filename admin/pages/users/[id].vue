@@ -36,6 +36,18 @@ const userId = computed(() => String(route.params.id));
 const { result, loading, refetch } = useQuery(GET_USER_DETAIL, () => ({ id: userId.value }));
 
 const user = computed(() => result.value?.user);
+const language = computed(() => {
+	switch (user.value?.language) {
+		case "0":
+			return "Inglês";
+		case "1":
+			return "Português";
+		case "2":
+			return "Espanhol";
+		default:
+			return user.value?.language;
+	}
+});
 
 // Notification feedback state
 const feedback = ref<{ type: "success" | "error"; message: string } | null>(null);
@@ -202,7 +214,7 @@ async function handleRemoveAction() {
 			class="not-found"
 		>
 			<h2>Jogador não encontrado</h2>
-			<p>O Discord ID {{ userId }} não possui registro na base de dados do jogo.</p>
+			<p>O ID {{ userId }} não possui registro na base de dados do jogo.</p>
 		</div>
 
 		<div
@@ -229,7 +241,7 @@ async function handleRemoveAction() {
 								>VIP</BaseBadge
 							>
 						</div>
-						<p class="user-id">Discord ID: <code>{{ user.id }}</code></p>
+						<p class="user-id">ID: <code>{{ user.id }}</code></p>
 					</div>
 				</div>
 
@@ -241,11 +253,11 @@ async function handleRemoveAction() {
 
 					<div class="meta-item">
 						<span class="meta-label">Idioma</span>
-						<span class="meta-value uppercase">{{ user.language }}</span>
+						<span class="meta-value">{{ language }}</span>
 					</div>
 
 					<div class="meta-item">
-						<span class="meta-label">Streak Diário</span>
+						<span class="meta-label">Sequência diária</span>
 						<span class="meta-value">{{ user.dailyStreak }} dias</span>
 					</div>
 
@@ -278,7 +290,7 @@ async function handleRemoveAction() {
 						@click="handleCure()"
 					>
 						<HeartPulse :size="16" />
-						<span>Curar do Hospital</span>
+						Curar do Hospital
 					</BaseButton>
 
 					<!-- Soltar -->
@@ -288,7 +300,7 @@ async function handleRemoveAction() {
 						@click="handleFree()"
 					>
 						<Lock :size="16" />
-						<span>Soltar da Prisão</span>
+						Soltar da Prisão
 					</BaseButton>
 
 					<!-- Ajustar Dinheiro -->
@@ -298,7 +310,7 @@ async function handleRemoveAction() {
 						@click="isMoneyModalOpen = true"
 					>
 						<DollarSign :size="16" />
-						<span>Alterar Dinheiro</span>
+						Alterar Dinheiro
 					</BaseButton>
 
 					<!-- Resetar Cooldown -->
@@ -308,7 +320,7 @@ async function handleRemoveAction() {
 						@click="isCooldownModalOpen = true"
 					>
 						<Clock :size="16" />
-						<span>Resetar Cooldown</span>
+						Resetar Cooldown
 					</BaseButton>
 
 					<!-- Remover de Ação -->
@@ -318,7 +330,7 @@ async function handleRemoveAction() {
 						@click="isActionModalOpen = true"
 					>
 						<RotateCw :size="16" />
-						<span>Remover de Ação</span>
+						Remover de Ação
 					</BaseButton>
 				</div>
 			</BaseCard>
@@ -337,7 +349,7 @@ async function handleRemoveAction() {
 								v-if="user.isInHospital"
 								variant="danger"
 							>
-								Internado até {{ new Date(user.hospitalTime).toLocaleTimeString() }}
+								Hospitalizado até {{ new Date(user.hospitalTime).toLocaleTimeString() }}
 							</BaseBadge>
 							<BaseBadge
 								v-else
@@ -376,11 +388,11 @@ async function handleRemoveAction() {
 						</div>
 
 						<div class="status-row">
-							<span class="row-label">Garimpo</span>
+							<span class="row-label">Vasculho</span>
 							<BaseBadge
 								v-if="user.isScavenging"
 								variant="warning"
-								>Garimpando</BaseBadge
+								>Vasculhando</BaseBadge
 							>
 							<BaseBadge
 								v-else
@@ -496,7 +508,7 @@ async function handleRemoveAction() {
 								type="radio"
 								value="ADD"
 							>
-							<span>Adicionar ao saldo atual</span>
+							Adicionar ao saldo atual
 						</label>
 						<label class="radio-label">
 							<input
@@ -504,12 +516,13 @@ async function handleRemoveAction() {
 								type="radio"
 								value="SET"
 							>
-							<span>Definir valor exato</span>
+							Definir valor exato
 						</label>
 					</div>
 				</div>
 
 				<BaseInput
+					id="money-ammount"
 					v-model="moneyAmount"
 					type="number"
 					label="Quantidade (Cr$)"
@@ -542,17 +555,16 @@ async function handleRemoveAction() {
 		>
 			<div class="modal-form">
 				<div class="form-group">
-					<label
-						>Escolha o Cooldown
-						<select
-							v-model="selectedCooldown"
-							class="form-select"
-						>
-							<option value="scavenge">Garimpo (Scavenge)</option>
-							<option value="robbery">Roubo / Procurado (Robbery)</option>
-							<option value="beatup">Espancamento (Beat Up)</option>
-						</select>
-					</label>
+					<label for="select-cooldown"> Escolha o Cooldown </label>
+					<select
+						id="select-cooldown"
+						v-model="selectedCooldown"
+						class="form-select"
+					>
+						<option value="scavenge">Vasculho (Scavenge)</option>
+						<option value="robbery">Roubo / Procurado (Robbery)</option>
+						<option value="beatup">Espancamento (Beat Up)</option>
+					</select>
 				</div>
 			</div>
 
@@ -581,20 +593,19 @@ async function handleRemoveAction() {
 		>
 			<div class="modal-form">
 				<div class="form-group">
-					<label
-						>Escolha a Ação
-						<select
-							v-model="selectedAction"
-							class="form-select"
-						>
-							<option value="job">Trabalho (Job)</option>
-							<option value="scavenge">Garimpo (Scavenge)</option>
-							<option value="robbery">Roubo (Robbery)</option>
-							<option value="beatup">Espancamento (Beat Up)</option>
-							<option value="casino">Jogo de Cassino</option>
-							<option value="gangaction">Ação de Gangue</option>
-						</select>
-					</label>
+					<label for="select-action"> Escolha a Ação </label>
+					<select
+						id="select-action"
+						v-model="selectedAction"
+						class="form-select"
+					>
+						<option value="job">Trabalho (Job)</option>
+						<option value="scavenge">Vasculho (Scavenge)</option>
+						<option value="robbery">Roubo (Robbery)</option>
+						<option value="beatup">Espancamento (Beat Up)</option>
+						<option value="casino">Jogo de Cassino</option>
+						<option value="gangaction">Ação de Gangue</option>
+					</select>
 				</div>
 			</div>
 

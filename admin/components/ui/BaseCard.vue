@@ -30,6 +30,7 @@ defineProps<Props>();
 					{{ subtitle }}
 				</p>
 			</div>
+			<slot name="header" />
 			<div
 				v-if="$slots.actions"
 				class="card-actions"
@@ -54,38 +55,38 @@ defineProps<Props>();
 	scoped
 >
 .base-card {
-  @include card-surface;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+	@include card-surface;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
 
-  .card-header {
-    @include flex-between;
-    padding: 16px 20px;
-    border-bottom: 1px solid $border-subtle;
+	.card-header {
+		@include flex-between;
+		padding: 16px 20px;
+		border-bottom: 1px solid $border-subtle;
 
-    .card-title {
-      font-size: 1rem;
-      font-weight: 600;
-      color: $text-primary;
-    }
+		.card-title {
+			font-size: 1rem;
+			font-weight: 600;
+			color: $text-primary;
+		}
 
-    .card-subtitle {
-      font-size: 0.8125rem;
-      color: $text-secondary;
-      margin-top: 2px;
-    }
-  }
+		.card-subtitle {
+			font-size: 0.8125rem;
+			color: $text-secondary;
+			margin-top: 2px;
+		}
+	}
 
-  .card-body {
-    padding: 20px;
-    flex: 1;
-  }
+	.card-body {
+		padding: 20px;
+		flex: 1;
+	}
 
-  .card-footer {
-    padding: 12px 20px;
-    border-top: 1px solid $border-subtle;
-    background-color: rgba($bg-input, 0.5);
-  }
+	.card-footer {
+		padding: 12px 20px;
+		border-top: 1px solid $border-subtle;
+		background-color: rgba($bg-input, 0.5);
+	}
 }
 </style>

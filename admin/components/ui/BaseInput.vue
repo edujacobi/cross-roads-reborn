@@ -3,6 +3,7 @@
 	lang="ts"
 >
 interface Props {
+	id: string;
 	modelValue?: string | number;
 	label?: string;
 	placeholder?: string;
@@ -18,17 +19,21 @@ defineEmits<(e: "update:modelValue", value: string | number) => void>();
 	<div class="base-input-wrapper">
 		<label
 			v-if="label"
+			:for="id"
 			class="input-label"
-			>{{ label }}
-			<input
-				:type="type || 'text'"
-				:value="modelValue"
-				:placeholder="placeholder"
-				:disabled="disabled"
-				class="base-input"
-				@input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
-			>
+		>
+			{{ label }}
 		</label>
+
+		<input
+			:id="id"
+			:type="type || 'text'"
+			:value="modelValue"
+			:placeholder="placeholder"
+			:disabled="disabled"
+			class="base-input"
+			@input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
+		>
 	</div>
 </template>
 

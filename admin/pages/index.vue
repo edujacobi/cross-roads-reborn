@@ -4,9 +4,10 @@
 >
 import { useQuery } from "@vue/apollo-composable";
 import {
+	Beer,
+	BicepsFlexed,
 	Briefcase,
 	Calendar,
-	Coffee,
 	Coins,
 	Compass,
 	Globe,
@@ -51,7 +52,7 @@ function refreshData() {
 					:size="15"
 					:class="{ 'spin-icon': statsLoading || historyLoading }"
 				/>
-				<span>Atualizar</span>
+				Atualizar
 			</BaseButton>
 		</div>
 
@@ -76,26 +77,6 @@ function refreshData() {
 					<span class="stat-value">{{ stats?.totalGangs?.toLocaleString() || "..." }}</span>
 				</div>
 			</div>
-
-			<div class="stat-card success">
-				<div class="stat-icon">
-					<Coffee :size="24" />
-				</div>
-				<div class="stat-info">
-					<span class="stat-label">Jogadores Livres (Idle)</span>
-					<span class="stat-value">{{ stats?.idleCount?.toLocaleString() || "..." }}</span>
-				</div>
-			</div>
-
-			<div class="stat-card blue">
-				<div class="stat-icon">
-					<Briefcase :size="24" />
-				</div>
-				<div class="stat-info">
-					<span class="stat-label">Trabalhando (Jobs)</span>
-					<span class="stat-value">{{ stats?.jobCount?.toLocaleString() || "..." }}</span>
-				</div>
-			</div>
 		</div>
 
 		<!-- Detailed Status Grid -->
@@ -104,10 +85,24 @@ function refreshData() {
 		</div>
 
 		<div class="status-grid">
-			<div class="status-box danger">
+			<div class="status-box idle">
+				<div class="status-box-header">
+					<Beer :size="18" />
+					Vadiando
+				</div>
+				<span class="status-box-count">{{ stats?.idleCount ?? 0 }}</span>
+			</div>
+			<div class="status-box working">
+				<div class="status-box-header">
+					<Briefcase :size="18" />
+					Trabalhando
+				</div>
+				<span class="status-box-count">{{ stats?.jobCount ?? 0 }}</span>
+			</div>
+			<div class="status-box hospital">
 				<div class="status-box-header">
 					<HeartPulse :size="18" />
-					<span>No Hospital</span>
+					Hospitalizados
 				</div>
 				<span class="status-box-count">{{ stats?.hospitalCount ?? 0 }}</span>
 			</div>
@@ -115,39 +110,39 @@ function refreshData() {
 			<div class="status-box prison">
 				<div class="status-box-header">
 					<Lock :size="18" />
-					<span>Na Prisão</span>
+					Presos
 				</div>
 				<span class="status-box-count">{{ stats?.prisonCount ?? 0 }}</span>
 			</div>
 
-			<div class="status-box warning">
+			<div class="status-box scavenge">
 				<div class="status-box-header">
 					<Compass :size="18" />
-					<span>Garimpando</span>
+					Vasculhando
 				</div>
 				<span class="status-box-count">{{ stats?.scavengeCount ?? 0 }}</span>
 			</div>
 
-			<div class="status-box purple">
+			<div class="status-box casino">
 				<div class="status-box-header">
 					<Coins :size="18" />
-					<span>No Cassino</span>
+					No Cassino
 				</div>
 				<span class="status-box-count">{{ stats?.casinoCount ?? 0 }}</span>
 			</div>
 
-			<div class="status-box orange">
+			<div class="status-box robbery">
 				<div class="status-box-header">
 					<Swords :size="18" />
-					<span>Em Roubo</span>
+					Em Roubo
 				</div>
 				<span class="status-box-count">{{ stats?.robberyCount ?? 0 }}</span>
 			</div>
 
-			<div class="status-box red">
+			<div class="status-box beat-up">
 				<div class="status-box-header">
-					<Swords :size="18" />
-					<span>Em Espancamento</span>
+					<BicepsFlexed :size="18" />
+					Em Espancamento
 				</div>
 				<span class="status-box-count">{{ stats?.beatUpCount ?? 0 }}</span>
 			</div>
@@ -157,14 +152,14 @@ function refreshData() {
 		<div class="details-row">
 			<!-- Languages Card -->
 			<BaseCard
-				title="Distribuição por Idioma"
+				title="Distribuição por idioma"
 				class="language-card"
 			>
 				<div class="language-list">
 					<div class="lang-item">
 						<div class="lang-label">
 							<Globe :size="16" />
-							<span>Português</span>
+							Português
 						</div>
 						<span class="lang-count">{{ stats?.portugueseCount ?? 0 }}</span>
 					</div>
@@ -172,7 +167,7 @@ function refreshData() {
 					<div class="lang-item">
 						<div class="lang-label">
 							<Globe :size="16" />
-							<span>Inglês</span>
+							Inglês
 						</div>
 						<span class="lang-count">{{ stats?.englishCount ?? 0 }}</span>
 					</div>
@@ -180,7 +175,7 @@ function refreshData() {
 					<div class="lang-item">
 						<div class="lang-label">
 							<Globe :size="16" />
-							<span>Espanhol</span>
+							Espanhol
 						</div>
 						<span class="lang-count">{{ stats?.spanishCount ?? 0 }}</span>
 					</div>
@@ -189,7 +184,7 @@ function refreshData() {
 
 			<!-- History Snapshots Card -->
 			<BaseCard
-				title="Histórico Recente (Últimos 30 Dias)"
+				title="Histórico (últimos 30 dias)"
 				class="history-card"
 			>
 				<div
@@ -220,7 +215,7 @@ function refreshData() {
 								<th>Hospital</th>
 								<th>Prisão</th>
 								<th>Trabalho</th>
-								<th>Garimpo</th>
+								<th>Vasculho</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -231,10 +226,10 @@ function refreshData() {
 								<td>{{ new Date(item.date).toLocaleDateString() }}</td>
 								<td class="font-bold">{{ item.totalPlayers }}</td>
 								<td>{{ item.totalGangs }}</td>
-								<td class="text-danger">{{ item.hospitalCount }}</td>
+								<td class="text-hospital">{{ item.hospitalCount }}</td>
 								<td class="text-prison">{{ item.prisonCount }}</td>
-								<td class="text-blue">{{ item.jobCount }}</td>
-								<td class="text-warning">{{ item.scavengeCount }}</td>
+								<td class="text-working">{{ item.jobCount }}</td>
+								<td class="text-scavenge">{{ item.scavengeCount }}</td>
 							</tr>
 						</tbody>
 					</table>
@@ -291,11 +286,6 @@ function refreshData() {
 		display: flex;
 		align-items: center;
 		gap: 16px;
-		transition: transform 0.15s ease-in-out;
-
-		&:hover {
-			transform: translateY(-2px);
-		}
 
 		.stat-icon {
 			@include flex-center;
@@ -334,11 +324,6 @@ function refreshData() {
 			background-color: rgba($color-success, 0.15);
 			color: $color-success;
 		}
-
-		&.blue .stat-icon {
-			background-color: rgba($color-working, 0.15);
-			color: lighten($color-working, 15%);
-		}
 	}
 }
 
@@ -356,7 +341,8 @@ function refreshData() {
 
 .status-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+	grid-template-columns: repeat(4, 1fr);
+	grid-auto-rows: 1fr;
 	gap: 14px;
 
 	.status-box {
@@ -380,7 +366,23 @@ function refreshData() {
 			color: $text-primary;
 		}
 
-		&.danger {
+		&.idle {
+			.status-box-header {
+				color: #fff;
+			}
+
+			border-left: 3px solid #fff;
+		}
+
+		&.working {
+			.status-box-header {
+				color: $color-working;
+			}
+
+			border-left: 3px solid $color-working;
+		}
+
+		&.hospital {
 			.status-box-header {
 				color: $color-hospital;
 			}
@@ -396,36 +398,36 @@ function refreshData() {
 			border-left: 3px solid $color-prison;
 		}
 
-		&.warning {
+		&.scavenge {
 			.status-box-header {
-				color: $color-warning;
+				color: $color-scavenge;
 			}
 
-			border-left: 3px solid $color-warning;
+			border-left: 3px solid $color-scavenge;
 		}
 
-		&.purple {
+		&.casino {
 			.status-box-header {
-				color: $color-vip;
+				color: $color-casino;
 			}
 
-			border-left: 3px solid $color-vip;
+			border-left: 3px solid $color-casino;
 		}
 
-		&.orange {
+		&.beat-up {
 			.status-box-header {
-				color: #f97316;
+				color: $color-beatup;
 			}
 
-			border-left: 3px solid #f97316;
+			border-left: 3px solid $color-beatup;
 		}
 
-		&.red {
+		&.robbery {
 			.status-box-header {
-				color: $color-danger;
+				color: $color-robbery;
 			}
 
-			border-left: 3px solid $color-danger;
+			border-left: 3px solid $color-robbery;
 		}
 	}
 }
@@ -513,7 +515,7 @@ function refreshData() {
 					color: $text-primary;
 				}
 
-				.text-danger {
+				.text-hospital {
 					color: $color-hospital;
 				}
 
@@ -521,12 +523,12 @@ function refreshData() {
 					color: $color-prison;
 				}
 
-				.text-blue {
-					color: lighten($color-working, 20%);
+				.text-working {
+					color: $color-working;
 				}
 
-				.text-warning {
-					color: $color-warning;
+				.text-scavenge {
+					color: $color-scavenge;
 				}
 			}
 		}

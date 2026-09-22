@@ -61,8 +61,9 @@ function nextPage() {
 						class="search-icon"
 					/>
 					<BaseInput
+						id="search-users"
 						:model-value="searchQuery"
-						placeholder="Buscar por Nickname ou Discord ID..."
+						placeholder="Buscar por Nickname ou ID..."
 						@update:model-value="handleSearch"
 					/>
 				</div>
@@ -91,7 +92,7 @@ function nextPage() {
 					<thead>
 						<tr>
 							<th>Jogador</th>
-							<th>Discord ID</th>
+							<th>ID</th>
 							<th>Classe</th>
 							<th>Dinheiro</th>
 							<th>Moedas Esp.</th>
@@ -111,7 +112,7 @@ function nextPage() {
 							<td class="id-cell">{{ u.id }}</td>
 							<td>{{ u.className }}</td>
 							<td class="money-cell">Cr$ {{ u.money.toLocaleString() }}</td>
-							<td class="coins-cell">{{ u.specialCoin }}</td>
+							<td class="coins-cell">{{ u.specialCoin.toLocaleString() }}</td>
 							<td>
 								<BaseBadge
 									v-if="u.isInHospital"
@@ -121,7 +122,7 @@ function nextPage() {
 								<BaseBadge
 									v-else-if="u.isInPrison"
 									variant="neutral"
-									>Prisão</BaseBadge
+									>Preso</BaseBadge
 								>
 								<BaseBadge
 									v-else-if="u.isWorking"
@@ -305,7 +306,7 @@ function nextPage() {
 
 		.coins-cell {
 			font-weight: 700;
-			color: $color-brand;
+			color: $color-special;
 		}
 
 		.text-muted {
