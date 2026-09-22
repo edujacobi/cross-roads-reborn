@@ -1,5 +1,22 @@
 import { gql } from "@apollo/client/core";
 
+export interface DashboardStatsDto {
+	date: number;
+	totalPlayers: number;
+	totalGangs: number;
+	prisonCount: number;
+	hospitalCount: number;
+	jobCount: number;
+	scavengeCount: number;
+	casinoCount: number;
+	robberyCount: number;
+	beatUpCount: number;
+	idleCount: number;
+	englishCount: number;
+	portugueseCount: number;
+	spanishCount: number;
+}
+
 export const GET_DASHBOARD_STATS = gql`
   query GetDashboardStats {
     dashboardStats {
@@ -20,6 +37,24 @@ export const GET_DASHBOARD_STATS = gql`
     }
   }
 `;
+
+export interface DashboardHistoryDto {
+	id: number;
+	date: number;
+	totalPlayers: number;
+	totalGangs: number;
+	prisonCount: number;
+	hospitalCount: number;
+	jobCount: number;
+	scavengeCount: number;
+	casinoCount: number;
+	robberyCount: number;
+	beatUpCount: number;
+	idleCount: number;
+	englishCount: number;
+	portugueseCount: number;
+	spanishCount: number;
+}
 
 export const GET_DASHBOARD_HISTORY = gql`
   query GetDashboardHistory {
