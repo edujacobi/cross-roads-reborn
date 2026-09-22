@@ -1,62 +1,75 @@
-<script setup lang="ts">
-import {
-  DialogRoot,
-  DialogTrigger,
-  DialogPortal,
-  DialogOverlay,
-  DialogContent,
-  DialogTitle,
-  DialogDescription,
-  DialogClose,
-} from "radix-vue";
+<script
+	setup
+	lang="ts"
+>
 import { X } from "lucide-vue-next";
+import {
+	DialogClose,
+	DialogContent,
+	DialogDescription,
+	DialogOverlay,
+	DialogPortal,
+	DialogRoot,
+	DialogTitle,
+	DialogTrigger,
+} from "radix-vue";
 
 interface Props {
-  open?: boolean;
-  title: string;
-  description?: string;
+	open?: boolean;
+	title: string;
+	description?: string;
 }
 
-const props = defineProps<Props>();
-const emit = defineEmits<{
-  (e: "update:open", value: boolean): void;
-}>();
+const _props = defineProps<Props>();
+const emit = defineEmits<(e: "update:open", value: boolean) => void>();
 </script>
 
 <template>
-  <DialogRoot :open="open" @update:open="emit('update:open', $event)">
-    <DialogTrigger as-child>
-      <slot name="trigger" />
-    </DialogTrigger>
+	<DialogRoot
+		:open="open"
+		@update:open="emit('update:open', $event)"
+	>
+		<DialogTrigger as-child>
+			<slot name="trigger" />
+		</DialogTrigger>
 
-    <DialogPortal>
-      <DialogOverlay class="dialog-overlay" />
-      <DialogContent class="dialog-content">
-        <div class="dialog-header">
-          <div>
-            <DialogTitle class="dialog-title">{{ title }}</DialogTitle>
-            <DialogDescription v-if="description" class="dialog-description">
-              {{ description }}
-            </DialogDescription>
-          </div>
-          <DialogClose class="dialog-close">
-            <X :size="18" />
-          </DialogClose>
-        </div>
+		<DialogPortal>
+			<DialogOverlay class="dialog-overlay" />
+			<DialogContent class="dialog-content">
+				<div class="dialog-header">
+					<div>
+						<DialogTitle class="dialog-title">{{ title }}</DialogTitle>
+						<DialogDescription
+							v-if="description"
+							class="dialog-description"
+						>
+							{{ description }}
+						</DialogDescription>
+					</div>
+					<DialogClose class="dialog-close">
+						<X :size="18" />
+					</DialogClose>
+				</div>
 
-        <div class="dialog-body">
-          <slot />
-        </div>
+				<div class="dialog-body">
+					<slot />
+				</div>
 
-        <div v-if="$slots.footer" class="dialog-footer">
-          <slot name="footer" />
-        </div>
-      </DialogContent>
-    </DialogPortal>
-  </DialogRoot>
+				<div
+					v-if="$slots.footer"
+					class="dialog-footer"
+				>
+					<slot name="footer" />
+				</div>
+			</DialogContent>
+		</DialogPortal>
+	</DialogRoot>
 </template>
 
-<style lang="scss" scoped>
+<style
+	lang="scss"
+	scoped
+>
 .dialog-overlay {
   position: fixed;
   inset: 0;

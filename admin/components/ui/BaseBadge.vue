@@ -1,20 +1,26 @@
-<script setup lang="ts">
+<script
+	setup
+	lang="ts"
+>
 interface Props {
-  variant?: "developer" | "moderator" | "vip" | "success" | "danger" | "warning" | "neutral";
+	variant?: "developer" | "moderator" | "vip" | "success" | "danger" | "warning" | "neutral";
 }
 
 withDefaults(defineProps<Props>(), {
-  variant: "neutral",
+	variant: "neutral",
 });
 </script>
 
 <template>
-  <span :class="['base-badge', `badge-${variant}`]">
-    <slot />
-  </span>
+	<span :class="['base-badge', `badge-${variant}`]">
+		<slot />
+	</span>
 </template>
 
-<style lang="scss" scoped>
+<style
+	lang="scss"
+	scoped
+>
 .base-badge {
   display: inline-flex;
   align-items: center;

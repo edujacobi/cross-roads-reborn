@@ -1,0 +1,90 @@
+﻿{
+	"$schema": "https://biomejs.dev/schemas/2.5.14/schema.json",
+	"html": {
+		"experimentalFullSupportEnabled": true,
+		"formatter": {
+			"enabled": true
+		}
+	},
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true
+	},
+	"files": {
+		"includes": ["**", "!node_modules", "!.nuxt", "!.output", "!dist"]
+	},
+	"formatter": {
+		"enabled": true,
+		"indentStyle": "tab",
+		"indentWidth": 2,
+		"lineWidth": 120,
+		"lineEnding": "crlf",
+		"attributePosition": "multiline"
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "double",
+			"semicolons": "always",
+			"bracketSpacing": true,
+			"arrowParentheses": "always",
+			"trailingCommas": "all",
+			"bracketSameLine": false
+		}
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"preset": "recommended",
+			"correctness": {
+				"noUnusedVariables": "warn",
+				"useVueVForKey": "error",
+				"useVueValidTemplateRoot": "error",
+				"useVueValidVBind": "error",
+				"useVueValidVCloak": "error",
+				"useVueValidVElse": "error",
+				"useVueValidVElseIf": "error",
+				"useVueValidVHtml": "error",
+				"useVueValidVIf": "error",
+				"useVueValidVOn": "error",
+				"useVueValidVOnce": "error",
+				"useVueValidVPre": "error",
+				"useVueValidVText": "error",
+				"noVueVIfWithVFor": "error"
+			},
+			"style": {
+				"useConst": "error",
+				"useVueHyphenatedAttributes": "error",
+				"useVueConsistentVBindStyle": "error",
+				"useVueConsistentVOnStyle": "error",
+				"useVueMultiWordComponentNames": "off"
+			},
+			"suspicious": "error",
+			"a11y": {
+				"noSvgWithoutTitle": "off"
+			}
+		}
+	},
+	"overrides": [
+		{
+			"includes": ["*.vue"],
+			"linter": {
+				"rules": {
+					"style": {
+						"useVueHyphenatedAttributes": "error"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["nuxt.config.ts", "plugins/**/*.ts"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noDefaultExport": "off"
+					}
+				}
+			}
+		}
+	]
+}

@@ -1,30 +1,36 @@
-<script setup lang="ts">
+<script
+	setup
+	lang="ts"
+>
 interface Props {
-  variant?: "primary" | "secondary" | "danger" | "success" | "ghost";
-  size?: "sm" | "md" | "lg";
-  disabled?: boolean;
-  type?: "button" | "submit" | "reset";
+	variant?: "primary" | "secondary" | "danger" | "success" | "ghost";
+	size?: "sm" | "md" | "lg";
+	disabled?: boolean;
+	type?: "button" | "submit" | "reset";
 }
 
 withDefaults(defineProps<Props>(), {
-  variant: "primary",
-  size: "md",
-  disabled: false,
-  type: "button",
+	variant: "primary",
+	size: "md",
+	disabled: false,
+	type: "button",
 });
 </script>
 
 <template>
-  <button
-    :type="type"
-    :disabled="disabled"
-    :class="['base-button', `variant-${variant}`, `size-${size}`]"
-  >
-    <slot />
-  </button>
+	<button
+		:type="type"
+		:disabled="disabled"
+		:class="['base-button', `variant-${variant}`, `size-${size}`]"
+	>
+		<slot />
+	</button>
 </template>
 
-<style lang="scss" scoped>
+<style
+	lang="scss"
+	scoped
+>
 .base-button {
   display: inline-flex;
   align-items: center;

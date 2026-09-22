@@ -1,11 +1,11 @@
-import { defineConfig, globalIgnores } from "eslint/config";
+import { FlatCompat } from "@eslint/eslintrc";
+import js from "@eslint/js";
 import typescriptEslint from "@typescript-eslint/eslint-plugin";
-import globals from "globals";
 import tsParser from "@typescript-eslint/parser";
+import { defineConfig, globalIgnores } from "eslint/config";
+import globals from "globals";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import js from "@eslint/js";
-import { FlatCompat } from "@eslint/eslintrc";
 
 // eslint-disable-next-line no-redeclare
 const __filename = fileURLToPath(import.meta.url);
@@ -18,7 +18,8 @@ const compat = new FlatCompat({
 });
 
 export default defineConfig([
-	globalIgnores(["build/*"]),
+	// admin/ is linted by Biome — exclude it here
+	globalIgnores(["build/*", "admin/**"]),
 	{
 		extends: compat.extends(
 			"eslint:recommended",

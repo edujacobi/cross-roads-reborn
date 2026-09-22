@@ -1,33 +1,58 @@
-<script setup lang="ts">
+<script
+	setup
+	lang="ts"
+>
 interface Props {
-  title?: string;
-  subtitle?: string;
+	title?: string;
+	subtitle?: string;
 }
 
 defineProps<Props>();
 </script>
 
 <template>
-  <div class="base-card">
-    <div v-if="title || $slots.header" class="card-header">
-      <div>
-        <h3 v-if="title" class="card-title">{{ title }}</h3>
-        <p v-if="subtitle" class="card-subtitle">{{ subtitle }}</p>
-      </div>
-      <div v-if="$slots.actions" class="card-actions">
-        <slot name="actions" />
-      </div>
-    </div>
-    <div class="card-body">
-      <slot />
-    </div>
-    <div v-if="$slots.footer" class="card-footer">
-      <slot name="footer" />
-    </div>
-  </div>
+	<div class="base-card">
+		<div
+			v-if="title || $slots.header"
+			class="card-header"
+		>
+			<div>
+				<h3
+					v-if="title"
+					class="card-title"
+				>
+					{{ title }}
+				</h3>
+				<p
+					v-if="subtitle"
+					class="card-subtitle"
+				>
+					{{ subtitle }}
+				</p>
+			</div>
+			<div
+				v-if="$slots.actions"
+				class="card-actions"
+			>
+				<slot name="actions" />
+			</div>
+		</div>
+		<div class="card-body">
+			<slot />
+		</div>
+		<div
+			v-if="$slots.footer"
+			class="card-footer"
+		>
+			<slot name="footer" />
+		</div>
+	</div>
 </template>
 
-<style lang="scss" scoped>
+<style
+	lang="scss"
+	scoped
+>
 .base-card {
   @include card-surface;
   overflow: hidden;

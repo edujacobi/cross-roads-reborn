@@ -1,33 +1,41 @@
-<script setup lang="ts">
+<script
+	setup
+	lang="ts"
+>
 interface Props {
-  modelValue?: string | number;
-  label?: string;
-  placeholder?: string;
-  type?: string;
-  disabled?: boolean;
+	modelValue?: string | number;
+	label?: string;
+	placeholder?: string;
+	type?: string;
+	disabled?: boolean;
 }
 
 defineProps<Props>();
-defineEmits<{
-  (e: "update:modelValue", value: string | number): void;
-}>();
+defineEmits<(e: "update:modelValue", value: string | number) => void>();
 </script>
 
 <template>
-  <div class="base-input-wrapper">
-    <label v-if="label" class="input-label">{{ label }}</label>
-    <input
-      :type="type || 'text'"
-      :value="modelValue"
-      :placeholder="placeholder"
-      :disabled="disabled"
-      class="base-input"
-      @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
-    />
-  </div>
+	<div class="base-input-wrapper">
+		<label
+			v-if="label"
+			class="input-label"
+			>{{ label }}
+			<input
+				:type="type || 'text'"
+				:value="modelValue"
+				:placeholder="placeholder"
+				:disabled="disabled"
+				class="base-input"
+				@input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
+			>
+		</label>
+	</div>
 </template>
 
-<style lang="scss" scoped>
+<style
+	lang="scss"
+	scoped
+>
 .base-input-wrapper {
   display: flex;
   flex-direction: column;

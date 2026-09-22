@@ -63,3 +63,9 @@ body {
     transform: translate(-50%, -50%) scale(1);
   }
 }
+
+.text-muted {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: $text-secondary;
+}
