@@ -27,6 +27,7 @@ import {
 	MUTATION_REMOVE_ACTION,
 	MUTATION_RESET_COOLDOWN,
 	MUTATION_SET_MONEY,
+	type UserDetailsDto,
 } from "~/graphql/operations";
 
 const route = useRoute();
@@ -35,7 +36,7 @@ const userId = computed(() => String(route.params.id));
 
 const { result, loading, refetch } = useQuery(GET_USER_DETAIL, () => ({ id: userId.value }));
 
-const user = computed(() => result.value?.user);
+const user = computed<UserDetailsDto>(() => result.value?.user);
 const language = computed(() => {
 	switch (user.value?.language) {
 		case "0":

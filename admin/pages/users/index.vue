@@ -8,7 +8,7 @@ import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseInput from "~/components/ui/BaseInput.vue";
-import { SEARCH_USERS } from "~/graphql/operations";
+import { SEARCH_USERS, type SimpleUserDto } from "~/graphql/operations";
 
 const searchQuery = ref("");
 const page = ref(1);
@@ -26,7 +26,7 @@ const { result, loading } = useQuery(
 	{ debounce: 300 },
 );
 
-const users = computed(() => result.value?.users?.users || []);
+const users = computed<SimpleUserDto[]>(() => result.value?.users?.users || []);
 const total = computed(() => result.value?.users?.total || 0);
 const totalPages = computed(() => Math.ceil(total.value / limit.value) || 1);
 

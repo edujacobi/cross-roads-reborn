@@ -78,6 +78,20 @@ export const GET_DASHBOARD_HISTORY = gql`
   }
 `;
 
+export interface SimpleUserDto {
+	id: number;
+	nickname: string;
+	money: number;
+	specialCoin: number;
+	class: number;
+	className: string;
+	isVip: boolean;
+	vipEternal: boolean;
+	isInHospital: boolean;
+	isInPrison: boolean;
+	isWorking: boolean;
+}
+
 export const SEARCH_USERS = gql`
   query SearchUsers($search: String, $limit: Int, $offset: Int) {
     users(search: $search, limit: $limit, offset: $offset) {
@@ -98,6 +112,40 @@ export const SEARCH_USERS = gql`
     }
   }
 `;
+
+export interface UserItemDto {
+	id: number;
+	name: string;
+	type: number;
+	quantity: number;
+	attack: number;
+	defense: number;
+	price: number;
+}
+
+export interface UserDetailsDto {
+	id: number;
+	nickname: string;
+	money: number;
+	specialCoin: number;
+	class: number;
+	className: string;
+	isVip: boolean;
+	vipEternal: boolean;
+	vipTime: number;
+	language: string;
+	isInHospital: boolean;
+	hospitalTime: number;
+	isInPrison: boolean;
+	prisonTime: number;
+	isWorking: boolean;
+	jobEndsIn: number;
+	isScavenging: boolean;
+	isWanted: boolean;
+	dailyStreak: number;
+	voteCount: number;
+	items: UserItemDto[];
+}
 
 export const GET_USER_DETAIL = gql`
   query GetUserDetail($id: ID!) {
