@@ -1,7 +1,10 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
 	compatibilityDate: "2024-11-01",
-	ssr: false, // SPA Mode as requested for internal admin dashboard
+
+	// SPA Mode as requested for internal admin dashboard
+	ssr: false,
+
 	devtools: { enabled: false },
 
 	app: {
@@ -24,19 +27,14 @@ export default defineNuxtConfig({
 
 	css: ["~/assets/scss/main.scss"],
 
-	vite: {
-		css: {
-			preprocessorOptions: {
-				scss: {
-					additionalData: '@use "~/assets/scss/variables" as *; @use "~/assets/scss/mixins" as *;',
-				},
-			},
-		},
-	},
-
 	runtimeConfig: {
 		public: {
 			apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || "http://localhost:3001",
 		},
+	},
+
+	modules: ["@nuxt/image"],
+	image: {
+		dir: "public/images",
 	},
 });

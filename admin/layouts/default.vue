@@ -68,11 +68,11 @@ watch(
 
 			<!-- User Info & Logout at Bottom -->
 			<div class="admin-profile">
-				<img
+				<NuxtImg
 					:src="auth.user.value?.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'"
 					alt="Avatar"
 					class="admin-avatar"
-				>
+				/>
 				<div class="admin-details">
 					<span class="admin-name">{{ auth.user.value?.username }}</span>
 					<BaseBadge :variant="auth.isDeveloper.value ? 'developer' : 'moderator'">

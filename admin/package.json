@@ -16,6 +16,7 @@
 	},
 	"dependencies": {
 		"@apollo/client": "^3.12.11",
+		"@nuxt/image": "^2.1.0",
 		"@vue/apollo-composable": "^4.2.1",
 		"graphql": "^16.10.0",
 		"graphql-tag": "^2.12.6",

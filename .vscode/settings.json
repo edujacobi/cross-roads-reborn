@@ -1,3 +1,7 @@
 {
-    "biome.configurationPath": "/admin/biome.json"
+    "biome.configurationPath": "/admin/biome.json",
+    "vue.hover.rich": true,
+    "vue.format.style.initialIndent": false,
+    "vue.format.script.initialIndent": false,
+    "vue.format.template.initialIndent": false
 }

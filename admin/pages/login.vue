@@ -28,11 +28,15 @@ onMounted(() => {
 </script>
 
 <template>
-	<div class="login-container">
-		<div class="login-card">
-			<div class="brand-logo">
-				<Coins :size="36" />
-			</div>
+	<main class="login-container">
+		<article class="login-card">
+			<section class="brand-logo">
+				<NuxtImg
+					src="brand/CrossRoadsLogo.png"
+					class="img"
+					alt=""
+				/>
+			</section>
 
 			<h1 class="title">CROSS ROADS REBORN</h1>
 			<p class="subtitle">Painel de Controle Administrativo</p>
