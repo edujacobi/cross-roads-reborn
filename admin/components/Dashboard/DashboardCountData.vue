@@ -2,15 +2,19 @@
 	setup
 	lang="ts"
 >
-import { Globe } from "lucide-vue-next";
+import { Globe, Shield, Users } from "lucide-vue-next";
 import BaseCard from "~/components/ui/BaseCard.vue";
 
 interface Props {
+	totalPlayers: number;
+	totalGangs: number;
 	portugueseCount: number;
 	englishCount: number;
 	spanishCount: number;
 }
 withDefaults(defineProps<Props>(), {
+	totalPlayers: 0,
+	totalGangs: 0,
 	portugueseCount: 0,
 	englishCount: 0,
 	spanishCount: 0,
@@ -18,33 +22,46 @@ withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
-	<BaseCard
-		title="Distribuição por idioma"
-		class="language-card"
-	>
-		<div class="language-list">
-			<div class="lang-item">
-				<div class="lang-label">
+	<BaseCard class="count-card">
+		<div class="count-list">
+			<div class="count-item">
+				<div class="count-label">
+					<Users :size="16" />
+					Jogadores
+				</div>
+				<span class="count-value">{{ totalPlayers ?? 0 }}</span>
+			</div>
+
+			<div class="count-item">
+				<div class="count-label">
 					<Globe :size="16" />
 					Português
 				</div>
-				<span class="lang-count">{{ portugueseCount ?? 0 }}</span>
+				<span class="count-value">{{ portugueseCount ?? 0 }}</span>
 			</div>
 
-			<div class="lang-item">
-				<div class="lang-label">
+			<div class="count-item">
+				<div class="count-label">
 					<Globe :size="16" />
 					Inglês
 				</div>
-				<span class="lang-count">{{ englishCount ?? 0 }}</span>
+				<span class="count-value">{{ englishCount ?? 0 }}</span>
 			</div>
 
-			<div class="lang-item">
-				<div class="lang-label">
+			<div class="count-item">
+				<div class="count-label">
 					<Globe :size="16" />
 					Espanhol
 				</div>
-				<span class="lang-count">{{ spanishCount ?? 0 }}</span>
+				<span class="count-value">{{ spanishCount ?? 0 }}</span>
+			</div>
+
+			<div class="count-item">
+				<div class="count-label">
+					<Shield :size="16" />
+					Gangues
+				</div>
+				<span class="count-value">{{ totalGangs ?? 0 }}</span>
 			</div>
 		</div>
 	</BaseCard>
@@ -57,20 +74,20 @@ withDefaults(defineProps<Props>(), {
 @use "~/assets/scss/variables" as *;
 @use "~/assets/scss/mixins" as *;
 
-.language-card {
-	.language-list {
+.count-card {
+	.count-list {
 		display: flex;
 		flex-direction: column;
 		gap: 14px;
 
-		.lang-item {
+		.count-item {
 			@include flex-between;
 			padding: 10px 12px;
 			background-color: $bg-input;
 			border-radius: $radius-sm;
 			border: 1px solid $border-subtle;
 
-			.lang-label {
+			.count-label {
 				display: flex;
 				align-items: center;
 				gap: 8px;
@@ -78,7 +95,7 @@ withDefaults(defineProps<Props>(), {
 				color: $text-primary;
 			}
 
-			.lang-count {
+			.count-value {
 				font-size: 0.9375rem;
 				font-weight: 700;
 				color: $color-brand;

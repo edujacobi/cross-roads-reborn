@@ -2,7 +2,7 @@
 	setup
 	lang="ts"
 >
-import { Activity, Coins, LayoutDashboard, LogOut, Users } from "lucide-vue-next";
+import { Activity, LayoutDashboard, LogOut, Users } from "lucide-vue-next";
 import BaseBadge from "~/components/ui/BaseBadge.vue";
 
 const auth = useAuth();
@@ -40,7 +40,10 @@ watch(
 		<aside class="sidebar">
 			<div class="brand">
 				<div class="brand-icon">
-					<Coins :size="24" />
+					<NuxtImg
+						src="brand/CrossRoadsLogo.png"
+						class="img"
+					/>
 				</div>
 				<div class="brand-text">
 					<h2>CROSS ROADS</h2>
@@ -54,7 +57,7 @@ watch(
 					:class="['nav-item', { active: route.path === '/' }]"
 				>
 					<LayoutDashboard :size="18" />
-					<span>Dashboard</span>
+					Dashboard
 				</NuxtLink>
 
 				<NuxtLink
@@ -62,7 +65,7 @@ watch(
 					:class="['nav-item', { active: route.path.startsWith('/users') }]"
 				>
 					<Users :size="18" />
-					<span>Jogadores</span>
+					Jogadores
 				</NuxtLink>
 			</nav>
 
@@ -98,7 +101,7 @@ watch(
 						:size="16"
 						class="pulse-icon"
 					/>
-					<span>Servidor Ativo</span>
+					Servidor Ativo
 				</div>
 
 				<div class="header-role-indicator">
@@ -180,10 +183,11 @@ watch(
 			@include flex-center;
 			width: 40px;
 			height: 40px;
-			background-color: rgba($color-brand, 0.15);
-			border: 1px solid rgba($color-brand, 0.3);
-			border-radius: $radius-sm;
 			color: $color-brand;
+
+			.img {
+				max-width: 100%;
+			}
 		}
 
 		.brand-text {

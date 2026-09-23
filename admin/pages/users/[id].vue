@@ -3,18 +3,7 @@
 	lang="ts"
 >
 import { useMutation, useQuery } from "@vue/apollo-composable";
-import {
-	AlertCircle,
-	ArrowLeft,
-	CheckCircle2,
-	Clock,
-	Coins,
-	DollarSign,
-	HeartPulse,
-	Lock,
-	Package,
-	RotateCw,
-} from "lucide-vue-next";
+import { AlertCircle, ArrowLeft, CheckCircle2, Clock, Coins, DollarSign, Package, Unlock } from "lucide-vue-next";
 import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
@@ -182,7 +171,7 @@ async function handleRemoveAction() {
 					size="sm"
 				>
 					<ArrowLeft :size="16" />
-					<span>Voltar para Lista</span>
+					Voltar para Lista
 				</BaseButton>
 			</NuxtLink>
 		</div>
@@ -200,7 +189,7 @@ async function handleRemoveAction() {
 				v-else
 				:size="18"
 			/>
-			<span>{{ feedback.message }}</span>
+			{{ feedback.message }}
 		</div>
 
 		<div
@@ -234,15 +223,25 @@ async function handleRemoveAction() {
 							<BaseBadge
 								v-if="user.vipEternal"
 								variant="vip"
-								>VIP Eterno</BaseBadge
 							>
+								<NuxtImg
+									src="vip.png"
+									width="18"
+								/>
+								VIP Eterno
+							</BaseBadge>
 							<BaseBadge
 								v-else-if="user.isVip"
 								variant="vip"
-								>VIP</BaseBadge
 							>
+								<NuxtImg
+									src="vip.png"
+									width="18"
+								/>
+								VIP
+							</BaseBadge>
 						</div>
-						<p class="user-id">ID: <code>{{ user.id }}</code></p>
+						<p class="user-id"><code> ID: {{ user.id }}</code></p>
 					</div>
 				</div>
 
@@ -286,11 +285,14 @@ async function handleRemoveAction() {
 				<div class="actions-grid">
 					<!-- Curar -->
 					<BaseButton
-						variant="danger"
+						variant="secondary"
 						:disabled="!auth.isDeveloper.value || !user.isInHospital || cureLoading"
 						@click="handleCure()"
 					>
-						<HeartPulse :size="16" />
+						<NuxtImg
+							src="situations/hospital.png"
+							width="18"
+						/>
 						Curar do Hospital
 					</BaseButton>
 
@@ -300,13 +302,16 @@ async function handleRemoveAction() {
 						:disabled="!auth.isDeveloper.value || !user.isInPrison || freeLoading"
 						@click="handleFree()"
 					>
-						<Lock :size="16" />
+						<NuxtImg
+							src="situations/prison.png"
+							width="18"
+						/>
 						Soltar da Prisão
 					</BaseButton>
 
 					<!-- Ajustar Dinheiro -->
 					<BaseButton
-						variant="primary"
+						variant="secondary"
 						:disabled="!auth.isDeveloper.value || moneyLoading"
 						@click="isMoneyModalOpen = true"
 					>
@@ -330,7 +335,7 @@ async function handleRemoveAction() {
 						:disabled="!auth.isDeveloper.value || actionLoading"
 						@click="isActionModalOpen = true"
 					>
-						<RotateCw :size="16" />
+						<Unlock :size="16" />
 						Remover de Ação
 					</BaseButton>
 				</div>
@@ -350,70 +355,98 @@ async function handleRemoveAction() {
 								v-if="user.isInHospital"
 								variant="danger"
 							>
+								<NuxtImg
+									src="situations/hospital.png"
+									width="18"
+								/>
 								Hospitalizado até {{ new Date(user.hospitalTime).toLocaleTimeString() }}
 							</BaseBadge>
 							<BaseBadge
 								v-else
-								variant="success"
-								>Livre</BaseBadge
+								variant="neutral"
 							>
+								Não
+							</BaseBadge>
 						</div>
 
 						<div class="status-row">
 							<span class="row-label">Prisão</span>
 							<BaseBadge
 								v-if="user.isInPrison"
-								variant="neutral"
+								variant="danger"
 							>
+								<NuxtImg
+									src="situations/prison.png"
+									width="18"
+								/>
 								Preso até {{ new Date(user.prisonTime).toLocaleTimeString() }}
 							</BaseBadge>
 							<BaseBadge
 								v-else
-								variant="success"
-								>Livre</BaseBadge
+								variant="neutral"
 							>
+								Não
+							</BaseBadge>
 						</div>
 
 						<div class="status-row">
-							<span class="row-label">Emprego</span>
+							<span class="row-label">Trabalho</span>
 							<BaseBadge
 								v-if="user.isWorking"
-								variant="warning"
-								>Trabalhando</BaseBadge
+								variant="success"
 							>
+								<NuxtImg
+									src="situations/job.png"
+									width="18"
+								/>
+								Trabalhando
+							</BaseBadge>
 							<BaseBadge
 								v-else
 								variant="neutral"
-								>Sem trabalho ativo</BaseBadge
 							>
+								Não
+							</BaseBadge>
 						</div>
 
 						<div class="status-row">
 							<span class="row-label">Vasculho</span>
 							<BaseBadge
 								v-if="user.isScavenging"
-								variant="warning"
-								>Vasculhando</BaseBadge
+								variant="success"
 							>
+								<NuxtImg
+									src="situations/scavenge.png"
+									width="18"
+								/>
+								Vasculhando
+							</BaseBadge>
 							<BaseBadge
 								v-else
 								variant="neutral"
-								>Inativo</BaseBadge
 							>
+								Não
+							</BaseBadge>
 						</div>
 
 						<div class="status-row">
-							<span class="row-label">Procurado pela Polícia</span>
+							<span class="row-label">Procurado</span>
 							<BaseBadge
 								v-if="user.isWanted"
 								variant="danger"
-								>Procurado</BaseBadge
 							>
+								<NuxtImg
+									src="situations/police.png"
+									width="18"
+								/>
+								Procurado
+							</BaseBadge>
 							<BaseBadge
 								v-else
-								variant="success"
-								>Ficha Limpa</BaseBadge
+								variant="neutral"
 							>
+								Não
+							</BaseBadge>
 						</div>
 					</div>
 				</BaseCard>
@@ -435,12 +468,12 @@ async function handleRemoveAction() {
 						</div>
 
 						<div class="economy-item">
-							<div class="icon-wrap gold">
+							<div class="icon-wrap special">
 								<Coins :size="20" />
 							</div>
 							<div class="economy-info">
-								<span class="label">Special Coins</span>
-								<span class="val gold">{{ user.specialCoin.toLocaleString() }}</span>
+								<span class="label">Moedas Especiais</span>
+								<span class="val special">{{ user.specialCoin.toLocaleString() }}</span>
 							</div>
 						</div>
 					</div>
@@ -779,17 +812,18 @@ async function handleRemoveAction() {
 	.status-rows {
 		display: flex;
 		flex-direction: column;
-		gap: 12px;
 
 		.status-row {
 			@include flex-between;
-			padding: 8px 12px;
-			background-color: $bg-input;
-			border-radius: $radius-sm;
+			padding: 12px 0px;
 			font-size: 0.875rem;
 
 			.row-label {
 				color: $text-secondary;
+			}
+
+			&:not(:last-child){
+				border-bottom: 1px solid $border-card
 			}
 		}
 	}
@@ -819,9 +853,9 @@ async function handleRemoveAction() {
 					color: $color-success;
 				}
 
-				&.gold {
-					background-color: rgba($color-gold, 0.15);
-					color: $color-gold;
+				&.special {
+					background-color: rgba($color-special, 0.15);
+					color: $color-special;
 				}
 			}
 
@@ -843,8 +877,8 @@ async function handleRemoveAction() {
 						color: $color-success;
 					}
 
-					&.gold {
-						color: $color-gold;
+					&.special {
+						color: $color-special;
 					}
 				}
 			}

@@ -42,11 +42,10 @@ defineProps<Props>();
 					<tr>
 						<th>Data</th>
 						<th>Jogadores</th>
+						<th>Português</th>
+						<th>Inglês</th>
+						<th>Espanhol</th>
 						<th>Gangues</th>
-						<th>Hospital</th>
-						<th>Prisão</th>
-						<th>Trabalho</th>
-						<th>Vasculho</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -56,11 +55,10 @@ defineProps<Props>();
 					>
 						<td>{{ new Date(item.date).toLocaleDateString() }}</td>
 						<td class="font-bold">{{ item.totalPlayers }}</td>
+						<td>{{ item.portugueseCount }}</td>
+						<td>{{ item.englishCount }}</td>
+						<td>{{ item.spanishCount }}</td>
 						<td>{{ item.totalGangs }}</td>
-						<td class="text-hospital">{{ item.hospitalCount }}</td>
-						<td class="text-prison">{{ item.prisonCount }}</td>
-						<td class="text-working">{{ item.jobCount }}</td>
-						<td class="text-scavenge">{{ item.scavengeCount }}</td>
 					</tr>
 				</tbody>
 			</table>
@@ -89,6 +87,7 @@ defineProps<Props>();
 
 	.table-container {
 		overflow-x: auto;
+		max-height: 50dvh;
 		@include scrollbar-custom;
 
 		.history-table {

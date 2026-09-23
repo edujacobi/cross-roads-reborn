@@ -17,47 +17,47 @@ const style = computed(() => {
 		case "idle":
 			return {
 				title: "Vadiando",
-				icon: Beer,
+				image: "idling",
 			};
 		case "working":
 			return {
 				title: "Trabalhando",
-				icon: Briefcase,
+				image: "job",
 			};
 		case "hospital":
 			return {
 				title: "Hospitalizados",
-				icon: HeartPulse,
+				image: "hospital",
 			};
 		case "prison":
 			return {
 				title: "Presos",
-				icon: Lock,
+				image: "prison",
 			};
 		case "scavenge":
 			return {
 				title: "Vasculhando",
-				icon: Compass,
+				image: "scavenging",
 			};
 		case "casino":
 			return {
 				title: "Apostando",
-				icon: Coins,
+				image: "casino",
 			};
 		case "robbery":
 			return {
 				title: "Em roubos",
-				icon: Swords,
+				image: "robbery",
 			};
 		case "beatup":
 			return {
 				title: "Em espancamentos",
-				icon: BicepsFlexed,
+				image: "beatup",
 			};
 		default:
 			return {
 				title: "-",
-				icon: Lock,
+				image: "",
 			};
 	}
 });
@@ -69,9 +69,9 @@ const style = computed(() => {
 		:class="variant"
 	>
 		<div class="status-box-header">
-			<component
-				:is="style.icon"
-				:size="18"
+			<NuxtImg
+				:src="'situations/' + style.image + '.png'"
+				class="status-img"
 			/>
 			{{ style.title }}
 		</div>
@@ -90,15 +90,19 @@ const style = computed(() => {
 	@include card-surface;
 	padding: 16px;
 	display: flex;
-	flex-direction: column;
+	flex-direction: row;
+	justify-content: space-between;
 	gap: 8px;
 
 	.status-box-header {
-		display: flex;
-		align-items: center;
+		@include flex-center;
 		gap: 8px;
 		font-size: 0.8125rem;
 		font-weight: 600;
+
+		.status-img {
+			max-width: 20px;
+		}
 	}
 
 	.status-box-count {
@@ -107,68 +111,56 @@ const style = computed(() => {
 		color: $text-primary;
 	}
 
-	&.idle {
+	$status-colors: (
+		"default": #fff,
+		"working": $color-working,
+		"hospital": $color-hospital,
+		"prison": $color-prison,
+		"scavenge": $color-scavenge,
+		"casino": $color-casino,
+		"beatup": $color-beatup,
+		"robbery": $color-robbery
+	);
+
+	@mixin status-variant($status){
 		.status-box-header {
-			color: #fff;
+			color: map-get($status-colors, $status);
 		}
 
-		border-left: 3px solid #fff;
+		border: 1px solid map-get($status-colors, $status);
+		box-shadow: 3px 3px map-get($status-colors, $status);
+	}
+
+	&.idle {
+		@include status-variant("default")
 	}
 
 	&.working {
-		.status-box-header {
-			color: $color-working;
-		}
-
-		border-left: 3px solid $color-working;
+		@include status-variant("working")
 	}
 
 	&.hospital {
-		.status-box-header {
-			color: $color-hospital;
-		}
-
-		border-left: 3px solid $color-hospital;
+		@include status-variant("hospital")
 	}
 
 	&.prison {
-		.status-box-header {
-			color: $color-prison;
-		}
-
-		border-left: 3px solid $color-prison;
+		@include status-variant("prison")
 	}
 
 	&.scavenge {
-		.status-box-header {
-			color: $color-scavenge;
-		}
-
-		border-left: 3px solid $color-scavenge;
+		@include status-variant("scavenge")
 	}
 
 	&.casino {
-		.status-box-header {
-			color: $color-casino;
-		}
-
-		border-left: 3px solid $color-casino;
+		@include status-variant("casino")
 	}
 
 	&.beatup {
-		.status-box-header {
-			color: $color-beatup;
-		}
-
-		border-left: 3px solid $color-beatup;
+		@include status-variant("beatup")
 	}
 
 	&.robbery {
-		.status-box-header {
-			color: $color-robbery;
-		}
-
-		border-left: 3px solid $color-robbery;
+		@include status-variant("robbery")
 	}
 }
 

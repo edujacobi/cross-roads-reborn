@@ -97,7 +97,6 @@ function nextPage() {
 							<th>Dinheiro</th>
 							<th>Moedas Esp.</th>
 							<th>Status</th>
-							<th>VIP</th>
 							<th class="text-right">Ações</th>
 						</tr>
 					</thead>
@@ -108,6 +107,26 @@ function nextPage() {
 						>
 							<td class="player-cell">
 								<span class="nickname">{{ u.nickname || "(Sem Nick)" }}</span>
+								<BaseBadge
+									v-if="u.vipEternal"
+									variant="vip"
+								>
+									<NuxtImg
+										src="vip.png"
+										width="14"
+									/>
+									VIP Eterno
+								</BaseBadge>
+								<BaseBadge
+									v-else-if="u.isVip"
+									variant="vip"
+								>
+									<NuxtImg
+										src="vip.png"
+										width="14"
+									/>
+									VIP
+								</BaseBadge>
 							</td>
 							<td class="id-cell">{{ u.id }}</td>
 							<td>{{ u.className }}</td>
@@ -117,40 +136,43 @@ function nextPage() {
 								<BaseBadge
 									v-if="u.isInHospital"
 									variant="danger"
-									>Hospital</BaseBadge
 								>
+									<NuxtImg
+										src="situations/hospital.png"
+										width="16"
+									/>
+									Hospital
+								</BaseBadge>
 								<BaseBadge
 									v-else-if="u.isInPrison"
-									variant="neutral"
-									>Preso</BaseBadge
+									variant="danger"
 								>
+									<NuxtImg
+										src="situations/prison.png"
+										width="16"
+									/>
+									Preso
+								</BaseBadge>
 								<BaseBadge
 									v-else-if="u.isWorking"
-									variant="warning"
-									>Trabalhando</BaseBadge
-								>
-								<BaseBadge
-									v-else
 									variant="success"
-									>Livre</BaseBadge
 								>
-							</td>
-							<td>
+									<NuxtImg
+										src="situations/job.png"
+										width="16"
+									/>
+									Trabalhando
+								</BaseBadge>
 								<BaseBadge
-									v-if="u.vipEternal"
-									variant="vip"
-									>Eterno</BaseBadge
-								>
-								<BaseBadge
-									v-else-if="u.isVip"
-									variant="vip"
-									>VIP</BaseBadge
-								>
-								<span
 									v-else
-									class="text-muted"
-									>-</span
+									variant="neutral"
 								>
+									<NuxtImg
+										src="situations/idling.png"
+										width="16"
+									/>
+									Vadiando
+								</BaseBadge>
 							</td>
 							<td class="text-right">
 								<NuxtLink :to="`/users/${u.id}`">
@@ -282,7 +304,6 @@ function nextPage() {
 			font-size: 0.75rem;
 			font-weight: 600;
 			text-transform: uppercase;
-			background-color: rgba($bg-input, 0.4);
 		}
 
 		td {
@@ -292,6 +313,7 @@ function nextPage() {
 		.player-cell {
 			.nickname {
 				font-weight: 600;
+				margin-right: 0.5rem;
 				color: $text-primary;
 			}
 		}

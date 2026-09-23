@@ -2,10 +2,11 @@ import { GraphQLError } from "graphql";
 import { Dashboard } from "#core/models/Dashboard";
 import { User } from "#core/models/User";
 import { UserRepository } from "#core/repositories/UserRepository";
-import { ClassList, ClassId } from "#core/types/Classes";
+import { ClassList } from "#core/types/Classes";
 import { Language } from "#core/models/Language";
 import { ItemList } from "#core/types/Items";
-import type { GraphQLContext, AuthUser } from "#api/types";
+import type { AuthUser, GraphQLContext } from "#api/types";
+import { formatMoney } from "#bot/utils/ui";
 
 function assertAuthenticated(context: GraphQLContext): AuthUser {
 	if (!context.user) {
@@ -47,7 +48,7 @@ function mapUserDetail(user: User) {
 		};
 	});
 
-	const className = ClassList[user.Class]?.Name?.[Language.English] || "None";
+	const className = ClassList[user.Class]?.Name?.[Language.Portuguese] || "None";
 
 	return {
 		id: user.Id,
@@ -135,7 +136,7 @@ export const resolvers: {
 				const isInHospital = u.hospitalTime ? new Date(u.hospitalTime) > now : false;
 				const isInPrison = u.prisonTime ? new Date(u.prisonTime) > now : false;
 				const isWorking = u.jobTime ? new Date(u.jobTime) > now && u.jobId !== null : false;
-				const className = ClassList[u.class]?.Name?.[Language.English] || "None";
+				const className = ClassList[u.class]?.Name?.[Language.Portuguese] || "None";
 
 				return {
 					id: u.id,
@@ -194,7 +195,7 @@ export const resolvers: {
 
 			return {
 				success: true,
-				message: `Money successfully updated to ${target.Money} for ${target.Nickname}.`,
+				message: `Money successfully updated to ${formatMoney(target.Money, Language.English)} for ${target.Nickname}.`,
 				user: mapUserDetail(target),
 			};
 		},

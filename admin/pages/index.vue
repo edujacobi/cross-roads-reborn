@@ -11,10 +11,8 @@ import {
 	GET_DASHBOARD_HISTORY,
 	GET_DASHBOARD_STATS,
 } from "~/graphql/operations";
-import DashboardMainMetrics from "../components/Dashboard/DashboardMainMetrics.vue";
 import DashboardStatusBox from "../components/Dashboard/DashboardStatusBox.vue";
 import DashboardUserHistory from "../components/Dashboard/DashboardUserHistory.vue";
-import DashboardUserLanguages from "../components/Dashboard/DashboardUserLanguages.vue";
 
 const { result: statsResult, loading: statsLoading, refetch: refetchStats } = useQuery(GET_DASHBOARD_STATS);
 
@@ -50,13 +48,8 @@ function refreshData() {
 			</BaseButton>
 		</section>
 
-		<DashboardMainMetrics
-			:user-count="stats?.totalPlayers"
-			:gang-count="stats?.totalGangs"
-		/>
-
 		<section class="section-title">
-			<h3>Distribuição em Ações do Jogo</h3>
+			<h3>Os jogadores estão atualmente</h3>
 		</section>
 
 		<section class="status-grid">
@@ -95,7 +88,9 @@ function refreshData() {
 		</section>
 
 		<section class="details-row">
-			<DashboardUserLanguages
+			<DashboardCountData
+				:total-players="stats?.totalPlayers"
+				:total-gangs="stats?.totalGangs"
 				:english-count="stats?.englishCount"
 				:portuguese-count="stats?.portugueseCount"
 				:spanish-count="stats?.spanishCount"
