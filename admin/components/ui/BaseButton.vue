@@ -31,6 +31,9 @@ withDefaults(defineProps<Props>(), {
 	lang="scss"
 	scoped
 >
+@use "~/assets/scss/variables" as *;
+@use "sass:color";
+
 .base-button {
   display: inline-flex;
   align-items: center;
@@ -70,7 +73,7 @@ withDefaults(defineProps<Props>(), {
     color: #000;
 
     &:hover:not(:disabled) {
-      background-color: lighten($color-brand, 8%);
+      background-color: color.adjust($color-brand, $lightness: 8%);
     }
   }
 
@@ -80,7 +83,7 @@ withDefaults(defineProps<Props>(), {
     color: $text-primary;
 
     &:hover:not(:disabled) {
-      background-color: lighten($bg-card-hover, 6%);
+      background-color: color.adjust($bg-card-hover, $lightness: 6%);
       border-color: $border-focus;
     }
   }
@@ -88,7 +91,7 @@ withDefaults(defineProps<Props>(), {
   &.variant-danger {
     background-color: rgba($color-danger, 0.15);
     border-color: rgba($color-danger, 0.4);
-    color: lighten($color-danger, 15%);
+    color: color.adjust($color-danger, $lightness: 15%);
 
     &:hover:not(:disabled) {
       background-color: rgba($color-danger, 0.3);
@@ -99,7 +102,7 @@ withDefaults(defineProps<Props>(), {
   &.variant-success {
     background-color: rgba($color-success, 0.15);
     border-color: rgba($color-success, 0.4);
-    color: lighten($color-success, 15%);
+    color: color.adjust($color-success, $lightness: 15%);
 
     &:hover:not(:disabled) {
       background-color: rgba($color-success, 0.3);

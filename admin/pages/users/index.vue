@@ -207,6 +207,9 @@ function nextPage() {
 	lang="scss"
 	scoped
 >
+@use "~/assets/scss/variables" as *;
+@use "~/assets/scss/mixins" as *;
+
 .users-page {
 	display: flex;
 	flex-direction: column;

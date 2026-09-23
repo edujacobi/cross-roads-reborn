@@ -83,6 +83,8 @@ const style = computed(() => {
 	lang="scss"
 	scoped
 >
+@use "~/assets/scss/variables" as *;
+@use "~/assets/scss/mixins" as *;
 
 .status-box {
 	@include card-surface;

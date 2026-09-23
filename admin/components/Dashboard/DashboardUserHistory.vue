@@ -72,6 +72,8 @@ defineProps<Props>();
 	lang="scss"
 	scoped
 >
+@use "~/assets/scss/variables" as *;
+@use "~/assets/scss/mixins" as *;
 
 .history-card {
 

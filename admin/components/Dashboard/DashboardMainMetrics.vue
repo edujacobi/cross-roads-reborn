@@ -42,12 +42,8 @@ withDefaults(defineProps<Props>(), {
 	lang="scss"
 	scoped
 >
-
-@keyframes spin {
-	to {
-		transform: rotate(360deg);
-	}
-}
+@use "~/assets/scss/variables" as *;
+@use "~/assets/scss/mixins" as *;
 
 .metrics-grid {
 	display: grid;

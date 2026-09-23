@@ -70,6 +70,9 @@ const emit = defineEmits<(e: "update:open", value: boolean) => void>();
 	lang="scss"
 	scoped
 >
+@use "~/assets/scss/variables" as *;
+@use "~/assets/scss/mixins" as *;
+
 .dialog-overlay {
   position: fixed;
   inset: 0;

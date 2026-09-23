@@ -632,6 +632,10 @@ async function handleRemoveAction() {
 	lang="scss"
 	scoped
 >
+@use "~/assets/scss/variables" as *;
+@use "~/assets/scss/mixins" as *;
+@use "sass:color";
+
 .user-detail-page {
 	display: flex;
 	flex-direction: column;
@@ -653,13 +657,13 @@ async function handleRemoveAction() {
 	&.success {
 		background-color: rgba($color-success, 0.15);
 		border: 1px solid rgba($color-success, 0.4);
-		color: lighten($color-success, 15%);
+		color: color.adjust($color-success, $lightness: 15%);
 	}
 
 	&.error {
 		background-color: rgba($color-danger, 0.15);
 		border: 1px solid rgba($color-danger, 0.4);
-		color: lighten($color-danger, 15%);
+		color: color.adjust($color-danger, $lightness: 15%);
 	}
 }
 

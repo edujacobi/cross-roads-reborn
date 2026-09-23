@@ -114,6 +114,9 @@ function refreshData() {
 	lang="scss"
 	scoped
 >
+@use "~/assets/scss/variables" as *;
+@use "~/assets/scss/mixins" as *;
+
 .dashboard-page {
 	display: flex;
 	flex-direction: column;

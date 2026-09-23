@@ -21,6 +21,9 @@ withDefaults(defineProps<Props>(), {
 	lang="scss"
 	scoped
 >
+@use "~/assets/scss/variables" as *;
+@use "sass:color";
+
 .base-badge {
   display: inline-flex;
   align-items: center;
@@ -34,37 +37,37 @@ withDefaults(defineProps<Props>(), {
 
   &.badge-developer {
     background-color: rgba($color-developer, 0.15);
-    color: lighten($color-developer, 10%);
+    color: color.adjust($color-developer, $lightness: 10%);
     border: 1px solid rgba($color-developer, 0.4);
   }
 
   &.badge-moderator {
     background-color: rgba($color-moderator, 0.15);
-    color: lighten($color-moderator, 15%);
+    color: color.adjust($color-moderator, $lightness: 15%);
     border: 1px solid rgba($color-moderator, 0.4);
   }
 
   &.badge-vip {
     background-color: rgba($color-vip, 0.2);
-    color: lighten($color-vip, 15%);
+    color: color.adjust($color-vip, $lightness: 15%);
     border: 1px solid rgba($color-vip, 0.5);
   }
 
   &.badge-success {
     background-color: rgba($color-success, 0.15);
-    color: lighten($color-success, 15%);
+    color: color.adjust($color-success, $lightness: 15%);
     border: 1px solid rgba($color-success, 0.4);
   }
 
   &.badge-danger {
     background-color: rgba($color-danger, 0.15);
-    color: lighten($color-danger, 15%);
+    color: color.adjust($color-danger, $lightness: 15%);
     border: 1px solid rgba($color-danger, 0.4);
   }
 
   &.badge-warning {
     background-color: rgba($color-warning, 0.15);
-    color: lighten($color-warning, 15%);
+    color: color.adjust($color-warning, $lightness: 15%);
     border: 1px solid rgba($color-warning, 0.4);
   }
 

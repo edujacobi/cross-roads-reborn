@@ -54,6 +54,9 @@ defineProps<Props>();
 	lang="scss"
 	scoped
 >
+@use "~/assets/scss/variables" as *;
+@use "~/assets/scss/mixins" as *;
+
 .base-card {
 	@include card-surface;
 	overflow: hidden;

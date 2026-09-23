@@ -1,3 +1,4 @@
+@use "sass:color";
 // Cross Roads Design Tokens & Variables
 
 // Backgrounds
@@ -33,7 +34,7 @@ $color-info: #06b6d4;
 
 // Status Specific
 $color-hospital: #e54747;
-$color-prison: lighten(#163cb6, 20%);
+$color-prison: color.adjust(#163cb6, $lightness: 20%);
 $color-working: #FFE300;
 $color-casino: #8C55FF;
 $color-robbery: #AF0000;

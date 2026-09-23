@@ -29,8 +29,8 @@ onMounted(async () => {
 </script>
 
 <template>
-	<div class="callback-container">
-		<div class="callback-card">
+	<main class="callback-container">
+		<article class="callback-card">
 			<div
 				v-if="!error"
 				class="loading-state"
@@ -48,14 +48,17 @@ onMounted(async () => {
 				<p>{{ error }}</p>
 				<span>Redirecionando para o login em instantes...</span>
 			</div>
-		</div>
-	</div>
+		</article>
+	</main>
 </template>
 
 <style
 	lang="scss"
 	scoped
 >
+@use "~/assets/scss/variables" as *;
+@use "~/assets/scss/mixins" as *;
+
 .callback-container {
 	@include flex-center;
 	min-height: 100vh;

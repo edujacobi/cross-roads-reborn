@@ -41,6 +41,8 @@ defineEmits<(e: "update:modelValue", value: string | number) => void>();
 	lang="scss"
 	scoped
 >
+@use "~/assets/scss/variables" as *;
+
 .base-input-wrapper {
   display: flex;
   flex-direction: column;

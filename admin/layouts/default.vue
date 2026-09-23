@@ -128,6 +128,10 @@ watch(
 	lang="scss"
 	scoped
 >
+@use "~/assets/scss/variables" as *;
+@use "~/assets/scss/mixins" as *;
+@use "sass:color";
+
 .loading-screen {
 	@include flex-center;
 	flex-direction: column;
@@ -309,12 +313,12 @@ watch(
 
 		&.dev {
 			background-color: rgba($color-developer, 0.15);
-			color: lighten($color-developer, 15%);
+			color: color.adjust($color-developer, $lightness: 15%);
 		}
 
 		&.mod {
 			background-color: rgba($color-moderator, 0.15);
-			color: lighten($color-moderator, 20%);
+			color: color.adjust($color-moderator, $lightness: 20%);
 		}
 	}
 }
