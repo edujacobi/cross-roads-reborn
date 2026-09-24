@@ -3,6 +3,8 @@
 	lang="ts"
 >
 import { useMutation, useQuery } from "@vue/apollo-composable";
+import { formatDistanceToNow } from "date-fns";
+import { enUS, es, ptBR } from "date-fns/locale";
 import { AlertCircle, ArrowLeft, CheckCircle2, Clock, Coins, DollarSign, Package, Unlock } from "lucide-vue-next";
 import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
@@ -18,6 +20,8 @@ import {
 	MUTATION_SET_MONEY,
 	type UserDetailsDto,
 } from "~/graphql/operations";
+
+import { ItemType } from "../../../src/core/types/ItemType";
 
 const route = useRoute();
 const auth = useAuth();
@@ -243,6 +247,8 @@ async function handleRemoveAction() {
 						</div>
 						<p class="user-id"><code> ID: {{ user.id }}</code></p>
 					</div>
+					Cr$ {{ user.money.toLocaleString() }}
+					{{ user.specialCoin.toLocaleString() }} Moedas
 				</div>
 
 				<div class="profile-meta-grid">
@@ -265,83 +271,62 @@ async function handleRemoveAction() {
 						<span class="meta-label">Votos (Top.gg)</span>
 						<span class="meta-value">{{ user.voteCount }}</span>
 					</div>
+
+					<div class="meta-item">
+						<span class="meta-label">Attack</span>
+						<span class="meta-value">{{ user.attack || 0 }}</span>
+					</div>
+
+					<div class="meta-item">
+						<span class="meta-label">Defense</span>
+						<span class="meta-value">{{ user.defense || 0 }}</span>
+					</div>
 				</div>
 			</BaseCard>
 
-			<!-- Admin Actions Toolbar -->
+			<!-- Inventory Section -->
 			<BaseCard
-				title="Ações Administrativas"
-				class="actions-card"
+				title="Inventário"
+				class="inventory-card"
 			>
-				<template #actions>
-					<span
-						v-if="!auth.isDeveloper.value"
-						class="read-only-badge"
-					>
-						Modo Somente Leitura (Apenas Developers podem executar ações)
-					</span>
-				</template>
+				<div
+					v-if="user.items.length === 0"
+					class="empty-inv"
+				>
+					<Package :size="32" />
+					<p>O jogador não possui itens no inventário.</p>
+				</div>
 
-				<div class="actions-grid">
-					<!-- Curar -->
-					<BaseButton
-						variant="secondary"
-						:disabled="!auth.isDeveloper.value || !user.isInHospital || cureLoading"
-						@click="handleCure()"
+				<div
+					v-else
+					class="items-grid"
+				>
+					<div
+						v-for="item in user.items"
+						:key="item.id"
+						class="item-card"
 					>
-						<NuxtImg
-							src="situations/hospital.png"
-							width="18"
-						/>
-						Curar do Hospital
-					</BaseButton>
-
-					<!-- Soltar -->
-					<BaseButton
-						variant="secondary"
-						:disabled="!auth.isDeveloper.value || !user.isInPrison || freeLoading"
-						@click="handleFree()"
-					>
-						<NuxtImg
-							src="situations/prison.png"
-							width="18"
-						/>
-						Soltar da Prisão
-					</BaseButton>
-
-					<!-- Ajustar Dinheiro -->
-					<BaseButton
-						variant="secondary"
-						:disabled="!auth.isDeveloper.value || moneyLoading"
-						@click="isMoneyModalOpen = true"
-					>
-						<DollarSign :size="16" />
-						Alterar Dinheiro
-					</BaseButton>
-
-					<!-- Resetar Cooldown -->
-					<BaseButton
-						variant="secondary"
-						:disabled="!auth.isDeveloper.value || cdLoading"
-						@click="isCooldownModalOpen = true"
-					>
-						<Clock :size="16" />
-						Resetar Cooldown
-					</BaseButton>
-
-					<!-- Remover de Ação -->
-					<BaseButton
-						variant="secondary"
-						:disabled="!auth.isDeveloper.value || actionLoading"
-						@click="isActionModalOpen = true"
-					>
-						<Unlock :size="16" />
-						Remover de Ação
-					</BaseButton>
+						<div class="item-header">
+							<span class="item-name">{{ item.name }}</span>
+							<span
+								v-if="item.type === ItemType.Consumable"
+								class="item-qty"
+							>
+								x{{ item.quantity }}
+							</span>
+							<span
+								v-else
+								class="item-qty"
+							>
+								{{ formatDistanceToNow(new Date(item.remainingTime), { locale: ptBR }) }}
+							</span>
+						</div>
+						<p>Skin: {{ item.skin }}</p>
+					</div>
 				</div>
 			</BaseCard>
 
-			<!-- Status & Economy Grid -->
+			<!-- Status Grid -->
 			<div class="info-columns">
 				<!-- Status Card -->
 				<BaseCard
@@ -448,81 +433,100 @@ async function handleRemoveAction() {
 								Não
 							</BaseBadge>
 						</div>
+						<div class="status-row">
+							<span class="row-label">Cassino</span>
+							<BaseBadge
+								v-if="user.isInCasino"
+								variant="success"
+							>
+								<NuxtImg
+									src="situations/casino.png"
+									width="18"
+								/>
+								Apostando
+							</BaseBadge>
+							<BaseBadge
+								v-else
+								variant="neutral"
+							>
+								Não
+							</BaseBadge>
+						</div>
 					</div>
 				</BaseCard>
-
-				<!-- Economy Card -->
+				<!-- Admin Actions Toolbar -->
 				<BaseCard
-					title="Economia"
-					class="economy-summary-card"
+					title="Ações Administrativas"
+					class="actions-card"
 				>
-					<div class="economy-rows">
-						<div class="economy-item">
-							<div class="icon-wrap success">
-								<DollarSign :size="20" />
-							</div>
-							<div class="economy-info">
-								<span class="label">Saldo em Carteira</span>
-								<span class="val success">Cr$ {{ user.money.toLocaleString() }}</span>
-							</div>
-						</div>
+					<template #actions>
+						<span
+							v-if="!auth.isDeveloper.value"
+							class="read-only-badge"
+						>
+							Modo Somente Leitura (Apenas Developers podem executar ações)
+						</span>
+					</template>
 
-						<div class="economy-item">
-							<div class="icon-wrap special">
-								<Coins :size="20" />
-							</div>
-							<div class="economy-info">
-								<span class="label">Moedas Especiais</span>
-								<span class="val special">{{ user.specialCoin.toLocaleString() }}</span>
-							</div>
-						</div>
+					<div class="actions-grid">
+						<!-- Curar -->
+						<BaseButton
+							variant="secondary"
+							:disabled="!auth.isDeveloper.value || !user.isInHospital || cureLoading"
+							@click="handleCure()"
+						>
+							<NuxtImg
+								src="situations/hospital.png"
+								width="18"
+							/>
+							Curar do Hospital
+						</BaseButton>
+
+						<!-- Soltar -->
+						<BaseButton
+							variant="secondary"
+							:disabled="!auth.isDeveloper.value || !user.isInPrison || freeLoading"
+							@click="handleFree()"
+						>
+							<NuxtImg
+								src="situations/prison.png"
+								width="18"
+							/>
+							Soltar da Prisão
+						</BaseButton>
+
+						<!-- Ajustar Dinheiro -->
+						<BaseButton
+							variant="secondary"
+							:disabled="!auth.isDeveloper.value || moneyLoading"
+							@click="isMoneyModalOpen = true"
+						>
+							<DollarSign :size="16" />
+							Alterar Dinheiro
+						</BaseButton>
+
+						<!-- Resetar Cooldown -->
+						<BaseButton
+							variant="secondary"
+							:disabled="!auth.isDeveloper.value || cdLoading"
+							@click="isCooldownModalOpen = true"
+						>
+							<Clock :size="16" />
+							Resetar Cooldown
+						</BaseButton>
+
+						<!-- Remover de Ação -->
+						<BaseButton
+							variant="secondary"
+							:disabled="!auth.isDeveloper.value || actionLoading"
+							@click="isActionModalOpen = true"
+						>
+							<Unlock :size="16" />
+							Remover de Ação
+						</BaseButton>
 					</div>
 				</BaseCard>
 			</div>
-
-			<!-- Inventory Section -->
-			<BaseCard
-				:title="`Inventário (${user.items.length} Itens)`"
-				class="inventory-card"
-			>
-				<div
-					v-if="user.items.length === 0"
-					class="empty-inv"
-				>
-					<Package :size="32" />
-					<p>O jogador não possui itens no inventário.</p>
-				</div>
-
-				<div
-					v-else
-					class="items-grid"
-				>
-					<div
-						v-for="item in user.items"
-						:key="item.id"
-						class="item-card"
-					>
-						<div class="item-header">
-							<span class="item-name">{{ item.name }}</span>
-							<span class="item-qty">x{{ item.quantity }}</span>
-						</div>
-
-						<div class="item-stats">
-							<span
-								v-if="item.attack > 0"
-								class="stat atk"
-								>ATK: +{{ item.attack }}</span
-							>
-							<span
-								v-if="item.defense > 0"
-								class="stat def"
-								>DEF: +{{ item.defense }}</span
-							>
-							<span class="stat price">Cr$ {{ item.price.toLocaleString() }}</span>
-						</div>
-					</div>
-				</div>
-			</BaseCard>
 		</div>
 
 		<!-- Modal: Alterar Dinheiro -->
@@ -568,8 +572,9 @@ async function handleRemoveAction() {
 				<BaseButton
 					variant="ghost"
 					@click="isMoneyModalOpen = false"
-					>Cancelar</BaseButton
 				>
+					Cancelar
+				</BaseButton>
 				<BaseButton
 					variant="primary"
 					:disabled="moneyLoading"
@@ -606,8 +611,9 @@ async function handleRemoveAction() {
 				<BaseButton
 					variant="ghost"
 					@click="isCooldownModalOpen = false"
-					>Cancelar</BaseButton
 				>
+					Cancelar
+				</BaseButton>
 				<BaseButton
 					variant="primary"
 					:disabled="cdLoading"
@@ -647,8 +653,9 @@ async function handleRemoveAction() {
 				<BaseButton
 					variant="ghost"
 					@click="isActionModalOpen = false"
-					>Cancelar</BaseButton
 				>
+					Cancelar
+				</BaseButton>
 				<BaseButton
 					variant="primary"
 					:disabled="actionLoading"
@@ -787,22 +794,9 @@ async function handleRemoveAction() {
 	}
 }
 
-.actions-card {
-	.read-only-badge {
-		font-size: 0.75rem;
-		color: $color-warning;
-	}
-
-	.actions-grid {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 12px;
-	}
-}
-
 .info-columns {
 	display: grid;
-	grid-template-columns: 1fr 1fr;
+	grid-template-columns: 3fr 1fr;
 	gap: 20px;
 
 	@media (max-width: 850px) {
@@ -828,60 +822,16 @@ async function handleRemoveAction() {
 		}
 	}
 
-	.economy-rows {
-		display: flex;
-		flex-direction: column;
-		gap: 14px;
+	.actions-card {
+		.read-only-badge {
+			font-size: 0.75rem;
+			color: $color-warning;
+		}
 
-		.economy-item {
+		.actions-grid {
 			display: flex;
-			align-items: center;
-			gap: 16px;
-			padding: 16px;
-			background-color: $bg-input;
-			border-radius: $radius-sm;
-			border: 1px solid $border-subtle;
-
-			.icon-wrap {
-				@include flex-center;
-				width: 44px;
-				height: 44px;
-				border-radius: $radius-sm;
-
-				&.success {
-					background-color: rgba($color-success, 0.15);
-					color: $color-success;
-				}
-
-				&.special {
-					background-color: rgba($color-special, 0.15);
-					color: $color-special;
-				}
-			}
-
-			.economy-info {
-				display: flex;
-				flex-direction: column;
-
-				.label {
-					font-size: 0.75rem;
-					color: $text-muted;
-					text-transform: uppercase;
-				}
-
-				.val {
-					font-size: 1.25rem;
-					font-weight: 800;
-
-					&.success {
-						color: $color-success;
-					}
-
-					&.special {
-						color: $color-special;
-					}
-				}
-			}
+			flex-direction: column;
+			gap: 12px;
 		}
 	}
 }
@@ -946,10 +896,6 @@ async function handleRemoveAction() {
 
 					&.def {
 						color: $color-info;
-					}
-
-					&.price {
-						color: $color-success;
 					}
 				}
 			}

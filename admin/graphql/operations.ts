@@ -1,4 +1,5 @@
 import { gql } from "@apollo/client/core";
+import type { BundleId } from "../../src/core/types/Ids";
 
 export interface DashboardStatsDto {
 	date: number;
@@ -118,9 +119,8 @@ export interface UserItemDto {
 	name: string;
 	type: number;
 	quantity: number;
-	attack: number;
-	defense: number;
-	price: number;
+	skin: BundleId;
+	remainingTime: string;
 }
 
 export interface UserDetailsDto {
@@ -128,8 +128,11 @@ export interface UserDetailsDto {
 	nickname: string;
 	money: number;
 	specialCoin: number;
+	gangId: number;
 	class: number;
 	className: string;
+	attack: number;
+	defense: number;
 	isVip: boolean;
 	vipEternal: boolean;
 	vipTime: number;
@@ -142,45 +145,53 @@ export interface UserDetailsDto {
 	jobEndsIn: number;
 	isScavenging: boolean;
 	isWanted: boolean;
+	isInCasino: boolean;
+	investmentId: boolean;
+	situationId: boolean;
 	dailyStreak: number;
 	voteCount: number;
 	items: UserItemDto[];
 }
 
 export const GET_USER_DETAIL = gql`
-  query GetUserDetail($id: ID!) {
-    user(id: $id) {
-      id
-      nickname
-      money
-      specialCoin
-      class
-      className
-      isVip
-      vipEternal
-      vipTime
-      language
-      isInHospital
-      hospitalTime
-      isInPrison
-      prisonTime
-      isWorking
-      jobEndsIn
-      isScavenging
-      isWanted
-      dailyStreak
-      voteCount
-      items {
-        id
-        name
-        type
-        quantity
-        attack
-        defense
-        price
-      }
+    query GetUserDetail($id: ID!) {
+        user(id: $id) {
+            id
+            nickname
+            money
+            specialCoin
+	        gangId
+            class
+            className
+	        attack
+	        defense
+            isVip
+            vipEternal
+            vipTime
+            language
+            isInHospital
+            hospitalTime
+            isInPrison
+            prisonTime
+            isWorking
+            jobEndsIn
+            isScavenging
+            isWanted
+	        isInCasino
+	        investmentId
+	        situationId
+            dailyStreak
+            voteCount
+            items {
+                id
+                name
+                type
+                quantity
+                skin
+                remainingTime
+            }
+        }
     }
-  }
 `;
 
 export const MUTATION_SET_MONEY = gql`

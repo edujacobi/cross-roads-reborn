@@ -2,8 +2,6 @@
 	setup
 	lang="ts"
 >
-import { Beer, BicepsFlexed, Briefcase, Coins, Compass, HeartPulse, Lock, Swords } from "lucide-vue-next";
-
 interface Props {
 	variant: "idle" | "working" | "hospital" | "prison" | "scavenge" | "casino" | "robbery" | "beatup";
 	value?: number;
@@ -85,6 +83,7 @@ const style = computed(() => {
 >
 @use "~/assets/scss/variables" as *;
 @use "~/assets/scss/mixins" as *;
+@use "sass:map";
 
 .status-box {
 	@include card-surface;
@@ -124,11 +123,11 @@ const style = computed(() => {
 
 	@mixin status-variant($status){
 		.status-box-header {
-			color: map-get($status-colors, $status);
+			color: map.get($status-colors, $status);
 		}
 
-		border: 1px solid map-get($status-colors, $status);
-		box-shadow: 3px 3px map-get($status-colors, $status);
+		border: 1px solid map.get($status-colors, $status);
+		box-shadow: 3px 3px map.get($status-colors, $status);
 	}
 
 	&.idle {

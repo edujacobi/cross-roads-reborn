@@ -42,9 +42,8 @@ function mapUserDetail(user: User) {
 			name: itemDef?.Description?.[user.Language] || itemDef?.Description?.[Language.English] || `Item #${item.Id}`,
 			type: item.Type,
 			quantity: item.Quantity,
-			attack: item.Attack,
-			defense: item.Defense,
-			price: item.Price,
+			skin: item.SelectedSkin,
+			remainingTime: item.RemainingTime ? item.RemainingTime.toISOString() : null,
 		};
 	});
 
@@ -55,8 +54,11 @@ function mapUserDetail(user: User) {
 		nickname: user.Nickname,
 		money: user.Money,
 		specialCoin: user.SpecialCoin,
+		gangId: user.GangId,
 		class: user.Class,
 		className,
+		attack: user.Attributes.Attack,
+		defense: user.Attributes.Defense,
 		isVip: user.IsVip(),
 		vipEternal: user.VipEternal,
 		vipTime: user.VipTime ? user.VipTime.toISOString() : null,
@@ -69,6 +71,9 @@ function mapUserDetail(user: User) {
 		jobEndsIn: isWorking ? user.Job.EndsIn.toISOString() : null,
 		isScavenging,
 		isWanted,
+		isInCasino: user.Casino.IsInGame,
+		investmentId: user.Investment.Id,
+		situationId: user.Situation.Id,
 		items,
 		dailyStreak: user.Daily.CurrentStreak,
 		voteCount: user.Vote.Count,
