@@ -82,7 +82,7 @@ export const typeDefs = /* GraphQL */ `
     type UserDetail {
         id: ID!
         nickname: String!
-        money: Float!
+        money: Int!
         specialCoin: Int!
         gangId: Int
         class: Int!

@@ -1,0 +1,145 @@
+query GetDashboardStats {
+	dashboardStats {
+		date
+		totalPlayers
+		totalGangs
+		prisonCount
+		hospitalCount
+		jobCount
+		scavengeCount
+		casinoCount
+		robberyCount
+		beatUpCount
+		idleCount
+		englishCount
+		portugueseCount
+		spanishCount
+	}
+}
+
+query GetDashboardHistory {
+	dashboardHistory {
+		id
+		date
+		totalPlayers
+		totalGangs
+		prisonCount
+		hospitalCount
+		jobCount
+		scavengeCount
+		casinoCount
+		robberyCount
+		beatUpCount
+		idleCount
+		englishCount
+		portugueseCount
+		spanishCount
+	}
+}
+
+query SearchUsers($search: String, $limit: Int, $offset: Int) {
+	users(search: $search, limit: $limit, offset: $offset) {
+		total
+		users {
+			id
+			nickname
+			money
+			specialCoin
+			class
+			className
+			isVip
+			vipEternal
+			isInHospital
+			isInPrison
+			isWorking
+		}
+	}
+}
+
+query GetUserDetail($id: ID!) {
+	user(id: $id) {
+		id
+		nickname
+		money
+		specialCoin
+		gangId
+		class
+		className
+		attack
+		defense
+		isVip
+		vipEternal
+		vipTime
+		language
+		isInHospital
+		hospitalTime
+		isInPrison
+		prisonTime
+		isWorking
+		jobEndsIn
+		isScavenging
+		isWanted
+		isInCasino
+		investmentId
+		situationId
+		dailyStreak
+		voteCount
+		items {
+			id
+			name
+			type
+			quantity
+			skin
+			remainingTime
+		}
+	}
+}
+
+mutation SetMoney($userId: ID!, $amount: Int!, $mode: SetMoneyMode!) {
+	setMoney(userId: $userId, amount: $amount, mode: $mode) {
+		success
+		message
+		user {
+			id
+			money
+		}
+	}
+}
+
+mutation CureUser($userId: ID!) {
+	cureUser(userId: $userId) {
+		success
+		message
+		user {
+			id
+			isInHospital
+			hospitalTime
+		}
+	}
+}
+
+mutation FreeUser($userId: ID!) {
+	freeUser(userId: $userId) {
+		success
+		message
+		user {
+			id
+			isInPrison
+			prisonTime
+		}
+	}
+}
+
+mutation ResetCooldown($userId: ID!, $cooldown: String!) {
+	resetCooldown(userId: $userId, cooldown: $cooldown) {
+		success
+		message
+	}
+}
+
+mutation RemoveAction($userId: ID!, $action: String!) {
+	removeAction(userId: $userId, action: $action) {
+		success
+		message
+	}
+}

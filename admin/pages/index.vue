@@ -6,20 +6,26 @@ import { useQuery } from "@vue/apollo-composable";
 import { RotateCw } from "lucide-vue-next";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import {
-	type DashboardHistoryDto,
-	type DashboardStatsDto,
-	GET_DASHBOARD_HISTORY,
-	GET_DASHBOARD_STATS,
-} from "~/graphql/operations";
+	GetDashboardHistoryDocument,
+	type GetDashboardHistoryQuery,
+	GetDashboardStatsDocument,
+	type GetDashboardStatsQuery,
+} from "~/graphql/generated";
 import DashboardStatusBox from "../components/Dashboard/DashboardStatusBox.vue";
 import DashboardUserHistory from "../components/Dashboard/DashboardUserHistory.vue";
 
-const { result: statsResult, loading: statsLoading, refetch: refetchStats } = useQuery(GET_DASHBOARD_STATS);
+const { result: statsResult, loading: statsLoading, refetch: refetchStats } = useQuery(GetDashboardStatsDocument);
 
-const { result: historyResult, loading: historyLoading, refetch: refetchHistory } = useQuery(GET_DASHBOARD_HISTORY);
+const {
+	result: historyResult,
+	loading: historyLoading,
+	refetch: refetchHistory,
+} = useQuery(GetDashboardHistoryDocument);
 
-const stats = computed<DashboardStatsDto>(() => statsResult.value?.dashboardStats);
-const history = computed<DashboardHistoryDto[]>(() => historyResult.value?.dashboardHistory || []);
+const stats = computed<GetDashboardStatsQuery["dashboardStats"] | undefined>(() => statsResult.value?.dashboardStats);
+const history = computed<GetDashboardHistoryQuery["dashboardHistory"]>(
+	() => historyResult.value?.dashboardHistory || [],
+);
 
 function refreshData() {
 	refetchStats();

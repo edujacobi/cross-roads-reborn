@@ -4,7 +4,7 @@
 >
 import { useMutation, useQuery } from "@vue/apollo-composable";
 import { formatDistanceToNow } from "date-fns";
-import { enUS, es, ptBR } from "date-fns/locale";
+import { ptBR } from "date-fns/locale";
 import { AlertCircle, ArrowLeft, CheckCircle2, Clock, Coins, DollarSign, Package, Unlock } from "lucide-vue-next";
 import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
@@ -12,14 +12,14 @@ import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseInput from "~/components/ui/BaseInput.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
 import {
-	GET_USER_DETAIL,
-	MUTATION_CURE_USER,
-	MUTATION_FREE_USER,
-	MUTATION_REMOVE_ACTION,
-	MUTATION_RESET_COOLDOWN,
-	MUTATION_SET_MONEY,
-	type UserDetailsDto,
-} from "~/graphql/operations";
+	CureUserDocument,
+	FreeUserDocument,
+	GetUserDetailDocument,
+	RemoveActionDocument,
+	ResetCooldownDocument,
+	SetMoneyDocument,
+	SetMoneyMode,
+} from "~/graphql/generated";
 
 import { ItemType } from "../../../src/core/types/ItemType";
 
@@ -27,9 +27,9 @@ const route = useRoute();
 const auth = useAuth();
 const userId = computed(() => String(route.params.id));
 
-const { result, loading, refetch } = useQuery(GET_USER_DETAIL, () => ({ id: userId.value }));
+const { result, loading, refetch } = useQuery(GetUserDetailDocument, () => ({ id: userId.value }));
 
-const user = computed<UserDetailsDto>(() => result.value?.user);
+const user = computed(() => result.value?.user);
 const language = computed(() => {
 	switch (user.value?.language) {
 		case "0":
@@ -54,16 +54,16 @@ function showFeedback(type: "success" | "error", message: string) {
 }
 
 // Mutations
-const { mutate: mutateCure, loading: cureLoading } = useMutation(MUTATION_CURE_USER);
-const { mutate: mutateFree, loading: freeLoading } = useMutation(MUTATION_FREE_USER);
-const { mutate: mutateSetMoney, loading: moneyLoading } = useMutation(MUTATION_SET_MONEY);
-const { mutate: mutateResetCooldown, loading: cdLoading } = useMutation(MUTATION_RESET_COOLDOWN);
-const { mutate: mutateRemoveAction, loading: actionLoading } = useMutation(MUTATION_REMOVE_ACTION);
+const { mutate: mutateCure, loading: cureLoading } = useMutation(CureUserDocument);
+const { mutate: mutateFree, loading: freeLoading } = useMutation(FreeUserDocument);
+const { mutate: mutateSetMoney, loading: moneyLoading } = useMutation(SetMoneyDocument);
+const { mutate: mutateResetCooldown, loading: cdLoading } = useMutation(ResetCooldownDocument);
+const { mutate: mutateRemoveAction, loading: actionLoading } = useMutation(RemoveActionDocument);
 
 // Modal States
 const isMoneyModalOpen = ref(false);
 const moneyAmount = ref(10000);
-const moneyMode = ref<"ADD" | "SET">("ADD");
+const moneyMode = ref<SetMoneyMode.Add | SetMoneyMode.Set>(SetMoneyMode.Add);
 
 const isCooldownModalOpen = ref(false);
 const selectedCooldown = ref<"scavenge" | "robbery" | "beatup">("scavenge");
@@ -315,7 +315,7 @@ async function handleRemoveAction() {
 								x{{ item.quantity }}
 							</span>
 							<span
-								v-else
+								v-else-if="item.remainingTime"
 								class="item-qty"
 							>
 								{{ formatDistanceToNow(new Date(item.remainingTime), { locale: ptBR }) }}
@@ -337,7 +337,7 @@ async function handleRemoveAction() {
 						<div class="status-row">
 							<span class="row-label">Hospital</span>
 							<BaseBadge
-								v-if="user.isInHospital"
+								v-if="user.isInHospital && user.hospitalTime"
 								variant="danger"
 							>
 								<NuxtImg
@@ -357,7 +357,7 @@ async function handleRemoveAction() {
 						<div class="status-row">
 							<span class="row-label">Prisão</span>
 							<BaseBadge
-								v-if="user.isInPrison"
+								v-if="user.isInPrison && user.prisonTime"
 								variant="danger"
 							>
 								<NuxtImg

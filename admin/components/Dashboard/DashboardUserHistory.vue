@@ -4,10 +4,10 @@
 >
 import { Calendar } from "lucide-vue-next";
 import BaseCard from "~/components/ui/BaseCard.vue";
-import type { DashboardHistoryDto } from "~/graphql/operations";
+import type { GetDashboardHistoryQuery } from "~/graphql/generated";
 
 interface Props {
-	history: DashboardHistoryDto[];
+	history: GetDashboardHistoryQuery["dashboardHistory"];
 	historyLoading?: boolean;
 }
 defineProps<Props>();

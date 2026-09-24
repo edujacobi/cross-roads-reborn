@@ -6,11 +6,11 @@ import { Globe, Shield, Users } from "lucide-vue-next";
 import BaseCard from "~/components/ui/BaseCard.vue";
 
 interface Props {
-	totalPlayers: number;
-	totalGangs: number;
-	portugueseCount: number;
-	englishCount: number;
-	spanishCount: number;
+	totalPlayers: number | undefined;
+	totalGangs: number | undefined;
+	portugueseCount: number | undefined;
+	englishCount: number | undefined;
+	spanishCount: number | undefined;
 }
 withDefaults(defineProps<Props>(), {
 	totalPlayers: 0,
