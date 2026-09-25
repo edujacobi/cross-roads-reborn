@@ -57,12 +57,9 @@ export const typeDefs = /* GraphQL */ `
         money: Float!
         specialCoin: Int!
         class: Int!
-        className: String!
         isVip: Boolean!
         vipEternal: Boolean!
-        isInHospital: Boolean!
-        isInPrison: Boolean!
-        isWorking: Boolean!
+        situationId: Int!
     }
 
     type UserSearchResult {

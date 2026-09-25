@@ -30,6 +30,10 @@ const userId = computed(() => String(route.params.id));
 const { result, loading, refetch } = useQuery(GetUserDetailDocument, () => ({ id: userId.value }));
 
 const user = computed(() => result.value?.user);
+
+const { getClassImageUrl } = useClasses();
+const { getSituationName, getSituationImageUrl } = useSituation();
+
 const language = computed(() => {
 	switch (user.value?.language) {
 		case "0":
@@ -247,16 +251,54 @@ async function handleRemoveAction() {
 						</div>
 						<p class="user-id"><code> ID: {{ user.id }}</code></p>
 					</div>
-					Cr$ {{ user.money.toLocaleString() }}
-					{{ user.specialCoin.toLocaleString() }} Moedas
+					<div class="user-economy">
+						<p class="user-money">Cr$ {{ user.money.toLocaleString() }}</p>
+						<p class="user-coins">{{ user.specialCoin.toLocaleString() }} Moedas</p>
+					</div>
 				</div>
+
+				<p class="situation">
+					<NuxtImg
+						:src="getSituationImageUrl(user.situationId)"
+						class="situation-img"
+					/>
+					{{ getSituationName(user.situationId) }}
+				</p>
 
 				<div class="profile-meta-grid">
 					<div class="meta-item">
-						<span class="meta-label">Classe</span>
-						<span class="meta-value">{{ user.className }}</span>
+						<span class="meta-value">
+							<NuxtImg
+								:src="getClassImageUrl(user.class)"
+								class="img-class"
+							/>
+							{{ user.className }}
+						</span>
 					</div>
 
+					<div class="meta-item">
+						<span class="meta-value">
+							<NuxtImg
+								src="attributes/attack.png"
+								class="img-attribute"
+							/>
+							{{ user.attack || 0 }}
+							ATK
+						</span>
+					</div>
+
+					<div class="meta-item">
+						<span class="meta-value">
+							<NuxtImg
+								src="attributes/defense.png"
+								class="img-attribute"
+							/>
+							{{ user.defense || 0 }}
+							DEF
+						</span>
+					</div>
+				</div>
+				<div class="profile-meta-grid">
 					<div class="meta-item">
 						<span class="meta-label">Idioma</span>
 						<span class="meta-value">{{ language }}</span>
@@ -270,16 +312,6 @@ async function handleRemoveAction() {
 					<div class="meta-item">
 						<span class="meta-label">Votos (Top.gg)</span>
 						<span class="meta-value">{{ user.voteCount }}</span>
-					</div>
-
-					<div class="meta-item">
-						<span class="meta-label">Attack</span>
-						<span class="meta-value">{{ user.attack || 0 }}</span>
-					</div>
-
-					<div class="meta-item">
-						<span class="meta-label">Defense</span>
-						<span class="meta-value">{{ user.defense || 0 }}</span>
 					</div>
 				</div>
 			</BaseCard>
@@ -761,6 +793,36 @@ async function handleRemoveAction() {
 				color: $text-secondary;
 			}
 		}
+
+		.user-economy {
+			margin-left: auto;
+			display: flex;
+			flex-direction: column;
+			align-items: end;
+
+			.user-money {
+				font-size: 2rem;
+				font-weight: 700;
+			}
+
+			.user-coins{
+				font-size: 0.8rem;
+				color: $text-secondary;
+			}
+		}
+	}
+
+	.situation {
+		display: flex;
+		align-items: center;
+		font-size: 1.2rem;
+		font-weight: 600;
+		gap: 6px;
+		margin: 0.5rem 0;
+
+		.situation-img {
+			width: 40px;
+		}
 	}
 
 	.profile-meta-grid {
@@ -772,6 +834,7 @@ async function handleRemoveAction() {
 		.meta-item {
 			display: flex;
 			flex-direction: column;
+			justify-content: center;
 			gap: 4px;
 
 			.meta-label {
@@ -785,10 +848,23 @@ async function handleRemoveAction() {
 				font-size: 0.9375rem;
 				font-weight: 600;
 				color: $text-primary;
+				display: flex;
+				align-items: center;
 
 				&.uppercase {
 					text-transform: uppercase;
 				}
+			}
+
+			.img-class {
+				width: 32px;
+				border-radius: $radius-full;
+				background-color: $border-card;
+				margin-right: 0.5rem;
+			}
+
+			.img-attribute {
+				width: 24px;
 			}
 		}
 	}

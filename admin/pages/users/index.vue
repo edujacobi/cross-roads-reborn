@@ -26,6 +26,9 @@ const { result, loading } = useQuery(
 	{ debounce: 300 },
 );
 
+const { getClassImageUrl, getClassName } = useClasses();
+const { getSituationName, getSituationImageUrl } = useSituation();
+
 const users = computed<SearchUsersQuery["users"]["users"]>(() => result.value?.users?.users || []);
 const total = computed(() => result.value?.users?.total || 0);
 const totalPages = computed(() => Math.ceil(total.value / limit.value) || 1);
@@ -129,49 +132,24 @@ function nextPage() {
 								</BaseBadge>
 							</td>
 							<td class="id-cell">{{ u.id }}</td>
-							<td>{{ u.className }}</td>
+							<td class="class-cell">
+								<BaseBadge variant="neutral">
+									<NuxtImg
+										:src="getClassImageUrl(u.class)"
+										width="16"
+									/>
+									{{ getClassName(u.class) }}
+								</BaseBadge>
+							</td>
 							<td class="money-cell">Cr$ {{ u.money.toLocaleString() }}</td>
 							<td class="coins-cell">{{ u.specialCoin.toLocaleString() }}</td>
 							<td>
-								<BaseBadge
-									v-if="u.isInHospital"
-									variant="danger"
-								>
+								<BaseBadge variant="neutral">
 									<NuxtImg
-										src="situations/hospital.png"
+										:src="getSituationImageUrl(u.situationId)"
 										width="16"
 									/>
-									Hospital
-								</BaseBadge>
-								<BaseBadge
-									v-else-if="u.isInPrison"
-									variant="danger"
-								>
-									<NuxtImg
-										src="situations/prison.png"
-										width="16"
-									/>
-									Preso
-								</BaseBadge>
-								<BaseBadge
-									v-else-if="u.isWorking"
-									variant="success"
-								>
-									<NuxtImg
-										src="situations/job.png"
-										width="16"
-									/>
-									Trabalhando
-								</BaseBadge>
-								<BaseBadge
-									v-else
-									variant="neutral"
-								>
-									<NuxtImg
-										src="situations/idling.png"
-										width="16"
-									/>
-									Vadiando
+									{{ getSituationName(u.situationId) }}
 								</BaseBadge>
 							</td>
 							<td class="text-right">
@@ -181,7 +159,7 @@ function nextPage() {
 										size="sm"
 									>
 										<Eye :size="14" />
-										<span>Detalhes</span>
+										Detalhes
 									</BaseButton>
 								</NuxtLink>
 							</td>
@@ -204,7 +182,7 @@ function nextPage() {
 							@click="prevPage()"
 						>
 							<ChevronLeft :size="16" />
-							<span>Anterior</span>
+							Anterior
 						</BaseButton>
 
 						<span class="page-indicator">Página {{ page }} de {{ totalPages }}</span>
@@ -215,7 +193,7 @@ function nextPage() {
 							:disabled="page >= totalPages"
 							@click="nextPage()"
 						>
-							<span>Próxima</span>
+							Próxima
 							<ChevronRight :size="16" />
 						</BaseButton>
 					</div>

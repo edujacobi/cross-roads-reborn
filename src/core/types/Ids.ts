@@ -75,3 +75,29 @@ export enum BackgroundDecorationId {
 	Rainbow,
 	BotanicalGarden,
 }
+
+export enum ClassId {
+	None,
+	Thief,
+	Assassin,
+	Entrepreneur,
+	Hobo,
+	Mafioso,
+	Attorney
+}
+
+export enum SituationId {
+	Idling,
+	Job,
+	Robbery,
+	PrisonAndHospital,
+	Prison,
+	Hospital,
+	Scavenging,
+	Wanted,
+	BeatUp,
+	Casino,
+	DefendingInvestment,
+	GangAction,
+	Dead,
+}

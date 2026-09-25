@@ -134,27 +134,24 @@ export const resolvers: {
 				offset: args.offset,
 			});
 
-			const now = new Date();
+			const mappedUsers = users.map(async (u) => {
+				const user = await new User(u.id).GetSimpleInfo(u);
 
-			const mappedUsers = users.map((u) => {
-				const isVip = u.vipEternal || (u.vipTime ? new Date(u.vipTime) > now : false);
-				const isInHospital = u.hospitalTime ? new Date(u.hospitalTime) > now : false;
-				const isInPrison = u.prisonTime ? new Date(u.prisonTime) > now : false;
-				const isWorking = u.jobTime ? new Date(u.jobTime) > now && u.jobId !== null : false;
-				const className = ClassList[u.class]?.Name?.[Language.Portuguese] || "None";
+				if (!user) {
+					return;
+				}
+
+				await user.GetSituation();
 
 				return {
-					id: u.id,
-					nickname: u.nickname,
-					money: u.money,
-					specialCoin: u.specialCoin,
-					class: u.class,
-					className,
-					isVip,
-					vipEternal: u.vipEternal,
-					isInHospital,
-					isInPrison,
-					isWorking,
+					id: user.Id,
+					nickname: user.Nickname,
+					money: user.Money,
+					specialCoin: user.SpecialCoin,
+					class: user.Class,
+					isVip: user.IsVip(),
+					vipEternal: user.VipEternal,
+					situationId: user.Situation.Id,
 				};
 			});
 
