@@ -82,8 +82,15 @@ query GetUserDetail($id: ID!) {
 		isScavenging
 		isWanted
 		isInCasino
-		investmentId
+		investment {
+			id
+			name
+			defense
+			imageUrl
+			expiresAt
+		}
 		situationId
+		situationText
 		dailyStreak
 		voteCount
 		items {
@@ -99,6 +106,8 @@ query GetUserDetail($id: ID!) {
 			name
 			description
 		}
+		createdAt
+		updatedAt
 	}
 }
 

@@ -86,6 +86,14 @@ export const typeDefs = /* GraphQL */ `
         description: String!
     }
 
+    type InvestmentInfo {
+        id: Int!
+        name: String!
+        imageUrl: String!
+        defense: Int!
+        expiresAt: String!
+    }
+
     type UserDetail {
         id: ID!
         nickname: String!
@@ -110,12 +118,15 @@ export const typeDefs = /* GraphQL */ `
         isScavenging: Boolean!
         isWanted: Boolean!
         isInCasino: Boolean!
-        investmentId: Int,
+        investment: InvestmentInfo,
         situationId: Int!,
+        situationText: String!
         items: [UserItemInfo!]!
         dailyStreak: Int!
         voteCount: Int!
         badges: [UserBadgeInfo!]!
+        createdAt: String!
+        updatedAt: String!
     }
 
     type MutationResult {

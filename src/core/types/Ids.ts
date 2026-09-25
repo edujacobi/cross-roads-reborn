@@ -228,3 +228,15 @@ export enum BadgeId {
 	S_Top1Hospital,
 	S_Top1Gang,
 }
+
+export enum InvestmentId {
+	ChurrosCart,
+	CrackDen,
+	BocceCourt,
+	VeganRestaurant,
+	GolfClub,
+	VehicleManufacturer,
+	UnderdevelopedCountry,
+	ReligiousCult,
+	StarGalaxy,
+}

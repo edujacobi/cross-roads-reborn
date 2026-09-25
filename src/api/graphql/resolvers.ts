@@ -9,6 +9,7 @@ import type { AuthUser, GraphQLContext } from "#api/types";
 import { formatMoney } from "#bot/utils/ui";
 import { UserBadge } from "#core/models/UserBadge";
 import { getClient } from "#bot/client";
+import { InvestmentList } from "#core/types/Investments";
 
 function assertAuthenticated(context: GraphQLContext): AuthUser {
 	if (!context.user) {
@@ -71,6 +72,19 @@ async function mapUserDetail(user: User) {
 		};
 	});
 
+	let investment = null;
+
+	if (user.Investment.Id) {
+		const investInfo = InvestmentList[user.Investment.Id];
+		investment = {
+			id: user.Investment.Id,
+			name: investInfo.Name[Language.Portuguese],
+			imageUrl: investInfo.ImageUrl,
+			expiresAt: user.Investment.ExpiresAt?.toISOString(),
+			defense: investInfo.BaseDefense,
+		};
+	}
+
 	return {
 		id: user.Id,
 		nickname: user.Nickname,
@@ -95,12 +109,15 @@ async function mapUserDetail(user: User) {
 		isScavenging,
 		isWanted,
 		isInCasino: user.Casino.IsInGame,
-		investmentId: user.Investment.Id,
+		investment: investment,
 		situationId: user.Situation.Id,
+		situationText: user.Situation.ComplexUI,
 		items,
 		dailyStreak: user.Daily.CurrentStreak,
 		voteCount: user.Vote.Count,
 		badges: badgeList,
+		createdAt: user.CreatedAt.toISOString(),
+		updatedAt: user.UpdatedAt.toISOString(),
 	};
 }
 
@@ -201,7 +218,7 @@ export const resolvers: {
 		user: async (_: unknown, args: { id: string }, context: GraphQLContext) => {
 			assertAuthenticated(context);
 			const user = new User(args.id);
-			const found = await user.GetInfo();
+			const found = await user.GetInfo(undefined, Language.Portuguese);
 			if (!found) {
 				return null;
 			}

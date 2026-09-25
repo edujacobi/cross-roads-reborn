@@ -3,7 +3,7 @@
 	lang="ts"
 >
 import { useMutation, useQuery } from "@vue/apollo-composable";
-import { formatDistanceToNow } from "date-fns";
+import { format, formatDistance, formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { AlertCircle, ArrowLeft, CheckCircle2, Clock, DollarSign, Package, Unlock } from "lucide-vue-next";
 import BaseBadge from "~/components/ui/BaseBadge.vue";
@@ -32,7 +32,7 @@ const { result, loading, refetch } = useQuery(GetUserDetailDocument, () => ({ id
 const user = computed(() => result.value?.user);
 
 const { getClassImageUrl } = useClasses();
-const { getSituationName, getSituationImageUrl } = useSituation();
+const { getSituationImageUrl } = useSituation();
 
 const language = computed(() => {
 	switch (user.value?.language) {
@@ -266,22 +266,20 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 						:src="getSituationImageUrl(user.situationId)"
 						class="situation-img"
 					/>
-					{{ getSituationName(user.situationId) }}
+					{{ user.situationText }}
 				</p>
 
-				<div class="meta-grid">
-					<div class="meta-item">
-						<span class="meta-value">
-							<NuxtImg
-								:src="getClassImageUrl(user.class)"
-								class="img-class"
-							/>
-							{{ user.className }}
-						</span>
+				<div class="user-info-grid">
+					<div class="user-info-left">
+						<NuxtImg
+							:src="getClassImageUrl(user.class)"
+							class="img-class"
+						/>
+						{{ user.className }}
 					</div>
 
-					<div class="meta-item">
-						<span class="meta-value">
+					<div class="user-info-right">
+						<span class="attribute">
 							<NuxtImg
 								src="attributes/attack.png"
 								class="img-attribute"
@@ -289,10 +287,7 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 							{{ user.attack || 0 }}
 							ATK
 						</span>
-					</div>
-
-					<div class="meta-item">
-						<span class="meta-value">
+						<span class="attribute">
 							<NuxtImg
 								src="attributes/defense.png"
 								class="img-attribute"
@@ -307,6 +302,7 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 			<!-- Inventory Section -->
 			<BaseCard
 				title="Inventário"
+				icon="ui_elements/inventory"
 				class="inventory-card"
 			>
 				<div
@@ -347,6 +343,27 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 							</span>
 						</div>
 					</div>
+				</div>
+			</BaseCard>
+
+			<BaseCard
+				v-if="user.investment"
+				title="Investimento"
+				icon="situations/defending-investment"
+			>
+				<div class="user-investment">
+					<div class="investment-left">
+						<NuxtImg :src="user.investment.imageUrl" />
+						<p class="text">{{ user.investment.name }}</p>
+						<p class="text-muted">• {{ formatDistance(user.investment.expiresAt, new Date(), { locale: ptBR }) }}</p>
+					</div>
+					<p class="investment-right">
+						<NuxtImg
+							class="investment-def"
+							src="attributes/defense.png"
+						/>
+						{{ user.investment.defense }} DEF
+					</p>
 				</div>
 			</BaseCard>
 
@@ -567,6 +584,16 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 					<div class="meta-item">
 						<span class="meta-label">Votos (Top.gg)</span>
 						<span class="meta-value">{{ user.voteCount }}</span>
+					</div>
+
+					<div class="meta-item">
+						<span class="meta-label">Criado em</span>
+						<span class="meta-value">{{ format(user.createdAt, "dd/MM/yyyy hh:mm") }}</span>
+					</div>
+
+					<div class="meta-item">
+						<span class="meta-label">Última atualização</span>
+						<span class="meta-value">{{ format(user.updatedAt, "dd/MM/yyyy hh:mm") }}</span>
 					</div>
 				</div>
 			</BaseCard>
@@ -817,7 +844,7 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 
 			.user-coins{
 				font-size: 0.8rem;
-				color: $text-secondary;
+				@include text-gradient;
 			}
 		}
 	}
@@ -845,6 +872,49 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 
 		.situation-img {
 			width: 40px;
+		}
+	}
+
+	.user-info-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+		gap: 16px;
+		padding-top: 20px;
+
+		.user-info-left {
+			display: flex;
+			font-weight: 600;
+			color: $text-primary;
+			align-items: center;
+
+			.img-class {
+				width: 32px;
+				border-radius: $radius-full;
+				background-color: $border-card;
+				margin-right: 0.5rem;
+			}
+		}
+
+		.user-info-right {
+			display: flex;
+			align-items: center;
+			gap: 0.75rem;
+
+			.img-attribute {
+				width: 24px;
+			}
+
+			.attribute {
+				display: flex;
+				align-items: center;
+				font-size: 0.9375rem;
+				font-weight: 600;
+				color: $color-attribute;
+			}
+
+			&:has(> .attribute) {
+				margin-left: auto;
+			}
 		}
 	}
 }
@@ -879,15 +949,29 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 				text-transform: uppercase;
 			}
 		}
+	}
+}
 
-		.img-class {
-			width: 32px;
-			border-radius: $radius-full;
-			background-color: $border-card;
-			margin-right: 0.5rem;
-		}
+.user-investment {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: space-between;
 
-		.img-attribute {
+	.investment-left {
+		display: flex;
+		gap: 0.5rem;
+		align-items: baseline;
+	}
+
+	.investment-right {
+		display: flex;
+		align-items: center;
+		color: $color-attribute;
+		font-weight: 600;
+		font-size: 0.9375rem;
+
+		img {
 			width: 24px;
 		}
 	}
@@ -968,6 +1052,7 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 				flex-direction: column;
 				gap: 0.25rem;
 				align-items: start;
+				flex-grow: 1;
 
 				.item-name {
 					font-size: 0.875rem;

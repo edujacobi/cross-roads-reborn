@@ -5,6 +5,7 @@
 interface Props {
 	title?: string;
 	subtitle?: string;
+	icon?: string;
 }
 
 defineProps<Props>();
@@ -21,6 +22,11 @@ defineProps<Props>();
 					v-if="title"
 					class="card-title"
 				>
+					<NuxtImg
+						v-if="icon"
+						class="card-icon"
+						:src="`${icon}.png`"
+					/>
 					{{ title }}
 				</h3>
 				<p
@@ -72,6 +78,13 @@ defineProps<Props>();
 			font-size: 1rem;
 			font-weight: 600;
 			color: $text-primary;
+			display: flex;
+			align-items: center;
+			gap: 0.4rem;
+
+			.card-icon {
+				width: 26px;
+			}
 		}
 
 		.card-subtitle {
