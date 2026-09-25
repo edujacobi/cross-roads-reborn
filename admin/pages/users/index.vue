@@ -112,13 +112,17 @@ function nextPage() {
 							:key="u.id"
 						>
 							<td class="player-cell">
+								<NuxtImg
+									class="profile-img"
+									:src="u.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'"
+								/>
 								<span class="nickname">{{ u.nickname || "(Sem Nick)" }}</span>
 								<BaseBadge
 									v-if="u.vipEternal"
 									variant="vip"
 								>
 									<NuxtImg
-										src="vip.png"
+										src="badges/vip.png"
 										width="14"
 									/>
 									VIP Eterno
@@ -128,7 +132,7 @@ function nextPage() {
 									variant="vip"
 								>
 									<NuxtImg
-										src="vip.png"
+										src="badges/vip.png"
 										width="14"
 									/>
 									VIP
@@ -324,10 +328,23 @@ function nextPage() {
 		}
 
 		.player-cell {
+			display: flex;
+			align-items: center;
+			gap: 0.35rem;
+
 			.nickname {
 				font-weight: 600;
-				margin-right: 0.5rem;
 				color: $text-primary;
+			}
+
+			.profile-img {
+				@include flex-center;
+				width: 32px;
+				height: 32px;
+				border-radius: 50%;
+				background-color: rgba($bg-input, 0.15);
+				border: 1px solid rgba($bg-input, 0.3);
+				color: $bg-input;
 			}
 		}
 

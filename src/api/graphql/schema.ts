@@ -80,6 +80,12 @@ export const typeDefs = /* GraphQL */ `
         remainingTime: String
     }
 
+    type UserBadgeInfo {
+        id: Int!
+        name: String!
+        description: String!
+    }
+
     type UserDetail {
         id: ID!
         nickname: String!
@@ -109,6 +115,7 @@ export const typeDefs = /* GraphQL */ `
         items: [UserItemInfo!]!
         dailyStreak: Int!
         voteCount: Int!
+        badges: [UserBadgeInfo!]!
     }
 
     type MutationResult {

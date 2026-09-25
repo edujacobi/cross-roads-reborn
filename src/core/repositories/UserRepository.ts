@@ -28,7 +28,7 @@ export class UserRepository {
 	 */
 	static async FindById(
 		id: string,
-		attributes?: (keyof Users)[]
+		attributes?: (keyof Users)[],
 	): Promise<Users | null> {
 		return await Users.findByPk(id, attributes ? { attributes } : undefined);
 	}
@@ -48,7 +48,7 @@ export class UserRepository {
 	 */
 	static async Update(
 		id: string,
-		values: UserUpdateParam
+		values: UserUpdateParam,
 	): Promise<[number]> {
 		return await Users.update(values, {
 			where: { id },
@@ -80,7 +80,7 @@ export class UserRepository {
 	static async IncrementMoneyAndProfit(id: string, amount: number): Promise<void> {
 		await Users.increment(
 			{ money: amount, investmentTotalProfit: amount },
-			{ where: { id } }
+			{ where: { id } },
 		);
 	}
 
@@ -91,7 +91,7 @@ export class UserRepository {
 		return await Users.findAll({
 			attributes: ["nickname", "class", "hospitalTime", "hospitalCount"],
 			order: [["hospitalTime", "DESC"]],
-			where: { hospitalTime: { [Op.gt]: new Date() } }
+			where: { hospitalTime: { [Op.gt]: new Date() } },
 		});
 	}
 
@@ -102,7 +102,7 @@ export class UserRepository {
 		return await Users.findAll({
 			attributes: ["nickname", "class", "prisonTime", "robberyFailureCount", "escapeCount"],
 			order: [["prisonTime", "DESC"]],
-			where: { prisonTime: { [Op.gt]: new Date() } }
+			where: { prisonTime: { [Op.gt]: new Date() } },
 		});
 	}
 
@@ -113,7 +113,7 @@ export class UserRepository {
 		return await Users.findAll({
 			attributes: ["nickname", "class", "deadUntil"],
 			order: [["deadUntil", "DESC"]],
-			where: { deadUntil: { [Op.gt]: new Date() } }
+			where: { deadUntil: { [Op.gt]: new Date() } },
 		});
 	}
 
@@ -158,8 +158,8 @@ export class UserRepository {
 			order: [[topType, "DESC"]],
 			where: {
 				class: { [Op.not]: ClassId.None },
-				[topType]: { [Op.gt]: 0 }
-			}
+				[topType]: { [Op.gt]: 0 },
+			},
 		});
 	}
 
@@ -170,8 +170,8 @@ export class UserRepository {
 		return await Users.count({
 			where: {
 				class: { [Op.not]: ClassId.None },
-				[topType]: { [Op.gt]: 0 }
-			}
+				[topType]: { [Op.gt]: 0 },
+			},
 		});
 	}
 
@@ -180,7 +180,7 @@ export class UserRepository {
 	 */
 	static async CountActivePlayers(): Promise<number> {
 		return await Users.count({
-			where: { class: { [Op.not]: ClassId.None } }
+			where: { class: { [Op.not]: ClassId.None } },
 		});
 	}
 
@@ -189,7 +189,7 @@ export class UserRepository {
 	 */
 	static async CountPrisoners(date: Date): Promise<number> {
 		return await Users.count({
-			where: { prisonTime: { [Op.gt]: date } }
+			where: { prisonTime: { [Op.gt]: date } },
 		});
 	}
 
@@ -198,7 +198,7 @@ export class UserRepository {
 	 */
 	static async CountHospitalized(date: Date): Promise<number> {
 		return await Users.count({
-			where: { hospitalTime: { [Op.gt]: date } }
+			where: { hospitalTime: { [Op.gt]: date } },
 		});
 	}
 
@@ -209,8 +209,8 @@ export class UserRepository {
 		return await Users.count({
 			where: {
 				jobTime: { [Op.gt]: date },
-				jobId: { [Op.ne]: null }
-			}
+				jobId: { [Op.ne]: null },
+			},
 		});
 	}
 
@@ -221,8 +221,8 @@ export class UserRepository {
 		return await Users.count({
 			where: {
 				scavengeTime: { [Op.gt]: date },
-				scavengingId: { [Op.ne]: null }
-			}
+				scavengingId: { [Op.ne]: null },
+			},
 		});
 	}
 
@@ -231,7 +231,7 @@ export class UserRepository {
 	 */
 	static async CountInCasinoGame(): Promise<number> {
 		return await Users.count({
-			where: { casinoIsInGame: true }
+			where: { casinoIsInGame: true },
 		});
 	}
 
@@ -243,9 +243,9 @@ export class UserRepository {
 			where: {
 				[Op.or]: [
 					{ robbingUserId: { [Op.ne]: null } },
-					{ robbingLocationId: { [Op.ne]: null } }
-				]
-			}
+					{ robbingLocationId: { [Op.ne]: null } },
+				],
+			},
 		});
 	}
 
@@ -254,7 +254,7 @@ export class UserRepository {
 	 */
 	static async CountInBeatUp(): Promise<number> {
 		return await Users.count({
-			where: { beatingUserId: { [Op.ne]: null } }
+			where: { beatingUserId: { [Op.ne]: null } },
 		});
 	}
 
@@ -263,7 +263,7 @@ export class UserRepository {
 	 */
 	static async CountPlayersByLanguage(language: Language): Promise<number> {
 		return await Users.count({
-			where: { language, class: { [Op.not]: ClassId.None } }
+			where: { language, class: { [Op.not]: ClassId.None } },
 		});
 	}
 
@@ -308,25 +308,31 @@ export class UserRepository {
 				{ tableName: HorseRaceBets.tableName, column: "userId" },
 				{ tableName: LotteryTickets.tableName, column: "userId" },
 				{ tableName: RobHistories.tableName, column: "attackerId" },
-				{ tableName: RobHistories.tableName, column: "defenderId" }
+				{ tableName: RobHistories.tableName, column: "defenderId" },
 			];
 
 			const details: string[] = [];
 
 			for (const { tableName, column } of updates) {
 				await sequelize.query(
-					`UPDATE ${tableName} SET ${column} = :tempId WHERE ${column} = :oldId`,
-					{ replacements: { oldId, tempId }, type: QueryTypes.UPDATE, transaction }
+					`UPDATE ${tableName}
+                     SET ${column} = :tempId
+                     WHERE ${column} = :oldId`,
+					{ replacements: { oldId, tempId }, type: QueryTypes.UPDATE, transaction },
 				);
 
 				await sequelize.query(
-					`UPDATE ${tableName} SET ${column} = :oldId WHERE ${column} = :newId`,
-					{ replacements: { oldId, newId }, type: QueryTypes.UPDATE, transaction }
+					`UPDATE ${tableName}
+                     SET ${column} = :oldId
+                     WHERE ${column} = :newId`,
+					{ replacements: { oldId, newId }, type: QueryTypes.UPDATE, transaction },
 				);
 
 				await sequelize.query(
-					`UPDATE ${tableName} SET ${column} = :newId WHERE ${column} = :tempId`,
-					{ replacements: { newId, tempId }, type: QueryTypes.UPDATE, transaction }
+					`UPDATE ${tableName}
+                     SET ${column} = :newId
+                     WHERE ${column} = :tempId`,
+					{ replacements: { newId, tempId }, type: QueryTypes.UPDATE, transaction },
 				);
 
 				details.push(`- **${tableName}**: Swapped ${column}`);
@@ -362,7 +368,10 @@ export class UserRepository {
 	/**
 	 * Searches and paginates users for admin panel.
 	 */
-	static async SearchUsers(options: { search?: string; limit?: number; offset?: number }): Promise<{ users: Users[]; total: number }> {
+	static async SearchUsers(options: { search?: string; limit?: number; offset?: number }): Promise<{
+		users: Users[];
+		total: number
+	}> {
 		const limit = Math.min(options.limit || 20, 100);
 		const offset = options.offset || 0;
 		const whereClause = options.search
@@ -378,7 +387,7 @@ export class UserRepository {
 			where: whereClause,
 			limit,
 			offset,
-			order: [["money", "DESC"]],
+			order: [["updatedAt", "DESC"]],
 		});
 
 		return { users: rows, total: count };

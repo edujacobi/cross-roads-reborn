@@ -94,6 +94,11 @@ query GetUserDetail($id: ID!) {
 			skin
 			remainingTime
 		}
+		badges {
+			id
+			name
+			description
+		}
 	}
 }
 

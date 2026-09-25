@@ -5,7 +5,7 @@
 import { useMutation, useQuery } from "@vue/apollo-composable";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { AlertCircle, ArrowLeft, CheckCircle2, Clock, Coins, DollarSign, Package, Unlock } from "lucide-vue-next";
+import { AlertCircle, ArrowLeft, CheckCircle2, Clock, DollarSign, Package, Unlock } from "lucide-vue-next";
 import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
@@ -20,7 +20,7 @@ import {
 	SetMoneyDocument,
 	SetMoneyMode,
 } from "~/graphql/generated";
-
+import { BadgeId, BundleId, ItemId } from "../../../src/core/types/Ids";
 import { ItemType } from "../../../src/core/types/ItemType";
 
 const route = useRoute();
@@ -168,6 +168,20 @@ async function handleRemoveAction() {
 		showFeedback("error", message);
 	}
 }
+
+function getBadgeImage(badgeId: BadgeId): string {
+	// biome-ignore lint/suspicious/noDoubleEquals: GraphQl brings as number, not as BadgeId
+	if (badgeId == BadgeId.VIP || badgeId == BadgeId.VIPEternal) {
+		return "badges/vip.png";
+	}
+	return `badges/${BadgeId[badgeId]}.png`;
+}
+
+function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
+	let filename = `${itemId}_${ItemId[itemId]}.png`;
+	if (bundleId !== 0) filename = `${itemId}_${ItemId[itemId]}_${BundleId[bundleId]}.png`;
+	return `items/${filename}`;
+}
 </script>
 
 <template>
@@ -222,40 +236,30 @@ async function handleRemoveAction() {
 			<!-- Header Card -->
 			<BaseCard class="profile-header-card">
 				<div class="profile-main-info">
-					<div class="avatar-placeholder">
-						<Coins :size="32" />
-					</div>
+					<NuxtImg
+						class="profile-img"
+						:src="user.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'"
+					/>
 					<div>
 						<div class="name-row">
 							<h1 class="user-name">{{ user.nickname || "(Sem Nick)" }}</h1>
-							<BaseBadge
-								v-if="user.vipEternal"
-								variant="vip"
-							>
-								<NuxtImg
-									src="vip.png"
-									width="18"
-								/>
-								VIP Eterno
-							</BaseBadge>
-							<BaseBadge
-								v-else-if="user.isVip"
-								variant="vip"
-							>
-								<NuxtImg
-									src="vip.png"
-									width="18"
-								/>
-								VIP
-							</BaseBadge>
 						</div>
 						<p class="user-id"><code> ID: {{ user.id }}</code></p>
 					</div>
 					<div class="user-economy">
 						<p class="user-money">Cr$ {{ user.money.toLocaleString() }}</p>
-						<p class="user-coins">{{ user.specialCoin.toLocaleString() }} Moedas</p>
+						<p class="user-coins">{{ user.specialCoin.toLocaleString() }} Moedas especiais</p>
 					</div>
 				</div>
+				<section class="user-badges-grid">
+					<NuxtImg
+						v-for="b in user.badges"
+						class="user-badge-img"
+						:key="b.id"
+						:src="getBadgeImage(b.id as BadgeId)"
+						:title="b.name"
+					/>
+				</section>
 
 				<p class="situation">
 					<NuxtImg
@@ -265,7 +269,7 @@ async function handleRemoveAction() {
 					{{ getSituationName(user.situationId) }}
 				</p>
 
-				<div class="profile-meta-grid">
+				<div class="meta-grid">
 					<div class="meta-item">
 						<span class="meta-value">
 							<NuxtImg
@@ -298,22 +302,6 @@ async function handleRemoveAction() {
 						</span>
 					</div>
 				</div>
-				<div class="profile-meta-grid">
-					<div class="meta-item">
-						<span class="meta-label">Idioma</span>
-						<span class="meta-value">{{ language }}</span>
-					</div>
-
-					<div class="meta-item">
-						<span class="meta-label">Sequência diária</span>
-						<span class="meta-value">{{ user.dailyStreak }} dias</span>
-					</div>
-
-					<div class="meta-item">
-						<span class="meta-label">Votos (Top.gg)</span>
-						<span class="meta-value">{{ user.voteCount }}</span>
-					</div>
-				</div>
 			</BaseCard>
 
 			<!-- Inventory Section -->
@@ -338,13 +326,18 @@ async function handleRemoveAction() {
 						:key="item.id"
 						class="item-card"
 					>
+						<NuxtImg
+							class="item-img"
+							:src="getItemImage(item.id, item.skin)"
+						/>
 						<div class="item-header">
 							<span class="item-name">{{ item.name }}</span>
 							<span
 								v-if="item.type === ItemType.Consumable"
 								class="item-qty"
 							>
-								x{{ item.quantity }}
+								{{ item.quantity }}
+								un
 							</span>
 							<span
 								v-else-if="item.remainingTime"
@@ -353,7 +346,6 @@ async function handleRemoveAction() {
 								{{ formatDistanceToNow(new Date(item.remainingTime), { locale: ptBR }) }}
 							</span>
 						</div>
-						<p>Skin: {{ item.skin }}</p>
 					</div>
 				</div>
 			</BaseCard>
@@ -559,6 +551,25 @@ async function handleRemoveAction() {
 					</div>
 				</BaseCard>
 			</div>
+
+			<BaseCard class="more-info-card">
+				<div class="meta-grid">
+					<div class="meta-item">
+						<span class="meta-label">Idioma</span>
+						<span class="meta-value">{{ language }}</span>
+					</div>
+
+					<div class="meta-item">
+						<span class="meta-label">Sequência diária</span>
+						<span class="meta-value">{{ user.dailyStreak }} dias</span>
+					</div>
+
+					<div class="meta-item">
+						<span class="meta-label">Votos (Top.gg)</span>
+						<span class="meta-value">{{ user.voteCount }}</span>
+					</div>
+				</div>
+			</BaseCard>
 		</div>
 
 		<!-- Modal: Alterar Dinheiro -->
@@ -760,16 +771,15 @@ async function handleRemoveAction() {
 		align-items: center;
 		gap: 18px;
 		padding-bottom: 20px;
-		border-bottom: 1px solid $border-subtle;
 
-		.avatar-placeholder {
+		.profile-img {
 			@include flex-center;
 			width: 56px;
 			height: 56px;
 			border-radius: 50%;
-			background-color: rgba($color-brand, 0.15);
-			border: 1px solid rgba($color-brand, 0.3);
-			color: $color-brand;
+			background-color: rgba($bg-input, 0.15);
+			border: 1px solid rgba($bg-input, 0.3);
+			color: $bg-input;
 		}
 
 		.name-row {
@@ -812,6 +822,19 @@ async function handleRemoveAction() {
 		}
 	}
 
+	.user-badges-grid {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem;
+		border-bottom: 1px solid $border-subtle;
+		padding-bottom: 1rem;
+
+		.user-badge-img{
+			width: 40px;
+		}
+	}
+
 	.situation {
 		display: flex;
 		align-items: center;
@@ -824,48 +847,48 @@ async function handleRemoveAction() {
 			width: 40px;
 		}
 	}
+}
 
-	.profile-meta-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-		gap: 16px;
-		padding-top: 20px;
+.meta-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+	gap: 16px;
+	padding-top: 20px;
 
-		.meta-item {
+	.meta-item {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		gap: 4px;
+
+		.meta-label {
+			font-size: 0.75rem;
+			color: $text-muted;
+			text-transform: uppercase;
+			letter-spacing: 0.04em;
+		}
+
+		.meta-value {
+			font-size: 0.9375rem;
+			font-weight: 600;
+			color: $text-primary;
 			display: flex;
-			flex-direction: column;
-			justify-content: center;
-			gap: 4px;
+			align-items: center;
 
-			.meta-label {
-				font-size: 0.75rem;
-				color: $text-muted;
+			&.uppercase {
 				text-transform: uppercase;
-				letter-spacing: 0.04em;
 			}
+		}
 
-			.meta-value {
-				font-size: 0.9375rem;
-				font-weight: 600;
-				color: $text-primary;
-				display: flex;
-				align-items: center;
+		.img-class {
+			width: 32px;
+			border-radius: $radius-full;
+			background-color: $border-card;
+			margin-right: 0.5rem;
+		}
 
-				&.uppercase {
-					text-transform: uppercase;
-				}
-			}
-
-			.img-class {
-				width: 32px;
-				border-radius: $radius-full;
-				background-color: $border-card;
-				margin-right: 0.5rem;
-			}
-
-			.img-attribute {
-				width: 24px;
-			}
+		.img-attribute {
+			width: 24px;
 		}
 	}
 }
@@ -924,7 +947,7 @@ async function handleRemoveAction() {
 
 	.items-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+		grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
 		gap: 14px;
 
 		.item-card {
@@ -936,8 +959,15 @@ async function handleRemoveAction() {
 			flex-direction: column;
 			gap: 8px;
 
+			.item-img {
+				//width: 128px;
+			}
+
 			.item-header {
 				@include flex-between;
+				flex-direction: column;
+				gap: 0.25rem;
+				align-items: start;
 
 				.item-name {
 					font-size: 0.875rem;

@@ -8,6 +8,7 @@ import { ItemList } from "#core/types/Items";
 import type { AuthUser, GraphQLContext } from "#api/types";
 import { formatMoney } from "#bot/utils/ui";
 import { UserBadge } from "#core/models/UserBadge";
+import { getClient } from "#bot/client";
 
 function assertAuthenticated(context: GraphQLContext): AuthUser {
 	if (!context.user) {
@@ -28,7 +29,7 @@ function assertDeveloper(context: GraphQLContext): AuthUser {
 	return user;
 }
 
-function mapUserDetail(user: User) {
+async function mapUserDetail(user: User) {
 	const now = new Date();
 	const isInHospital = user.Hospital.Time > now;
 	const isInPrison = user.Prison.Time > now;
@@ -50,11 +51,31 @@ function mapUserDetail(user: User) {
 
 	const className = ClassList[user.Class]?.Name?.[Language.Portuguese] || "None";
 
+	const client = getClient();
+
+	// eslint-disable-next-line prefer-const
+	let [badges, discordUser] = await Promise.all([
+		UserBadge.GetList(user.Id),
+		client.users.fetch(user.Id),
+	]);
+
+	if (user.IsVip()) {
+		badges = UserBadge.AddVIPBadgeInList(badges, user);
+	}
+
+	const badgeList = badges.map(b => {
+		return {
+			id: b.BadgeId,
+			name: b.Name,
+			description: b.Description,
+		};
+	});
+
 	return {
 		id: user.Id,
 		nickname: user.Nickname,
 		money: user.Money,
-		avatarUrl: "", // todo: how to get dynamic avatar
+		avatarUrl: discordUser.avatarURL(),
 		specialCoin: user.SpecialCoin,
 		gangId: user.GangId,
 		class: user.Class,
@@ -79,6 +100,7 @@ function mapUserDetail(user: User) {
 		items,
 		dailyStreak: user.Daily.CurrentStreak,
 		voteCount: user.Vote.Count,
+		badges: badgeList,
 	};
 }
 
@@ -137,6 +159,8 @@ export const resolvers: {
 				offset: args.offset,
 			});
 
+			const client = getClient();
+
 			const mappedUsers = users.map(async (u) => {
 				const user = await new User(u.id).GetSimpleInfo(u);
 
@@ -144,17 +168,18 @@ export const resolvers: {
 					return;
 				}
 
-				const [_, isDev, isMod, isHelper] = await Promise.all([
+				const [_, isDev, isMod, isHelper, discordUser] = await Promise.all([
 					user.GetSituation(),
 					UserBadge.IsDeveloper(user.Id),
 					UserBadge.IsModerator(user.Id),
 					UserBadge.IsHelper(user.Id),
+					client.users.fetch(user.Id),
 				]);
 
 				return {
 					id: user.Id,
 					nickname: user.Nickname,
-					avatarUrl: "", // todo
+					avatarUrl: discordUser.avatarURL(),
 					class: user.Class,
 					isVip: user.IsVip(),
 					vipEternal: user.VipEternal,
