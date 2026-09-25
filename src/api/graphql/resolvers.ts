@@ -7,6 +7,7 @@ import { Language } from "#core/models/Language";
 import { ItemList } from "#core/types/Items";
 import type { AuthUser, GraphQLContext } from "#api/types";
 import { formatMoney } from "#bot/utils/ui";
+import { UserBadge } from "#core/models/UserBadge";
 
 function assertAuthenticated(context: GraphQLContext): AuthUser {
 	if (!context.user) {
@@ -53,6 +54,7 @@ function mapUserDetail(user: User) {
 		id: user.Id,
 		nickname: user.Nickname,
 		money: user.Money,
+		avatarUrl: "", // todo: how to get dynamic avatar
 		specialCoin: user.SpecialCoin,
 		gangId: user.GangId,
 		class: user.Class,
@@ -80,7 +82,8 @@ function mapUserDetail(user: User) {
 	};
 }
 
-export type ResolverFn = (_: unknown, args: any, context: GraphQLContext) => Promise<any> | any;
+// eslint-disable-next-line
+export type ResolverFn = (_: unknown, args: never, context: GraphQLContext) => Promise<never> | any;
 
 export const resolvers: {
 	Query: Record<string, ResolverFn>;
@@ -141,17 +144,26 @@ export const resolvers: {
 					return;
 				}
 
-				await user.GetSituation();
+				const [_, isDev, isMod, isHelper] = await Promise.all([
+					user.GetSituation(),
+					UserBadge.IsDeveloper(user.Id),
+					UserBadge.IsModerator(user.Id),
+					UserBadge.IsHelper(user.Id),
+				]);
 
 				return {
 					id: user.Id,
 					nickname: user.Nickname,
-					money: user.Money,
-					specialCoin: user.SpecialCoin,
+					avatarUrl: "", // todo
 					class: user.Class,
 					isVip: user.IsVip(),
 					vipEternal: user.VipEternal,
 					situationId: user.Situation.Id,
+					createdAt: user.CreatedAt.toISOString(),
+					updatedAt: user.UpdatedAt.toISOString(),
+					isDeveloper: isDev,
+					isModerator: isMod,
+					isHelper: isHelper,
 				};
 			});
 

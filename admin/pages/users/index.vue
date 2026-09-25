@@ -3,6 +3,8 @@
 	lang="ts"
 >
 import { useQuery } from "@vue/apollo-composable";
+import { format, formatDistance } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Eye, Search, UserCheck } from "lucide-vue-next";
 import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
@@ -96,10 +98,11 @@ function nextPage() {
 						<tr>
 							<th>Jogador</th>
 							<th>ID</th>
+							<th>Grupo</th>
 							<th>Classe</th>
-							<th>Dinheiro</th>
-							<th>Moedas Esp.</th>
 							<th>Status</th>
+							<th>Criação</th>
+							<th>Última atualização</th>
 							<th class="text-right">Ações</th>
 						</tr>
 					</thead>
@@ -132,6 +135,32 @@ function nextPage() {
 								</BaseBadge>
 							</td>
 							<td class="id-cell">{{ u.id }}</td>
+							<td>
+								<BaseBadge
+									v-if="u.isDeveloper"
+									variant="developer"
+								>
+									Desenvolvedor
+								</BaseBadge>
+								<BaseBadge
+									v-else-if="u.isModerator"
+									variant="moderator"
+								>
+									Moderador
+								</BaseBadge>
+								<BaseBadge
+									v-else-if="u.isHelper"
+									variant="helper"
+								>
+									Ajudante
+								</BaseBadge>
+								<BaseBadge
+									v-else
+									variant="neutral"
+								>
+									Jogador
+								</BaseBadge>
+							</td>
 							<td class="class-cell">
 								<BaseBadge variant="neutral">
 									<NuxtImg
@@ -141,8 +170,6 @@ function nextPage() {
 									{{ getClassName(u.class) }}
 								</BaseBadge>
 							</td>
-							<td class="money-cell">Cr$ {{ u.money.toLocaleString() }}</td>
-							<td class="coins-cell">{{ u.specialCoin.toLocaleString() }}</td>
 							<td>
 								<BaseBadge variant="neutral">
 									<NuxtImg
@@ -151,6 +178,14 @@ function nextPage() {
 									/>
 									{{ getSituationName(u.situationId) }}
 								</BaseBadge>
+							</td>
+							<td>{{ format(u.createdAt, "dd/MM/yyyy hh:mm") }}</td>
+							<td>
+								{{
+									formatDistance(u.updatedAt, new Date(), {
+										locale: ptBR,
+									})
+								}}
 							</td>
 							<td class="text-right">
 								<NuxtLink :to="`/users/${u.id}`">

@@ -3,7 +3,7 @@
 	lang="ts"
 >
 interface Props {
-	variant?: "developer" | "moderator" | "vip" | "success" | "danger" | "warning" | "neutral";
+	variant?: "developer" | "moderator" | "helper" | "vip" | "success" | "danger" | "warning" | "neutral";
 }
 
 withDefaults(defineProps<Props>(), {
@@ -46,6 +46,12 @@ withDefaults(defineProps<Props>(), {
     color: color.adjust($color-moderator, $lightness: 15%);
     border: 1px solid rgba($color-moderator, 0.4);
   }
+
+	&.badge-helper {
+		background-color: rgba($color-helper, 0.15);
+		color: color.adjust($color-helper, $lightness: 15%);
+		border: 1px solid rgba($color-helper, 0.4);
+	}
 
   &.badge-vip {
     background-color: rgba($color-vip, 0.2);

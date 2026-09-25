@@ -54,12 +54,16 @@ export const typeDefs = /* GraphQL */ `
     type UserSummary {
         id: ID!
         nickname: String!
-        money: Float!
-        specialCoin: Int!
+        avatarUrl: String
         class: Int!
         isVip: Boolean!
         vipEternal: Boolean!
         situationId: Int!
+        isDeveloper: Boolean!
+        isModerator: Boolean!
+        isHelper: Boolean!
+        createdAt: String!
+        updatedAt: String!
     }
 
     type UserSearchResult {
@@ -79,6 +83,7 @@ export const typeDefs = /* GraphQL */ `
     type UserDetail {
         id: ID!
         nickname: String!
+        avatarUrl: String
         money: Int!
         specialCoin: Int!
         gangId: Int
