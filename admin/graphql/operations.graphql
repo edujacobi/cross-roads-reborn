@@ -61,6 +61,7 @@ query GetUserDetail($id: ID!) {
 	user(id: $id) {
 		id
 		nickname
+		online
 		money
 		avatarUrl
 		avatarDecoration

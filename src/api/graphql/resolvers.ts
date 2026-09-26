@@ -11,6 +11,7 @@ import { UserBadge } from "#core/models/UserBadge";
 import { getClient } from "#bot/client";
 import { InvestmentList } from "#core/types/Investments";
 import { GangColor } from "#core/types/GangColors";
+import { subMinutes } from "date-fns";
 
 function assertAuthenticated(context: GraphQLContext): AuthUser {
 	if (!context.user) {
@@ -103,9 +104,13 @@ async function mapUserDetail(user: User) {
 		};
 	}
 
+	const lastCommand = client.userLastCommand.get(user.Id) || 0;
+	const isOnline = new Date(lastCommand) > subMinutes(new Date(), 15);
+
 	return {
 		id: user.Id,
 		nickname: user.Nickname,
+		online: isOnline,
 		money: user.Money,
 		avatarUrl: discordUser.avatarURL(),
 		avatarDecoration: user.AvatarDecoration.Description[Language.English].toLowerCase().replaceAll(" ", "_"),

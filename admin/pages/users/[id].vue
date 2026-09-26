@@ -244,10 +244,13 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 			<!-- Header Card -->
 			<BaseCard class="profile-header-card">
 				<div class="profile-main-info">
-					<NuxtImg
-						:class="['user-avatar', `user-avatar--${user.avatarDecoration}`]"
-						:src="user.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'"
-					/>
+					<div class="avatar-wrapper">
+						<NuxtImg
+							:class="['user-avatar', `user-avatar--${user.avatarDecoration}`]"
+							:src="user.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'"
+						/>
+						<span :class="`user-${user.online ? 'online' : 'offline'}`"></span>
+					</div>
 					<div>
 						<div class="name-row">
 							<h1 class="user-name">{{ user.nickname || "(Sem Nick)" }}</h1>
@@ -841,6 +844,28 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 		align-items: center;
 		gap: 18px;
 		padding-bottom: 20px;
+
+		.avatar-wrapper {
+			position: relative;
+		}
+
+		.user-online, .user-offline  {
+			width: 24px;
+			aspect-ratio: 1;
+			border-radius: $radius-full;
+			position: absolute;
+			bottom: 0;
+			left: 0;
+			border: 3px solid $bg-card;
+		}
+
+		.user-online {
+			background: #00B784;
+		}
+
+		.user-offline {
+			background: #80848E;
+		}
 
 		.name-row {
 			display: flex;
