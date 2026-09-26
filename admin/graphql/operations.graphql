@@ -64,7 +64,14 @@ query GetUserDetail($id: ID!) {
 		money
 		avatarUrl
 		specialCoin
-		gangId
+		gang {
+			id
+			name
+			imageUrl
+			color
+			level
+			role
+		}
 		class
 		className
 		attack

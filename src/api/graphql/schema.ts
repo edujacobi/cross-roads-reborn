@@ -94,17 +94,26 @@ export const typeDefs = /* GraphQL */ `
         expiresAt: String!
     }
 
+    type GangInfo {
+        id: Int!
+        name: String!
+        imageUrl: String
+        role: String!
+        level: Int!
+        color: String!
+    }
+
     type UserDetail {
         id: ID!
         nickname: String!
         avatarUrl: String
         money: Int!
         specialCoin: Int!
-        gangId: Int
+        gang: GangInfo
         class: Int!
         className: String!
-        attack: Int!
-        defense: Int!
+        attack: Float!
+        defense: Float!
         isVip: Boolean!
         vipEternal: Boolean!
         vipTime: String

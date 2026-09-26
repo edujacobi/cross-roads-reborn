@@ -75,6 +75,8 @@ const selectedCooldown = ref<"scavenge" | "robbery" | "beatup">("scavenge");
 const isActionModalOpen = ref(false);
 const selectedAction = ref<"job" | "scavenge" | "robbery" | "beatup" | "casino" | "gangaction">("job");
 
+const gangColor = computed(() => user.value?.gang?.color);
+
 // Handlers
 async function handleCure() {
 	try {
@@ -364,6 +366,24 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 						/>
 						{{ user.investment.defense }} DEF
 					</p>
+				</div>
+			</BaseCard>
+
+			<BaseCard
+				v-if="user.gang"
+				title="Gangue"
+				icon="situations/gang-action"
+				class="gang-card"
+			>
+				<div class="user-gang">
+					<NuxtImg
+						class="gang-img"
+						:src="user.gang.imageUrl || 'https://i.imgur.com/xOUjOlZ.png'"
+					/>
+					<p class="text">
+						{{ user.gang.role }} de <span :style="{color: user.gang.color}">{{ user.gang.name }}</span>
+					</p>
+					<p class="gang-level">Nível {{ user.gang?.level }}</p>
 				</div>
 			</BaseCard>
 
@@ -973,6 +993,34 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 
 		img {
 			width: 24px;
+		}
+	}
+}
+
+.gang-card {
+	border-color: color-mix(in lab, $border-card 100%, v-bind(gangColor) 75%);
+	background-color:  color-mix(in lab, $bg-card 100%, v-bind(gangColor) 15%);
+
+	:deep(.card-header){
+		border-color: color-mix(in lab, $border-card 100%, v-bind(gangColor) 75%)
+	}
+
+	.user-gang {
+		display: flex;
+		gap: 1rem;
+		align-items: center;
+		font-weight: 600;
+
+		.gang-img {
+			border-radius: 100%;
+			aspect-ratio: 1;
+			object-fit: cover;
+			width: 60px;
+		}
+
+		.gang-level {
+			color: $text-secondary;
+			margin-left: auto;
 		}
 	}
 }

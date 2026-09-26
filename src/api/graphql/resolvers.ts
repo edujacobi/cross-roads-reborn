@@ -6,10 +6,11 @@ import { ClassList } from "#core/types/Classes";
 import { Language } from "#core/models/Language";
 import { ItemList } from "#core/types/Items";
 import type { AuthUser, GraphQLContext } from "#api/types";
-import { formatMoney } from "#bot/utils/ui";
+import { convertHexNumberToString, formatMoney } from "#bot/utils/ui";
 import { UserBadge } from "#core/models/UserBadge";
 import { getClient } from "#bot/client";
 import { InvestmentList } from "#core/types/Investments";
+import { GangColor } from "#core/types/GangColors";
 
 function assertAuthenticated(context: GraphQLContext): AuthUser {
 	if (!context.user) {
@@ -55,9 +56,10 @@ async function mapUserDetail(user: User) {
 	const client = getClient();
 
 	// eslint-disable-next-line prefer-const
-	let [badges, discordUser] = await Promise.all([
+	let [badges, discordUser, gang] = await Promise.all([
 		UserBadge.GetList(user.Id),
 		client.users.fetch(user.Id),
+		user.GetGang(),
 	]);
 
 	if (user.IsVip()) {
@@ -85,13 +87,28 @@ async function mapUserDetail(user: User) {
 		};
 	}
 
+	let gangInfo = null;
+
+	if (gang) {
+		const roleText = gang.Members.find(member => member.UserId === user.Id)!.RoleName;
+
+		gangInfo = {
+			id: gang.Id,
+			name: gang.Name,
+			level: gang.Level,
+			role: roleText,
+			imageUrl: gang.Image,
+			color: convertHexNumberToString(GangColor[gang.Color].Color),
+		};
+	}
+
 	return {
 		id: user.Id,
 		nickname: user.Nickname,
 		money: user.Money,
 		avatarUrl: discordUser.avatarURL(),
 		specialCoin: user.SpecialCoin,
-		gangId: user.GangId,
+		gang: gangInfo,
 		class: user.Class,
 		className,
 		attack: user.Attributes.Attack,
