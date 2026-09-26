@@ -31,6 +31,10 @@ const { result, loading, refetch } = useQuery(GetUserDetailDocument, () => ({ id
 
 const user = computed(() => result.value?.user);
 
+useHead({
+	title: () => user.value?.nickname,
+});
+
 const { getClassImageUrl } = useClasses();
 const { getSituationImageUrl } = useSituation();
 

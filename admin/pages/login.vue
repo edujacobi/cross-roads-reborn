@@ -9,6 +9,10 @@ definePageMeta({
 	layout: false,
 });
 
+useHead({
+	title: "Login",
+});
+
 const route = useRoute();
 const auth = useAuth();
 

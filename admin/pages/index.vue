@@ -14,6 +14,10 @@ import {
 import DashboardStatusBox from "../components/Dashboard/DashboardStatusBox.vue";
 import DashboardUserHistory from "../components/Dashboard/DashboardUserHistory.vue";
 
+useHead({
+	title: "Dashboard",
+});
+
 const { result: statsResult, loading: statsLoading, refetch: refetchStats } = useQuery(GetDashboardStatsDocument);
 
 const {

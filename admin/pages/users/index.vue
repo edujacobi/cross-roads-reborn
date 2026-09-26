@@ -12,6 +12,10 @@ import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseInput from "~/components/ui/BaseInput.vue";
 import { SearchUsersDocument, type SearchUsersQuery } from "~/graphql/generated";
 
+useHead({
+	title: "Jogadores",
+});
+
 const searchQuery = ref("");
 const page = ref(1);
 const limit = ref(15);
