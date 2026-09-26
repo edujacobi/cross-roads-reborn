@@ -94,8 +94,9 @@ query GetUserDetail($id: ID!) {
 			id
 			name
 			defense
-			imageUrl
 			expiresAt
+			nextPaymentValue
+			henchmanEndsAt
 		}
 		situationId
 		situationText

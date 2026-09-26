@@ -11,6 +11,7 @@ import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseInput from "~/components/ui/BaseInput.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
+import { useInvestment } from "~/composables/useInvestment";
 import {
 	CureUserDocument,
 	FreeUserDocument,
@@ -37,6 +38,7 @@ useHead({
 
 const { getClassImageUrl } = useClasses();
 const { getSituationImageUrl } = useSituation();
+const { getInvestmentImageUrl } = useInvestment();
 
 const language = computed(() => {
 	switch (user.value?.language) {
@@ -359,9 +361,26 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 			>
 				<div class="user-investment">
 					<div class="investment-left">
-						<NuxtImg :src="user.investment.imageUrl" />
-						<p class="text">{{ user.investment.name }}</p>
-						<p class="text-muted">• {{ formatDistance(user.investment.expiresAt, new Date(), { locale: ptBR }) }}</p>
+						<NuxtImg
+							class="investment-image"
+							:src="getInvestmentImageUrl(user.investment.id)"
+						/>
+						<div class="investment-data">
+							<p class="text">{{ user.investment.name }}</p>
+							<p class="text-secondary">Lucro acumulado: {{ user.investment.nextPaymentValue }}</p>
+							<p class="text-muted">{{ formatDistance(user.investment.expiresAt, new Date(), { locale: ptBR }) }}</p>
+							<p
+								class="text-henchman"
+								v-if="user.investment.henchmanEndsAt"
+							>
+								<NuxtImg
+									class="img-henchman"
+									src="classes/5_Mafioso.png"
+								/>
+								Capanga: contrato encerra em
+								{{ formatDistance(user.investment?.henchmanEndsAt, new Date(), { locale: ptBR }) }}
+							</p>
+						</div>
 					</div>
 					<p class="investment-right">
 						<NuxtImg
@@ -974,8 +993,35 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 
 	.investment-left {
 		display: flex;
-		gap: 0.5rem;
-		align-items: baseline;
+		gap: 1rem;
+		align-items: center;
+		font-weight: 600;
+
+		.investment-image {
+			border-radius: 1rem;
+			width: 80px;
+		}
+
+		.investment-data {
+			.text-secondary {
+				font-size: 0.85rem;
+			}
+
+			.text-henchman {
+				color: $text-secondary;
+				font-size: 0.8rem;
+				display: flex;
+				align-items: center;
+				gap: 0.25rem;
+				margin-top: 0.5rem;
+			}
+
+			.img-henchman {
+				background: $border-card;
+				border-radius: $radius-full;
+				width: 20px;
+			}
+		}
 	}
 
 	.investment-right {
@@ -1009,7 +1055,8 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 			border-radius: 100%;
 			aspect-ratio: 1;
 			object-fit: cover;
-			width: 60px;
+			border-radius: 1rem;
+			width: 80px;
 		}
 
 		.gang-level {

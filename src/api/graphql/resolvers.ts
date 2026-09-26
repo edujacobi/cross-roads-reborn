@@ -81,9 +81,10 @@ async function mapUserDetail(user: User) {
 		investment = {
 			id: user.Investment.Id,
 			name: investInfo.Name[Language.Portuguese],
-			imageUrl: investInfo.ImageUrl,
 			expiresAt: user.Investment.ExpiresAt?.toISOString(),
 			defense: investInfo.BaseDefense,
+			nextPaymentValue: formatMoney(user.Investment.AccumulatedYield, Language.Portuguese),
+			henchmanEndsAt: user.Investment.HenchmanEndsAt?.toISOString(),
 		};
 	}
 
