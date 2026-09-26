@@ -63,6 +63,7 @@ query GetUserDetail($id: ID!) {
 		nickname
 		money
 		avatarUrl
+		avatarDecoration
 		specialCoin
 		gang {
 			id

@@ -1,0 +1,92 @@
+@use "./variables" as *;
+@use "./mixins" as *;
+
+@mixin avatarDecoration($ring, $glow) {
+  border: 6px solid transparent;
+  background-image: $ring;
+  background-origin: border-box;
+  background-clip: border-area;
+  box-shadow: 0 0 32px 3px rgba($glow, 0.25);
+}
+
+.user-avatar {
+  object-fit: cover;
+  border-radius: $radius-full;
+  background: $bg-main;
+  border: 6px solid rgba(#6C6C93, 0.25);
+  width: 100px;
+  @include flex-center;
+
+  &--vip {
+    $avatar-ring: linear-gradient(135deg, #e0ba1f, #ffa600);
+    $avatar-glow: #e0ba1f;
+    @include avatarDecoration($avatar-ring, $avatar-glow);
+  }
+
+  &--developer {
+    $avatar-ring: #00b884;
+    $avatar-glow: #00b884;
+    @include avatarDecoration($avatar-ring, $avatar-glow);
+  }
+
+  &--moderator {
+    $avatar-ring: #E43950;
+    $avatar-glow: #E43950;
+    @include avatarDecoration($avatar-ring, $avatar-glow);
+  }
+
+  &--helper {
+    $avatar-ring: #007BFF;
+    $avatar-glow: #007BFF;
+    @include avatarDecoration($avatar-ring, $avatar-glow);
+  }
+
+  &--purple {
+    $avatar-ring: linear-gradient(180deg, #7345C4, #3F1EB7);
+    $avatar-glow: #7345C4;
+    @include avatarDecoration($avatar-ring, $avatar-glow);
+  }
+
+  &--sunset {
+    $avatar-ring: linear-gradient(180deg, #FD5949, #D6249F, #285AEB);
+    $avatar-glow: #D6249F;
+    @include avatarDecoration($avatar-ring, $avatar-glow);
+  }
+
+  &--sunrise {
+    $avatar-ring: linear-gradient(180deg, #FCB045, #FD1D1D, #833AB4);
+    $avatar-glow: #FD1D1D;
+    @include avatarDecoration($avatar-ring, $avatar-glow);
+  }
+
+  &--cloud {
+    $avatar-ring: radial-gradient(#94BBE9 63%, #EEAECA 70%);
+    $avatar-glow: #94BBE9;
+    @include avatarDecoration($avatar-ring, $avatar-glow);
+  }
+
+  &--botanical_garden {
+    $avatar-ring: linear-gradient(120deg, #3E805B 15%, #AAD47B, #F9FFA1, #e66c97, #ba4fc2 85%);
+    $avatar-glow: #e66c97;
+    @include avatarDecoration($avatar-ring, $avatar-glow);
+  }
+
+  &--frutiger_aero {
+    $avatar-ring: radial-gradient(rgba(255, 255, 255, 0.4) 63%, rgba(255, 255, 255, 0) 69%),
+    linear-gradient(205deg, #EDDD53, #57C785, #2A7B9B);
+    $avatar-glow: #57C785;
+    @include avatarDecoration($avatar-ring, $avatar-glow);
+  }
+
+  &--silver {
+    $avatar-ring: linear-gradient(205deg, #d9d9d9, #ADBBC3, #656C70);
+    $avatar-glow: #ADBBC3;
+    @include avatarDecoration($avatar-ring, $avatar-glow);
+  }
+
+  &--rainbow {
+    $avatar-ring: linear-gradient(135deg, #b547c6 15%, #FF6355, #FBA949, #FAE442, #8BD448, #2AA8F2 85%);
+    $avatar-glow: #8BD448;
+    @include avatarDecoration($avatar-ring, $avatar-glow);
+  }
+}

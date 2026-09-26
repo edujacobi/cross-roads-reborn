@@ -107,6 +107,7 @@ export const typeDefs = /* GraphQL */ `
         id: ID!
         nickname: String!
         avatarUrl: String
+        avatarDecoration: String!
         money: Int!
         specialCoin: Int!
         gang: GangInfo

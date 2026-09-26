@@ -243,7 +243,7 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 			<BaseCard class="profile-header-card">
 				<div class="profile-main-info">
 					<NuxtImg
-						class="profile-img"
+						:class="['user-avatar', `user-avatar--${user.avatarDecoration}`]"
 						:src="user.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'"
 					/>
 					<div>
@@ -822,16 +822,6 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 		align-items: center;
 		gap: 18px;
 		padding-bottom: 20px;
-
-		.profile-img {
-			@include flex-center;
-			width: 56px;
-			height: 56px;
-			border-radius: 50%;
-			background-color: rgba($bg-input, 0.15);
-			border: 1px solid rgba($bg-input, 0.3);
-			color: $bg-input;
-		}
 
 		.name-row {
 			display: flex;

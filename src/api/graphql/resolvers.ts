@@ -107,6 +107,7 @@ async function mapUserDetail(user: User) {
 		nickname: user.Nickname,
 		money: user.Money,
 		avatarUrl: discordUser.avatarURL(),
+		avatarDecoration: user.AvatarDecoration.Description[Language.English].toLowerCase().replaceAll(" ", "_"),
 		specialCoin: user.SpecialCoin,
 		gang: gangInfo,
 		class: user.Class,
