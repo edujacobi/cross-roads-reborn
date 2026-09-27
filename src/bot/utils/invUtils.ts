@@ -14,7 +14,7 @@ import {
 	MessageFlags,
 	StringSelectMenuBuilder,
 	StringSelectMenuOptionBuilder,
-	type ChatInputCommandInteraction
+	type ChatInputCommandInteraction,
 } from "discord.js";
 import { deferUpdate, replyInteraction, replyWithContainer } from "./discordInteractions";
 import { EmoteId, EmoteString } from "./emotes";
@@ -163,7 +163,13 @@ export class Inventory {
 		const render = await this.Render();
 
 		const response = await replyInteraction(this.Interaction, {
-			components: [...this.Medias, render.row],
+			components: [...this.Medias, render.row,
+				new ActionRowBuilder<ButtonBuilder>()
+					.addComponents(new ButtonBuilder()
+						.setLabel("Seus itens sumiram?")
+						.setCustomId("new-season")
+						.setStyle(ButtonStyle.Secondary)),
+			],
 			files: this.Attachments,
 			flags: MessageFlags.IsComponentsV2,
 		});
@@ -185,6 +191,19 @@ export class Inventory {
 			}
 			else if (btn.customId === "lessInfo") {
 				this.FullSize = false;
+			}
+			else if (btn.customId === "new-season") {
+				return replyWithContainer(btn, defaultComponent({
+					color: CrColors.Default,
+					thumbnail: this.Interaction.client.user.avatarURL() || undefined,
+					description: `### A pré-temporada de Cross Roads Reborn finalmente terminou!
+ Todos os registros foram limpos (a maioria está guardado para a posterioridade) e você começará do zero novamente.
+### Temporadas
+Para saber mais sobre as temporadas, use o comando \`/temporada\`.
+No final de uma temporada, os melhores jogadores nos rankings ganharão insígnias permanentes!
+### Encontre outros jogadores
+Acesse o servidor oficial de Cross Roads com o comando \`/convite\`.`,
+				}));
 			}
 			else if (btn.customId === "adminHeal") {
 				await this.Target.Cure(this.Interaction.user.id);

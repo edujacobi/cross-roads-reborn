@@ -82,7 +82,7 @@ export const BundleList: SkinBundleListType = {
 			ItemId.BrassKnuckles,
 			ItemId.BaseballBat,
 		],
-		Shop: true,
+		Shop: false,
 		Price: 3_000,
 	},
 	[BundleId.Brazilian]: {
