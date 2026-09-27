@@ -23,47 +23,62 @@ withDefaults(defineProps<Props>(), {
 
 <template>
 	<BaseCard class="count-card">
-		<div class="count-list">
+		<dl class="count-list">
 			<div class="count-item">
-				<div class="count-label">
-					<Users :size="16" />
+				<dt class="count-label">
+					<Users
+						:size="16"
+						aria-hidden="true"
+					/>
 					Jogadores
-				</div>
-				<span class="count-value">{{ totalPlayers ?? 0 }}</span>
+				</dt>
+				<dd class="count-value">{{ totalPlayers ?? 0 }}</dd>
 			</div>
 
 			<div class="count-item">
-				<div class="count-label">
-					<Globe :size="16" />
+				<dt class="count-label">
+					<Globe
+						:size="16"
+						aria-hidden="true"
+					/>
 					Português
-				</div>
-				<span class="count-value">{{ portugueseCount ?? 0 }}</span>
+				</dt>
+				<dd class="count-value">{{ portugueseCount ?? 0 }}</dd>
 			</div>
 
 			<div class="count-item">
-				<div class="count-label">
-					<Globe :size="16" />
+				<dt class="count-label">
+					<Globe
+						:size="16"
+						aria-hidden="true"
+					/>
 					Inglês
-				</div>
-				<span class="count-value">{{ englishCount ?? 0 }}</span>
+				</dt>
+				<dd class="count-value">{{ englishCount ?? 0 }}</dd>
 			</div>
 
 			<div class="count-item">
-				<div class="count-label">
-					<Globe :size="16" />
+				<dt class="count-label">
+					<Globe
+						:size="16"
+						aria-hidden="true"
+					/>
 					Espanhol
-				</div>
-				<span class="count-value">{{ spanishCount ?? 0 }}</span>
+				</dt>
+				<dd class="count-value">{{ spanishCount ?? 0 }}</dd>
 			</div>
 
 			<div class="count-item">
-				<div class="count-label">
-					<Shield :size="16" />
+				<dt class="count-label">
+					<Shield
+						:size="16"
+						aria-hidden="true"
+					/>
 					Gangues
-				</div>
-				<span class="count-value">{{ totalGangs ?? 0 }}</span>
+				</dt>
+				<dd class="count-value">{{ totalGangs ?? 0 }}</dd>
 			</div>
-		</div>
+		</dl>
 	</BaseCard>
 </template>
 
@@ -86,6 +101,10 @@ withDefaults(defineProps<Props>(), {
 			background-color: $bg-input;
 			border-radius: $radius-sm;
 			border: 1px solid $border-subtle;
+
+			.count-value {
+				margin: 0;
+			}
 
 			.count-label {
 				display: flex;

@@ -27,8 +27,12 @@ watch(
 	<div
 		v-if="auth.loading.value"
 		class="loading-screen"
+		role="status"
 	>
-		<div class="spinner" />
+		<div
+			class="spinner"
+			aria-hidden="true"
+		/>
 		<p>Carregando painel administrativo...</p>
 	</div>
 
@@ -37,26 +41,36 @@ watch(
 		class="admin-layout"
 	>
 		<!-- Sidebar -->
-		<aside class="sidebar">
+		<aside
+			class="sidebar"
+			aria-label="Painel administrativo"
+		>
 			<div class="brand">
 				<div class="brand-icon">
 					<NuxtImg
 						src="brand/CrossRoadsLogo.png"
 						class="img"
+						alt=""
 					/>
 				</div>
 				<div class="brand-text">
-					<h2>CROSS ROADS</h2>
+					<p class="brand-name">CROSS ROADS</p>
 					<span>Painel Admin</span>
 				</div>
 			</div>
 
-			<nav class="nav-links">
+			<nav
+				class="nav-links"
+				aria-label="Navegação principal"
+			>
 				<NuxtLink
 					to="/"
 					:class="['nav-item', { active: route.path === '/' }]"
 				>
-					<LayoutDashboard :size="18" />
+					<LayoutDashboard
+						:size="18"
+						aria-hidden="true"
+					/>
 					Dashboard
 				</NuxtLink>
 
@@ -64,7 +78,10 @@ watch(
 					to="/users"
 					:class="['nav-item', { active: route.path.startsWith('/users') }]"
 				>
-					<Users :size="18" />
+					<Users
+						:size="18"
+						aria-hidden="true"
+					/>
 					Jogadores
 				</NuxtLink>
 			</nav>
@@ -73,7 +90,7 @@ watch(
 			<div class="admin-profile">
 				<NuxtImg
 					:src="auth.user.value?.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'"
-					alt="Avatar"
+					:alt="auth.user.value?.username ? `Avatar de ${auth.user.value.username}` : 'Avatar do administrador'"
 					class="admin-avatar"
 				/>
 				<div class="admin-details">
@@ -86,9 +103,13 @@ watch(
 					type="button"
 					class="logout-btn"
 					title="Encerrar sessão"
+					aria-label="Encerrar sessão"
 					@click="auth.logout()"
 				>
-					<LogOut :size="18" />
+					<LogOut
+						:size="18"
+						aria-hidden="true"
+					/>
 				</button>
 			</div>
 		</aside>
@@ -100,6 +121,7 @@ watch(
 					<Activity
 						:size="16"
 						class="pulse-icon"
+						aria-hidden="true"
 					/>
 					Servidor Ativo
 				</div>
@@ -120,9 +142,9 @@ watch(
 				</div>
 			</header>
 
-			<main class="page-content">
+			<div class="page-content">
 				<slot />
-			</main>
+			</div>
 		</div>
 	</div>
 </template>
@@ -191,11 +213,12 @@ watch(
 		}
 
 		.brand-text {
-			h2 {
+			.brand-name {
 				font-size: 0.9375rem;
 				font-weight: 800;
 				letter-spacing: 0.05em;
 				color: $text-primary;
+				margin: 0;
 			}
 
 			span {

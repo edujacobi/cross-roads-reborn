@@ -21,6 +21,7 @@ defineProps<Props>();
 		<div
 			v-if="historyLoading"
 			class="loading-box"
+			role="status"
 		>
 			<p>Carregando histórico...</p>
 		</div>
@@ -29,7 +30,10 @@ defineProps<Props>();
 			v-else-if="history.length === 0"
 			class="empty-box"
 		>
-			<Calendar :size="32" />
+			<Calendar
+				:size="32"
+				aria-hidden="true"
+			/>
 			<p>Nenhum snapshot de histórico gravado ainda.</p>
 		</div>
 
@@ -38,14 +42,17 @@ defineProps<Props>();
 			class="table-container"
 		>
 			<table class="history-table">
+				<caption class="visually-hidden">
+					Histórico de jogadores e gangues dos últimos 30 dias
+				</caption>
 				<thead>
 					<tr>
-						<th>Data</th>
-						<th>Jogadores</th>
-						<th>Português</th>
-						<th>Inglês</th>
-						<th>Espanhol</th>
-						<th>Gangues</th>
+						<th scope="col">Data</th>
+						<th scope="col">Jogadores</th>
+						<th scope="col">Português</th>
+						<th scope="col">Inglês</th>
+						<th scope="col">Espanhol</th>
+						<th scope="col">Gangues</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -53,7 +60,7 @@ defineProps<Props>();
 						v-for="item in history"
 						:key="item.id || item.date"
 					>
-						<td>{{ new Date(item.date).toLocaleDateString() }}</td>
+						<td><time :datetime="item.date">{{ new Date(item.date).toLocaleDateString() }}</time></td>
 						<td class="font-bold">{{ item.totalPlayers }}</td>
 						<td>{{ item.portugueseCount }}</td>
 						<td>{{ item.englishCount }}</td>
@@ -72,6 +79,18 @@ defineProps<Props>();
 >
 @use "~/assets/scss/variables" as *;
 @use "~/assets/scss/mixins" as *;
+
+.visually-hidden {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
 
 .history-card {
 

@@ -34,19 +34,24 @@ onMounted(async () => {
 			<div
 				v-if="!error"
 				class="loading-state"
+				role="status"
 			>
-				<div class="spinner" />
-				<h2>Autenticando...</h2>
+				<div
+					class="spinner"
+					aria-hidden="true"
+				/>
+				<h1>Autenticando...</h1>
 				<p>Validando permissões e conectando ao Cross Roads Admin.</p>
 			</div>
 
 			<div
 				v-else
 				class="error-state"
+				role="alert"
 			>
-				<h2>Erro na Autenticação</h2>
+				<h1>Erro na Autenticação</h1>
 				<p>{{ error }}</p>
-				<span>Redirecionando para o login em instantes...</span>
+				<p>Redirecionando para o login em instantes...</p>
 			</div>
 		</article>
 	</main>
@@ -82,11 +87,12 @@ onMounted(async () => {
 		animation: spin 0.8s linear infinite;
 	}
 
-	h2 {
+	h1 {
 		font-size: 1.125rem;
 		font-weight: 700;
 		color: $text-primary;
 		margin-bottom: 8px;
+		margin-top: 0;
 	}
 
 	p {
@@ -95,11 +101,11 @@ onMounted(async () => {
 	}
 
 	.error-state {
-		h2 {
+		h1 {
 			color: $color-danger;
 		}
 
-		span {
+		p:last-child {
 			display: block;
 			font-size: 0.75rem;
 			color: $text-muted;

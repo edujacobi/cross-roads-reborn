@@ -14,28 +14,32 @@ defineProps<{
 
 <template>
 	<BaseCard class="user-metadata">
-		<div class="user-metadata__grid">
+		<dl class="user-metadata__grid">
 			<div class="user-metadata__item">
-				<span class="user-metadata__label">Idioma</span>
-				<span class="user-metadata__value">{{ language }}</span>
+				<dt class="user-metadata__label">Idioma</dt>
+				<dd class="user-metadata__value">{{ language }}</dd>
 			</div>
 			<div class="user-metadata__item">
-				<span class="user-metadata__label">Sequência diária</span>
-				<span class="user-metadata__value">{{ user.dailyStreak }} dias</span>
+				<dt class="user-metadata__label">Sequência diária</dt>
+				<dd class="user-metadata__value">{{ user.dailyStreak }} dias</dd>
 			</div>
 			<div class="user-metadata__item">
-				<span class="user-metadata__label">Votos (Top.gg)</span>
-				<span class="user-metadata__value">{{ user.voteCount }}</span>
+				<dt class="user-metadata__label">Votos (Top.gg)</dt>
+				<dd class="user-metadata__value">{{ user.voteCount }}</dd>
 			</div>
 			<div class="user-metadata__item">
-				<span class="user-metadata__label">Criado em</span>
-				<span class="user-metadata__value">{{ format(user.createdAt, "dd/MM/yyyy hh:mm") }}</span>
+				<dt class="user-metadata__label">Criado em</dt>
+				<dd class="user-metadata__value">
+					<time :datetime="user.createdAt">{{ format(user.createdAt, "dd/MM/yyyy hh:mm") }}</time>
+				</dd>
 			</div>
 			<div class="user-metadata__item">
-				<span class="user-metadata__label">Última atualização</span>
-				<span class="user-metadata__value">{{ format(user.updatedAt, "dd/MM/yyyy hh:mm") }}</span>
+				<dt class="user-metadata__label">Última atualização</dt>
+				<dd class="user-metadata__value">
+					<time :datetime="user.updatedAt">{{ format(user.updatedAt, "dd/MM/yyyy hh:mm") }}</time>
+				</dd>
 			</div>
-		</div>
+		</dl>
 	</BaseCard>
 </template>
 
@@ -73,6 +77,7 @@ defineProps<{
 		color: $text-primary;
 		display: flex;
 		align-items: center;
+		margin: 0;
 	}
 }
 </style>

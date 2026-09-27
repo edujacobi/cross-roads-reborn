@@ -68,10 +68,13 @@ function nextPage() {
 					<Search
 						:size="18"
 						class="search-icon"
+						aria-hidden="true"
 					/>
 					<BaseInput
 						id="search-users"
 						:model-value="searchQuery"
+						aria-label="Buscar jogadores por nickname ou ID"
+						type="search"
 						placeholder="Buscar por Nickname ou ID..."
 						@update:model-value="handleSearch"
 					/>
@@ -81,6 +84,7 @@ function nextPage() {
 			<div
 				v-if="loading"
 				class="loading-state"
+				role="status"
 			>
 				<p>Buscando jogadores no banco de dados...</p>
 			</div>
@@ -89,7 +93,10 @@ function nextPage() {
 				v-else-if="users.length === 0"
 				class="empty-state"
 			>
-				<UserCheck :size="36" />
+				<UserCheck
+					:size="36"
+					aria-hidden="true"
+				/>
 				<p>Nenhum jogador encontrado com os critérios de busca.</p>
 			</div>
 
@@ -98,16 +105,24 @@ function nextPage() {
 				class="table-wrapper"
 			>
 				<table class="users-table">
+					<caption class="visually-hidden">
+						Lista de jogadores
+					</caption>
 					<thead>
 						<tr>
-							<th>Jogador</th>
-							<th>ID</th>
-							<th>Grupo</th>
-							<th>Classe</th>
-							<th>Status</th>
-							<th>Criação</th>
-							<th>Última atualização</th>
-							<th class="text-right">Ações</th>
+							<th scope="col">Jogador</th>
+							<th scope="col">ID</th>
+							<th scope="col">Grupo</th>
+							<th scope="col">Classe</th>
+							<th scope="col">Status</th>
+							<th scope="col">Criação</th>
+							<th scope="col">Última atualização</th>
+							<th
+								scope="col"
+								class="text-right"
+							>
+								Ações
+							</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -115,33 +130,41 @@ function nextPage() {
 							v-for="u in users"
 							:key="u.id"
 						>
-							<td class="player-cell">
-								<NuxtImg
-									class="profile-img"
-									:src="u.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'"
-								/>
-								<span class="nickname">{{ u.nickname || "(Sem Nick)" }}</span>
-								<BaseBadge
-									v-if="u.vipEternal"
-									variant="vip"
-								>
+							<th
+								scope="row"
+								class="player-cell"
+							>
+								<div class="player-cell-content">
 									<NuxtImg
-										src="badges/vip.png"
-										width="14"
+										class="profile-img"
+										:src="u.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'"
+										:alt="u.nickname ? `Avatar de ${u.nickname}` : 'Avatar do jogador'"
 									/>
-									VIP Eterno
-								</BaseBadge>
-								<BaseBadge
-									v-else-if="u.isVip"
-									variant="vip"
-								>
-									<NuxtImg
-										src="badges/vip.png"
-										width="14"
-									/>
-									VIP
-								</BaseBadge>
-							</td>
+									<span class="nickname">{{ u.nickname || "(Sem Nick)" }}</span>
+									<BaseBadge
+										v-if="u.vipEternal"
+										variant="vip"
+									>
+										<NuxtImg
+											src="badges/vip.png"
+											width="14"
+											alt=""
+										/>
+										VIP Eterno
+									</BaseBadge>
+									<BaseBadge
+										v-else-if="u.isVip"
+										variant="vip"
+									>
+										<NuxtImg
+											src="badges/vip.png"
+											width="14"
+											alt=""
+										/>
+										VIP
+									</BaseBadge>
+								</div>
+							</th>
 							<td class="id-cell">{{ u.id }}</td>
 							<td>
 								<BaseBadge
@@ -174,6 +197,7 @@ function nextPage() {
 									<NuxtImg
 										:src="getClassImageUrl(u.class)"
 										width="16"
+										alt=""
 									/>
 									{{ getClassName(u.class) }}
 								</BaseBadge>
@@ -183,28 +207,31 @@ function nextPage() {
 									<NuxtImg
 										:src="getSituationImageUrl(u.situationId)"
 										width="16"
+										alt=""
 									/>
 									{{ getSituationName(u.situationId) }}
 								</BaseBadge>
 							</td>
-							<td>{{ format(u.createdAt, "dd/MM/yyyy hh:mm") }}</td>
 							<td>
-								{{
-									formatDistance(u.updatedAt, new Date(), {
-										locale: ptBR,
-									})
-								}}
+								<time :datetime="u.createdAt">{{ format(u.createdAt, "dd/MM/yyyy hh:mm") }}</time>
+							</td>
+							<td>
+								<time :datetime="u.updatedAt">
+									{{ formatDistance(u.updatedAt, new Date(), { locale: ptBR }) }}
+								</time>
 							</td>
 							<td class="text-right">
-								<NuxtLink :to="`/users/${u.id}`">
-									<BaseButton
-										variant="secondary"
-										size="sm"
-									>
-										<Eye :size="14" />
-										Detalhes
-									</BaseButton>
-								</NuxtLink>
+								<BaseButton
+									:to="`/users/${u.id}`"
+									variant="secondary"
+									size="sm"
+								>
+									<Eye
+										:size="14"
+										aria-hidden="true"
+									/>
+									Detalhes
+								</BaseButton>
 							</td>
 						</tr>
 					</tbody>
@@ -217,14 +244,20 @@ function nextPage() {
 						Mostrando <strong>{{ users.length }}</strong> de <strong>{{ total }}</strong> jogadores
 					</span>
 
-					<div class="pagination-controls">
+					<nav
+						class="pagination-controls"
+						aria-label="Paginação de jogadores"
+					>
 						<BaseButton
 							variant="secondary"
 							size="sm"
 							:disabled="page <= 1"
 							@click="prevPage()"
 						>
-							<ChevronLeft :size="16" />
+							<ChevronLeft
+								:size="16"
+								aria-hidden="true"
+							/>
 							Anterior
 						</BaseButton>
 
@@ -237,9 +270,12 @@ function nextPage() {
 							@click="nextPage()"
 						>
 							Próxima
-							<ChevronRight :size="16" />
+							<ChevronRight
+								:size="16"
+								aria-hidden="true"
+							/>
 						</BaseButton>
-					</div>
+					</nav>
 				</div>
 			</template>
 		</BaseCard>
@@ -257,6 +293,18 @@ function nextPage() {
 	display: flex;
 	flex-direction: column;
 	gap: 24px;
+}
+
+.visually-hidden {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
 }
 
 .page-title-row {
@@ -327,11 +375,18 @@ function nextPage() {
 			text-transform: uppercase;
 		}
 
+		tbody th {
+			color: $text-secondary;
+			font-size: inherit;
+			font-weight: 400;
+			text-transform: none;
+		}
+
 		td {
 			color: $text-secondary;
 		}
 
-		.player-cell {
+		.player-cell-content {
 			display: flex;
 			align-items: center;
 			gap: 0.35rem;
@@ -350,6 +405,13 @@ function nextPage() {
 				border: 1px solid rgba($bg-input, 0.3);
 				color: $bg-input;
 			}
+		}
+
+		.player-cell {
+			color: $text-secondary;
+			font-size: inherit;
+			font-weight: 400;
+			text-transform: none;
 		}
 
 		.id-cell {

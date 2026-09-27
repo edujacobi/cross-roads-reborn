@@ -53,16 +53,23 @@ function refreshData() {
 				<RotateCw
 					:size="15"
 					:class="{ 'spin-icon': statsLoading || historyLoading }"
+					aria-hidden="true"
 				/>
 				Atualizar
 			</BaseButton>
 		</section>
 
-		<section class="section-title">
-			<h3>Os jogadores estão atualmente</h3>
-		</section>
+		<h2
+			id="player-status-heading"
+			class="section-title"
+		>
+			Os jogadores estão atualmente
+		</h2>
 
-		<section class="status-grid">
+		<section
+			class="status-grid"
+			aria-labelledby="player-status-heading"
+		>
 			<DashboardStatusBox
 				variant="idle"
 				:value="stats?.idleCount"
@@ -97,7 +104,7 @@ function refreshData() {
 			/>
 		</section>
 
-		<section class="details-row">
+		<div class="details-row">
 			<DashboardCountData
 				:total-players="stats?.totalPlayers"
 				:total-gangs="stats?.totalGangs"
@@ -111,7 +118,7 @@ function refreshData() {
 				:history="history"
 				:history-loading="historyLoading"
 			/>
-		</section>
+		</div>
 	</main>
 </template>
 
@@ -155,15 +162,12 @@ function refreshData() {
 }
 
 .section-title {
-	margin-top: 8px;
-
-	h3 {
-		font-size: 1rem;
-		font-weight: 700;
-		color: $text-secondary;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
-	}
+	margin: 8px 0;
+	font-size: 1rem;
+	font-weight: 700;
+	color: $text-secondary;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
 }
 
 .status-grid {

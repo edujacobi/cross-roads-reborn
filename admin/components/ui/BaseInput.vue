@@ -6,6 +6,7 @@ interface Props {
 	id: string;
 	modelValue?: string | number;
 	label?: string;
+	ariaLabel?: string;
 	placeholder?: string;
 	type?: string;
 	disabled?: boolean;
@@ -31,6 +32,7 @@ defineEmits<(e: "update:modelValue", value: string | number) => void>();
 			:value="modelValue"
 			:placeholder="placeholder"
 			:disabled="disabled"
+			:aria-label="ariaLabel"
 			class="base-input"
 			@input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
 		>

@@ -160,6 +160,7 @@ async function handleRemoveAction() {
 					<NuxtImg
 						src="situations/hospital.png"
 						width="18"
+						alt=""
 					/>
 					Curar do Hospital
 				</BaseButton>
@@ -171,6 +172,7 @@ async function handleRemoveAction() {
 					<NuxtImg
 						src="situations/prison.png"
 						width="18"
+						alt=""
 					/>
 					Soltar da Prisão
 				</BaseButton>
@@ -179,7 +181,10 @@ async function handleRemoveAction() {
 					:disabled="!isDeveloper || moneyLoading"
 					@click="isMoneyModalOpen = true"
 				>
-					<DollarSign :size="16" />
+					<DollarSign
+						:size="16"
+						aria-hidden="true"
+					/>
 					Alterar Dinheiro
 				</BaseButton>
 				<BaseButton
@@ -187,7 +192,10 @@ async function handleRemoveAction() {
 					:disabled="!isDeveloper || cdLoading"
 					@click="isCooldownModalOpen = true"
 				>
-					<Clock :size="16" />
+					<Clock
+						:size="16"
+						aria-hidden="true"
+					/>
 					Resetar Cooldown
 				</BaseButton>
 				<BaseButton
@@ -195,7 +203,10 @@ async function handleRemoveAction() {
 					:disabled="!isDeveloper || actionLoading"
 					@click="isActionModalOpen = true"
 				>
-					<Unlock :size="16" />
+					<Unlock
+						:size="16"
+						aria-hidden="true"
+					/>
 					Remover de Ação
 				</BaseButton>
 			</div>
@@ -208,8 +219,8 @@ async function handleRemoveAction() {
 			@update:open="isMoneyModalOpen = $event"
 		>
 			<div class="user-admin-actions__modal-form">
-				<div class="user-admin-actions__form-group">
-					<p class="user-admin-actions__muted">Modo de Operação</p>
+				<fieldset class="user-admin-actions__form-group user-admin-actions__mode">
+					<legend class="user-admin-actions__muted">Modo de Operação</legend>
 					<div class="user-admin-actions__radio-group">
 						<label class="user-admin-actions__radio-label">
 							<input
@@ -228,7 +239,7 @@ async function handleRemoveAction() {
 							Definir valor exato
 						</label>
 					</div>
-				</div>
+				</fieldset>
 				<BaseInput
 					id="money-ammount"
 					v-model="moneyAmount"
@@ -366,6 +377,13 @@ async function handleRemoveAction() {
 		display: flex;
 		flex-direction: column;
 		gap: 6px;
+	}
+
+	&__mode {
+		border: 0;
+		padding: 0;
+		margin: 0;
+		min-width: 0;
 	}
 
 	&__label {

@@ -29,15 +29,18 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 			v-if="items.length === 0"
 			class="user-inventory__empty"
 		>
-			<Package :size="32" />
+			<Package
+				:size="32"
+				aria-hidden="true"
+			/>
 			<p>O jogador não possui itens no inventário.</p>
 		</div>
 
-		<div
+		<ul
 			v-else
 			class="user-inventory__items"
 		>
-			<div
+			<li
 				v-for="item in items"
 				:key="item.id"
 				class="user-inventory__item"
@@ -45,9 +48,10 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 				<NuxtImg
 					class="user-inventory__item-image"
 					:src="getItemImage(item.id, item.skin)"
+					alt=""
 				/>
 				<div class="user-inventory__item-header">
-					<span class="user-inventory__item-name">{{ item.name }}</span>
+					<h3 class="user-inventory__item-name">{{ item.name }}</h3>
 					<span
 						v-if="item.type === ItemType.Consumable"
 						class="user-inventory__item-quantity"
@@ -62,8 +66,8 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 						{{ formatDistanceToNow(new Date(item.remainingTime), { locale: ptBR }) }}
 					</span>
 				</div>
-			</div>
-		</div>
+			</li>
+		</ul>
 	</BaseCard>
 </template>
 
@@ -88,6 +92,9 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
 		gap: 14px;
+		list-style: none;
+		margin: 0;
+		padding: 0;
 	}
 
 	&__item {
@@ -112,6 +119,7 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 		font-size: 0.875rem;
 		font-weight: 600;
 		color: $text-primary;
+		margin: 0;
 	}
 
 	&__item-quantity {

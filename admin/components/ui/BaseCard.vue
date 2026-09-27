@@ -18,7 +18,7 @@ defineProps<Props>();
 			class="card-header"
 		>
 			<div>
-				<h3
+				<h2
 					v-if="title"
 					class="card-title"
 				>
@@ -26,9 +26,10 @@ defineProps<Props>();
 						v-if="icon"
 						class="card-icon"
 						:src="`${icon}.png`"
+						alt=""
 					/>
 					{{ title }}
-				</h3>
+				</h2>
 				<p
 					v-if="subtitle"
 					class="card-subtitle"

@@ -27,8 +27,13 @@ function getBadgeImage(badgeId: BadgeId): string {
 				<NuxtImg
 					:class="['user-avatar', `user-avatar--${user.avatarDecoration}`]"
 					:src="user.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'"
+					:alt="user.nickname ? `Avatar de ${user.nickname}` : 'Avatar do jogador'"
 				/>
-				<span :class="`user-profile__presence user-profile__presence--${user.online ? 'online' : 'offline'}`"></span>
+				<span
+					:class="`user-profile__presence user-profile__presence--${user.online ? 'online' : 'offline'}`"
+					role="img"
+					:aria-label="user.online ? 'Online' : 'Offline'"
+				></span>
 			</div>
 			<div>
 				<div class="user-profile__name-row">
@@ -41,20 +46,25 @@ function getBadgeImage(badgeId: BadgeId): string {
 				<p class="user-profile__coins">{{ user.specialCoin.toLocaleString() }} Moedas especiais</p>
 			</div>
 		</div>
-		<section class="user-profile__badges">
-			<NuxtImg
+		<ul class="user-profile__badges">
+			<li
 				v-for="badge in user.badges"
 				:key="badge.id"
-				class="user-profile__badge"
-				:src="getBadgeImage(badge.id as BadgeId)"
-				:title="badge.name"
-			/>
-		</section>
+			>
+				<NuxtImg
+					:src="getBadgeImage(badge.id as BadgeId)"
+					:alt="badge.name"
+					:title="badge.name"
+					class="user-profile__badge"
+				/>
+			</li>
+		</ul>
 
 		<p class="user-profile__situation">
 			<NuxtImg
 				:src="getSituationImageUrl(user.situationId)"
 				class="user-profile__situation-image"
+				alt=""
 			/>
 			{{ user.situationText }}
 		</p>
@@ -64,6 +74,7 @@ function getBadgeImage(badgeId: BadgeId): string {
 				<NuxtImg
 					:src="getClassImageUrl(user.class)"
 					class="user-profile__class-image"
+					alt=""
 				/>
 				{{ user.className }}
 			</div>
@@ -73,6 +84,7 @@ function getBadgeImage(badgeId: BadgeId): string {
 					<NuxtImg
 						src="attributes/attack.png"
 						class="user-profile__attribute-image"
+						alt=""
 					/>
 					{{ user.attack || 0 }}
 					ATK
@@ -81,6 +93,7 @@ function getBadgeImage(badgeId: BadgeId): string {
 					<NuxtImg
 						src="attributes/defense.png"
 						class="user-profile__attribute-image"
+						alt=""
 					/>
 					{{ user.defense || 0 }}
 					DEF
@@ -173,6 +186,9 @@ function getBadgeImage(badgeId: BadgeId): string {
 		gap: 0.5rem;
 		border-bottom: 1px solid $border-subtle;
 		padding-bottom: 1rem;
+		list-style: none;
+		margin: 0;
+		padding-left: 0;
 	}
 
 	&__badge {

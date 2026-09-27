@@ -50,29 +50,38 @@ function showFeedback(type: "success" | "error", message: string) {
 
 <template>
 	<div class="user-detail">
-		<div class="user-detail__nav-back">
-			<NuxtLink to="/users">
-				<BaseButton
-					variant="ghost"
-					size="sm"
-				>
-					<ArrowLeft :size="16" />
-					Voltar para Lista
-				</BaseButton>
-			</NuxtLink>
-		</div>
+		<nav
+			class="user-detail__nav-back"
+			aria-label="Navegação do jogador"
+		>
+			<BaseButton
+				to="/users"
+				variant="ghost"
+				size="sm"
+			>
+				<ArrowLeft
+					:size="16"
+					aria-hidden="true"
+				/>
+				Voltar para Lista
+			</BaseButton>
+		</nav>
 
 		<div
 			v-if="feedback"
 			:class="`user-detail__feedback user-detail__feedback--${feedback.type}`"
+			:role="feedback.type === 'error' ? 'alert' : 'status'"
+			:aria-live="feedback.type === 'error' ? 'assertive' : 'polite'"
 		>
 			<CheckCircle2
 				v-if="feedback.type === 'success'"
 				:size="18"
+				aria-hidden="true"
 			/>
 			<AlertCircle
 				v-else
 				:size="18"
+				aria-hidden="true"
 			/>
 			{{ feedback.message }}
 		</div>
@@ -80,6 +89,7 @@ function showFeedback(type: "success" | "error", message: string) {
 		<div
 			v-if="loading"
 			class="user-detail__loading"
+			role="status"
 		>
 			<p>Carregando perfil e inventário do jogador...</p>
 		</div>
@@ -88,7 +98,7 @@ function showFeedback(type: "success" | "error", message: string) {
 			v-else-if="!user"
 			class="user-detail__not-found"
 		>
-			<h2>Jogador não encontrado</h2>
+			<h1>Jogador não encontrado</h1>
 			<p>O ID {{ userId }} não possui registro na base de dados do jogo.</p>
 		</div>
 

@@ -47,7 +47,11 @@ const emit = defineEmits<(e: "update:open", value: boolean) => void>();
 						</DialogDescription>
 					</div>
 					<DialogClose class="dialog-close">
-						<X :size="18" />
+						<X
+							:size="18"
+							aria-hidden="true"
+						/>
+						<span class="visually-hidden">Fechar</span>
 					</DialogClose>
 				</div>
 
@@ -80,6 +84,18 @@ const emit = defineEmits<(e: "update:open", value: boolean) => void>();
   backdrop-filter: blur(6px);
   z-index: 100;
   animation: fadeIn 0.2s ease-out;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .dialog-content {

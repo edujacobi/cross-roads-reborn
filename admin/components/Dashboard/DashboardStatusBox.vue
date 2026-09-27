@@ -62,19 +62,20 @@ const style = computed(() => {
 </script>
 
 <template>
-	<div
+	<article
 		class="status-box"
 		:class="variant"
 	>
 		<div class="status-box-header">
 			<NuxtImg
-				:src="'situations/' + style.image + '.png'"
+				:src="`situations/${style.image}.png`"
 				class="status-img"
+				alt=""
 			/>
-			{{ style.title }}
+			<h3>{{ style.title }}</h3>
 		</div>
-		<span class="status-box-count">{{ value ?? 0 }}</span>
-	</div>
+		<output class="status-box-count">{{ value ?? 0 }}</output>
+	</article>
 </template>
 
 <style
@@ -98,6 +99,11 @@ const style = computed(() => {
 		gap: 8px;
 		font-size: 0.8125rem;
 		font-weight: 600;
+
+		h3 {
+			margin: 0;
+			font: inherit;
+		}
 
 		.status-img {
 			max-width: 20px;

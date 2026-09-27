@@ -19,6 +19,7 @@ defineProps<{ gang: NonNullable<UserDetail["gang"]> }>();
 			<NuxtImg
 				class="user-gang__image"
 				:src="gang.imageUrl || 'https://i.imgur.com/xOUjOlZ.png'"
+				:alt="`Imagem da gangue ${gang.name}`"
 			/>
 			<p class="user-gang__role">{{ gang.role }} de <span class="user-gang__name">{{ gang.name }}</span></p>
 			<p class="user-gang__level">Nível {{ gang.level }}</p>

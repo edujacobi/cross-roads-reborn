@@ -24,13 +24,17 @@ const { getInvestmentImageUrl } = useInvestment();
 				<NuxtImg
 					class="user-investment__image"
 					:src="getInvestmentImageUrl(investment.id)"
+					alt=""
 				/>
 				<div class="user-investment__data">
 					<p class="user-investment__name">{{ investment.name }}</p>
 					<p class="user-investment__profit">Lucro acumulado: {{ investment.nextPaymentValue }}</p>
-					<p class="user-investment__expiry">
+					<time
+						class="user-investment__expiry"
+						:datetime="investment.expiresAt"
+					>
 						{{ formatDistance(investment.expiresAt, new Date(), { locale: ptBR }) }}
-					</p>
+					</time>
 					<p
 						v-if="investment.henchmanEndsAt"
 						class="user-investment__henchman"
@@ -38,9 +42,12 @@ const { getInvestmentImageUrl } = useInvestment();
 						<NuxtImg
 							class="user-investment__henchman-image"
 							src="classes/5_Mafioso.png"
+							alt=""
 						/>
 						Capanga: contrato encerra em
-						{{ formatDistance(investment.henchmanEndsAt, new Date(), { locale: ptBR }) }}
+						<time :datetime="investment.henchmanEndsAt">
+							{{ formatDistance(investment.henchmanEndsAt, new Date(), { locale: ptBR }) }}
+						</time>
 					</p>
 				</div>
 			</div>
@@ -48,6 +55,7 @@ const { getInvestmentImageUrl } = useInvestment();
 				<NuxtImg
 					class="user-investment__defense-image"
 					src="attributes/defense.png"
+					alt=""
 				/>
 				{{ investment.defense }} DEF
 			</p>

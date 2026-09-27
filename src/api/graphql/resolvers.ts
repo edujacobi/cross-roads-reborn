@@ -209,18 +209,26 @@ export const resolvers: {
 					return;
 				}
 
-				const [_, isDev, isMod, isHelper, discordUser] = await Promise.all([
+				const [_, isDev, isMod, isHelper] = await Promise.all([
 					user.GetSituation(),
 					UserBadge.IsDeveloper(user.Id),
 					UserBadge.IsModerator(user.Id),
 					UserBadge.IsHelper(user.Id),
-					client.users.fetch(user.Id),
 				]);
+
+				let avatarUrl: string | null;
+
+				try {
+					avatarUrl = (await client.users.fetch(user.Id)).avatarURL();
+				}
+				catch {
+					avatarUrl = null;
+				}
 
 				return {
 					id: user.Id,
 					nickname: user.Nickname,
-					avatarUrl: discordUser.avatarURL(),
+					avatarUrl,
 					class: user.Class,
 					isVip: user.IsVip(),
 					vipEternal: user.VipEternal,

@@ -7,6 +7,7 @@ interface Props {
 	size?: "sm" | "md" | "lg";
 	disabled?: boolean;
 	type?: "button" | "submit" | "reset";
+	to?: string;
 }
 
 withDefaults(defineProps<Props>(), {
@@ -18,7 +19,15 @@ withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
+	<NuxtLink
+		v-if="to"
+		:to="to"
+		:class="['base-button', `variant-${variant}`, `size-${size}`]"
+	>
+		<slot />
+	</NuxtLink>
 	<button
+		v-else
 		:type="type"
 		:disabled="disabled"
 		:class="['base-button', `variant-${variant}`, `size-${size}`]"
@@ -35,6 +44,7 @@ withDefaults(defineProps<Props>(), {
 @use "sass:color";
 
 .base-button {
+  text-decoration: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
