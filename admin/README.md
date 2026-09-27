@@ -22,7 +22,8 @@ Roles are enforced both on the API server (GraphQL resolvers) and the frontend:
 
 ## Environment Variables
 
-Create a `.env` file inside `admin/` (or set these in your hosting provider):
+For local development, create a `.env` file inside `admin/` (or set these in
+your hosting provider):
 
 ```env
 # URL of the running API server (defaults to localhost:3001)
@@ -36,8 +37,27 @@ DISCORD_CLIENT_ID=...
 DISCORD_CLIENT_SECRET=...
 DISCORD_REDIRECT_URI=http://localhost:3001/auth/discord/callback
 JWT_SECRET=...
-ADMIN_FRONTEND_URL=http://localhost:3000
+FRONTEND_URL=http://localhost:3000
 ```
+
+### Production domain
+
+To serve the admin panel at `https://crossroads.ejacobi.com.br`, set:
+
+```env
+# Nuxt frontend
+NUXT_PUBLIC_API_BASE_URL=https://crossroads.ejacobi.com.br
+
+# Bot/API server
+DISCORD_REDIRECT_URI=https://crossroads.ejacobi.com.br/auth/discord/callback
+FRONTEND_URL=https://crossroads.ejacobi.com.br
+```
+
+Add `https://crossroads.ejacobi.com.br/auth/discord/callback` to the OAuth2
+redirect URLs in the Discord Developer Portal. Point the subdomain's DNS to the
+server's public IP and configure its HTTPS reverse proxy to route `/graphql`,
+`/auth/*`, and `/health` to the API on port `3001`; route the remaining paths to
+the Nuxt server on port `3000`.
 
 ---
 
