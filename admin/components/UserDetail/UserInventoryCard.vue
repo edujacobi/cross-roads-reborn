@@ -173,6 +173,10 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 		gap: $spacing-md;
 
 		&-image {
+			width: 4rem;
+			height: 4rem;
+			flex: 0 0 4rem;
+			object-fit: contain;
 			padding: $spacing-xs;
 		}
 
