@@ -43,7 +43,7 @@ defineProps<{ gang: NonNullable<UserDetail["gang"]> }>();
 
 	&__content {
 		display: flex;
-		gap: 1rem;
+		gap: $spacing-md;
 		align-items: center;
 		font-weight: 600;
 	}
@@ -52,7 +52,7 @@ defineProps<{ gang: NonNullable<UserDetail["gang"]> }>();
 		border-radius: 1rem;
 		aspect-ratio: 1;
 		object-fit: cover;
-		width: 80px;
+		width: 5rem;
 	}
 
 	&__name {

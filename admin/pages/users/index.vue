@@ -58,7 +58,9 @@ function nextPage() {
 		<div class="page-title-row">
 			<div>
 				<h1 class="page-title">Gestão de Jogadores</h1>
-				<p class="page-subtitle">Pesquise, visualize inventários e execute ações de moderação e administração.</p>
+				<p class="page-subtitle text-secondary">
+					Pesquise, visualize inventários e execute ações de moderação e administração.
+				</p>
 			</div>
 		</div>
 
@@ -292,33 +294,7 @@ function nextPage() {
 .users-page {
 	display: flex;
 	flex-direction: column;
-	gap: 24px;
-}
-
-.visually-hidden {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	padding: 0;
-	margin: -1px;
-	overflow: hidden;
-	clip: rect(0, 0, 0, 0);
-	white-space: nowrap;
-	border: 0;
-}
-
-.page-title-row {
-	.page-title {
-		font-size: 1.5rem;
-		font-weight: 800;
-		color: $text-primary;
-	}
-
-	.page-subtitle {
-		font-size: 0.875rem;
-		color: $text-secondary;
-		margin-top: 4px;
-	}
+	gap: $spacing-lg;
 }
 
 .search-bar {
@@ -326,7 +302,7 @@ function nextPage() {
 	align-items: center;
 	gap: 12px;
 	width: 100%;
-	max-width: 450px;
+	max-width: 28.125rem;
 	position: relative;
 
 	.search-icon {
@@ -337,7 +313,7 @@ function nextPage() {
 	}
 
 	:deep(.base-input) {
-		padding-left: 38px;
+		padding-left: 2.375rem;
 	}
 }
 
@@ -346,7 +322,7 @@ function nextPage() {
 	@include flex-center;
 	flex-direction: column;
 	gap: 12px;
-	padding: 50px 20px;
+	padding: 3.125rem 1.25rem;
 	color: $text-muted;
 	font-size: 0.875rem;
 }
@@ -362,7 +338,7 @@ function nextPage() {
 
 		th,
 		td {
-			padding: 12px 16px;
+			padding: 0.75rem $spacing-md;
 			text-align: left;
 			border-bottom: 1px solid $border-subtle;
 			white-space: nowrap;
@@ -389,7 +365,7 @@ function nextPage() {
 		.player-cell-content {
 			display: flex;
 			align-items: center;
-			gap: 0.35rem;
+			gap: $spacing-sm;
 
 			.nickname {
 				font-weight: 600;
@@ -398,8 +374,8 @@ function nextPage() {
 
 			.profile-img {
 				@include flex-center;
-				width: 32px;
-				height: 32px;
+				width: 2rem;
+				height: 2rem;
 				border-radius: 50%;
 				background-color: rgba($bg-input, 0.15);
 				border: 1px solid rgba($bg-input, 0.3);

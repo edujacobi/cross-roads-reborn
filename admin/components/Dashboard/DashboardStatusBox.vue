@@ -88,15 +88,15 @@ const style = computed(() => {
 
 .status-box {
 	@include card-surface;
-	padding: 16px;
+	padding: $spacing-md;
 	display: flex;
 	flex-direction: row;
 	justify-content: space-between;
-	gap: 8px;
+	gap: $spacing-sm;
 
 	.status-box-header {
 		@include flex-center;
-		gap: 8px;
+		gap: $spacing-sm;
 		font-size: 0.8125rem;
 		font-weight: 600;
 
@@ -106,7 +106,7 @@ const style = computed(() => {
 		}
 
 		.status-img {
-			max-width: 20px;
+			max-width: 1.25rem;
 		}
 	}
 

@@ -42,7 +42,7 @@ function refreshData() {
 		<section class="page-title-row">
 			<div>
 				<h1 class="page-title">Dashboard & Métricas</h1>
-				<p class="page-subtitle">Visão geral em tempo real da economia e jogadores do Cross Roads.</p>
+				<p class="page-subtitle text-secondary">Visão geral em tempo real da economia e jogadores do Cross Roads.</p>
 			</div>
 
 			<BaseButton
@@ -58,13 +58,6 @@ function refreshData() {
 				Atualizar
 			</BaseButton>
 		</section>
-
-		<h2
-			id="player-status-heading"
-			class="section-title"
-		>
-			Os jogadores estão atualmente
-		</h2>
 
 		<section
 			class="status-grid"
@@ -132,23 +125,11 @@ function refreshData() {
 .dashboard-page {
 	display: flex;
 	flex-direction: column;
-	gap: 24px;
+	gap: $spacing-lg;
 }
 
 .page-title-row {
 	@include flex-between;
-
-	.page-title {
-		font-size: 1.5rem;
-		font-weight: 800;
-		color: $text-primary;
-	}
-
-	.page-subtitle {
-		font-size: 0.875rem;
-		color: $text-secondary;
-		margin-top: 4px;
-	}
 }
 
 .spin-icon {
@@ -162,10 +143,9 @@ function refreshData() {
 }
 
 .section-title {
-	margin: 8px 0;
+	margin: $spacing-sm 0;
 	font-size: 1rem;
 	font-weight: 700;
-	color: $text-secondary;
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
 }
@@ -174,7 +154,7 @@ function refreshData() {
 	display: grid;
 	grid-template-columns: repeat(4, 1fr);
 	grid-auto-rows: 1fr;
-	gap: 14px;
+	gap: $spacing-md;
 }
 
 .details-row {

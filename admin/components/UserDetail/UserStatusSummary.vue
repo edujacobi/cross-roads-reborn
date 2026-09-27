@@ -166,7 +166,7 @@ defineProps<{ user: UserDetail }>();
 
 	&__row {
 		@include flex-between;
-		padding: 12px 0;
+		padding: 0.75rem 0;
 		font-size: 0.875rem;
 
 		&:not(:last-child) {

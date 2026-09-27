@@ -148,29 +148,27 @@ function showFeedback(type: "success" | "error", message: string) {
 .user-detail {
 	display: flex;
 	flex-direction: column;
-	gap: 20px;
+	gap: $spacing-md;
 
 	&__nav-back {
-		margin-bottom: 4px;
+		margin-bottom: $spacing-xs;
 	}
 
 	&__feedback {
 		display: flex;
 		align-items: center;
-		gap: 10px;
-		padding: 12px 16px;
+		gap: $spacing-sm;
+		padding: 0.75rem $spacing-md;
 		border-radius: $radius-sm;
 		font-size: 0.875rem;
 
 		&--success {
-			background-color: rgba($color-success, 0.15);
-			border: 1px solid rgba($color-success, 0.4);
+			@include accent-surface($color-success);
 			color: color.adjust($color-success, $lightness: 15%);
 		}
 
 		&--error {
-			background-color: rgba($color-danger, 0.15);
-			border: 1px solid rgba($color-danger, 0.4);
+			@include accent-surface($color-danger);
 			color: color.adjust($color-danger, $lightness: 15%);
 		}
 	}
@@ -180,20 +178,20 @@ function showFeedback(type: "success" | "error", message: string) {
 		@include flex-center;
 		flex-direction: column;
 		gap: 12px;
-		padding: 60px 20px;
+		padding: 3.75rem 1.25rem;
 		color: $text-secondary;
 	}
 
 	&__content {
 		display: flex;
 		flex-direction: column;
-		gap: 20px;
+		gap: $spacing-md;
 	}
 
 	&__columns {
 		display: grid;
 		grid-template-columns: 3fr 1fr;
-		gap: 20px;
+		gap: $spacing-md;
 
 		@media (max-width: 850px) {
 			grid-template-columns: 1fr;

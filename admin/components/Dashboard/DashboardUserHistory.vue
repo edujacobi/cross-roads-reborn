@@ -80,26 +80,14 @@ defineProps<Props>();
 @use "~/assets/scss/variables" as *;
 @use "~/assets/scss/mixins" as *;
 
-.visually-hidden {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	padding: 0;
-	margin: -1px;
-	overflow: hidden;
-	clip: rect(0, 0, 0, 0);
-	white-space: nowrap;
-	border: 0;
-}
-
 .history-card {
 
 	.loading-box,
 	.empty-box {
 		@include flex-center;
 		flex-direction: column;
-		gap: 10px;
-		padding: 40px;
+		gap: $spacing-sm;
+		padding: $spacing-lg;
 		color: $text-muted;
 		font-size: 0.875rem;
 	}
@@ -116,7 +104,7 @@ defineProps<Props>();
 
 			th,
 			td {
-				padding: 10px 14px;
+				padding: 0.625rem 0.875rem;
 				text-align: left;
 				border-bottom: 1px solid $border-subtle;
 			}

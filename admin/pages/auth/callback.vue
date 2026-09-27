@@ -72,18 +72,18 @@ onMounted(async () => {
 
 .callback-card {
 	@include card-surface;
-	padding: 40px;
+	padding: 2.5rem;
 	text-align: center;
-	max-width: 400px;
+	max-width: 25rem;
 	width: 90%;
 
 	.spinner {
-		width: 48px;
-		height: 48px;
+		width: 3rem;
+		height: 3rem;
 		border: 3px solid $border-subtle;
 		border-top-color: $color-brand;
 		border-radius: 50%;
-		margin: 0 auto 20px;
+		margin: 0 auto 1.25rem;
 		animation: spin 0.8s linear infinite;
 	}
 
@@ -91,7 +91,7 @@ onMounted(async () => {
 		font-size: 1.125rem;
 		font-weight: 700;
 		color: $text-primary;
-		margin-bottom: 8px;
+		margin-bottom: $spacing-sm;
 		margin-top: 0;
 	}
 
@@ -109,7 +109,7 @@ onMounted(async () => {
 			display: block;
 			font-size: 0.75rem;
 			color: $text-muted;
-			margin-top: 16px;
+			margin-top: $spacing-md;
 		}
 	}
 }

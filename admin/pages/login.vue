@@ -97,15 +97,15 @@ onMounted(() => {
 	@include flex-center;
 	min-height: 100vh;
 	background: radial-gradient(circle at center, #171b26 0%, $bg-main 70%);
-	padding: 24px;
+	padding: 1.5rem;
 }
 
 .login-card {
 	width: 100%;
-	max-width: 440px;
+	max-width: 27.5rem;
 	@include card-surface;
 	background-color: $bg-card;
-	padding: 40px 32px;
+	padding: 2.5rem $spacing-lg;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -114,7 +114,7 @@ onMounted(() => {
 
 	.brand-logo {
 		@include flex-center;
-		margin-bottom: 20px;
+		margin-bottom: 1.25rem;
 
 		.img {
 			max-width: 100%;
@@ -131,34 +131,33 @@ onMounted(() => {
 	.subtitle {
 		font-size: 0.875rem;
 		color: $text-secondary;
-		margin-top: 6px;
-		margin-bottom: 24px;
+		margin-top: 0.375rem;
+		margin-bottom: 1.5rem;
 	}
 
 	.error-banner {
 		width: 100%;
 		display: flex;
 		align-items: center;
-		gap: 10px;
-		padding: 12px 16px;
-		background-color: rgba($color-danger, 0.15);
-		border: 1px solid rgba($color-danger, 0.4);
+		gap: $spacing-sm;
+		padding: 0.75rem $spacing-md;
+		@include accent-surface($color-danger);
 		border-radius: $radius-sm;
 		color: color.adjust($color-danger, $lightness: 15%);
 		font-size: 0.8125rem;
 		text-align: left;
-		margin-bottom: 20px;
+		margin-bottom: 1.25rem;
 	}
 
 	.info-box {
 		width: 100%;
-		padding: 14px 16px;
+		padding: 0.875rem $spacing-md;
 		background-color: rgba($bg-input, 0.6);
 		border: 1px solid $border-subtle;
 		border-radius: $radius-sm;
 		font-size: 0.8125rem;
 		color: $text-muted;
-		margin-bottom: 28px;
+		margin-bottom: $spacing-lg;
 		line-height: 1.5;
 
 		strong {

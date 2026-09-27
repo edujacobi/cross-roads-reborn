@@ -53,15 +53,15 @@ defineProps<{
 	&__grid {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-		gap: 16px;
-		padding-top: 20px;
+		gap: $spacing-md;
+		padding-top: 1.25rem;
 	}
 
 	&__item {
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
-		gap: 4px;
+		gap: $spacing-xs;
 	}
 
 	&__label {

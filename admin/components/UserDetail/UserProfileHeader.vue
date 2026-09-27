@@ -114,8 +114,8 @@ function getBadgeImage(badgeId: BadgeId): string {
 	&__main-info {
 		display: flex;
 		align-items: center;
-		gap: 18px;
-		padding-bottom: 20px;
+		gap: $spacing-md;
+		padding-bottom: 1.25rem;
 	}
 
 	&__avatar-wrapper {
@@ -123,7 +123,7 @@ function getBadgeImage(badgeId: BadgeId): string {
 	}
 
 	&__presence {
-		width: 24px;
+		width: 1.5rem;
 		aspect-ratio: 1;
 		border-radius: $radius-full;
 		position: absolute;
@@ -155,7 +155,7 @@ function getBadgeImage(badgeId: BadgeId): string {
 	&__id {
 		font-size: 0.8125rem;
 		color: $text-muted;
-		margin-top: 2px;
+		margin-top: 0.125rem;
 
 		code {
 			color: $text-secondary;
@@ -183,16 +183,16 @@ function getBadgeImage(badgeId: BadgeId): string {
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
-		gap: 0.5rem;
+		gap: $spacing-sm;
 		border-bottom: 1px solid $border-subtle;
-		padding-bottom: 1rem;
+		padding-bottom: $spacing-md;
 		list-style: none;
 		margin: 0;
 		padding-left: 0;
 	}
 
 	&__badge {
-		width: 40px;
+		width: 2.5rem;
 	}
 
 	&__situation {
@@ -201,18 +201,18 @@ function getBadgeImage(badgeId: BadgeId): string {
 		font-size: 1.2rem;
 		font-weight: 600;
 		gap: 6px;
-		margin: 0.5rem 0;
+		margin: $spacing-sm 0;
 	}
 
 	&__situation-image {
-		width: 40px;
+		width: 2.5rem;
 	}
 
 	&__info {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-		gap: 16px;
-		padding-top: 20px;
+		gap: $spacing-md;
+		padding-top: 1.25rem;
 	}
 
 	&__class {
@@ -223,21 +223,21 @@ function getBadgeImage(badgeId: BadgeId): string {
 	}
 
 	&__class-image {
-		width: 32px;
+		width: 2rem;
 		border-radius: $radius-full;
 		background-color: $border-card;
-		margin-right: 0.5rem;
+		margin-right: $spacing-sm;
 	}
 
 	&__attributes {
 		display: flex;
 		align-items: center;
-		gap: 0.75rem;
+		gap: $spacing-md;
 		margin-left: auto;
 	}
 
 	&__attribute-image {
-		width: 24px;
+		width: 1.5rem;
 	}
 
 	&__attribute {

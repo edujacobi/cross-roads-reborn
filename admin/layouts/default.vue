@@ -62,12 +62,12 @@ watch(
 	@include flex-center;
 	flex-direction: column;
 	height: 100vh;
-	gap: 16px;
+	gap: $spacing-md;
 	color: $text-secondary;
 
 	.spinner {
-		width: 40px;
-		height: 40px;
+		width: 2.5rem;
+		height: 2.5rem;
 		border: 3px solid $border-subtle;
 		border-top-color: $color-brand;
 		border-radius: 50%;
@@ -97,7 +97,7 @@ watch(
 .page-content {
 	flex: 1;
 	overflow-y: auto;
-	padding: 28px;
+	padding: $spacing-lg;
 	@include scrollbar-custom;
 }
 </style>

@@ -65,8 +65,35 @@ body {
   }
 }
 
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: $text-primary;
+}
+
+.page-subtitle {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.text-secondary {
+  color: $text-secondary;
+}
+
 .text-muted {
   font-size: 0.8125rem;
   font-weight: 500;
-  color: $text-secondary;
+  color: $text-muted;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 0.0625rem;
+  height: 0.0625rem;
+  padding: 0;
+  margin: -0.0625rem;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }

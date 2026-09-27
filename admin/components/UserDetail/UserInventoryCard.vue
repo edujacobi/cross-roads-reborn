@@ -82,8 +82,8 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 	&__empty {
 		@include flex-center;
 		flex-direction: column;
-		gap: 10px;
-		padding: 40px;
+		gap: $spacing-sm;
+		padding: $spacing-lg;
 		color: $text-muted;
 		font-size: 0.875rem;
 	}
@@ -91,26 +91,30 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 	&__items {
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
-		gap: 14px;
+		gap: $spacing-sm;
 		list-style: none;
 		margin: 0;
 		padding: 0;
 	}
 
 	&__item {
-		padding: 14px;
+		padding: 0.875rem;
 		background-color: $bg-input;
 		border: 1px solid $border-subtle;
 		border-radius: $radius-sm;
 		display: flex;
 		flex-direction: column;
-		gap: 8px;
+
+		&-image {
+			padding: $spacing-sm;
+		}
 	}
+
 
 	&__item-header {
 		@include flex-between;
 		flex-direction: column;
-		gap: 0.25rem;
+		gap: $spacing-xs;
 		align-items: start;
 		flex-grow: 1;
 	}
@@ -127,7 +131,7 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 		font-weight: 700;
 		color: $color-brand;
 		background-color: rgba($color-brand, 0.15);
-		padding: 2px 6px;
+		padding: 0.125rem 0.375rem;
 		border-radius: $radius-xs;
 	}
 }

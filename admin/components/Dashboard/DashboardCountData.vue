@@ -93,11 +93,11 @@ withDefaults(defineProps<Props>(), {
 	.count-list {
 		display: flex;
 		flex-direction: column;
-		gap: 14px;
+		gap: $spacing-md;
 
 		.count-item {
 			@include flex-between;
-			padding: 10px 12px;
+			padding: 0.625rem 0.75rem;
 			background-color: $bg-input;
 			border-radius: $radius-sm;
 			border: 1px solid $border-subtle;
@@ -109,7 +109,7 @@ withDefaults(defineProps<Props>(), {
 			.count-label {
 				display: flex;
 				align-items: center;
-				gap: 8px;
+				gap: $spacing-sm;
 				font-size: 0.875rem;
 				color: $text-primary;
 			}

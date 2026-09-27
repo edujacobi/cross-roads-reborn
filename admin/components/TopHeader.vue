@@ -44,16 +44,16 @@ const auth = useAuth();
 @use "sass:color";
 
 .top-header {
-	height: 60px;
+	height: 3.75rem;
 	background-color: $bg-sidebar;
 	border-bottom: 1px solid $border-subtle;
 	@include flex-between;
-	padding: 0 28px;
+	padding: 0 $spacing-lg;
 
 	.header-status {
 		display: flex;
 		align-items: center;
-		gap: 8px;
+		gap: $spacing-sm;
 		font-size: 0.8125rem;
 		color: $color-success;
 
@@ -64,7 +64,7 @@ const auth = useAuth();
 
 	.role-hint {
 		font-size: 0.75rem;
-		padding: 4px 10px;
+		padding: $spacing-xs $spacing-sm;
 		border-radius: $radius-full;
 		font-weight: 500;
 

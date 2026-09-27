@@ -41,6 +41,7 @@ withDefaults(defineProps<Props>(), {
 	scoped
 >
 @use "~/assets/scss/variables" as *;
+@use "~/assets/scss/mixins" as *;
 @use "sass:color";
 
 .base-button {
@@ -48,7 +49,7 @@ withDefaults(defineProps<Props>(), {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: $spacing-sm;
   font-weight: 600;
   border-radius: $radius-sm;
   border: 1px solid transparent;
@@ -63,17 +64,17 @@ withDefaults(defineProps<Props>(), {
 
   // Sizes
   &.size-sm {
-    padding: 6px 12px;
+    padding: 0.375rem 0.75rem;
     font-size: 0.8125rem;
   }
 
   &.size-md {
-    padding: 8px 16px;
+    padding: $spacing-sm $spacing-md;
     font-size: 0.875rem;
   }
 
   &.size-lg {
-    padding: 12px 24px;
+    padding: 0.75rem 1.5rem;
     font-size: 1rem;
   }
 
@@ -99,8 +100,7 @@ withDefaults(defineProps<Props>(), {
   }
 
   &.variant-danger {
-    background-color: rgba($color-danger, 0.15);
-    border-color: rgba($color-danger, 0.4);
+    @include accent-surface($color-danger);
     color: color.adjust($color-danger, $lightness: 15%);
 
     &:hover:not(:disabled) {
@@ -110,8 +110,7 @@ withDefaults(defineProps<Props>(), {
   }
 
   &.variant-success {
-    background-color: rgba($color-success, 0.15);
-    border-color: rgba($color-success, 0.4);
+    @include accent-surface($color-success);
     color: color.adjust($color-success, $lightness: 15%);
 
     &:hover:not(:disabled) {

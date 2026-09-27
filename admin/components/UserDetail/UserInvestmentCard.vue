@@ -72,21 +72,21 @@ const { getInvestmentImageUrl } = useInvestment();
 .user-investment {
 	&__content {
 		display: flex;
-		gap: 0.5rem;
+		gap: $spacing-sm;
 		align-items: center;
 		justify-content: space-between;
 	}
 
 	&__details {
 		display: flex;
-		gap: 1rem;
+		gap: $spacing-md;
 		align-items: center;
 		font-weight: 600;
 	}
 
 	&__image {
 		border-radius: 1rem;
-		width: 80px;
+		width: 5rem;
 	}
 
 	&__profit {
@@ -104,14 +104,14 @@ const { getInvestmentImageUrl } = useInvestment();
 		font-size: 0.8rem;
 		display: flex;
 		align-items: center;
-		gap: 0.25rem;
-		margin-top: 0.5rem;
+		gap: $spacing-xs;
+		margin-top: $spacing-sm;
 	}
 
 	&__henchman-image {
 		background: $border-card;
 		border-radius: $radius-full;
-		width: 20px;
+		width: 1.25rem;
 	}
 
 	&__defense {
@@ -123,7 +123,7 @@ const { getInvestmentImageUrl } = useInvestment();
 	}
 
 	&__defense-image {
-		width: 24px;
+		width: 1.5rem;
 	}
 }
 </style>

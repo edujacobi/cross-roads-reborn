@@ -72,7 +72,7 @@ defineProps<Props>();
 
 	.card-header {
 		@include flex-between;
-		padding: 16px 20px;
+		padding: $spacing-md 1.25rem;
 		border-bottom: 1px solid $border-subtle;
 
 		.card-title {
@@ -81,27 +81,27 @@ defineProps<Props>();
 			color: $text-primary;
 			display: flex;
 			align-items: center;
-			gap: 0.4rem;
+			gap: $spacing-sm;
 
 			.card-icon {
-				width: 26px;
+				width: 1.625rem;
 			}
 		}
 
 		.card-subtitle {
 			font-size: 0.8125rem;
 			color: $text-secondary;
-			margin-top: 2px;
+			margin-top: 0.125rem;
 		}
 	}
 
 	.card-body {
-		padding: 20px;
+		padding: 1.25rem;
 		flex: 1;
 	}
 
 	.card-footer {
-		padding: 12px 20px;
+		padding: 0.75rem 1.25rem;
 		border-top: 1px solid $border-subtle;
 		background-color: rgba($bg-input, 0.5);
 	}

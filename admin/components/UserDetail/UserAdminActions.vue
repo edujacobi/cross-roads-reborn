@@ -370,7 +370,7 @@ async function handleRemoveAction() {
 	&__modal-form {
 		display: flex;
 		flex-direction: column;
-		gap: 16px;
+		gap: $spacing-md;
 	}
 
 	&__form-group {
@@ -401,13 +401,13 @@ async function handleRemoveAction() {
 	&__radio-group {
 		display: flex;
 		flex-direction: column;
-		gap: 8px;
+		gap: $spacing-sm;
 	}
 
 	&__radio-label {
 		display: flex;
 		align-items: center;
-		gap: 8px;
+		gap: $spacing-sm;
 		font-size: 0.875rem;
 		color: $text-primary;
 		cursor: pointer;
@@ -415,7 +415,7 @@ async function handleRemoveAction() {
 
 	&__select {
 		width: 100%;
-		padding: 10px 14px;
+		padding: 0.625rem 0.875rem;
 		background-color: $bg-input;
 		border: 1px solid $border-subtle;
 		border-radius: $radius-sm;

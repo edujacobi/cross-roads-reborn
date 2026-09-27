@@ -86,25 +86,13 @@ const emit = defineEmits<(e: "update:open", value: boolean) => void>();
   animation: fadeIn 0.2s ease-out;
 }
 
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
 .dialog-content {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   width: 90vw;
-  max-width: 520px;
+  max-width: 32.5rem;
   max-height: 85vh;
   overflow-y: auto;
   @include card-surface;
@@ -116,7 +104,7 @@ const emit = defineEmits<(e: "update:open", value: boolean) => void>();
 
   .dialog-header {
     @include flex-between;
-    padding: 20px 24px;
+    padding: 1.25rem 1.5rem;
     border-bottom: 1px solid $border-subtle;
 
     .dialog-title {
@@ -128,7 +116,7 @@ const emit = defineEmits<(e: "update:open", value: boolean) => void>();
     .dialog-description {
       font-size: 0.875rem;
       color: $text-secondary;
-      margin-top: 4px;
+      margin-top: $spacing-xs;
     }
 
     .dialog-close {
@@ -136,7 +124,7 @@ const emit = defineEmits<(e: "update:open", value: boolean) => void>();
       border: none;
       color: $text-muted;
       cursor: pointer;
-      padding: 4px;
+      padding: $spacing-xs;
       border-radius: $radius-xs;
       display: flex;
       align-items: center;
@@ -151,12 +139,12 @@ const emit = defineEmits<(e: "update:open", value: boolean) => void>();
   }
 
   .dialog-body {
-    padding: 24px;
+    padding: 1.5rem;
   }
 
   .dialog-footer {
     @include flex-between;
-    padding: 16px 24px;
+    padding: $spacing-md 1.5rem;
     border-top: 1px solid $border-subtle;
     background-color: rgba($bg-input, 0.4);
     gap: 12px;

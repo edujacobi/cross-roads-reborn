@@ -91,7 +91,7 @@ const route = useRoute();
 @use "~/assets/scss/mixins" as *;
 
 .sidebar {
-	width: 260px;
+	width: 16.25rem;
 	background-color: $bg-sidebar;
 	border-right: 1px solid $border-subtle;
 	display: flex;
@@ -102,13 +102,13 @@ const route = useRoute();
 		display: flex;
 		align-items: center;
 		gap: 12px;
-		padding: 24px 20px;
+		padding: 1.5rem 1.25rem;
 		border-bottom: 1px solid $border-subtle;
 
 		.brand-icon {
 			@include flex-center;
-			width: 40px;
-			height: 40px;
+			width: 2.5rem;
+			height: 2.5rem;
 			color: $color-brand;
 
 			.img {
@@ -134,16 +134,16 @@ const route = useRoute();
 
 	.nav-links {
 		flex: 1;
-		padding: 16px 12px;
+		padding: $spacing-md 0.75rem;
 		display: flex;
 		flex-direction: column;
-		gap: 4px;
+		gap: $spacing-xs;
 
 		.nav-item {
 			display: flex;
 			align-items: center;
 			gap: 12px;
-			padding: 10px 14px;
+			padding: 0.625rem 0.875rem;
 			border-radius: $radius-sm;
 			font-size: 0.875rem;
 			font-weight: 500;
@@ -164,16 +164,16 @@ const route = useRoute();
 	}
 
 	.admin-profile {
-		padding: 16px;
+		padding: $spacing-md;
 		border-top: 1px solid $border-subtle;
 		display: flex;
 		align-items: center;
-		gap: 10px;
+		gap: $spacing-sm;
 		background-color: rgba($bg-input, 0.5);
 
 		.admin-avatar {
-			width: 38px;
-			height: 38px;
+			width: 2.375rem;
+			height: 2.375rem;
 			border-radius: 50%;
 			border: 1px solid $border-subtle;
 		}
@@ -198,7 +198,7 @@ const route = useRoute();
 			border: none;
 			color: $text-muted;
 			cursor: pointer;
-			padding: 6px;
+			padding: 0.375rem;
 			border-radius: $radius-xs;
 			transition: all 0.15s;
 

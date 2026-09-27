@@ -48,7 +48,7 @@ defineEmits<(e: "update:modelValue", value: string | number) => void>();
 .base-input-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: $spacing-xs;
   width: 100%;
 
   .input-label {
@@ -59,7 +59,7 @@ defineEmits<(e: "update:modelValue", value: string | number) => void>();
 
   .base-input {
     width: 100%;
-    padding: 10px 14px;
+    padding: 0.625rem 0.875rem;
     background-color: $bg-input;
     border: 1px solid $border-subtle;
     border-radius: $radius-sm;
