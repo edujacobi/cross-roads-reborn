@@ -140,7 +140,7 @@ async function handleRemoveAction() {
 <template>
 	<div class="user-admin-actions">
 		<BaseCard
-			title="Ações Administrativas"
+			title="Ações administrativas"
 			class="user-admin-actions__card"
 		>
 			<template #actions>

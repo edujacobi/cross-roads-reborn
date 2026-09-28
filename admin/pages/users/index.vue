@@ -5,7 +5,7 @@
 import { useQuery } from "@vue/apollo-composable";
 import { format, formatDistance } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Eye, Search, UserCheck } from "lucide-vue-next";
+import { ChevronLeft, ChevronRight, Search, UserCheck } from "lucide-vue-next";
 import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
@@ -58,9 +58,9 @@ function nextPage() {
 	<div class="users-page">
 		<div class="page-title-row">
 			<div>
-				<h1 class="page-title">Gestão de Jogadores</h1>
+				<h1 class="page-title">Jogadores</h1>
 				<p class="page-subtitle text-secondary">
-					Pesquise, visualize inventários e execute ações de moderação e administração.
+					Pesquise, visualize inventários e execute ações de moderação e administração
 				</p>
 			</div>
 		</div>
@@ -120,18 +120,16 @@ function nextPage() {
 							<th scope="col">Status</th>
 							<th scope="col">Criação</th>
 							<th scope="col">Última atualização</th>
-							<th
-								scope="col"
-								class="text-right"
-							>
-								Ações
-							</th>
 						</tr>
 					</thead>
 					<tbody>
 						<tr
 							v-for="u in users"
 							:key="u.id"
+							class="clickable-row"
+							tabindex="0"
+							@click="navigateTo(`/users/${u.id}`)"
+							@keydown.enter.prevent="navigateTo(`/users/${u.id}`)"
 						>
 							<th
 								scope="row"
@@ -223,19 +221,6 @@ function nextPage() {
 									{{ formatDistance(u.updatedAt, new Date(), { locale: ptBR }) }}
 								</time>
 							</td>
-							<td class="text-right">
-								<BaseButton
-									:to="`/users/${u.id}`"
-									variant="secondary"
-									size="sm"
-								>
-									<Eye
-										:size="14"
-										aria-hidden="true"
-									/>
-									Detalhes
-								</BaseButton>
-							</td>
 						</tr>
 					</tbody>
 				</table>
@@ -244,7 +229,7 @@ function nextPage() {
 			<template #footer>
 				<div class="pagination-footer">
 					<span class="pagination-info">
-						Mostrando <strong>{{ users.length }}</strong> de <strong>{{ total }}</strong> jogadores
+						Mostrando <strong>{{ offset + 1 }}-{{ offset + limit }}</strong> de <strong>{{ total }}</strong> jogadores
 					</span>
 
 					<nav
@@ -357,6 +342,20 @@ function nextPage() {
 			font-size: inherit;
 			font-weight: 400;
 			text-transform: none;
+		}
+
+		.clickable-row {
+			cursor: pointer;
+
+			&:hover,
+			&:focus-visible {
+				background-color: rgba($bg-input, 0.12);
+			}
+
+			&:focus-visible {
+				outline: 2px solid $color-special;
+				outline-offset: -2px;
+			}
 		}
 
 		td {

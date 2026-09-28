@@ -42,8 +42,6 @@ watch(
 
 		<!-- Main Content Area -->
 		<div class="main-content-wrapper">
-			<TopHeader />
-
 			<div class="page-content">
 				<slot />
 			</div>

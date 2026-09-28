@@ -12,7 +12,7 @@ defineProps<{ user: UserDetail }>();
 
 <template>
 	<BaseCard
-		title="Situação & Estados"
+		title="Situação e estados"
 		class="user-status"
 	>
 		<dl class="user-status__rows">

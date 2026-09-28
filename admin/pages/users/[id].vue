@@ -63,7 +63,7 @@ function showFeedback(type: "success" | "error", message: string) {
 					:size="16"
 					aria-hidden="true"
 				/>
-				Voltar para Lista
+				Voltar
 			</BaseButton>
 		</nav>
 

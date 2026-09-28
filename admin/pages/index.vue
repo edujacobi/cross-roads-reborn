@@ -41,8 +41,8 @@ function refreshData() {
 	<main class="dashboard-page">
 		<section class="page-title-row">
 			<div>
-				<h1 class="page-title">Dashboard & Métricas</h1>
-				<p class="page-subtitle text-secondary">Visão geral em tempo real da economia e jogadores do Cross Roads.</p>
+				<h1 class="page-title">Dashboard</h1>
+				<p class="page-subtitle text-secondary">Visão geral em tempo real da economia e jogadores</p>
 			</div>
 
 			<BaseButton
