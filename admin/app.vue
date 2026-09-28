@@ -1,4 +1,4 @@
-<script>
+<script setup>
 useHead({
 	titleTemplate: (titleChunk) => {
 		return titleChunk ? `${titleChunk} - Cross Roads` : "Cross Roads";
