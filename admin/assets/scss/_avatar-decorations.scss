@@ -3,7 +3,7 @@
 
 @mixin avatarDecoration($ring, $glow) {
   border: 6px solid transparent;
-  background-image: $ring;
+  background: $ring;
   background-origin: border-box;
   background-clip: border-area;
   box-shadow: 0 0 32px 3px rgba($glow, 0.25);

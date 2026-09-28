@@ -44,7 +44,7 @@ function getItemStatusClasses(item: UserDetail["items"][number]) {
 function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 	let filename = `${itemId}_${ItemId[itemId]}.png`;
 	if (bundleId !== 0) filename = `${itemId}_${ItemId[itemId]}_${BundleId[bundleId]}.png`;
-	return `items/${filename}`;
+	return `/images/items/${filename}`;
 }
 </script>
 

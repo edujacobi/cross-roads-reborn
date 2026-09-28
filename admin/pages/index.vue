@@ -6,6 +6,7 @@ import { useQuery } from "@vue/apollo-composable";
 import { RotateCw } from "lucide-vue-next";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
+import { imagePaths } from "~/constants/imagePaths";
 import {
 	GetDashboardHistoryDocument,
 	type GetDashboardHistoryQuery,
@@ -109,14 +110,14 @@ function refreshData() {
 		>
 			<BaseCard
 				title="Cofre do Banco"
-				icon="ui_elements/CentralBank.png"
+				:icon="imagePaths.uiElements.vaultBank"
 				no-body
 			>
 				<template #actions>Cr$ {{ (stats?.bankVaultValue ?? 0).toLocaleString("pt-BR") }}</template>
 			</BaseCard>
 			<BaseCard
 				title="Cofre do Cassino"
-				icon="ui_elements/CasinoVault.png"
+				:icon="imagePaths.uiElements.vaultCasino"
 				no-body
 			>
 				<template #actions> Cr$ {{ (stats?.casinoVaultValue ?? 0).toLocaleString("pt-BR") }} </template>

@@ -36,7 +36,7 @@ async function copyErrorMessage() {
 		>
 			<NuxtImg
 				class="error__image"
-				:src="isNotFound ? 'badges/S6Top1Scavenge.png' : 'badges/S6Top1BeatUp.png'"
+				:src="isNotFound ? '/images/badges/S6Top1Scavenge.png' : '/images/badges/S6Top1BeatUp.png'"
 			/>
 			<p class="error__description">
 				{{
@@ -147,6 +147,5 @@ async function copyErrorMessage() {
 		@include flex-center;
 		gap: $spacing-sm;
 	}
-
 }
 </style>

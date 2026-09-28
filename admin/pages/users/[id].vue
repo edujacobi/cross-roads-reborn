@@ -12,7 +12,6 @@ import UserMetadataCard from "~/components/UserDetail/UserMetadataCard.vue";
 import UserProfileHeader from "~/components/UserDetail/UserProfileHeader.vue";
 import UserStatusSummary from "~/components/UserDetail/UserStatusSummary.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
-import { imagePaths } from "~/constants/imagePaths";
 import { GetUserDetailDocument } from "~/graphql/generated";
 
 definePageMeta({

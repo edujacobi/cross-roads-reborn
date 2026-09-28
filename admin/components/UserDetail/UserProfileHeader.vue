@@ -17,7 +17,7 @@ function getBadgeImage(badgeId: BadgeId): string {
 	if (badgeId == BadgeId.VIP || badgeId == BadgeId.VIPEternal) {
 		return imagePaths.badges.vip;
 	}
-	return `badges/${BadgeId[badgeId]}.png`;
+	return `/images/badges/${BadgeId[badgeId]}.png`;
 }
 </script>
 
