@@ -8,6 +8,7 @@ import { Maximize, Minimize, Package } from "lucide-vue-next";
 import { onMounted, ref } from "vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
+import { imagePaths } from "~/constants/imagePaths";
 import type { UserDetail } from "~/types/userDetail";
 import { BundleId, ItemId } from "../../../src/core/types/Ids";
 import { ItemType } from "../../../src/core/types/ItemType";
@@ -50,7 +51,7 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 <template>
 	<BaseCard
 		title="Inventário"
-		icon="ui_elements/inventory"
+		:icon="imagePaths.uiElements.inventory"
 		class="user-inventory"
 	>
 		<template #actions>

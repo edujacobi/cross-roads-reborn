@@ -4,6 +4,7 @@
 >
 import { AlertTriangle } from "lucide-vue-next";
 import BaseButton from "~/components/ui/BaseButton.vue";
+import { imagePaths } from "~/constants/imagePaths";
 
 definePageMeta({
 	layout: false,
@@ -36,7 +37,7 @@ onMounted(() => {
 		<article class="login-card">
 			<div class="brand-logo">
 				<NuxtImg
-					src="brand/CrossRoadsLogo.png"
+					:src="imagePaths.brand.logo"
 					class="img"
 					alt=""
 				/>

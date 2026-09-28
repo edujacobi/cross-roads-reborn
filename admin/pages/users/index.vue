@@ -10,6 +10,7 @@ import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseInput from "~/components/ui/BaseInput.vue";
+import { imagePaths } from "~/constants/imagePaths";
 import { SearchUsersDocument, type SearchUsersQuery } from "~/graphql/generated";
 
 useHead({
@@ -148,7 +149,7 @@ function nextPage() {
 										variant="vip"
 									>
 										<NuxtImg
-											src="badges/vip.png"
+											:src="imagePaths.badges.vip"
 											width="14"
 											alt=""
 										/>
@@ -159,7 +160,7 @@ function nextPage() {
 										variant="vip"
 									>
 										<NuxtImg
-											src="badges/vip.png"
+											:src="imagePaths.badges.vip"
 											width="14"
 											alt=""
 										/>

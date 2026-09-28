@@ -1,25 +1,19 @@
+import { type ImagePath, imagePaths } from "~/constants/imagePaths";
 import { ClassId } from "../../src/core/types/Ids";
+
+const classImages: Record<ClassId, ImagePath> = {
+	[ClassId.None]: imagePaths.classes.none,
+	[ClassId.Thief]: imagePaths.classes.thief,
+	[ClassId.Assassin]: imagePaths.classes.assassin,
+	[ClassId.Entrepreneur]: imagePaths.classes.entrepreneur,
+	[ClassId.Hobo]: imagePaths.classes.hobo,
+	[ClassId.Mafioso]: imagePaths.classes.mafioso,
+	[ClassId.Attorney]: imagePaths.classes.attorney,
+};
 
 export function useClasses() {
 	function getClassImageUrl(classId: ClassId) {
-		switch (classId) {
-			case ClassId.None:
-				return "/classes/0_None.png";
-			case ClassId.Thief:
-				return "/classes/1_Thief.png";
-			case ClassId.Assassin:
-				return "/classes/2_Assassin.png";
-			case ClassId.Entrepreneur:
-				return "/classes/3_Entrepreneur.png";
-			case ClassId.Hobo:
-				return "/classes/4_Hobo.png";
-			case ClassId.Mafioso:
-				return "/classes/5_Mafioso.png";
-			case ClassId.Attorney:
-				return "/classes/6_Attorney.png";
-			default:
-				return "/classes/0_None.png";
-		}
+		return classImages[classId] ?? imagePaths.classes.none;
 	}
 
 	function getClassName(classId: ClassId) {

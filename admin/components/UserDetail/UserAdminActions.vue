@@ -8,6 +8,7 @@ import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseInput from "~/components/ui/BaseInput.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
+import { imagePaths } from "~/constants/imagePaths";
 import {
 	CureUserDocument,
 	FreeUserDocument,
@@ -158,7 +159,7 @@ async function handleRemoveAction() {
 					@click="handleCure()"
 				>
 					<NuxtImg
-						src="situations/hospital.png"
+						:src="imagePaths.situations.hospital"
 						width="18"
 						alt=""
 					/>
@@ -170,7 +171,7 @@ async function handleRemoveAction() {
 					@click="handleFree()"
 				>
 					<NuxtImg
-						src="situations/prison.png"
+						:src="imagePaths.situations.prison"
 						width="18"
 						alt=""
 					/>

@@ -3,6 +3,7 @@
 	lang="ts"
 >
 import BaseCard from "~/components/ui/BaseCard.vue";
+import { imagePaths } from "~/constants/imagePaths";
 import type { UserDetail } from "~/types/userDetail";
 import { BadgeId } from "../../../src/core/types/Ids";
 
@@ -14,7 +15,7 @@ const { getSituationImageUrl } = useSituation();
 function getBadgeImage(badgeId: BadgeId): string {
 	// biome-ignore lint/suspicious/noDoubleEquals: GraphQl brings as number, not as BadgeId
 	if (badgeId == BadgeId.VIP || badgeId == BadgeId.VIPEternal) {
-		return "badges/vip.png";
+		return imagePaths.badges.vip;
 	}
 	return `badges/${BadgeId[badgeId]}.png`;
 }
@@ -82,7 +83,7 @@ function getBadgeImage(badgeId: BadgeId): string {
 			<div class="user-profile__attributes">
 				<span class="user-profile__attribute">
 					<NuxtImg
-						src="attributes/attack.png"
+						:src="imagePaths.attributes.attack"
 						class="user-profile__attribute-image"
 						alt=""
 					/>
@@ -91,7 +92,7 @@ function getBadgeImage(badgeId: BadgeId): string {
 				</span>
 				<span class="user-profile__attribute">
 					<NuxtImg
-						src="attributes/defense.png"
+						:src="imagePaths.attributes.defense"
 						class="user-profile__attribute-image"
 						alt=""
 					/>

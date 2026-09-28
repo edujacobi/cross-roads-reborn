@@ -3,6 +3,7 @@
 	lang="ts"
 >
 import BaseCard from "~/components/ui/BaseCard.vue";
+import { imagePaths } from "~/constants/imagePaths";
 import type { UserDetail } from "~/types/userDetail";
 
 defineProps<{ gang: NonNullable<UserDetail["gang"]> }>();
@@ -11,7 +12,7 @@ defineProps<{ gang: NonNullable<UserDetail["gang"]> }>();
 <template>
 	<BaseCard
 		title="Gangue"
-		icon="situations/gang-action"
+		:icon="imagePaths.situations.gangAction"
 		class="user-gang"
 		:style="{ '--user-gang-color': gang.color }"
 	>

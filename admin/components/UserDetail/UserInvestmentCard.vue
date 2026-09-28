@@ -6,6 +6,7 @@ import { formatDistance } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import { useInvestment } from "~/composables/useInvestment";
+import { imagePaths } from "~/constants/imagePaths";
 import type { UserDetail } from "~/types/userDetail";
 
 defineProps<{ investment: NonNullable<UserDetail["investment"]> }>();
@@ -16,7 +17,7 @@ const { getInvestmentImageUrl } = useInvestment();
 <template>
 	<BaseCard
 		title="Investimento"
-		icon="situations/defending-investment"
+		:icon="imagePaths.situations.defendingInvestment"
 		class="user-investment"
 	>
 		<div class="user-investment__content">
@@ -41,7 +42,7 @@ const { getInvestmentImageUrl } = useInvestment();
 					>
 						<NuxtImg
 							class="user-investment__henchman-image"
-							src="classes/5_Mafioso.png"
+							:src="imagePaths.classes.mafioso"
 							alt=""
 						/>
 						Capanga: contrato encerra em
@@ -54,7 +55,7 @@ const { getInvestmentImageUrl } = useInvestment();
 			<p class="user-investment__defense">
 				<NuxtImg
 					class="user-investment__defense-image"
-					src="attributes/defense.png"
+					:src="imagePaths.attributes.defense"
 					alt=""
 				/>
 				{{ investment.defense }} DEF

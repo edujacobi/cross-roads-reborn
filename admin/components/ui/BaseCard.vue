@@ -2,10 +2,12 @@
 	setup
 	lang="ts"
 >
+import type { ImagePath } from "~/constants/imagePaths";
+
 interface Props {
 	title?: string;
 	subtitle?: string;
-	icon?: string;
+	icon?: ImagePath;
 }
 
 defineProps<Props>();
@@ -25,7 +27,7 @@ defineProps<Props>();
 					<NuxtImg
 						v-if="icon"
 						class="card-icon"
-						:src="`${icon}.png`"
+						:src="icon"
 						alt=""
 					/>
 					{{ title }}

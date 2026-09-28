@@ -4,6 +4,7 @@
 >
 import { LayoutDashboard, LogOut, Users } from "lucide-vue-next";
 import BaseBadge from "~/components/ui/BaseBadge.vue";
+import { imagePaths } from "~/constants/imagePaths";
 
 const auth = useAuth();
 const route = useRoute();
@@ -17,7 +18,7 @@ const route = useRoute();
 		<div class="brand">
 			<div class="brand-icon">
 				<NuxtImg
-					src="brand/CrossRoadsLogo.png"
+					:src="imagePaths.brand.logo"
 					class="img"
 					alt=""
 				/>

@@ -1,37 +1,25 @@
+import { type ImagePath, imagePaths } from "~/constants/imagePaths";
 import { SituationId } from "../../src/core/types/Ids";
+
+const situationImages: Record<SituationId, ImagePath> = {
+	[SituationId.Idling]: imagePaths.situations.idling,
+	[SituationId.Job]: imagePaths.situations.job,
+	[SituationId.Robbery]: imagePaths.situations.robbery,
+	[SituationId.PrisonAndHospital]: imagePaths.situations.prison,
+	[SituationId.Prison]: imagePaths.situations.prison,
+	[SituationId.Hospital]: imagePaths.situations.hospital,
+	[SituationId.Scavenging]: imagePaths.situations.scavenging,
+	[SituationId.Wanted]: imagePaths.situations.wanted,
+	[SituationId.BeatUp]: imagePaths.situations.beatup,
+	[SituationId.Casino]: imagePaths.situations.casino,
+	[SituationId.DefendingInvestment]: imagePaths.situations.defendingInvestment,
+	[SituationId.GangAction]: imagePaths.situations.gangAction,
+	[SituationId.Dead]: imagePaths.situations.dead,
+};
 
 export function useSituation() {
 	function getSituationImageUrl(situationId: SituationId) {
-		switch (situationId) {
-			case SituationId.Idling:
-				return "situations/idling.png";
-			case SituationId.Job:
-				return "situations/job.png";
-			case SituationId.Robbery:
-				return "situations/robbery.png";
-			case SituationId.PrisonAndHospital:
-				return "situations/prison.png";
-			case SituationId.Prison:
-				return "situations/prison.png";
-			case SituationId.Hospital:
-				return "situations/hospital.png";
-			case SituationId.Scavenging:
-				return "situations/scavenging.png";
-			case SituationId.Wanted:
-				return "situations/wanted.png";
-			case SituationId.BeatUp:
-				return "situations/beatup.png";
-			case SituationId.Casino:
-				return "situations/casino.png";
-			case SituationId.DefendingInvestment:
-				return "situations/defending-investment.png";
-			case SituationId.GangAction:
-				return "situations/gang-action.png";
-			case SituationId.Dead:
-				return "situations/dead.png";
-			default:
-				return "situations/idling.png";
-		}
+		return situationImages[situationId] ?? imagePaths.situations.idling;
 	}
 
 	function getSituationName(situationId: SituationId) {

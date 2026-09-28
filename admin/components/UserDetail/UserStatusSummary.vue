@@ -4,6 +4,7 @@
 >
 import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
+import { imagePaths } from "~/constants/imagePaths";
 import type { UserDetail } from "~/types/userDetail";
 
 defineProps<{ user: UserDetail }>();
@@ -23,7 +24,7 @@ defineProps<{ user: UserDetail }>();
 						variant="danger"
 					>
 						<NuxtImg
-							src="situations/hospital.png"
+							:src="imagePaths.situations.hospital"
 							width="18"
 							alt=""
 						/>
@@ -47,7 +48,7 @@ defineProps<{ user: UserDetail }>();
 						variant="danger"
 					>
 						<NuxtImg
-							src="situations/prison.png"
+							:src="imagePaths.situations.prison"
 							width="18"
 							alt=""
 						/>
@@ -71,7 +72,7 @@ defineProps<{ user: UserDetail }>();
 						variant="success"
 					>
 						<NuxtImg
-							src="situations/job.png"
+							:src="imagePaths.situations.job"
 							width="18"
 							alt=""
 						/>
@@ -92,7 +93,7 @@ defineProps<{ user: UserDetail }>();
 						variant="success"
 					>
 						<NuxtImg
-							src="situations/scavenge.png"
+							:src="imagePaths.situations.scavenging"
 							width="18"
 							alt=""
 						/>
@@ -113,7 +114,7 @@ defineProps<{ user: UserDetail }>();
 						variant="danger"
 					>
 						<NuxtImg
-							src="situations/police.png"
+							:src="imagePaths.situations.wanted"
 							width="18"
 							alt=""
 						/>
@@ -134,7 +135,7 @@ defineProps<{ user: UserDetail }>();
 						variant="success"
 					>
 						<NuxtImg
-							src="situations/casino.png"
+							:src="imagePaths.situations.casino"
 							width="18"
 							alt=""
 						/>

@@ -2,6 +2,8 @@
 	setup
 	lang="ts"
 >
+import { imagePaths } from "~/constants/imagePaths";
+
 interface Props {
 	variant: "idle" | "working" | "hospital" | "prison" | "scavenge" | "casino" | "robbery" | "beatup";
 	value?: number;
@@ -15,47 +17,47 @@ const style = computed(() => {
 		case "idle":
 			return {
 				title: "Vadiando",
-				image: "idling",
+				image: imagePaths.situations.idling,
 			};
 		case "working":
 			return {
 				title: "Trabalhando",
-				image: "job",
+				image: imagePaths.situations.job,
 			};
 		case "hospital":
 			return {
 				title: "Hospitalizados",
-				image: "hospital",
+				image: imagePaths.situations.hospital,
 			};
 		case "prison":
 			return {
 				title: "Presos",
-				image: "prison",
+				image: imagePaths.situations.prison,
 			};
 		case "scavenge":
 			return {
 				title: "Vasculhando",
-				image: "scavenging",
+				image: imagePaths.situations.scavenging,
 			};
 		case "casino":
 			return {
 				title: "Apostando",
-				image: "casino",
+				image: imagePaths.situations.casino,
 			};
 		case "robbery":
 			return {
 				title: "Em roubos",
-				image: "robbery",
+				image: imagePaths.situations.robbery,
 			};
 		case "beatup":
 			return {
 				title: "Em espancamentos",
-				image: "beatup",
+				image: imagePaths.situations.beatup,
 			};
 		default:
 			return {
 				title: "-",
-				image: "",
+				image: imagePaths.situations.idling,
 			};
 	}
 });
@@ -68,7 +70,7 @@ const style = computed(() => {
 	>
 		<div class="status-box-header">
 			<NuxtImg
-				:src="`situations/${style.image}.png`"
+				:src="style.image"
 				class="status-img"
 				alt=""
 			/>
