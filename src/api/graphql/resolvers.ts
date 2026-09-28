@@ -147,7 +147,7 @@ async function mapUserDetail(user: User) {
 }
 
 // eslint-disable-next-line
-export type ResolverFn = (_: unknown, args: never, context: GraphQLContext) => Promise<never> | any;
+export type ResolverFn = (_: unknown, args: any, context: GraphQLContext) => Promise<any> | any;
 
 export const resolvers: {
 	Query: Record<string, ResolverFn>;
@@ -216,7 +216,7 @@ export const resolvers: {
 					return;
 				}
 
-				const [_, isDev, isMod, isHelper] = await Promise.all([
+				const [, isDev, isMod, isHelper] = await Promise.all([
 					user.GetSituation(),
 					UserBadge.IsDeveloper(user.Id),
 					UserBadge.IsModerator(user.Id),
@@ -271,7 +271,7 @@ export const resolvers: {
 			args: { userId: string; amount: number; mode: "ADD" | "SET" },
 			context: GraphQLContext,
 		) => {
-			const admin = assertDeveloper(context);
+			assertDeveloper(context);
 			const target = new User(args.userId);
 			const found = await target.GetInfo();
 			if (!found) {

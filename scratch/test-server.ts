@@ -2,7 +2,7 @@ import { startApiServer, stopApiServer } from "../src/api/server";
 
 async function test() {
 	console.log("Starting test API server on port 3099...");
-	const server = await startApiServer(3099);
+	await startApiServer(3099);
 
 	console.log("Testing /health...");
 	const healthRes = await fetch("http://localhost:3099/health");

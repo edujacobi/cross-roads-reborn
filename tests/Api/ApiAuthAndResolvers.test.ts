@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { describe, expect, it } from "vitest";
 import { signAuthToken, verifyAuthToken } from "#api/auth/jwt";
 import type { AuthUser } from "#api/types";
 import { resolvers } from "#api/graphql/resolvers";
