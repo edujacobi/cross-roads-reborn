@@ -20,12 +20,8 @@ const route = useRoute();
 				<NuxtImg
 					:src="imagePaths.brand.logo"
 					class="img"
-					alt=""
+					alt="CROSS ROADS"
 				/>
-			</div>
-			<div class="brand-text">
-				<p class="brand-name">CROSS ROADS</p>
-				<span>Painel Admin</span>
 			</div>
 		</div>
 
@@ -57,17 +53,20 @@ const route = useRoute();
 		</nav>
 
 		<div class="admin-profile">
-			<NuxtImg
-				:src="auth.user.value?.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'"
-				:alt="auth.user.value?.username ? `Avatar de ${auth.user.value.username}` : 'Avatar do administrador'"
-				class="admin-avatar"
-			/>
-			<div class="admin-details">
-				<span class="admin-name">{{ auth.user.value?.username }}</span>
-				<BaseBadge :variant="auth.isDeveloper.value ? 'developer' : 'moderator'">
-					{{ auth.user.value?.role }}
-				</BaseBadge>
-			</div>
+			<NuxtLink
+				:to="'/users/' + auth.user.value?.userId"
+				class="admin-info"
+			>
+				<NuxtImg
+					:src="auth.user.value?.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'"
+					:alt="auth.user.value?.username ? `Avatar de ${auth.user.value.username}` : 'Avatar do administrador'"
+					class="admin-avatar"
+				/>
+				<div class="admin-details">
+					<span class="admin-name">{{ auth.user.value?.username }}</span>
+					<p class="text-muted">{{ auth.user.value?.role }}</p>
+				</div>
+			</NuxtLink>
 			<button
 				type="button"
 				class="logout-btn"
@@ -100,15 +99,13 @@ const route = useRoute();
 	flex-shrink: 0;
 
 	.brand {
-		display: flex;
-		align-items: center;
-		gap: 12px;
+		@include flex-center;
 		padding: 1.5rem 1.25rem;
 		border-bottom: 1px solid $border-subtle;
 
 		.brand-icon {
 			@include flex-center;
-			width: 2.5rem;
+			width: 7rem;
 			height: 2.5rem;
 			color: $color-brand;
 
@@ -170,7 +167,13 @@ const route = useRoute();
 		display: flex;
 		align-items: center;
 		gap: $spacing-sm;
+		justify-content: space-between;
 		background-color: rgba($bg-input, 0.5);
+
+		.admin-info {
+			display: flex;
+			gap: $spacing-sm;
+		}
 
 		.admin-avatar {
 			width: 2.375rem;
