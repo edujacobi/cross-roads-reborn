@@ -29,6 +29,14 @@ import Sidebar from "~/components/Sidebar.vue";
 	display: flex;
 	height: 100vh;
 	overflow: hidden;
+
+	// ponytail: stack sidebar and content on mobile
+	@media (max-width: 768px) {
+		flex-direction: column;
+		height: auto;
+		min-height: 100vh;
+		overflow: visible;
+	}
 }
 
 .main-content-wrapper {
@@ -36,6 +44,11 @@ import Sidebar from "~/components/Sidebar.vue";
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
+
+	// ponytail: allow natural scrolling on mobile
+	@media (max-width: 768px) {
+		overflow: visible;
+	}
 }
 
 .page-content {
@@ -43,5 +56,11 @@ import Sidebar from "~/components/Sidebar.vue";
 	overflow-y: auto;
 	padding: $spacing-lg;
 	@include scrollbar-custom;
+
+	// ponytail: compact padding on mobile
+	@media (max-width: 768px) {
+		padding: $spacing-md;
+		overflow-y: visible;
+	}
 }
 </style>

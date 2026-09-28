@@ -148,6 +148,15 @@ const emit = defineEmits<(e: "update:open", value: boolean) => void>();
     border-top: 1px solid $border-subtle;
     background-color: rgba($bg-input, 0.4);
     gap: 12px;
+
+    // ponytail: stack dialog buttons on mobile
+    @media (max-width: 480px) {
+      flex-direction: column-reverse;
+
+      > * {
+        width: 100%;
+      }
+    }
   }
 }
 </style>

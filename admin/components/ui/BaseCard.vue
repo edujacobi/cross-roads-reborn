@@ -81,6 +81,12 @@ defineProps<Props>();
 		@include flex-between;
 		padding: $spacing-md 1.25rem;
 
+		// ponytail: wrap card header when title and actions overflow
+		@media (max-width: 540px) {
+			flex-wrap: wrap;
+			gap: $spacing-sm;
+		}
+
 		&:not(.no-body){
 			border-bottom: 1px solid $border-subtle;
 		}

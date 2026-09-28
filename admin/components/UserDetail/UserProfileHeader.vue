@@ -117,6 +117,13 @@ function getBadgeImage(badgeId: BadgeId): string {
 		align-items: center;
 		gap: $spacing-md;
 		padding-bottom: 1.25rem;
+
+		// ponytail: stack profile and align economy nicely on mobile
+		@media (max-width: 640px) {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: $spacing-sm;
+		}
 	}
 
 	&__avatar-wrapper {
@@ -168,11 +175,21 @@ function getBadgeImage(badgeId: BadgeId): string {
 		display: flex;
 		flex-direction: column;
 		align-items: end;
+
+		// ponytail: left-align economy numbers on mobile
+		@media (max-width: 640px) {
+			margin-left: 0;
+			align-items: flex-start;
+		}
 	}
 
 	&__money {
 		font-size: 2rem;
 		font-weight: 700;
+
+		@media (max-width: 640px) {
+			font-size: 1.5rem;
+		}
 	}
 
 	&__coins {
@@ -235,6 +252,11 @@ function getBadgeImage(badgeId: BadgeId): string {
 		align-items: center;
 		gap: $spacing-md;
 		margin-left: auto;
+
+		// ponytail: align attributes on smaller screens
+		@media (max-width: 640px) {
+			margin-left: 0;
+		}
 	}
 
 	&__attribute-image {

@@ -164,6 +164,13 @@ function refreshData() {
 
 .page-title-row {
 	@include flex-between;
+
+	// ponytail: stack title and refresh button on mobile
+	@media (max-width: 480px) {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: $spacing-sm;
+	}
 }
 
 .spin-icon {
@@ -189,6 +196,15 @@ function refreshData() {
 	grid-template-columns: repeat(4, 1fr);
 	grid-auto-rows: 1fr;
 	gap: $spacing-md;
+
+	// ponytail: responsive columns for dashboard status boxes
+	@media (max-width: 992px) {
+		grid-template-columns: repeat(2, 1fr);
+	}
+
+	@media (max-width: 480px) {
+		grid-template-columns: 1fr;
+	}
 }
 
 .vault-grid {

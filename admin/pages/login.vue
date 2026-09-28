@@ -113,6 +113,11 @@ onMounted(() => {
 	text-align: center;
 	box-shadow: $shadow-lg;
 
+	// ponytail: compact padding on mobile devices
+	@media (max-width: 480px) {
+		padding: 1.5rem 1rem;
+	}
+
 	.brand-logo {
 		@include flex-center;
 		margin-bottom: 1.25rem;

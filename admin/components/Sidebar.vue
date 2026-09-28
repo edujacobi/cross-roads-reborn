@@ -250,5 +250,81 @@ const user = computed(() => {
 			}
 		}
 	}
+
+	// ponytail: horizontal navbar layout on mobile with scrollable nav options and fixed profile
+	@media (max-width: 768px) {
+		width: 100%;
+		flex-direction: row;
+		align-items: center;
+		border-right: none;
+		border-bottom: 1px solid $border-subtle;
+
+		.brand {
+			flex-shrink: 0;
+			padding: 0.75rem 1rem;
+			border-bottom: none;
+
+			.brand-icon {
+				width: 5rem;
+				height: 2rem;
+			}
+		}
+
+		.nav-links {
+			flex: 1;
+			min-width: 0;
+			flex-direction: row;
+			overflow-x: auto;
+			overflow-y: hidden;
+			padding: 0.5rem;
+			gap: 0.25rem;
+			@include scrollbar-custom;
+
+			.nav-item {
+				flex-shrink: 0;
+				white-space: nowrap;
+				padding: 0.5rem 0.75rem;
+				font-size: 0.8125rem;
+			}
+		}
+
+		.admin-profile {
+			flex-shrink: 0;
+			border-top: none;
+			padding: 0.5rem 0.75rem;
+			background-color: transparent;
+
+			.admin-info {
+				padding: 0.25rem;
+			}
+
+			.admin-details {
+				display: none;
+			}
+		}
+	}
+
+	@media (max-width: 520px) {
+		.brand {
+			padding: 0.5rem;
+
+			.brand-icon {
+				width: 3.75rem;
+			}
+		}
+
+		.nav-links {
+			padding: 0.25rem;
+
+			.nav-item {
+				padding: 0.375rem 0.5rem;
+				gap: 6px;
+			}
+		}
+
+		.admin-profile {
+			padding: 0.25rem 0.5rem;
+		}
+	}
 }
 </style>

@@ -295,6 +295,11 @@ function nextPage() {
 	max-width: 28.125rem;
 	position: relative;
 
+	// ponytail: expand search on mobile screens
+	@media (max-width: 600px) {
+		max-width: 100%;
+	}
+
 	.search-icon {
 		position: absolute;
 		left: 12px;
@@ -423,6 +428,14 @@ function nextPage() {
 .pagination-footer {
 	@include flex-between;
 	width: 100%;
+
+	// ponytail: stack pagination info and controls on small screens
+	@media (max-width: 640px) {
+		flex-direction: column;
+		gap: $spacing-md;
+		align-items: center;
+		text-align: center;
+	}
 
 	.pagination-info {
 		font-size: 0.8125rem;

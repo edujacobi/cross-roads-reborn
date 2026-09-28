@@ -76,6 +76,13 @@ const { getInvestmentImageUrl } = useInvestment();
 		gap: $spacing-sm;
 		align-items: center;
 		justify-content: space-between;
+
+		// ponytail: stack investment info on mobile
+		@media (max-width: 640px) {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: $spacing-md;
+		}
 	}
 
 	&__details {
@@ -83,6 +90,12 @@ const { getInvestmentImageUrl } = useInvestment();
 		gap: $spacing-md;
 		align-items: center;
 		font-weight: 600;
+
+		// ponytail: stack image and text on narrow mobile
+		@media (max-width: 480px) {
+			flex-direction: column;
+			align-items: flex-start;
+		}
 	}
 
 	&__image {

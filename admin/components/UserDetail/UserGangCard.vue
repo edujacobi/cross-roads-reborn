@@ -47,6 +47,11 @@ defineProps<{ gang: NonNullable<UserDetail["gang"]> }>();
 		gap: $spacing-md;
 		align-items: center;
 		font-weight: 600;
+
+		// ponytail: wrap content on narrow mobile
+		@media (max-width: 480px) {
+			flex-wrap: wrap;
+		}
 	}
 
 	&__image {
@@ -63,6 +68,12 @@ defineProps<{ gang: NonNullable<UserDetail["gang"]> }>();
 	&__level {
 		color: $text-secondary;
 		margin-left: auto;
+
+		// ponytail: reset margin on narrow mobile
+		@media (max-width: 480px) {
+			margin-left: 0;
+			width: 100%;
+		}
 	}
 }
 </style>

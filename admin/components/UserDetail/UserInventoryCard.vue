@@ -159,6 +159,15 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 		margin: 0;
 		padding: 0;
 
+		// ponytail: responsive columns for inventory items
+		@media (max-width: 1024px) {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+
+		@media (max-width: 540px) {
+			grid-template-columns: 1fr;
+		}
+
 		&--compact {
 			grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
 		}
