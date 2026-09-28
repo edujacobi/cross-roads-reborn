@@ -1,0 +1,53 @@
+// SCSS Mixins
+@use "./variables" as *;
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@mixin card-surface {
+  background-color: $bg-card;
+  border: 1px solid $border-card;
+  border-radius: $radius-md;
+  box-shadow: $shadow-md;
+}
+
+@mixin accent-surface($accent, $background-opacity: 0.15, $border-opacity: 0.4) {
+  background-color: rgba($accent, $background-opacity);
+  border: 1px solid rgba($accent, $border-opacity);
+}
+
+@mixin text-gradient {
+  background: $text-secondary;
+  background: linear-gradient(35deg, $text-secondary 0%, $color-special 48%, $text-secondary 100%);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@mixin scrollbar-custom {
+  &::-webkit-scrollbar {
+    width: 0.375rem;
+    height: 0.375rem;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $border-subtle;
+    border-radius: $radius-full;
+
+    &:hover {
+      background: $text-muted;
+    }
+  }
+}

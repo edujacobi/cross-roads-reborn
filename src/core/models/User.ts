@@ -30,22 +30,9 @@ import { Vault } from "./Vault";
 
 import { type InvestmentId } from "#core/types/Investments";
 import { time, TimestampStyles } from "discord.js";
+import { SituationId } from "#core/types/Ids";
 
-export enum SituationId {
-	Idling,
-	Job,
-	Robbery,
-	PrisonAndHospital,
-	Prison,
-	Hospital,
-	Scavenging,
-	Wanted,
-	BeatUp,
-	Casino,
-	DefendingInvestment,
-	GangAction,
-	Dead,
-}
+export { SituationId } from "#core/types/Ids";
 
 export type AvailabilityReason =
 	| "scavenging"
@@ -67,12 +54,12 @@ export type AvailabilityReason =
 export type AvailabilityResult =
 	| { available: true }
 	| {
-		available: false;
-		reason: AvailabilityReason;
-		time?: Date;
-		targetId?: string;
-		referenceId?: string | number;
-	};
+	available: false;
+	reason: AvailabilityReason;
+	time?: Date;
+	targetId?: string;
+	referenceId?: string | number;
+};
 
 export class User {
 	static VIP_BASE_PRICE = 5_000; // special coins
@@ -1869,7 +1856,7 @@ export class User {
 		await this.Update({
 			prisonTime: this.Prison.Time,
 			prisonHasPaidBribe: this.Prison.HasPaidBribe,
-			escapeHasTried: this.Escape.HasTried
+			escapeHasTried: this.Escape.HasTried,
 		});
 
 		Log.Success(`Admin ${adminId} freed ${this.Nickname} (Id: ${this.Id}) from prison.`);

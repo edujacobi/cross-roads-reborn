@@ -1,0 +1,84 @@
+<script
+	setup
+	lang="ts"
+>
+interface Props {
+	id: string;
+	modelValue?: string | number;
+	label?: string;
+	ariaLabel?: string;
+	placeholder?: string;
+	type?: string;
+	disabled?: boolean;
+}
+
+defineProps<Props>();
+defineEmits<(e: "update:modelValue", value: string | number) => void>();
+</script>
+
+<template>
+	<div class="base-input-wrapper">
+		<label
+			v-if="label"
+			:for="id"
+			class="input-label"
+		>
+			{{ label }}
+		</label>
+
+		<input
+			:id="id"
+			:type="type || 'text'"
+			:value="modelValue"
+			:placeholder="placeholder"
+			:disabled="disabled"
+			:aria-label="ariaLabel"
+			class="base-input"
+			@input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
+		>
+	</div>
+</template>
+
+<style
+	lang="scss"
+	scoped
+>
+@use "~/assets/scss/variables" as *;
+
+.base-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+  width: 100%;
+
+  .input-label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: $text-secondary;
+  }
+
+  .base-input {
+    width: 100%;
+    padding: 0.625rem 0.875rem;
+    background-color: $bg-input;
+    border: 1px solid $border-subtle;
+    border-radius: $radius-sm;
+    color: $text-primary;
+    outline: none;
+    transition: border-color 0.15s ease-in-out;
+
+    &::placeholder {
+      color: $text-muted;
+    }
+
+    &:focus {
+      border-color: $color-brand;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+</style>

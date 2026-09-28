@@ -8,6 +8,7 @@ export class DashboardStats extends Model<
 	declare id: CreationOptional<number>;
 	declare date: Date;
 	declare totalPlayers: number;
+	declare allUsers: number | null;
 	declare totalGangs: number;
 	declare prisonCount: number;
 	declare hospitalCount: number;
@@ -37,6 +38,10 @@ DashboardStats.init(
 		totalPlayers: {
 			type: DataTypes.INTEGER,
 			allowNull: false,
+		},
+		allUsers: {
+			type: DataTypes.INTEGER,
+			allowNull: true,
 		},
 		totalGangs: {
 			type: DataTypes.INTEGER,

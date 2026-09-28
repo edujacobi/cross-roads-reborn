@@ -2,14 +2,9 @@ import type { IDescription, IEmote } from "./Interfaces";
 import { Language } from "#core/models/Language";
 import { EmoteId, EmoteString } from "#bot/utils/emotes";
 import { BundleId, ItemId } from "./Ids";
+import { ItemType } from "./ItemType";
 
-export enum ItemType {
-	Weapon,
-	Wearable,
-	Accessory,
-	Consumable,
-	BeatUp
-}
+export { ItemType } from "./ItemType";
 
 export interface Items {
 	readonly Id: ItemId,

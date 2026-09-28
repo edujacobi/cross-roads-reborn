@@ -1,16 +1,9 @@
 import { Language } from "#core/models/Language";
 import type { IDescription, IEmote } from "./Interfaces";
 import { EmoteId, EmoteString } from "#bot/utils/emotes";
+import { ClassId } from "./Ids";
 
-export enum ClassId {
-	None,
-	Thief,
-	Assassin,
-	Entrepreneur,
-	Hobo,
-	Mafioso,
-	Attorney
-}
+export { ClassId } from "./Ids";
 
 export interface IModifier {
 	Positive?: number,

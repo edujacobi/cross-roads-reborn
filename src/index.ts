@@ -7,6 +7,7 @@ import { logger, Log } from "#shared/log";
 import { GlobalFonts } from "@napi-rs/canvas";
 import { BackgroundPatternRegistry } from "#bot/ui/patterns/BackgroundPatternRegistry";
 import { AvatarDecorationRegistry } from "#bot/ui/patterns/AvatarDecorationRegistry";
+import { startApiServer, stopApiServer } from "#api/server";
 
 const client = setClient();
 
@@ -40,8 +41,10 @@ client.on(Events.ShardResume, (shardId, replayedEvents) => {
 
 const handleExit = (signal: string) => {
 	logger.info(`Received ${signal}. Shutting down gracefully...`);
-	client.destroy();
-	process.exit(0);
+	stopApiServer().finally(() => {
+		client.destroy();
+		process.exit(0);
+	});
 };
 
 process.on("SIGINT", () => handleExit("SIGINT"));
@@ -130,6 +133,10 @@ BackgroundPatternRegistry.initialize().catch(err => {
 
 AvatarDecorationRegistry.initialize().catch(err => {
 	Log.Error(`Failed to initialize avatar decoration frames: ${err}`);
+});
+
+startApiServer().catch(err => {
+	Log.Error(`Failed to start Admin API Server: ${err}`);
 });
 
 client.login(token)

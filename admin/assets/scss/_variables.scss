@@ -1,0 +1,65 @@
+@use "sass:color";
+// Cross Roads Design Tokens & Variables
+
+// Backgrounds
+$bg-main: #0b0d13;
+$bg-sidebar: #10131c;
+$bg-card: #151924;
+$bg-card-hover: #1b2130;
+$bg-input: #0f121a;
+$bg-overlay: rgba(5, 7, 12, 0.85);
+
+// Borders
+$border-subtle: #21283a;
+$border-card: #283147;
+$border-focus: #4b5563;
+
+// Typography
+$font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+$text-primary: #f9fafb;
+$text-secondary: #9ca3af;
+$text-muted: #6b7280;
+
+// Spacing
+$spacing-xs: 0.25rem;
+$spacing-sm: 0.5rem;
+$spacing-md: 1rem;
+$spacing-lg: 2rem;
+$spacing-xl: 4rem;
+
+// Accents & Theme Colors
+$color-brand: #57f287;
+$color-gold: #eab308;
+$color-vip: #f1c40f;
+$color-developer: #80e893;
+$color-moderator: #e43950;
+$color-helper: #007bff;
+
+$color-success: #10b981;
+$color-danger: #ef4444;
+$color-warning: #f59e0b;
+$color-info: #06b6d4;
+
+// Status Specific
+$color-hospital: #e54747;
+$color-prison: color.adjust(#163cb6, $lightness: 20%);
+$color-working: #FFE300;
+$color-casino: #8C55FF;
+$color-robbery: #AF0000;
+$color-beatup: #ff8C00;
+$color-scavenge: #88D3E4;
+$color-cemetery: #7e7e7e;
+$color-special: #03a2e9;
+$color-attribute: #F4E7D2;
+
+// Radii
+$radius-xs: 4px;
+$radius-sm: 8px;
+$radius-md: 12px;
+$radius-lg: 16px;
+$radius-full: 9999px;
+
+// Shadows
+$shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
+$shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
+$shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.5);

@@ -1,17 +1,8 @@
 import { Language } from "#core/models/Language";
+import { InvestmentId } from "./Ids";
 import type { IDescription, IEmote } from "./Interfaces";
 
-export enum InvestmentId {
-	ChurrosCart,
-	CrackDen,
-	BocceCourt,
-	VeganRestaurant,
-	GolfClub,
-	VehicleManufacturer,
-	UnderdevelopedCountry,
-	ReligiousCult,
-	StarGalaxy,
-}
+export { InvestmentId } from "./Ids";
 
 export interface Investment {
 	readonly Id: InvestmentId;

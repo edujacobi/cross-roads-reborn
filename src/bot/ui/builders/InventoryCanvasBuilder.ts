@@ -382,7 +382,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 
 	/**
 	 * Adds the item grid to the canvas.
-	 * Item can have Skin. 
+	 * Item can have Skin.
 	 * Yellow Warning if below 24 hours or 2 or less quantity.
 	 * Red Warning if below 12 hours or 1 or less quantity.
 	 */
