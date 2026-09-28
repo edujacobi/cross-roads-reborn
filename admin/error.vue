@@ -10,57 +10,45 @@ import BaseCard from "~/components/ui/BaseCard.vue";
 const props = defineProps<{
 	error: NuxtError;
 }>();
+const { showToast } = useToast();
 
 const isNotFound = computed(() => props.error.status === 404);
 const errorMessage = computed(() => `Error ${props.error.status || 500}: ${props.error.message}`);
-const copyFeedback = ref<{ type: "success" | "error"; message: string } | null>(null);
-let copyFeedbackTimeout: ReturnType<typeof setTimeout> | undefined;
 
 async function copyErrorMessage() {
 	try {
 		await navigator.clipboard.writeText(errorMessage.value);
-		copyFeedback.value = { type: "success", message: "Mensagem de erro copiada." };
+		showToast({ variant: "success", text: "Mensagem de erro copiada." });
 	} catch {
-		copyFeedback.value = { type: "error", message: "Não foi possível copiar a mensagem de erro." };
+		showToast({ variant: "error", text: "Não foi possível copiar a mensagem de erro." });
 	}
-
-	if (copyFeedbackTimeout) clearTimeout(copyFeedbackTimeout);
-	copyFeedbackTimeout = setTimeout(() => {
-		copyFeedback.value = null;
-	}, 3000);
 }
 </script>
 
 <template>
-	<main class="error-page">
-		<div
-			v-if="copyFeedback"
-			class="copy-feedback"
-			:class="`copy-feedback--${copyFeedback.type}`"
-			:role="copyFeedback.type === 'error' ? 'alert' : 'status'"
-			:aria-live="copyFeedback.type === 'error' ? 'assertive' : 'polite'"
-		>
-			{{ copyFeedback.message }}
-		</div>
+	<main class="error">
+		<UiToastContainer />
 
 		<BaseCard
-			class="error-card"
+			class="error__card"
 			role="alert"
 			:title="isNotFound ? 'Página não encontrada' : 'Algo deu errado'"
 		>
 			<NuxtImg
-				class="error-image"
+				class="error__image"
 				:src="isNotFound ? 'badges/S6Top1Scavenge.png' : 'badges/S6Top1BeatUp.png'"
 			/>
-			<p class="description">
+			<p class="error__description">
 				{{
 					isNotFound
 						? "A página que você tentou acessar não existe ou foi movida."
 						: "Ocorreu um erro inesperado. Tente voltar ao painel."
 				}}
 			</p>
-			<p class="send-to-us">Caso o erro persista, copie a mensagem de erro abaixo e envie em nosso Discord</p>
-			<div class="button-row">
+			<p class="error__support-message">
+				Caso o erro persista, copie a mensagem de erro abaixo e envie em nosso Discord
+			</p>
+			<div class="error__actions">
 				<BaseButton
 					variant="secondary"
 					@click="clearError({ redirect: '/' })"
@@ -77,7 +65,7 @@ async function copyErrorMessage() {
 					target="_blank"
 				>
 					<svg
-						class="discord-icon"
+						class="error__discord-icon"
 						viewBox="0 0 24 24"
 						fill="currentColor"
 						width="16"
@@ -92,7 +80,7 @@ async function copyErrorMessage() {
 				</BaseButton>
 			</div>
 			<template #footer>
-				<p class="error-code">{{ errorMessage }}</p>
+				<p class="error__code">{{ errorMessage }}</p>
 				<BaseButton
 					variant="ghost"
 					aria-label="Copiar erro"
@@ -116,57 +104,40 @@ async function copyErrorMessage() {
 @use "~/assets/scss/variables" as *;
 @use "~/assets/scss/mixins" as *;
 
-.error-page {
+.error {
 	@include flex-center;
 	min-height: 100vh;
 	padding: $spacing-lg;
 	background-color: $bg-main;
-}
 
-.copy-feedback {
-	position: fixed;
-	right: $spacing-lg;
-	bottom: $spacing-lg;
-	z-index: 10;
-	padding: $spacing-sm $spacing-md;
-	border: 1px solid $border-subtle;
-	border-radius: $radius-sm;
-	background: $bg-card;
-	color: $text-primary;
-	box-shadow: 0 4px 16px rgb(0 0 0 / 30%);
-
-	&--error {
-		border-color: $color-danger;
+	&__card {
+		gap: $spacing-md;
+		max-width: 32rem;
+		text-align: center;
 	}
-}
 
-.error-card {
-	gap: $spacing-md;
-	max-width: 32rem;
-	text-align: center;
-
-	.error-image {
+	&__image {
 		width: 8rem;
 	}
 
-	.description {
+	&__description {
 		color: $text-secondary;
 	}
 
-	.send-to-us {
+	&__support-message {
 		color: $text-muted;
 		font-size: 0.85rem;
 		margin-top: 1rem;
 	}
 
-	.button-row {
+	&__actions {
 		display: flex;
 		justify-content: center;
 		gap: $spacing-md;
 		margin-top: 1.5rem;
 	}
 
-	.error-code {
+	&__code {
 		color: $text-muted;
 		font-weight: 600;
 		font-size: 0.85rem;
@@ -174,7 +145,8 @@ async function copyErrorMessage() {
 
 	:deep(.card-footer) {
 		@include flex-center;
-		gap: $spacing-sm
-		}
+		gap: $spacing-sm;
+	}
+
 }
 </style>

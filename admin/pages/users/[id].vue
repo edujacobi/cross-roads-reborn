@@ -3,7 +3,7 @@
 	lang="ts"
 >
 import { useQuery } from "@vue/apollo-composable";
-import { AlertCircle, ArrowLeft, CheckCircle2 } from "lucide-vue-next";
+import { ArrowLeft } from "lucide-vue-next";
 import UserAdminActions from "~/components/UserDetail/UserAdminActions.vue";
 import UserGangCard from "~/components/UserDetail/UserGangCard.vue";
 import UserInventoryCard from "~/components/UserDetail/UserInventoryCard.vue";
@@ -12,6 +12,7 @@ import UserMetadataCard from "~/components/UserDetail/UserMetadataCard.vue";
 import UserProfileHeader from "~/components/UserDetail/UserProfileHeader.vue";
 import UserStatusSummary from "~/components/UserDetail/UserStatusSummary.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
+import { imagePaths } from "~/constants/imagePaths";
 import { GetUserDetailDocument } from "~/graphql/generated";
 
 definePageMeta({
@@ -20,6 +21,7 @@ definePageMeta({
 
 const route = useRoute();
 const auth = useAuth();
+const { showToast } = useToast();
 const userId = computed(() => String(route.params.id));
 
 const { result, loading, refetch } = useQuery(GetUserDetailDocument, () => ({ id: userId.value }));
@@ -42,13 +44,8 @@ const language = computed(() => {
 	}
 });
 
-const feedback = ref<{ type: "success" | "error"; message: string } | null>(null);
-
 function showFeedback(type: "success" | "error", message: string) {
-	feedback.value = { type, message };
-	setTimeout(() => {
-		feedback.value = null;
-	}, 4000);
+	showToast({ variant: type, text: message });
 }
 </script>
 
@@ -70,25 +67,6 @@ function showFeedback(type: "success" | "error", message: string) {
 				Voltar
 			</BaseButton>
 		</nav>
-
-		<div
-			v-if="feedback"
-			:class="`user-detail__feedback user-detail__feedback--${feedback.type}`"
-			:role="feedback.type === 'error' ? 'alert' : 'status'"
-			:aria-live="feedback.type === 'error' ? 'assertive' : 'polite'"
-		>
-			<CheckCircle2
-				v-if="feedback.type === 'success'"
-				:size="18"
-				aria-hidden="true"
-			/>
-			<AlertCircle
-				v-else
-				:size="18"
-				aria-hidden="true"
-			/>
-			{{ feedback.message }}
-		</div>
 
 		<div
 			v-if="loading"
@@ -147,7 +125,6 @@ function showFeedback(type: "success" | "error", message: string) {
 >
 @use "~/assets/scss/variables" as *;
 @use "~/assets/scss/mixins" as *;
-@use "sass:color";
 
 .user-detail {
 	display: flex;
@@ -156,25 +133,6 @@ function showFeedback(type: "success" | "error", message: string) {
 
 	&__nav-back {
 		margin-bottom: $spacing-xs;
-	}
-
-	&__feedback {
-		display: flex;
-		align-items: center;
-		gap: $spacing-sm;
-		padding: 0.75rem $spacing-md;
-		border-radius: $radius-sm;
-		font-size: 0.875rem;
-
-		&--success {
-			@include accent-surface($color-success);
-			color: color.adjust($color-success, $lightness: 15%);
-		}
-
-		&--error {
-			@include accent-surface($color-danger);
-			color: color.adjust($color-danger, $lightness: 15%);
-		}
 	}
 
 	&__loading,
