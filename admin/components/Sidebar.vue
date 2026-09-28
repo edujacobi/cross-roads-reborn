@@ -3,11 +3,36 @@
 	lang="ts"
 >
 import { LayoutDashboard, LogOut, Users } from "lucide-vue-next";
-import BaseBadge from "~/components/ui/BaseBadge.vue";
 import { imagePaths } from "~/constants/imagePaths";
 
 const auth = useAuth();
 const route = useRoute();
+
+const user = computed(() => {
+	const authUser = auth.user.value;
+	const mapRole = {
+		["DEVELOPER"]: {
+			description: "Desenvolvedor",
+			image: "/images/badges/Developer.png",
+		},
+		["MODERATOR"]: {
+			description: "Moderador",
+			image: "/images/badges/Moderator.png",
+		},
+	};
+
+	if (!authUser) {
+		return;
+	}
+
+	return {
+		id: authUser.userId,
+		username: authUser.username,
+		avatarUrl: authUser.avatar || "https://cdn.discordapp.com/embed/avatars/0.png",
+		imageAlt: authUser.username ? `Avatar de ${authUser.username}` : "Avatar do administrador",
+		role: mapRole[authUser.role],
+	};
+});
 </script>
 
 <template>
@@ -54,17 +79,23 @@ const route = useRoute();
 
 		<div class="admin-profile">
 			<NuxtLink
-				:to="'/users/' + auth.user.value?.userId"
+				:to="'/users/' + user?.id"
 				class="admin-info"
 			>
 				<NuxtImg
-					:src="auth.user.value?.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'"
-					:alt="auth.user.value?.username ? `Avatar de ${auth.user.value.username}` : 'Avatar do administrador'"
+					:src="user?.avatarUrl"
+					:alt="user?.imageAlt"
 					class="admin-avatar"
 				/>
 				<div class="admin-details">
-					<span class="admin-name">{{ auth.user.value?.username }}</span>
-					<p class="text-muted">{{ auth.user.value?.role }}</p>
+					<span class="admin-name">{{ user?.username }}</span>
+					<p class="admin-role">
+						<NuxtImg
+							:src="user?.role.image"
+							class="img-role"
+						/>
+						{{ user?.role.description }}
+					</p>
 				</div>
 			</NuxtLink>
 			<button
@@ -89,6 +120,7 @@ const route = useRoute();
 >
 @use "~/assets/scss/variables" as *;
 @use "~/assets/scss/mixins" as *;
+@use "sass:color";
 
 .sidebar {
 	width: 16.25rem;
@@ -111,21 +143,6 @@ const route = useRoute();
 
 			.img {
 				max-width: 100%;
-			}
-		}
-
-		.brand-text {
-			.brand-name {
-				font-size: 0.9375rem;
-				font-weight: 800;
-				letter-spacing: 0.05em;
-				color: $text-primary;
-				margin: 0;
-			}
-
-			span {
-				font-size: 0.75rem;
-				color: $text-muted;
 			}
 		}
 	}
@@ -162,17 +179,24 @@ const route = useRoute();
 	}
 
 	.admin-profile {
-		padding: $spacing-md;
 		border-top: 1px solid $border-subtle;
 		display: flex;
 		align-items: center;
 		gap: $spacing-sm;
+		padding: $spacing-sm;
 		justify-content: space-between;
 		background-color: rgba($bg-input, 0.5);
 
 		.admin-info {
 			display: flex;
 			gap: $spacing-sm;
+			border-radius: $radius-sm;
+			padding: $spacing-sm 1rem $spacing-sm $spacing-sm;
+			transition: all 0.15s;
+
+			&:hover {
+				background-color: $border-subtle;
+			}
 		}
 
 		.admin-avatar {
@@ -180,6 +204,18 @@ const route = useRoute();
 			height: 2.375rem;
 			border-radius: 50%;
 			border: 1px solid $border-subtle;
+		}
+
+		.admin-role {
+			color: $text-secondary;
+			font-size: 0.85rem;
+			display: flex;
+			align-items: center;
+			gap: $spacing-xs;
+
+			.img-role {
+				width: 16px;
+			}
 		}
 
 		.admin-details {
@@ -198,6 +234,7 @@ const route = useRoute();
 		}
 
 		.logout-btn {
+			@include flex-center;
 			background: transparent;
 			border: none;
 			color: $text-muted;
@@ -205,6 +242,7 @@ const route = useRoute();
 			padding: 0.375rem;
 			border-radius: $radius-xs;
 			transition: all 0.15s;
+			margin-right: 0.25rem;
 
 			&:hover {
 				color: $color-danger;
