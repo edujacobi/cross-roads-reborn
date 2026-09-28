@@ -16,6 +16,10 @@ import DashboardStatusBox from "../components/Dashboard/DashboardStatusBox.vue";
 import DashboardUserChart from "../components/Dashboard/DashboardUserChart.vue";
 import DashboardUserHistory from "../components/Dashboard/DashboardUserHistory.vue";
 
+definePageMeta({
+	middleware: "auth",
+});
+
 useHead({
 	title: "Dashboard",
 });

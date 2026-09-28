@@ -13,6 +13,10 @@ import BaseInput from "~/components/ui/BaseInput.vue";
 import { imagePaths } from "~/constants/imagePaths";
 import { SearchUsersDocument, type SearchUsersQuery } from "~/graphql/generated";
 
+definePageMeta({
+	middleware: "auth",
+});
+
 useHead({
 	title: "Jogadores",
 });

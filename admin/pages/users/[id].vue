@@ -14,6 +14,10 @@ import UserStatusSummary from "~/components/UserDetail/UserStatusSummary.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import { GetUserDetailDocument } from "~/graphql/generated";
 
+definePageMeta({
+	middleware: "auth",
+});
+
 const route = useRoute();
 const auth = useAuth();
 const userId = computed(() => String(route.params.id));

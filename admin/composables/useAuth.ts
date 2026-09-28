@@ -15,15 +15,17 @@ export function useAuth() {
 	const isDeveloper = computed(() => user.value?.role === "DEVELOPER");
 	const isModerator = computed(() => user.value?.role === "MODERATOR");
 
-	function initAuth() {
-		if (import.meta.client) {
-			const storedToken = localStorage.getItem("cr_admin_token");
-			if (storedToken) {
-				token.value = storedToken;
-				fetchUser();
-			} else {
-				loading.value = false;
-			}
+	async function initAuth() {
+		if (!import.meta.client) return;
+
+		if (!token.value) {
+			token.value = localStorage.getItem("cr_admin_token");
+		}
+
+		if (token.value && !user.value) {
+			await fetchUser();
+		} else {
+			loading.value = false;
 		}
 	}
 
@@ -46,10 +48,10 @@ export function useAuth() {
 				const data = await res.json();
 				user.value = data.user;
 			} else {
-				logout();
+				clearSession();
 			}
 		} catch (_err) {
-			logout();
+			clearSession();
 		} finally {
 			loading.value = false;
 		}
@@ -69,12 +71,16 @@ export function useAuth() {
 	}
 
 	function logout() {
+		clearSession();
+		navigateTo("/login");
+	}
+
+	function clearSession() {
 		token.value = null;
 		user.value = null;
 		if (import.meta.client) {
 			localStorage.removeItem("cr_admin_token");
 		}
-		navigateTo("/login");
 	}
 
 	return {
