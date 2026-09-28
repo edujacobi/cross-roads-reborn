@@ -19,6 +19,9 @@ export const typeDefs = /* GraphQL */ `
     type DashboardStats {
         date: String!
         totalPlayers: Int!
+        allUsers: Int!
+        bankVaultValue: Int!
+        casinoVaultValue: Int!
         totalGangs: Int!
         prisonCount: Int!
         hospitalCount: Int!
@@ -37,6 +40,7 @@ export const typeDefs = /* GraphQL */ `
         id: ID
         date: String!
         totalPlayers: Int!
+        allUsers: Int
         totalGangs: Int!
         prisonCount: Int!
         hospitalCount: Int!

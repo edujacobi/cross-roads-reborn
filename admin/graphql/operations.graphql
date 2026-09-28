@@ -2,6 +2,9 @@ query GetDashboardStats {
 	dashboardStats {
 		date
 		totalPlayers
+		allUsers
+		bankVaultValue
+		casinoVaultValue
 		totalGangs
 		prisonCount
 		hospitalCount
@@ -22,6 +25,7 @@ query GetDashboardHistory {
 		id
 		date
 		totalPlayers
+		allUsers
 		totalGangs
 		prisonCount
 		hospitalCount

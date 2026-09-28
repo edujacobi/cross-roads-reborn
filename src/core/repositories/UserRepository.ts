@@ -185,6 +185,13 @@ export class UserRepository {
 	}
 
 	/**
+	 * Counts all registered users.
+	 */
+	static async CountAllUsers(): Promise<number> {
+		return await Users.count();
+	}
+
+	/**
 	 * Counts prisoners.
 	 */
 	static async CountPrisoners(date: Date): Promise<number> {
@@ -259,11 +266,11 @@ export class UserRepository {
 	}
 
 	/**
-	 * Counts players by language.
+	 * Counts all users by language.
 	 */
 	static async CountPlayersByLanguage(language: Language): Promise<number> {
 		return await Users.count({
-			where: { language, class: { [Op.not]: ClassId.None } },
+			where: { language },
 		});
 	}
 
@@ -393,4 +400,3 @@ export class UserRepository {
 		return { users: rows, total: count };
 	}
 }
-

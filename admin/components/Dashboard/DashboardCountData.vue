@@ -7,6 +7,7 @@ import BaseCard from "~/components/ui/BaseCard.vue";
 
 interface Props {
 	totalPlayers: number | undefined;
+	allUsers: number | undefined;
 	totalGangs: number | undefined;
 	portugueseCount: number | undefined;
 	englishCount: number | undefined;
@@ -14,6 +15,7 @@ interface Props {
 }
 withDefaults(defineProps<Props>(), {
 	totalPlayers: 0,
+	allUsers: 0,
 	totalGangs: 0,
 	portugueseCount: 0,
 	englishCount: 0,
@@ -30,9 +32,20 @@ withDefaults(defineProps<Props>(), {
 						:size="16"
 						aria-hidden="true"
 					/>
-					Jogadores
+					Jogadores ativos
 				</dt>
 				<dd class="count-value">{{ totalPlayers ?? 0 }}</dd>
+			</div>
+
+			<div class="count-item">
+				<dt class="count-label">
+					<Users
+						:size="16"
+						aria-hidden="true"
+					/>
+					Todos os usuários
+				</dt>
+				<dd class="count-value">{{ allUsers ?? 0 }}</dd>
 			</div>
 
 			<div class="count-item">

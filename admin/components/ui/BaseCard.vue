@@ -8,6 +8,7 @@ interface Props {
 	title?: string;
 	subtitle?: string;
 	icon?: ImagePath;
+	noBody?: boolean;
 }
 
 defineProps<Props>();
@@ -18,6 +19,7 @@ defineProps<Props>();
 		<div
 			v-if="title || $slots.header"
 			class="card-header"
+			:class="{'no-body': noBody}"
 		>
 			<div>
 				<h2
@@ -47,7 +49,10 @@ defineProps<Props>();
 				<slot name="actions" />
 			</div>
 		</div>
-		<div class="card-body">
+		<div
+			class="card-body"
+			v-if="!noBody"
+		>
 			<slot />
 		</div>
 		<div
@@ -75,7 +80,10 @@ defineProps<Props>();
 	.card-header {
 		@include flex-between;
 		padding: $spacing-md 1.25rem;
-		border-bottom: 1px solid $border-subtle;
+
+		&:not(.no-body){
+			border-bottom: 1px solid $border-subtle;
+		}
 
 		.card-title {
 			font-size: 1rem;

@@ -5,6 +5,7 @@
 import { useQuery } from "@vue/apollo-composable";
 import { RotateCw } from "lucide-vue-next";
 import BaseButton from "~/components/ui/BaseButton.vue";
+import BaseCard from "~/components/ui/BaseCard.vue";
 import {
 	GetDashboardHistoryDocument,
 	type GetDashboardHistoryQuery,
@@ -12,6 +13,7 @@ import {
 	type GetDashboardStatsQuery,
 } from "~/graphql/generated";
 import DashboardStatusBox from "../components/Dashboard/DashboardStatusBox.vue";
+import DashboardUserChart from "../components/Dashboard/DashboardUserChart.vue";
 import DashboardUserHistory from "../components/Dashboard/DashboardUserHistory.vue";
 
 useHead({
@@ -97,9 +99,36 @@ function refreshData() {
 			/>
 		</section>
 
+		<section
+			class="vault-grid"
+			aria-label="Valores dos cofres"
+		>
+			<BaseCard
+				title="Cofre do Banco"
+				icon="ui_elements/CentralBank.png"
+				no-body
+			>
+				<template #actions>Cr$ {{ (stats?.bankVaultValue ?? 0).toLocaleString("pt-BR") }}</template>
+			</BaseCard>
+			<BaseCard
+				title="Cofre do Cassino"
+				icon="ui_elements/CasinoVault.png"
+				no-body
+			>
+				<template #actions> Cr$ {{ (stats?.casinoVaultValue ?? 0).toLocaleString("pt-BR") }} </template>
+			</BaseCard>
+		</section>
+
+		<DashboardUserChart
+			:history="history"
+			:current-stats="stats"
+			:history-loading="historyLoading"
+		/>
+
 		<div class="details-row">
 			<DashboardCountData
 				:total-players="stats?.totalPlayers"
+				:all-users="stats?.allUsers"
 				:total-gangs="stats?.totalGangs"
 				:english-count="stats?.englishCount"
 				:portuguese-count="stats?.portugueseCount"
@@ -155,6 +184,16 @@ function refreshData() {
 	grid-template-columns: repeat(4, 1fr);
 	grid-auto-rows: 1fr;
 	gap: $spacing-md;
+}
+
+.vault-grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: $spacing-md;
+
+	@media (max-width: 600px) {
+		grid-template-columns: 1fr;
+	}
 }
 
 .details-row {

@@ -1,5 +1,6 @@
 import { GraphQLError } from "graphql";
 import { Dashboard } from "#core/models/Dashboard";
+import { Vault } from "#core/models/Vault";
 import { User } from "#core/models/User";
 import { UserRepository } from "#core/repositories/UserRepository";
 import { ClassList } from "#core/types/Classes";
@@ -159,10 +160,15 @@ export const resolvers: {
 
 		dashboardStats: async (_: unknown, __: unknown, context: GraphQLContext) => {
 			assertAuthenticated(context);
-			const stats = await Dashboard.GetCurrentStats();
+			const [stats, vaultBalances] = await Promise.all([
+				Dashboard.GetCurrentStats(),
+				Vault.GetBalances(),
+			]);
 			return {
 				...stats,
 				date: stats.date.toISOString(),
+				bankVaultValue: vaultBalances.bank,
+				casinoVaultValue: vaultBalances.casino,
 			};
 		},
 
@@ -173,6 +179,7 @@ export const resolvers: {
 				id: (snapshot as { id?: number }).id || null,
 				date: snapshot.date instanceof Date ? snapshot.date.toISOString() : String(snapshot.date),
 				totalPlayers: snapshot.totalPlayers,
+				allUsers: snapshot.allUsers,
 				totalGangs: snapshot.totalGangs,
 				prisonCount: snapshot.prisonCount,
 				hospitalCount: snapshot.hospitalCount,

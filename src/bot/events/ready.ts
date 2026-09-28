@@ -18,6 +18,7 @@ module.exports = {
 	async execute(client: Client) {
 		// await sequelize.sync({ force: true });
 		await sequelize.sync();
+		await Dashboard.Initialize();
 		await VaultRepository.GetInstance();
 		changeActivity(client);
 		Notification.StartProcedure();

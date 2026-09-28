@@ -15,7 +15,7 @@ defineProps<Props>();
 
 <template>
 	<BaseCard
-		title="Histórico (últimos 30 dias)"
+		title="Histórico"
 		class="history-card"
 	>
 		<div
@@ -48,7 +48,8 @@ defineProps<Props>();
 				<thead>
 					<tr>
 						<th scope="col">Data</th>
-						<th scope="col">Jogadores</th>
+						<th scope="col">Jogadores ativos</th>
+						<th scope="col">Todos os usuários</th>
 						<th scope="col">Português</th>
 						<th scope="col">Inglês</th>
 						<th scope="col">Espanhol</th>
@@ -62,6 +63,7 @@ defineProps<Props>();
 					>
 						<td><time :datetime="item.date">{{ new Date(item.date).toLocaleDateString() }}</time></td>
 						<td class="font-bold">{{ item.totalPlayers }}</td>
+						<td>{{ item.allUsers ?? "—" }}</td>
 						<td>{{ item.portugueseCount }}</td>
 						<td>{{ item.englishCount }}</td>
 						<td>{{ item.spanishCount }}</td>

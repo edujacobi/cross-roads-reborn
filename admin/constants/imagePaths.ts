@@ -45,6 +45,8 @@ export const imagePaths = {
 	},
 	uiElements: {
 		inventory: "ui_elements/inventory.png",
+		vaultCasino: "ui_elements/CasinoVault.png",
+		vaultBank: "ui_elements/CentralBank.png",
 	},
 } as const;
 

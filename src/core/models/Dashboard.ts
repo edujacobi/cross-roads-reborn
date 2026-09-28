@@ -9,6 +9,7 @@ export class Dashboard {
 		const now = new Date();
 
 		const totalPlayers = await UserRepository.CountActivePlayers();
+		const allUsers = await UserRepository.CountAllUsers();
 		const totalGangs = await GangRepository.CountAllGangs();
 
 		const prisonCount = await UserRepository.CountPrisoners(now);
@@ -29,6 +30,7 @@ export class Dashboard {
 		return {
 			date: now,
 			totalPlayers,
+			allUsers,
 			totalGangs,
 			prisonCount,
 			hospitalCount,
@@ -64,6 +66,10 @@ export class Dashboard {
 	 */
 	static async GetLast30Days() {
 		return await DashboardRepository.GetLast30Days();
+	}
+
+	static async Initialize() {
+		await DashboardRepository.EnsureAllUsersColumn();
 	}
 
 	/**

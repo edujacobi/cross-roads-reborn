@@ -5,6 +5,7 @@ import { CrColors } from "#bot/utils/colors";
 export interface IDashboardStats {
 	date: Date;
 	totalPlayers: number;
+	allUsers: number | null;
 	totalGangs: number;
 	prisonCount: number;
 	hospitalCount: number;
@@ -43,8 +44,9 @@ export class DashboardCanvasBuilder extends BaseCanvasBuilder {
 		ctx.font = "20px Inter";
 		ctx.textAlign = "left";
 		ctx.fillStyle = "#bbbbbb";
-		ctx.fillText(`Total Players: ${stats.totalPlayers}`, this.Padding, 80);
-		ctx.fillText(`Total Gangs: ${stats.totalGangs}`, this.Padding, 110);
+		ctx.fillText(`Active Players: ${stats.totalPlayers}`, this.Padding, 80);
+		ctx.fillText(`All Users: ${stats.allUsers ?? "N/A"}`, this.Padding, 110);
+		ctx.fillText(`Total Gangs: ${stats.totalGangs}`, this.Padding, 140);
 
 		// Draw Pie Chart
 		const chartRadius = 100;
@@ -164,7 +166,7 @@ export class DashboardCanvasBuilder extends BaseCanvasBuilder {
 		ctx.font = "16px InterSemiBold";
 		ctx.fillStyle = "#E3E3E6";
 		ctx.textAlign = "center";
-		ctx.fillText("Players (Last 30 Days)", x + width / 2, y - 10);
+		ctx.fillText("Active Players (Last 30 Days)", x + width / 2, y - 10);
 
 		const maxPlayers = Math.max(...history.map(h => h.totalPlayers), 10);
 		const minPlayers = Math.max(0, Math.min(...history.map(h => h.totalPlayers)) - 5);
