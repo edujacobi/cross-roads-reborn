@@ -165,5 +165,13 @@ export const typeDefs = /* GraphQL */ `
         freeUser(userId: ID!): MutationResult!
         resetCooldown(userId: ID!, cooldown: String!): MutationResult!
         removeAction(userId: ID!, action: String!): MutationResult!
+        setItem(userId: ID!, itemId: Int!, mode: SetMoneyMode!, hoursOrQuantity: Float!): MutationResult!
+        addSpecialCoins(userId: ID!, amount: Int!): MutationResult!
+        setClass(userId: ID!, classId: Int!): MutationResult!
+        setNickname(userId: ID!, nickname: String!): MutationResult!
+        setVip(userId: ID!, days: Int!): MutationResult!
+        killUser(userId: ID!, days: Int!): MutationResult!
+        addBadge(userId: ID!, badgeId: Int!): MutationResult!
+        removeBadge(userId: ID!, badgeId: Int!): MutationResult!
     }
 `;

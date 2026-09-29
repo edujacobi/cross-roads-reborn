@@ -374,5 +374,205 @@ export const resolvers: {
 				user: mapUserDetail(target),
 			};
 		},
+
+		setItem: async (
+			_: unknown,
+			args: { userId: string; itemId: number; mode: "ADD" | "SET"; hoursOrQuantity: number },
+			context: GraphQLContext,
+		) => {
+			assertCanWrite(context);
+			const itemData = ItemList[args.itemId];
+			if (!itemData) {
+				return { success: false, message: `Item with Id ${args.itemId} was not found.`, user: null };
+			}
+			const target = new User(args.userId);
+			const found = await target.GetInfo();
+			if (!found) {
+				return { success: false, message: "User not found.", user: null };
+			}
+
+			const existingItem = await UserItemRepository.FindByUserAndItem(args.userId, args.itemId);
+			const now = new Date();
+
+			if (itemData.Type !== ItemType.Consumable) {
+				const newExpiry = addHours(now, args.hoursOrQuantity);
+				if (args.mode === "SET") {
+					if (existingItem) {
+						await UserItemRepository.UpdateDurationOrQuantity(args.userId, args.itemId, { remainingTime: newExpiry });
+					} else {
+						await UserItemRepository.Create({ userId: args.userId, itemId: args.itemId, remainingTime: newExpiry, skin: BundleId.Default });
+					}
+				} else {
+					const baseDate = existingItem && existingItem.remainingTime > now ? existingItem.remainingTime : now;
+					const extendedExpiry = addHours(baseDate, args.hoursOrQuantity);
+					if (existingItem) {
+						await UserItemRepository.UpdateDurationOrQuantity(args.userId, args.itemId, { remainingTime: extendedExpiry });
+					} else {
+						await UserItemRepository.Create({ userId: args.userId, itemId: args.itemId, remainingTime: extendedExpiry, skin: BundleId.Default });
+					}
+				}
+			} else if (args.mode === "SET") {
+				if (existingItem) {
+					await UserItemRepository.UpdateDurationOrQuantity(args.userId, args.itemId, { quantity: args.hoursOrQuantity });
+				} else {
+					await UserItemRepository.Create({ userId: args.userId, itemId: args.itemId, quantity: args.hoursOrQuantity, skin: BundleId.Default });
+				}
+			} else {
+				const newQuantity = (existingItem?.quantity || 0) + args.hoursOrQuantity;
+				if (existingItem) {
+					await UserItemRepository.UpdateDurationOrQuantity(args.userId, args.itemId, { quantity: newQuantity });
+				} else {
+					await UserItemRepository.Create({ userId: args.userId, itemId: args.itemId, quantity: newQuantity, skin: BundleId.Default });
+				}
+			}
+
+			await target.GetInfo();
+			return {
+				success: true,
+				message: `Item ${itemData.Description[Language.English]} updated for ${target.Nickname}.`,
+				user: mapUserDetail(target),
+			};
+		},
+
+		addSpecialCoins: async (
+			_: unknown,
+			args: { userId: string; amount: number },
+			context: GraphQLContext,
+		) => {
+			assertCanWrite(context);
+			const target = new User(args.userId);
+			const found = await target.GetInfo();
+			if (!found) {
+				return { success: false, message: "User not found.", user: null };
+			}
+			await target.AddSpecialCoin(args.amount);
+			await target.GetInfo();
+			return {
+				success: true,
+				message: `Added ${args.amount} Special Coins to ${target.Nickname}.`,
+				user: mapUserDetail(target),
+			};
+		},
+
+		setClass: async (
+			_: unknown,
+			args: { userId: string; classId: number },
+			context: GraphQLContext,
+		) => {
+			assertCanWrite(context);
+			const target = new User(args.userId);
+			const found = await target.GetInfo();
+			if (!found) {
+				return { success: false, message: "User not found.", user: null };
+			}
+			await target.SetClass(args.classId);
+			await target.GetInfo();
+			const className = ClassList[args.classId]?.Name[Language.English] || "Unknown";
+			return {
+				success: true,
+				message: `Class updated to ${className} for ${target.Nickname}.`,
+				user: mapUserDetail(target),
+			};
+		},
+
+		setNickname: async (
+			_: unknown,
+			args: { userId: string; nickname: string },
+			context: GraphQLContext,
+		) => {
+			assertCanWrite(context);
+			const target = new User(args.userId);
+			const found = await target.GetInfo();
+			if (!found) {
+				return { success: false, message: "User not found.", user: null };
+			}
+			await target.SetNickname(args.nickname);
+			await target.GetInfo();
+			return {
+				success: true,
+				message: `Nickname changed to ${target.Nickname}.`,
+				user: mapUserDetail(target),
+			};
+		},
+
+		setVip: async (
+			_: unknown,
+			args: { userId: string; days: number },
+			context: GraphQLContext,
+		) => {
+			assertCanWrite(context);
+			const target = new User(args.userId);
+			const found = await target.GetInfo();
+			if (!found) {
+				return { success: false, message: "User not found.", user: null };
+			}
+			await target.AddVip(args.days);
+			await target.GetInfo();
+			return {
+				success: true,
+				message: `Added ${args.days} days of VIP to ${target.Nickname}.`,
+				user: mapUserDetail(target),
+			};
+		},
+
+		killUser: async (
+			_: unknown,
+			args: { userId: string; days: number },
+			context: GraphQLContext,
+		) => {
+			assertCanWrite(context);
+			const target = new User(args.userId);
+			const found = await target.GetInfo();
+			if (!found) {
+				return { success: false, message: "User not found.", user: null };
+			}
+			const deadUntil = await target.Kill(args.days);
+			await target.GetInfo();
+			return {
+				success: true,
+				message: `Killed ${target.Nickname} for ${args.days} days (Dead until ${deadUntil.toISOString()}).`,
+				user: mapUserDetail(target),
+			};
+		},
+
+		addBadge: async (
+			_: unknown,
+			args: { userId: string; badgeId: number },
+			context: GraphQLContext,
+		) => {
+			assertCanWrite(context);
+			const target = new User(args.userId);
+			const found = await target.GetInfo();
+			if (!found) {
+				return { success: false, message: "User not found.", user: null };
+			}
+			const success = await UserBadge.Create(args.userId, args.badgeId);
+			await target.GetInfo();
+			return {
+				success,
+				message: success ? `Badge ${args.badgeId} added to ${target.Nickname}.` : `Failed to add badge (or already exists).`,
+				user: mapUserDetail(target),
+			};
+		},
+
+		removeBadge: async (
+			_: unknown,
+			args: { userId: string; badgeId: number },
+			context: GraphQLContext,
+		) => {
+			assertCanWrite(context);
+			const target = new User(args.userId);
+			const found = await target.GetInfo();
+			if (!found) {
+				return { success: false, message: "User not found.", user: null };
+			}
+			const success = await UserBadge.Delete(args.userId, args.badgeId);
+			await target.GetInfo();
+			return {
+				success,
+				message: success ? `Badge ${args.badgeId} removed from ${target.Nickname}.` : `Failed to remove badge (not found).`,
+				user: mapUserDetail(target),
+			};
+		},
 	},
 };

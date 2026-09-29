@@ -173,3 +173,60 @@ mutation RemoveAction($userId: ID!, $action: String!) {
 		message
 	}
 }
+
+mutation SetItem($userId: ID!, $itemId: Int!, $mode: SetMoneyMode!, $hoursOrQuantity: Float!) {
+	setItem(userId: $userId, itemId: $itemId, mode: $mode, hoursOrQuantity: $hoursOrQuantity) {
+		success
+		message
+	}
+}
+
+mutation AddSpecialCoins($userId: ID!, $amount: Int!) {
+	addSpecialCoins(userId: $userId, amount: $amount) {
+		success
+		message
+	}
+}
+
+mutation SetClass($userId: ID!, $classId: Int!) {
+	setClass(userId: $userId, classId: $classId) {
+		success
+		message
+	}
+}
+
+mutation SetNickname($userId: ID!, $nickname: String!) {
+	setNickname(userId: $userId, nickname: $nickname) {
+		success
+		message
+	}
+}
+
+mutation SetVip($userId: ID!, $days: Int!) {
+	setVip(userId: $userId, days: $days) {
+		success
+		message
+	}
+}
+
+mutation KillUser($userId: ID!, $days: Int!) {
+	killUser(userId: $userId, days: $days) {
+		success
+		message
+	}
+}
+
+mutation AddBadge($userId: ID!, $badgeId: Int!) {
+	addBadge(userId: $userId, badgeId: $badgeId) {
+		success
+		message
+	}
+}
+
+mutation RemoveBadge($userId: ID!, $badgeId: Int!) {
+	removeBadge(userId: $userId, badgeId: $badgeId) {
+		success
+		message
+	}
+}
+
