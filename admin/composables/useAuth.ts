@@ -12,6 +12,7 @@ export function useAuth() {
 	const loading = useState<boolean>("auth_loading", () => true);
 
 	const isAuthenticated = computed(() => !!token.value && !!user.value);
+	const isDeveloper = computed(() => user.value?.role === "DEVELOPER");
 	const canWrite = computed(() => user.value?.role === "DEVELOPER" || user.value?.role === "MODERATOR");
 
 	async function initAuth() {
@@ -87,6 +88,7 @@ export function useAuth() {
 		user,
 		loading,
 		isAuthenticated,
+		isDeveloper,
 		canWrite,
 		initAuth,
 		fetchUser,

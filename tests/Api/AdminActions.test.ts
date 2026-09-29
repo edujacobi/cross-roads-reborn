@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { resolvers } from "#api/graphql/resolvers";
 import { User } from "#core/models/User";
 import { UserBadge } from "#core/models/UserBadge";
+import { UserRepository } from "#core/repositories/UserRepository";
 import { UserItemRepository } from "#core/repositories/UserItemRepository";
 import { BadgeId } from "#core/types/Badges";
 import { ClassId } from "#core/types/Classes";
@@ -21,6 +22,11 @@ const moderator = {
 	username: "ModTester",
 	avatar: null,
 	role: "MODERATOR" as const,
+};
+
+const developer = {
+	...moderator,
+	role: "DEVELOPER" as const,
 };
 
 describe("Admin action mutations", () => {
@@ -183,5 +189,57 @@ describe("Admin action mutations", () => {
 		).resolves.toMatchObject({ success: true });
 
 		expect(deleteBadge).toHaveBeenCalledWith("target123", BadgeId.Helper);
+	});
+
+	it("allows only Developers to swap users", async () => {
+		const findById = vi.spyOn(UserRepository, "FindById");
+		const swapUsers = vi.spyOn(UserRepository, "SwapUsers");
+
+		await expect(
+			resolvers.Mutation.swapUsers(null, {
+				firstUserId: "first123",
+				secondUserId: "second123",
+			}, { user: moderator }),
+		).rejects.toThrow("Forbidden: Developer access required.");
+
+		expect(findById).not.toHaveBeenCalled();
+		expect(swapUsers).not.toHaveBeenCalled();
+	});
+
+	it("swaps two existing users through the repository", async () => {
+		const firstUser = { id: "first123", nickname: "First" };
+		const secondUser = { id: "second123", nickname: "Second" };
+		const findById = vi.spyOn(UserRepository, "FindById")
+			.mockResolvedValueOnce(firstUser as never)
+			.mockResolvedValueOnce(secondUser as never);
+		const swapUsers = vi.spyOn(UserRepository, "SwapUsers").mockResolvedValue(["users", "items"]);
+
+		await expect(
+			resolvers.Mutation.swapUsers(null, {
+				firstUserId: firstUser.id,
+				secondUserId: secondUser.id,
+			}, { user: developer }),
+		).resolves.toMatchObject({
+			success: true,
+			message: expect.stringContaining("First and Second"),
+		});
+
+		expect(findById).toHaveBeenCalledTimes(2);
+		expect(swapUsers).toHaveBeenCalledWith(firstUser.id, secondUser.id, expect.stringMatching(/^TEMP_[a-f0-9]{12}$/));
+	});
+
+	it("rejects swapping a user with itself", async () => {
+		const findById = vi.spyOn(UserRepository, "FindById");
+		const swapUsers = vi.spyOn(UserRepository, "SwapUsers");
+
+		await expect(
+			resolvers.Mutation.swapUsers(null, {
+				firstUserId: "same123",
+				secondUserId: "same123",
+			}, { user: developer }),
+		).resolves.toMatchObject({ success: false, message: "Choose two different users." });
+
+		expect(findById).not.toHaveBeenCalled();
+		expect(swapUsers).not.toHaveBeenCalled();
 	});
 });

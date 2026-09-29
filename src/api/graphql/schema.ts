@@ -174,5 +174,6 @@ export const typeDefs = /* GraphQL */ `
         killUser(userId: ID!, days: Int!): MutationResult!
         addBadge(userId: ID!, badgeId: Int!): MutationResult!
         removeBadge(userId: ID!, badgeId: Int!): MutationResult!
+        swapUsers(firstUserId: ID!, secondUserId: ID!): MutationResult!
     }
 `;

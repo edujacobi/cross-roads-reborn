@@ -230,3 +230,9 @@ mutation RemoveBadge($userId: ID!, $badgeId: Int!) {
 	}
 }
 
+mutation SwapUsers($firstUserId: ID!, $secondUserId: ID!) {
+	swapUsers(firstUserId: $firstUserId, secondUserId: $secondUserId) {
+		success
+		message
+	}
+}

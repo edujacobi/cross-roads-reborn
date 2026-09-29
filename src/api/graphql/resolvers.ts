@@ -16,6 +16,8 @@ import { addHours, subMinutes } from "date-fns";
 import { getClient } from "#bot/client";
 import { InvestmentList } from "#core/types/Investments";
 import { GangColor } from "#core/types/GangColors";
+import { randomBytes } from "node:crypto";
+import { logger } from "#shared/log";
 
 function assertAuthenticated(context: GraphQLContext): AuthUser {
 	if (!context.user) {
@@ -30,6 +32,16 @@ function assertCanWrite(context: GraphQLContext): AuthUser {
 	const user = assertAuthenticated(context);
 	if (user.role !== "DEVELOPER" && user.role !== "MODERATOR") {
 		throw new GraphQLError("Forbidden: This role has read-only access.", {
+			extensions: { code: "FORBIDDEN" },
+		});
+	}
+	return user;
+}
+
+function assertDeveloper(context: GraphQLContext): AuthUser {
+	const user = assertAuthenticated(context);
+	if (user.role !== "DEVELOPER") {
+		throw new GraphQLError("Forbidden: Developer access required.", {
 			extensions: { code: "FORBIDDEN" },
 		});
 	}
@@ -605,6 +617,37 @@ export const resolvers: {
 				success,
 				message: success ? `Badge ${args.badgeId} removed from ${target.Nickname}.` : `Failed to remove badge (not found).`,
 				user: mapUserDetail(target),
+			};
+		},
+
+		swapUsers: async (
+			_: unknown,
+			args: { firstUserId: string; secondUserId: string },
+			context: GraphQLContext,
+		) => {
+			const admin = assertDeveloper(context);
+			if (args.firstUserId === args.secondUserId) {
+				return { success: false, message: "Choose two different users.", user: null };
+			}
+
+			const [firstUser, secondUser] = await Promise.all([
+				UserRepository.FindById(args.firstUserId, ["id", "nickname"]),
+				UserRepository.FindById(args.secondUserId, ["id", "nickname"]),
+			]);
+			if (!firstUser || !secondUser) {
+				return { success: false, message: "One or both users were not found.", user: null };
+			}
+
+			const temporaryId = `TEMP_${randomBytes(6).toString("hex")}`;
+			const updatedTables = await UserRepository.SwapUsers(args.firstUserId, args.secondUserId, temporaryId);
+			logger.info(
+				`Developer ${admin.username} (${admin.userId}) swapped users ${firstUser.nickname} (${args.firstUserId}) and ${secondUser.nickname} (${args.secondUserId}).`,
+			);
+
+			return {
+				success: true,
+				message: `Swapped all account data between ${firstUser.nickname} and ${secondUser.nickname}. Updated ${updatedTables.length} table references.`,
+				user: null,
 			};
 		},
 	},

@@ -5,6 +5,7 @@
 import { useMutation } from "@vue/apollo-composable";
 import {
 	Award,
+	ArrowLeftRight,
 	Clock,
 	Coins,
 	Crown,
@@ -36,11 +37,13 @@ import {
 	SetMoneyMode,
 	SetNicknameDocument,
 	SetVipDocument,
+	SwapUsersDocument,
 } from "~/graphql/generated";
 import { BadgeId, ClassId, ItemId } from "../../../src/core/types/Ids";
 
 const props = defineProps<{
 	userId: string;
+	isDeveloper: boolean;
 	canWrite: boolean;
 	isInHospital: boolean;
 	isInPrison: boolean;
@@ -65,6 +68,7 @@ const { mutate: mutateSetVip, loading: vipLoading } = useMutation(SetVipDocument
 const { mutate: mutateKillUser, loading: killLoading } = useMutation(KillUserDocument);
 const { mutate: mutateAddBadge, loading: addBadgeLoading } = useMutation(AddBadgeDocument);
 const { mutate: mutateRemoveBadge, loading: removeBadgeLoading } = useMutation(RemoveBadgeDocument);
+const { mutate: mutateSwapUsers, loading: swapUsersLoading } = useMutation(SwapUsersDocument);
 
 const isMoneyModalOpen = ref(false);
 const moneyAmount = ref(10000);
@@ -87,10 +91,12 @@ const isAddBadgeModalOpen = ref(false);
 const selectedAddBadge = ref<number | null>(null);
 const isRemoveBadgeModalOpen = ref(false);
 const selectedRemoveBadge = ref<number | null>(null);
+const isSwapUsersModalOpen = ref(false);
 const isCooldownModalOpen = ref(false);
 const selectedCooldown = ref<"scavenge" | "robbery" | "beatup">("scavenge");
 const isActionModalOpen = ref(false);
 const selectedAction = ref<"job" | "scavenge" | "robbery" | "beatup" | "casino" | "gangaction">("job");
+const secondSwapUserId = ref("");
 
 const itemOptions = Object.entries(ItemId).flatMap(([name, id]) => (typeof id === "number" ? [{ id, name }] : []));
 const classNames: Record<number, string> = {
@@ -372,6 +378,32 @@ async function handleRemoveAction() {
 		showError(getErrorMessage(error));
 	}
 }
+
+async function handleSwapUsers() {
+	const secondUserId = secondSwapUserId.value.trim();
+	if (!secondUserId || secondUserId === props.userId) {
+		showError("Informe o ID de outro jogador.");
+		return;
+	}
+
+	try {
+		const res = await mutateSwapUsers({
+			firstUserId: props.userId,
+			secondUserId,
+		});
+		if (res?.data?.swapUsers?.success) {
+			isSwapUsersModalOpen.value = false;
+			secondSwapUserId.value = "";
+			showSuccess(res.data.swapUsers.message);
+		}
+		else {
+			showError(res?.data?.swapUsers?.message || "Erro ao trocar os jogadores.");
+		}
+	}
+	catch (error: unknown) {
+		showError(getErrorMessage(error));
+	}
+}
 </script>
 
 <template>
@@ -535,6 +567,18 @@ async function handleRemoveAction() {
 						aria-hidden="true"
 					/>
 					Aplicar Punição de Morte
+				</BaseButton>
+				<BaseButton
+					v-if="isDeveloper"
+					variant="danger"
+					:disabled="swapUsersLoading"
+					@click="isSwapUsersModalOpen = true"
+				>
+					<ArrowLeftRight
+						:size="16"
+						aria-hidden="true"
+					/>
+					Trocar Jogadores
 				</BaseButton>
 			</div>
 		</BaseCard>
@@ -909,6 +953,36 @@ async function handleRemoveAction() {
 					@click="handleRemoveBadge"
 				>
 					Remover Emblema
+				</BaseButton>
+			</template>
+		</BaseModal>
+
+		<BaseModal
+			:open="isSwapUsersModalOpen"
+			title="Trocar dados entre jogadores"
+			description="Esta ação troca todo o progresso e histórico dos dois jogadores em todas as tabelas do banco."
+			@update:open="isSwapUsersModalOpen = $event"
+		>
+			<p>ID atual: <strong>{{ userId }}</strong></p>
+			<BaseInput
+				id="swap-user-id"
+				v-model="secondSwapUserId"
+				label="ID do outro jogador"
+				placeholder="Discord ID"
+			/>
+			<template #footer>
+				<BaseButton
+					variant="ghost"
+					@click="isSwapUsersModalOpen = false"
+				>
+					Cancelar
+				</BaseButton>
+				<BaseButton
+					variant="danger"
+					:disabled="swapUsersLoading || !secondSwapUserId.trim() || secondSwapUserId.trim() === userId"
+					@click="handleSwapUsers"
+				>
+					Confirmar Troca
 				</BaseButton>
 			</template>
 		</BaseModal>
