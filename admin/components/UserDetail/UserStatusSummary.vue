@@ -21,7 +21,7 @@ defineProps<{ user: UserDetail }>();
 				<dd class="user-status__value">
 					<BaseBadge
 						v-if="user.isInHospital && user.hospitalTime"
-						variant="danger"
+						variant="helper"
 					>
 						<NuxtImg
 							:src="imagePaths.situations.hospital"
@@ -46,7 +46,7 @@ defineProps<{ user: UserDetail }>();
 				<dd class="user-status__value">
 					<BaseBadge
 						v-if="user.isInPrison && user.prisonTime"
-						variant="danger"
+						variant="helper"
 					>
 						<NuxtImg
 							:src="imagePaths.situations.prison"
@@ -70,15 +70,18 @@ defineProps<{ user: UserDetail }>();
 				<dt class="user-status__label">Trabalho</dt>
 				<dd class="user-status__value">
 					<BaseBadge
-						v-if="user.isWorking"
-						variant="success"
+						v-if="user.isWorking && user.jobEndsIn"
+						variant="helper"
 					>
 						<NuxtImg
 							:src="imagePaths.situations.job"
 							width="18"
 							alt=""
 						/>
-						Trabalhando
+						Trabalhando até
+						<time :datetime="user.jobEndsIn">
+							{{ new Date(user.jobEndsIn).toLocaleTimeString() }}
+						</time>
 					</BaseBadge>
 					<BaseBadge
 						v-else
@@ -93,7 +96,7 @@ defineProps<{ user: UserDetail }>();
 				<dd class="user-status__value">
 					<BaseBadge
 						v-if="user.isScavenging"
-						variant="success"
+						variant="helper"
 					>
 						<NuxtImg
 							:src="imagePaths.situations.scavenging"
@@ -111,18 +114,85 @@ defineProps<{ user: UserDetail }>();
 				</dd>
 			</div>
 			<div class="user-status__row">
+				<dt class="user-status__label">Roubo</dt>
+				<dd class="user-status__value">
+					<BaseBadge
+						v-if="user.isRobbing || user.isBeingRobbed"
+						variant="helper"
+					>
+						<template v-if="user.isRobbing">
+							<NuxtImg
+								:src="imagePaths.situations.robbery"
+								width="18"
+								alt=""
+							/>
+							Roubando
+						</template>
+						<template v-if="user.isBeingRobbed">
+							<NuxtImg
+								:src="imagePaths.situations.robbery"
+								width="18"
+								alt=""
+							/>
+							Sendo roubado
+						</template>
+					</BaseBadge>
+					<BaseBadge
+						v-else
+						variant="neutral"
+					>
+						Não
+					</BaseBadge>
+				</dd>
+			</div>
+			<div class="user-status__row">
+				<dt class="user-status__label">Espancamento</dt>
+				<dd class="user-status__value">
+					<BaseBadge
+						v-if="user.isBeating || user.isBeingBeated"
+						variant="helper"
+					>
+						<template v-if="user.isBeating">
+							<NuxtImg
+								:src="imagePaths.situations.beatup"
+								width="18"
+								alt=""
+							/>
+							Espancando
+						</template>
+						<template v-if="user.isBeingBeated">
+							<NuxtImg
+								:src="imagePaths.situations.beatup"
+								width="18"
+								alt=""
+							/>
+							Sendo espancado
+						</template>
+					</BaseBadge>
+					<BaseBadge
+						v-else
+						variant="neutral"
+					>
+						Não
+					</BaseBadge>
+				</dd>
+			</div>
+			<div class="user-status__row">
 				<dt class="user-status__label">Procurado</dt>
 				<dd class="user-status__value">
 					<BaseBadge
-						v-if="user.isWanted"
-						variant="danger"
+						v-if="user.isWanted && user.wantedTime"
+						variant="helper"
 					>
 						<NuxtImg
 							:src="imagePaths.situations.wanted"
 							width="18"
 							alt=""
 						/>
-						Procurado
+						Procurado até
+						<time :datetime="user.wantedTime">
+							{{ new Date(user.wantedTime).toLocaleTimeString() }}
+						</time>
 					</BaseBadge>
 					<BaseBadge
 						v-else
@@ -137,7 +207,7 @@ defineProps<{ user: UserDetail }>();
 				<dd class="user-status__value">
 					<BaseBadge
 						v-if="user.isInCasino"
-						variant="success"
+						variant="helper"
 					>
 						<NuxtImg
 							:src="imagePaths.situations.casino"
@@ -145,6 +215,75 @@ defineProps<{ user: UserDetail }>();
 							alt=""
 						/>
 						Apostando
+					</BaseBadge>
+					<BaseBadge
+						v-else
+						variant="neutral"
+					>
+						Não
+					</BaseBadge>
+				</dd>
+			</div>
+			<div class="user-status__row">
+				<dt class="user-status__label">Defendendo investimento</dt>
+				<dd class="user-status__value">
+					<BaseBadge
+						v-if="user.isDefendingInvestment"
+						variant="helper"
+					>
+						<NuxtImg
+							:src="imagePaths.situations.defendingInvestment"
+							width="18"
+							alt=""
+						/>
+						Defendendo
+					</BaseBadge>
+					<BaseBadge
+						v-else
+						variant="neutral"
+					>
+						Não
+					</BaseBadge>
+				</dd>
+			</div>
+			<div class="user-status__row">
+				<dt class="user-status__label">Em ação de gangue</dt>
+				<dd class="user-status__value">
+					<BaseBadge
+						v-if="user.isInGangAction"
+						variant="helper"
+					>
+						<NuxtImg
+							:src="imagePaths.situations.gangAction"
+							width="18"
+							alt=""
+						/>
+						Agindo
+					</BaseBadge>
+					<BaseBadge
+						v-else
+						variant="neutral"
+					>
+						Não
+					</BaseBadge>
+				</dd>
+			</div>
+			<div class="user-status__row">
+				<dt class="user-status__label">Morto</dt>
+				<dd class="user-status__value">
+					<BaseBadge
+						v-if="user.isDead && user.deadUntil"
+						variant="danger"
+					>
+						<NuxtImg
+							:src="imagePaths.situations.dead"
+							width="18"
+							alt=""
+						/>
+						Morto até
+						<time :datetime="user.deadUntil">
+							{{ new Date(user.deadUntil).toLocaleTimeString() }}
+						</time>
 					</BaseBadge>
 					<BaseBadge
 						v-else

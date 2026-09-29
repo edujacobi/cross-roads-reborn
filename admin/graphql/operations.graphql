@@ -94,7 +94,16 @@ query GetUserDetail($id: ID!) {
 		jobEndsIn
 		isScavenging
 		isWanted
+		wantedTime
+		isRobbing
+		isBeingRobbed
+		isBeating
+		isBeingBeated
 		isInCasino
+		isDefendingInvestment
+		isInGangAction
+		isDead
+		deadUntil
 		investment {
 			id
 			name

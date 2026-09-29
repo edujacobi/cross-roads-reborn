@@ -171,7 +171,16 @@ export const typeDefs = /* GraphQL */ `
         jobEndsIn: String
         isScavenging: Boolean!
         isWanted: Boolean!
+        wantedTime: String
+        isRobbing: Boolean!
+        isBeingRobbed: Boolean!
+        isBeating: Boolean!
+        isBeingBeated: Boolean!
         isInCasino: Boolean!
+        isDefendingInvestment: Boolean!
+        isInGangAction: Boolean!
+        isDead: Boolean!
+        deadUntil: String
         investment: InvestmentInfo,
         situationId: Int!,
         situationText: String!

@@ -55,6 +55,7 @@ async function mapUserDetail(user: User) {
 	const isWorking = user.Job.EndsIn > now && user.Job.Id !== null;
 	const isScavenging = user.Scavenge.Time > now && user.Scavenge.IsScavengingId !== null;
 	const isWanted = user.Wanted.Time > now;
+	const isDead = user.DeadUntil > now;
 
 	const items = (user.Items || []).map((item) => {
 		const itemDef = ItemList[item.Id];
@@ -148,7 +149,16 @@ async function mapUserDetail(user: User) {
 		jobEndsIn: isWorking ? user.Job.EndsIn.toISOString() : null,
 		isScavenging,
 		isWanted,
+		wantedTime: isWanted ? user.Wanted.Time.toISOString() : null,
+		isRobbing: user.Robbery.IsRobbingId !== null || user.Robbery.IsRobbingLocationId !== null,
+		isBeingRobbed: user.Robbery.IsBeingRobbedById !== null,
+		isBeating: user.BeatUp.IsBeatingId !== null,
+		isBeingBeated: user.BeatUp.IsBeingBeatUpById !== null,
 		isInCasino: user.Casino.IsInGame,
+		isDefendingInvestment: user.IsDefendingInvestment(),
+		isInGangAction: user.IsParticipatingInGangAction(),
+		isDead,
+		deadUntil: isDead ? user.DeadUntil.toISOString() : null,
 		investment: investment,
 		situationId: user.Situation.Id,
 		situationText: user.Situation.ComplexUI,
