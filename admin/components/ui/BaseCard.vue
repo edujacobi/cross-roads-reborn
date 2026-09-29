@@ -80,7 +80,8 @@ defineProps<Props>();
 	.card-header {
 		@include flex-between;
 		padding: $spacing-md 1.25rem;
-
+		gap: $spacing-sm;
+		
 		// ponytail: wrap card header when title and actions overflow
 		@media (max-width: 540px) {
 			flex-wrap: wrap;

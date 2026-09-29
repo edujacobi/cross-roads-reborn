@@ -91,6 +91,43 @@ export const typeDefs = /* GraphQL */ `
         description: String!
     }
 
+    type UserActivityStats {
+        dailyMaxStreak: Int!
+        dailyCurrentStreak: Int!
+        hospitalCount: Int!
+        hospitalTreatmentCount: Int!
+        hospitalTreatmentSum: Int!
+        prisonCount: Int!
+        escapeCount: Int!
+        prisonBriberySum: Int!
+        prisonBriberyCount: Int!
+        robberySuccessCount: Int!
+        robberyFailureCount: Int!
+        robberySuccessRobbedSum: Int!
+        robberyBeingRobbedCount: Int!
+        robberyBeingRobbedSum: Int!
+        beatUpSuccessCount: Int!
+        beatUpFailureCount: Int!
+        beatUpBeatedUpCount: Int!
+        casinoWinCount: Int!
+        casinoLoseCount: Int!
+        casinoWinSum: Int!
+        casinoLoseSum: Int!
+        almsReceivedSum: Int!
+        almsReceivedCount: Int!
+        almsGivenSum: Int!
+        almsGivenCount: Int!
+        scavengeFoundCount: Int!
+        scavengeFailures: Int!
+        scavengeHospitalizations: Int!
+        scavengePrisonizations: Int!
+        jobReceivedSum: Int!
+        jobReceivedCount: Int!
+        investmentProfit: Int!
+        shopSpentSum: Int!
+        shopSpentCount: Int!
+    }
+
     type InvestmentInfo {
         id: Int!
         name: String!
@@ -139,8 +176,8 @@ export const typeDefs = /* GraphQL */ `
         situationId: Int!,
         situationText: String!
         items: [UserItemInfo!]!
-        dailyStreak: Int!
         voteCount: Int!
+        activityStats: UserActivityStats!
         badges: [UserBadgeInfo!]!
         createdAt: String!
         updatedAt: String!

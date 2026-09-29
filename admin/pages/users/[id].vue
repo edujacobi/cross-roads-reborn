@@ -4,6 +4,7 @@
 >
 import { useQuery } from "@vue/apollo-composable";
 import { ArrowLeft } from "lucide-vue-next";
+import UserActivityStatsCard from "~/components/UserDetail/UserActivityStatsCard.vue";
 import UserAdminActions from "~/components/UserDetail/UserAdminActions.vue";
 import UserGangCard from "~/components/UserDetail/UserGangCard.vue";
 import UserInventoryCard from "~/components/UserDetail/UserInventoryCard.vue";
@@ -97,6 +98,8 @@ function showFeedback(type: "success" | "error", message: string) {
 				v-if="user.gang"
 				:gang="user.gang"
 			/>
+
+			<UserActivityStatsCard :stats="user.activityStats" />
 
 			<div class="user-detail__columns">
 				<UserStatusSummary :user="user" />

@@ -39,7 +39,7 @@ defineProps<{ gang: NonNullable<UserDetail["gang"]> }>();
 	background-color: color-mix(in lab, $bg-card 100%, var(--user-gang-color) 15%);
 
 	:deep(.card-header) {
-		border-color: color-mix(in lab, $border-card 100%, var(--user-gang-color) 75%);
+		border-color: color-mix(in lab, $border-card 100%, var(--user-gang-color) 75%) !important;
 	}
 
 	&__content {

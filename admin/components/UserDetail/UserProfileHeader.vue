@@ -186,6 +186,7 @@ function getBadgeImage(badgeId: BadgeId): string {
 	&__money {
 		font-size: 2rem;
 		font-weight: 700;
+		text-align: end;
 
 		@media (max-width: 640px) {
 			font-size: 1.5rem;

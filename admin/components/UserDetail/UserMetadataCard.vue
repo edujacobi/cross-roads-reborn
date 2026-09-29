@@ -20,10 +20,6 @@ defineProps<{
 				<dd class="user-metadata__value">{{ language }}</dd>
 			</div>
 			<div class="user-metadata__item">
-				<dt class="user-metadata__label">Sequência diária</dt>
-				<dd class="user-metadata__value">{{ user.dailyStreak }} dias</dd>
-			</div>
-			<div class="user-metadata__item">
 				<dt class="user-metadata__label">Votos (Top.gg)</dt>
 				<dd class="user-metadata__value">{{ user.voteCount }}</dd>
 			</div>

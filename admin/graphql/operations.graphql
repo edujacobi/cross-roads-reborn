@@ -105,8 +105,43 @@ query GetUserDetail($id: ID!) {
 		}
 		situationId
 		situationText
-		dailyStreak
 		voteCount
+		activityStats {
+			dailyMaxStreak
+			dailyCurrentStreak
+			hospitalCount
+			hospitalTreatmentCount
+			hospitalTreatmentSum
+			prisonCount
+			escapeCount
+			prisonBriberySum
+			prisonBriberyCount
+			robberySuccessCount
+			robberyFailureCount
+			robberySuccessRobbedSum
+			robberyBeingRobbedCount
+			robberyBeingRobbedSum
+			beatUpSuccessCount
+			beatUpFailureCount
+			beatUpBeatedUpCount
+			casinoWinCount
+			casinoLoseCount
+			casinoWinSum
+			casinoLoseSum
+			almsReceivedSum
+			almsReceivedCount
+			almsGivenSum
+			almsGivenCount
+			scavengeFoundCount
+			scavengeFailures
+			scavengeHospitalizations
+			scavengePrisonizations
+			jobReceivedSum
+			jobReceivedCount
+			investmentProfit
+			shopSpentSum
+			shopSpentCount
+		}
 		items {
 			id
 			name
