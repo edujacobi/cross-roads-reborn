@@ -13,6 +13,9 @@ import { UserItemRepository } from "#core/repositories/UserItemRepository";
 import { ItemType } from "#core/types/Items";
 import { BundleId } from "#core/types/Ids";
 import { addHours, subMinutes } from "date-fns";
+import { getClient } from "#bot/client";
+import { InvestmentList } from "#core/types/Investments";
+import { GangColor } from "#core/types/GangColors";
 
 function assertAuthenticated(context: GraphQLContext): AuthUser {
 	if (!context.user) {
@@ -385,6 +388,9 @@ export const resolvers: {
 			if (!itemData) {
 				return { success: false, message: `Item with Id ${args.itemId} was not found.`, user: null };
 			}
+			if (itemData.Type === ItemType.Consumable && (!Number.isInteger(args.hoursOrQuantity) || args.hoursOrQuantity < 0)) {
+				return { success: false, message: "Consumable quantity must be a non-negative integer.", user: null };
+			}
 			const target = new User(args.userId);
 			const found = await target.GetInfo();
 			if (!found) {
@@ -399,30 +405,57 @@ export const resolvers: {
 				if (args.mode === "SET") {
 					if (existingItem) {
 						await UserItemRepository.UpdateDurationOrQuantity(args.userId, args.itemId, { remainingTime: newExpiry });
-					} else {
-						await UserItemRepository.Create({ userId: args.userId, itemId: args.itemId, remainingTime: newExpiry, skin: BundleId.Default });
 					}
-				} else {
+					else {
+						await UserItemRepository.Create({
+							userId: args.userId,
+							itemId: args.itemId,
+							remainingTime: newExpiry,
+							skin: BundleId.Default,
+						});
+					}
+				}
+				else {
 					const baseDate = existingItem && existingItem.remainingTime > now ? existingItem.remainingTime : now;
 					const extendedExpiry = addHours(baseDate, args.hoursOrQuantity);
 					if (existingItem) {
 						await UserItemRepository.UpdateDurationOrQuantity(args.userId, args.itemId, { remainingTime: extendedExpiry });
-					} else {
-						await UserItemRepository.Create({ userId: args.userId, itemId: args.itemId, remainingTime: extendedExpiry, skin: BundleId.Default });
+					}
+					else {
+						await UserItemRepository.Create({
+							userId: args.userId,
+							itemId: args.itemId,
+							remainingTime: extendedExpiry,
+							skin: BundleId.Default,
+						});
 					}
 				}
-			} else if (args.mode === "SET") {
+			}
+			else if (args.mode === "SET") {
 				if (existingItem) {
 					await UserItemRepository.UpdateDurationOrQuantity(args.userId, args.itemId, { quantity: args.hoursOrQuantity });
-				} else {
-					await UserItemRepository.Create({ userId: args.userId, itemId: args.itemId, quantity: args.hoursOrQuantity, skin: BundleId.Default });
 				}
-			} else {
+				else {
+					await UserItemRepository.Create({
+						userId: args.userId,
+						itemId: args.itemId,
+						quantity: args.hoursOrQuantity,
+						skin: BundleId.Default,
+					});
+				}
+			}
+			else {
 				const newQuantity = (existingItem?.quantity || 0) + args.hoursOrQuantity;
 				if (existingItem) {
 					await UserItemRepository.UpdateDurationOrQuantity(args.userId, args.itemId, { quantity: newQuantity });
-				} else {
-					await UserItemRepository.Create({ userId: args.userId, itemId: args.itemId, quantity: newQuantity, skin: BundleId.Default });
+				}
+				else {
+					await UserItemRepository.Create({
+						userId: args.userId,
+						itemId: args.itemId,
+						quantity: newQuantity,
+						skin: BundleId.Default,
+					});
 				}
 			}
 

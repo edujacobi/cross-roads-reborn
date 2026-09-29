@@ -199,8 +199,8 @@ async function handleSetItem() {
 
 async function handleAddSpecialCoins() {
 	const amount = Number(specialCoinsAmount.value);
-	if (!Number.isInteger(amount) || amount < 0) {
-		showError("Informe uma quantidade inteira igual ou maior que zero.");
+	if (!Number.isInteger(amount)) {
+		showError("Informe uma quantidade inteira.");
 		return;
 	}
 
@@ -253,8 +253,8 @@ async function handleSetNickname() {
 
 async function handleSetVip() {
 	const days = Number(vipDays.value);
-	if (!Number.isInteger(days) || days < 1) {
-		showError("Informe pelo menos 1 dia de VIP.");
+	if (!Number.isInteger(days)) {
+		showError("Informe uma quantidade inteira de dias.");
 		return;
 	}
 
@@ -668,8 +668,8 @@ async function handleRemoveAction() {
 
 		<BaseModal
 			:open="isSpecialCoinsModalOpen"
-			title="Adicionar Moedas Especiais"
-			description="As moedas serão somadas ao saldo atual do jogador."
+			title="Ajustar Moedas Especiais"
+			description="Valores positivos adicionam moedas; valores negativos removem."
 			@update:open="isSpecialCoinsModalOpen = $event"
 		>
 			<BaseInput
@@ -677,7 +677,7 @@ async function handleRemoveAction() {
 				v-model="specialCoinsAmount"
 				type="number"
 				label="Quantidade de moedas"
-				placeholder="Ex: 10"
+				placeholder="Ex: 10 ou -10"
 			/>
 			<template #footer>
 				<BaseButton
@@ -691,7 +691,7 @@ async function handleRemoveAction() {
 					:disabled="specialCoinsLoading"
 					@click="handleAddSpecialCoins"
 				>
-					Adicionar Moedas
+					Aplicar Ajuste
 				</BaseButton>
 			</template>
 		</BaseModal>
@@ -771,8 +771,8 @@ async function handleRemoveAction() {
 
 		<BaseModal
 			:open="isVipModalOpen"
-			title="Adicionar VIP"
-			description="O período informado será adicionado ao VIP atual, se houver."
+			title="Ajustar VIP"
+			description="Dias positivos adicionam VIP; dias negativos removem do período atual."
 			@update:open="isVipModalOpen = $event"
 		>
 			<BaseInput
@@ -780,7 +780,7 @@ async function handleRemoveAction() {
 				v-model="vipDays"
 				type="number"
 				label="Duração em dias"
-				placeholder="30"
+				placeholder="30 ou -30"
 			/>
 			<template #footer>
 				<BaseButton
@@ -794,7 +794,7 @@ async function handleRemoveAction() {
 					:disabled="vipLoading"
 					@click="handleSetVip"
 				>
-					Adicionar VIP
+					Aplicar Ajuste
 				</BaseButton>
 			</template>
 		</BaseModal>
