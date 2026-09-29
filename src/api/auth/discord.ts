@@ -82,24 +82,34 @@ export async function handleDiscordCallback(code: string): Promise<{ token: stri
 
 		const discordUser = (await userResponse.json()) as DiscordOAuthUser;
 
-		// 3. Permission verification: IsDeveloper or IsModerator
-		const [isDeveloper, isModerator] = await Promise.all([
+		// 3. Permission verification: IsDeveloper, IsModerator, or IsHelper
+		const [isDeveloper, isModerator, isHelper] = await Promise.all([
 			UserBadge.IsDeveloper(discordUser.id),
 			UserBadge.IsModerator(discordUser.id),
+			UserBadge.IsHelper(discordUser.id),
 		]);
 
 		// Fallback check for owner if configured
 		const isOwner = process.env.JACOBI_ID && discordUser.id === process.env.JACOBI_ID;
 
-		if (!isDeveloper && !isModerator && !isOwner) {
-			logger.warn(`User ${discordUser.username} (${discordUser.id}) attempted to login to admin panel without Developer or Moderator badge.`);
+		if (!isDeveloper && !isModerator && !isHelper && !isOwner) {
+			logger.warn(`User ${discordUser.username} (${discordUser.id}) attempted to login to admin panel without an authorized badge.`);
 			return {
-				error: "Access denied. You must have the Developer or Moderator badge to access this admin panel.",
+				error: "Access denied. You must have the Developer, Moderator, or Helper badge to access this admin panel.",
 				status: 403,
 			};
 		}
 
-		const role: UserRole = (isDeveloper || isOwner) ? "DEVELOPER" : "MODERATOR";
+		let role: UserRole;
+		if (isDeveloper || isOwner) {
+			role = "DEVELOPER";
+		}
+		else if (isModerator) {
+			role = "MODERATOR";
+		}
+		else {
+			role = "HELPER";
+		}
 
 		const avatarUrl = discordUser.avatar
 			? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png`

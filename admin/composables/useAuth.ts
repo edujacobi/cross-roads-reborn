@@ -2,7 +2,7 @@ export interface AuthUser {
 	userId: string;
 	username: string;
 	avatar: string | null;
-	role: "DEVELOPER" | "MODERATOR";
+	role: "DEVELOPER" | "MODERATOR" | "HELPER";
 }
 
 export function useAuth() {
@@ -12,8 +12,7 @@ export function useAuth() {
 	const loading = useState<boolean>("auth_loading", () => true);
 
 	const isAuthenticated = computed(() => !!token.value && !!user.value);
-	const isDeveloper = computed(() => user.value?.role === "DEVELOPER");
-	const isModerator = computed(() => user.value?.role === "MODERATOR");
+	const canWrite = computed(() => user.value?.role === "DEVELOPER" || user.value?.role === "MODERATOR");
 
 	async function initAuth() {
 		if (!import.meta.client) return;
@@ -88,8 +87,7 @@ export function useAuth() {
 		user,
 		loading,
 		isAuthenticated,
-		isDeveloper,
-		isModerator,
+		canWrite,
 		initAuth,
 		fetchUser,
 		setToken,

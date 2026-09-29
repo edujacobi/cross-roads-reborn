@@ -2,6 +2,7 @@ export const typeDefs = /* GraphQL */ `
     enum Role {
         DEVELOPER
         MODERATOR
+        HELPER
     }
 
     enum SetMoneyMode {

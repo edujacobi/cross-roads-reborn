@@ -59,7 +59,12 @@ onMounted(() => {
 			</div>
 
 			<aside class="info-box">
-				<p>Acesso estritamente restrito a membros <strong>Desenvolvedores</strong> e <strong>Moderadores</strong>.</p>
+				<p>
+					Acesso estritamente restrito a membros <strong class="dev">Desenvolvedores</strong>,
+					<strong class="mod">Moderadores</strong>
+					e
+					<strong class="helper">Ajudantes</strong>.
+				</p>
 			</aside>
 
 			<BaseButton
@@ -166,8 +171,14 @@ onMounted(() => {
 		margin-bottom: $spacing-lg;
 		line-height: 1.5;
 
-		strong {
-			color: $text-primary;
+		.dev {
+			color: $color-developer;
+		}
+		.mod {
+			color: $color-moderator;
+		}
+		.helper {
+			color: $color-helper;
 		}
 	}
 

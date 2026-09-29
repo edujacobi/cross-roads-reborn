@@ -102,9 +102,10 @@ function showFeedback(type: "success" | "error", message: string) {
 				<UserStatusSummary :user="user" />
 				<UserAdminActions
 					:user-id="userId"
-					:is-developer="auth.isDeveloper.value"
+					:can-write="auth.canWrite.value"
 					:is-in-hospital="user.isInHospital"
 					:is-in-prison="user.isInPrison"
+					:badges="user.badges"
 					@feedback="showFeedback"
 					@refresh="refetch"
 				/>

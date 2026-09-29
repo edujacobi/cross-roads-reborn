@@ -1,7 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { signAuthToken, verifyAuthToken } from "#api/auth/jwt";
 import type { AuthUser } from "#api/types";
 import { resolvers } from "#api/graphql/resolvers";
+import { Dashboard } from "#core/models/Dashboard";
+import { User } from "#core/models/User";
+import { Vault } from "#core/models/Vault";
 
 describe("API Auth and Resolvers", () => {
 	const devUser: AuthUser = {
@@ -17,6 +20,15 @@ describe("API Auth and Resolvers", () => {
 		avatar: null,
 		role: "MODERATOR",
 	};
+
+	const helperUser: AuthUser = {
+		userId: "789012",
+		username: "HelperTester",
+		avatar: null,
+		role: "HELPER",
+	};
+
+	afterEach(() => vi.restoreAllMocks());
 
 	describe("JWT Signing and Verification", () => {
 		it("should correctly sign and verify a token for a developer", () => {
@@ -35,6 +47,14 @@ describe("API Auth and Resolvers", () => {
 			expect(decoded).not.toBeNull();
 			expect(decoded?.userId).toBe(modUser.userId);
 			expect(decoded?.role).toBe("MODERATOR");
+		});
+
+		it("should correctly sign and verify a token for a helper", () => {
+			const token = signAuthToken(helperUser);
+			const decoded = verifyAuthToken(token);
+			expect(decoded).not.toBeNull();
+			expect(decoded?.userId).toBe(helperUser.userId);
+			expect(decoded?.role).toBe("HELPER");
 		});
 
 		it("should return null for an invalid token", () => {
@@ -56,16 +76,48 @@ describe("API Auth and Resolvers", () => {
 			).rejects.toThrow("Authentication required to perform this action.");
 		});
 
-		it("should reject mutations when user is MODERATOR (read-only)", async () => {
+		it("should allow dashboard queries when user is HELPER", async () => {
+			vi.spyOn(Dashboard, "GetCurrentStats").mockResolvedValue({
+				date: new Date(),
+				totalPlayers: 0,
+				allUsers: 0,
+				totalGangs: 0,
+				prisonCount: 0,
+				hospitalCount: 0,
+				jobCount: 0,
+				scavengeCount: 0,
+				casinoCount: 0,
+				robberyCount: 0,
+				beatUpCount: 0,
+				idleCount: 0,
+				englishCount: 0,
+				portugueseCount: 0,
+				spanishCount: 0,
+			});
+			vi.spyOn(Vault, "GetBalances").mockResolvedValue({ bank: 0, casino: 0 });
+
 			await expect(
-				resolvers.Mutation.cureUser(null, { userId: "target123" }, { user: modUser }),
-			).rejects.toThrow("Forbidden: Moderators have read-only access.");
+				resolvers.Query.dashboardStats(null, {}, { user: helperUser }),
+			).resolves.toMatchObject({ totalPlayers: 0, bankVaultValue: 0, casinoVaultValue: 0 });
 		});
 
-		it("should reject setMoney when user is MODERATOR", async () => {
+		it("should allow mutations when user is MODERATOR", async () => {
+			vi.spyOn(User.prototype, "GetInfo").mockResolvedValue(null);
 			await expect(
-				resolvers.Mutation.setMoney(null, { userId: "target123", amount: 1000, mode: "ADD" }, { user: modUser }),
-			).rejects.toThrow("Forbidden: Moderators have read-only access.");
+				resolvers.Mutation.cureUser(null, { userId: "target123" }, { user: modUser }),
+			).resolves.toMatchObject({ success: false, message: "User not found." });
+		});
+
+		it("should reject mutations when user is HELPER (read-only)", async () => {
+			await expect(
+				resolvers.Mutation.cureUser(null, { userId: "target123" }, { user: helperUser }),
+			).rejects.toThrow("Forbidden: This role has read-only access.");
+		});
+
+		it("should reject setMoney when user is HELPER", async () => {
+			await expect(
+				resolvers.Mutation.setMoney(null, { userId: "target123", amount: 1000, mode: "ADD" }, { user: helperUser }),
+			).rejects.toThrow("Forbidden: This role has read-only access.");
 		});
 	});
 });

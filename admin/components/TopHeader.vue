@@ -20,7 +20,7 @@ const auth = useAuth();
 
 		<div class="header-role-indicator">
 			<span
-				v-if="auth.isDeveloper.value"
+				v-if="auth.canWrite.value"
 				class="role-hint dev"
 			>
 				Permissão: Leitura & Escrita

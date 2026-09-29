@@ -16,7 +16,8 @@ Roles are enforced both on the API server (GraphQL resolvers) and the frontend:
 | Role        | Read | Write (mutations) |
 |-------------|:----:|:-----------------:|
 | Developer   |  ✔   |         ✔         |
-| Moderator   |  ✔   |         ✗         |
+| Moderator   |  ✔   |         ✔         |
+| Helper      |  ✔   |         ✗         |
 
 ---
 

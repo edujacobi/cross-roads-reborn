@@ -9,10 +9,10 @@ import { ItemList } from "#core/types/Items";
 import type { AuthUser, GraphQLContext } from "#api/types";
 import { convertHexNumberToString, formatMoney } from "#bot/utils/ui";
 import { UserBadge } from "#core/models/UserBadge";
-import { getClient } from "#bot/client";
-import { InvestmentList } from "#core/types/Investments";
-import { GangColor } from "#core/types/GangColors";
-import { subMinutes } from "date-fns";
+import { UserItemRepository } from "#core/repositories/UserItemRepository";
+import { ItemType } from "#core/types/Items";
+import { BundleId } from "#core/types/Ids";
+import { addHours, subMinutes } from "date-fns";
 
 function assertAuthenticated(context: GraphQLContext): AuthUser {
 	if (!context.user) {
@@ -23,10 +23,10 @@ function assertAuthenticated(context: GraphQLContext): AuthUser {
 	return context.user;
 }
 
-function assertDeveloper(context: GraphQLContext): AuthUser {
+function assertCanWrite(context: GraphQLContext): AuthUser {
 	const user = assertAuthenticated(context);
-	if (user.role !== "DEVELOPER") {
-		throw new GraphQLError("Forbidden: Moderators have read-only access.", {
+	if (user.role !== "DEVELOPER" && user.role !== "MODERATOR") {
+		throw new GraphQLError("Forbidden: This role has read-only access.", {
 			extensions: { code: "FORBIDDEN" },
 		});
 	}
@@ -271,7 +271,7 @@ export const resolvers: {
 			args: { userId: string; amount: number; mode: "ADD" | "SET" },
 			context: GraphQLContext,
 		) => {
-			assertDeveloper(context);
+			assertCanWrite(context);
 			const target = new User(args.userId);
 			const found = await target.GetInfo();
 			if (!found) {
@@ -296,7 +296,7 @@ export const resolvers: {
 		},
 
 		cureUser: async (_: unknown, args: { userId: string }, context: GraphQLContext) => {
-			const admin = assertDeveloper(context);
+			const admin = assertCanWrite(context);
 			const target = new User(args.userId);
 			const found = await target.GetInfo();
 			if (!found) {
@@ -314,7 +314,7 @@ export const resolvers: {
 		},
 
 		freeUser: async (_: unknown, args: { userId: string }, context: GraphQLContext) => {
-			const admin = assertDeveloper(context);
+			const admin = assertCanWrite(context);
 			const target = new User(args.userId);
 			const found = await target.GetInfo();
 			if (!found) {
@@ -336,7 +336,7 @@ export const resolvers: {
 			args: { userId: string; cooldown: string },
 			context: GraphQLContext,
 		) => {
-			const admin = assertDeveloper(context);
+			const admin = assertCanWrite(context);
 			const target = new User(args.userId);
 			const found = await target.GetInfo();
 			if (!found) {
@@ -358,7 +358,7 @@ export const resolvers: {
 			args: { userId: string; action: string },
 			context: GraphQLContext,
 		) => {
-			const admin = assertDeveloper(context);
+			const admin = assertCanWrite(context);
 			const target = new User(args.userId);
 			const found = await target.GetInfo();
 			if (!found) {

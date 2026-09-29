@@ -36,8 +36,9 @@ defineProps<{ user: UserDetail }>();
 					<BaseBadge
 						v-else
 						variant="neutral"
-						>Não</BaseBadge
 					>
+						Não
+					</BaseBadge>
 				</dd>
 			</div>
 			<div class="user-status__row">
@@ -60,8 +61,9 @@ defineProps<{ user: UserDetail }>();
 					<BaseBadge
 						v-else
 						variant="neutral"
-						>Não</BaseBadge
 					>
+						Não
+					</BaseBadge>
 				</dd>
 			</div>
 			<div class="user-status__row">
@@ -81,8 +83,9 @@ defineProps<{ user: UserDetail }>();
 					<BaseBadge
 						v-else
 						variant="neutral"
-						>Não</BaseBadge
 					>
+						Não
+					</BaseBadge>
 				</dd>
 			</div>
 			<div class="user-status__row">
@@ -102,8 +105,9 @@ defineProps<{ user: UserDetail }>();
 					<BaseBadge
 						v-else
 						variant="neutral"
-						>Não</BaseBadge
 					>
+						Não
+					</BaseBadge>
 				</dd>
 			</div>
 			<div class="user-status__row">
@@ -123,8 +127,9 @@ defineProps<{ user: UserDetail }>();
 					<BaseBadge
 						v-else
 						variant="neutral"
-						>Não</BaseBadge
 					>
+						Não
+					</BaseBadge>
 				</dd>
 			</div>
 			<div class="user-status__row">
@@ -144,8 +149,9 @@ defineProps<{ user: UserDetail }>();
 					<BaseBadge
 						v-else
 						variant="neutral"
-						>Não</BaseBadge
 					>
+						Não
+					</BaseBadge>
 				</dd>
 			</div>
 		</dl>

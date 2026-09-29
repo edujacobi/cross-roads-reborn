@@ -19,6 +19,10 @@ const user = computed(() => {
 			description: "Moderador",
 			image: "/images/badges/Moderator.png",
 		},
+		["HELPER"]: {
+			description: "Ajudante",
+			image: "/images/badges/Helper.png",
+		},
 	};
 
 	if (!authUser) {
@@ -29,7 +33,6 @@ const user = computed(() => {
 		id: authUser.userId,
 		username: authUser.username,
 		avatarUrl: authUser.avatar || "https://cdn.discordapp.com/embed/avatars/0.png",
-		imageAlt: authUser.username ? `Avatar de ${authUser.username}` : "Avatar do administrador",
 		role: mapRole[authUser.role],
 	};
 });
@@ -84,7 +87,6 @@ const user = computed(() => {
 			>
 				<NuxtImg
 					:src="user?.avatarUrl"
-					:alt="user?.imageAlt"
 					class="admin-avatar"
 				/>
 				<div class="admin-details">
