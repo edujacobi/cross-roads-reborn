@@ -52,6 +52,23 @@ query GetEvents {
 	}
 }
 
+query GetSeasonInfo {
+	seasonInfo {
+		number
+		startDate
+		endDate
+		daysRemaining
+		mainHeistAllowed
+	}
+}
+
+mutation SetMainHeistAllowed($allowed: Boolean!) {
+	setMainHeistAllowed(allowed: $allowed) {
+		success
+		message
+	}
+}
+
 mutation CreateEvent($type: Int!, $value: Float!, $periodStart: String!, $periodEnd: String!) {
 	createEvent(type: $type, value: $value, periodStart: $periodStart, periodEnd: $periodEnd) {
 		success

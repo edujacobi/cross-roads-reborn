@@ -2,7 +2,7 @@
 	setup
 	lang="ts"
 >
-import { CalendarDays, LayoutDashboard, LogOut, Trophy, Users } from "lucide-vue-next";
+import { CalendarDays, CalendarSync, LayoutDashboard, LogOut, Trophy, Users } from "lucide-vue-next";
 import { imagePaths } from "~/constants/imagePaths";
 
 const auth = useAuth();
@@ -88,6 +88,17 @@ const user = computed(() => {
 					aria-hidden="true"
 				/>
 				Eventos
+			</NuxtLink>
+
+			<NuxtLink
+				to="/season"
+				:class="['nav-item', { active: route.path === '/season' }]"
+			>
+				<CalendarSync
+					:size="18"
+					aria-hidden="true"
+				/>
+				Temporada
 			</NuxtLink>
 
 			<NuxtLink

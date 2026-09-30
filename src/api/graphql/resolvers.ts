@@ -1,5 +1,6 @@
 import { GraphQLError } from "graphql";
 import { Dashboard } from "#core/models/Dashboard";
+import { Season } from "#core/models/Season";
 import { Vault } from "#core/models/Vault";
 import { User } from "#core/models/User";
 import { GangRoleRepository } from "#core/repositories/GangRoleRepository";
@@ -296,6 +297,22 @@ export const resolvers: {
 			}));
 		},
 
+		seasonInfo: async (_: unknown, __: unknown, context: GraphQLContext) => {
+			assertAuthenticated(context);
+			const [season, mainHeistAllowed] = await Promise.all([
+				Season.GetCurrent(),
+				Vault.IsMainHeistAllowed(),
+			]);
+
+			return {
+				number: season.Number,
+				startDate: season.StartDate.toISOString(),
+				endDate: season.EndDate.toISOString(),
+				daysRemaining: season.GetDaysRemaining(),
+				mainHeistAllowed,
+			};
+		},
+
 		users: async (
 			_: unknown,
 			args: { search?: string; limit?: number; offset?: number },
@@ -463,6 +480,19 @@ export const resolvers: {
 	},
 
 	Mutation: {
+		setMainHeistAllowed: async (
+			_: unknown,
+			args: { allowed: boolean },
+			context: GraphQLContext,
+		) => {
+			assertDeveloper(context);
+			await Vault.SetMainHeistAllowed(args.allowed);
+			return {
+				success: true,
+				message: `Main heist ${args.allowed ? "enabled" : "disabled"}.`,
+			};
+		},
+
 		createEvent: async (
 			_: unknown,
 			args: { type: number; value: number; periodStart: string; periodEnd: string },

@@ -255,6 +255,19 @@ export const typeDefs = /* GraphQL */ `
         message: String!
     }
 
+    type SeasonInfo {
+        number: Int!
+        startDate: String!
+        endDate: String!
+        daysRemaining: Int!
+        mainHeistAllowed: Boolean!
+    }
+
+    type SeasonMutationResult {
+        success: Boolean!
+        message: String!
+    }
+
     type MutationResult {
         success: Boolean!
         message: String!
@@ -266,6 +279,7 @@ export const typeDefs = /* GraphQL */ `
         dashboardStats: DashboardStats!
         dashboardHistory: [DashboardSnapshot!]!
         events: [Event!]!
+        seasonInfo: SeasonInfo!
         users(search: String, limit: Int, offset: Int): UserSearchResult!
         topUsers(ranking: UserRanking!, limit: Int, offset: Int): UserRankingResult!
         topGangs(limit: Int, offset: Int): GangRankingResult!
@@ -290,5 +304,6 @@ export const typeDefs = /* GraphQL */ `
         createEvent(type: Int!, value: Float!, periodStart: String!, periodEnd: String!): EventMutationResult!
         updateEvent(id: Int!, value: Float, periodStart: String, periodEnd: String): EventMutationResult!
         deleteEvent(id: Int!): EventMutationResult!
+        setMainHeistAllowed(allowed: Boolean!): SeasonMutationResult!
     }
 `;

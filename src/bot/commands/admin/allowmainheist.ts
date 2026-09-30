@@ -2,6 +2,7 @@ import { CrColors } from "#bot/utils/colors";
 import { replyWithContainer } from "#bot/utils/discordInteractions";
 import { defaultComponent } from "#bot/utils/ui";
 import type { User } from "#core/models/User";
+import { UserBadge } from "#core/models/UserBadge";
 import { Vault } from "#core/models/Vault";
 import { Language, type Localization } from "#core/models/Language";
 import {
@@ -29,8 +30,16 @@ module.exports = {
 		),
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
-		const allowed = interaction.options.getBoolean("allowed", true);
 		const s = Strings[language];
+		if (user.Id !== process.env.JACOBI_ID && !await UserBadge.IsDeveloper(user.Id)) {
+			return replyWithContainer(interaction, defaultComponent({
+				user,
+				color: CrColors.Admin,
+				description: s.forbidden,
+			}));
+		}
+
+		const allowed = interaction.options.getBoolean("allowed", true);
 
 		await Vault.SetMainHeistAllowed(allowed);
 
@@ -46,12 +55,15 @@ module.exports = {
 
 const Strings = {
 	[Language.English]: {
+		forbidden: "Only Developers can change the main heist setting.",
 		success: (allowed: boolean) => `Main heist execution is now **${allowed ? "ENABLED (Mon, Wed, Fri)" : "DISABLED"}**.`,
 	},
 	[Language.Portuguese]: {
+		forbidden: "Somente desenvolvedores podem alterar a configuração do golpe principal.",
 		success: (allowed: boolean) => `A execução do golpe principal agora está **${allowed ? "ATIVADA (Seg, Qua, Sex)" : "DESATIVADA"}**.`,
 	},
 	[Language.Spanish]: {
+		forbidden: "Solo los desarrolladores pueden cambiar la configuración del golpe principal.",
 		success: (allowed: boolean) => `La ejecución del golpe principal ahora está **${allowed ? "ACTIVADA (Lun, Mié, Vie)" : "DESACTIVADA"}**.`,
 	},
 } as const satisfies Localization;
