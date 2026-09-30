@@ -9,6 +9,8 @@ interface Props {
 	subtitle?: string;
 	icon?: ImagePath;
 	noBody?: boolean;
+	noPaddingX?: boolean;
+	noPaddingY?: boolean;
 }
 
 defineProps<Props>();
@@ -51,6 +53,10 @@ defineProps<Props>();
 		</div>
 		<div
 			class="card-body"
+			:class="{
+			'card-body__no-padding-x': noPaddingX,
+			'card-body__no-padding-y': noPaddingY
+		}"
 			v-if="!noBody"
 		>
 			<slot />
@@ -81,7 +87,7 @@ defineProps<Props>();
 		@include flex-between;
 		padding: $spacing-md 1.25rem;
 		gap: $spacing-sm;
-		
+
 		// ponytail: wrap card header when title and actions overflow
 		@media (max-width: 540px) {
 			flex-wrap: wrap;
@@ -115,6 +121,14 @@ defineProps<Props>();
 	.card-body {
 		padding: 1.25rem;
 		flex: 1;
+
+		&__no-padding-x {
+			padding-inline: 0
+		}
+
+		&__no-padding-y {
+			padding-block: 0;
+		}
 	}
 
 	.card-footer {

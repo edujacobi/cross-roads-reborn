@@ -17,6 +17,8 @@ defineProps<Props>();
 	<BaseCard
 		title="Histórico"
 		class="history-card"
+		no-padding-x
+		no-padding-y
 	>
 		<div
 			v-if="historyLoading"

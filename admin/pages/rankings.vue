@@ -224,7 +224,11 @@ function nextPage() {
 			</BaseButton>
 		</nav>
 
-		<BaseCard :title="`Top ${activeRanking.label}`">
+		<BaseCard
+			:title="`Top ${activeRanking.label}`"
+			no-padding-x
+			no-padding-y
+		>
 			<div
 				v-if="loading"
 				class="state-message"

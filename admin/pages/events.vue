@@ -217,7 +217,11 @@ async function removeEvent() {
 			</BaseButton>
 		</section>
 
-		<BaseCard title="Todos os eventos">
+		<BaseCard
+			title="Todos os eventos"
+			no-padding-x
+			no-padding-y
+		>
 			<div
 				v-if="loading"
 				class="state-message"

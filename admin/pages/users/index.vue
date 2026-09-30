@@ -69,7 +69,11 @@ function nextPage() {
 			</div>
 		</div>
 
-		<BaseCard class="users-card">
+		<BaseCard
+			class="users-card"
+			no-padding-x
+			no-padding-y
+		>
 			<template #header>
 				<div class="search-bar">
 					<Search
