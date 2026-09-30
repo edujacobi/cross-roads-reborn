@@ -141,21 +141,24 @@ async function saveEvent() {
 	const startIso = periodStart.toISOString();
 	const endIso = periodEnd.toISOString();
 	try {
-		const response =
+		const mutationResult =
 			editingEventId.value === null
-				? await createEvent({
-						type: Number(draft.value.type),
-						value,
-						periodStart: startIso,
-						periodEnd: endIso,
-					})
-				: await updateEvent({
-						id: editingEventId.value,
-						value,
-						periodStart: startIso,
-						periodEnd: endIso,
-					});
-		const mutationResult = editingEventId.value === null ? response?.data?.createEvent : response?.data?.updateEvent;
+				? (
+						await createEvent({
+							type: Number(draft.value.type),
+							value,
+							periodStart: startIso,
+							periodEnd: endIso,
+						})
+					)?.data?.createEvent
+				: (
+						await updateEvent({
+							id: editingEventId.value,
+							value,
+							periodStart: startIso,
+							periodEnd: endIso,
+						})
+					)?.data?.updateEvent;
 		if (!mutationResult?.success) {
 			showError(mutationResult?.message || "Não foi possível salvar o evento.");
 			return;
