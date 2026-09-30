@@ -1,4 +1,5 @@
 import { GangMembers } from "#core/database/GangMembers";
+import { Op } from "sequelize";
 
 export class GangMemberRepository {
 	/**
@@ -7,6 +8,13 @@ export class GangMemberRepository {
 	static async FindByUserId(userId: string): Promise<GangMembers | null> {
 		return await GangMembers.findOne({
 			where: { userId },
+		});
+	}
+
+	static async FindAllByUserIds(userIds: string[]): Promise<GangMembers[]> {
+		return await GangMembers.findAll({
+			attributes: ["userId", "gangId"],
+			where: { userId: { [Op.in]: userIds } },
 		});
 	}
 
@@ -87,4 +95,3 @@ export class GangMemberRepository {
 		);
 	}
 }
-

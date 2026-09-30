@@ -12,6 +12,13 @@ export class GangRepository {
 		return await Gangs.findByPk(id, attributes ? { attributes } : undefined);
 	}
 
+	static async FindAllByIds(ids: number[]): Promise<Gangs[]> {
+		return await Gangs.findAll({
+			attributes: ["id", "name", "color"],
+			where: { id: { [Op.in]: ids } },
+		});
+	}
+
 	static async FindTopGangs(limit: number, offset: number): Promise<Gangs[]> {
 		return await Gangs.findAll({
 			limit,

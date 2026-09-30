@@ -95,6 +95,8 @@ export const typeDefs = /* GraphQL */ `
         id: ID!
         nickname: String!
         avatarUrl: String
+        gangName: String
+        gangColor: String
         value: Float!
         count: Float
     }
@@ -102,6 +104,25 @@ export const typeDefs = /* GraphQL */ `
     type UserRankingResult {
         entries: [UserRankingEntry!]!
         total: Int!
+    }
+
+    type GangRankingEntry {
+        id: ID!
+        name: String!
+        acronym: String!
+        imageUrl: String
+        level: Int!
+        experience: Int!
+        memberRole: String
+        color: String!
+    }
+
+    type GangRankingResult {
+        entries: [GangRankingEntry!]!
+        total: Int!
+        currentUserGangId: ID
+        currentUserGangName: String
+        currentUserGangColor: String
     }
 
     type UserItemInfo {
@@ -247,6 +268,7 @@ export const typeDefs = /* GraphQL */ `
         events: [Event!]!
         users(search: String, limit: Int, offset: Int): UserSearchResult!
         topUsers(ranking: UserRanking!, limit: Int, offset: Int): UserRankingResult!
+        topGangs(limit: Int, offset: Int): GangRankingResult!
         user(id: ID!): UserDetail
     }
 

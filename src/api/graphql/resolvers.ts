@@ -2,6 +2,9 @@ import { GraphQLError } from "graphql";
 import { Dashboard } from "#core/models/Dashboard";
 import { Vault } from "#core/models/Vault";
 import { User } from "#core/models/User";
+import { GangRoleRepository } from "#core/repositories/GangRoleRepository";
+import { GangMemberRepository } from "#core/repositories/GangMemberRepository";
+import { GangRepository } from "#core/repositories/GangRepository";
 import {
 	UserRepository,
 	type TopUserRankingCountField,
@@ -371,6 +374,16 @@ export const resolvers: {
 				UserRepository.FindTopUsers(ranking.orderField, limit, offset),
 				UserRepository.CountTopUsers(ranking.orderField),
 			]);
+			const memberships = await GangMemberRepository.FindAllByUserIds(users.map(user => user.id));
+			const gangs = await GangRepository.FindAllByIds([...new Set(memberships.map(member => member.gangId))]);
+			const gangNames = new Map(gangs.map(gang => [gang.id, gang.name]));
+			const gangColors = new Map(
+				gangs.map(gang => [gang.id, convertHexNumberToString(GangColor[gang.color].Color)]),
+			);
+			const gangByUserId = new Map(memberships.map(member => [member.userId, gangNames.get(member.gangId) ?? null]));
+			const gangColorByUserId = new Map(
+				memberships.map(member => [member.userId, gangColors.get(member.gangId) ?? null]),
+			);
 			const client = getClient();
 			const entries = await Promise.all(users.map(async (user) => {
 				let avatarUrl: string | null = null;
@@ -385,12 +398,57 @@ export const resolvers: {
 					id: user.id,
 					nickname: user.nickname || "(Sem Nick)",
 					avatarUrl,
+					gangName: gangByUserId.get(user.id) ?? null,
+					gangColor: gangColorByUserId.get(user.id) ?? null,
 					value: Number(user[ranking.orderField]),
 					count: ranking.countField ? Number(user[ranking.countField]) : null,
 				};
 			}));
 
 			return { entries, total };
+		},
+
+		topGangs: async (
+			_: unknown,
+			args: { limit?: number; offset?: number },
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			const limit = args.limit ?? 15;
+			const offset = args.offset ?? 0;
+			if (!Number.isInteger(limit) || limit < 1 || limit > 100 || !Number.isInteger(offset) || offset < 0) {
+				throw new GraphQLError("Invalid ranking pagination.", {
+					extensions: { code: "BAD_USER_INPUT" },
+				});
+			}
+
+			const [gangs, total, member] = await Promise.all([
+				GangRepository.FindTopGangs(limit, offset),
+				GangRepository.CountAllGangs(),
+				GangMemberRepository.FindByUserId(authUser.userId),
+			]);
+			const [memberRole, userGang] = await Promise.all([
+				member ? GangRoleRepository.FindById(member.roleId) : null,
+				member ? GangRepository.FindById(member.gangId) : null,
+			]);
+			const currentUserGangId = member?.gangId ?? null;
+
+			return {
+				total,
+				currentUserGangId,
+				currentUserGangName: userGang?.name ?? null,
+				currentUserGangColor: userGang ? convertHexNumberToString(GangColor[userGang.color].Color) : null,
+				entries: gangs.map(gang => ({
+					id: gang.id,
+					name: gang.name,
+					acronym: gang.acronym.toUpperCase(),
+					imageUrl: gang.image,
+					level: gang.level,
+					experience: gang.experience,
+					color: convertHexNumberToString(GangColor[gang.color].Color),
+					memberRole: gang.id === currentUserGangId ? memberRole?.name ?? "???" : null,
+				})),
+			};
 		},
 
 		user: async (_: unknown, args: { id: string }, context: GraphQLContext) => {

@@ -7,7 +7,7 @@ import { ChevronLeft, ChevronRight, Trophy } from "lucide-vue-next";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import { type ImagePath, imagePaths } from "~/constants/imagePaths";
-import { GetTopUsersDocument, UserRanking } from "~/graphql/generated";
+import { GetTopGangsDocument, GetTopUsersDocument, UserRanking } from "~/graphql/generated";
 
 definePageMeta({
 	middleware: "auth",
@@ -17,14 +17,16 @@ useHead({
 	title: "Rankings",
 });
 
-const rankings: {
-	type: UserRanking;
+interface RankingList {
+	type: UserRanking | "GANGS";
 	label: string;
 	valueLabel: string;
 	countLabel?: string;
 	image: ImagePath;
 	isMoney: boolean;
-}[] = [
+}
+
+const rankings: RankingList[] = [
 	{ type: UserRanking.Money, label: "Grana", valueLabel: "Saldo", image: imagePaths.badges.top1Money, isMoney: true },
 	{
 		type: UserRanking.Gamblers,
@@ -114,40 +116,68 @@ const rankings: {
 		isMoney: true,
 	},
 ];
+const gangRanking: RankingList = {
+	type: "GANGS",
+	label: "Gangues",
+	valueLabel: "Nível",
+	image: imagePaths.badges.topGang,
+	isMoney: false,
+};
+const rankingOptions = [...rankings, gangRanking];
 
 const auth = useAuth();
-const activeRanking = ref(rankings[0]);
+const activeRanking = ref<RankingList>(rankings[0]);
 const page = ref(1);
 const pageSize = 10;
 const offset = computed(() => (page.value - 1) * pageSize);
-const { result, loading, error, refetch } = useQuery(GetTopUsersDocument, {
-	ranking: activeRanking.value.type,
+const {
+	result: userResult,
+	loading: userLoading,
+	error: userError,
+	refetch: refetchUsers,
+} = useQuery(GetTopUsersDocument, {
+	ranking: rankings[0].type as UserRanking,
 	limit: pageSize,
 	offset: 0,
 });
+const {
+	result: gangResult,
+	loading: gangLoading,
+	error: gangError,
+	refetch: refetchGangs,
+} = useQuery(GetTopGangsDocument, { limit: pageSize, offset: 0 });
 
-const entries = computed(() => result.value?.topUsers.entries ?? []);
-const total = computed(() => result.value?.topUsers.total ?? 0);
+const entries = computed(() => userResult.value?.topUsers.entries ?? []);
+const gangs = computed(() => gangResult.value?.topGangs.entries ?? []);
+const isGangRanking = computed(() => activeRanking.value.type === "GANGS");
+const loading = computed(() => (isGangRanking.value ? gangLoading.value : userLoading.value));
+const error = computed(() => (isGangRanking.value ? gangError.value : userError.value));
+const total = computed(() =>
+	isGangRanking.value ? (gangResult.value?.topGangs.total ?? 0) : (userResult.value?.topUsers.total ?? 0),
+);
 const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSize)));
 const firstResult = computed(() => (total.value > 0 ? offset.value + 1 : 0));
-const lastResult = computed(() => Math.min(offset.value + entries.value.length, total.value));
+const lastResult = computed(() =>
+	Math.min(offset.value + (isGangRanking.value ? gangs.value.length : entries.value.length), total.value),
+);
 
 watch(totalPages, (lastPage) => {
 	if (page.value > lastPage) page.value = lastPage;
 });
 
-async function selectRanking(ranking: (typeof rankings)[number]) {
+async function selectRanking(ranking: RankingList) {
 	activeRanking.value = ranking;
 	await loadPage(1, ranking);
 }
 
 async function loadPage(targetPage: number, ranking = activeRanking.value) {
 	page.value = targetPage;
-	await refetch({
-		ranking: ranking.type,
-		limit: pageSize,
-		offset: (targetPage - 1) * pageSize,
-	});
+	const variables = { limit: pageSize, offset: (targetPage - 1) * pageSize };
+	if (ranking.type === "GANGS") {
+		await refetchGangs(variables);
+	} else {
+		await refetchUsers({ ...variables, ranking: ranking.type });
+	}
 }
 
 function formatValue(value: number): string {
@@ -178,7 +208,7 @@ function nextPage() {
 			aria-label="Tipos de ranking"
 		>
 			<BaseButton
-				v-for="ranking in rankings"
+				v-for="ranking in rankingOptions"
 				:key="ranking.type"
 				class="ranking-tab"
 				:variant="activeRanking.type === ranking.type ? 'success' : 'secondary'"
@@ -210,20 +240,71 @@ function nextPage() {
 				Não foi possível carregar este ranking.
 			</div>
 			<div
-				v-else-if="entries.length === 0"
+				v-else-if="isGangRanking ? gangs.length === 0 : entries.length === 0"
 				class="state-message"
 			>
 				<Trophy
 					:size="32"
 					aria-hidden="true"
 				/>
-				Nenhum jogador neste ranking.
+				{{ isGangRanking ? "Nenhuma gangue neste ranking." : "Nenhum jogador neste ranking." }}
 			</div>
 			<div
 				v-else
 				class="table-wrapper"
 			>
-				<table class="rankings-table">
+				<table
+					v-if="isGangRanking"
+					class="rankings-table"
+				>
+					<caption class="visually-hidden">
+						Ranking de {{ activeRanking.label }}
+					</caption>
+					<thead>
+						<tr>
+							<th scope="col">Gangue</th>
+							<th scope="col">Acrônimo</th>
+							<th scope="col">Nível</th>
+							<th scope="col">Experiência</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr
+							v-for="(gang, index) in gangs"
+							:key="gang.id"
+							:class="{ 'current-user': gang.id === gangResult?.topGangs.currentUserGangId }"
+							:style="{ '--highlight-color': gangResult?.topGangs.currentUserGangColor ?? '#89999A' }"
+						>
+							<th
+								scope="row"
+								class="player-cell"
+							>
+								<div class="player-content">
+									<span class="rank-cell">{{ offset + index + 1 }}</span>
+									<NuxtImg
+										class="player-avatar"
+										:src="gang.imageUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'"
+										alt=""
+									/>
+									<span class="player-name">{{ gang.name }}</span>
+									<span
+										v-if="gang.id === gangResult?.topGangs.currentUserGangId"
+										class="current-user-label"
+									>
+										{{ gang.memberRole }}
+									</span>
+								</div>
+							</th>
+							<td>{{ gang.acronym }}</td>
+							<td class="value-cell">{{ gang.level }}</td>
+							<td>{{ gang.experience.toLocaleString("pt-BR") }}</td>
+						</tr>
+					</tbody>
+				</table>
+				<table
+					v-else
+					class="rankings-table"
+				>
 					<caption class="visually-hidden">
 						Ranking de {{ activeRanking.label }}
 					</caption>
@@ -244,6 +325,7 @@ function nextPage() {
 							v-for="(entry, index) in entries"
 							:key="entry.id"
 							:class="{ 'current-user': entry.id === auth.user.value?.userId }"
+							:style="{ '--highlight-color': entry.gangColor ?? '#89999A' }"
 						>
 							<th
 								scope="row"
@@ -263,6 +345,13 @@ function nextPage() {
 									>
 										Você
 									</span>
+									<span
+										v-if="entry.gangName"
+										class="gang-name-label"
+										:style="{ '--gang-color': entry.gangColor ?? '#89999A' }"
+									>
+										{{ entry.gangName }}
+									</span>
 								</div>
 							</th>
 							<td class="value-cell">{{ formatValue(entry.value) }}</td>
@@ -280,7 +369,8 @@ function nextPage() {
 			>
 				<div class="pagination-footer">
 					<span class="pagination-info">
-						Mostrando <strong>{{ firstResult }}-{{ lastResult }}</strong> de <strong>{{ total }}</strong> jogadores
+						Mostrando <strong>{{ firstResult }}-{{ lastResult }}</strong> de <strong>{{ total }}</strong>
+						{{ isGangRanking ? "gangues" : "jogadores" }}
 					</span>
 					<nav
 						class="pagination-controls"
@@ -378,9 +468,10 @@ function nextPage() {
 		color: $text-secondary;
 	}
 
-	tr.current-user {
-		background-color: rgba($color-brand, 0.1);
-		box-shadow: inset 3px 0 $color-brand;
+	tr.current-user,
+	tr.gang-colored {
+		background-color: color-mix(in srgb, var(--highlight-color) 14%, transparent);
+		box-shadow: inset 3px 0 var(--highlight-color);
 	}
 }
 
@@ -416,6 +507,16 @@ function nextPage() {
 	font-size: 0.6875rem;
 	font-weight: 600;
 	text-transform: uppercase;
+}
+
+.gang-name-label {
+	padding: 0.125rem 0.5rem;
+	border-radius: $radius-full;
+	background-color: color-mix(in srgb, var(--gang-color) 20%, transparent);
+	color: var(--gang-color);
+	border: 1px solid color-mix(in srgb, var(--gang-color) 35%, transparent);
+	font-size: 0.6875rem;
+	font-weight: 600;
 }
 
 .value-cell {

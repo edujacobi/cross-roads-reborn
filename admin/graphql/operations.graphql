@@ -100,8 +100,29 @@ query GetTopUsers($ranking: UserRanking!, $limit: Int!, $offset: Int!) {
 			id
 			nickname
 			avatarUrl
+			gangName
+			gangColor
 			value
 			count
+		}
+	}
+}
+
+query GetTopGangs($limit: Int!, $offset: Int!) {
+	topGangs(limit: $limit, offset: $offset) {
+		total
+		currentUserGangId
+		currentUserGangName
+		currentUserGangColor
+		entries {
+			id
+			name
+			acronym
+			imageUrl
+			level
+			experience
+			memberRole
+			color
 		}
 	}
 }
