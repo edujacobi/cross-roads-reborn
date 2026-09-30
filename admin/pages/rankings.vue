@@ -324,8 +324,12 @@ function nextPage() {
 						<tr
 							v-for="(entry, index) in entries"
 							:key="entry.id"
+							class="clickable-row"
+							tabindex="0"
 							:class="{ 'current-user': entry.id === auth.user.value?.userId }"
 							:style="{ '--highlight-color': entry.gangColor ?? '#89999A' }"
+							@click="navigateTo(`/users/${entry.id}`)"
+							@keydown.enter.prevent="navigateTo(`/users/${entry.id}`)"
 						>
 							<th
 								scope="row"
@@ -462,6 +466,20 @@ function nextPage() {
 	tbody th {
 		font-size: inherit;
 		text-transform: none;
+	}
+
+	.clickable-row {
+		cursor: pointer;
+
+		&:hover,
+		&:focus-visible {
+			background-color: rgba($bg-input, 0.12);
+		}
+
+		&:focus-visible {
+			outline: 2px solid $color-special;
+			outline-offset: -2px;
+		}
 	}
 
 	td {
