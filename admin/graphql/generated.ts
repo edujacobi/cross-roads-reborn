@@ -63,6 +63,22 @@ export type DashboardStats = {
   totalPlayers: Scalars['Int']['output'];
 };
 
+export type Event = {
+  __typename?: 'Event';
+  id: Scalars['Int']['output'];
+  isActive: Scalars['Boolean']['output'];
+  periodEnd: Scalars['String']['output'];
+  periodStart: Scalars['String']['output'];
+  type: Scalars['Int']['output'];
+  value: Scalars['Float']['output'];
+};
+
+export type EventMutationResult = {
+  __typename?: 'EventMutationResult';
+  message: Scalars['String']['output'];
+  success: Scalars['Boolean']['output'];
+};
+
 export type GangInfo = {
   __typename?: 'GangInfo';
   color: Scalars['String']['output'];
@@ -87,7 +103,9 @@ export type Mutation = {
   __typename?: 'Mutation';
   addBadge: MutationResult;
   addSpecialCoins: MutationResult;
+  createEvent: EventMutationResult;
   cureUser: MutationResult;
+  deleteEvent: EventMutationResult;
   freeUser: MutationResult;
   killUser: MutationResult;
   removeAction: MutationResult;
@@ -99,6 +117,7 @@ export type Mutation = {
   setNickname: MutationResult;
   setVip: MutationResult;
   swapUsers: MutationResult;
+  updateEvent: EventMutationResult;
 };
 
 
@@ -114,8 +133,21 @@ export type MutationAddSpecialCoinsArgs = {
 };
 
 
+export type MutationCreateEventArgs = {
+  periodEnd: Scalars['String']['input'];
+  periodStart: Scalars['String']['input'];
+  type: Scalars['Int']['input'];
+  value: Scalars['Float']['input'];
+};
+
+
 export type MutationCureUserArgs = {
   userId: Scalars['ID']['input'];
+};
+
+
+export type MutationDeleteEventArgs = {
+  id: Scalars['Int']['input'];
 };
 
 
@@ -186,6 +218,14 @@ export type MutationSwapUsersArgs = {
   secondUserId: Scalars['ID']['input'];
 };
 
+
+export type MutationUpdateEventArgs = {
+  id: Scalars['Int']['input'];
+  periodEnd?: InputMaybe<Scalars['String']['input']>;
+  periodStart?: InputMaybe<Scalars['String']['input']>;
+  value?: InputMaybe<Scalars['Float']['input']>;
+};
+
 export type MutationResult = {
   __typename?: 'MutationResult';
   message: Scalars['String']['output'];
@@ -197,6 +237,7 @@ export type Query = {
   __typename?: 'Query';
   dashboardHistory: Array<DashboardSnapshot>;
   dashboardStats: DashboardStats;
+  events: Array<Event>;
   me?: Maybe<AuthUser>;
   user?: Maybe<UserDetail>;
   users: UserSearchResult;
@@ -363,6 +404,38 @@ export type GetDashboardHistoryQueryVariables = Exact<{ [key: string]: never; }>
 
 export type GetDashboardHistoryQuery = { dashboardHistory: Array<{ id: string | null, date: string, totalPlayers: number, allUsers: number | null, totalGangs: number, prisonCount: number, hospitalCount: number, jobCount: number, scavengeCount: number, casinoCount: number, robberyCount: number, beatUpCount: number, idleCount: number, englishCount: number, portugueseCount: number, spanishCount: number }> };
 
+export type GetEventsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetEventsQuery = { events: Array<{ id: number, type: number, value: number, periodStart: string, periodEnd: string, isActive: boolean }> };
+
+export type CreateEventMutationVariables = Exact<{
+  type: number;
+  value: number;
+  periodStart: string;
+  periodEnd: string;
+}>;
+
+
+export type CreateEventMutation = { createEvent: { success: boolean, message: string } };
+
+export type UpdateEventMutationVariables = Exact<{
+  id: number;
+  value?: number | null | undefined;
+  periodStart?: string | null | undefined;
+  periodEnd?: string | null | undefined;
+}>;
+
+
+export type UpdateEventMutation = { updateEvent: { success: boolean, message: string } };
+
+export type DeleteEventMutationVariables = Exact<{
+  id: number;
+}>;
+
+
+export type DeleteEventMutation = { deleteEvent: { success: boolean, message: string } };
+
 export type SearchUsersQueryVariables = Exact<{
   search?: string | null | undefined;
   limit?: number | null | undefined;
@@ -495,6 +568,10 @@ export type SwapUsersMutation = { swapUsers: { success: boolean, message: string
 
 export const GetDashboardStatsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetDashboardStats"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"dashboardStats"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"totalPlayers"}},{"kind":"Field","name":{"kind":"Name","value":"allUsers"}},{"kind":"Field","name":{"kind":"Name","value":"bankVaultValue"}},{"kind":"Field","name":{"kind":"Name","value":"casinoVaultValue"}},{"kind":"Field","name":{"kind":"Name","value":"totalGangs"}},{"kind":"Field","name":{"kind":"Name","value":"prisonCount"}},{"kind":"Field","name":{"kind":"Name","value":"hospitalCount"}},{"kind":"Field","name":{"kind":"Name","value":"jobCount"}},{"kind":"Field","name":{"kind":"Name","value":"scavengeCount"}},{"kind":"Field","name":{"kind":"Name","value":"casinoCount"}},{"kind":"Field","name":{"kind":"Name","value":"robberyCount"}},{"kind":"Field","name":{"kind":"Name","value":"beatUpCount"}},{"kind":"Field","name":{"kind":"Name","value":"idleCount"}},{"kind":"Field","name":{"kind":"Name","value":"englishCount"}},{"kind":"Field","name":{"kind":"Name","value":"portugueseCount"}},{"kind":"Field","name":{"kind":"Name","value":"spanishCount"}}]}}]}}]} as unknown as DocumentNode<GetDashboardStatsQuery, GetDashboardStatsQueryVariables>;
 export const GetDashboardHistoryDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetDashboardHistory"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"dashboardHistory"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"totalPlayers"}},{"kind":"Field","name":{"kind":"Name","value":"allUsers"}},{"kind":"Field","name":{"kind":"Name","value":"totalGangs"}},{"kind":"Field","name":{"kind":"Name","value":"prisonCount"}},{"kind":"Field","name":{"kind":"Name","value":"hospitalCount"}},{"kind":"Field","name":{"kind":"Name","value":"jobCount"}},{"kind":"Field","name":{"kind":"Name","value":"scavengeCount"}},{"kind":"Field","name":{"kind":"Name","value":"casinoCount"}},{"kind":"Field","name":{"kind":"Name","value":"robberyCount"}},{"kind":"Field","name":{"kind":"Name","value":"beatUpCount"}},{"kind":"Field","name":{"kind":"Name","value":"idleCount"}},{"kind":"Field","name":{"kind":"Name","value":"englishCount"}},{"kind":"Field","name":{"kind":"Name","value":"portugueseCount"}},{"kind":"Field","name":{"kind":"Name","value":"spanishCount"}}]}}]}}]} as unknown as DocumentNode<GetDashboardHistoryQuery, GetDashboardHistoryQueryVariables>;
+export const GetEventsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetEvents"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"events"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"periodStart"}},{"kind":"Field","name":{"kind":"Name","value":"periodEnd"}},{"kind":"Field","name":{"kind":"Name","value":"isActive"}}]}}]}}]} as unknown as DocumentNode<GetEventsQuery, GetEventsQueryVariables>;
+export const CreateEventDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateEvent"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"type"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"value"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Float"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"periodStart"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"periodEnd"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createEvent"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"type"},"value":{"kind":"Variable","name":{"kind":"Name","value":"type"}}},{"kind":"Argument","name":{"kind":"Name","value":"value"},"value":{"kind":"Variable","name":{"kind":"Name","value":"value"}}},{"kind":"Argument","name":{"kind":"Name","value":"periodStart"},"value":{"kind":"Variable","name":{"kind":"Name","value":"periodStart"}}},{"kind":"Argument","name":{"kind":"Name","value":"periodEnd"},"value":{"kind":"Variable","name":{"kind":"Name","value":"periodEnd"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<CreateEventMutation, CreateEventMutationVariables>;
+export const UpdateEventDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateEvent"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"value"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Float"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"periodStart"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"periodEnd"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateEvent"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"value"},"value":{"kind":"Variable","name":{"kind":"Name","value":"value"}}},{"kind":"Argument","name":{"kind":"Name","value":"periodStart"},"value":{"kind":"Variable","name":{"kind":"Name","value":"periodStart"}}},{"kind":"Argument","name":{"kind":"Name","value":"periodEnd"},"value":{"kind":"Variable","name":{"kind":"Name","value":"periodEnd"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<UpdateEventMutation, UpdateEventMutationVariables>;
+export const DeleteEventDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"DeleteEvent"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deleteEvent"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<DeleteEventMutation, DeleteEventMutationVariables>;
 export const SearchUsersDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SearchUsers"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"search"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"limit"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"offset"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"users"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"search"},"value":{"kind":"Variable","name":{"kind":"Name","value":"search"}}},{"kind":"Argument","name":{"kind":"Name","value":"limit"},"value":{"kind":"Variable","name":{"kind":"Name","value":"limit"}}},{"kind":"Argument","name":{"kind":"Name","value":"offset"},"value":{"kind":"Variable","name":{"kind":"Name","value":"offset"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"total"}},{"kind":"Field","name":{"kind":"Name","value":"users"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"nickname"}},{"kind":"Field","name":{"kind":"Name","value":"avatarUrl"}},{"kind":"Field","name":{"kind":"Name","value":"class"}},{"kind":"Field","name":{"kind":"Name","value":"isVip"}},{"kind":"Field","name":{"kind":"Name","value":"vipEternal"}},{"kind":"Field","name":{"kind":"Name","value":"situationId"}},{"kind":"Field","name":{"kind":"Name","value":"isDeveloper"}},{"kind":"Field","name":{"kind":"Name","value":"isModerator"}},{"kind":"Field","name":{"kind":"Name","value":"isHelper"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}}]}}]}}]}}]} as unknown as DocumentNode<SearchUsersQuery, SearchUsersQueryVariables>;
 export const GetUserDetailDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetUserDetail"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"nickname"}},{"kind":"Field","name":{"kind":"Name","value":"online"}},{"kind":"Field","name":{"kind":"Name","value":"money"}},{"kind":"Field","name":{"kind":"Name","value":"avatarUrl"}},{"kind":"Field","name":{"kind":"Name","value":"avatarDecoration"}},{"kind":"Field","name":{"kind":"Name","value":"specialCoin"}},{"kind":"Field","name":{"kind":"Name","value":"gang"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"imageUrl"}},{"kind":"Field","name":{"kind":"Name","value":"color"}},{"kind":"Field","name":{"kind":"Name","value":"level"}},{"kind":"Field","name":{"kind":"Name","value":"role"}}]}},{"kind":"Field","name":{"kind":"Name","value":"class"}},{"kind":"Field","name":{"kind":"Name","value":"className"}},{"kind":"Field","name":{"kind":"Name","value":"attack"}},{"kind":"Field","name":{"kind":"Name","value":"defense"}},{"kind":"Field","name":{"kind":"Name","value":"isVip"}},{"kind":"Field","name":{"kind":"Name","value":"vipEternal"}},{"kind":"Field","name":{"kind":"Name","value":"vipTime"}},{"kind":"Field","name":{"kind":"Name","value":"language"}},{"kind":"Field","name":{"kind":"Name","value":"isInHospital"}},{"kind":"Field","name":{"kind":"Name","value":"hospitalTime"}},{"kind":"Field","name":{"kind":"Name","value":"isInPrison"}},{"kind":"Field","name":{"kind":"Name","value":"prisonTime"}},{"kind":"Field","name":{"kind":"Name","value":"isWorking"}},{"kind":"Field","name":{"kind":"Name","value":"jobEndsIn"}},{"kind":"Field","name":{"kind":"Name","value":"isScavenging"}},{"kind":"Field","name":{"kind":"Name","value":"isWanted"}},{"kind":"Field","name":{"kind":"Name","value":"wantedTime"}},{"kind":"Field","name":{"kind":"Name","value":"isRobbing"}},{"kind":"Field","name":{"kind":"Name","value":"isBeingRobbed"}},{"kind":"Field","name":{"kind":"Name","value":"isBeating"}},{"kind":"Field","name":{"kind":"Name","value":"isBeingBeated"}},{"kind":"Field","name":{"kind":"Name","value":"isInCasino"}},{"kind":"Field","name":{"kind":"Name","value":"isDefendingInvestment"}},{"kind":"Field","name":{"kind":"Name","value":"isInGangAction"}},{"kind":"Field","name":{"kind":"Name","value":"isDead"}},{"kind":"Field","name":{"kind":"Name","value":"deadUntil"}},{"kind":"Field","name":{"kind":"Name","value":"investment"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"defense"}},{"kind":"Field","name":{"kind":"Name","value":"expiresAt"}},{"kind":"Field","name":{"kind":"Name","value":"nextPaymentValue"}},{"kind":"Field","name":{"kind":"Name","value":"henchmanEndsAt"}}]}},{"kind":"Field","name":{"kind":"Name","value":"situationId"}},{"kind":"Field","name":{"kind":"Name","value":"situationText"}},{"kind":"Field","name":{"kind":"Name","value":"voteCount"}},{"kind":"Field","name":{"kind":"Name","value":"activityStats"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"dailyMaxStreak"}},{"kind":"Field","name":{"kind":"Name","value":"dailyCurrentStreak"}},{"kind":"Field","name":{"kind":"Name","value":"hospitalCount"}},{"kind":"Field","name":{"kind":"Name","value":"hospitalTreatmentCount"}},{"kind":"Field","name":{"kind":"Name","value":"hospitalTreatmentSum"}},{"kind":"Field","name":{"kind":"Name","value":"prisonCount"}},{"kind":"Field","name":{"kind":"Name","value":"escapeCount"}},{"kind":"Field","name":{"kind":"Name","value":"prisonBriberySum"}},{"kind":"Field","name":{"kind":"Name","value":"prisonBriberyCount"}},{"kind":"Field","name":{"kind":"Name","value":"robberySuccessCount"}},{"kind":"Field","name":{"kind":"Name","value":"robberyFailureCount"}},{"kind":"Field","name":{"kind":"Name","value":"robberySuccessRobbedSum"}},{"kind":"Field","name":{"kind":"Name","value":"robberyBeingRobbedCount"}},{"kind":"Field","name":{"kind":"Name","value":"robberyBeingRobbedSum"}},{"kind":"Field","name":{"kind":"Name","value":"beatUpSuccessCount"}},{"kind":"Field","name":{"kind":"Name","value":"beatUpFailureCount"}},{"kind":"Field","name":{"kind":"Name","value":"beatUpBeatedUpCount"}},{"kind":"Field","name":{"kind":"Name","value":"casinoWinCount"}},{"kind":"Field","name":{"kind":"Name","value":"casinoLoseCount"}},{"kind":"Field","name":{"kind":"Name","value":"casinoWinSum"}},{"kind":"Field","name":{"kind":"Name","value":"casinoLoseSum"}},{"kind":"Field","name":{"kind":"Name","value":"almsReceivedSum"}},{"kind":"Field","name":{"kind":"Name","value":"almsReceivedCount"}},{"kind":"Field","name":{"kind":"Name","value":"almsGivenSum"}},{"kind":"Field","name":{"kind":"Name","value":"almsGivenCount"}},{"kind":"Field","name":{"kind":"Name","value":"scavengeFoundCount"}},{"kind":"Field","name":{"kind":"Name","value":"scavengeFailures"}},{"kind":"Field","name":{"kind":"Name","value":"scavengeHospitalizations"}},{"kind":"Field","name":{"kind":"Name","value":"scavengePrisonizations"}},{"kind":"Field","name":{"kind":"Name","value":"jobReceivedSum"}},{"kind":"Field","name":{"kind":"Name","value":"jobReceivedCount"}},{"kind":"Field","name":{"kind":"Name","value":"investmentProfit"}},{"kind":"Field","name":{"kind":"Name","value":"shopSpentSum"}},{"kind":"Field","name":{"kind":"Name","value":"shopSpentCount"}}]}},{"kind":"Field","name":{"kind":"Name","value":"items"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"quantity"}},{"kind":"Field","name":{"kind":"Name","value":"skin"}},{"kind":"Field","name":{"kind":"Name","value":"remainingTime"}}]}},{"kind":"Field","name":{"kind":"Name","value":"badges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}}]}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}}]}}]}}]} as unknown as DocumentNode<GetUserDetailQuery, GetUserDetailQueryVariables>;
 export const SetMoneyDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SetMoney"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"userId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"amount"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"mode"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"SetMoneyMode"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"setMoney"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"userId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"userId"}}},{"kind":"Argument","name":{"kind":"Name","value":"amount"},"value":{"kind":"Variable","name":{"kind":"Name","value":"amount"}}},{"kind":"Argument","name":{"kind":"Name","value":"mode"},"value":{"kind":"Variable","name":{"kind":"Name","value":"mode"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"money"}}]}}]}}]}}]} as unknown as DocumentNode<SetMoneyMutation, SetMoneyMutationVariables>;

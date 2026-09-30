@@ -14,6 +14,11 @@ export enum EventType {
 }
 
 export class Event {
+	static IsActive(event: Pick<Events, "periodStart" | "periodEnd">): boolean {
+		const currentDate = new Date();
+		return currentDate > event.periodStart && currentDate < event.periodEnd;
+	}
+
 	/**
 	 * Creates a new event.
 	 *
@@ -90,6 +95,14 @@ export class Event {
 			Log.Error(`Error while updating event with Id ${eventId}`);
 			return false;
 		}
+	}
+
+	static async GetById(eventId: number) {
+		return await EventRepository.FindById(eventId);
+	}
+
+	static async GetAll() {
+		return await EventRepository.FindAll();
 	}
 
 	/**

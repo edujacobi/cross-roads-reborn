@@ -4,7 +4,7 @@ import type { NullishPropertiesOf } from "sequelize/lib/utils";
 
 export class EventRepository {
 	static async Create(
-		values: Optional<InferCreationAttributes<Events>, NullishPropertiesOf<InferCreationAttributes<Events>>>
+		values: Optional<InferCreationAttributes<Events>, NullishPropertiesOf<InferCreationAttributes<Events>>>,
 	): Promise<Events> {
 		return await Events.create(values);
 	}
@@ -17,7 +17,7 @@ export class EventRepository {
 
 	static async Update(
 		id: number,
-		values: Partial<InferAttributes<Events>>
+		values: Partial<InferAttributes<Events>>,
 	): Promise<[number]> {
 		return await Events.update(values, {
 			where: { id },
@@ -31,6 +31,16 @@ export class EventRepository {
 				periodStart: { [Op.lte]: date },
 				periodEnd: { [Op.gte]: date },
 			},
+		});
+	}
+
+	static async FindById(id: number): Promise<Events | null> {
+		return await Events.findByPk(id);
+	}
+
+	static async FindAll(): Promise<Events[]> {
+		return await Events.findAll({
+			order: [["periodStart", "DESC"]],
 		});
 	}
 

@@ -10,6 +10,8 @@ interface Props {
 	placeholder?: string;
 	type?: string;
 	disabled?: boolean;
+	required?: boolean;
+	step?: string | number;
 }
 
 defineProps<Props>();
@@ -32,6 +34,8 @@ defineEmits<(e: "update:modelValue", value: string | number) => void>();
 			:value="modelValue"
 			:placeholder="placeholder"
 			:disabled="disabled"
+			:required="required"
+			:step="step"
 			:aria-label="ariaLabel"
 			class="base-input"
 			@input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"

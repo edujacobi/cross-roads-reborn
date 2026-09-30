@@ -192,6 +192,20 @@ export const typeDefs = /* GraphQL */ `
         updatedAt: String!
     }
 
+    type Event {
+        id: Int!
+        type: Int!
+        value: Float!
+        periodStart: String!
+        periodEnd: String!
+        isActive: Boolean!
+    }
+
+    type EventMutationResult {
+        success: Boolean!
+        message: String!
+    }
+
     type MutationResult {
         success: Boolean!
         message: String!
@@ -202,6 +216,7 @@ export const typeDefs = /* GraphQL */ `
         me: AuthUser
         dashboardStats: DashboardStats!
         dashboardHistory: [DashboardSnapshot!]!
+        events: [Event!]!
         users(search: String, limit: Int, offset: Int): UserSearchResult!
         user(id: ID!): UserDetail
     }
@@ -221,5 +236,8 @@ export const typeDefs = /* GraphQL */ `
         addBadge(userId: ID!, badgeId: Int!): MutationResult!
         removeBadge(userId: ID!, badgeId: Int!): MutationResult!
         swapUsers(firstUserId: ID!, secondUserId: ID!): MutationResult!
+        createEvent(type: Int!, value: Float!, periodStart: String!, periodEnd: String!): EventMutationResult!
+        updateEvent(id: Int!, value: Float, periodStart: String, periodEnd: String): EventMutationResult!
+        deleteEvent(id: Int!): EventMutationResult!
     }
 `;

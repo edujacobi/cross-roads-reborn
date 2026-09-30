@@ -41,6 +41,38 @@ query GetDashboardHistory {
 	}
 }
 
+query GetEvents {
+	events {
+		id
+		type
+		value
+		periodStart
+		periodEnd
+		isActive
+	}
+}
+
+mutation CreateEvent($type: Int!, $value: Float!, $periodStart: String!, $periodEnd: String!) {
+	createEvent(type: $type, value: $value, periodStart: $periodStart, periodEnd: $periodEnd) {
+		success
+		message
+	}
+}
+
+mutation UpdateEvent($id: Int!, $value: Float, $periodStart: String, $periodEnd: String) {
+	updateEvent(id: $id, value: $value, periodStart: $periodStart, periodEnd: $periodEnd) {
+		success
+		message
+	}
+}
+
+mutation DeleteEvent($id: Int!) {
+	deleteEvent(id: $id) {
+		success
+		message
+	}
+}
+
 query SearchUsers($search: String, $limit: Int, $offset: Int) {
 	users(search: $search, limit: $limit, offset: $offset) {
 		total

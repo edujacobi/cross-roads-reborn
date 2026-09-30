@@ -13,23 +13,38 @@ where a signed JWT is stored in `localStorage`.
 
 Roles are enforced both on the API server (GraphQL resolvers) and the frontend:
 
-| Role        | Read | Write (mutations) |
-|-------------|:----:|:-----------------:|
-| Developer   |  ✔   |         ✔         |
-| Moderator   |  ✔   |         ✔         |
-| Helper      |  ✔   |         ✗         |
+| Role      | Read | Write (mutations) |
+|-----------|:----:|:-----------------:|
+| Developer |  ✔  |        ✔         |
+| Moderator |  ✔  |        ✔         |
+| Helper    |  ✔  |        ✗         |
 
 ---
 
 ## Environment Variables
 
-For local development, create a `.env` file inside `admin/` (or set these in
-your hosting provider):
+The Nuxt commands explicitly load separate environment files. From the
+repository root, create them from the examples:
+
+```powershell
+Copy-Item admin/.env.dev.example admin/.env.dev
+Copy-Item admin/.env.prod.example admin/.env.prod
+```
+
+Set the API URL in each file:
 
 ```env
-# URL of the running API server (defaults to localhost:3001)
+# admin/.env.dev — used by `npm run admin:dev`
 NUXT_PUBLIC_API_BASE_URL=http://localhost:3001
 ```
+
+```env
+# admin/.env.prod — used by `npm --prefix admin run generate`
+NUXT_PUBLIC_API_BASE_URL=https://graphql.ejacobi.com.br
+```
+
+These scripts pass the corresponding file to Nuxt with `--dotenv`, so the
+production URL in `admin/.env` is not used by them.
 
 The main bot also needs these set in its own `.env`:
 
@@ -43,12 +58,7 @@ FRONTEND_URL=http://localhost:3000
 
 ### Production domain
 
-To serve the admin panel at `https://crossroads.ejacobi.com.br`, set:
-
 ```env
-# Nuxt frontend
-NUXT_PUBLIC_API_BASE_URL=https://crossroads.ejacobi.com.br
-
 # Bot/API server
 DISCORD_REDIRECT_URI=https://crossroads.ejacobi.com.br/auth/discord/callback
 FRONTEND_URL=https://crossroads.ejacobi.com.br
@@ -91,6 +101,17 @@ The admin panel will be available at `http://localhost:3000`.
 
 ## Production Build
 
+To generate the production static site:
+
+```powershell
+npm --prefix admin run generate
+```
+
+This creates `admin/.output` using the production API URL configured
+in `admin/.env.prod`.
+
+For a server-rendered production build:
+
 ```powershell
 npm run admin:build
 ```
@@ -105,13 +126,13 @@ node admin/.output/server/index.mjs
 
 ## Pages
 
-| Route | Description |
-|-------|-------------|
-| `/login` | Discord OAuth login screen |
-| `/auth/callback` | Handles the OAuth redirect and JWT storage |
-| `/` | Dashboard — stats, status grid, language distribution |
-| `/users` | Searchable, paginated user list |
-| `/users/[id]` | Detailed user profile with admin action modals |
+| Route            | Description                                           |
+|------------------|-------------------------------------------------------|
+| `/login`         | Discord OAuth login screen                            |
+| `/auth/callback` | Handles the OAuth redirect and JWT storage            |
+| `/`              | Dashboard — stats, status grid, language distribution |
+| `/users`         | Searchable, paginated user list                       |
+| `/users/[id]`    | Detailed user profile with admin action modals        |
 
 ---
 

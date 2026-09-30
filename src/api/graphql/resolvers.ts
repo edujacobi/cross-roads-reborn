@@ -18,6 +18,8 @@ import { InvestmentList } from "#core/types/Investments";
 import { GangColor } from "#core/types/GangColors";
 import { randomBytes } from "node:crypto";
 import { logger } from "#shared/log";
+import { Event, EventType } from "#core/models/Event";
+import type { Events } from "#core/database/Events";
 
 function assertAuthenticated(context: GraphQLContext): AuthUser {
 	if (!context.user) {
@@ -255,6 +257,20 @@ export const resolvers: {
 			}));
 		},
 
+		events: async (_: unknown, __: unknown, context: GraphQLContext) => {
+			assertAuthenticated(context);
+			const events = await Event.GetAll();
+
+			return events.map(event => ({
+				id: event.id,
+				type: event.type,
+				value: event.value,
+				periodStart: event.periodStart.toISOString(),
+				periodEnd: event.periodEnd.toISOString(),
+				isActive: Event.IsActive(event),
+			}));
+		},
+
 		users: async (
 			_: unknown,
 			args: { search?: string; limit?: number; offset?: number },
@@ -326,6 +342,86 @@ export const resolvers: {
 	},
 
 	Mutation: {
+		createEvent: async (
+			_: unknown,
+			args: { type: number; value: number; periodStart: string; periodEnd: string },
+			context: GraphQLContext,
+		) => {
+			assertCanWrite(context);
+			const eventTypes = Object.values(EventType).filter((type): type is EventType => typeof type === "number");
+			const periodStart = new Date(args.periodStart);
+			const periodEnd = new Date(args.periodEnd);
+			if (
+				!eventTypes.includes(args.type)
+				|| !Number.isFinite(args.value)
+				|| !Number.isFinite(periodStart.getTime())
+				|| !Number.isFinite(periodEnd.getTime())
+				|| periodStart >= periodEnd
+			) {
+				return { success: false, message: "Invalid event data." };
+			}
+
+			const success = await Event.Create(args.type, args.value, periodStart, periodEnd);
+			return {
+				success,
+				message: success ? "Event created successfully." : "Failed to create event.",
+			};
+		},
+
+		updateEvent: async (
+			_: unknown,
+			args: { id: number; value?: number | null; periodStart?: string | null; periodEnd?: string | null },
+			context: GraphQLContext,
+		) => {
+			assertCanWrite(context);
+			const event = await Event.GetById(args.id);
+			if (!event) {
+				return { success: false, message: "Event not found." };
+			}
+
+			const updatedData: Partial<Events> = {};
+			if (args.value !== undefined && args.value !== null) {
+				if (!Number.isFinite(args.value)) {
+					return { success: false, message: "Invalid event value." };
+				}
+				updatedData.value = args.value;
+			}
+
+			const periodStart = args.periodStart !== undefined && args.periodStart !== null
+				? new Date(args.periodStart)
+				: event.periodStart;
+			const periodEnd = args.periodEnd !== undefined && args.periodEnd !== null
+				? new Date(args.periodEnd)
+				: event.periodEnd;
+			if (
+				!Number.isFinite(periodStart.getTime())
+				|| !Number.isFinite(periodEnd.getTime())
+				|| periodStart >= periodEnd
+			) {
+				return { success: false, message: "Event start must be before its end." };
+			}
+			if (args.periodStart !== undefined && args.periodStart !== null) updatedData.periodStart = periodStart;
+			if (args.periodEnd !== undefined && args.periodEnd !== null) updatedData.periodEnd = periodEnd;
+			if (!Object.keys(updatedData).length) {
+				return { success: false, message: "No event changes provided." };
+			}
+
+			const success = await Event.Update(args.id, updatedData);
+			return {
+				success,
+				message: success ? "Event updated successfully." : "Failed to update event.",
+			};
+		},
+
+		deleteEvent: async (_: unknown, args: { id: number }, context: GraphQLContext) => {
+			assertCanWrite(context);
+			const success = await Event.Delete(args.id);
+			return {
+				success,
+				message: success ? "Event deleted successfully." : "Event not found or could not be deleted.",
+			};
+		},
+
 		setMoney: async (
 			_: unknown,
 			args: { userId: string; amount: number; mode: "ADD" | "SET" },

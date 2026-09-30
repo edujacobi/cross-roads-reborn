@@ -2,7 +2,7 @@
 	setup
 	lang="ts"
 >
-import { LayoutDashboard, LogOut, Users } from "lucide-vue-next";
+import { CalendarDays, LayoutDashboard, LogOut, Users } from "lucide-vue-next";
 import { imagePaths } from "~/constants/imagePaths";
 
 const auth = useAuth();
@@ -77,6 +77,17 @@ const user = computed(() => {
 					aria-hidden="true"
 				/>
 				Jogadores
+			</NuxtLink>
+
+			<NuxtLink
+				to="/events"
+				:class="['nav-item', { active: route.path.startsWith('/events') }]"
+			>
+				<CalendarDays
+					:size="18"
+					aria-hidden="true"
+				/>
+				Eventos
 			</NuxtLink>
 		</nav>
 

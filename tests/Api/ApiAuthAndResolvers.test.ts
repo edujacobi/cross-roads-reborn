@@ -3,6 +3,7 @@ import { signAuthToken, verifyAuthToken } from "#api/auth/jwt";
 import type { AuthUser } from "#api/types";
 import { resolvers } from "#api/graphql/resolvers";
 import { Dashboard } from "#core/models/Dashboard";
+import { Event, EventType } from "#core/models/Event";
 import { User } from "#core/models/User";
 import { Vault } from "#core/models/Vault";
 
@@ -118,6 +119,38 @@ describe("API Auth and Resolvers", () => {
 			await expect(
 				resolvers.Mutation.setMoney(null, { userId: "target123", amount: 1000, mode: "ADD" }, { user: helperUser }),
 			).rejects.toThrow("Forbidden: This role has read-only access.");
+		});
+	});
+
+	describe("Event management resolvers", () => {
+		it("rejects event writes from HELPER users", async () => {
+			const createEvent = vi.spyOn(Event, "Create");
+
+			await expect(
+				resolvers.Mutation.createEvent(null, {
+					type: EventType.JOB_TIME_MULTIPLIER,
+					value: 1.5,
+					periodStart: "2027-01-01T00:00:00.000Z",
+					periodEnd: "2027-01-02T00:00:00.000Z",
+				}, { user: helperUser }),
+			).rejects.toThrow("Forbidden: This role has read-only access.");
+
+			expect(createEvent).not.toHaveBeenCalled();
+		});
+
+		it("rejects invalid event data without creating a record", async () => {
+			const createEvent = vi.spyOn(Event, "Create");
+
+			await expect(
+				resolvers.Mutation.createEvent(null, {
+					type: EventType.JOB_TIME_MULTIPLIER,
+					value: 1.5,
+					periodStart: "2027-01-02T00:00:00.000Z",
+					periodEnd: "2027-01-01T00:00:00.000Z",
+				}, { user: modUser }),
+			).resolves.toEqual({ success: false, message: "Invalid event data." });
+
+			expect(createEvent).not.toHaveBeenCalled();
 		});
 	});
 });
