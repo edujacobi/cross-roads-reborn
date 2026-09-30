@@ -2,24 +2,43 @@
 	setup
 	lang="ts"
 >
-import { CalendarDays, CalendarSync, LayoutDashboard, LogOut, Trophy, Users } from "lucide-vue-next";
+import {
+	CalendarDays,
+	CalendarSync,
+	EllipsisVertical,
+	LayoutDashboard,
+	LogOut,
+	Trophy,
+	Users,
+	X,
+} from "lucide-vue-next";
 import { imagePaths } from "~/constants/imagePaths";
 
 const auth = useAuth();
 const route = useRoute();
+const mobileMenu = ref<HTMLInputElement | null>(null);
+
+watch(
+	() => route.path,
+	() => {
+		if (mobileMenu.value) {
+			mobileMenu.value.checked = false;
+		}
+	},
+);
 
 const user = computed(() => {
 	const authUser = auth.user.value;
 	const mapRole = {
-		["DEVELOPER"]: {
+		DEVELOPER: {
 			description: "Desenvolvedor",
 			image: "/images/badges/Developer.png",
 		},
-		["MODERATOR"]: {
+		MODERATOR: {
 			description: "Moderador",
 			image: "/images/badges/Moderator.png",
 		},
-		["HELPER"]: {
+		HELPER: {
 			description: "Ajudante",
 			image: "/images/badges/Helper.png",
 		},
@@ -39,7 +58,33 @@ const user = computed(() => {
 </script>
 
 <template>
+	<input
+		id="mobile-menu-toggle"
+		ref="mobileMenu"
+		class="mobile-menu-toggle"
+		type="checkbox"
+		aria-label="Menu de navegação"
+		aria-controls="admin-sidebar"
+	>
+	<!-- biome-ignore lint/a11y/noLabelWithoutControl: External labels toggle the CSS-controlled checkbox. -->
+	<label
+		for="mobile-menu-toggle"
+		class="mobile-menu-open"
+		aria-hidden="true"
+	>
+		<EllipsisVertical
+			:size="24"
+			aria-hidden="true"
+		/>
+	</label>
+	<!-- biome-ignore lint/a11y/noLabelWithoutControl: External labels toggle the CSS-controlled checkbox. -->
+	<label
+		for="mobile-menu-toggle"
+		class="sidebar-backdrop"
+		aria-hidden="true"
+	/>
 	<aside
+		id="admin-sidebar"
 		class="sidebar"
 		aria-label="Painel administrativo"
 	>
@@ -51,6 +96,17 @@ const user = computed(() => {
 					alt="CROSS ROADS"
 				/>
 			</div>
+			<!-- biome-ignore lint/a11y/noLabelWithoutControl: External labels toggle the CSS-controlled checkbox. -->
+			<label
+				for="mobile-menu-toggle"
+				class="mobile-menu-close"
+				aria-hidden="true"
+			>
+				<X
+					:size="24"
+					aria-hidden="true"
+				/>
+			</label>
 		</div>
 
 		<nav
@@ -115,8 +171,9 @@ const user = computed(() => {
 
 		<div class="admin-profile">
 			<NuxtLink
-				:to="'/users/' + user?.id"
+				:to="`/users/${user?.id}`"
 				class="admin-info"
+				aria-label="Meu inventário"
 			>
 				<NuxtImg
 					:src="user?.avatarUrl"
@@ -166,6 +223,7 @@ const user = computed(() => {
 	flex-shrink: 0;
 
 	.brand {
+		flex-shrink: 0;
 		@include flex-center;
 		padding: 1.5rem 1.25rem;
 		border-bottom: 1px solid $border-subtle;
@@ -180,14 +238,28 @@ const user = computed(() => {
 				max-width: 100%;
 			}
 		}
+
+		.mobile-menu-close {
+			display: none;
+			margin-left: auto;
+			color: $text-secondary;
+			cursor: pointer;
+
+			@media (max-width: 768px) {
+				display: flex;
+			}
+		}
 	}
 
 	.nav-links {
 		flex: 1;
+		min-height: 0;
 		padding: $spacing-md 0.75rem;
 		display: flex;
 		flex-direction: column;
 		gap: $spacing-xs;
+		overflow-y: auto;
+		overscroll-behavior: contain;
 
 		.nav-item {
 			display: flex;
@@ -214,6 +286,7 @@ const user = computed(() => {
 	}
 
 	.admin-profile {
+		flex-shrink: 0;
 		border-top: 1px solid $border-subtle;
 		display: flex;
 		align-items: center;
@@ -286,80 +359,86 @@ const user = computed(() => {
 		}
 	}
 
-	// ponytail: horizontal navbar layout on mobile with scrollable nav options and fixed profile
 	@media (max-width: 768px) {
-		width: 100%;
-		flex-direction: row;
-		align-items: center;
+		position: fixed;
+		inset: 0;
+		z-index: 1000;
+		width: 80%;
+		height: 100dvh;
 		border-right: none;
-		border-bottom: 1px solid $border-subtle;
+		border-left:  1px solid $border-subtle;
+		transform: translateX(125%);
+		visibility: hidden;
+		transition: transform 0.3s ease-in-out, visibility 0.3s;
+	}
+}
 
-		.brand {
-			flex-shrink: 0;
-			padding: 0.75rem 1rem;
-			border-bottom: none;
+.mobile-menu-toggle {
+	display: none;
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	opacity: 0;
 
-			.brand-icon {
-				width: 5rem;
-				height: 2rem;
-			}
-		}
-
-		.nav-links {
-			flex: 1;
-			min-width: 0;
-			flex-direction: row;
-			overflow-x: auto;
-			overflow-y: hidden;
-			padding: 0.5rem;
-			gap: 0.25rem;
-			@include scrollbar-custom;
-
-			.nav-item {
-				flex-shrink: 0;
-				white-space: nowrap;
-				padding: 0.5rem 0.75rem;
-				font-size: 0.8125rem;
-			}
-		}
-
-		.admin-profile {
-			flex-shrink: 0;
-			border-top: none;
-			padding: 0.5rem 0.75rem;
-			background-color: transparent;
-
-			.admin-info {
-				padding: 0.25rem;
-			}
-
-			.admin-details {
-				display: none;
-			}
-		}
+	@media (max-width: 768px) {
+		display: block;
 	}
 
-	@media (max-width: 520px) {
-		.brand {
-			padding: 0.5rem;
+	&:focus-visible + .mobile-menu-open {
+		outline: 2px solid $color-brand;
+		outline-offset: 3px;
+	}
 
-			.brand-icon {
-				width: 3.75rem;
-			}
-		}
+	&:checked ~ .mobile-menu-open {
+		display: none;
+	}
 
-		.nav-links {
-			padding: 0.25rem;
+	&:checked ~ .sidebar-backdrop {
+		display: block;
+	}
 
-			.nav-item {
-				padding: 0.375rem 0.5rem;
-				gap: 6px;
-			}
-		}
+	&:checked ~ .sidebar {
+		transform: translateX(25%);
+		visibility: visible;
+	}
+}
 
-		.admin-profile {
-			padding: 0.25rem 0.5rem;
-		}
+:global(body:has(.mobile-menu-toggle:checked)) {
+	overflow: hidden;
+}
+
+.sidebar-backdrop {
+	display: none;
+	position: fixed;
+	inset: 0;
+	z-index: 999;
+	width: 100%;
+	height: 100%;
+	border: 0;
+	background-color: rgba(0, 0, 0, 0.25);
+	backdrop-filter: blur(4px);
+	-webkit-backdrop-filter: blur(4px);
+	cursor: pointer;
+}
+
+.mobile-menu-open {
+	display: none;
+	cursor: pointer;
+
+	@media (max-width: 768px) {
+		@include flex-center;
+		position: fixed;
+		bottom: 1rem;
+		right: 1rem;
+		z-index: 1001;
+		width: 4rem;
+		height: 4rem;
+		color: $text-primary;
+		background-color: $bg-sidebar;
+		border: 1px solid $border-subtle;
+		border-radius: $radius-full;
+		box-shadow: $shadow-lg;
+		cursor: pointer;
 	}
 }
 </style>
