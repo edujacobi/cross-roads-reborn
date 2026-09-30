@@ -2,16 +2,7 @@
 	setup
 	lang="ts"
 >
-import {
-	CalendarDays,
-	CalendarSync,
-	EllipsisVertical,
-	LayoutDashboard,
-	LogOut,
-	Trophy,
-	Users,
-	X,
-} from "lucide-vue-next";
+import { CalendarDays, CalendarSync, LayoutDashboard, LogOut, Menu, Trophy, Users, X } from "lucide-vue-next";
 import { imagePaths } from "~/constants/imagePaths";
 
 const auth = useAuth();
@@ -72,7 +63,7 @@ const user = computed(() => {
 		class="mobile-menu-open"
 		aria-hidden="true"
 	>
-		<EllipsisVertical
+		<Menu
 			:size="24"
 			aria-hidden="true"
 		/>
