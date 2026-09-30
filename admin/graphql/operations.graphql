@@ -93,6 +93,19 @@ query SearchUsers($search: String, $limit: Int, $offset: Int) {
 	}
 }
 
+query GetTopUsers($ranking: UserRanking!, $limit: Int!, $offset: Int!) {
+	topUsers(ranking: $ranking, limit: $limit, offset: $offset) {
+		total
+		entries {
+			id
+			nickname
+			avatarUrl
+			value
+			count
+		}
+	}
+}
+
 query GetUserDetail($id: ID!) {
 	user(id: $id) {
 		id

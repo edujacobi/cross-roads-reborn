@@ -11,7 +11,7 @@ import { Inventory } from "#bot/utils/invUtils";
 import { runUserRobbery } from "#bot/utils/robberyHelper";
 import { defaultComponent, formatMoney } from "#bot/utils/ui";
 import { searchUser } from "#bot/utils/userUtils";
-import { UserRepository } from "#core/repositories/UserRepository";
+import { UserRepository, type TopUserRankingField } from "#core/repositories/UserRepository";
 import { GangRepository } from "#core/repositories/GangRepository";
 import type { Users } from "#core/database/Users";
 import { BeatUp } from "#core/models/BeatUp";
@@ -49,7 +49,7 @@ enum TopSubcommand {
 
 interface TopSubcommandConfig {
 	attributes: string[];
-	orderField: string;
+	orderField: TopUserRankingField | "level";
 	valueField: string;
 	valueModifier?: (value: number, language: Language) => string;
 	valuePrefix?: IDescription;
@@ -433,7 +433,7 @@ module.exports = {
 		const pagination = new Pagination(interaction, language);
 
 		async function findList() {
-			users = await UserRepository.FindTopUsers(currentConfig.orderField as keyof Users, pagination.Limit, pagination.Offset);
+			users = await UserRepository.FindTopUsers(currentConfig.orderField as TopUserRankingField, pagination.Limit, pagination.Offset);
 		}
 
 		async function findGangs() {
@@ -456,7 +456,7 @@ module.exports = {
 			pagination.HowManyRecords = await GangRepository.CountAllGangs();
 		}
 		else {
-			pagination.HowManyRecords = await UserRepository.CountTopUsers(currentConfig.orderField as keyof Users);
+			pagination.HowManyRecords = await UserRepository.CountTopUsers(currentConfig.orderField as TopUserRankingField);
 		}
 
 		if (subcommand === TopSubcommand.Gangs) {

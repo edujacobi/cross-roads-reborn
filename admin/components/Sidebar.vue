@@ -2,7 +2,7 @@
 	setup
 	lang="ts"
 >
-import { CalendarDays, LayoutDashboard, LogOut, Users } from "lucide-vue-next";
+import { CalendarDays, LayoutDashboard, LogOut, Trophy, Users } from "lucide-vue-next";
 import { imagePaths } from "~/constants/imagePaths";
 
 const auth = useAuth();
@@ -88,6 +88,17 @@ const user = computed(() => {
 					aria-hidden="true"
 				/>
 				Eventos
+			</NuxtLink>
+
+			<NuxtLink
+				to="/rankings"
+				:class="['nav-item', { active: route.path.startsWith('/rankings') }]"
+			>
+				<Trophy
+					:size="18"
+					aria-hidden="true"
+				/>
+				Rankings
 			</NuxtLink>
 		</nav>
 

@@ -2,7 +2,11 @@ import { GraphQLError } from "graphql";
 import { Dashboard } from "#core/models/Dashboard";
 import { Vault } from "#core/models/Vault";
 import { User } from "#core/models/User";
-import { UserRepository } from "#core/repositories/UserRepository";
+import {
+	UserRepository,
+	type TopUserRankingCountField,
+	type TopUserRankingField,
+} from "#core/repositories/UserRepository";
 import { ClassList } from "#core/types/Classes";
 import { Language } from "#core/models/Language";
 import { ItemList } from "#core/types/Items";
@@ -49,6 +53,24 @@ function assertDeveloper(context: GraphQLContext): AuthUser {
 	}
 	return user;
 }
+
+const topUserRankings = {
+	MONEY: { orderField: "money", countField: undefined },
+	GAMBLERS: { orderField: "casinoWinSum", countField: "casinoWinCount" },
+	SPENDERS: { orderField: "shopSpentSum", countField: "shopSpentCount" },
+	THIEVES: { orderField: "robberySuccessRobbedSum", countField: "robberySuccessCount" },
+	WORKERS: { orderField: "jobReceivedSum", countField: "jobReceivedCount" },
+	DRUNKERS: { orderField: "drinkHappyHour", countField: "drunkCount" },
+	BEATERS: { orderField: "beatUpSuccessCount", countField: "beatUpBeatedUpCount" },
+	SCAVENGERS: { orderField: "scavengeFoundTotal", countField: "scavengeCount" },
+	HOSPITAL: { orderField: "hospitalTreatmentSum", countField: "hospitalTreatmentCount" },
+	BRIBERS: { orderField: "prisonBriberySum", countField: "prisonBriberyCount" },
+	ESCAPERS: { orderField: "escapeCount", countField: "prisonCount" },
+	INVESTORS: { orderField: "investmentTotalProfit", countField: undefined },
+} satisfies Record<
+	string,
+	{ orderField: TopUserRankingField; countField?: TopUserRankingCountField }
+>;
 
 async function mapUserDetail(user: User) {
 	const now = new Date();
@@ -328,6 +350,47 @@ export const resolvers: {
 				users: mappedUsers,
 				total,
 			};
+		},
+
+		topUsers: async (
+			_: unknown,
+			args: { ranking: keyof typeof topUserRankings; limit?: number; offset?: number },
+			context: GraphQLContext,
+		) => {
+			assertAuthenticated(context);
+			const ranking = topUserRankings[args.ranking];
+			const limit = args.limit ?? 15;
+			const offset = args.offset ?? 0;
+			if (!Number.isInteger(limit) || limit < 1 || limit > 100 || !Number.isInteger(offset) || offset < 0) {
+				throw new GraphQLError("Invalid ranking pagination.", {
+					extensions: { code: "BAD_USER_INPUT" },
+				});
+			}
+
+			const [users, total] = await Promise.all([
+				UserRepository.FindTopUsers(ranking.orderField, limit, offset),
+				UserRepository.CountTopUsers(ranking.orderField),
+			]);
+			const client = getClient();
+			const entries = await Promise.all(users.map(async (user) => {
+				let avatarUrl: string | null = null;
+				try {
+					avatarUrl = (await client.users.fetch(user.id)).avatarURL();
+				}
+				catch {
+					avatarUrl = null;
+				}
+
+				return {
+					id: user.id,
+					nickname: user.nickname || "(Sem Nick)",
+					avatarUrl,
+					value: Number(user[ranking.orderField]),
+					count: ranking.countField ? Number(user[ranking.countField]) : null,
+				};
+			}));
+
+			return { entries, total };
 		},
 
 		user: async (_: unknown, args: { id: string }, context: GraphQLContext) => {

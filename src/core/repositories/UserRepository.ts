@@ -19,6 +19,30 @@ import type { Language } from "#core/models/Language";
 import { ClassId } from "#core/types/Classes";
 
 export type UserUpdateParam = Partial<InferAttributes<Users>>;
+export type TopUserRankingField =
+	| "money"
+	| "casinoWinSum"
+	| "shopSpentSum"
+	| "robberySuccessRobbedSum"
+	| "jobReceivedSum"
+	| "drinkHappyHour"
+	| "beatUpSuccessCount"
+	| "scavengeFoundTotal"
+	| "hospitalTreatmentSum"
+	| "prisonBriberySum"
+	| "escapeCount"
+	| "investmentTotalProfit";
+export type TopUserRankingCountField =
+	| "casinoWinCount"
+	| "shopSpentCount"
+	| "robberySuccessCount"
+	| "jobReceivedCount"
+	| "drunkCount"
+	| "beatUpBeatedUpCount"
+	| "scavengeCount"
+	| "hospitalTreatmentCount"
+	| "prisonBriberyCount"
+	| "prisonCount";
 
 export class UserRepository {
 	/**
@@ -151,7 +175,7 @@ export class UserRepository {
 	/**
 	 * Finds top users for a specific column.
 	 */
-	static async FindTopUsers(topType: keyof Users, limit: number, offset: number): Promise<Users[]> {
+	static async FindTopUsers(topType: TopUserRankingField, limit: number, offset: number): Promise<Users[]> {
 		return await Users.findAll({
 			limit,
 			offset,
@@ -166,7 +190,7 @@ export class UserRepository {
 	/**
 	 * Counts top users for a specific column.
 	 */
-	static async CountTopUsers(topType: keyof Users): Promise<number> {
+	static async CountTopUsers(topType: TopUserRankingField): Promise<number> {
 		return await Users.count({
 			where: {
 				class: { [Op.not]: ClassId.None },

@@ -10,6 +10,21 @@ export const typeDefs = /* GraphQL */ `
         SET
     }
 
+    enum UserRanking {
+        MONEY
+        GAMBLERS
+        SPENDERS
+        THIEVES
+        WORKERS
+        DRUNKERS
+        BEATERS
+        SCAVENGERS
+        HOSPITAL
+        BRIBERS
+        ESCAPERS
+        INVESTORS
+    }
+
     type AuthUser {
         userId: ID!
         username: String!
@@ -73,6 +88,19 @@ export const typeDefs = /* GraphQL */ `
 
     type UserSearchResult {
         users: [UserSummary!]!
+        total: Int!
+    }
+
+    type UserRankingEntry {
+        id: ID!
+        nickname: String!
+        avatarUrl: String
+        value: Float!
+        count: Float
+    }
+
+    type UserRankingResult {
+        entries: [UserRankingEntry!]!
         total: Int!
     }
 
@@ -218,6 +246,7 @@ export const typeDefs = /* GraphQL */ `
         dashboardHistory: [DashboardSnapshot!]!
         events: [Event!]!
         users(search: String, limit: Int, offset: Int): UserSearchResult!
+        topUsers(ranking: UserRanking!, limit: Int, offset: Int): UserRankingResult!
         user(id: ID!): UserDetail
     }
 
