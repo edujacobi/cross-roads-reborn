@@ -36,8 +36,8 @@ export const typeDefs = /* GraphQL */ `
         date: String!
         totalPlayers: Int!
         allUsers: Int!
-        bankVaultValue: Int!
-        casinoVaultValue: Int!
+        bankVaultValue: Float!
+        casinoVaultValue: Float!
         totalGangs: Int!
         prisonCount: Int!
         hospitalCount: Int!
@@ -145,35 +145,35 @@ export const typeDefs = /* GraphQL */ `
         dailyCurrentStreak: Int!
         hospitalCount: Int!
         hospitalTreatmentCount: Int!
-        hospitalTreatmentSum: Int!
+        hospitalTreatmentSum: Float!
         prisonCount: Int!
         escapeCount: Int!
-        prisonBriberySum: Int!
+        prisonBriberySum: Float!
         prisonBriberyCount: Int!
         robberySuccessCount: Int!
         robberyFailureCount: Int!
-        robberySuccessRobbedSum: Int!
+        robberySuccessRobbedSum: Float!
         robberyBeingRobbedCount: Int!
-        robberyBeingRobbedSum: Int!
+        robberyBeingRobbedSum: Float!
         beatUpSuccessCount: Int!
         beatUpFailureCount: Int!
         beatUpBeatedUpCount: Int!
         casinoWinCount: Int!
         casinoLoseCount: Int!
-        casinoWinSum: Int!
-        casinoLoseSum: Int!
-        almsReceivedSum: Int!
+        casinoWinSum: Float!
+        casinoLoseSum: Float!
+        almsReceivedSum: Float!
         almsReceivedCount: Int!
-        almsGivenSum: Int!
+        almsGivenSum: Float!
         almsGivenCount: Int!
         scavengeFoundCount: Int!
         scavengeFailures: Int!
         scavengeHospitalizations: Int!
         scavengePrisonizations: Int!
-        jobReceivedSum: Int!
+        jobReceivedSum: Float!
         jobReceivedCount: Int!
-        investmentProfit: Int!
-        shopSpentSum: Int!
+        investmentProfit: Float!
+        shopSpentSum: Float!
         shopSpentCount: Int!
     }
 
@@ -201,8 +201,8 @@ export const typeDefs = /* GraphQL */ `
         online: Boolean!
         avatarUrl: String
         avatarDecoration: String!
-        money: Int!
-        specialCoin: Int!
+        money: Float!
+        specialCoin: Float!
         gang: GangInfo
         class: Int!
         className: String!
@@ -287,13 +287,13 @@ export const typeDefs = /* GraphQL */ `
     }
 
     type Mutation {
-        setMoney(userId: ID!, amount: Int!, mode: SetMoneyMode!): MutationResult!
+        setMoney(userId: ID!, amount: Float!, mode: SetMoneyMode!): MutationResult!
         cureUser(userId: ID!): MutationResult!
         freeUser(userId: ID!): MutationResult!
         resetCooldown(userId: ID!, cooldown: String!): MutationResult!
         removeAction(userId: ID!, action: String!): MutationResult!
         setItem(userId: ID!, itemId: Int!, mode: SetMoneyMode!, hoursOrQuantity: Float!): MutationResult!
-        addSpecialCoins(userId: ID!, amount: Int!): MutationResult!
+        addSpecialCoins(userId: ID!, amount: Float!): MutationResult!
         setClass(userId: ID!, classId: Int!): MutationResult!
         setNickname(userId: ID!, nickname: String!): MutationResult!
         setVip(userId: ID!, days: Int!): MutationResult!

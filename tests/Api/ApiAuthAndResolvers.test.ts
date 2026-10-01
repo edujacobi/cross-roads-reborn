@@ -120,6 +120,36 @@ describe("API Auth and Resolvers", () => {
 				resolvers.Mutation.setMoney(null, { userId: "target123", amount: 1000, mode: "ADD" }, { user: helperUser }),
 			).rejects.toThrow("Forbidden: This role has read-only access.");
 		});
+
+		it("should reject non-integer and unsafe setMoney amounts", async () => {
+			const getInfo = vi.spyOn(User.prototype, "GetInfo");
+
+			for (const amount of [1000.5, Number.MAX_SAFE_INTEGER + 1]) {
+				await expect(
+					resolvers.Mutation.setMoney(null, { userId: "target123", amount, mode: "ADD" }, { user: modUser }),
+				).resolves.toMatchObject({
+					success: false,
+					message: "Money amount must be a safe integer.",
+				});
+			}
+
+			expect(getInfo).not.toHaveBeenCalled();
+		});
+
+		it("should reject non-integer and unsafe special coin amounts", async () => {
+			const getInfo = vi.spyOn(User.prototype, "GetInfo");
+
+			for (const amount of [1000.5, Number.MAX_SAFE_INTEGER + 1]) {
+				await expect(
+					resolvers.Mutation.addSpecialCoins(null, { userId: "target123", amount }, { user: modUser }),
+				).resolves.toMatchObject({
+					success: false,
+					message: "Special coin amount must be a safe integer.",
+				});
+			}
+
+			expect(getInfo).not.toHaveBeenCalled();
+		});
 	});
 
 	describe("Event management resolvers", () => {

@@ -156,7 +156,7 @@ async function handleFree() {
 
 async function handleSetMoney() {
 	const amount = Number(moneyAmount.value);
-	if (!Number.isInteger(amount) || amount < 0) {
+	if (!Number.isSafeInteger(amount) || amount < 0) {
 		showError("Informe uma quantidade inteira igual ou maior que zero.");
 		return;
 	}
@@ -205,7 +205,7 @@ async function handleSetItem() {
 
 async function handleAddSpecialCoins() {
 	const amount = Number(specialCoinsAmount.value);
-	if (!Number.isInteger(amount)) {
+	if (!Number.isSafeInteger(amount)) {
 		showError("Informe uma quantidade inteira.");
 		return;
 	}

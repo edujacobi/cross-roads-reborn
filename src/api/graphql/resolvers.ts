@@ -579,20 +579,23 @@ export const resolvers: {
 			context: GraphQLContext,
 		) => {
 			assertCanWrite(context);
+			if (!Number.isSafeInteger(args.amount)) {
+				return { success: false, message: "Money amount must be a safe integer.", user: null };
+			}
+
 			const target = new User(args.userId);
 			const found = await target.GetInfo();
 			if (!found) {
 				return { success: false, message: "User not found.", user: null };
 			}
 
-			if (args.mode === "ADD") {
-				target.Money += args.amount;
-			}
-			else {
-				target.Money = args.amount;
+			const money = args.mode === "ADD" ? target.Money + args.amount : args.amount;
+			if (!Number.isSafeInteger(money)) {
+				return { success: false, message: "Updated money must be a safe integer.", user: null };
 			}
 
-			await target.Update({ money: target.Money });
+			target.Money = money;
+			await target.Update({ money });
 			await target.GetInfo();
 
 			return {
@@ -777,11 +780,20 @@ export const resolvers: {
 			context: GraphQLContext,
 		) => {
 			assertCanWrite(context);
+			if (!Number.isSafeInteger(args.amount)) {
+				return { success: false, message: "Special coin amount must be a safe integer.", user: null };
+			}
+
 			const target = new User(args.userId);
 			const found = await target.GetInfo();
 			if (!found) {
 				return { success: false, message: "User not found.", user: null };
 			}
+
+			if (!Number.isSafeInteger(target.SpecialCoin + args.amount)) {
+				return { success: false, message: "Updated special coins must be a safe integer.", user: null };
+			}
+
 			await target.AddSpecialCoin(args.amount);
 			await target.GetInfo();
 			return {

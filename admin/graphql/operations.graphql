@@ -252,7 +252,7 @@ query GetUserDetail($id: ID!) {
 	}
 }
 
-mutation SetMoney($userId: ID!, $amount: Int!, $mode: SetMoneyMode!) {
+mutation SetMoney($userId: ID!, $amount: Float!, $mode: SetMoneyMode!) {
 	setMoney(userId: $userId, amount: $amount, mode: $mode) {
 		success
 		message
@@ -308,7 +308,7 @@ mutation SetItem($userId: ID!, $itemId: Int!, $mode: SetMoneyMode!, $hoursOrQuan
 	}
 }
 
-mutation AddSpecialCoins($userId: ID!, $amount: Int!) {
+mutation AddSpecialCoins($userId: ID!, $amount: Float!) {
 	addSpecialCoins(userId: $userId, amount: $amount) {
 		success
 		message
