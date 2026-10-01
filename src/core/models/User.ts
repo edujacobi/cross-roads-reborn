@@ -684,10 +684,10 @@ export class User {
 	}
 
 	/**
-	 * Toggles eternal VIP status.
+	 * Sets eternal VIP status, or toggles it when no value is provided.
 	 */
-	async SetEternalVip() {
-		this.VipEternal = !this.VipEternal;
+	async SetEternalVip(eternal = !this.VipEternal) {
+		this.VipEternal = eternal;
 
 		await this.Update({
 			vipEternal: this.VipEternal,

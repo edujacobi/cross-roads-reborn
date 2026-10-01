@@ -90,8 +90,8 @@ mutation DeleteEvent($id: Int!) {
 	}
 }
 
-query SearchUsers($search: String, $limit: Int, $offset: Int) {
-	users(search: $search, limit: $limit, offset: $offset) {
+query SearchUsers($search: String, $limit: Int, $offset: Int, $vipOnly: Boolean) {
+	users(search: $search, limit: $limit, offset: $offset, vipOnly: $vipOnly) {
 		total
 		users {
 			id
@@ -100,6 +100,7 @@ query SearchUsers($search: String, $limit: Int, $offset: Int) {
 			class
 			isVip
 			vipEternal
+			vipTime
 			situationId
 			isDeveloper
 			isModerator
@@ -330,8 +331,8 @@ mutation SetNickname($userId: ID!, $nickname: String!) {
 	}
 }
 
-mutation SetVip($userId: ID!, $days: Int!) {
-	setVip(userId: $userId, days: $days) {
+mutation SetVip($userId: ID!, $days: Int!, $eternal: Boolean!) {
+	setVip(userId: $userId, days: $days, eternal: $eternal) {
 		success
 		message
 	}

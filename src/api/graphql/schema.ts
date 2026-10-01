@@ -78,6 +78,7 @@ export const typeDefs = /* GraphQL */ `
         class: Int!
         isVip: Boolean!
         vipEternal: Boolean!
+        vipTime: String
         situationId: Int!
         isDeveloper: Boolean!
         isModerator: Boolean!
@@ -281,7 +282,7 @@ export const typeDefs = /* GraphQL */ `
         dashboardHistory: [DashboardSnapshot!]!
         events: [Event!]!
         seasonInfo: SeasonInfo!
-        users(search: String, limit: Int, offset: Int): UserSearchResult!
+        users(search: String, limit: Int, offset: Int, vipOnly: Boolean): UserSearchResult!
         topUsers(ranking: UserRanking!, limit: Int, offset: Int): UserRankingResult!
         topGangs(limit: Int, offset: Int): GangRankingResult!
         user(id: ID!): UserDetail
@@ -297,7 +298,7 @@ export const typeDefs = /* GraphQL */ `
         addSpecialCoins(userId: ID!, amount: Float!): MutationResult!
         setClass(userId: ID!, classId: Int!): MutationResult!
         setNickname(userId: ID!, nickname: String!): MutationResult!
-        setVip(userId: ID!, days: Int!): MutationResult!
+        setVip(userId: ID!, days: Int!, eternal: Boolean!): MutationResult!
         killUser(userId: ID!, days: Int!): MutationResult!
         addBadge(userId: ID!, badgeId: Int!): MutationResult!
         removeBadge(userId: ID!, badgeId: Int!): MutationResult!

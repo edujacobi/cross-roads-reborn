@@ -84,6 +84,7 @@ const isNicknameModalOpen = ref(false);
 const nickname = ref("");
 const isVipModalOpen = ref(false);
 const vipDays = ref(30);
+const vipEternal = ref(false);
 const isKillModalOpen = ref(false);
 const killDays = ref(1);
 const isAddBadgeModalOpen = ref(false);
@@ -257,14 +258,14 @@ async function handleSetNickname() {
 }
 
 async function handleSetVip() {
-	const days = Number(vipDays.value);
-	if (!Number.isInteger(days)) {
+	const days = vipEternal.value ? 0 : Number(vipDays.value);
+	if (!vipEternal.value && !Number.isInteger(days)) {
 		showError("Informe uma quantidade inteira de dias.");
 		return;
 	}
 
 	try {
-		const res = await mutateSetVip({ userId: props.userId, days });
+		const res = await mutateSetVip({ userId: props.userId, days, eternal: vipEternal.value });
 		if (res?.data?.setVip?.success) {
 			showSuccess(res.data.setVip.message);
 			isVipModalOpen.value = false;
@@ -826,7 +827,15 @@ async function handleSwapUsers() {
 				type="number"
 				label="Duração em dias"
 				placeholder="30 ou -30"
+				:disabled="vipEternal"
 			/>
+			<label class="vip-eternal-option">
+				<input
+					v-model="vipEternal"
+					type="checkbox"
+				>
+				VIP eterno
+			</label>
 			<template #footer>
 				<BaseButton
 					variant="ghost"
@@ -1150,5 +1159,15 @@ async function handleSwapUsers() {
 			border-color: $color-brand;
 		}
 	}
+}
+
+.vip-eternal-option {
+	display: flex;
+	align-items: center;
+	gap: $spacing-sm;
+	color: $text-primary;
+	margin-top: $spacing-md;
+	font-size: 0.875rem;
+	cursor: pointer;
 }
 </style>

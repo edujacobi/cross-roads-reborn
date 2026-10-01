@@ -142,22 +142,37 @@ describe("Admin action mutations", () => {
 
 	it("adds VIP time to a user", async () => {
 		const addVip = vi.spyOn(User.prototype, "AddVip").mockResolvedValue();
+		const setEternalVip = vi.spyOn(User.prototype, "SetEternalVip").mockResolvedValue();
 
 		await expect(
-			resolvers.Mutation.setVip(null, { userId: "target123", days: 30 }, { user: moderator }),
+			resolvers.Mutation.setVip(null, { userId: "target123", days: 30, eternal: false }, { user: moderator }),
 		).resolves.toMatchObject({ success: true });
 
 		expect(addVip).toHaveBeenCalledWith(30);
+		expect(setEternalVip).toHaveBeenCalledWith(false);
 	});
 
 	it("removes VIP time when given negative days", async () => {
 		const addVip = vi.spyOn(User.prototype, "AddVip").mockResolvedValue();
+		vi.spyOn(User.prototype, "SetEternalVip").mockResolvedValue();
 
 		await expect(
-			resolvers.Mutation.setVip(null, { userId: "target123", days: -30 }, { user: moderator }),
+			resolvers.Mutation.setVip(null, { userId: "target123", days: -30, eternal: false }, { user: moderator }),
 		).resolves.toMatchObject({ success: true });
 
 		expect(addVip).toHaveBeenCalledWith(-30);
+	});
+
+	it("sets eternal VIP without applying a timed duration", async () => {
+		const addVip = vi.spyOn(User.prototype, "AddVip").mockResolvedValue();
+		const setEternalVip = vi.spyOn(User.prototype, "SetEternalVip").mockResolvedValue();
+
+		await expect(
+			resolvers.Mutation.setVip(null, { userId: "target123", days: 30, eternal: true }, { user: moderator }),
+		).resolves.toMatchObject({ success: true, message: expect.stringContaining("eternal VIP") });
+
+		expect(setEternalVip).toHaveBeenCalledWith(true);
+		expect(addVip).not.toHaveBeenCalled();
 	});
 
 	it("applies a timed death to a user", async () => {

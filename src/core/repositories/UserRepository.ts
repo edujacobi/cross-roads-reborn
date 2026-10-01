@@ -399,23 +399,32 @@ export class UserRepository {
 	/**
 	 * Searches and paginates users for admin panel.
 	 */
-	static async SearchUsers(options: { search?: string; limit?: number; offset?: number }): Promise<{
+	static async SearchUsers(options: { search?: string; limit?: number; offset?: number; vipOnly?: boolean }): Promise<{
 		users: Users[];
 		total: number
 	}> {
 		const limit = Math.min(options.limit || 20, 100);
 		const offset = options.offset || 0;
-		const whereClause = options.search
-			? {
+		const conditions = [];
+		if (options.search) {
+			conditions.push({
 				[Op.or]: [
 					{ id: { [Op.like]: `%${options.search}%` } },
 					{ nickname: { [Op.like]: `%${options.search}%` } },
 				],
-			}
-			: {};
+			});
+		}
+		if (options.vipOnly) {
+			conditions.push({
+				[Op.or]: {
+					vipTime: { [Op.gt]: new Date() },
+					vipEternal: { [Op.not]: false },
+				},
+			});
+		}
 
 		const { rows, count } = await Users.findAndCountAll({
-			where: whereClause,
+			where: conditions.length ? { [Op.and]: conditions } : {},
 			limit,
 			offset,
 			order: [["updatedAt", "DESC"]],

@@ -316,7 +316,7 @@ export const resolvers: {
 
 		users: async (
 			_: unknown,
-			args: { search?: string; limit?: number; offset?: number },
+			args: { search?: string; limit?: number; offset?: number; vipOnly?: boolean },
 			context: GraphQLContext,
 		) => {
 			assertAuthenticated(context);
@@ -324,6 +324,7 @@ export const resolvers: {
 				search: args.search,
 				limit: args.limit,
 				offset: args.offset,
+				vipOnly: args.vipOnly,
 			});
 
 			const client = getClient();
@@ -358,6 +359,7 @@ export const resolvers: {
 					class: user.Class,
 					isVip: user.IsVip(),
 					vipEternal: user.VipEternal,
+					vipTime: user.VipTime?.toISOString() ?? null,
 					situationId: user.Situation.Id,
 					createdAt: user.CreatedAt.toISOString(),
 					updatedAt: user.UpdatedAt.toISOString(),
@@ -848,7 +850,7 @@ export const resolvers: {
 
 		setVip: async (
 			_: unknown,
-			args: { userId: string; days: number },
+			args: { userId: string; days: number; eternal: boolean },
 			context: GraphQLContext,
 		) => {
 			assertCanWrite(context);
@@ -857,11 +859,16 @@ export const resolvers: {
 			if (!found) {
 				return { success: false, message: "User not found.", user: null };
 			}
-			await target.AddVip(args.days);
+			await target.SetEternalVip(args.eternal);
+			if (!args.eternal) {
+				await target.AddVip(args.days);
+			}
 			await target.GetInfo();
 			return {
 				success: true,
-				message: `Added ${args.days} days of VIP to ${target.Nickname}.`,
+				message: args.eternal
+					? `Set ${target.Nickname} as an eternal VIP.`
+					: `Added ${args.days} days of VIP to ${target.Nickname}.`,
 				user: mapUserDetail(target),
 			};
 		},

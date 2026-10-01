@@ -6,6 +6,7 @@ import {
 	CalendarDays,
 	CalendarSync,
 	ChevronLeft,
+	Crown,
 	LayoutDashboard,
 	LogOut,
 	Menu,
@@ -203,6 +204,18 @@ const user = computed(() => {
 				/>
 				<span class="nav-label">Rankings</span>
 			</NuxtLink>
+
+			<NuxtLink
+				to="/vips"
+				:class="['nav-item', { active: route.path.startsWith('/vips') }]"
+				aria-label="VIPs"
+				title="VIPs"
+			>
+				<Crown
+					:size="18"
+					aria-hidden="true"
+				/>
+				<span class="nav-label">VIPs</span>
 			</NuxtLink>
 		</nav>
 
