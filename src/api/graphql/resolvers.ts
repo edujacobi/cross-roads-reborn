@@ -859,9 +859,10 @@ export const resolvers: {
 			if (!found) {
 				return { success: false, message: "User not found.", user: null };
 			}
+			const wasEternalVip = target.VipEternal;
 			await target.SetEternalVip(args.eternal);
 			if (!args.eternal) {
-				await target.AddVip(args.days);
+				await target.AddVip(args.days, !wasEternalVip);
 			}
 			await target.GetInfo();
 			return {

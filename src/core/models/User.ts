@@ -665,11 +665,11 @@ export class User {
 	 * Adds VIP time to the user.
 	 * @param days Number of days to add.
 	 */
-	async AddVip(days: number) {
+	async AddVip(days: number, setAvatarDecoration = true) {
 		if (this.VipTime == null || this.VipTime < new Date()) {
 			this.VipTime = new Date();
 		}
-		if (this.AvatarDecoration.Id === AvatarDecorationId.Default) {
+		if (setAvatarDecoration && this.AvatarDecoration.Id === AvatarDecorationId.Default) {
 			this.AvatarDecoration = AvatarDecorationList[AvatarDecorationId.VIP];
 		}
 

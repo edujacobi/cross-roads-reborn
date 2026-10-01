@@ -3,6 +3,7 @@ import { User } from "#core/models/User";
 import { Language } from "#core/models/Language";
 import { ClassId } from "#core/types/Classes";
 import { JobId } from "#core/types/Jobs";
+import { AvatarDecorationId } from "#core/types/Ids";
 
 // --- Global Mocks ---
 
@@ -35,5 +36,15 @@ describe("User Model Core Actions (Regression)", () => {
 		await user.CancelJob();
 		expect(user.Job.Id).toBe(null);
 		expect(user.IsWorking()).toBe(false);
+	});
+
+	it("keeps the default avatar decoration when adding timed VIP after eternal VIP", async () => {
+		vi.spyOn(user, "Update").mockResolvedValue();
+		user.VipEternal = true;
+
+		await user.SetEternalVip(false);
+		await user.AddVip(30, false);
+
+		expect(user.AvatarDecoration.Id).toBe(AvatarDecorationId.Default);
 	});
 });

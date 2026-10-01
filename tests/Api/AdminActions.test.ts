@@ -148,7 +148,7 @@ describe("Admin action mutations", () => {
 			resolvers.Mutation.setVip(null, { userId: "target123", days: 30, eternal: false }, { user: moderator }),
 		).resolves.toMatchObject({ success: true });
 
-		expect(addVip).toHaveBeenCalledWith(30);
+		expect(addVip).toHaveBeenCalledWith(30, true);
 		expect(setEternalVip).toHaveBeenCalledWith(false);
 	});
 
@@ -160,7 +160,7 @@ describe("Admin action mutations", () => {
 			resolvers.Mutation.setVip(null, { userId: "target123", days: -30, eternal: false }, { user: moderator }),
 		).resolves.toMatchObject({ success: true });
 
-		expect(addVip).toHaveBeenCalledWith(-30);
+		expect(addVip).toHaveBeenCalledWith(-30, true);
 	});
 
 	it("sets eternal VIP without applying a timed duration", async () => {
@@ -173,6 +173,21 @@ describe("Admin action mutations", () => {
 
 		expect(setEternalVip).toHaveBeenCalledWith(true);
 		expect(addVip).not.toHaveBeenCalled();
+	});
+
+	it("keeps the default avatar decoration when removing eternal VIP", async () => {
+		vi.spyOn(User.prototype, "GetInfo").mockImplementation(async function(this: User) {
+			this.VipEternal = true;
+			return this;
+		});
+		vi.spyOn(User.prototype, "SetEternalVip").mockResolvedValue();
+		const addVip = vi.spyOn(User.prototype, "AddVip").mockResolvedValue();
+
+		await expect(
+			resolvers.Mutation.setVip(null, { userId: "target123", days: 30, eternal: false }, { user: moderator }),
+		).resolves.toMatchObject({ success: true });
+
+		expect(addVip).toHaveBeenCalledWith(30, false);
 	});
 
 	it("applies a timed death to a user", async () => {
