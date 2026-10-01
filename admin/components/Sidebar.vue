@@ -24,6 +24,14 @@ const mobileMenu = ref<HTMLInputElement | null>(null);
 const isLogoutModalOpen = ref(false);
 const isCollapsed = ref(false);
 
+function openLogoutModal() {
+	if (mobileMenu.value) {
+		mobileMenu.value.checked = false;
+	}
+
+	isLogoutModalOpen.value = true;
+}
+
 watch(
 	() => route.path,
 	() => {
@@ -249,7 +257,7 @@ const user = computed(() => {
 				class="logout-btn"
 				title="Encerrar sessão"
 				aria-label="Encerrar sessão"
-				@click="isLogoutModalOpen = true"
+				@click="openLogoutModal"
 			>
 				<LogOut
 					:size="18"
@@ -565,7 +573,9 @@ const user = computed(() => {
 
 .mobile-menu-toggle {
 	display: none;
-	position: absolute;
+	position: fixed;
+	top: 0;
+	left: 0;
 	width: 1px;
 	height: 1px;
 	opacity: 0;
