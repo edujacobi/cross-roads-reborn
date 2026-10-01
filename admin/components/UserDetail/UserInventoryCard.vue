@@ -98,9 +98,10 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 				:class="{ 'user-inventory__item--compact': isCompactInventory }"
 				:title="isCompactInventory ? item.name : ''"
 			>
-				<NuxtImg
+				<LazyNuxtImg
 					class="user-inventory__item-image"
 					:src="getItemImage(item.id, item.skin)"
+					alt=""
 				/>
 				<span
 					v-show="isCompactInventory"

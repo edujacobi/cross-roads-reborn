@@ -71,10 +71,10 @@ const style = computed(() => {
 		<div class="status-box-header">
 			<NuxtImg
 				:src="style.image"
-				class="status-img"
 				alt=""
+				width="20"
 			/>
-			<h3>{{ style.title }}</h3>
+			<p>{{ style.title }}</p>
 		</div>
 		<output class="status-box-count">{{ value ?? 0 }}</output>
 	</article>
@@ -102,13 +102,9 @@ const style = computed(() => {
 		font-size: 0.8125rem;
 		font-weight: 600;
 
-		h3 {
+		p {
 			margin: 0;
 			font: inherit;
-		}
-
-		.status-img {
-			max-width: 1.25rem;
 		}
 	}
 

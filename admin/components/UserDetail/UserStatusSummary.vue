@@ -26,6 +26,7 @@ defineProps<{ user: UserDetail }>();
 						<NuxtImg
 							:src="imagePaths.situations.hospital"
 							width="18"
+							height="18"
 							alt=""
 						/>
 						Hospitalizado até
@@ -51,6 +52,7 @@ defineProps<{ user: UserDetail }>();
 						<NuxtImg
 							:src="imagePaths.situations.prison"
 							width="18"
+							height="18"
 							alt=""
 						/>
 						Preso até
@@ -76,6 +78,7 @@ defineProps<{ user: UserDetail }>();
 						<NuxtImg
 							:src="imagePaths.situations.job"
 							width="18"
+							height="18"
 							alt=""
 						/>
 						Trabalhando até
@@ -101,6 +104,7 @@ defineProps<{ user: UserDetail }>();
 						<NuxtImg
 							:src="imagePaths.situations.scavenging"
 							width="18"
+							height="18"
 							alt=""
 						/>
 						Vasculhando
@@ -124,6 +128,7 @@ defineProps<{ user: UserDetail }>();
 							<NuxtImg
 								:src="imagePaths.situations.robbery"
 								width="18"
+								height="18"
 								alt=""
 							/>
 							Roubando
@@ -132,6 +137,7 @@ defineProps<{ user: UserDetail }>();
 							<NuxtImg
 								:src="imagePaths.situations.robbery"
 								width="18"
+								height="18"
 								alt=""
 							/>
 							Sendo roubado
@@ -156,6 +162,7 @@ defineProps<{ user: UserDetail }>();
 							<NuxtImg
 								:src="imagePaths.situations.beatup"
 								width="18"
+								height="18"
 								alt=""
 							/>
 							Espancando
@@ -164,6 +171,7 @@ defineProps<{ user: UserDetail }>();
 							<NuxtImg
 								:src="imagePaths.situations.beatup"
 								width="18"
+								height="18"
 								alt=""
 							/>
 							Sendo espancado
@@ -187,6 +195,7 @@ defineProps<{ user: UserDetail }>();
 						<NuxtImg
 							:src="imagePaths.situations.wanted"
 							width="18"
+							height="18"
 							alt=""
 						/>
 						Procurado até
@@ -212,6 +221,7 @@ defineProps<{ user: UserDetail }>();
 						<NuxtImg
 							:src="imagePaths.situations.casino"
 							width="18"
+							height="18"
 							alt=""
 						/>
 						Apostando
@@ -234,6 +244,7 @@ defineProps<{ user: UserDetail }>();
 						<NuxtImg
 							:src="imagePaths.situations.defendingInvestment"
 							width="18"
+							height="18"
 							alt=""
 						/>
 						Defendendo
@@ -256,6 +267,7 @@ defineProps<{ user: UserDetail }>();
 						<NuxtImg
 							:src="imagePaths.situations.gangAction"
 							width="18"
+							height="18"
 							alt=""
 						/>
 						Agindo
@@ -278,6 +290,7 @@ defineProps<{ user: UserDetail }>();
 						<NuxtImg
 							:src="imagePaths.situations.dead"
 							width="18"
+							height="18"
 							alt=""
 						/>
 						Morto até

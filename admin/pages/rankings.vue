@@ -219,6 +219,7 @@ function nextPage() {
 				<NuxtImg
 					:src="ranking.image"
 					width="16"
+					alt=""
 				/>
 				{{ ranking.label }}
 			</BaseButton>
@@ -285,7 +286,7 @@ function nextPage() {
 							>
 								<div class="player-content">
 									<span class="rank-cell">{{ offset + index + 1 }}</span>
-									<NuxtImg
+									<LazyNuxtImg
 										class="player-avatar"
 										:src="gang.imageUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'"
 										alt=""
@@ -341,7 +342,7 @@ function nextPage() {
 							>
 								<div class="player-content">
 									<span class="rank-cell">{{ offset + index + 1 }}</span>
-									<NuxtImg
+									<LazyNuxtImg
 										:class="['player-avatar', 'user-avatar', `user-avatar--${entry.avatarDecoration}`]"
 										:src="entry.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'"
 										alt=""

@@ -33,6 +33,8 @@ defineProps<Props>();
 						class="card-icon"
 						:src="icon"
 						alt=""
+						width="26"
+						height="26"
 					/>
 					{{ title }}
 				</h2>
@@ -105,10 +107,6 @@ defineProps<Props>();
 			display: flex;
 			align-items: center;
 			gap: $spacing-sm;
-
-			.card-icon {
-				width: 1.625rem;
-			}
 		}
 
 		.card-subtitle {

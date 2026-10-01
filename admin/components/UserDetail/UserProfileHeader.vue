@@ -25,10 +25,12 @@ function getBadgeImage(badgeId: BadgeId): string {
 	<BaseCard class="user-profile">
 		<div class="user-profile__main-info">
 			<div class="user-profile__avatar-wrapper">
-				<NuxtImg
+				<LazyNuxtImg
 					:class="['user-avatar', `user-avatar--${user.avatarDecoration}`]"
 					:src="user.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'"
 					:alt="user.nickname ? `Avatar de ${user.nickname}` : 'Avatar do jogador'"
+					width="100"
+					height="100"
 				/>
 				<span
 					:class="`user-profile__presence user-profile__presence--${user.online ? 'online' : 'offline'}`"
@@ -57,6 +59,8 @@ function getBadgeImage(badgeId: BadgeId): string {
 					:alt="badge.name"
 					:title="badge.name"
 					class="user-profile__badge"
+					width="40"
+					height="40"
 				/>
 			</li>
 		</ul>
@@ -66,6 +70,8 @@ function getBadgeImage(badgeId: BadgeId): string {
 				:src="getSituationImageUrl(user.situationId)"
 				class="user-profile__situation-image"
 				alt=""
+				width="40"
+				height="40"
 			/>
 			{{ user.situationText }}
 		</p>
@@ -76,6 +82,8 @@ function getBadgeImage(badgeId: BadgeId): string {
 					:src="getClassImageUrl(user.class)"
 					class="user-profile__class-image"
 					alt=""
+					width="32"
+					height="32"
 				/>
 				{{ user.className }}
 			</div>
@@ -86,6 +94,8 @@ function getBadgeImage(badgeId: BadgeId): string {
 						:src="imagePaths.attributes.attack"
 						class="user-profile__attribute-image"
 						alt=""
+						width="24"
+						height="24"
 					/>
 					{{ user.attack || 0 }}
 					ATK
@@ -95,6 +105,8 @@ function getBadgeImage(badgeId: BadgeId): string {
 						:src="imagePaths.attributes.defense"
 						class="user-profile__attribute-image"
 						alt=""
+						width="24"
+						height="24"
 					/>
 					{{ user.defense || 0 }}
 					DEF

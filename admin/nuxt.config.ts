@@ -9,6 +9,9 @@ export default defineNuxtConfig({
 
 	app: {
 		head: {
+			htmlAttrs: {
+				lang: "pt-BR",
+			},
 			title: "Cross Roads Reborn - Admin Panel",
 			meta: [
 				{ charset: "utf-8" },
@@ -17,6 +20,12 @@ export default defineNuxtConfig({
 				{ name: "apple-mobile-web-app-title", content: "Cross Roads" },
 			],
 			link: [
+				{
+					rel: "preload",
+					as: "image",
+					href: "/images/brand/CrossRoadsLogo.png",
+					fetchpriority: "high",
+				},
 				{ rel: "manifest", href: "/manifest/site.webmanifest" },
 				{ rel: "icon", type: "image/x-icon", href: "/manifest/favicon.ico" },
 				{ rel: "icon", type: "image/svg+xml", href: "/manifest/favicon.svg" },

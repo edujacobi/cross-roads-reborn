@@ -164,6 +164,8 @@ async function handleTabKeydown(event: KeyboardEvent, index: number) {
 					<NuxtImg
 						:src="tab.image"
 						width="16"
+						height="16"
+						alt=""
 					/>
 					{{ tab.label }}
 				</BaseButton>

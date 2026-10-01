@@ -281,6 +281,7 @@ async function removeEvent() {
 									style="vertical-align: sub"
 									:src="eventTypes.find(e=> e.id === event.type)?.image"
 									width="16"
+									alt=""
 								/>
 								{{ eventTypeNames[event.type] || "Desconhecido" }}
 							</td>

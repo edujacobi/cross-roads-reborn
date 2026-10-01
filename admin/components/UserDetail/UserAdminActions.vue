@@ -4,11 +4,10 @@
 >
 import { useMutation } from "@vue/apollo-composable";
 import {
-	Award,
 	ArrowLeftRight,
+	Award,
 	Clock,
 	Coins,
-	Crown,
 	DollarSign,
 	Package,
 	Pencil,
@@ -395,12 +394,10 @@ async function handleSwapUsers() {
 			isSwapUsersModalOpen.value = false;
 			secondSwapUserId.value = "";
 			showSuccess(res.data.swapUsers.message);
-		}
-		else {
+		} else {
 			showError(res?.data?.swapUsers?.message || "Erro ao trocar os jogadores.");
 		}
-	}
-	catch (error: unknown) {
+	} catch (error: unknown) {
 		showError(getErrorMessage(error));
 	}
 }
@@ -430,6 +427,7 @@ async function handleSwapUsers() {
 					<NuxtImg
 						:src="imagePaths.situations.hospital"
 						width="18"
+						height="18"
 						alt=""
 					/>
 					Curar do Hospital
@@ -442,6 +440,7 @@ async function handleSwapUsers() {
 					<NuxtImg
 						:src="imagePaths.situations.prison"
 						width="18"
+						height="18"
 						alt=""
 					/>
 					Soltar da Prisão
@@ -531,6 +530,8 @@ async function handleSwapUsers() {
 					<NuxtImg
 						:src="imagePaths.badges.vip"
 						width="18"
+						height="18"
+						alt=""
 					/>
 					Adicionar VIP
 				</BaseButton>

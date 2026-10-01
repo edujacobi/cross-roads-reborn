@@ -89,6 +89,10 @@ const user = computed(() => {
 					:src="imagePaths.brand.logo"
 					class="img"
 					alt="CROSS ROADS"
+					width="112"
+					height="50"
+					loading="eager"
+					fetchpriority="high"
 				/>
 			</div>
 			<!-- biome-ignore lint/a11y/noLabelWithoutControl: External labels toggle the CSS-controlled checkbox. -->
@@ -168,11 +172,11 @@ const user = computed(() => {
 			<NuxtLink
 				:to="`/users/${user?.id}`"
 				class="admin-info"
-				aria-label="Meu inventário"
 			>
-				<NuxtImg
+				<LazyNuxtImg
 					:src="user?.avatarUrl"
 					:class="['admin-avatar', 'user-avatar', `user-avatar--${user?.avatarDecoration}`]"
+					alt=""
 				/>
 				<div class="admin-details">
 					<span class="admin-name">{{ user?.username }}</span>
@@ -180,6 +184,9 @@ const user = computed(() => {
 						<NuxtImg
 							:src="user?.role.image"
 							class="img-role"
+							width="16"
+							height="16"
+							alt=""
 						/>
 						{{ user?.role.description }}
 					</p>
