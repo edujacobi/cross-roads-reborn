@@ -3,11 +3,14 @@
 	lang="ts"
 >
 import { CalendarDays, CalendarSync, LayoutDashboard, LogOut, Menu, Trophy, Users, X } from "lucide-vue-next";
+import BaseButton from "~/components/ui/BaseButton.vue";
+import BaseModal from "~/components/ui/BaseModal.vue";
 import { imagePaths } from "~/constants/imagePaths";
 
 const auth = useAuth();
 const route = useRoute();
 const mobileMenu = ref<HTMLInputElement | null>(null);
+const isLogoutModalOpen = ref(false);
 
 watch(
 	() => route.path,
@@ -187,7 +190,7 @@ const user = computed(() => {
 				class="logout-btn"
 				title="Encerrar sessão"
 				aria-label="Encerrar sessão"
-				@click="auth.logout()"
+				@click="isLogoutModalOpen = true"
 			>
 				<LogOut
 					:size="18"
@@ -196,6 +199,28 @@ const user = computed(() => {
 			</button>
 		</div>
 	</aside>
+
+	<BaseModal
+		:open="isLogoutModalOpen"
+		title="Encerrar sessão"
+		description="Tem certeza de que deseja sair da sua conta?"
+		@update:open="isLogoutModalOpen = $event"
+	>
+		<template #footer>
+			<BaseButton
+				variant="secondary"
+				@click="isLogoutModalOpen = false"
+			>
+				Cancelar
+			</BaseButton>
+			<BaseButton
+				variant="danger"
+				@click="auth.logout()"
+			>
+				Sair
+			</BaseButton>
+		</template>
+	</BaseModal>
 </template>
 
 <style
