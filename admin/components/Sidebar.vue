@@ -2,7 +2,17 @@
 	setup
 	lang="ts"
 >
-import { CalendarDays, CalendarSync, LayoutDashboard, LogOut, Menu, Trophy, Users, X } from "lucide-vue-next";
+import {
+	CalendarDays,
+	CalendarSync,
+	ChevronLeft,
+	LayoutDashboard,
+	LogOut,
+	Menu,
+	Trophy,
+	Users,
+	X,
+} from "lucide-vue-next";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
 import { imagePaths } from "~/constants/imagePaths";
@@ -11,6 +21,7 @@ const auth = useAuth();
 const route = useRoute();
 const mobileMenu = ref<HTMLInputElement | null>(null);
 const isLogoutModalOpen = ref(false);
+const isCollapsed = ref(false);
 
 watch(
 	() => route.path,
@@ -80,7 +91,7 @@ const user = computed(() => {
 	/>
 	<aside
 		id="admin-sidebar"
-		class="sidebar"
+		:class="['sidebar', { 'sidebar--collapsed': isCollapsed }]"
 		aria-label="Painel administrativo"
 	>
 		<div class="brand">
@@ -95,6 +106,22 @@ const user = computed(() => {
 					fetchpriority="high"
 				/>
 			</div>
+			<button
+				type="button"
+				class="collapse-toggle"
+				:aria-label="isCollapsed ? 'Expandir menu' : 'Recolher menu'"
+				:title="isCollapsed ? 'Expandir menu' : 'Recolher menu'"
+				:aria-expanded="!isCollapsed"
+				aria-controls="admin-sidebar"
+				@click="isCollapsed = !isCollapsed"
+			>
+				<component
+					:is="ChevronLeft"
+					:class="{ 'collapse-icon--collapsed': isCollapsed }"
+					:size="18"
+					aria-hidden="true"
+				/>
+			</button>
 			<!-- biome-ignore lint/a11y/noLabelWithoutControl: External labels toggle the CSS-controlled checkbox. -->
 			<label
 				for="mobile-menu-toggle"
@@ -115,56 +142,67 @@ const user = computed(() => {
 			<NuxtLink
 				to="/"
 				:class="['nav-item', { active: route.path === '/' }]"
+				aria-label="Dashboard"
+				title="Dashboard"
 			>
 				<LayoutDashboard
 					:size="18"
 					aria-hidden="true"
 				/>
-				Dashboard
+				<span class="nav-label">Dashboard</span>
 			</NuxtLink>
 
 			<NuxtLink
 				to="/users"
 				:class="['nav-item', { active: route.path.startsWith('/users') }]"
+				aria-label="Jogadores"
+				title="Jogadores"
 			>
 				<Users
 					:size="18"
 					aria-hidden="true"
 				/>
-				Jogadores
+				<span class="nav-label">Jogadores</span>
 			</NuxtLink>
 
 			<NuxtLink
 				to="/events"
 				:class="['nav-item', { active: route.path.startsWith('/events') }]"
+				aria-label="Eventos"
+				title="Eventos"
 			>
 				<CalendarDays
 					:size="18"
 					aria-hidden="true"
 				/>
-				Eventos
+				<span class="nav-label">Eventos</span>
 			</NuxtLink>
 
 			<NuxtLink
 				to="/season"
 				:class="['nav-item', { active: route.path === '/season' }]"
+				aria-label="Temporada"
+				title="Temporada"
 			>
 				<CalendarSync
 					:size="18"
 					aria-hidden="true"
 				/>
-				Temporada
+				<span class="nav-label">Temporada</span>
 			</NuxtLink>
 
 			<NuxtLink
 				to="/rankings"
 				:class="['nav-item', { active: route.path.startsWith('/rankings') }]"
+				aria-label="Rankings"
+				title="Rankings"
 			>
 				<Trophy
 					:size="18"
 					aria-hidden="true"
 				/>
-				Rankings
+				<span class="nav-label">Rankings</span>
+			</NuxtLink>
 			</NuxtLink>
 		</nav>
 
@@ -172,6 +210,7 @@ const user = computed(() => {
 			<NuxtLink
 				:to="`/users/${user?.id}`"
 				class="admin-info"
+				:aria-label="user?.username ? `Perfil de ${user.username}` : 'Perfil do administrador'"
 			>
 				<LazyNuxtImg
 					:src="user?.avatarUrl"
@@ -245,6 +284,8 @@ const user = computed(() => {
 	display: flex;
 	flex-direction: column;
 	flex-shrink: 0;
+	position: relative;
+	transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 
 	.brand {
 		flex-shrink: 0;
@@ -254,12 +295,50 @@ const user = computed(() => {
 
 		.brand-icon {
 			@include flex-center;
-			width: 7rem;
+			max-width: 7rem;
 			height: 2.5rem;
 			color: $color-brand;
+			transition: max-width 0.3s ease, opacity 0.2s ease, transform 0.3s ease;
 
 			.img {
-				max-width: 100%;
+				width: 7rem;
+				max-width: none;
+			}
+		}
+
+		.collapse-toggle {
+			@include flex-center;
+			position: absolute;
+			top: 50%;
+			right: 0;
+			z-index: 1;
+			width: 2rem;
+			height: 2rem;
+			padding: 0;
+			color: $text-primary;
+			background: $bg-sidebar;
+			border: 1px solid $border-subtle;
+			border-radius: $radius-full;
+			cursor: pointer;
+			transform: translate(50%, -50%);
+			transition: color 0.15s ease, background-color 0.15s ease;
+
+			&:hover {
+				color: $color-brand;
+				background-color: $bg-card-hover;
+			}
+
+			&:focus-visible {
+				outline: 2px solid $color-brand;
+				outline-offset: 2px;
+			}
+
+			.collapse-icon--collapsed {
+				transform: rotate(180deg);
+			}
+
+			svg {
+				transition: transform 0.3s ease;
 			}
 		}
 
@@ -286,7 +365,8 @@ const user = computed(() => {
 		overscroll-behavior: contain;
 
 		.nav-item {
-			display: flex;
+			display: grid;
+			grid-template-columns: 18px minmax(0, 1fr);
 			align-items: center;
 			gap: 12px;
 			padding: 0.625rem 0.875rem;
@@ -294,7 +374,7 @@ const user = computed(() => {
 			font-size: 0.875rem;
 			font-weight: 500;
 			color: $text-secondary;
-			transition: all 0.15s ease-in-out;
+			transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out, grid-template-columns 0.3s ease, gap 0.3s ease, padding 0.3s ease;
 
 			&:hover {
 				background-color: $bg-card-hover;
@@ -307,6 +387,13 @@ const user = computed(() => {
 				font-weight: 600;
 			}
 		}
+
+		.nav-label {
+			max-width: 10rem;
+			overflow: hidden;
+			white-space: nowrap;
+			transition: max-width 0.3s ease, opacity 0.2s ease, transform 0.3s ease;
+		}
 	}
 
 	.admin-profile {
@@ -316,15 +403,17 @@ const user = computed(() => {
 		align-items: center;
 		gap: $spacing-sm;
 		padding: $spacing-sm;
-		justify-content: space-between;
+		justify-content: flex-start;
 		background-color: rgba($bg-input, 0.5);
 
 		.admin-info {
 			display: flex;
+			flex: 1;
+			min-width: 0;
 			gap: $spacing-sm;
 			border-radius: $radius-sm;
 			padding: $spacing-sm 1rem $spacing-sm $spacing-sm;
-			transition: all 0.15s;
+			transition: background-color 0.15s;
 
 			&:hover {
 				background-color: $border-subtle;
@@ -336,6 +425,7 @@ const user = computed(() => {
 			height: 2.375rem;
 			border-radius: 50%;
 			border-width: 2px;
+			flex: 0 0 auto;
 		}
 
 		.admin-role {
@@ -352,7 +442,10 @@ const user = computed(() => {
 
 		.admin-details {
 			flex: 1;
+			min-width: 0;
+			max-width: 10rem;
 			overflow: hidden;
+			transition: max-width 0.3s ease, opacity 0.2s ease;
 
 			.admin-name {
 				display: block;
@@ -394,6 +487,66 @@ const user = computed(() => {
 		transform: translateX(125%);
 		visibility: hidden;
 		transition: transform 0.3s ease-in-out, visibility 0.3s;
+
+		.collapse-toggle {
+			display: none;
+		}
+	}
+
+	@media (min-width: 769px) {
+		&.sidebar--collapsed {
+			width: 4.5rem;
+
+			.brand {
+				justify-content: center;
+
+				.brand-icon {
+					max-width: 0;
+					transform: scale(0.45);
+				}
+			}
+
+			.nav-links {
+				padding-right: 0.75rem;
+				padding-left: 0.75rem;
+
+				.nav-item {
+					grid-template-columns: 18px minmax(0, 0fr);
+					gap: 0;
+					justify-content: center;
+					padding-right: 0.5625rem;
+					padding-left: 0.5625rem;
+				}
+
+				.nav-label {
+					max-width: 0;
+					opacity: 0;
+					transform: translateX(-0.5rem);
+				}
+			}
+
+			.admin-profile {
+				.admin-info{
+					padding: 0.5rem;
+				}
+				.admin-details {
+					max-width: 0;
+					opacity: 0;
+				}
+
+				.logout-btn {
+					display: none;
+				}
+			}
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+
+		* {
+			transition-duration: 0.01ms !important;
+		}
 	}
 }
 
