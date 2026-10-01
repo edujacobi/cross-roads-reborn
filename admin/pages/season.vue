@@ -5,6 +5,7 @@
 import { useMutation, useQuery } from "@vue/apollo-composable";
 import { CalendarRange, Clock3, Shield } from "lucide-vue-next";
 import BaseCard from "~/components/ui/BaseCard.vue";
+import PageTitle from "~/components/ui/PageTitle.vue";
 import { GetSeasonInfoDocument, SetMainHeistAllowedDocument } from "~/graphql/generated";
 
 definePageMeta({
@@ -51,13 +52,11 @@ async function toggleMainHeist() {
 </script>
 
 <template>
-	<div class="season-page">
-		<section class="page-title-row">
-			<div>
-				<h1 class="page-title">Temporada</h1>
-				<p class="page-subtitle text-secondary">Período atual e configurações dos golpes</p>
-			</div>
-		</section>
+	<main class="season-page">
+		<PageTitle
+			title="Temporada"
+			subtitle="Período atual e configurações dos golpes"
+		/>
 
 		<div
 			v-if="loading"
@@ -147,7 +146,7 @@ async function toggleMainHeist() {
 				</p>
 			</BaseCard>
 		</template>
-	</div>
+	</main>
 </template>
 
 <style

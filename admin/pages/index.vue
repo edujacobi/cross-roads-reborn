@@ -6,6 +6,7 @@ import { useQuery } from "@vue/apollo-composable";
 import { RotateCw } from "lucide-vue-next";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
+import PageTitle from "~/components/ui/PageTitle.vue";
 import { imagePaths } from "~/constants/imagePaths";
 import {
 	GetDashboardHistoryDocument,
@@ -46,25 +47,25 @@ function refreshData() {
 
 <template>
 	<main class="dashboard-page">
-		<section class="page-title-row">
-			<div>
-				<h1 class="page-title">Dashboard</h1>
-				<p class="page-subtitle text-secondary">Visão geral em tempo real da economia e jogadores</p>
-			</div>
-
-			<BaseButton
-				variant="secondary"
-				size="sm"
-				@click="refreshData()"
-			>
-				<RotateCw
-					:size="15"
-					:class="{ 'spin-icon': statsLoading || historyLoading }"
-					aria-hidden="true"
-				/>
-				Atualizar
-			</BaseButton>
-		</section>
+		<PageTitle
+			title="Dashboard"
+			subtitle="Visão geral em tempo real da economia e jogadores"
+		>
+			<template #actions>
+				<BaseButton
+					variant="secondary"
+					size="sm"
+					@click="refreshData()"
+				>
+					<RotateCw
+						:size="15"
+						:class="{ 'spin-icon': statsLoading || historyLoading }"
+						aria-hidden="true"
+					/>
+					Atualizar
+				</BaseButton>
+			</template>
+		</PageTitle>
 
 		<section
 			class="status-grid"
@@ -160,17 +161,6 @@ function refreshData() {
 	display: flex;
 	flex-direction: column;
 	gap: $spacing-lg;
-}
-
-.page-title-row {
-	@include flex-between;
-
-	// ponytail: stack title and refresh button on mobile
-	@media (max-width: 480px) {
-		flex-direction: column;
-		align-items: flex-start;
-		gap: $spacing-sm;
-	}
 }
 
 .spin-icon {

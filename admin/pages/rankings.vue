@@ -195,7 +195,7 @@ function nextPage() {
 </script>
 
 <template>
-	<div class="rankings-page">
+	<main class="rankings-page">
 		<section class="page-title-row">
 			<div>
 				<h1 class="page-title">Rankings</h1>
@@ -418,7 +418,7 @@ function nextPage() {
 				</div>
 			</template>
 		</BaseCard>
-	</div>
+	</main>
 </template>
 
 <style

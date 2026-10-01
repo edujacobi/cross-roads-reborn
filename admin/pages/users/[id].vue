@@ -50,7 +50,7 @@ function showFeedback(type: "success" | "error", message: string) {
 </script>
 
 <template>
-	<div class="user-detail">
+	<main class="user-detail">
 		<nav
 			class="user-detail__nav-back"
 			aria-label="Navegação do jogador"
@@ -120,7 +120,7 @@ function showFeedback(type: "success" | "error", message: string) {
 				:language="language"
 			/>
 		</div>
-	</div>
+	</main>
 </template>
 
 <style

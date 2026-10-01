@@ -9,6 +9,7 @@ import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseInput from "~/components/ui/BaseInput.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
+import PageTitle from "~/components/ui/PageTitle.vue";
 import { imagePaths } from "~/constants/imagePaths";
 import {
 	CreateEventDocument,
@@ -199,23 +200,24 @@ async function removeEvent() {
 </script>
 
 <template>
-	<div class="events-page">
-		<section class="page-title-row">
-			<div>
-				<h1 class="page-title">Eventos</h1>
-				<p class="page-subtitle text-secondary">Crie, atualize e remova eventos do jogo</p>
-			</div>
-			<BaseButton
-				v-if="canWrite"
-				@click="beginCreate()"
-			>
-				<Plus
-					:size="16"
-					aria-hidden="true"
-				/>
-				Novo evento
-			</BaseButton>
-		</section>
+	<main class="events-page">
+		<PageTitle
+			title="Eventos"
+			subtitle="Crie, atualize e remova eventos do jogo"
+		>
+			<template #actions>
+				<BaseButton
+					v-if="canWrite"
+					@click="beginCreate()"
+				>
+					<Plus
+						:size="16"
+						aria-hidden="true"
+					/>
+					Novo evento
+				</BaseButton>
+			</template>
+		</PageTitle>
 
 		<BaseCard
 			title="Todos os eventos"
@@ -475,7 +477,7 @@ async function removeEvent() {
 				</BaseButton>
 			</template>
 		</BaseModal>
-	</div>
+	</main>
 </template>
 
 <style
@@ -489,11 +491,6 @@ async function removeEvent() {
 	display: flex;
 	flex-direction: column;
 	gap: $spacing-lg;
-}
-
-.page-title-row {
-	@include flex-between;
-	gap: $spacing-md;
 }
 
 .table-wrapper {
@@ -601,10 +598,4 @@ async function removeEvent() {
 	}
 }
 
-@media (max-width: 600px) {
-	.page-title-row {
-		align-items: flex-start;
-		flex-direction: column;
-	}
-}
 </style>

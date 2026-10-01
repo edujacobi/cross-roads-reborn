@@ -10,6 +10,7 @@ import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseInput from "~/components/ui/BaseInput.vue";
+import PageTitle from "~/components/ui/PageTitle.vue";
 import { imagePaths } from "~/constants/imagePaths";
 import { SearchUsersDocument, type SearchUsersQuery } from "~/graphql/generated";
 
@@ -59,15 +60,11 @@ function nextPage() {
 </script>
 
 <template>
-	<div class="users-page">
-		<div class="page-title-row">
-			<div>
-				<h1 class="page-title">Jogadores</h1>
-				<p class="page-subtitle text-secondary">
-					Pesquise, visualize inventários e execute ações de moderação e administração
-				</p>
-			</div>
-		</div>
+	<main class="users-page">
+		<PageTitle
+			title="Jogadores"
+			subtitle="Pesquise, visualize inventários e execute ações de moderação e administração"
+		/>
 
 		<BaseCard
 			class="users-card"
@@ -275,7 +272,7 @@ function nextPage() {
 				</div>
 			</template>
 		</BaseCard>
-	</div>
+	</main>
 </template>
 
 <style
