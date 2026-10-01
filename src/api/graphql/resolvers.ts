@@ -12,6 +12,7 @@ import {
 	type TopUserRankingField,
 } from "#core/repositories/UserRepository";
 import { ClassList } from "#core/types/Classes";
+import { AvatarDecorationList } from "#core/types/AvatarDecorations";
 import { Language } from "#core/models/Language";
 import { ItemList } from "#core/types/Items";
 import type { AuthUser, GraphQLContext } from "#api/types";
@@ -415,6 +416,7 @@ export const resolvers: {
 					id: user.id,
 					nickname: user.nickname || "(Sem Nick)",
 					avatarUrl,
+					avatarDecoration: AvatarDecorationList[user.avatarDecoration].Description[Language.English].toLowerCase().replaceAll(" ", "_"),
 					gangName: gangByUserId.get(user.id) ?? null,
 					gangColor: gangColorByUserId.get(user.id) ?? null,
 					value: Number(user[ranking.orderField]),

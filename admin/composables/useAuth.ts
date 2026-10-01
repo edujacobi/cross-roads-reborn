@@ -2,6 +2,7 @@ export interface AuthUser {
 	userId: string;
 	username: string;
 	avatar: string | null;
+	avatarDecoration?: string;
 	role: "DEVELOPER" | "MODERATOR" | "HELPER";
 }
 

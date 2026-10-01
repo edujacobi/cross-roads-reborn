@@ -7,6 +7,8 @@ import { verifyAuthToken } from "#api/auth/jwt";
 import { buildDiscordAuthUrl, handleDiscordCallback, getFrontendUrl } from "#api/auth/discord";
 import type { GraphQLContext } from "#api/types";
 import { logger } from "#shared/log";
+import { User } from "#core/models/User";
+import { Language } from "#core/models/Language";
 
 let server: FastifyInstance | null = null;
 
@@ -110,7 +112,12 @@ export async function createApiServer(): Promise<FastifyInstance> {
 			return reply.status(401).send({ error: "Invalid or expired token." });
 		}
 
-		return reply.send({ user });
+		const userModel = await new User(user.userId).GetSimpleInfo(undefined, undefined, { skipGangLookup: true });
+		const avatarDecoration = userModel?.AvatarDecoration.Description[Language.English]
+			.toLowerCase()
+			.replaceAll(" ", "_") ?? "default";
+
+		return reply.send({ user: { ...user, avatarDecoration } });
 	});
 
 	// Health Check

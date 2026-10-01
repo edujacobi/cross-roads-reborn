@@ -43,6 +43,7 @@ const user = computed(() => {
 		id: authUser.userId,
 		username: authUser.username,
 		avatarUrl: authUser.avatar || "https://cdn.discordapp.com/embed/avatars/0.png",
+		avatarDecoration: authUser.avatarDecoration || "default",
 		role: mapRole[authUser.role],
 	};
 });
@@ -168,7 +169,7 @@ const user = computed(() => {
 			>
 				<NuxtImg
 					:src="user?.avatarUrl"
-					class="admin-avatar"
+					:class="['admin-avatar', 'user-avatar', `user-avatar--${user?.avatarDecoration}`]"
 				/>
 				<div class="admin-details">
 					<span class="admin-name">{{ user?.username }}</span>
@@ -302,7 +303,7 @@ const user = computed(() => {
 			width: 2.375rem;
 			height: 2.375rem;
 			border-radius: 50%;
-			border: 1px solid $border-subtle;
+			border-width: 2px;
 		}
 
 		.admin-role {

@@ -342,7 +342,7 @@ function nextPage() {
 								<div class="player-content">
 									<span class="rank-cell">{{ offset + index + 1 }}</span>
 									<NuxtImg
-										class="player-avatar"
+										:class="['player-avatar', 'user-avatar', `user-avatar--${entry.avatarDecoration}`]"
 										:src="entry.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'"
 										alt=""
 									/>
@@ -506,14 +506,25 @@ function nextPage() {
 .player-content {
 	display: flex;
 	align-items: center;
-	gap: $spacing-sm;
+	gap: $spacing-md;
+
+	@media (max-width: 768px){
+		gap: $spacing-sm;
+	}
 }
 
 .player-avatar {
-	width: 2rem;
-	height: 2rem;
+	width: 3rem;
+	height: 3rem;
 	border-radius: 50%;
 	background-color: rgba($bg-input, 0.15);
+	border-width: 3px;
+
+	@media (max-width: 768px){
+		width: 2rem;
+		height: 2rem;
+		border-width: 2px;
+	}
 }
 
 .player-name {

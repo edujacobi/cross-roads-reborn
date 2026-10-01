@@ -117,6 +117,7 @@ query GetTopUsers($ranking: UserRanking!, $limit: Int!, $offset: Int!) {
 			id
 			nickname
 			avatarUrl
+			avatarDecoration
 			gangName
 			gangColor
 			value
