@@ -5,11 +5,12 @@
 import { useQuery } from "@vue/apollo-composable";
 import { format, formatDistance } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Search, UserCheck } from "lucide-vue-next";
+import { Search, UserCheck } from "lucide-vue-next";
 import BaseBadge from "~/components/ui/BaseBadge.vue";
-import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseInput from "~/components/ui/BaseInput.vue";
+import BaseTable from "~/components/ui/BaseTable.vue";
+import BaseTableFooter from "~/components/ui/BaseTableFooter.vue";
 import PageTitle from "~/components/ui/PageTitle.vue";
 import { imagePaths } from "~/constants/imagePaths";
 import { SearchUsersDocument, type SearchUsersQuery } from "~/graphql/generated";
@@ -108,10 +109,7 @@ function nextPage() {
 				<p>Nenhum jogador encontrado com os critérios de busca.</p>
 			</div>
 
-			<div
-				v-else
-				class="table-wrapper"
-			>
+			<BaseTable v-else>
 				<table class="users-table">
 					<caption class="visually-hidden">
 						Lista de jogadores
@@ -229,47 +227,22 @@ function nextPage() {
 						</tr>
 					</tbody>
 				</table>
-			</div>
+			</BaseTable>
 
 			<template #footer>
-				<div class="pagination-footer">
-					<span class="pagination-info">
-						Mostrando <strong>{{ offset + 1 }}-{{ offset + limit }}</strong> de <strong>{{ total }}</strong> jogadores
-					</span>
-
-					<nav
-						class="pagination-controls"
-						aria-label="Paginação de jogadores"
-					>
-						<BaseButton
-							variant="secondary"
-							size="sm"
-							:disabled="page <= 1"
-							@click="prevPage()"
-						>
-							<ChevronLeft
-								:size="16"
-								aria-hidden="true"
-							/>
-							Anterior
-						</BaseButton>
-
-						<span class="page-indicator">Página {{ page }} de {{ totalPages }}</span>
-
-						<BaseButton
-							variant="secondary"
-							size="sm"
-							:disabled="page >= totalPages"
-							@click="nextPage()"
-						>
-							Próxima
-							<ChevronRight
-								:size="16"
-								aria-hidden="true"
-							/>
-						</BaseButton>
-					</nav>
-				</div>
+				<BaseTableFooter
+					:labels="{
+						item: 'jogadores',
+						navigation: 'Paginação de jogadores',
+					}"
+					:index="users.length"
+					:offset="offset"
+					:total="total"
+					:page="page"
+					:pages="totalPages"
+					@click-previous="prevPage()"
+					@click-next="nextPage()"
+				/>
 			</template>
 		</BaseCard>
 	</main>
@@ -323,139 +296,72 @@ function nextPage() {
 	font-size: 0.875rem;
 }
 
-.table-wrapper {
-	overflow-x: auto;
-	@include scrollbar-custom;
+.users-table {
+	.clickable-row {
+		cursor: pointer;
 
-	.users-table {
-		width: 100%;
-		border-collapse: collapse;
-		font-size: 0.875rem;
-
-		th,
-		td {
-			padding: 0.75rem $spacing-md;
-			text-align: left;
-			border-bottom: 1px solid $border-subtle;
-			white-space: nowrap;
+		&:hover,
+		&:focus-visible {
+			background-color: rgba($bg-input, 0.12);
 		}
 
-		th {
-			color: $text-muted;
-			font-size: 0.75rem;
-			font-weight: 600;
-			text-transform: uppercase;
-		}
-
-		tbody th {
-			color: $text-secondary;
-			font-size: inherit;
-			font-weight: 400;
-			text-transform: none;
-		}
-
-		.clickable-row {
-			cursor: pointer;
-
-			&:hover,
-			&:focus-visible {
-				background-color: rgba($bg-input, 0.12);
-			}
-
-			&:focus-visible {
-				outline: 2px solid $color-special;
-				outline-offset: -2px;
-			}
-		}
-
-		td {
-			color: $text-secondary;
-		}
-
-		.player-cell-content {
-			display: flex;
-			align-items: center;
-			gap: $spacing-sm;
-
-			.nickname {
-				font-weight: 600;
-				color: $text-primary;
-			}
-
-			.profile-img {
-				@include flex-center;
-				width: 2rem;
-				height: 2rem;
-				border-radius: 50%;
-				background-color: rgba($bg-input, 0.15);
-				border: 1px solid rgba($bg-input, 0.3);
-				color: $bg-input;
-			}
-		}
-
-		.player-cell {
-			color: $text-secondary;
-			font-size: inherit;
-			font-weight: 400;
-			text-transform: none;
-		}
-
-		.id-cell {
-			font-family: monospace;
-			font-size: 0.8125rem;
-			color: $text-muted;
-		}
-
-		.money-cell {
-			font-weight: 700;
-			color: $color-success;
-		}
-
-		.coins-cell {
-			font-weight: 700;
-			color: $color-special;
-		}
-
-		.text-muted {
-			color: $text-muted;
-		}
-
-		.text-right {
-			text-align: right;
-		}
-	}
-}
-
-.pagination-footer {
-	@include flex-between;
-	width: 100%;
-
-	// ponytail: stack pagination info and controls on small screens
-	@media (max-width: 640px) {
-		flex-direction: column;
-		gap: $spacing-md;
-		align-items: center;
-		text-align: center;
-	}
-
-	.pagination-info {
-		font-size: 0.8125rem;
-		color: $text-secondary;
-
-		strong {
-			color: $text-primary;
+		&:focus-visible {
+			outline: 2px solid $color-special;
+			outline-offset: -2px;
 		}
 	}
 
-	.pagination-controls {
+	.player-cell-content {
 		display: flex;
 		align-items: center;
-		gap: 12px;
+		gap: $spacing-sm;
 
-		.page-indicator {
-			font-size: 0.8125rem;
-			color: $text-secondary;
+		.nickname {
+			font-weight: 600;
+			color: $text-primary;
+		}
+
+		.profile-img {
+			@include flex-center;
+			width: 2rem;
+			height: 2rem;
+			border-radius: 50%;
+			background-color: rgba($bg-input, 0.15);
+			border: 1px solid rgba($bg-input, 0.3);
+			color: $bg-input;
 		}
 	}
+
+	.player-cell {
+		color: $text-secondary;
+		font-size: inherit;
+		font-weight: 400;
+		text-transform: none;
+	}
+
+	.id-cell {
+		font-family: monospace;
+		font-size: 0.8125rem;
+		color: $text-muted;
+	}
+
+	.money-cell {
+		font-weight: 700;
+		color: $color-success;
+	}
+
+	.coins-cell {
+		font-weight: 700;
+		color: $color-special;
+	}
+
+	.text-muted {
+		color: $text-muted;
+	}
+
+	.text-right {
+		text-align: right;
+	}
 }
+
 </style>

@@ -3,12 +3,14 @@
 	lang="ts"
 >
 import { useMutation, useQuery } from "@vue/apollo-composable";
-import { CalendarDays, ChevronLeft, ChevronRight, Pencil, Plus, Trash2 } from "lucide-vue-next";
+import { CalendarDays, Pencil, Plus, Trash2 } from "lucide-vue-next";
 import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseInput from "~/components/ui/BaseInput.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
+import BaseTable from "~/components/ui/BaseTable.vue";
+import BaseTableFooter from "~/components/ui/BaseTableFooter.vue";
 import PageTitle from "~/components/ui/PageTitle.vue";
 import { imagePaths } from "~/constants/imagePaths";
 import {
@@ -248,10 +250,7 @@ async function removeEvent() {
 				/>
 				Nenhum evento cadastrado.
 			</div>
-			<div
-				v-else
-				class="table-wrapper"
-			>
+			<BaseTable v-else>
 				<table class="events-table">
 					<caption class="visually-hidden">
 						Todos os eventos cadastrados
@@ -328,54 +327,25 @@ async function removeEvent() {
 						</tr>
 					</tbody>
 				</table>
-			</div>
+			</BaseTable>
 
 			<template
 				v-if="events.length > 0"
 				#footer
 			>
-				<div class="pagination-footer">
-					<span class="pagination-info">
-						Mostrando
-						<strong>{{ (page - 1) * pageSize + 1 }}-{{ Math.min(page * pageSize, events.length) }}</strong>
-						de <strong>{{ events.length }}</strong> eventos
-					</span>
-					<nav
-						class="pagination-controls"
-						aria-label="Paginação de eventos"
-					>
-						<BaseButton
-							variant="secondary"
-							size="sm"
-							:disabled="page <= 1"
-							@click="prevPage()"
-						>
-							<ChevronLeft
-								:size="16"
-								aria-hidden="true"
-							/>
-							Anterior
-						</BaseButton>
-						<span
-							class="page-indicator"
-							aria-live="polite"
-						>
-							Página {{ page }} de {{ totalPages }}
-						</span>
-						<BaseButton
-							variant="secondary"
-							size="sm"
-							:disabled="page >= totalPages"
-							@click="nextPage()"
-						>
-							Próxima
-							<ChevronRight
-								:size="16"
-								aria-hidden="true"
-							/>
-						</BaseButton>
-					</nav>
-				</div>
+				<BaseTableFooter
+					:labels="{
+						item: 'eventos',
+						navigation: 'Paginação de eventos',
+					}"
+					:index="pageEvents.length"
+					:offset="(page - 1) * pageSize"
+					:total="events.length"
+					:page="page"
+					:pages="totalPages"
+					@click-previous="prevPage()"
+					@click-next="nextPage()"
+				/>
 			</template>
 		</BaseCard>
 
@@ -492,62 +462,6 @@ async function removeEvent() {
 	display: flex;
 	flex-direction: column;
 	gap: $spacing-lg;
-}
-
-.table-wrapper {
-	overflow-x: auto;
-	@include scrollbar-custom;
-}
-
-.pagination-footer {
-	@include flex-between;
-	gap: $spacing-md;
-
-	@media (max-width: 640px) {
-		flex-direction: column;
-		text-align: center;
-	}
-}
-
-.pagination-info,
-.page-indicator {
-	font-size: 0.8125rem;
-	color: $text-secondary;
-
-	strong {
-		color: $text-primary;
-	}
-}
-
-.pagination-controls {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-}
-
-.events-table {
-	width: 100%;
-	border-collapse: collapse;
-	font-size: 0.875rem;
-
-	th,
-	td {
-		padding: 0.75rem $spacing-md;
-		text-align: left;
-		border-bottom: 1px solid $border-subtle;
-		white-space: nowrap;
-	}
-
-	th {
-		color: $text-muted;
-		font-size: 0.75rem;
-		font-weight: 600;
-		text-transform: uppercase;
-	}
-
-	td {
-		color: $text-secondary;
-	}
 }
 
 .id-cell {

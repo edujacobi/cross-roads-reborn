@@ -3,9 +3,11 @@
 	lang="ts"
 >
 import { useQuery } from "@vue/apollo-composable";
-import { ChevronLeft, ChevronRight, Trophy } from "lucide-vue-next";
+import { Trophy } from "lucide-vue-next";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
+import BaseTable from "~/components/ui/BaseTable.vue";
+import BaseTableFooter from "~/components/ui/BaseTableFooter.vue";
 import { type ImagePath, imagePaths } from "~/constants/imagePaths";
 import { GetTopGangsDocument, GetTopUsersDocument, UserRanking } from "~/graphql/generated";
 
@@ -156,11 +158,6 @@ const total = computed(() =>
 	isGangRanking.value ? (gangResult.value?.topGangs.total ?? 0) : (userResult.value?.topUsers.total ?? 0),
 );
 const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSize)));
-const firstResult = computed(() => (total.value > 0 ? offset.value + 1 : 0));
-const lastResult = computed(() =>
-	Math.min(offset.value + (isGangRanking.value ? gangs.value.length : entries.value.length), total.value),
-);
-
 watch(totalPages, (lastPage) => {
 	if (page.value > lastPage) page.value = lastPage;
 });
@@ -254,10 +251,7 @@ function nextPage() {
 				/>
 				{{ isGangRanking ? "Nenhuma gangue neste ranking." : "Nenhum jogador neste ranking." }}
 			</div>
-			<div
-				v-else
-				class="table-wrapper"
-			>
+			<BaseTable v-else>
 				<table
 					v-if="isGangRanking"
 					class="rankings-table"
@@ -370,53 +364,25 @@ function nextPage() {
 						</tr>
 					</tbody>
 				</table>
-			</div>
+			</BaseTable>
 
 			<template
 				v-if="total > 0"
 				#footer
 			>
-				<div class="pagination-footer">
-					<span class="pagination-info">
-						Mostrando <strong>{{ firstResult }}-{{ lastResult }}</strong> de <strong>{{ total }}</strong>
-						{{ isGangRanking ? "gangues" : "jogadores" }}
-					</span>
-					<nav
-						class="pagination-controls"
-						aria-label="Paginação do ranking"
-					>
-						<BaseButton
-							variant="secondary"
-							size="sm"
-							:disabled="page <= 1"
-							@click="previousPage()"
-						>
-							<ChevronLeft
-								:size="16"
-								aria-hidden="true"
-							/>
-							Anterior
-						</BaseButton>
-						<span
-							class="page-indicator"
-							aria-live="polite"
-						>
-							Página {{ page }} de {{ totalPages }}
-						</span>
-						<BaseButton
-							variant="secondary"
-							size="sm"
-							:disabled="page >= totalPages"
-							@click="nextPage()"
-						>
-							Próxima
-							<ChevronRight
-								:size="16"
-								aria-hidden="true"
-							/>
-						</BaseButton>
-					</nav>
-				</div>
+				<BaseTableFooter
+					:labels="{
+						item: isGangRanking ? 'gangues' : 'jogadores',
+						navigation: 'Paginação do ranking',
+					}"
+					:index="isGangRanking ? gangs.length : entries.length"
+					:offset="offset"
+					:total="total"
+					:page="page"
+					:pages="totalPages"
+					@click-previous="previousPage()"
+					@click-next="nextPage()"
+				/>
 			</template>
 		</BaseCard>
 	</main>
@@ -443,36 +409,7 @@ function nextPage() {
 	@include scrollbar-custom;
 }
 
-.table-wrapper {
-	overflow-x: auto;
-	@include scrollbar-custom;
-}
-
 .rankings-table {
-	width: 100%;
-	border-collapse: collapse;
-	font-size: 0.875rem;
-
-	th,
-	td {
-		padding: 0.75rem $spacing-md;
-		text-align: left;
-		border-bottom: 1px solid $border-subtle;
-		white-space: nowrap;
-	}
-
-	th {
-		color: $text-muted;
-		font-size: 0.75rem;
-		font-weight: 600;
-		text-transform: uppercase;
-	}
-
-	tbody th {
-		font-size: inherit;
-		text-transform: none;
-	}
-
 	.clickable-row {
 		cursor: pointer;
 
@@ -485,10 +422,6 @@ function nextPage() {
 			outline: 2px solid $color-special;
 			outline-offset: -2px;
 		}
-	}
-
-	td {
-		color: $text-secondary;
 	}
 
 	tr.current-user,
@@ -556,32 +489,6 @@ function nextPage() {
 .value-cell {
 	font-weight: 600;
 	font-variant-numeric: tabular-nums;
-}
-
-.pagination-footer {
-	@include flex-between;
-	gap: $spacing-md;
-
-	@media (max-width: 640px) {
-		flex-direction: column;
-		text-align: center;
-	}
-}
-
-.pagination-info,
-.page-indicator {
-	font-size: 0.8125rem;
-	color: $text-secondary;
-
-	strong {
-		color: $text-primary;
-	}
-}
-
-.pagination-controls {
-	display: flex;
-	align-items: center;
-	gap: 12px;
 }
 
 .state-message {

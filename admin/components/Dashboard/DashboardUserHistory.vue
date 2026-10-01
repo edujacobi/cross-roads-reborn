@@ -4,6 +4,7 @@
 >
 import { Calendar } from "lucide-vue-next";
 import BaseCard from "~/components/ui/BaseCard.vue";
+import BaseTable from "~/components/ui/BaseTable.vue";
 import type { GetDashboardHistoryQuery } from "~/graphql/generated";
 
 interface Props {
@@ -39,7 +40,7 @@ defineProps<Props>();
 			<p>Nenhum snapshot de histórico gravado ainda.</p>
 		</div>
 
-		<div
+		<BaseTable
 			v-else
 			class="table-container"
 		>
@@ -73,7 +74,7 @@ defineProps<Props>();
 					</tr>
 				</tbody>
 			</table>
-		</div>
+		</BaseTable>
 	</BaseCard>
 </template>
 
@@ -97,31 +98,15 @@ defineProps<Props>();
 	}
 
 	.table-container {
-		overflow-x: auto;
 		max-height: 50dvh;
-		@include scrollbar-custom;
+		overflow-y: auto;
 
 		.history-table {
-			width: 100%;
-			border-collapse: collapse;
 			font-size: 0.8125rem;
 
 			th,
 			td {
 				padding: 0.625rem 0.875rem;
-				text-align: left;
-				border-bottom: 1px solid $border-subtle;
-			}
-
-			th {
-				color: $text-muted;
-				font-weight: 600;
-				text-transform: uppercase;
-				font-size: 0.75rem;
-			}
-
-			td {
-				color: $text-secondary;
 			}
 
 			.font-bold {
