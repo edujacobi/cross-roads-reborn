@@ -4,6 +4,7 @@
 >
 import { useQuery } from "@vue/apollo-composable";
 import { RotateCw } from "lucide-vue-next";
+import DashboardClassDistribution from "~/components/Dashboard/DashboardClassDistribution.vue";
 import DashboardStatusBox from "~/components/Dashboard/DashboardStatusBox.vue";
 import DashboardUserChart from "~/components/Dashboard/DashboardUserChart.vue";
 import DashboardUserHistory from "~/components/Dashboard/DashboardUserHistory.vue";
@@ -129,6 +130,13 @@ function refreshData() {
 			:history="history"
 			:current-stats="stats"
 			:history-loading="historyLoading"
+		/>
+
+		<DashboardClassDistribution
+			:history="history"
+			:current-stats="stats"
+			:history-loading="historyLoading"
+			:stats-loading="statsLoading"
 		/>
 
 		<div class="details-row">

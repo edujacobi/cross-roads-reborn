@@ -82,6 +82,7 @@ describe("API Auth and Resolvers", () => {
 				date: new Date(),
 				totalPlayers: 0,
 				allUsers: 0,
+				classCounts: [],
 				totalGangs: 0,
 				prisonCount: 0,
 				hospitalCount: 0,
@@ -99,7 +100,12 @@ describe("API Auth and Resolvers", () => {
 
 			await expect(
 				resolvers.Query.dashboardStats(null, {}, { user: helperUser }),
-			).resolves.toMatchObject({ totalPlayers: 0, bankVaultValue: 0, casinoVaultValue: 0 });
+			).resolves.toMatchObject({
+				totalPlayers: 0,
+				classCounts: [],
+				bankVaultValue: 0,
+				casinoVaultValue: 0,
+			});
 		});
 
 		it("should allow mutations when user is MODERATOR", async () => {

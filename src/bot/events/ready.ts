@@ -1,5 +1,4 @@
 import { type Client, Events } from "discord.js";
-import { sequelize } from "#core/database/Database";
 import { changeActivity } from "#bot/utils/ui";
 import { Notification } from "#core/models/Notification";
 import { HorseRacing } from "#core/models/HorseRacing";
@@ -16,9 +15,6 @@ module.exports = {
 	name: Events.ClientReady,
 	once: true,
 	async execute(client: Client) {
-		// await sequelize.sync({ force: true });
-		await sequelize.sync();
-		await Dashboard.Initialize();
 		await VaultRepository.GetInstance();
 		changeActivity(client);
 		Notification.StartProcedure();

@@ -3,6 +3,10 @@ query GetDashboardStats {
 		date
 		totalPlayers
 		allUsers
+		classCounts {
+			classId
+			count
+		}
 		bankVaultValue
 		casinoVaultValue
 		totalGangs
@@ -26,6 +30,10 @@ query GetDashboardHistory {
 		date
 		totalPlayers
 		allUsers
+		classCounts {
+			classId
+			count
+		}
 		totalGangs
 		prisonCount
 		hospitalCount

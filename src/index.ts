@@ -8,6 +8,8 @@ import { GlobalFonts } from "@napi-rs/canvas";
 import { BackgroundPatternRegistry } from "#bot/ui/patterns/BackgroundPatternRegistry";
 import { AvatarDecorationRegistry } from "#bot/ui/patterns/AvatarDecorationRegistry";
 import { startApiServer, stopApiServer } from "#api/server";
+import { sequelize } from "#core/database/Database";
+import { Dashboard } from "#core/models/Dashboard";
 
 const client = setClient();
 
@@ -135,10 +137,19 @@ AvatarDecorationRegistry.initialize().catch(err => {
 	Log.Error(`Failed to initialize avatar decoration frames: ${err}`);
 });
 
-startApiServer().catch(err => {
-	Log.Error(`Failed to start Admin API Server: ${err}`);
-});
+async function startApplication() {
+	await sequelize.sync();
+	await Dashboard.Initialize();
+	await Promise.all([
+		startApiServer().catch((err) => {
+			Log.Error(`Failed to start Admin API Server: ${err}`);
+		}),
+		client.login(token)
+			.then(() => logger.info(`Cross Roads Reborn Online! ENV: ${process.env.NODE_ENV}`))
+			.catch((err) => logger.error("Failed to login to Discord:", err)),
+	]);
+}
 
-client.login(token)
-	.then(() => logger.info(`Cross Roads Reborn Online! ENV: ${process.env.NODE_ENV}`))
-	.catch((err) => logger.error("Failed to login to Discord:", err));
+startApplication().catch((err) => {
+	logger.error("Failed to initialize application:", err);
+});

@@ -26,11 +26,16 @@ export class Dashboard {
 		const englishCount = await UserRepository.CountPlayersByLanguage(Language.English);
 		const portugueseCount = await UserRepository.CountPlayersByLanguage(Language.Portuguese);
 		const spanishCount = await UserRepository.CountPlayersByLanguage(Language.Spanish);
+		const classCounts = (await UserRepository.CountGroupedByClass()).map(({ class: classId, count }) => ({
+			classId,
+			count,
+		}));
 
 		return {
 			date: now,
 			totalPlayers,
 			allUsers,
+			classCounts,
 			totalGangs,
 			prisonCount,
 			hospitalCount,
@@ -52,7 +57,10 @@ export class Dashboard {
 	static async TakeSnapshot() {
 		try {
 			const stats = await Dashboard.GetCurrentStats();
-			await DashboardRepository.Create(stats);
+			await DashboardRepository.Create({
+				...stats,
+				classCounts: JSON.stringify(stats.classCounts),
+			});
 
 			Log.Success("Dashboard snapshot taken successfully.");
 		}
@@ -69,7 +77,7 @@ export class Dashboard {
 	}
 
 	static async Initialize() {
-		await DashboardRepository.EnsureAllUsersColumn();
+		await DashboardRepository.EnsureDashboardStatsColumns();
 	}
 
 	/**

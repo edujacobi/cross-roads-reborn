@@ -4,11 +4,17 @@ import { DataTypes, type InferCreationAttributes, type Optional } from "sequeliz
 import type { NullishPropertiesOf } from "sequelize/lib/utils";
 
 export class DashboardRepository {
-	static async EnsureAllUsersColumn(): Promise<void> {
+	static async EnsureDashboardStatsColumns(): Promise<void> {
 		const columns = await sequelize.getQueryInterface().describeTable("dashboard_stats");
 		if (!("allUsers" in columns)) {
 			await sequelize.getQueryInterface().addColumn("dashboard_stats", "allUsers", {
 				type: DataTypes.INTEGER,
+				allowNull: true,
+			});
+		}
+		if (!("classCounts" in columns)) {
+			await sequelize.getQueryInterface().addColumn("dashboard_stats", "classCounts", {
+				type: DataTypes.TEXT,
 				allowNull: true,
 			});
 		}

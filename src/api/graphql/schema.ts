@@ -32,10 +32,16 @@ export const typeDefs = /* GraphQL */ `
         role: Role!
     }
 
+    type ClassCount {
+        classId: Int!
+        count: Int!
+    }
+
     type DashboardStats {
         date: String!
         totalPlayers: Int!
         allUsers: Int!
+        classCounts: [ClassCount!]!
         bankVaultValue: Float!
         casinoVaultValue: Float!
         totalGangs: Int!
@@ -57,6 +63,7 @@ export const typeDefs = /* GraphQL */ `
         date: String!
         totalPlayers: Int!
         allUsers: Int
+        classCounts: [ClassCount!]
         totalGangs: Int!
         prisonCount: Int!
         hospitalCount: Int!

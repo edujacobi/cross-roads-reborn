@@ -269,6 +269,7 @@ export const resolvers: {
 				date: snapshot.date instanceof Date ? snapshot.date.toISOString() : String(snapshot.date),
 				totalPlayers: snapshot.totalPlayers,
 				allUsers: snapshot.allUsers,
+				classCounts: snapshot.classCounts === null ? null : JSON.parse(snapshot.classCounts),
 				totalGangs: snapshot.totalGangs,
 				prisonCount: snapshot.prisonCount,
 				hospitalCount: snapshot.hospitalCount,
