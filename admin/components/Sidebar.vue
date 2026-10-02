@@ -73,7 +73,12 @@ const navigationGroups = [
 				label: "VIPs",
 				to: { name: "vips" },
 				icon: Crown,
-				activeRouteNames: ["vips"],
+			},
+			{
+				label: "Auditoria",
+				to: { name: "admin-audit-log" },
+				icon: ScrollText,
+				activeRouteNames: ["admin-audit-log"],
 			},
 		],
 	},

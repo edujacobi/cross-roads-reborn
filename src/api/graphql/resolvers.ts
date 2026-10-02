@@ -1,4 +1,5 @@
 import { GraphQLError } from "graphql";
+import { AdminAuditLog } from "#core/models/AdminAuditLog";
 import { Dashboard } from "#core/models/Dashboard";
 import { Season } from "#core/models/Season";
 import { Vault } from "#core/models/Vault";
@@ -57,6 +58,46 @@ function assertDeveloper(context: GraphQLContext): AuthUser {
 		});
 	}
 	return user;
+}
+
+async function recordAdminAction(
+	admin: AuthUser,
+	action: string,
+	target: string,
+	previousValue: unknown,
+	newValue: unknown,
+): Promise<void> {
+	await AdminAuditLog.Record(admin, action, target, previousValue, newValue);
+}
+
+function getCooldownValue(user: User, cooldown: string): Date | null {
+	switch (cooldown) {
+	case "scavenge": return user.Scavenge.Time;
+	case "robbery": return user.Wanted.Time;
+	case "beatup": return user.BeatUp.Time;
+	default: return null;
+	}
+}
+
+function getActionValue(user: User, action: string): unknown {
+	switch (action) {
+	case "job": return { jobId: user.Job.Id };
+	case "scavenge": return { scavengingId: user.Scavenge.IsScavengingId };
+	case "robbery": return {
+		robbingUserId: user.Robbery.IsRobbingId,
+		beingRobbedByUserId: user.Robbery.IsBeingRobbedById,
+		robbingLocationId: user.Robbery.IsRobbingLocationId,
+		investmentIsDefending: user.Robbery.InvestmentIsDefending,
+		participatingInGangAction: user.Robbery.ParticipatingInGangAction,
+	};
+	case "beatup": return {
+		beatingUserId: user.BeatUp.IsBeatingId,
+		beingBeatUpByUserId: user.BeatUp.IsBeingBeatUpById,
+	};
+	case "casino": return { isInGame: user.Casino.IsInGame };
+	case "gangaction": return { participatingInGangAction: user.Robbery.ParticipatingInGangAction };
+	default: return null;
+	}
 }
 
 const topUserRankings = {
@@ -245,6 +286,20 @@ export const resolvers: {
 	Query: {
 		me: (_: unknown, __: unknown, context: GraphQLContext) => {
 			return context.user;
+		},
+
+		adminAuditLogs: async (_: unknown, args: { limit?: number; offset?: number }, context: GraphQLContext) => {
+			assertDeveloper(context);
+			const limit = Math.min(Math.max(Math.trunc(args.limit ?? 25), 1), 100);
+			const offset = Math.max(Math.trunc(args.offset ?? 0), 0);
+			const page = await AdminAuditLog.GetPage(limit, offset);
+			return {
+				...page,
+				entries: page.entries.map(entry => ({
+					...entry,
+					createdAt: entry.createdAt.toISOString(),
+				})),
+			};
 		},
 
 		dashboardStats: async (_: unknown, __: unknown, context: GraphQLContext) => {
@@ -575,8 +630,10 @@ export const resolvers: {
 			args: { allowed: boolean },
 			context: GraphQLContext,
 		) => {
-			assertDeveloper(context);
+			const admin = assertDeveloper(context);
+			const previousValue = await Vault.IsMainHeistAllowed();
 			await Vault.SetMainHeistAllowed(args.allowed);
+			await recordAdminAction(admin, "setMainHeistAllowed", "Main heist setting", previousValue, args.allowed);
 			return {
 				success: true,
 				message: `Main heist ${args.allowed ? "enabled" : "disabled"}.`,
@@ -588,8 +645,17 @@ export const resolvers: {
 			args: { isPreSeason: boolean },
 			context: GraphQLContext,
 		) => {
-			assertDeveloper(context);
+			const admin = assertDeveloper(context);
+			const previousSeason = await Season.GetCurrent();
 			await Season.EndCurrentSeason(args.isPreSeason);
+			const newSeason = await Season.GetCurrent();
+			await recordAdminAction(
+				admin,
+				"endSeason",
+				"Current season",
+				{ number: previousSeason.Number, startDate: previousSeason.StartDate, endDate: previousSeason.EndDate },
+				{ number: newSeason.Number, startDate: newSeason.StartDate, endDate: newSeason.EndDate, isPreSeason: args.isPreSeason },
+			);
 			return {
 				success: true,
 				message: args.isPreSeason
@@ -603,7 +669,7 @@ export const resolvers: {
 			args: { type: number; value: number; periodStart: string; periodEnd: string },
 			context: GraphQLContext,
 		) => {
-			assertCanWrite(context);
+			const admin = assertCanWrite(context);
 			const eventTypes = Object.values(EventType).filter((type): type is EventType => typeof type === "number");
 			const periodStart = new Date(args.periodStart);
 			const periodEnd = new Date(args.periodEnd);
@@ -618,6 +684,15 @@ export const resolvers: {
 			}
 
 			const success = await Event.Create(args.type, args.value, periodStart, periodEnd);
+			if (success) {
+				await recordAdminAction(
+					admin,
+					"createEvent",
+					`Event: ${Event.GetEventTypeText(args.type)}`,
+					null,
+					{ type: args.type, value: args.value, periodStart, periodEnd },
+				);
+			}
 			return {
 				success,
 				message: success ? "Event created successfully." : "Failed to create event.",
@@ -629,7 +704,7 @@ export const resolvers: {
 			args: { id: number; value?: number | null; periodStart?: string | null; periodEnd?: string | null },
 			context: GraphQLContext,
 		) => {
-			assertCanWrite(context);
+			const admin = assertCanWrite(context);
 			const event = await Event.GetById(args.id);
 			if (!event) {
 				return { success: false, message: "Event not found." };
@@ -662,7 +737,22 @@ export const resolvers: {
 				return { success: false, message: "No event changes provided." };
 			}
 
+			const previousValue = {
+				type: event.type,
+				value: event.value,
+				periodStart: event.periodStart,
+				periodEnd: event.periodEnd,
+			};
 			const success = await Event.Update(args.id, updatedData);
+			if (success) {
+				await recordAdminAction(
+					admin,
+					"updateEvent",
+					`Event: ${Event.GetEventTypeText(event.type)} (#${args.id})`,
+					previousValue,
+					{ ...previousValue, ...updatedData },
+				);
+			}
 			return {
 				success,
 				message: success ? "Event updated successfully." : "Failed to update event.",
@@ -670,8 +760,18 @@ export const resolvers: {
 		},
 
 		deleteEvent: async (_: unknown, args: { id: number }, context: GraphQLContext) => {
-			assertCanWrite(context);
+			const admin = assertCanWrite(context);
+			const event = await Event.GetById(args.id);
 			const success = await Event.Delete(args.id);
+			if (success && event) {
+				await recordAdminAction(
+					admin,
+					"deleteEvent",
+					`Event: ${Event.GetEventTypeText(event.type)} (#${args.id})`,
+					{ type: event.type, value: event.value, periodStart: event.periodStart, periodEnd: event.periodEnd },
+					null,
+				);
+			}
 			return {
 				success,
 				message: success ? "Event deleted successfully." : "Event not found or could not be deleted.",
@@ -683,7 +783,7 @@ export const resolvers: {
 			args: { userId: string; amount: number; mode: "ADD" | "SET" },
 			context: GraphQLContext,
 		) => {
-			assertCanWrite(context);
+			const admin = assertCanWrite(context);
 			if (!Number.isSafeInteger(args.amount)) {
 				return { success: false, message: "Money amount must be a safe integer.", user: null };
 			}
@@ -699,9 +799,11 @@ export const resolvers: {
 				return { success: false, message: "Updated money must be a safe integer.", user: null };
 			}
 
+			const previousMoney = target.Money;
 			target.Money = money;
 			await target.Update({ money });
 			await target.GetInfo();
+			await recordAdminAction(admin, "setMoney", `${target.Nickname} (${target.Id})`, previousMoney, target.Money);
 
 			return {
 				success: true,
@@ -718,8 +820,10 @@ export const resolvers: {
 				return { success: false, message: "User not found.", user: null };
 			}
 
+			const previousValue = target.Hospital.Time;
 			await target.Cure(admin.userId);
 			await target.GetInfo();
+			await recordAdminAction(admin, "cureUser", `${target.Nickname} (${target.Id})`, previousValue, target.Hospital.Time);
 
 			return {
 				success: true,
@@ -736,8 +840,24 @@ export const resolvers: {
 				return { success: false, message: "User not found.", user: null };
 			}
 
+			const previousValue = {
+				prisonTime: target.Prison.Time,
+				hasPaidBribe: target.Prison.HasPaidBribe,
+				hasTriedEscape: target.Escape.HasTried,
+			};
 			await target.Free(admin.userId);
 			await target.GetInfo();
+			await recordAdminAction(
+				admin,
+				"freeUser",
+				`${target.Nickname} (${target.Id})`,
+				previousValue,
+				{
+					prisonTime: target.Prison.Time,
+					hasPaidBribe: target.Prison.HasPaidBribe,
+					hasTriedEscape: target.Escape.HasTried,
+				},
+			);
 
 			return {
 				success: true,
@@ -758,8 +878,16 @@ export const resolvers: {
 				return { success: false, message: "User not found.", user: null };
 			}
 
+			const previousValue = getCooldownValue(target, args.cooldown);
 			await target.ResetCooldown(args.cooldown, admin.userId);
 			await target.GetInfo();
+			await recordAdminAction(
+				admin,
+				"resetCooldown",
+				`${target.Nickname} (${target.Id})`,
+				{ cooldown: args.cooldown, value: previousValue },
+				{ cooldown: args.cooldown, value: getCooldownValue(target, args.cooldown) },
+			);
 
 			return {
 				success: true,
@@ -780,8 +908,16 @@ export const resolvers: {
 				return { success: false, message: "User not found.", user: null };
 			}
 
+			const previousValue = getActionValue(target, args.action);
 			await target.RemoveAction(args.action, admin.userId);
 			await target.GetInfo();
+			await recordAdminAction(
+				admin,
+				"removeAction",
+				`${target.Nickname} (${target.Id})`,
+				{ action: args.action, value: previousValue },
+				{ action: args.action, value: getActionValue(target, args.action) },
+			);
 
 			return {
 				success: true,
@@ -795,7 +931,7 @@ export const resolvers: {
 			args: { userId: string; itemId: number; mode: "ADD" | "SET"; hoursOrQuantity: number },
 			context: GraphQLContext,
 		) => {
-			assertCanWrite(context);
+			const admin = assertCanWrite(context);
 			const itemData = ItemList[args.itemId];
 			if (!itemData) {
 				return { success: false, message: `Item with Id ${args.itemId} was not found.`, user: null };
@@ -810,6 +946,9 @@ export const resolvers: {
 			}
 
 			const existingItem = await UserItemRepository.FindByUserAndItem(args.userId, args.itemId);
+			const previousValue = existingItem
+				? { quantity: existingItem.quantity, remainingTime: existingItem.remainingTime }
+				: null;
 			const now = new Date();
 
 			if (itemData.Type !== ItemType.Consumable) {
@@ -872,6 +1011,14 @@ export const resolvers: {
 			}
 
 			await target.GetInfo();
+			const updatedItem = target.Items.find(item => item.Id === args.itemId);
+			await recordAdminAction(
+				admin,
+				"setItem",
+				`${target.Nickname} (${target.Id}) - ${itemData.Description[Language.English]}`,
+				previousValue,
+				updatedItem ? { quantity: updatedItem.Quantity, remainingTime: updatedItem.RemainingTime } : null,
+			);
 			return {
 				success: true,
 				message: `Item ${itemData.Description[Language.English]} updated for ${target.Nickname}.`,
@@ -884,7 +1031,7 @@ export const resolvers: {
 			args: { userId: string; amount: number },
 			context: GraphQLContext,
 		) => {
-			assertCanWrite(context);
+			const admin = assertCanWrite(context);
 			if (!Number.isSafeInteger(args.amount)) {
 				return { success: false, message: "Special coin amount must be a safe integer.", user: null };
 			}
@@ -899,8 +1046,10 @@ export const resolvers: {
 				return { success: false, message: "Updated special coins must be a safe integer.", user: null };
 			}
 
+			const previousValue = target.SpecialCoin;
 			await target.AddSpecialCoin(args.amount);
 			await target.GetInfo();
+			await recordAdminAction(admin, "addSpecialCoins", `${target.Nickname} (${target.Id})`, previousValue, target.SpecialCoin);
 			return {
 				success: true,
 				message: `Added ${args.amount} Special Coins to ${target.Nickname}.`,
@@ -913,14 +1062,16 @@ export const resolvers: {
 			args: { userId: string; classId: number },
 			context: GraphQLContext,
 		) => {
-			assertCanWrite(context);
+			const admin = assertCanWrite(context);
 			const target = new User(args.userId);
 			const found = await target.GetInfo();
 			if (!found) {
 				return { success: false, message: "User not found.", user: null };
 			}
+			const previousValue = target.Class;
 			await target.SetClass(args.classId);
 			await target.GetInfo();
+			await recordAdminAction(admin, "setClass", `${target.Nickname} (${target.Id})`, previousValue, target.Class);
 			const className = ClassList[args.classId]?.Name[Language.English] || "Unknown";
 			return {
 				success: true,
@@ -934,14 +1085,16 @@ export const resolvers: {
 			args: { userId: string; nickname: string },
 			context: GraphQLContext,
 		) => {
-			assertCanWrite(context);
+			const admin = assertCanWrite(context);
 			const target = new User(args.userId);
 			const found = await target.GetInfo();
 			if (!found) {
 				return { success: false, message: "User not found.", user: null };
 			}
+			const previousValue = target.Nickname;
 			await target.SetNickname(args.nickname);
 			await target.GetInfo();
+			await recordAdminAction(admin, "setNickname", `${target.Nickname} (${target.Id})`, previousValue, target.Nickname);
 			return {
 				success: true,
 				message: `Nickname changed to ${target.Nickname}.`,
@@ -954,18 +1107,26 @@ export const resolvers: {
 			args: { userId: string; days: number; eternal: boolean },
 			context: GraphQLContext,
 		) => {
-			assertCanWrite(context);
+			const admin = assertCanWrite(context);
 			const target = new User(args.userId);
 			const found = await target.GetInfo();
 			if (!found) {
 				return { success: false, message: "User not found.", user: null };
 			}
 			const wasEternalVip = target.VipEternal;
+			const previousValue = { eternal: target.VipEternal, expiresAt: target.VipTime };
 			await target.SetEternalVip(args.eternal);
 			if (!args.eternal) {
 				await target.AddVip(args.days, !wasEternalVip);
 			}
 			await target.GetInfo();
+			await recordAdminAction(
+				admin,
+				"setVip",
+				`${target.Nickname} (${target.Id})`,
+				previousValue,
+				{ eternal: target.VipEternal, expiresAt: target.VipTime },
+			);
 			return {
 				success: true,
 				message: args.eternal
@@ -980,14 +1141,16 @@ export const resolvers: {
 			args: { userId: string; days: number },
 			context: GraphQLContext,
 		) => {
-			assertCanWrite(context);
+			const admin = assertCanWrite(context);
 			const target = new User(args.userId);
 			const found = await target.GetInfo();
 			if (!found) {
 				return { success: false, message: "User not found.", user: null };
 			}
+			const previousValue = target.DeadUntil;
 			const deadUntil = await target.Kill(args.days);
 			await target.GetInfo();
+			await recordAdminAction(admin, "killUser", `${target.Nickname} (${target.Id})`, previousValue, deadUntil);
 			return {
 				success: true,
 				message: `Killed ${target.Nickname} for ${args.days} days (Dead until ${deadUntil.toISOString()}).`,
@@ -1000,14 +1163,18 @@ export const resolvers: {
 			args: { userId: string; badgeId: number },
 			context: GraphQLContext,
 		) => {
-			assertCanWrite(context);
+			const admin = assertCanWrite(context);
 			const target = new User(args.userId);
 			const found = await target.GetInfo();
 			if (!found) {
 				return { success: false, message: "User not found.", user: null };
 			}
+			const previousValue = (await UserBadge.GetList(args.userId)).some(badge => badge.BadgeId === args.badgeId);
 			const success = await UserBadge.Create(args.userId, args.badgeId);
 			await target.GetInfo();
+			if (success) {
+				await recordAdminAction(admin, "addBadge", `${target.Nickname} (${target.Id}) - badge #${args.badgeId}`, previousValue, true);
+			}
 			return {
 				success,
 				message: success ? `Badge ${args.badgeId} added to ${target.Nickname}.` : `Failed to add badge (or already exists).`,
@@ -1020,14 +1187,18 @@ export const resolvers: {
 			args: { userId: string; badgeId: number },
 			context: GraphQLContext,
 		) => {
-			assertCanWrite(context);
+			const admin = assertCanWrite(context);
 			const target = new User(args.userId);
 			const found = await target.GetInfo();
 			if (!found) {
 				return { success: false, message: "User not found.", user: null };
 			}
+			const previousValue = (await UserBadge.GetList(args.userId)).some(badge => badge.BadgeId === args.badgeId);
 			const success = await UserBadge.Delete(args.userId, args.badgeId);
 			await target.GetInfo();
+			if (success) {
+				await recordAdminAction(admin, "removeBadge", `${target.Nickname} (${target.Id}) - badge #${args.badgeId}`, previousValue, false);
+			}
 			return {
 				success,
 				message: success ? `Badge ${args.badgeId} removed from ${target.Nickname}.` : `Failed to remove badge (not found).`,
@@ -1053,8 +1224,23 @@ export const resolvers: {
 				return { success: false, message: "One or both users were not found.", user: null };
 			}
 
+			const previousValue = {
+				firstUser: { id: firstUser.id, nickname: firstUser.nickname },
+				secondUser: { id: secondUser.id, nickname: secondUser.nickname },
+			};
 			const temporaryId = `TEMP_${randomBytes(6).toString("hex")}`;
 			const updatedTables = await UserRepository.SwapUsers(args.firstUserId, args.secondUserId, temporaryId);
+			await recordAdminAction(
+				admin,
+				"swapUsers",
+				"User accounts",
+				previousValue,
+				{
+					firstUserId: args.secondUserId,
+					secondUserId: args.firstUserId,
+					updatedTableCount: updatedTables.length,
+				},
+			);
 			logger.info(
 				`Developer ${admin.username} (${admin.userId}) swapped users ${firstUser.nickname} (${args.firstUserId}) and ${secondUser.nickname} (${args.secondUserId}).`,
 			);
@@ -1072,11 +1258,19 @@ export const resolvers: {
 			context: GraphQLContext,
 		) => {
 			const admin = assertDeveloper(context);
+			const target = await UserRepository.FindById(args.userId, ["id", "nickname"]);
 			const deleted = await UserRepository.DeleteUser(args.userId);
 			if (!deleted) {
 				return { success: false, message: "User not found.", user: null };
 			}
 
+			await recordAdminAction(
+				admin,
+				"deleteUser",
+				target ? `${target.nickname} (${target.id})` : args.userId,
+				target ? { id: target.id, nickname: target.nickname } : args.userId,
+				null,
+			);
 			logger.warn(`Developer ${admin.username} (${admin.userId}) deleted user ${args.userId} and all related data.`);
 			return {
 				success: true,

@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { resolvers } from "#api/graphql/resolvers";
+import { AdminAuditLog } from "#core/models/AdminAuditLog";
 import { User } from "#core/models/User";
 import { UserBadge } from "#core/models/UserBadge";
 import { UserRepository } from "#core/repositories/UserRepository";
@@ -31,6 +32,7 @@ const developer = {
 
 describe("Admin action mutations", () => {
 	beforeEach(() => {
+		vi.spyOn(AdminAuditLog, "Record").mockResolvedValue();
 		vi.spyOn(User.prototype, "GetInfo").mockImplementation(async function(this: User) {
 			return this;
 		});
@@ -39,6 +41,26 @@ describe("Admin action mutations", () => {
 	});
 
 	afterEach(() => vi.restoreAllMocks());
+
+	it("records the admin and the previous and new money values", async () => {
+		vi.spyOn(User.prototype, "Update").mockResolvedValue();
+
+		await expect(
+			resolvers.Mutation.setMoney(null, {
+				userId: "target123",
+				amount: 250,
+				mode: "SET",
+			}, { user: moderator }),
+		).resolves.toMatchObject({ success: true });
+
+		expect(AdminAuditLog.Record).toHaveBeenCalledWith(
+			moderator,
+			"setMoney",
+			" (target123)",
+			0,
+			250,
+		);
+	});
 
 	it("sets a user's item quantity", async () => {
 		const findItem = vi.spyOn(UserItemRepository, "FindByUserAndItem").mockResolvedValue(null);

@@ -25,6 +25,7 @@ import {
 	AddBadgeDocument,
 	AddSpecialCoinsDocument,
 	CureUserDocument,
+	DeleteUserDocument,
 	FreeUserDocument,
 	KillUserDocument,
 	RemoveActionDocument,
@@ -37,7 +38,6 @@ import {
 	SetNicknameDocument,
 	SetVipDocument,
 	SwapUsersDocument,
-	DeleteUserDocument,
 } from "~/graphql/generated";
 import { BadgeId, ClassId, ItemId } from "../../../src/core/types/Ids";
 
@@ -307,7 +307,7 @@ function openAddBadgeModal() {
 
 async function handleAddBadge() {
 	if (selectedAddBadge.value === null) {
-		showError("Não há emblemas disponíveis para adicionar.");
+		showError("Não há insígnias disponíveis para adicionar.");
 		return;
 	}
 
@@ -317,7 +317,7 @@ async function handleAddBadge() {
 			showSuccess(res.data.addBadge.message);
 			isAddBadgeModalOpen.value = false;
 		} else {
-			showError(res?.data?.addBadge?.message || "Erro ao adicionar emblema.");
+			showError(res?.data?.addBadge?.message || "Erro ao adicionar insígnia.");
 		}
 	} catch (error: unknown) {
 		showError(getErrorMessage(error));
@@ -331,7 +331,7 @@ function openRemoveBadgeModal() {
 
 async function handleRemoveBadge() {
 	if (selectedRemoveBadge.value === null) {
-		showError("O jogador não possui emblemas para remover.");
+		showError("O jogador não possui insígnias para remover.");
 		return;
 	}
 
@@ -341,7 +341,7 @@ async function handleRemoveBadge() {
 			showSuccess(res.data.removeBadge.message);
 			isRemoveBadgeModalOpen.value = false;
 		} else {
-			showError(res?.data?.removeBadge?.message || "Erro ao remover emblema.");
+			showError(res?.data?.removeBadge?.message || "Erro ao remover insígnia.");
 		}
 	} catch (error: unknown) {
 		showError(getErrorMessage(error));
@@ -950,22 +950,22 @@ async function handleDeleteUser() {
 					:disabled="addBadgeLoading || selectedAddBadge === null"
 					@click="handleAddBadge"
 				>
-					Adicionar Emblema
+					Adicionar Insígnia
 				</BaseButton>
 			</template>
 		</BaseModal>
 
 		<BaseModal
 			:open="isRemoveBadgeModalOpen"
-			title="Remover Emblema"
-			description="Selecione um dos emblemas atuais do jogador para removê-lo."
+			title="Remover insígnia"
+			description="Selecione uma das insígnias atuais do jogador para removê-lo."
 			@update:open="isRemoveBadgeModalOpen = $event"
 		>
 			<div class="user-admin-actions__form-group">
 				<label
 					class="user-admin-actions__label"
 					for="select-remove-badge"
-					>Emblema</label
+					>Insígnia</label
 				>
 				<select
 					id="select-remove-badge"
@@ -992,7 +992,7 @@ async function handleDeleteUser() {
 					:disabled="removeBadgeLoading || selectedRemoveBadge === null"
 					@click="handleRemoveBadge"
 				>
-					Remover Emblema
+					Remover Insígnia
 				</BaseButton>
 			</template>
 		</BaseModal>
@@ -1034,7 +1034,8 @@ async function handleDeleteUser() {
 			@update:open="isDeleteUserModalOpen = $event"
 		>
 			<p>
-				Serão excluídos inventário, insígnias, investimentos, histórico, vínculos com gangues e qualquer gangue liderada por este jogador, incluindo seus dados.
+				Serão excluídos inventário, insígnias, investimentos, histórico, vínculos com gangues e qualquer gangue liderada
+				por este jogador, incluindo seus dados.
 				<strong>Esta exclusão não pode ser desfeita.</strong>
 			</p>
 			<p>ID do jogador: <strong>{{ userId }}</strong></p>

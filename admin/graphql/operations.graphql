@@ -68,6 +68,22 @@ query GetEvents {
 	}
 }
 
+query GetAdminAuditLogs($limit: Int!, $offset: Int!) {
+	adminAuditLogs(limit: $limit, offset: $offset) {
+		entries {
+			id
+			adminId
+			adminName
+			action
+			target
+			previousValue
+			newValue
+			createdAt
+		}
+		total
+	}
+}
+
 query GetSeasonInfo {
 	seasonInfo {
 		number

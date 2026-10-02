@@ -334,8 +334,25 @@ export const typeDefs = /* GraphQL */ `
         user: UserDetail
     }
 
+    type AdminAuditEntry {
+        id: ID!
+        adminId: ID!
+        adminName: String!
+        action: String!
+        target: String!
+        previousValue: String!
+        newValue: String!
+        createdAt: String!
+    }
+
+    type AdminAuditLogPage {
+        entries: [AdminAuditEntry!]!
+        total: Int!
+    }
+
     type Query {
         me: AuthUser
+        adminAuditLogs(limit: Int, offset: Int): AdminAuditLogPage!
         dashboardStats: DashboardStats!
         dashboardHistory: [DashboardSnapshot!]!
         dashboardItemPopularity: [DashboardItemPopularity!]!

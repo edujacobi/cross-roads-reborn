@@ -1,7 +1,8 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { signAuthToken, verifyAuthToken } from "#api/auth/jwt";
 import type { AuthUser } from "#api/types";
 import { resolvers } from "#api/graphql/resolvers";
+import { AdminAuditLog } from "#core/models/AdminAuditLog";
 import { Dashboard } from "#core/models/Dashboard";
 import { Event, EventType } from "#core/models/Event";
 import { User } from "#core/models/User";
@@ -33,6 +34,9 @@ describe("API Auth and Resolvers", () => {
 	};
 
 	afterEach(() => vi.restoreAllMocks());
+	beforeEach(() => {
+		vi.spyOn(AdminAuditLog, "Record").mockResolvedValue();
+	});
 
 	describe("JWT Signing and Verification", () => {
 		it("should correctly sign and verify a token for a developer", () => {
@@ -72,6 +76,19 @@ describe("API Auth and Resolvers", () => {
 			await expect(resolvers.Query.dashboardStats(null, {}, { user: null })).rejects.toThrow(
 				"Authentication required to perform this action.",
 			);
+		});
+
+		it("restricts audit log reads to Developers", async () => {
+			const getPage = vi.spyOn(AdminAuditLog, "GetPage").mockResolvedValue({ entries: [], total: 0 });
+
+			await expect(
+				resolvers.Query.adminAuditLogs(null, {}, { user: modUser }),
+			).rejects.toThrow("Forbidden: Developer access required.");
+
+			await expect(
+				resolvers.Query.adminAuditLogs(null, { limit: 250, offset: -5 }, { user: devUser }),
+			).resolves.toEqual({ entries: [], total: 0 });
+			expect(getPage).toHaveBeenCalledWith(100, 0);
 		});
 
 		it("should reject mutations when unauthenticated", async () => {
