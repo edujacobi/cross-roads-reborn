@@ -6,6 +6,8 @@ import { Dashboard } from "#core/models/Dashboard";
 import { Event, EventType } from "#core/models/Event";
 import { User } from "#core/models/User";
 import { Vault } from "#core/models/Vault";
+import { UserItemRepository } from "#core/repositories/UserItemRepository";
+import { ItemId } from "#core/types/Ids";
 
 describe("API Auth and Resolvers", () => {
 	const devUser: AuthUser = {
@@ -106,6 +108,19 @@ describe("API Auth and Resolvers", () => {
 				bankVaultValue: 0,
 				casinoVaultValue: 0,
 			});
+		});
+
+		it("should return item user counts for dashboard", async () => {
+			const countUsersWithItem = vi.spyOn(UserItemRepository, "CountUsersWithItem").mockResolvedValue(7);
+
+			await expect(
+				resolvers.Query.dashboardItemPopularity(null, {}, { user: helperUser }),
+			).resolves.toContainEqual({
+				itemId: ItemId.Knife,
+				name: "Faca",
+				userCount: 7,
+			});
+			expect(countUsersWithItem).toHaveBeenCalledWith(ItemId.Knife);
 		});
 
 		it("should allow mutations when user is MODERATOR", async () => {

@@ -5,6 +5,7 @@
 import { useQuery } from "@vue/apollo-composable";
 import { RotateCw } from "lucide-vue-next";
 import DashboardClassDistribution from "~/components/Dashboard/DashboardClassDistribution.vue";
+import DashboardItemPopularity from "~/components/Dashboard/DashboardItemPopularity.vue";
 import DashboardStatusBox from "~/components/Dashboard/DashboardStatusBox.vue";
 import DashboardUserChart from "~/components/Dashboard/DashboardUserChart.vue";
 import DashboardUserHistory from "~/components/Dashboard/DashboardUserHistory.vue";
@@ -15,6 +16,8 @@ import { imagePaths } from "~/constants/imagePaths";
 import {
 	GetDashboardHistoryDocument,
 	type GetDashboardHistoryQuery,
+	GetDashboardItemPopularityDocument,
+	type GetDashboardItemPopularityQuery,
 	GetDashboardStatsDocument,
 	type GetDashboardStatsQuery,
 } from "~/graphql/generated";
@@ -28,6 +31,11 @@ useHead({
 });
 
 const { result: statsResult, loading: statsLoading, refetch: refetchStats } = useQuery(GetDashboardStatsDocument);
+const {
+	result: itemPopularityResult,
+	loading: itemPopularityLoading,
+	refetch: refetchItemPopularity,
+} = useQuery(GetDashboardItemPopularityDocument);
 
 const {
 	result: historyResult,
@@ -36,6 +44,9 @@ const {
 } = useQuery(GetDashboardHistoryDocument);
 
 const stats = computed<GetDashboardStatsQuery["dashboardStats"] | undefined>(() => statsResult.value?.dashboardStats);
+const itemPopularity = computed<GetDashboardItemPopularityQuery["dashboardItemPopularity"]>(
+	() => itemPopularityResult.value?.dashboardItemPopularity || [],
+);
 const history = computed<GetDashboardHistoryQuery["dashboardHistory"]>(
 	() => historyResult.value?.dashboardHistory || [],
 );
@@ -43,6 +54,7 @@ const history = computed<GetDashboardHistoryQuery["dashboardHistory"]>(
 function refreshData() {
 	refetchStats();
 	refetchHistory();
+	refetchItemPopularity();
 }
 </script>
 
@@ -60,7 +72,7 @@ function refreshData() {
 				>
 					<RotateCw
 						:size="15"
-						:class="{ 'spin-icon': statsLoading || historyLoading }"
+						:class="{ 'spin-icon': statsLoading || historyLoading || itemPopularityLoading }"
 						aria-hidden="true"
 					/>
 					Atualizar
@@ -137,6 +149,11 @@ function refreshData() {
 			:current-stats="stats"
 			:history-loading="historyLoading"
 			:stats-loading="statsLoading"
+		/>
+
+		<DashboardItemPopularity
+			:items="itemPopularity"
+			:loading="itemPopularityLoading"
 		/>
 
 		<div class="details-row">

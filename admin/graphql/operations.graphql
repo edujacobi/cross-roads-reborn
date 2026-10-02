@@ -49,6 +49,14 @@ query GetDashboardHistory {
 	}
 }
 
+query GetDashboardItemPopularity {
+	dashboardItemPopularity {
+		itemId
+		name
+		userCount
+	}
+}
+
 query GetEvents {
 	events {
 		id

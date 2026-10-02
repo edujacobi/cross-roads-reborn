@@ -70,6 +70,8 @@ export class UserItemRepository {
 	 */
 	static async CountUsersWithItem(itemId: ItemId): Promise<number> {
 		return await UserItems.count({
+			distinct: true,
+			col: "userId",
 			where: {
 				itemId,
 				[Op.or]: {
@@ -148,4 +150,3 @@ export class UserItemRepository {
 		await UserItems.upsert(values);
 	}
 }
-

@@ -78,6 +78,12 @@ export const typeDefs = /* GraphQL */ `
         spanishCount: Int!
     }
 
+    type DashboardItemPopularity {
+        itemId: Int!
+        name: String!
+        userCount: Int!
+    }
+
     type UserSummary {
         id: ID!
         nickname: String!
@@ -332,6 +338,7 @@ export const typeDefs = /* GraphQL */ `
         me: AuthUser
         dashboardStats: DashboardStats!
         dashboardHistory: [DashboardSnapshot!]!
+        dashboardItemPopularity: [DashboardItemPopularity!]!
         events: [Event!]!
         seasonInfo: SeasonInfo!
         seasonEndPreview: SeasonEndPreview!

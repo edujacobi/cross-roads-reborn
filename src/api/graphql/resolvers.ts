@@ -285,6 +285,17 @@ export const resolvers: {
 			}));
 		},
 
+		dashboardItemPopularity: async (_: unknown, __: unknown, context: GraphQLContext) => {
+			assertAuthenticated(context);
+			return await Promise.all(
+				Object.values(ItemList).map(async (item) => ({
+					itemId: item.Id,
+					name: item.Description[Language.Portuguese],
+					userCount: await UserItemRepository.CountUsersWithItem(item.Id),
+				})),
+			);
+		},
+
 		events: async (_: unknown, __: unknown, context: GraphQLContext) => {
 			assertAuthenticated(context);
 			const events = await Event.GetAll();
