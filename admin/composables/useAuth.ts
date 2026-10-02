@@ -17,6 +17,9 @@ export function useAuth() {
 
 	const isAuthenticated = computed(() => !!token.value && !!user.value);
 	const isDeveloper = computed(() => user.value?.role === "DEVELOPER");
+	const hasAdminAccess = computed(
+		() => user.value?.role === "DEVELOPER" || user.value?.role === "MODERATOR" || user.value?.role === "HELPER",
+	);
 	const canWrite = computed(() => user.value?.role === "DEVELOPER" || user.value?.role === "MODERATOR");
 
 	async function initAuth() {
@@ -89,6 +92,7 @@ export function useAuth() {
 		loading,
 		isAuthenticated,
 		isDeveloper,
+		hasAdminAccess,
 		canWrite,
 		initAuth,
 		fetchUser,

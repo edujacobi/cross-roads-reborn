@@ -93,8 +93,8 @@ function remainingVipTime(vipTime: string | null): string {
 							:key="vip.id"
 							class="clickable-row"
 							tabindex="0"
-							@click="navigateTo(`/users/${vip.id}`)"
-							@keydown.enter.prevent="navigateTo(`/users/${vip.id}`)"
+							@click="navigateTo(`/admin/users/${vip.id}`)"
+							@keydown.enter.prevent="navigateTo(`/admin/users/${vip.id}`)"
 						>
 							<th
 								scope="row"

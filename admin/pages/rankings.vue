@@ -327,8 +327,8 @@ function nextPage() {
 							tabindex="0"
 							:class="{ 'current-user': entry.id === auth.user.value?.userId }"
 							:style="{ '--highlight-color': entry.gangColor ?? '#89999A' }"
-							@click="navigateTo(`/users/${entry.id}`)"
-							@keydown.enter.prevent="navigateTo(`/users/${entry.id}`)"
+							@click="navigateTo(`/admin/users/${entry.id}`)"
+							@keydown.enter.prevent="navigateTo(`/admin/users/${entry.id}`)"
 						>
 							<th
 								scope="row"

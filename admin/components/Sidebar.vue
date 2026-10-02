@@ -10,6 +10,7 @@ import {
 	LayoutDashboard,
 	LogOut,
 	Menu,
+	ScrollText,
 	Trophy,
 	Users,
 	X,
@@ -30,7 +31,7 @@ onMounted(() => {
 	isCollapsed.value = sidebarStorage.get() === "true";
 });
 
-const navigationGroups = [
+const navigationGroups = computed(() => [
 	{
 		title: "",
 		links: [
@@ -47,32 +48,33 @@ const navigationGroups = [
 		links: [
 			{
 				label: "Dashboard",
-				to: { name: "dashboard" },
+				to: { name: "admin-dashboard" },
 				icon: LayoutDashboard,
-				activeRouteNames: ["dashboard"],
+				activeRouteNames: ["admin-dashboard"],
 			},
 			{
 				label: "Jogadores",
-				to: { name: "users" },
+				to: { name: "admin-users" },
 				icon: Users,
-				activeRouteNames: ["users", "users-id"],
+				activeRouteNames: ["admin-users", "admin-users-id"],
 			},
 			{
 				label: "Eventos",
-				to: { name: "events" },
+				to: { name: "admin-events" },
 				icon: CalendarDays,
-				activeRouteNames: ["events"],
+				activeRouteNames: ["admin-events"],
 			},
 			{
 				label: "Temporada",
-				to: { name: "season" },
+				to: { name: "admin-season" },
 				icon: CalendarSync,
-				activeRouteNames: ["season"],
+				activeRouteNames: ["admin-season"],
 			},
 			{
 				label: "VIPs",
-				to: { name: "vips" },
+				to: { name: "admin-vips" },
 				icon: Crown,
+				activeRouteNames: ["admin-vips"],
 			},
 			{
 				label: "Auditoria",
@@ -82,7 +84,7 @@ const navigationGroups = [
 			},
 		],
 	},
-] as const;
+]);
 
 function openLogoutModal() {
 	if (mobileMenu.value) {
@@ -244,7 +246,7 @@ const user = computed(() => {
 
 		<div class="admin-profile">
 			<NuxtLink
-				:to="`/users/${user?.id}`"
+				:to="`/admin/users/${user?.id}`"
 				class="admin-info"
 				:aria-label="user?.username ? `Perfil de ${user.username}` : 'Perfil do administrador'"
 			>

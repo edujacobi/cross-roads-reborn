@@ -56,7 +56,7 @@ function showFeedback(type: "success" | "error", message: string) {
 			aria-label="Navegação do jogador"
 		>
 			<BaseButton
-				to="/users"
+				to="/admin/users"
 				variant="ghost"
 				size="sm"
 			>
@@ -112,7 +112,7 @@ function showFeedback(type: "success" | "error", message: string) {
 					:badges="user.badges"
 					@feedback="showFeedback"
 					@refresh="refetch"
-					@deleted="navigateTo('/users')"
+					@deleted="navigateTo('/admin/users')"
 				/>
 			</div>
 

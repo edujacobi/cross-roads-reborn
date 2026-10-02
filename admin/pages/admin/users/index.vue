@@ -131,8 +131,8 @@ function nextPage() {
 							:key="u.id"
 							class="clickable-row"
 							tabindex="0"
-							@click="navigateTo(`/users/${u.id}`)"
-							@keydown.enter.prevent="navigateTo(`/users/${u.id}`)"
+							@click="navigateTo(`/admin/users/${u.id}`)"
+							@keydown.enter.prevent="navigateTo(`/admin/users/${u.id}`)"
 						>
 							<th
 								scope="row"
