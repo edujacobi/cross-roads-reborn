@@ -1,4 +1,4 @@
-export type UserRole = "DEVELOPER" | "MODERATOR" | "HELPER";
+export type UserRole = "DEVELOPER" | "MODERATOR" | "HELPER" | "PLAYER";
 
 export interface AuthUser {
 	userId: string;

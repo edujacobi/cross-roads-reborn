@@ -10,6 +10,6 @@ export default defineNuxtRouteMiddleware(async (to) => {
 	}
 
 	if (!auth.hasAdminAccess.value) {
-		return navigateTo("/", { replace: true });
+		return navigateTo("/users", { replace: true });
 	}
 });

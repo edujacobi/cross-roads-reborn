@@ -82,7 +82,7 @@ export async function handleDiscordCallback(code: string): Promise<{ token: stri
 
 		const discordUser = (await userResponse.json()) as DiscordOAuthUser;
 
-		// 3. Permission verification: IsDeveloper, IsModerator, or IsHelper
+		// 3. Assign the highest Discord badge role, or regular player access.
 		const [isDeveloper, isModerator, isHelper] = await Promise.all([
 			UserBadge.IsDeveloper(discordUser.id),
 			UserBadge.IsModerator(discordUser.id),
@@ -92,14 +92,6 @@ export async function handleDiscordCallback(code: string): Promise<{ token: stri
 		// Fallback check for owner if configured
 		const isOwner = process.env.JACOBI_ID && discordUser.id === process.env.JACOBI_ID;
 
-		if (!isDeveloper && !isModerator && !isHelper && !isOwner) {
-			logger.warn(`User ${discordUser.username} (${discordUser.id}) attempted to login to admin panel without an authorized badge.`);
-			return {
-				error: "Access denied. You must have the Developer, Moderator, or Helper badge to access this admin panel.",
-				status: 403,
-			};
-		}
-
 		let role: UserRole;
 		if (isDeveloper || isOwner) {
 			role = "DEVELOPER";
@@ -107,8 +99,11 @@ export async function handleDiscordCallback(code: string): Promise<{ token: stri
 		else if (isModerator) {
 			role = "MODERATOR";
 		}
-		else {
+		else if (isHelper) {
 			role = "HELPER";
+		}
+		else {
+			role = "PLAYER";
 		}
 
 		const avatarUrl = discordUser.avatar
@@ -123,7 +118,7 @@ export async function handleDiscordCallback(code: string): Promise<{ token: stri
 		};
 
 		const token = signAuthToken(authUser);
-		logger.info(`Admin logged in: ${authUser.username} (${authUser.userId}) as ${authUser.role}`);
+		logger.info(`User logged in: ${authUser.username} (${authUser.userId}) as ${authUser.role}`);
 
 		return { token, user: authUser };
 	}

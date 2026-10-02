@@ -3,6 +3,7 @@ export const typeDefs = /* GraphQL */ `
         DEVELOPER
         MODERATOR
         HELPER
+        PLAYER
     }
 
     enum SetMoneyMode {

@@ -23,9 +23,15 @@ useHead({
 	title: "Jogadores",
 });
 
+const auth = useAuth();
 const searchQuery = ref("");
 const page = ref(1);
 const limit = ref(15);
+const pageSubtitle = computed(() =>
+	auth.hasAdminAccess.value
+		? "Pesquise, visualize inventários e execute ações de moderação e administração"
+		: "Pesquise e visualize os perfis dos jogadores",
+);
 
 const offset = computed(() => (page.value - 1) * limit.value);
 
@@ -64,7 +70,7 @@ function nextPage() {
 	<main class="users-page">
 		<PageTitle
 			title="Jogadores"
-			subtitle="Pesquise, visualize inventários e execute ações de moderação e administração"
+			:subtitle="pageSubtitle"
 		/>
 
 		<BaseCard
@@ -117,12 +123,27 @@ function nextPage() {
 					<thead>
 						<tr>
 							<th scope="col">Jogador</th>
-							<th scope="col">ID</th>
+							<th
+								v-if="auth.hasAdminAccess.value"
+								scope="col"
+							>
+								ID
+							</th>
 							<th scope="col">Grupo</th>
 							<th scope="col">Classe</th>
 							<th scope="col">Status</th>
-							<th scope="col">Criação</th>
-							<th scope="col">Última atualização</th>
+							<th
+								v-if="auth.hasAdminAccess.value"
+								scope="col"
+							>
+								Criação
+							</th>
+							<th
+								v-if="auth.hasAdminAccess.value"
+								scope="col"
+							>
+								Última atualização
+							</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -131,8 +152,8 @@ function nextPage() {
 							:key="u.id"
 							class="clickable-row"
 							tabindex="0"
-							@click="navigateTo(`/admin/users/${u.id}`)"
-							@keydown.enter.prevent="navigateTo(`/admin/users/${u.id}`)"
+							@click="navigateTo(`/users/${u.id}`)"
+							@keydown.enter.prevent="navigateTo(`/users/${u.id}`)"
 						>
 							<th
 								scope="row"
@@ -169,7 +190,12 @@ function nextPage() {
 									</BaseBadge>
 								</div>
 							</th>
-							<td class="id-cell">{{ u.id }}</td>
+							<td
+								v-if="auth.hasAdminAccess.value"
+								class="id-cell"
+							>
+								{{ u.id }}
+							</td>
 							<td>
 								<BaseBadge
 									v-if="u.isDeveloper"
@@ -216,10 +242,10 @@ function nextPage() {
 									{{ getSituationName(u.situationId) }}
 								</BaseBadge>
 							</td>
-							<td>
+							<td v-if="auth.hasAdminAccess.value">
 								<time :datetime="u.createdAt">{{ format(u.createdAt, "dd/MM/yyyy hh:mm") }}</time>
 							</td>
-							<td>
+							<td v-if="auth.hasAdminAccess.value">
 								<time :datetime="u.updatedAt">
 									{{ formatDistance(u.updatedAt, new Date(), { locale: ptBR }) }}
 								</time>

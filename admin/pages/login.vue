@@ -24,10 +24,10 @@ const errorMessage = computed(() => {
 	return null;
 });
 
-onMounted(() => {
-	auth.initAuth();
+onMounted(async () => {
+	await auth.initAuth();
 	if (auth.isAuthenticated.value) {
-		navigateTo("/admin/dashboard");
+		navigateTo(auth.hasAdminAccess.value ? "/admin/dashboard" : "/users");
 	}
 });
 </script>
@@ -59,10 +59,10 @@ onMounted(() => {
 
 			<aside class="info-box">
 				<p>
-					Acesso estritamente restrito a membros <strong class="dev">Desenvolvedores</strong>,
-					<strong class="mod">Moderadores</strong>
-					e
-					<strong class="helper">Ajudantes</strong>.
+					Entre com Discord para acessar os perfis dos jogadores. Membros
+					<strong class="dev">Desenvolvedores</strong>, <strong class="mod">Moderadores</strong> e
+					<strong class="helper">Ajudantes</strong>
+					também podem acessar as ferramentas administrativas.
 				</p>
 			</aside>
 

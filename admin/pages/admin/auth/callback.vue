@@ -21,7 +21,7 @@ onMounted(async () => {
 	try {
 		await auth.setToken(token);
 		if (!auth.hasAdminAccess.value) {
-			auth.logout();
+			navigateTo("/users");
 			return;
 		}
 		navigateTo("/admin/dashboard");

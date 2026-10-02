@@ -357,7 +357,8 @@ export type QueryUsersArgs = {
 export enum Role {
   Developer = 'DEVELOPER',
   Helper = 'HELPER',
-  Moderator = 'MODERATOR'
+  Moderator = 'MODERATOR',
+  Player = 'PLAYER'
 }
 
 export type SeasonEndPreview = {

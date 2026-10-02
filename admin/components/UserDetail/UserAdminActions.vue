@@ -53,6 +53,7 @@ const props = defineProps<{
 const emit = defineEmits<{
 	feedback: [type: "success" | "error", message: string];
 	refresh: [];
+	deleted: [];
 }>();
 
 const { mutate: mutateCure, loading: cureLoading } = useMutation(CureUserDocument);

@@ -33,6 +33,13 @@ describe("API Auth and Resolvers", () => {
 		role: "HELPER",
 	};
 
+	const playerUser: AuthUser = {
+		userId: "456789",
+		username: "PlayerTester",
+		avatar: null,
+		role: "PLAYER",
+	};
+
 	afterEach(() => vi.restoreAllMocks());
 	beforeEach(() => {
 		vi.spyOn(AdminAuditLog, "Record").mockResolvedValue();
@@ -65,6 +72,14 @@ describe("API Auth and Resolvers", () => {
 			expect(decoded?.role).toBe("HELPER");
 		});
 
+		it("should correctly sign and verify a token for a player", () => {
+			const token = signAuthToken(playerUser);
+			const decoded = verifyAuthToken(token);
+			expect(decoded).not.toBeNull();
+			expect(decoded?.userId).toBe(playerUser.userId);
+			expect(decoded?.role).toBe("PLAYER");
+		});
+
 		it("should return null for an invalid token", () => {
 			const decoded = verifyAuthToken("invalid.token.here");
 			expect(decoded).toBeNull();
@@ -76,6 +91,18 @@ describe("API Auth and Resolvers", () => {
 			await expect(resolvers.Query.dashboardStats(null, {}, { user: null })).rejects.toThrow(
 				"Authentication required to perform this action.",
 			);
+		});
+
+		it("should reject admin queries from players", async () => {
+			await expect(
+				resolvers.Query.dashboardStats(null, {}, { user: playerUser }),
+			).rejects.toThrow("Forbidden: Admin access required.");
+		});
+
+		it("should reject VIP filtering from players", async () => {
+			await expect(
+				resolvers.Query.users(null, { vipOnly: true }, { user: playerUser }),
+			).rejects.toThrow("Forbidden: VIP filtering is restricted to admins.");
 		});
 
 		it("restricts audit log reads to Developers", async () => {

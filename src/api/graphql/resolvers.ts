@@ -40,6 +40,16 @@ function assertAuthenticated(context: GraphQLContext): AuthUser {
 	return context.user;
 }
 
+function assertAdmin(context: GraphQLContext): AuthUser {
+	const user = assertAuthenticated(context);
+	if (user.role === "PLAYER") {
+		throw new GraphQLError("Forbidden: Admin access required.", {
+			extensions: { code: "FORBIDDEN" },
+		});
+	}
+	return user;
+}
+
 function assertCanWrite(context: GraphQLContext): AuthUser {
 	const user = assertAuthenticated(context);
 	if (user.role !== "DEVELOPER" && user.role !== "MODERATOR") {
@@ -303,7 +313,7 @@ export const resolvers: {
 		},
 
 		dashboardStats: async (_: unknown, __: unknown, context: GraphQLContext) => {
-			assertAuthenticated(context);
+			assertAdmin(context);
 			const [stats, vaultBalances] = await Promise.all([
 				Dashboard.GetCurrentStats(),
 				Vault.GetBalances(),
@@ -317,7 +327,7 @@ export const resolvers: {
 		},
 
 		dashboardHistory: async (_: unknown, __: unknown, context: GraphQLContext) => {
-			assertAuthenticated(context);
+			assertAdmin(context);
 			const history = await Dashboard.GetLast30Days();
 			return history.map((snapshot) => ({
 				id: (snapshot as { id?: number }).id || null,
@@ -341,7 +351,7 @@ export const resolvers: {
 		},
 
 		dashboardItemPopularity: async (_: unknown, __: unknown, context: GraphQLContext) => {
-			assertAuthenticated(context);
+			assertAdmin(context);
 			return await Promise.all(
 				Object.values(ItemList).map(async (item) => ({
 					itemId: item.Id,
@@ -352,7 +362,7 @@ export const resolvers: {
 		},
 
 		events: async (_: unknown, __: unknown, context: GraphQLContext) => {
-			assertAuthenticated(context);
+			assertAdmin(context);
 			const events = await Event.GetAll();
 
 			return events.map(event => ({
@@ -366,7 +376,7 @@ export const resolvers: {
 		},
 
 		seasonInfo: async (_: unknown, __: unknown, context: GraphQLContext) => {
-			assertAuthenticated(context);
+			assertAdmin(context);
 			const [season, mainHeistAllowed] = await Promise.all([
 				Season.GetCurrent(),
 				Vault.IsMainHeistAllowed(),
@@ -460,7 +470,13 @@ export const resolvers: {
 			args: { search?: string; limit?: number; offset?: number; vipOnly?: boolean },
 			context: GraphQLContext,
 		) => {
-			assertAuthenticated(context);
+			const authUser = assertAuthenticated(context);
+			if (authUser.role === "PLAYER" && args.vipOnly) {
+				throw new GraphQLError("Forbidden: VIP filtering is restricted to admins.", {
+					extensions: { code: "FORBIDDEN" },
+				});
+			}
+
 			const { users, total } = await UserRepository.SearchUsers({
 				search: args.search,
 				limit: args.limit,
@@ -498,15 +514,15 @@ export const resolvers: {
 					nickname: user.Nickname,
 					avatarUrl,
 					class: user.Class,
-					isVip: user.IsVip(),
-					vipEternal: user.VipEternal,
-					vipTime: user.VipTime?.toISOString() ?? null,
-					situationId: user.Situation.Id,
-					createdAt: user.CreatedAt.toISOString(),
-					updatedAt: user.UpdatedAt.toISOString(),
-					isDeveloper: isDev,
-					isModerator: isMod,
-					isHelper: isHelper,
+					isVip: authUser.role !== "PLAYER" && user.IsVip(),
+					vipEternal: authUser.role !== "PLAYER" && user.VipEternal,
+					vipTime: authUser.role === "PLAYER" ? null : user.VipTime?.toISOString() ?? null,
+					situationId: authUser.role === "PLAYER" ? 0 : user.Situation.Id,
+					createdAt: authUser.role === "PLAYER" ? "" : user.CreatedAt.toISOString(),
+					updatedAt: authUser.role === "PLAYER" ? "" : user.UpdatedAt.toISOString(),
+					isDeveloper: authUser.role !== "PLAYER" && isDev,
+					isModerator: authUser.role !== "PLAYER" && isMod,
+					isHelper: authUser.role !== "PLAYER" && isHelper,
 				};
 			});
 
@@ -614,13 +630,42 @@ export const resolvers: {
 		},
 
 		user: async (_: unknown, args: { id: string }, context: GraphQLContext) => {
-			assertAuthenticated(context);
+			const authUser = assertAuthenticated(context);
 			const user = new User(args.id);
 			const found = await user.GetInfo(undefined, Language.Portuguese);
 			if (!found) {
 				return null;
 			}
-			return mapUserDetail(user);
+			const detail = await mapUserDetail(user);
+			if (authUser.role !== "PLAYER") {
+				return detail;
+			}
+
+			return {
+				...detail,
+				language: "",
+				isInHospital: false,
+				hospitalTime: null,
+				isInPrison: false,
+				prisonTime: null,
+				isWorking: false,
+				jobEndsIn: null,
+				isScavenging: false,
+				isWanted: false,
+				wantedTime: null,
+				isRobbing: false,
+				isBeingRobbed: false,
+				isBeating: false,
+				isBeingBeated: false,
+				isInCasino: false,
+				isDefendingInvestment: false,
+				isInGangAction: false,
+				isDead: false,
+				deadUntil: null,
+				voteCount: 0,
+				createdAt: "",
+				updatedAt: "",
+			};
 		},
 	},
 

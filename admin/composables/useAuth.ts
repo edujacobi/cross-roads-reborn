@@ -5,7 +5,7 @@ export interface AuthUser {
 	username: string;
 	avatar: string | null;
 	avatarDecoration?: string;
-	role: "DEVELOPER" | "MODERATOR" | "HELPER";
+	role: "DEVELOPER" | "MODERATOR" | "HELPER" | "PLAYER";
 }
 
 export function useAuth() {

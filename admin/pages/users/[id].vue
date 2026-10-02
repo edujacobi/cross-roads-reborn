@@ -56,7 +56,7 @@ function showFeedback(type: "success" | "error", message: string) {
 			aria-label="Navegação do jogador"
 		>
 			<BaseButton
-				to="/admin/users"
+				to="/users"
 				variant="ghost"
 				size="sm"
 			>
@@ -101,7 +101,10 @@ function showFeedback(type: "success" | "error", message: string) {
 
 			<UserActivityStatsCard :stats="user.activityStats" />
 
-			<div class="user-detail__columns">
+			<div
+				v-if="auth.hasAdminAccess.value"
+				class="user-detail__columns"
+			>
 				<UserStatusSummary :user="user" />
 				<UserAdminActions
 					:user-id="userId"
@@ -112,11 +115,12 @@ function showFeedback(type: "success" | "error", message: string) {
 					:badges="user.badges"
 					@feedback="showFeedback"
 					@refresh="refetch"
-					@deleted="navigateTo('/admin/users')"
+					@deleted="navigateTo('/users')"
 				/>
 			</div>
 
 			<UserMetadataCard
+				v-if="auth.hasAdminAccess.value"
 				:user="user"
 				:language="language"
 			/>

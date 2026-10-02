@@ -36,6 +36,12 @@ const navigationGroups = computed(() => [
 		title: "",
 		links: [
 			{
+				label: "Jogadores",
+				to: { name: "users" },
+				icon: Users,
+				activeRouteNames: ["users", "users-id"],
+			},
+			{
 				label: "Rankings",
 				to: { name: "rankings" },
 				icon: Trophy,
@@ -43,47 +49,45 @@ const navigationGroups = computed(() => [
 			},
 		],
 	},
-	{
-		title: "Moderação",
-		links: [
-			{
-				label: "Dashboard",
-				to: { name: "admin-dashboard" },
-				icon: LayoutDashboard,
-				activeRouteNames: ["admin-dashboard"],
-			},
-			{
-				label: "Jogadores",
-				to: { name: "admin-users" },
-				icon: Users,
-				activeRouteNames: ["admin-users", "admin-users-id"],
-			},
-			{
-				label: "Eventos",
-				to: { name: "admin-events" },
-				icon: CalendarDays,
-				activeRouteNames: ["admin-events"],
-			},
-			{
-				label: "Temporada",
-				to: { name: "admin-season" },
-				icon: CalendarSync,
-				activeRouteNames: ["admin-season"],
-			},
-			{
-				label: "VIPs",
-				to: { name: "admin-vips" },
-				icon: Crown,
-				activeRouteNames: ["admin-vips"],
-			},
-			{
-				label: "Auditoria",
-				to: { name: "admin-audit-log" },
-				icon: ScrollText,
-				activeRouteNames: ["admin-audit-log"],
-			},
-		],
-	},
+	...(auth.hasAdminAccess
+		? [
+				{
+					title: "Moderação",
+					links: [
+						{
+							label: "Dashboard",
+							to: { name: "admin-dashboard" },
+							icon: LayoutDashboard,
+							activeRouteNames: ["admin-dashboard"],
+						},
+						{
+							label: "Eventos",
+							to: { name: "admin-events" },
+							icon: CalendarDays,
+							activeRouteNames: ["admin-events"],
+						},
+						{
+							label: "Temporada",
+							to: { name: "admin-season" },
+							icon: CalendarSync,
+							activeRouteNames: ["admin-season"],
+						},
+						{
+							label: "VIPs",
+							to: { name: "admin-vips" },
+							icon: Crown,
+							activeRouteNames: ["admin-vips"],
+						},
+						{
+							label: "Auditoria",
+							to: { name: "admin-audit-log" },
+							icon: ScrollText,
+							activeRouteNames: ["admin-audit-log"],
+						},
+					],
+				},
+			]
+		: []),
 ]);
 
 function openLogoutModal() {
@@ -125,7 +129,7 @@ const user = computed(() => {
 		},
 	};
 
-	if (!authUser) {
+	if (!authUser || authUser.role === "PLAYER") {
 		return;
 	}
 
@@ -246,7 +250,7 @@ const user = computed(() => {
 
 		<div class="admin-profile">
 			<NuxtLink
-				:to="`/admin/users/${user?.id}`"
+				:to="`/users/${user?.id}`"
 				class="admin-info"
 				:aria-label="user?.username ? `Perfil de ${user.username}` : 'Perfil do administrador'"
 			>
