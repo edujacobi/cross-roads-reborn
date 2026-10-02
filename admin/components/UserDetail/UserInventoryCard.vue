@@ -9,6 +9,7 @@ import { onMounted, ref } from "vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import { imagePaths } from "~/constants/imagePaths";
+import { localStorageKeys } from "~/constants/localStorageKeys";
 import type { UserDetail } from "~/types/userDetail";
 import { BundleId, ItemId } from "../../../src/core/types/Ids";
 import { ItemType } from "../../../src/core/types/ItemType";
@@ -16,14 +17,15 @@ import { ItemType } from "../../../src/core/types/ItemType";
 defineProps<{ items: UserDetail["items"] }>();
 
 const isCompactInventory = ref(false);
+const inventoryStorage = useLocalStorage(localStorageKeys.compactInventory);
 
 onMounted(() => {
-	isCompactInventory.value = localStorage.getItem("isCompactInventory") === "true";
+	isCompactInventory.value = inventoryStorage.get() === "true";
 });
 
 function toggleCompactInventory() {
 	isCompactInventory.value = !isCompactInventory.value;
-	localStorage.setItem("isCompactInventory", String(isCompactInventory.value));
+	inventoryStorage.set(String(isCompactInventory.value));
 }
 
 function getItemStatusClasses(item: UserDetail["items"][number]) {

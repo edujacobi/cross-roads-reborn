@@ -1,3 +1,5 @@
+import { localStorageKeys } from "~/constants/localStorageKeys";
+
 export interface AuthUser {
 	userId: string;
 	username: string;
@@ -8,6 +10,7 @@ export interface AuthUser {
 
 export function useAuth() {
 	const config = useRuntimeConfig();
+	const tokenStorage = useLocalStorage(localStorageKeys.token);
 	const token = useState<string | null>("auth_token", () => null);
 	const user = useState<AuthUser | null>("auth_user", () => null);
 	const loading = useState<boolean>("auth_loading", () => true);
@@ -20,7 +23,7 @@ export function useAuth() {
 		if (!import.meta.client) return;
 
 		if (!token.value) {
-			token.value = localStorage.getItem("cr_admin_token");
+			token.value = tokenStorage.get();
 		}
 
 		if (token.value && !user.value) {
@@ -60,9 +63,7 @@ export function useAuth() {
 
 	function setToken(newToken: string) {
 		token.value = newToken;
-		if (import.meta.client) {
-			localStorage.setItem("cr_admin_token", newToken);
-		}
+		tokenStorage.set(newToken);
 		return fetchUser();
 	}
 
@@ -79,9 +80,7 @@ export function useAuth() {
 	function clearSession() {
 		token.value = null;
 		user.value = null;
-		if (import.meta.client) {
-			localStorage.removeItem("cr_admin_token");
-		}
+		tokenStorage.remove();
 	}
 
 	return {

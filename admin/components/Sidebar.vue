@@ -17,12 +17,18 @@ import {
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
 import { imagePaths } from "~/constants/imagePaths";
+import { localStorageKeys } from "~/constants/localStorageKeys";
 
 const auth = useAuth();
 const route = useRoute();
+const sidebarStorage = useLocalStorage(localStorageKeys.sidebarCollapsed);
 const mobileMenu = ref<HTMLInputElement | null>(null);
 const isLogoutModalOpen = ref(false);
 const isCollapsed = ref(false);
+
+onMounted(() => {
+	isCollapsed.value = sidebarStorage.get() === "true";
+});
 
 const navigationGroups = [
 	{
@@ -79,6 +85,11 @@ function openLogoutModal() {
 	}
 
 	isLogoutModalOpen.value = true;
+}
+
+function toggleCollapsed() {
+	isCollapsed.value = !isCollapsed.value;
+	sidebarStorage.set(String(isCollapsed.value));
 }
 
 watch(
@@ -171,7 +182,7 @@ const user = computed(() => {
 				:title="isCollapsed ? 'Expandir menu' : 'Recolher menu'"
 				:aria-expanded="!isCollapsed"
 				aria-controls="admin-sidebar"
-				@click="isCollapsed = !isCollapsed"
+				@click="toggleCollapsed"
 			>
 				<component
 					:is="ChevronLeft"

@@ -1,19 +1,18 @@
 import { ApolloClient, createHttpLink, from, InMemoryCache } from "@apollo/client/core";
 import { setContext } from "@apollo/client/link/context";
 import { DefaultApolloClient } from "@vue/apollo-composable";
+import { localStorageKeys } from "~/constants/localStorageKeys";
 
 export default defineNuxtPlugin((nuxtApp) => {
 	const config = useRuntimeConfig();
+	const tokenStorage = useLocalStorage(localStorageKeys.adminToken);
 
 	const httpLink = createHttpLink({
 		uri: `${config.public.apiBaseUrl}/graphql`,
 	});
 
 	const authLink = setContext((_, { headers }) => {
-		let token: string | null = null;
-		if (import.meta.client) {
-			token = localStorage.getItem("cr_admin_token");
-		}
+		const token = tokenStorage.get();
 
 		return {
 			headers: {
