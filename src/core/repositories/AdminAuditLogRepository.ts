@@ -4,6 +4,9 @@ import type { AdminAuditActionId, AdminAuditSettingId } from "#core/types/AdminA
 export class AdminAuditLogRepository {
 	static async Create(values: {
 		adminId: string;
+		adminIpAddress: string | null;
+		adminDeviceType: string | null;
+		adminOperatingSystem: string | null;
 		actionId: AdminAuditActionId;
 		targetUserId: string | null;
 		targetSettingId: AdminAuditSettingId | null;

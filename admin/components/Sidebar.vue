@@ -77,12 +77,12 @@ const navigationGroups = computed(() => [
 						icon: Crown,
 						activeRouteNames: ["admin-vips"],
 					},
-					{
+					...(auth.canWrite.value ? [{
 						label: "Auditoria",
 						to: { name: "admin-audit-log" },
 						icon: ScrollText,
 						activeRouteNames: ["admin-audit-log"],
-					},
+					}] : []),
 				],
 			}]
 		: []),

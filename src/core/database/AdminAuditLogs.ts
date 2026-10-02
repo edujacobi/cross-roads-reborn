@@ -8,6 +8,9 @@ export class AdminAuditLogs extends Model<
 > {
 	declare id: CreationOptional<number>;
 	declare adminId: string;
+	declare adminIpAddress: string | null;
+	declare adminDeviceType: string | null;
+	declare adminOperatingSystem: string | null;
 	declare actionId: AdminAuditActionId;
 	declare targetUserId: string | null;
 	declare targetSettingId: AdminAuditSettingId | null;
@@ -26,6 +29,18 @@ AdminAuditLogs.init(
 		adminId: {
 			type: DataTypes.STRING,
 			allowNull: false,
+		},
+		adminIpAddress: {
+			type: DataTypes.STRING,
+			allowNull: true,
+		},
+		adminDeviceType: {
+			type: DataTypes.STRING,
+			allowNull: true,
+		},
+		adminOperatingSystem: {
+			type: DataTypes.STRING,
+			allowNull: true,
 		},
 		actionId: {
 			type: DataTypes.INTEGER,

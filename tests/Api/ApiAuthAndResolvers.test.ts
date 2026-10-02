@@ -105,17 +105,21 @@ describe("API Auth and Resolvers", () => {
 			).rejects.toThrow("Forbidden: VIP filtering is restricted to admins.");
 		});
 
-		it("restricts audit log reads to Developers", async () => {
+		it("allows Developers and moderators to read audit logs, but rejects helpers", async () => {
 			const getPage = vi.spyOn(AdminAuditLog, "GetPage").mockResolvedValue({ entries: [], total: 0 });
 
 			await expect(
-				resolvers.Query.adminAuditLogs(null, {}, { user: modUser }),
-			).rejects.toThrow("Forbidden: Developer access required.");
+				resolvers.Query.adminAuditLogs(null, {}, { user: helperUser }),
+			).rejects.toThrow("Forbidden: Audit log access required.");
 
 			await expect(
 				resolvers.Query.adminAuditLogs(null, { limit: 250, offset: -5 }, { user: devUser }),
 			).resolves.toEqual({ entries: [], total: 0 });
 			expect(getPage).toHaveBeenCalledWith(100, 0, undefined);
+
+			await expect(
+				resolvers.Query.adminAuditLogs(null, {}, { user: modUser }),
+			).resolves.toMatchObject({ entries: [], total: 0 });
 		});
 
 		it("should reject mutations when unauthenticated", async () => {

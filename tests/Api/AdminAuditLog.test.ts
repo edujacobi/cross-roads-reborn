@@ -10,10 +10,23 @@ describe("Admin audit log", () => {
 		const create = vi.spyOn(AdminAuditLogRepository, "Create").mockResolvedValue();
 		const admin = { userId: "123" };
 
-		await AdminAuditLog.Record(admin, AdminAuditActionId.SetMoney, { userId: "456" }, { money: 10 }, { money: 25 });
+		await AdminAuditLog.Record(
+			admin,
+			AdminAuditActionId.SetMoney,
+			{ userId: "456" },
+			{ money: 10 },
+			{ money: 25 },
+			{
+				ipAddress: "203.0.113.10",
+				userAgent: "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Chrome/130.0.0.0 Mobile Safari/537.36",
+			},
+		);
 
 		expect(create).toHaveBeenCalledWith({
 			adminId: admin.userId,
+			adminIpAddress: "203.0.113.10",
+			adminDeviceType: "Mobile",
+			adminOperatingSystem: "Android",
 			actionId: AdminAuditActionId.SetMoney,
 			targetUserId: "456",
 			targetSettingId: null,

@@ -10,4 +10,8 @@ export interface AuthUser {
 
 export interface GraphQLContext {
 	user: AuthUser | null;
+	auditRequestInfo?: {
+		ipAddress: string | null;
+		userAgent: string | null;
+	};
 }

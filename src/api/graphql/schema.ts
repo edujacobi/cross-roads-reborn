@@ -341,6 +341,9 @@ export const typeDefs = /* GraphQL */ `
         adminId: ID!
         adminName: String!
         adminAvatarUrl: String
+        adminIpAddress: String
+        adminDeviceType: String
+        adminOperatingSystem: String
         actionId: Int!
         targetUserId: ID
         targetUserName: String

@@ -1,5 +1,5 @@
 import { AdminAuditLogRepository } from "#core/repositories/AdminAuditLogRepository";
-import type { AdminAuditActionId, AdminAuditSettingId } from "#core/types/AdminAuditLog";
+import type { AdminAuditActionId, AdminAuditRequestInfo, AdminAuditSettingId } from "#core/types/AdminAuditLog";
 
 export type AdminAuditTarget =
 	| { userId: string; settingId?: never }
@@ -8,6 +8,9 @@ export type AdminAuditTarget =
 export interface AdminAuditEntry {
 	id: number;
 	adminId: string;
+	adminIpAddress: string | null;
+	adminDeviceType: string | null;
+	adminOperatingSystem: string | null;
 	actionId: AdminAuditActionId;
 	targetUserId: string | null;
 	targetSettingId: AdminAuditSettingId | null;
@@ -31,9 +34,14 @@ export class AdminAuditLog {
 		target: AdminAuditTarget,
 		previousValue: unknown,
 		newValue: unknown,
+		requestInfo: AdminAuditRequestInfo,
 	): Promise<void> {
+		const deviceInfo = this.parseUserAgent(requestInfo.userAgent);
 		await AdminAuditLogRepository.Create({
 			adminId: admin.userId,
+			adminIpAddress: requestInfo.ipAddress,
+			adminDeviceType: deviceInfo.deviceType,
+			adminOperatingSystem: deviceInfo.operatingSystem,
 			actionId,
 			targetUserId: target.userId ?? null,
 			targetSettingId: target.settingId ?? null,
@@ -41,6 +49,33 @@ export class AdminAuditLog {
 			newValue: this.serialize(newValue),
 			createdAt: new Date(),
 		});
+	}
+
+	private static parseUserAgent(userAgent: string | null): { deviceType: string; operatingSystem: string } {
+		if (!userAgent) {
+			return { deviceType: "Unknown", operatingSystem: "Unknown" };
+		}
+
+		const deviceType = /iPad|Tablet/i.test(userAgent) || (/Android/i.test(userAgent) && !/Mobile/i.test(userAgent))
+			? "Tablet"
+			: /Mobile|iPhone|iPod/i.test(userAgent)
+				? "Mobile"
+				: "Desktop";
+		const operatingSystem = /Android/i.test(userAgent)
+			? "Android"
+			: /iPhone|iPad|iPod/i.test(userAgent)
+				? "iOS"
+				: /Windows NT/i.test(userAgent)
+					? "Windows"
+					: /Mac OS X/i.test(userAgent)
+						? "macOS"
+						: /CrOS/i.test(userAgent)
+							? "ChromeOS"
+							: /Linux/i.test(userAgent)
+								? "Linux"
+								: "Unknown";
+
+		return { deviceType, operatingSystem };
 	}
 
 	static async GetPage(
@@ -53,6 +88,9 @@ export class AdminAuditLog {
 			entries: page.rows.map(log => ({
 				id: log.id,
 				adminId: log.adminId,
+				adminIpAddress: log.adminIpAddress,
+				adminDeviceType: log.adminDeviceType,
+				adminOperatingSystem: log.adminOperatingSystem,
 				actionId: log.actionId,
 				targetUserId: log.targetUserId,
 				targetSettingId: log.targetSettingId,

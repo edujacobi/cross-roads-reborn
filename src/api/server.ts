@@ -53,12 +53,17 @@ export async function createApiServer(): Promise<FastifyInstance> {
 		}),
 		context: async ({ req }): Promise<GraphQLContext> => {
 			const authHeader = req.headers.authorization;
+			const userAgentHeader = req.headers["user-agent"];
+			const auditRequestInfo = {
+				ipAddress: req.ip || null,
+				userAgent: typeof userAgentHeader === "string" ? userAgentHeader : null,
+			};
 			if (authHeader && authHeader.startsWith("Bearer ")) {
 				const token = authHeader.substring(7);
 				const user = verifyAuthToken(token);
-				return { user };
+				return { user, auditRequestInfo };
 			}
-			return { user: null };
+			return { user: null, auditRequestInfo };
 		},
 		graphqlEndpoint: "/graphql",
 	});

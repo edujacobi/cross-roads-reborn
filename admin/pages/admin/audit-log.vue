@@ -5,6 +5,7 @@
 import { useQuery } from "@vue/apollo-composable";
 import { ScrollText } from "lucide-vue-next";
 import BaseCard from "~/components/ui/BaseCard.vue";
+import BaseModal from "~/components/ui/BaseModal.vue";
 import BaseTable from "~/components/ui/BaseTable.vue";
 import BaseTableFooter from "~/components/ui/BaseTableFooter.vue";
 import PageTitle from "~/components/ui/PageTitle.vue";
@@ -19,6 +20,8 @@ useHead({
 });
 
 const auth = useAuth();
+const isDeveloper = computed(() => auth.isDeveloper.value);
+const selectedEntry = ref<GetAdminAuditLogsQuery["adminAuditLogs"]["entries"][number] | null>(null);
 const page = ref(1);
 const selectedActionId = ref("");
 const pageSize = 25;
@@ -34,7 +37,7 @@ const { result, loading, error } = useQuery(
 		offset: offset.value,
 		actionId: selectedActionId.value ? Number(selectedActionId.value) : undefined,
 	}),
-	{ enabled: computed(() => auth.isDeveloper.value) },
+	{ enabled: computed(() => auth.canWrite.value) },
 );
 
 const auditPage = computed(() => result.value?.adminAuditLogs);
@@ -90,6 +93,14 @@ function formatValue(value: string): string {
 
 function formatDate(value: string): string {
 	return new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "medium" }).format(new Date(value));
+}
+
+function openEntry(entry: GetAdminAuditLogsQuery["adminAuditLogs"]["entries"][number]) {
+	if (isDeveloper.value) selectedEntry.value = entry;
+}
+
+function setModalOpen(isOpen: boolean) {
+	if (!isOpen) selectedEntry.value = null;
 }
 
 function prevPage() {
@@ -174,6 +185,11 @@ function nextPage() {
 						<tr
 							v-for="entry in entries"
 							:key="entry.id"
+							:class="{ 'audit-row--clickable': isDeveloper }"
+							:tabindex="isDeveloper ? 0 : undefined"
+							@click="openEntry(entry)"
+							@keydown.enter="openEntry(entry)"
+							@keydown.space.prevent="openEntry(entry)"
 						>
 							<td>
 								<div class="audit-person">
@@ -239,6 +255,32 @@ function nextPage() {
 				/>
 			</template>
 		</BaseCard>
+
+		<BaseModal
+			v-if="isDeveloper"
+			:open="selectedEntry !== null"
+			title="Dados do acesso administrativo"
+			:description="selectedEntry ? `${selectedEntry.adminName} · ${formatDate(selectedEntry.createdAt)}` : undefined"
+			@update:open="setModalOpen($event)"
+		>
+			<dl
+				v-if="selectedEntry"
+				class="audit-access-details"
+			>
+				<div>
+					<dt>Endereço IP</dt>
+					<dd>{{ selectedEntry.adminIpAddress || "Desconhecido" }}</dd>
+				</div>
+				<div>
+					<dt>Dispositivo</dt>
+					<dd>{{ selectedEntry.adminDeviceType || "Desconhecido" }}</dd>
+				</div>
+				<div>
+					<dt>Sistema operacional</dt>
+					<dd>{{ selectedEntry.adminOperatingSystem || "Desconhecido" }}</dd>
+				</div>
+			</dl>
+		</BaseModal>
 	</main>
 </template>
 
@@ -314,5 +356,37 @@ function nextPage() {
 	max-width: 24rem;
 	white-space: pre-wrap;
 	overflow-wrap: anywhere;
+}
+
+.audit-row--clickable {
+	cursor: pointer;
+
+	&:hover,
+	&:focus-visible {
+		background-color: rgba($bg-input, 0.12);
+	}
+
+	&:focus-visible {
+		outline: 2px solid $color-brand;
+		outline-offset: -2px;
+	}
+}
+
+.audit-access-details {
+	display: grid;
+	gap: $spacing-md;
+	margin: 0;
+
+	dt {
+		color: $text-muted;
+		font-size: 0.8125rem;
+	}
+
+	dd {
+		margin: 0.25rem 0 0;
+		color: $text-primary;
+		font-family: monospace;
+		overflow-wrap: anywhere;
+	}
 }
 </style>

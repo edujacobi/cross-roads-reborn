@@ -27,3 +27,8 @@ export enum AdminAuditSettingId {
 	Events = 3,
 	UserAccounts = 4,
 }
+
+export interface AdminAuditRequestInfo {
+	ipAddress: string | null;
+	userAgent: string | null;
+}

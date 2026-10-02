@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { DataTypes, QueryTypes, Sequelize } from "sequelize";
 import { migrateAdminAuditLogsV2 } from "#core/database/migrations/AdminAuditLogsV2";
+import { migrateAdminAuditLogsV3 } from "#core/database/migrations/AdminAuditLogsV3";
 
 describe("Admin audit log schema migration", () => {
 	let database: Sequelize | undefined;
@@ -84,5 +85,27 @@ describe("Admin audit log schema migration", () => {
 				newValue: "false",
 			},
 		]);
+	});
+
+	it("adds nullable request metadata columns idempotently", async () => {
+		database = new Sequelize({ dialect: "sqlite", storage: ":memory:", logging: false });
+		await database.getQueryInterface().createTable("admin_audit_logs", {
+			id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true, allowNull: false },
+			adminId: { type: DataTypes.STRING, allowNull: false },
+			actionId: { type: DataTypes.INTEGER, allowNull: false },
+			targetUserId: { type: DataTypes.STRING, allowNull: true },
+			targetSettingId: { type: DataTypes.INTEGER, allowNull: true },
+			previousValue: { type: DataTypes.TEXT, allowNull: false },
+			newValue: { type: DataTypes.TEXT, allowNull: false },
+			createdAt: { type: DataTypes.DATE, allowNull: false },
+		});
+
+		await migrateAdminAuditLogsV3(database);
+		await migrateAdminAuditLogsV3(database);
+
+		const columns = await database.getQueryInterface().describeTable("admin_audit_logs");
+		expect(columns.adminIpAddress.allowNull).toBe(true);
+		expect(columns.adminDeviceType.allowNull).toBe(true);
+		expect(columns.adminOperatingSystem.allowNull).toBe(true);
 	});
 });

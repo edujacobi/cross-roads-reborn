@@ -55,11 +55,15 @@ describe("Admin action mutations", () => {
 		).resolves.toMatchObject({ success: true });
 
 		expect(AdminAuditLog.Record).toHaveBeenCalledWith(
-			moderator,
+			expect.objectContaining({
+				userId: moderator.userId,
+				auditRequestInfo: { ipAddress: null, userAgent: null },
+			}),
 			AdminAuditActionId.SetMoney,
 			{ userId: "target123" },
 			0,
 			250,
+			{ ipAddress: null, userAgent: null },
 		);
 	});
 

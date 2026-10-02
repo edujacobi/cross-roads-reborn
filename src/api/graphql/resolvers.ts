@@ -42,6 +42,10 @@ function assertAuthenticated(context: GraphQLContext): AuthUser {
 	return context.user;
 }
 
+type AdminActor = AuthUser & {
+	auditRequestInfo: NonNullable<GraphQLContext["auditRequestInfo"]>;
+};
+
 function assertAdmin(context: GraphQLContext): AuthUser {
 	const user = assertAuthenticated(context);
 	if (user.role === "PLAYER") {
@@ -52,34 +56,40 @@ function assertAdmin(context: GraphQLContext): AuthUser {
 	return user;
 }
 
-function assertCanWrite(context: GraphQLContext): AuthUser {
+function assertCanWrite(context: GraphQLContext): AdminActor {
 	const user = assertAuthenticated(context);
 	if (user.role !== "DEVELOPER" && user.role !== "MODERATOR") {
 		throw new GraphQLError("Forbidden: This role has read-only access.", {
 			extensions: { code: "FORBIDDEN" },
 		});
 	}
-	return user;
+	return {
+		...user,
+		auditRequestInfo: context.auditRequestInfo ?? { ipAddress: null, userAgent: null },
+	};
 }
 
-function assertDeveloper(context: GraphQLContext): AuthUser {
+function assertDeveloper(context: GraphQLContext): AdminActor {
 	const user = assertAuthenticated(context);
 	if (user.role !== "DEVELOPER") {
 		throw new GraphQLError("Forbidden: Developer access required.", {
 			extensions: { code: "FORBIDDEN" },
 		});
 	}
-	return user;
+	return {
+		...user,
+		auditRequestInfo: context.auditRequestInfo ?? { ipAddress: null, userAgent: null },
+	};
 }
 
 async function recordAdminAction(
-	admin: AuthUser,
+	admin: AdminActor,
 	actionId: AdminAuditActionId,
 	target: AdminAuditTarget,
 	previousValue: unknown,
 	newValue: unknown,
 ): Promise<void> {
-	await AdminAuditLog.Record(admin, actionId, target, previousValue, newValue);
+	await AdminAuditLog.Record(admin, actionId, target, previousValue, newValue, admin.auditRequestInfo);
 }
 
 function getCooldownValue(user: User, cooldown: string): Date | null {
@@ -335,7 +345,12 @@ export const resolvers: {
 			args: { limit?: number; offset?: number; actionId?: number | null },
 			context: GraphQLContext,
 		) => {
-			assertDeveloper(context);
+			const user = assertAuthenticated(context);
+			if (user.role !== "DEVELOPER" && user.role !== "MODERATOR") {
+				throw new GraphQLError("Forbidden: Audit log access required.", {
+					extensions: { code: "FORBIDDEN" },
+				});
+			}
 			const limit = Math.min(Math.max(Math.trunc(args.limit ?? 25), 1), 100);
 			const offset = Math.max(Math.trunc(args.offset ?? 0), 0);
 			const page = await AdminAuditLog.GetPage(limit, offset, args.actionId ?? undefined);
@@ -355,6 +370,9 @@ export const resolvers: {
 				...page,
 				entries: page.entries.map(entry => ({
 					...entry,
+					adminIpAddress: user.role === "DEVELOPER" ? entry.adminIpAddress : null,
+					adminDeviceType: user.role === "DEVELOPER" ? entry.adminDeviceType : null,
+					adminOperatingSystem: user.role === "DEVELOPER" ? entry.adminOperatingSystem : null,
 					adminName: discordProfileById.get(entry.adminId)?.name ?? entry.adminId,
 					adminAvatarUrl: discordProfileById.get(entry.adminId)?.avatarUrl ?? null,
 					targetUserName: entry.targetUserId
