@@ -12,11 +12,14 @@ export default defineNuxtConfig({
 			htmlAttrs: {
 				lang: "pt-BR",
 			},
-			title: "Cross Roads Reborn - Admin Panel",
+			title: "Cross Roads Reborn",
 			meta: [
 				{ charset: "utf-8" },
 				{ name: "viewport", content: "width=device-width, initial-scale=1" },
-				{ name: "description", content: "Administrative dashboard for Cross Roads Reborn" },
+				{
+					name: "description",
+					content: "Cross Roads Reborn é um RPG multiplayer de economia, combate e alianças entre jogadores.",
+				},
 				{ name: "apple-mobile-web-app-title", content: "Cross Roads" },
 			],
 			link: [

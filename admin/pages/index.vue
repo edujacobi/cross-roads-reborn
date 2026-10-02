@@ -10,8 +10,19 @@ definePageMeta({
 	layout: false,
 });
 
-useHead({
+useSeoMeta({
 	title: "Início",
+	titleTemplate: "%s | Cross Roads Reborn",
+	description:
+		"Construa sua história em Cross Roads Reborn, um RPG multiplayer de economia, combate e alianças. Trabalhe, invista, enfrente rivais e dispute rankings.",
+	ogTitle: "Cross Roads Reborn | RPG multiplayer",
+	ogDescription:
+		"Trabalhe, invista, enfrente rivais e forme alianças em Cross Roads Reborn, um RPG multiplayer movido pelas escolhas dos jogadores.",
+	ogType: "website",
+	ogLocale: "pt_BR",
+	ogSiteName: "Cross Roads Reborn",
+	twitterCard: "summary",
+	robots: "index, follow",
 });
 </script>
 
