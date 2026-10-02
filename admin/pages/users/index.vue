@@ -169,18 +169,7 @@ function nextPage() {
 									/>
 									<span class="nickname">{{ u.nickname || "(Sem Nick)" }}</span>
 									<BaseBadge
-										v-if="u.vipEternal"
-										variant="vip"
-									>
-										<NuxtImg
-											:src="imagePaths.badges.vip"
-											width="14"
-											alt=""
-										/>
-										VIP Eterno
-									</BaseBadge>
-									<BaseBadge
-										v-else-if="u.isVip"
+										v-if="u.isVip"
 										variant="vip"
 									>
 										<NuxtImg
