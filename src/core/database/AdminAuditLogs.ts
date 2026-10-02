@@ -11,6 +11,7 @@ export class AdminAuditLogs extends Model<
 	declare adminIpAddress: string | null;
 	declare adminDeviceType: string | null;
 	declare adminOperatingSystem: string | null;
+	declare adminBrowser: string | null;
 	declare actionId: AdminAuditActionId;
 	declare targetUserId: string | null;
 	declare targetSettingId: AdminAuditSettingId | null;
@@ -39,6 +40,10 @@ AdminAuditLogs.init(
 			allowNull: true,
 		},
 		adminOperatingSystem: {
+			type: DataTypes.STRING,
+			allowNull: true,
+		},
+		adminBrowser: {
 			type: DataTypes.STRING,
 			allowNull: true,
 		},

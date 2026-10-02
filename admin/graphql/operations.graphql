@@ -78,6 +78,7 @@ query GetAdminAuditLogs($limit: Int!, $offset: Int!, $actionId: Int) {
 			adminIpAddress
 			adminDeviceType
 			adminOperatingSystem
+			adminBrowser
 			actionId
 			targetUserId
 			targetUserName

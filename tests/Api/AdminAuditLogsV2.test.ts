@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { DataTypes, QueryTypes, Sequelize } from "sequelize";
 import { migrateAdminAuditLogsV2 } from "#core/database/migrations/AdminAuditLogsV2";
 import { migrateAdminAuditLogsV3 } from "#core/database/migrations/AdminAuditLogsV3";
+import { migrateAdminAuditLogsV4 } from "#core/database/migrations/AdminAuditLogsV4";
 
 describe("Admin audit log schema migration", () => {
 	let database: Sequelize | undefined;
@@ -107,5 +108,18 @@ describe("Admin audit log schema migration", () => {
 		expect(columns.adminIpAddress.allowNull).toBe(true);
 		expect(columns.adminDeviceType.allowNull).toBe(true);
 		expect(columns.adminOperatingSystem.allowNull).toBe(true);
+	});
+
+	it("adds the browser metadata column idempotently", async () => {
+		database = new Sequelize({ dialect: "sqlite", storage: ":memory:", logging: false });
+		await database.getQueryInterface().createTable("admin_audit_logs", {
+			id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true, allowNull: false },
+		});
+
+		await migrateAdminAuditLogsV4(database);
+		await migrateAdminAuditLogsV4(database);
+
+		const columns = await database.getQueryInterface().describeTable("admin_audit_logs");
+		expect(columns.adminBrowser.allowNull).toBe(true);
 	});
 });

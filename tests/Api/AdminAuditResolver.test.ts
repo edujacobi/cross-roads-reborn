@@ -46,6 +46,7 @@ describe("Admin audit log resolver", () => {
 				adminIpAddress: "203.0.113.5",
 				adminDeviceType: "Desktop",
 				adminOperatingSystem: "Windows",
+				adminBrowser: "Edge",
 				actionId: AdminAuditActionId.SetMoney,
 				targetUserId: "222",
 				targetSettingId: null,
@@ -80,6 +81,7 @@ describe("Admin audit log resolver", () => {
 				adminIpAddress: null,
 				adminDeviceType: null,
 				adminOperatingSystem: null,
+				adminBrowser: null,
 				actionId: AdminAuditActionId.SetMainHeistAllowed,
 				targetUserId: null,
 				targetSettingId: AdminAuditSettingId.MainHeist,
@@ -120,6 +122,7 @@ describe("Admin audit log resolver", () => {
 				adminIpAddress: "203.0.113.5",
 				adminDeviceType: "Desktop",
 				adminOperatingSystem: "Windows",
+				adminBrowser: "Edge",
 				actionId: AdminAuditActionId.SetMoney,
 				targetUserId: null,
 				targetSettingId: null,
@@ -137,6 +140,7 @@ describe("Admin audit log resolver", () => {
 			adminIpAddress: null,
 			adminDeviceType: null,
 			adminOperatingSystem: null,
+			adminBrowser: null,
 		});
 	});
 

@@ -27,6 +27,7 @@ describe("Admin audit log", () => {
 			adminIpAddress: "203.0.113.10",
 			adminDeviceType: "Mobile",
 			adminOperatingSystem: "Android",
+			adminBrowser: "Chrome",
 			actionId: AdminAuditActionId.SetMoney,
 			targetUserId: "456",
 			targetSettingId: null,
@@ -34,5 +35,23 @@ describe("Admin audit log", () => {
 			newValue: "{\"money\":25}",
 			createdAt: expect.any(Date),
 		});
+	});
+
+	it("prefers Edge over Chrome in Chromium-based user agents", async () => {
+		const create = vi.spyOn(AdminAuditLogRepository, "Create").mockResolvedValue();
+
+		await AdminAuditLog.Record(
+			{ userId: "123" },
+			AdminAuditActionId.SetMoney,
+			{ userId: "456" },
+			null,
+			null,
+			{
+				ipAddress: null,
+				userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+			},
+		);
+
+		expect(create).toHaveBeenCalledWith(expect.objectContaining({ adminBrowser: "Edge" }));
 	});
 });

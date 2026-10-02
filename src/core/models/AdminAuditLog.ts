@@ -11,6 +11,7 @@ export interface AdminAuditEntry {
 	adminIpAddress: string | null;
 	adminDeviceType: string | null;
 	adminOperatingSystem: string | null;
+	adminBrowser: string | null;
 	actionId: AdminAuditActionId;
 	targetUserId: string | null;
 	targetSettingId: AdminAuditSettingId | null;
@@ -42,6 +43,7 @@ export class AdminAuditLog {
 			adminIpAddress: requestInfo.ipAddress,
 			adminDeviceType: deviceInfo.deviceType,
 			adminOperatingSystem: deviceInfo.operatingSystem,
+			adminBrowser: deviceInfo.browser,
 			actionId,
 			targetUserId: target.userId ?? null,
 			targetSettingId: target.settingId ?? null,
@@ -51,9 +53,9 @@ export class AdminAuditLog {
 		});
 	}
 
-	private static parseUserAgent(userAgent: string | null): { deviceType: string; operatingSystem: string } {
+	private static parseUserAgent(userAgent: string | null): { deviceType: string; operatingSystem: string; browser: string } {
 		if (!userAgent) {
-			return { deviceType: "Unknown", operatingSystem: "Unknown" };
+			return { deviceType: "Unknown", operatingSystem: "Unknown", browser: "Unknown" };
 		}
 
 		const deviceType = /iPad|Tablet/i.test(userAgent) || (/Android/i.test(userAgent) && !/Mobile/i.test(userAgent))
@@ -74,8 +76,23 @@ export class AdminAuditLog {
 							: /Linux/i.test(userAgent)
 								? "Linux"
 								: "Unknown";
+		const browser = /SamsungBrowser/i.test(userAgent)
+			? "Samsung Internet"
+			: /Edg(e|A|iOS)?\/|Edge\//i.test(userAgent)
+				? "Edge"
+				: /OPR\/|Opera/i.test(userAgent)
+					? "Opera"
+					: /Firefox|FxiOS/i.test(userAgent)
+						? "Firefox"
+						: /Chromium/i.test(userAgent)
+							? "Chromium"
+							: /CriOS|Chrome/i.test(userAgent)
+							? "Chrome"
+							: /Safari/i.test(userAgent)
+								? "Safari"
+								: "Unknown";
 
-		return { deviceType, operatingSystem };
+		return { deviceType, operatingSystem, browser };
 	}
 
 	static async GetPage(
@@ -91,6 +108,7 @@ export class AdminAuditLog {
 				adminIpAddress: log.adminIpAddress,
 				adminDeviceType: log.adminDeviceType,
 				adminOperatingSystem: log.adminOperatingSystem,
+				adminBrowser: log.adminBrowser,
 				actionId: log.actionId,
 				targetUserId: log.targetUserId,
 				targetSettingId: log.targetSettingId,

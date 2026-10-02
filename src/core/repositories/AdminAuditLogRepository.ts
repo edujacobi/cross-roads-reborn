@@ -7,6 +7,7 @@ export class AdminAuditLogRepository {
 		adminIpAddress: string | null;
 		adminDeviceType: string | null;
 		adminOperatingSystem: string | null;
+		adminBrowser: string | null;
 		actionId: AdminAuditActionId;
 		targetUserId: string | null;
 		targetSettingId: AdminAuditSettingId | null;

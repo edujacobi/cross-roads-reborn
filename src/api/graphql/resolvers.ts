@@ -373,6 +373,7 @@ export const resolvers: {
 					adminIpAddress: user.role === "DEVELOPER" ? entry.adminIpAddress : null,
 					adminDeviceType: user.role === "DEVELOPER" ? entry.adminDeviceType : null,
 					adminOperatingSystem: user.role === "DEVELOPER" ? entry.adminOperatingSystem : null,
+					adminBrowser: user.role === "DEVELOPER" ? entry.adminBrowser : null,
 					adminName: discordProfileById.get(entry.adminId)?.name ?? entry.adminId,
 					adminAvatarUrl: discordProfileById.get(entry.adminId)?.avatarUrl ?? null,
 					targetUserName: entry.targetUserId

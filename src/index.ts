@@ -11,6 +11,7 @@ import { startApiServer, stopApiServer } from "#api/server";
 import { sequelize } from "#core/database/Database";
 import { migrateAdminAuditLogsV2 } from "#core/database/migrations/AdminAuditLogsV2";
 import { migrateAdminAuditLogsV3 } from "#core/database/migrations/AdminAuditLogsV3";
+import { migrateAdminAuditLogsV4 } from "#core/database/migrations/AdminAuditLogsV4";
 import { Dashboard } from "#core/models/Dashboard";
 
 const client = setClient();
@@ -143,6 +144,7 @@ async function startApplication() {
 	await sequelize.sync();
 	await migrateAdminAuditLogsV2();
 	await migrateAdminAuditLogsV3();
+	await migrateAdminAuditLogsV4();
 	await Dashboard.Initialize();
 	await Promise.all([
 		startApiServer().catch((err) => {

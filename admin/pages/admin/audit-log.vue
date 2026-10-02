@@ -279,6 +279,10 @@ function nextPage() {
 					<dt>Sistema operacional</dt>
 					<dd>{{ selectedEntry.adminOperatingSystem || "Desconhecido" }}</dd>
 				</div>
+				<div>
+					<dt>Navegador</dt>
+					<dd>{{ selectedEntry.adminBrowser || "Desconhecido" }}</dd>
+				</div>
 			</dl>
 		</BaseModal>
 	</main>
