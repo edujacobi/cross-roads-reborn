@@ -513,6 +513,9 @@ export const resolvers: {
 					id: user.Id,
 					nickname: user.Nickname,
 					avatarUrl,
+					avatarDecoration: AvatarDecorationList[user.AvatarDecoration.Id].Description[Language.English]
+						.toLowerCase()
+						.replaceAll(" ", "_"),
 					class: user.Class,
 					isVip: authUser.role !== "PLAYER" && user.IsVip(),
 					vipEternal: authUser.role !== "PLAYER" && user.VipEternal,

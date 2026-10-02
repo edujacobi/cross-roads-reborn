@@ -168,6 +168,7 @@ query SearchUsers($search: String, $limit: Int, $offset: Int, $vipOnly: Boolean)
 			id
 			nickname
 			avatarUrl
+			avatarDecoration
 			class
 			isVip
 			vipEternal

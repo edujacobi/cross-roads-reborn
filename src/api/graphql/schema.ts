@@ -89,6 +89,7 @@ export const typeDefs = /* GraphQL */ `
         id: ID!
         nickname: String!
         avatarUrl: String
+        avatarDecoration: String!
         class: Int!
         isVip: Boolean!
         vipEternal: Boolean!

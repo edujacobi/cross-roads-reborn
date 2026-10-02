@@ -161,9 +161,11 @@ function nextPage() {
 							>
 								<div class="player-cell-content">
 									<NuxtImg
-										class="profile-img"
+										:class="['profile-img', 'user-avatar', `user-avatar--${u.avatarDecoration}`]"
 										:src="u.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'"
 										:alt="u.nickname ? `Avatar de ${u.nickname}` : 'Avatar do jogador'"
+										width="32"
+										height="32"
 									/>
 									<span class="nickname">{{ u.nickname || "(Sem Nick)" }}</span>
 									<BaseBadge
@@ -353,8 +355,11 @@ function nextPage() {
 			height: 2rem;
 			border-radius: 50%;
 			background-color: rgba($bg-input, 0.15);
-			border: 1px solid rgba($bg-input, 0.3);
 			color: $bg-input;
+		}
+
+		.user-avatar {
+			border-width: 2px;
 		}
 	}
 
