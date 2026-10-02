@@ -314,6 +314,80 @@ export const resolvers: {
 			};
 		},
 
+		seasonEndPreview: async (_: unknown, __: unknown, context: GraphQLContext) => {
+			assertDeveloper(context);
+			const [
+				[
+					topMoney,
+					topGambler,
+					topSpender,
+					topThiefProfit,
+					topThiefQuantity,
+					topWorker,
+					topBeater,
+					topScavenger,
+					topHospital,
+					topBriber,
+					topEscaper,
+					topDrunk,
+					topInvestor,
+					topGang,
+				],
+				[
+					activeUsers,
+					activeGangs,
+					gangMembers,
+					gangRoles,
+					gangHeists,
+					items,
+					robberies,
+					notifications,
+					lotteryTickets,
+					investments,
+					horseRaceBets,
+				],
+			] = await Promise.all([
+				Season.GetEndSeasonRankingData(),
+				Season.GetEndSeasonStats(),
+			]);
+			const mapUsers = (users: typeof topMoney, value: (user: typeof topMoney[number]) => number) => users.map(user => ({
+				id: user.id,
+				nickname: user.nickname,
+				class: user.class,
+				value: value(user),
+			}));
+
+			return {
+				topMoney: mapUsers(topMoney, user => user.money),
+				topGambler: mapUsers(topGambler, user => user.casinoWinSum),
+				topSpender: mapUsers(topSpender, user => user.shopSpentSum),
+				topThiefProfit: mapUsers(topThiefProfit, user => user.robberySuccessRobbedSum),
+				topThiefQuantity: mapUsers(topThiefQuantity, user => user.robberySuccessCount),
+				topWorker: mapUsers(topWorker, user => user.jobReceivedSum),
+				topBeater: mapUsers(topBeater, user => user.beatUpSuccessCount),
+				topScavenger: mapUsers(topScavenger, user => user.scavengeFoundTotal),
+				topHospital: mapUsers(topHospital, user => user.hospitalTreatmentSum),
+				topBriber: mapUsers(topBriber, user => user.prisonBriberySum),
+				topEscaper: mapUsers(topEscaper, user => user.escapeCount),
+				topDrunk: mapUsers(topDrunk, user => user.drinkHappyHour),
+				topInvestor: mapUsers(topInvestor, user => user.investmentTotalProfit),
+				topGang,
+				stats: {
+					activeUsers,
+					activeGangs,
+					gangMembers,
+					gangRoles,
+					gangHeists,
+					items,
+					robberies,
+					notifications,
+					lotteryTickets,
+					investments,
+					horseRaceBets,
+				},
+			};
+		},
+
 		users: async (
 			_: unknown,
 			args: { search?: string; limit?: number; offset?: number; vipOnly?: boolean },
@@ -494,6 +568,21 @@ export const resolvers: {
 			return {
 				success: true,
 				message: `Main heist ${args.allowed ? "enabled" : "disabled"}.`,
+			};
+		},
+
+		endSeason: async (
+			_: unknown,
+			args: { isPreSeason: boolean },
+			context: GraphQLContext,
+		) => {
+			assertDeveloper(context);
+			await Season.EndCurrentSeason(args.isPreSeason);
+			return {
+				success: true,
+				message: args.isPreSeason
+					? "Pre-season values reset and a new season started."
+					: "Season ended, winners awarded, announcements sent, and a new season started.",
 			};
 		},
 

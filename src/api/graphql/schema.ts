@@ -270,6 +270,51 @@ export const typeDefs = /* GraphQL */ `
         message: String!
     }
 
+    type SeasonRankingUser {
+        id: ID!
+        nickname: String!
+        class: Int!
+        value: Float!
+    }
+
+    type SeasonRankingGang {
+        id: Int!
+        name: String!
+        level: Int!
+    }
+
+    type SeasonWipeStats {
+        activeUsers: Int!
+        activeGangs: Int!
+        gangMembers: Int!
+        gangRoles: Int!
+        gangHeists: Int!
+        items: Int!
+        robberies: Int!
+        notifications: Int!
+        lotteryTickets: Int!
+        investments: Int!
+        horseRaceBets: Int!
+    }
+
+    type SeasonEndPreview {
+        topMoney: [SeasonRankingUser!]!
+        topGambler: [SeasonRankingUser!]!
+        topSpender: [SeasonRankingUser!]!
+        topThiefProfit: [SeasonRankingUser!]!
+        topThiefQuantity: [SeasonRankingUser!]!
+        topWorker: [SeasonRankingUser!]!
+        topBeater: [SeasonRankingUser!]!
+        topScavenger: [SeasonRankingUser!]!
+        topHospital: [SeasonRankingUser!]!
+        topBriber: [SeasonRankingUser!]!
+        topEscaper: [SeasonRankingUser!]!
+        topDrunk: [SeasonRankingUser!]!
+        topInvestor: [SeasonRankingUser!]!
+        topGang: [SeasonRankingGang!]!
+        stats: SeasonWipeStats!
+    }
+
     type MutationResult {
         success: Boolean!
         message: String!
@@ -282,6 +327,7 @@ export const typeDefs = /* GraphQL */ `
         dashboardHistory: [DashboardSnapshot!]!
         events: [Event!]!
         seasonInfo: SeasonInfo!
+        seasonEndPreview: SeasonEndPreview!
         users(search: String, limit: Int, offset: Int, vipOnly: Boolean): UserSearchResult!
         topUsers(ranking: UserRanking!, limit: Int, offset: Int): UserRankingResult!
         topGangs(limit: Int, offset: Int): GangRankingResult!
@@ -307,5 +353,6 @@ export const typeDefs = /* GraphQL */ `
         updateEvent(id: Int!, value: Float, periodStart: String, periodEnd: String): EventMutationResult!
         deleteEvent(id: Int!): EventMutationResult!
         setMainHeistAllowed(allowed: Boolean!): SeasonMutationResult!
+        endSeason(isPreSeason: Boolean!): SeasonMutationResult!
     }
 `;

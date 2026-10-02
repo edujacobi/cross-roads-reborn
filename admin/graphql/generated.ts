@@ -127,6 +127,7 @@ export type Mutation = {
   createEvent: EventMutationResult;
   cureUser: MutationResult;
   deleteEvent: EventMutationResult;
+  endSeason: SeasonMutationResult;
   freeUser: MutationResult;
   killUser: MutationResult;
   removeAction: MutationResult;
@@ -170,6 +171,11 @@ export type MutationCureUserArgs = {
 
 export type MutationDeleteEventArgs = {
   id: Scalars['Int']['input'];
+};
+
+
+export type MutationEndSeasonArgs = {
+  isPreSeason: Scalars['Boolean']['input'];
 };
 
 
@@ -267,6 +273,7 @@ export type Query = {
   dashboardStats: DashboardStats;
   events: Array<Event>;
   me?: Maybe<AuthUser>;
+  seasonEndPreview: SeasonEndPreview;
   seasonInfo: SeasonInfo;
   topGangs: GangRankingResult;
   topUsers: UserRankingResult;
@@ -306,6 +313,25 @@ export enum Role {
   Moderator = 'MODERATOR'
 }
 
+export type SeasonEndPreview = {
+  __typename?: 'SeasonEndPreview';
+  stats: SeasonWipeStats;
+  topBeater: Array<SeasonRankingUser>;
+  topBriber: Array<SeasonRankingUser>;
+  topDrunk: Array<SeasonRankingUser>;
+  topEscaper: Array<SeasonRankingUser>;
+  topGambler: Array<SeasonRankingUser>;
+  topGang: Array<SeasonRankingGang>;
+  topHospital: Array<SeasonRankingUser>;
+  topInvestor: Array<SeasonRankingUser>;
+  topMoney: Array<SeasonRankingUser>;
+  topScavenger: Array<SeasonRankingUser>;
+  topSpender: Array<SeasonRankingUser>;
+  topThiefProfit: Array<SeasonRankingUser>;
+  topThiefQuantity: Array<SeasonRankingUser>;
+  topWorker: Array<SeasonRankingUser>;
+};
+
 export type SeasonInfo = {
   __typename?: 'SeasonInfo';
   daysRemaining: Scalars['Int']['output'];
@@ -319,6 +345,36 @@ export type SeasonMutationResult = {
   __typename?: 'SeasonMutationResult';
   message: Scalars['String']['output'];
   success: Scalars['Boolean']['output'];
+};
+
+export type SeasonRankingGang = {
+  __typename?: 'SeasonRankingGang';
+  id: Scalars['Int']['output'];
+  level: Scalars['Int']['output'];
+  name: Scalars['String']['output'];
+};
+
+export type SeasonRankingUser = {
+  __typename?: 'SeasonRankingUser';
+  class: Scalars['Int']['output'];
+  id: Scalars['ID']['output'];
+  nickname: Scalars['String']['output'];
+  value: Scalars['Float']['output'];
+};
+
+export type SeasonWipeStats = {
+  __typename?: 'SeasonWipeStats';
+  activeGangs: Scalars['Int']['output'];
+  activeUsers: Scalars['Int']['output'];
+  gangHeists: Scalars['Int']['output'];
+  gangMembers: Scalars['Int']['output'];
+  gangRoles: Scalars['Int']['output'];
+  horseRaceBets: Scalars['Int']['output'];
+  investments: Scalars['Int']['output'];
+  items: Scalars['Int']['output'];
+  lotteryTickets: Scalars['Int']['output'];
+  notifications: Scalars['Int']['output'];
+  robberies: Scalars['Int']['output'];
 };
 
 export enum SetMoneyMode {
@@ -522,12 +578,24 @@ export type GetSeasonInfoQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type GetSeasonInfoQuery = { seasonInfo: { number: number, startDate: string, endDate: string, daysRemaining: number, mainHeistAllowed: boolean } };
 
+export type GetSeasonEndPreviewQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetSeasonEndPreviewQuery = { seasonEndPreview: { topMoney: Array<{ id: string, nickname: string, class: number, value: number }>, topGambler: Array<{ id: string, nickname: string, class: number, value: number }>, topSpender: Array<{ id: string, nickname: string, class: number, value: number }>, topThiefProfit: Array<{ id: string, nickname: string, class: number, value: number }>, topThiefQuantity: Array<{ id: string, nickname: string, class: number, value: number }>, topWorker: Array<{ id: string, nickname: string, class: number, value: number }>, topBeater: Array<{ id: string, nickname: string, class: number, value: number }>, topScavenger: Array<{ id: string, nickname: string, class: number, value: number }>, topHospital: Array<{ id: string, nickname: string, class: number, value: number }>, topBriber: Array<{ id: string, nickname: string, class: number, value: number }>, topEscaper: Array<{ id: string, nickname: string, class: number, value: number }>, topDrunk: Array<{ id: string, nickname: string, class: number, value: number }>, topInvestor: Array<{ id: string, nickname: string, class: number, value: number }>, topGang: Array<{ id: number, name: string, level: number }>, stats: { activeUsers: number, activeGangs: number, gangMembers: number, gangRoles: number, gangHeists: number, items: number, robberies: number, notifications: number, lotteryTickets: number, investments: number, horseRaceBets: number } } };
+
 export type SetMainHeistAllowedMutationVariables = Exact<{
   allowed: boolean;
 }>;
 
 
 export type SetMainHeistAllowedMutation = { setMainHeistAllowed: { success: boolean, message: string } };
+
+export type EndSeasonMutationVariables = Exact<{
+  isPreSeason: boolean;
+}>;
+
+
+export type EndSeasonMutation = { endSeason: { success: boolean, message: string } };
 
 export type CreateEventMutationVariables = Exact<{
   type: number;
@@ -709,7 +777,9 @@ export const GetDashboardStatsDocument = {"kind":"Document","definitions":[{"kin
 export const GetDashboardHistoryDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetDashboardHistory"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"dashboardHistory"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"totalPlayers"}},{"kind":"Field","name":{"kind":"Name","value":"allUsers"}},{"kind":"Field","name":{"kind":"Name","value":"totalGangs"}},{"kind":"Field","name":{"kind":"Name","value":"prisonCount"}},{"kind":"Field","name":{"kind":"Name","value":"hospitalCount"}},{"kind":"Field","name":{"kind":"Name","value":"jobCount"}},{"kind":"Field","name":{"kind":"Name","value":"scavengeCount"}},{"kind":"Field","name":{"kind":"Name","value":"casinoCount"}},{"kind":"Field","name":{"kind":"Name","value":"robberyCount"}},{"kind":"Field","name":{"kind":"Name","value":"beatUpCount"}},{"kind":"Field","name":{"kind":"Name","value":"idleCount"}},{"kind":"Field","name":{"kind":"Name","value":"englishCount"}},{"kind":"Field","name":{"kind":"Name","value":"portugueseCount"}},{"kind":"Field","name":{"kind":"Name","value":"spanishCount"}}]}}]}}]} as unknown as DocumentNode<GetDashboardHistoryQuery, GetDashboardHistoryQueryVariables>;
 export const GetEventsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetEvents"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"events"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"periodStart"}},{"kind":"Field","name":{"kind":"Name","value":"periodEnd"}},{"kind":"Field","name":{"kind":"Name","value":"isActive"}}]}}]}}]} as unknown as DocumentNode<GetEventsQuery, GetEventsQueryVariables>;
 export const GetSeasonInfoDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetSeasonInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"seasonInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"number"}},{"kind":"Field","name":{"kind":"Name","value":"startDate"}},{"kind":"Field","name":{"kind":"Name","value":"endDate"}},{"kind":"Field","name":{"kind":"Name","value":"daysRemaining"}},{"kind":"Field","name":{"kind":"Name","value":"mainHeistAllowed"}}]}}]}}]} as unknown as DocumentNode<GetSeasonInfoQuery, GetSeasonInfoQueryVariables>;
+export const GetSeasonEndPreviewDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetSeasonEndPreview"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"seasonEndPreview"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"topMoney"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"nickname"}},{"kind":"Field","name":{"kind":"Name","value":"class"}},{"kind":"Field","name":{"kind":"Name","value":"value"}}]}},{"kind":"Field","name":{"kind":"Name","value":"topGambler"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"nickname"}},{"kind":"Field","name":{"kind":"Name","value":"class"}},{"kind":"Field","name":{"kind":"Name","value":"value"}}]}},{"kind":"Field","name":{"kind":"Name","value":"topSpender"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"nickname"}},{"kind":"Field","name":{"kind":"Name","value":"class"}},{"kind":"Field","name":{"kind":"Name","value":"value"}}]}},{"kind":"Field","name":{"kind":"Name","value":"topThiefProfit"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"nickname"}},{"kind":"Field","name":{"kind":"Name","value":"class"}},{"kind":"Field","name":{"kind":"Name","value":"value"}}]}},{"kind":"Field","name":{"kind":"Name","value":"topThiefQuantity"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"nickname"}},{"kind":"Field","name":{"kind":"Name","value":"class"}},{"kind":"Field","name":{"kind":"Name","value":"value"}}]}},{"kind":"Field","name":{"kind":"Name","value":"topWorker"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"nickname"}},{"kind":"Field","name":{"kind":"Name","value":"class"}},{"kind":"Field","name":{"kind":"Name","value":"value"}}]}},{"kind":"Field","name":{"kind":"Name","value":"topBeater"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"nickname"}},{"kind":"Field","name":{"kind":"Name","value":"class"}},{"kind":"Field","name":{"kind":"Name","value":"value"}}]}},{"kind":"Field","name":{"kind":"Name","value":"topScavenger"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"nickname"}},{"kind":"Field","name":{"kind":"Name","value":"class"}},{"kind":"Field","name":{"kind":"Name","value":"value"}}]}},{"kind":"Field","name":{"kind":"Name","value":"topHospital"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"nickname"}},{"kind":"Field","name":{"kind":"Name","value":"class"}},{"kind":"Field","name":{"kind":"Name","value":"value"}}]}},{"kind":"Field","name":{"kind":"Name","value":"topBriber"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"nickname"}},{"kind":"Field","name":{"kind":"Name","value":"class"}},{"kind":"Field","name":{"kind":"Name","value":"value"}}]}},{"kind":"Field","name":{"kind":"Name","value":"topEscaper"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"nickname"}},{"kind":"Field","name":{"kind":"Name","value":"class"}},{"kind":"Field","name":{"kind":"Name","value":"value"}}]}},{"kind":"Field","name":{"kind":"Name","value":"topDrunk"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"nickname"}},{"kind":"Field","name":{"kind":"Name","value":"class"}},{"kind":"Field","name":{"kind":"Name","value":"value"}}]}},{"kind":"Field","name":{"kind":"Name","value":"topInvestor"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"nickname"}},{"kind":"Field","name":{"kind":"Name","value":"class"}},{"kind":"Field","name":{"kind":"Name","value":"value"}}]}},{"kind":"Field","name":{"kind":"Name","value":"topGang"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"level"}}]}},{"kind":"Field","name":{"kind":"Name","value":"stats"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"activeUsers"}},{"kind":"Field","name":{"kind":"Name","value":"activeGangs"}},{"kind":"Field","name":{"kind":"Name","value":"gangMembers"}},{"kind":"Field","name":{"kind":"Name","value":"gangRoles"}},{"kind":"Field","name":{"kind":"Name","value":"gangHeists"}},{"kind":"Field","name":{"kind":"Name","value":"items"}},{"kind":"Field","name":{"kind":"Name","value":"robberies"}},{"kind":"Field","name":{"kind":"Name","value":"notifications"}},{"kind":"Field","name":{"kind":"Name","value":"lotteryTickets"}},{"kind":"Field","name":{"kind":"Name","value":"investments"}},{"kind":"Field","name":{"kind":"Name","value":"horseRaceBets"}}]}}]}}]}}]} as unknown as DocumentNode<GetSeasonEndPreviewQuery, GetSeasonEndPreviewQueryVariables>;
 export const SetMainHeistAllowedDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SetMainHeistAllowed"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"allowed"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"setMainHeistAllowed"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"allowed"},"value":{"kind":"Variable","name":{"kind":"Name","value":"allowed"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<SetMainHeistAllowedMutation, SetMainHeistAllowedMutationVariables>;
+export const EndSeasonDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"EndSeason"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"isPreSeason"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"endSeason"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"isPreSeason"},"value":{"kind":"Variable","name":{"kind":"Name","value":"isPreSeason"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<EndSeasonMutation, EndSeasonMutationVariables>;
 export const CreateEventDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateEvent"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"type"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"value"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Float"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"periodStart"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"periodEnd"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createEvent"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"type"},"value":{"kind":"Variable","name":{"kind":"Name","value":"type"}}},{"kind":"Argument","name":{"kind":"Name","value":"value"},"value":{"kind":"Variable","name":{"kind":"Name","value":"value"}}},{"kind":"Argument","name":{"kind":"Name","value":"periodStart"},"value":{"kind":"Variable","name":{"kind":"Name","value":"periodStart"}}},{"kind":"Argument","name":{"kind":"Name","value":"periodEnd"},"value":{"kind":"Variable","name":{"kind":"Name","value":"periodEnd"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<CreateEventMutation, CreateEventMutationVariables>;
 export const UpdateEventDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateEvent"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"value"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Float"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"periodStart"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"periodEnd"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateEvent"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"value"},"value":{"kind":"Variable","name":{"kind":"Name","value":"value"}}},{"kind":"Argument","name":{"kind":"Name","value":"periodStart"},"value":{"kind":"Variable","name":{"kind":"Name","value":"periodStart"}}},{"kind":"Argument","name":{"kind":"Name","value":"periodEnd"},"value":{"kind":"Variable","name":{"kind":"Name","value":"periodEnd"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<UpdateEventMutation, UpdateEventMutationVariables>;
 export const DeleteEventDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"DeleteEvent"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deleteEvent"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<DeleteEventMutation, DeleteEventMutationVariables>;

@@ -5,7 +5,7 @@ import { localStorageKeys } from "~/constants/localStorageKeys";
 
 export default defineNuxtPlugin((nuxtApp) => {
 	const config = useRuntimeConfig();
-	const tokenStorage = useLocalStorage(localStorageKeys.adminToken);
+	const tokenStorage = useLocalStorage(localStorageKeys.token);
 
 	const httpLink = createHttpLink({
 		uri: `${config.public.apiBaseUrl}/graphql`,
