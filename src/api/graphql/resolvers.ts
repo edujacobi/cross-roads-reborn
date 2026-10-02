@@ -1065,5 +1065,24 @@ export const resolvers: {
 				user: null,
 			};
 		},
+
+		deleteUser: async (
+			_: unknown,
+			args: { userId: string },
+			context: GraphQLContext,
+		) => {
+			const admin = assertDeveloper(context);
+			const deleted = await UserRepository.DeleteUser(args.userId);
+			if (!deleted) {
+				return { success: false, message: "User not found.", user: null };
+			}
+
+			logger.warn(`Developer ${admin.username} (${admin.userId}) deleted user ${args.userId} and all related data.`);
+			return {
+				success: true,
+				message: "User and all related data deleted.",
+				user: null,
+			};
+		},
 	},
 };

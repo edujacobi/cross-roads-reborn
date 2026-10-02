@@ -363,6 +363,7 @@ export const typeDefs = /* GraphQL */ `
         addBadge(userId: ID!, badgeId: Int!): MutationResult!
         removeBadge(userId: ID!, badgeId: Int!): MutationResult!
         swapUsers(firstUserId: ID!, secondUserId: ID!): MutationResult!
+        deleteUser(userId: ID!): MutationResult!
         createEvent(type: Int!, value: Float!, periodStart: String!, periodEnd: String!): EventMutationResult!
         updateEvent(id: Int!, value: Float, periodStart: String, periodEnd: String): EventMutationResult!
         deleteEvent(id: Int!): EventMutationResult!

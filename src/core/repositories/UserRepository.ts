@@ -1,5 +1,7 @@
 import { sequelize } from "#core/database/Database";
+import { GangHeists } from "#core/database/GangHeists";
 import GangMembers from "#core/database/GangMembers";
+import GangRoles from "#core/database/GangRoles";
 import Gangs from "#core/database/Gangs";
 import { HorseRaceBets } from "#core/database/HorseRaceBets";
 import { LotteryTickets } from "#core/database/LotteryTickets";
@@ -76,6 +78,72 @@ export class UserRepository {
 	): Promise<[number]> {
 		return await Users.update(values, {
 			where: { id },
+		});
+	}
+
+	/**
+	 * Deletes a user and all data that references their ID in one transaction.
+	 */
+	static async DeleteUser(id: string): Promise<boolean> {
+		return await sequelize.transaction(async (transaction) => {
+			const user = await Users.findByPk(id, { attributes: ["id"], transaction });
+			if (!user) {
+				return false;
+			}
+
+			const gangIds = (await Gangs.findAll({
+				attributes: ["id"],
+				where: { leaderId: id },
+				transaction,
+			})).map(gang => gang.id);
+
+			await GangMembers.destroy({
+				where: gangIds.length
+					? { [Op.or]: [{ userId: id }, { gangId: { [Op.in]: gangIds } }] }
+					: { userId: id },
+				transaction,
+			});
+			if (gangIds.length) {
+				await GangHeists.destroy({ where: { gangId: { [Op.in]: gangIds } }, transaction });
+				await GangRoles.destroy({ where: { gangId: { [Op.in]: gangIds } }, transaction });
+				await Gangs.destroy({ where: { id: { [Op.in]: gangIds } }, transaction });
+			}
+
+			await UserItems.destroy({ where: { userId: id }, transaction });
+			await UserBadges.destroy({ where: { userId: id }, transaction });
+			await UserInvestments.destroy({ where: { userId: id }, transaction });
+			await UserBundles.destroy({ where: { userId: id }, transaction });
+			await UserAvatarDecorations.destroy({ where: { userId: id }, transaction });
+			await UserBackgroundDecorations.destroy({ where: { userId: id }, transaction });
+			await Notifications.destroy({ where: { userId: id }, transaction });
+			await HorseRaceBets.destroy({ where: { userId: id }, transaction });
+			await LotteryTickets.destroy({ where: { userId: id }, transaction });
+			await RobHistories.destroy({
+				where: { [Op.or]: [{ attackerId: id }, { defenderId: id }] },
+				transaction,
+			});
+
+			await Users.update(
+				{
+					robbingUserId: null,
+					beingRobbedByUserId: null,
+					beatingUserId: null,
+					beingBeatUpByUserId: null,
+				},
+				{
+					where: {
+						[Op.or]: [
+							{ robbingUserId: id },
+							{ beingRobbedByUserId: id },
+							{ beatingUserId: id },
+							{ beingBeatUpByUserId: id },
+						],
+					},
+					transaction,
+				},
+			);
+
+			return (await Users.destroy({ where: { id }, transaction })) > 0;
 		});
 	}
 

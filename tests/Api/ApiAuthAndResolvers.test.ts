@@ -6,6 +6,7 @@ import { Dashboard } from "#core/models/Dashboard";
 import { Event, EventType } from "#core/models/Event";
 import { User } from "#core/models/User";
 import { Vault } from "#core/models/Vault";
+import { UserRepository } from "#core/repositories/UserRepository";
 import { UserItemRepository } from "#core/repositories/UserItemRepository";
 import { ItemId } from "#core/types/Ids";
 
@@ -134,6 +135,27 @@ describe("API Auth and Resolvers", () => {
 			await expect(
 				resolvers.Mutation.cureUser(null, { userId: "target123" }, { user: helperUser }),
 			).rejects.toThrow("Forbidden: This role has read-only access.");
+		});
+
+		it("should allow developers to delete users", async () => {
+			const deleteUser = vi.spyOn(UserRepository, "DeleteUser").mockResolvedValue(true);
+
+			await expect(
+				resolvers.Mutation.deleteUser(null, { userId: "target123" }, { user: devUser }),
+			).resolves.toMatchObject({
+				success: true,
+				message: "User and all related data deleted.",
+			});
+			expect(deleteUser).toHaveBeenCalledWith("target123");
+		});
+
+		it("should reject user deletion from moderators", async () => {
+			const deleteUser = vi.spyOn(UserRepository, "DeleteUser");
+
+			await expect(
+				resolvers.Mutation.deleteUser(null, { userId: "target123" }, { user: modUser }),
+			).rejects.toThrow("Forbidden: Developer access required.");
+			expect(deleteUser).not.toHaveBeenCalled();
 		});
 
 		it("should reject setMoney when user is HELPER", async () => {

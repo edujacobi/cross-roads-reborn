@@ -37,6 +37,7 @@ import {
 	SetNicknameDocument,
 	SetVipDocument,
 	SwapUsersDocument,
+	DeleteUserDocument,
 } from "~/graphql/generated";
 import { BadgeId, ClassId, ItemId } from "../../../src/core/types/Ids";
 
@@ -68,6 +69,7 @@ const { mutate: mutateKillUser, loading: killLoading } = useMutation(KillUserDoc
 const { mutate: mutateAddBadge, loading: addBadgeLoading } = useMutation(AddBadgeDocument);
 const { mutate: mutateRemoveBadge, loading: removeBadgeLoading } = useMutation(RemoveBadgeDocument);
 const { mutate: mutateSwapUsers, loading: swapUsersLoading } = useMutation(SwapUsersDocument);
+const { mutate: mutateDeleteUser, loading: deleteUserLoading } = useMutation(DeleteUserDocument);
 
 const isMoneyModalOpen = ref(false);
 const moneyAmount = ref(10000);
@@ -92,6 +94,7 @@ const selectedAddBadge = ref<number | null>(null);
 const isRemoveBadgeModalOpen = ref(false);
 const selectedRemoveBadge = ref<number | null>(null);
 const isSwapUsersModalOpen = ref(false);
+const isDeleteUserModalOpen = ref(false);
 const isCooldownModalOpen = ref(false);
 const selectedCooldown = ref<"scavenge" | "robbery" | "beatup">("scavenge");
 const isActionModalOpen = ref(false);
@@ -402,6 +405,21 @@ async function handleSwapUsers() {
 		showError(getErrorMessage(error));
 	}
 }
+
+async function handleDeleteUser() {
+	try {
+		const res = await mutateDeleteUser({ userId: props.userId });
+		if (res?.data?.deleteUser?.success) {
+			isDeleteUserModalOpen.value = false;
+			emit("feedback", "success", res.data.deleteUser.message);
+			emit("deleted");
+		} else {
+			showError(res?.data?.deleteUser?.message || "Erro ao excluir jogador.");
+		}
+	} catch (error: unknown) {
+		showError(getErrorMessage(error));
+	}
+}
 </script>
 
 <template>
@@ -581,6 +599,18 @@ async function handleSwapUsers() {
 						aria-hidden="true"
 					/>
 					Trocar Jogadores
+				</BaseButton>
+				<BaseButton
+					v-if="isDeveloper"
+					variant="danger"
+					:disabled="deleteUserLoading"
+					@click="isDeleteUserModalOpen = true"
+				>
+					<Trash2
+						:size="16"
+						aria-hidden="true"
+					/>
+					Excluir Jogador
 				</BaseButton>
 			</div>
 		</BaseCard>
@@ -993,6 +1023,34 @@ async function handleSwapUsers() {
 					@click="handleSwapUsers"
 				>
 					Confirmar Troca
+				</BaseButton>
+			</template>
+		</BaseModal>
+
+		<BaseModal
+			:open="isDeleteUserModalOpen"
+			title="Excluir jogador permanentemente?"
+			description="Esta ação é irreversível e removerá o jogador e todos os dados relacionados ao ID."
+			@update:open="isDeleteUserModalOpen = $event"
+		>
+			<p>
+				Serão excluídos inventário, insígnias, investimentos, histórico, vínculos com gangues e qualquer gangue liderada por este jogador, incluindo seus dados.
+				<strong>Esta exclusão não pode ser desfeita.</strong>
+			</p>
+			<p>ID do jogador: <strong>{{ userId }}</strong></p>
+			<template #footer>
+				<BaseButton
+					variant="ghost"
+					@click="isDeleteUserModalOpen = false"
+				>
+					Cancelar
+				</BaseButton>
+				<BaseButton
+					variant="danger"
+					:disabled="deleteUserLoading"
+					@click="handleDeleteUser"
+				>
+					Excluir permanentemente
 				</BaseButton>
 			</template>
 		</BaseModal>

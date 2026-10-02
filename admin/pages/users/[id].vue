@@ -112,6 +112,7 @@ function showFeedback(type: "success" | "error", message: string) {
 					:badges="user.badges"
 					@feedback="showFeedback"
 					@refresh="refetch"
+					@deleted="navigateTo('/users')"
 				/>
 			</div>
 
