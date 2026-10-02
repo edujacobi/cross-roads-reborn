@@ -1,5 +1,6 @@
 import { type CreationOptional, DataTypes, type InferAttributes, type InferCreationAttributes, Model } from "sequelize";
 import { sequelize } from "./Database";
+import type { AdminAuditActionId, AdminAuditSettingId } from "#core/types/AdminAuditLog";
 
 export class AdminAuditLogs extends Model<
 	InferAttributes<AdminAuditLogs>,
@@ -7,9 +8,9 @@ export class AdminAuditLogs extends Model<
 > {
 	declare id: CreationOptional<number>;
 	declare adminId: string;
-	declare adminName: string;
-	declare action: string;
-	declare target: string;
+	declare actionId: AdminAuditActionId;
+	declare targetUserId: string | null;
+	declare targetSettingId: AdminAuditSettingId | null;
 	declare previousValue: string;
 	declare newValue: string;
 	declare createdAt: CreationOptional<Date>;
@@ -26,17 +27,17 @@ AdminAuditLogs.init(
 			type: DataTypes.STRING,
 			allowNull: false,
 		},
-		adminName: {
-			type: DataTypes.STRING,
+		actionId: {
+			type: DataTypes.INTEGER,
 			allowNull: false,
 		},
-		action: {
+		targetUserId: {
 			type: DataTypes.STRING,
-			allowNull: false,
+			allowNull: true,
 		},
-		target: {
-			type: DataTypes.STRING,
-			allowNull: false,
+		targetSettingId: {
+			type: DataTypes.INTEGER,
+			allowNull: true,
 		},
 		previousValue: {
 			type: DataTypes.TEXT,
@@ -55,9 +56,5 @@ AdminAuditLogs.init(
 		sequelize,
 		tableName: "admin_audit_logs",
 		timestamps: false,
-		indexes: [
-			{ fields: ["createdAt"] },
-			{ fields: ["adminId"] },
-		],
 	},
 );

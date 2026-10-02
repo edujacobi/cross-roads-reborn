@@ -340,8 +340,12 @@ export const typeDefs = /* GraphQL */ `
         id: ID!
         adminId: ID!
         adminName: String!
-        action: String!
-        target: String!
+        adminAvatarUrl: String
+        actionId: Int!
+        targetUserId: ID
+        targetUserName: String
+        targetUserAvatarUrl: String
+        targetSettingId: Int
         previousValue: String!
         newValue: String!
         createdAt: String!
@@ -354,7 +358,7 @@ export const typeDefs = /* GraphQL */ `
 
     type Query {
         me: AuthUser
-        adminAuditLogs(limit: Int, offset: Int): AdminAuditLogPage!
+        adminAuditLogs(limit: Int, offset: Int, actionId: Int): AdminAuditLogPage!
         dashboardStats: DashboardStats!
         dashboardHistory: [DashboardSnapshot!]!
         dashboardItemPopularity: [DashboardItemPopularity!]!

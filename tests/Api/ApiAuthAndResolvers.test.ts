@@ -115,7 +115,7 @@ describe("API Auth and Resolvers", () => {
 			await expect(
 				resolvers.Query.adminAuditLogs(null, { limit: 250, offset: -5 }, { user: devUser }),
 			).resolves.toEqual({ entries: [], total: 0 });
-			expect(getPage).toHaveBeenCalledWith(100, 0);
+			expect(getPage).toHaveBeenCalledWith(100, 0, undefined);
 		});
 
 		it("should reject mutations when unauthenticated", async () => {

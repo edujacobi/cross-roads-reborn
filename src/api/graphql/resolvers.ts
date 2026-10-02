@@ -1,5 +1,7 @@
 import { GraphQLError } from "graphql";
 import { AdminAuditLog } from "#core/models/AdminAuditLog";
+import type { AdminAuditTarget } from "#core/models/AdminAuditLog";
+import { AdminAuditActionId, AdminAuditSettingId } from "#core/types/AdminAuditLog";
 import { Dashboard } from "#core/models/Dashboard";
 import { Season } from "#core/models/Season";
 import { Vault } from "#core/models/Vault";
@@ -72,12 +74,12 @@ function assertDeveloper(context: GraphQLContext): AuthUser {
 
 async function recordAdminAction(
 	admin: AuthUser,
-	action: string,
-	target: string,
+	actionId: AdminAuditActionId,
+	target: AdminAuditTarget,
 	previousValue: unknown,
 	newValue: unknown,
 ): Promise<void> {
-	await AdminAuditLog.Record(admin, action, target, previousValue, newValue);
+	await AdminAuditLog.Record(admin, actionId, target, previousValue, newValue);
 }
 
 function getCooldownValue(user: User, cooldown: string): Date | null {
@@ -107,6 +109,36 @@ function getActionValue(user: User, action: string): unknown {
 	case "casino": return { isInGame: user.Casino.IsInGame };
 	case "gangaction": return { participatingInGangAction: user.Robbery.ParticipatingInGangAction };
 	default: return null;
+	}
+}
+
+async function getCurrentDiscordProfile(userId: string): Promise<{ name: string; avatarUrl: string | null }> {
+	const client = getClient();
+	if (process.env.SERVER_ID) {
+		try {
+			const guild = client.guilds.cache.get(process.env.SERVER_ID)
+				?? await client.guilds.fetch(process.env.SERVER_ID);
+			const member = await guild.members.fetch({ user: userId, force: true });
+			return {
+				name: member.displayName,
+				avatarUrl: member.displayAvatarURL({ size: 64 }),
+			};
+		}
+		catch {
+			// Fall back to the current Discord account name for users no longer in the server.
+		}
+	}
+
+	try {
+		const discordUser = await client.users.fetch(userId, { force: true });
+		return {
+			name: discordUser.globalName || discordUser.username,
+			avatarUrl: discordUser.displayAvatarURL({ size: 64 }),
+		};
+	}
+	catch (error) {
+		logger.warn({ userId, error }, "Could not resolve current Discord profile for admin audit log.");
+		return { name: userId, avatarUrl: null };
 	}
 }
 
@@ -298,15 +330,39 @@ export const resolvers: {
 			return context.user;
 		},
 
-		adminAuditLogs: async (_: unknown, args: { limit?: number; offset?: number }, context: GraphQLContext) => {
+		adminAuditLogs: async (
+			_: unknown,
+			args: { limit?: number; offset?: number; actionId?: number | null },
+			context: GraphQLContext,
+		) => {
 			assertDeveloper(context);
 			const limit = Math.min(Math.max(Math.trunc(args.limit ?? 25), 1), 100);
 			const offset = Math.max(Math.trunc(args.offset ?? 0), 0);
-			const page = await AdminAuditLog.GetPage(limit, offset);
+			const page = await AdminAuditLog.GetPage(limit, offset, args.actionId ?? undefined);
+			const adminIds = [...new Set(page.entries.map(entry => entry.adminId))];
+			const targetUserIds = [...new Set(page.entries.flatMap(entry => entry.targetUserId ? [entry.targetUserId] : []))];
+			const discordUserIds = [...new Set([...adminIds, ...targetUserIds])];
+			const gameUsers = await Promise.all(targetUserIds.map(async userId => [
+				userId,
+				await UserRepository.FindById(userId, ["id", "nickname"]),
+			] as const));
+			const gameUserById = new Map(gameUsers);
+			const discordProfiles = await Promise.all(
+				discordUserIds.map(async userId => [userId, await getCurrentDiscordProfile(userId)] as const),
+			);
+			const discordProfileById = new Map(discordProfiles);
 			return {
 				...page,
 				entries: page.entries.map(entry => ({
 					...entry,
+					adminName: discordProfileById.get(entry.adminId)?.name ?? entry.adminId,
+					adminAvatarUrl: discordProfileById.get(entry.adminId)?.avatarUrl ?? null,
+					targetUserName: entry.targetUserId
+						? gameUserById.get(entry.targetUserId)?.nickname ?? discordProfileById.get(entry.targetUserId)?.name ?? entry.targetUserId
+						: null,
+					targetUserAvatarUrl: entry.targetUserId
+						? discordProfileById.get(entry.targetUserId)?.avatarUrl ?? null
+						: null,
 					createdAt: entry.createdAt.toISOString(),
 				})),
 			};
@@ -681,7 +737,13 @@ export const resolvers: {
 			const admin = assertDeveloper(context);
 			const previousValue = await Vault.IsMainHeistAllowed();
 			await Vault.SetMainHeistAllowed(args.allowed);
-			await recordAdminAction(admin, "setMainHeistAllowed", "Main heist setting", previousValue, args.allowed);
+			await recordAdminAction(
+				admin,
+				AdminAuditActionId.SetMainHeistAllowed,
+				{ settingId: AdminAuditSettingId.MainHeist },
+				previousValue,
+				args.allowed,
+			);
 			return {
 				success: true,
 				message: `Main heist ${args.allowed ? "enabled" : "disabled"}.`,
@@ -699,8 +761,8 @@ export const resolvers: {
 			const newSeason = await Season.GetCurrent();
 			await recordAdminAction(
 				admin,
-				"endSeason",
-				"Current season",
+				AdminAuditActionId.EndSeason,
+				{ settingId: AdminAuditSettingId.Season },
 				{ number: previousSeason.Number, startDate: previousSeason.StartDate, endDate: previousSeason.EndDate },
 				{ number: newSeason.Number, startDate: newSeason.StartDate, endDate: newSeason.EndDate, isPreSeason: args.isPreSeason },
 			);
@@ -735,8 +797,8 @@ export const resolvers: {
 			if (success) {
 				await recordAdminAction(
 					admin,
-					"createEvent",
-					`Event: ${Event.GetEventTypeText(args.type)}`,
+					AdminAuditActionId.CreateEvent,
+					{ settingId: AdminAuditSettingId.Events },
 					null,
 					{ type: args.type, value: args.value, periodStart, periodEnd },
 				);
@@ -786,6 +848,7 @@ export const resolvers: {
 			}
 
 			const previousValue = {
+				id: event.id,
 				type: event.type,
 				value: event.value,
 				periodStart: event.periodStart,
@@ -795,8 +858,8 @@ export const resolvers: {
 			if (success) {
 				await recordAdminAction(
 					admin,
-					"updateEvent",
-					`Event: ${Event.GetEventTypeText(event.type)} (#${args.id})`,
+					AdminAuditActionId.UpdateEvent,
+					{ settingId: AdminAuditSettingId.Events },
 					previousValue,
 					{ ...previousValue, ...updatedData },
 				);
@@ -814,9 +877,9 @@ export const resolvers: {
 			if (success && event) {
 				await recordAdminAction(
 					admin,
-					"deleteEvent",
-					`Event: ${Event.GetEventTypeText(event.type)} (#${args.id})`,
-					{ type: event.type, value: event.value, periodStart: event.periodStart, periodEnd: event.periodEnd },
+					AdminAuditActionId.DeleteEvent,
+					{ settingId: AdminAuditSettingId.Events },
+					{ id: event.id, type: event.type, value: event.value, periodStart: event.periodStart, periodEnd: event.periodEnd },
 					null,
 				);
 			}
@@ -851,7 +914,7 @@ export const resolvers: {
 			target.Money = money;
 			await target.Update({ money });
 			await target.GetInfo();
-			await recordAdminAction(admin, "setMoney", `${target.Nickname} (${target.Id})`, previousMoney, target.Money);
+			await recordAdminAction(admin, AdminAuditActionId.SetMoney, { userId: target.Id }, previousMoney, target.Money);
 
 			return {
 				success: true,
@@ -871,7 +934,7 @@ export const resolvers: {
 			const previousValue = target.Hospital.Time;
 			await target.Cure(admin.userId);
 			await target.GetInfo();
-			await recordAdminAction(admin, "cureUser", `${target.Nickname} (${target.Id})`, previousValue, target.Hospital.Time);
+			await recordAdminAction(admin, AdminAuditActionId.CureUser, { userId: target.Id }, previousValue, target.Hospital.Time);
 
 			return {
 				success: true,
@@ -897,8 +960,8 @@ export const resolvers: {
 			await target.GetInfo();
 			await recordAdminAction(
 				admin,
-				"freeUser",
-				`${target.Nickname} (${target.Id})`,
+				AdminAuditActionId.FreeUser,
+				{ userId: target.Id },
 				previousValue,
 				{
 					prisonTime: target.Prison.Time,
@@ -931,8 +994,8 @@ export const resolvers: {
 			await target.GetInfo();
 			await recordAdminAction(
 				admin,
-				"resetCooldown",
-				`${target.Nickname} (${target.Id})`,
+				AdminAuditActionId.ResetCooldown,
+				{ userId: target.Id },
 				{ cooldown: args.cooldown, value: previousValue },
 				{ cooldown: args.cooldown, value: getCooldownValue(target, args.cooldown) },
 			);
@@ -961,8 +1024,8 @@ export const resolvers: {
 			await target.GetInfo();
 			await recordAdminAction(
 				admin,
-				"removeAction",
-				`${target.Nickname} (${target.Id})`,
+				AdminAuditActionId.RemoveAction,
+				{ userId: target.Id },
 				{ action: args.action, value: previousValue },
 				{ action: args.action, value: getActionValue(target, args.action) },
 			);
@@ -1062,8 +1125,8 @@ export const resolvers: {
 			const updatedItem = target.Items.find(item => item.Id === args.itemId);
 			await recordAdminAction(
 				admin,
-				"setItem",
-				`${target.Nickname} (${target.Id}) - ${itemData.Description[Language.English]}`,
+				AdminAuditActionId.SetItem,
+				{ userId: target.Id },
 				previousValue,
 				updatedItem ? { quantity: updatedItem.Quantity, remainingTime: updatedItem.RemainingTime } : null,
 			);
@@ -1097,7 +1160,7 @@ export const resolvers: {
 			const previousValue = target.SpecialCoin;
 			await target.AddSpecialCoin(args.amount);
 			await target.GetInfo();
-			await recordAdminAction(admin, "addSpecialCoins", `${target.Nickname} (${target.Id})`, previousValue, target.SpecialCoin);
+			await recordAdminAction(admin, AdminAuditActionId.AddSpecialCoins, { userId: target.Id }, previousValue, target.SpecialCoin);
 			return {
 				success: true,
 				message: `Added ${args.amount} Special Coins to ${target.Nickname}.`,
@@ -1119,7 +1182,7 @@ export const resolvers: {
 			const previousValue = target.Class;
 			await target.SetClass(args.classId);
 			await target.GetInfo();
-			await recordAdminAction(admin, "setClass", `${target.Nickname} (${target.Id})`, previousValue, target.Class);
+			await recordAdminAction(admin, AdminAuditActionId.SetClass, { userId: target.Id }, previousValue, target.Class);
 			const className = ClassList[args.classId]?.Name[Language.English] || "Unknown";
 			return {
 				success: true,
@@ -1142,7 +1205,7 @@ export const resolvers: {
 			const previousValue = target.Nickname;
 			await target.SetNickname(args.nickname);
 			await target.GetInfo();
-			await recordAdminAction(admin, "setNickname", `${target.Nickname} (${target.Id})`, previousValue, target.Nickname);
+			await recordAdminAction(admin, AdminAuditActionId.SetNickname, { userId: target.Id }, previousValue, target.Nickname);
 			return {
 				success: true,
 				message: `Nickname changed to ${target.Nickname}.`,
@@ -1170,8 +1233,8 @@ export const resolvers: {
 			await target.GetInfo();
 			await recordAdminAction(
 				admin,
-				"setVip",
-				`${target.Nickname} (${target.Id})`,
+				AdminAuditActionId.SetVip,
+				{ userId: target.Id },
 				previousValue,
 				{ eternal: target.VipEternal, expiresAt: target.VipTime },
 			);
@@ -1198,7 +1261,7 @@ export const resolvers: {
 			const previousValue = target.DeadUntil;
 			const deadUntil = await target.Kill(args.days);
 			await target.GetInfo();
-			await recordAdminAction(admin, "killUser", `${target.Nickname} (${target.Id})`, previousValue, deadUntil);
+			await recordAdminAction(admin, AdminAuditActionId.KillUser, { userId: target.Id }, previousValue, deadUntil);
 			return {
 				success: true,
 				message: `Killed ${target.Nickname} for ${args.days} days (Dead until ${deadUntil.toISOString()}).`,
@@ -1221,7 +1284,7 @@ export const resolvers: {
 			const success = await UserBadge.Create(args.userId, args.badgeId);
 			await target.GetInfo();
 			if (success) {
-				await recordAdminAction(admin, "addBadge", `${target.Nickname} (${target.Id}) - badge #${args.badgeId}`, previousValue, true);
+				await recordAdminAction(admin, AdminAuditActionId.AddBadge, { userId: target.Id }, previousValue, true);
 			}
 			return {
 				success,
@@ -1245,7 +1308,7 @@ export const resolvers: {
 			const success = await UserBadge.Delete(args.userId, args.badgeId);
 			await target.GetInfo();
 			if (success) {
-				await recordAdminAction(admin, "removeBadge", `${target.Nickname} (${target.Id}) - badge #${args.badgeId}`, previousValue, false);
+				await recordAdminAction(admin, AdminAuditActionId.RemoveBadge, { userId: target.Id }, previousValue, false);
 			}
 			return {
 				success,
@@ -1280,8 +1343,8 @@ export const resolvers: {
 			const updatedTables = await UserRepository.SwapUsers(args.firstUserId, args.secondUserId, temporaryId);
 			await recordAdminAction(
 				admin,
-				"swapUsers",
-				"User accounts",
+				AdminAuditActionId.SwapUsers,
+				{ userId: firstUser.id },
 				previousValue,
 				{
 					firstUserId: args.secondUserId,
@@ -1314,8 +1377,8 @@ export const resolvers: {
 
 			await recordAdminAction(
 				admin,
-				"deleteUser",
-				target ? `${target.nickname} (${target.id})` : args.userId,
+				AdminAuditActionId.DeleteUser,
+				{ userId: args.userId },
 				target ? { id: target.id, nickname: target.nickname } : args.userId,
 				null,
 			);

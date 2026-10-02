@@ -20,6 +20,7 @@ useHead({
 
 const auth = useAuth();
 const page = ref(1);
+const selectedActionId = ref("");
 const pageSize = 25;
 const paginationLabels = {
 	item: "ações",
@@ -28,7 +29,11 @@ const paginationLabels = {
 const offset = computed(() => (page.value - 1) * pageSize);
 const { result, loading, error } = useQuery(
 	GetAdminAuditLogsDocument,
-	() => ({ limit: pageSize, offset: offset.value }),
+	() => ({
+		limit: pageSize,
+		offset: offset.value,
+		actionId: selectedActionId.value ? Number(selectedActionId.value) : undefined,
+	}),
 	{ enabled: computed(() => auth.isDeveloper.value) },
 );
 
@@ -37,28 +42,41 @@ const entries = computed<GetAdminAuditLogsQuery["adminAuditLogs"]["entries"]>(()
 const total = computed(() => auditPage.value?.total ?? 0);
 const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSize)));
 
-const actionNames: Record<string, string> = {
-	setMainHeistAllowed: "Alterar permissão do Golpe principal",
-	endSeason: "Encerrar temporada",
-	createEvent: "Criar evento",
-	updateEvent: "Atualizar evento",
-	deleteEvent: "Excluir evento",
-	setMoney: "Alterar dinheiro",
-	cureUser: "Curar jogador",
-	freeUser: "Libertar jogador",
-	resetCooldown: "Redefinir tempo de espera",
-	removeAction: "Remover ação",
-	setItem: "Alterar item",
-	addSpecialCoins: "Adicionar moedas especiais",
-	setClass: "Alterar classe",
-	setNickname: "Alterar nickname",
-	setVip: "Alterar VIP",
-	killUser: "Matar jogador",
-	addBadge: "Adicionar insígnia",
-	removeBadge: "Remover insígnia",
-	swapUsers: "Trocar contas",
-	deleteUser: "Excluir jogador",
+const actionNames: Record<number, string> = {
+	1: "Alterar permissão do Golpe principal",
+	2: "Encerrar temporada",
+	3: "Criar evento",
+	4: "Atualizar evento",
+	5: "Excluir evento",
+	6: "Alterar dinheiro",
+	7: "Curar jogador",
+	8: "Libertar jogador",
+	9: "Redefinir tempo de espera",
+	10: "Remover ação",
+	11: "Alterar item",
+	12: "Adicionar moedas especiais",
+	13: "Alterar classe",
+	14: "Alterar nickname",
+	15: "Alterar VIP",
+	16: "Matar jogador",
+	17: "Adicionar insígnia",
+	18: "Remover insígnia",
+	19: "Trocar contas",
+	20: "Excluir jogador",
 };
+
+const settingNames: Record<number, string> = {
+	1: "Permissão do Golpe principal",
+	2: "Temporada",
+	3: "Eventos",
+	4: "Contas de jogadores",
+};
+
+const actionOptions = Object.entries(actionNames).map(([id, name]) => ({ id, name }));
+
+watch(selectedActionId, () => {
+	page.value = 1;
+});
 
 function formatValue(value: string): string {
 	try {
@@ -95,6 +113,24 @@ function nextPage() {
 			no-padding-x
 			no-padding-y
 		>
+			<template #header>
+				<label class="audit-filter">
+					<span>Filtrar por ação</span>
+					<select
+						v-model="selectedActionId"
+						aria-label="Filtrar por ação"
+					>
+						<option value="">Todas as ações</option>
+						<option
+							v-for="action in actionOptions"
+							:key="action.id"
+							:value="action.id"
+						>
+							{{ action.name }}
+						</option>
+					</select>
+				</label>
+			</template>
 			<div
 				v-if="loading"
 				class="audit-state"
@@ -140,11 +176,43 @@ function nextPage() {
 							:key="entry.id"
 						>
 							<td>
-								<strong class="audit-admin-name">{{ entry.adminName }}</strong>
-								<small class="audit-secondary">{{ entry.adminId }}</small>
+								<div class="audit-person">
+									<NuxtImg
+										v-if="entry.adminAvatarUrl"
+										:src="entry.adminAvatarUrl"
+										class="audit-avatar"
+										width="32"
+										height="32"
+										alt=""
+									/>
+									<div>
+										<strong class="audit-user-name">{{ entry.adminName }}</strong>
+										<small class="audit-secondary">{{ entry.adminId }}</small>
+									</div>
+								</div>
 							</td>
-							<td>{{ actionNames[entry.action] || entry.action }}</td>
-							<td>{{ entry.target }}</td>
+							<td>{{ actionNames[entry.actionId] || `Ação #${entry.actionId}` }}</td>
+							<td>
+								<template v-if="entry.targetUserId">
+									<div class="audit-person">
+										<NuxtImg
+											v-if="entry.targetUserAvatarUrl"
+											:src="entry.targetUserAvatarUrl"
+											class="audit-avatar"
+											width="32"
+											height="32"
+											alt=""
+										/>
+										<div>
+											<strong class="audit-user-name">{{ entry.targetUserName || entry.targetUserId }}</strong>
+											<small class="audit-secondary">{{ entry.targetUserId }}</small>
+										</div>
+									</div>
+								</template>
+								<template v-else>
+									{{ settingNames[entry.targetSettingId ?? 0] || `Funcionalidade #${entry.targetSettingId}` }}
+								</template>
+							</td>
 							<td class="audit-value">{{ formatValue(entry.previousValue) }}</td>
 							<td class="audit-value">{{ formatValue(entry.newValue) }}</td>
 							<td>
@@ -200,7 +268,37 @@ function nextPage() {
 	color: $color-danger;
 }
 
-.audit-admin-name {
+.audit-filter {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	color: $text-secondary;
+	font-size: 0.8125rem;
+
+	select {
+		padding: 0.5rem 0.75rem;
+		border: 1px solid $border-subtle;
+		border-radius: 0.375rem;
+		background: $bg-input;
+		color: $text-primary;
+	}
+}
+
+.audit-person {
+	display: flex;
+	align-items: center;
+	gap: 0.625rem;
+}
+
+.audit-avatar {
+	flex: 0 0 36px;
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	object-fit: cover;
+}
+
+.audit-user-name {
 	color: $text-primary;
 }
 

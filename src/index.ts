@@ -9,6 +9,7 @@ import { BackgroundPatternRegistry } from "#bot/ui/patterns/BackgroundPatternReg
 import { AvatarDecorationRegistry } from "#bot/ui/patterns/AvatarDecorationRegistry";
 import { startApiServer, stopApiServer } from "#api/server";
 import { sequelize } from "#core/database/Database";
+import { migrateAdminAuditLogsV2 } from "#core/database/migrations/AdminAuditLogsV2";
 import { Dashboard } from "#core/models/Dashboard";
 
 const client = setClient();
@@ -139,6 +140,7 @@ AvatarDecorationRegistry.initialize().catch(err => {
 
 async function startApplication() {
 	await sequelize.sync();
+	await migrateAdminAuditLogsV2();
 	await Dashboard.Initialize();
 	await Promise.all([
 		startApiServer().catch((err) => {

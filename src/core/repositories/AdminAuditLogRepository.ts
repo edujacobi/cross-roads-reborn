@@ -1,11 +1,12 @@
 import { AdminAuditLogs } from "#core/database/AdminAuditLogs";
+import type { AdminAuditActionId, AdminAuditSettingId } from "#core/types/AdminAuditLog";
 
 export class AdminAuditLogRepository {
 	static async Create(values: {
 		adminId: string;
-		adminName: string;
-		action: string;
-		target: string;
+		actionId: AdminAuditActionId;
+		targetUserId: string | null;
+		targetSettingId: AdminAuditSettingId | null;
 		previousValue: string;
 		newValue: string;
 		createdAt: Date;
@@ -13,8 +14,9 @@ export class AdminAuditLogRepository {
 		await AdminAuditLogs.create(values);
 	}
 
-	static async FindPage(limit: number, offset: number) {
+	static async FindPage(limit: number, offset: number, actionId?: AdminAuditActionId) {
 		return await AdminAuditLogs.findAndCountAll({
+			where: actionId === undefined ? undefined : { actionId },
 			order: [["createdAt", "DESC"], ["id", "DESC"]],
 			limit,
 			offset,

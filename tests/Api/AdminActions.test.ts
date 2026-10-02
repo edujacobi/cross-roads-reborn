@@ -5,6 +5,7 @@ import { User } from "#core/models/User";
 import { UserBadge } from "#core/models/UserBadge";
 import { UserRepository } from "#core/repositories/UserRepository";
 import { UserItemRepository } from "#core/repositories/UserItemRepository";
+import { AdminAuditActionId } from "#core/types/AdminAuditLog";
 import { BadgeId } from "#core/types/Badges";
 import { ClassId } from "#core/types/Classes";
 import { BundleId, ItemId } from "#core/types/Ids";
@@ -55,8 +56,8 @@ describe("Admin action mutations", () => {
 
 		expect(AdminAuditLog.Record).toHaveBeenCalledWith(
 			moderator,
-			"setMoney",
-			" (target123)",
+			AdminAuditActionId.SetMoney,
+			{ userId: "target123" },
 			0,
 			250,
 		);

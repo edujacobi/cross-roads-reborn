@@ -1,11 +1,16 @@
 import { AdminAuditLogRepository } from "#core/repositories/AdminAuditLogRepository";
+import type { AdminAuditActionId, AdminAuditSettingId } from "#core/types/AdminAuditLog";
+
+export type AdminAuditTarget =
+	| { userId: string; settingId?: never }
+	| { userId?: never; settingId: AdminAuditSettingId };
 
 export interface AdminAuditEntry {
 	id: number;
 	adminId: string;
-	adminName: string;
-	action: string;
-	target: string;
+	actionId: AdminAuditActionId;
+	targetUserId: string | null;
+	targetSettingId: AdminAuditSettingId | null;
 	previousValue: string;
 	newValue: string;
 	createdAt: Date;
@@ -21,32 +26,36 @@ export class AdminAuditLog {
 	}
 
 	static async Record(
-		admin: { userId: string; username: string },
-		action: string,
-		target: string,
+		admin: { userId: string },
+		actionId: AdminAuditActionId,
+		target: AdminAuditTarget,
 		previousValue: unknown,
 		newValue: unknown,
 	): Promise<void> {
 		await AdminAuditLogRepository.Create({
 			adminId: admin.userId,
-			adminName: admin.username,
-			action,
-			target,
+			actionId,
+			targetUserId: target.userId ?? null,
+			targetSettingId: target.settingId ?? null,
 			previousValue: this.serialize(previousValue),
 			newValue: this.serialize(newValue),
 			createdAt: new Date(),
 		});
 	}
 
-	static async GetPage(limit: number, offset: number): Promise<{ entries: AdminAuditEntry[]; total: number }> {
-		const page = await AdminAuditLogRepository.FindPage(limit, offset);
+	static async GetPage(
+		limit: number,
+		offset: number,
+		actionId?: AdminAuditActionId,
+	): Promise<{ entries: AdminAuditEntry[]; total: number }> {
+		const page = await AdminAuditLogRepository.FindPage(limit, offset, actionId);
 		return {
 			entries: page.rows.map(log => ({
 				id: log.id,
 				adminId: log.adminId,
-				adminName: log.adminName,
-				action: log.action,
-				target: log.target,
+				actionId: log.actionId,
+				targetUserId: log.targetUserId,
+				targetSettingId: log.targetSettingId,
 				previousValue: log.previousValue,
 				newValue: log.newValue,
 				createdAt: log.createdAt,
