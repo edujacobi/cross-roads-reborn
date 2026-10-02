@@ -109,6 +109,16 @@ The project follows a strict **Separation of Concerns** between the interaction 
 - **Database Repositories**: Located in `src/core/repositories/`. The only layer allowed to import and query database files directly, isolating models from database schemas.
 - **Contracts (Types)**: Located in `src/core/types/`. Shared definitions that ensure type safety across frontend, backend, and database repositories.
 
+### Product Direction
+
+The admin web application is the first step in a gradual transition from Discord-only gameplay to a web interface. The transition is planned in three stages:
+
+1. **Admin interface**: Provide administrators with a web interface to control and monitor the game.
+2. **Web gameplay**: Let general users play through the web interface while continuing to support the existing Discord commands.
+3. **Web-first experience**: Deprecate the Discord commands and direct users to the web interface.
+
+The Discord implementation remains an important supported interface during the transition; game rules and state should therefore live in shared backend services rather than being tied to either the Nuxt app or Discord commands.
+
 ### Localization
 
 All user-facing text must be localized. The bot supports:

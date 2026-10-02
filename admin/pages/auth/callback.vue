@@ -20,7 +20,7 @@ onMounted(async () => {
 
 	try {
 		await auth.setToken(token);
-		navigateTo("/");
+		navigateTo("/dashboard");
 	} catch (err) {
 		error.value = `Falha ao processar token de autenticação: ${err}`;
 		setTimeout(() => navigateTo("/login"), 3000);

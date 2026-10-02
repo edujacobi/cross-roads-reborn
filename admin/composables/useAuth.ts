@@ -73,7 +73,7 @@ export function useAuth() {
 
 	function logout() {
 		clearSession();
-		navigateTo("/login");
+		navigateTo("/");
 	}
 
 	function clearSession() {

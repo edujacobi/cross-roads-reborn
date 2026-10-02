@@ -2,151 +2,77 @@
 	setup
 	lang="ts"
 >
-import { useQuery } from "@vue/apollo-composable";
-import { RotateCw } from "lucide-vue-next";
+import { Coins, LogIn, Swords, UsersRound } from "lucide-vue-next";
 import BaseButton from "~/components/ui/BaseButton.vue";
-import BaseCard from "~/components/ui/BaseCard.vue";
-import PageTitle from "~/components/ui/PageTitle.vue";
 import { imagePaths } from "~/constants/imagePaths";
-import {
-	GetDashboardHistoryDocument,
-	type GetDashboardHistoryQuery,
-	GetDashboardStatsDocument,
-	type GetDashboardStatsQuery,
-} from "~/graphql/generated";
-import DashboardStatusBox from "../components/Dashboard/DashboardStatusBox.vue";
-import DashboardUserChart from "../components/Dashboard/DashboardUserChart.vue";
-import DashboardUserHistory from "../components/Dashboard/DashboardUserHistory.vue";
 
 definePageMeta({
-	middleware: "auth",
+	layout: false,
 });
 
 useHead({
-	title: "Dashboard",
+	title: "Início",
 });
-
-const { result: statsResult, loading: statsLoading, refetch: refetchStats } = useQuery(GetDashboardStatsDocument);
-
-const {
-	result: historyResult,
-	loading: historyLoading,
-	refetch: refetchHistory,
-} = useQuery(GetDashboardHistoryDocument);
-
-const stats = computed<GetDashboardStatsQuery["dashboardStats"] | undefined>(() => statsResult.value?.dashboardStats);
-const history = computed<GetDashboardHistoryQuery["dashboardHistory"]>(
-	() => historyResult.value?.dashboardHistory || [],
-);
-
-function refreshData() {
-	refetchStats();
-	refetchHistory();
-}
 </script>
 
 <template>
-	<main class="dashboard-page">
-		<PageTitle
-			title="Dashboard"
-			subtitle="Visão geral em tempo real da economia e jogadores"
-		>
-			<template #actions>
-				<BaseButton
-					variant="secondary"
-					size="sm"
-					@click="refreshData()"
-				>
-					<RotateCw
-						:size="15"
-						:class="{ 'spin-icon': statsLoading || historyLoading }"
-						aria-hidden="true"
-					/>
-					Atualizar
-				</BaseButton>
-			</template>
-		</PageTitle>
+	<main class="game-home">
+		<header class="game-home__header">
+			<NuxtImg
+				:src="imagePaths.brand.logo"
+				alt="Cross Roads Reborn"
+				width="60"
+			/>
+			<BaseButton
+				to="/login"
+				variant="secondary"
+				size="sm"
+			>
+				<LogIn :size="16" />
+				Entrar
+			</BaseButton>
+		</header>
 
-		<section
-			class="status-grid"
-			aria-labelledby="player-status-heading"
-		>
-			<DashboardStatusBox
-				variant="idle"
-				:value="stats?.idleCount"
-			/>
-			<DashboardStatusBox
-				variant="working"
-				:value="stats?.jobCount"
-			/>
-			<DashboardStatusBox
-				variant="scavenge"
-				:value="stats?.scavengeCount"
-			/>
-			<DashboardStatusBox
-				variant="casino"
-				:value="stats?.casinoCount"
-			/>
-			<DashboardStatusBox
-				variant="hospital"
-				:value="stats?.hospitalCount"
-			/>
-			<DashboardStatusBox
-				variant="prison"
-				:value="stats?.prisonCount"
-			/>
-			<DashboardStatusBox
-				variant="robbery"
-				:value="stats?.robberyCount"
-			/>
-			<DashboardStatusBox
-				variant="beatup"
-				:value="stats?.beatUpCount"
-			/>
+		<section class="game-home__hero">
+			<p class="game-home__eyebrow">RPG multiplayer</p>
+			<h1>Uma cidade. Mil maneiras de chegar ao topo.</h1>
+			<p class="game-home__intro">
+				Construa sua história em Cross Roads Reborn: trabalhe, acumule riquezas, enfrente rivais e forme alianças em um
+				mundo movido pelas escolhas dos jogadores.
+			</p>
 		</section>
 
 		<section
-			class="vault-grid"
-			aria-label="Valores dos cofres"
+			class="game-home__features"
+			aria-label="Sobre o jogo"
 		>
-			<BaseCard
-				title="Cofre do Banco"
-				:icon="imagePaths.uiElements.vaultBank"
-				no-body
-			>
-				<template #actions>Cr$ {{ (stats?.bankVaultValue ?? 0).toLocaleString("pt-BR") }}</template>
-			</BaseCard>
-			<BaseCard
-				title="Cofre do Cassino"
-				:icon="imagePaths.uiElements.vaultCasino"
-				no-body
-			>
-				<template #actions> Cr$ {{ (stats?.casinoVaultValue ?? 0).toLocaleString("pt-BR") }} </template>
-			</BaseCard>
+			<article class="game-feature">
+				<Coins
+					:size="24"
+					aria-hidden="true"
+				/>
+				<h2>Construa sua fortuna</h2>
+				<p>Trabalhe, invista, explore e administre seu dinheiro para avançar na economia do jogo.</p>
+			</article>
+
+			<article class="game-feature">
+				<Swords
+					:size="24"
+					aria-hidden="true"
+				/>
+				<h2>Encare desafios</h2>
+				<p>Escolha sua classe, equipe-se e dispute espaço em combates, apostas e outras atividades.</p>
+			</article>
+
+			<article class="game-feature">
+				<UsersRound
+					:size="24"
+					aria-hidden="true"
+				/>
+				<h2>Jogue em comunidade</h2>
+				<p>Crie ou participe de uma gangue, colabore com outros jogadores e dispute rankings.</p>
+			</article>
 		</section>
-
-		<DashboardUserChart
-			:history="history"
-			:current-stats="stats"
-			:history-loading="historyLoading"
-		/>
-
-		<div class="details-row">
-			<DashboardCountData
-				:total-players="stats?.totalPlayers"
-				:all-users="stats?.allUsers"
-				:total-gangs="stats?.totalGangs"
-				:english-count="stats?.englishCount"
-				:portuguese-count="stats?.portugueseCount"
-				:spanish-count="stats?.spanishCount"
-			/>
-
-			<!-- History Snapshots Card -->
-			<DashboardUserHistory
-				:history="history"
-				:history-loading="historyLoading"
-			/>
-		</div>
 	</main>
 </template>
 
@@ -155,66 +81,85 @@ function refreshData() {
 	scoped
 >
 @use "~/assets/scss/variables" as *;
-@use "~/assets/scss/mixins" as *;
 
-.dashboard-page {
-	display: flex;
-	flex-direction: column;
-	gap: $spacing-lg;
-}
+.game-home {
+	width: min(68rem, 100%);
+	margin: 0 auto;
+	padding: clamp(1.25rem, 4vw, 3rem);
 
-.spin-icon {
-	animation: spin 0.8s linear infinite;
-}
+	&__header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: $spacing-md;
+		flex-wrap: wrap;
 
-@keyframes spin {
-	to {
-		transform: rotate(360deg);
+		//@media (max-width: 425px){
+		//	flex-direction: column;
+		//}
+	}
+
+	&__hero {
+		max-width: 48rem;
+		margin: clamp(4rem, 12vh, 8rem) 0 $spacing-xl;
+	}
+
+	&__eyebrow {
+		margin-bottom: $spacing-sm;
+		color: $color-brand;
+		font-size: 0.8125rem;
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+	}
+
+	h1 {
+		max-width: 42rem;
+		font-size: clamp(2.5rem, 7vw, 4.5rem);
+		font-weight: 800;
+		line-height: 1.05;
+	}
+
+	&__intro {
+		max-width: 38rem;
+		margin-top: $spacing-md;
+		color: $text-secondary;
+		font-size: clamp(1rem, 2vw, 1.125rem);
+		line-height: 1.7;
+	}
+
+	&__features {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: $spacing-md;
+
+		@media (max-width: 700px) {
+			grid-template-columns: 1fr;
+		}
 	}
 }
 
-.section-title {
-	margin: $spacing-sm 0;
-	font-size: 1rem;
-	font-weight: 700;
-	text-transform: uppercase;
-	letter-spacing: 0.05em;
-}
+.game-feature {
+	padding: $spacing-lg;
+	background: $bg-card;
+	border: 1px solid $border-card;
+	border-radius: $radius-md;
 
-.status-grid {
-	display: grid;
-	grid-template-columns: repeat(4, 1fr);
-	grid-auto-rows: 1fr;
-	gap: $spacing-md;
-
-	// ponytail: responsive columns for dashboard status boxes
-	@media (max-width: 992px) {
-		grid-template-columns: repeat(2, 1fr);
+	svg {
+		margin-bottom: $spacing-md;
+		color: $color-brand;
 	}
 
-	@media (max-width: 480px) {
-		grid-template-columns: 1fr;
-	}
-}
-
-.vault-grid {
-	display: grid;
-	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: $spacing-md;
-
-	@media (max-width: 600px) {
-		grid-template-columns: 1fr;
-	}
-}
-
-.details-row {
-	display: grid;
-	grid-template-columns: 320px 1fr;
-	gap: 20px;
-
-	@media (max-width: 900px) {
-		grid-template-columns: 1fr;
+	h2 {
+		margin-bottom: $spacing-sm;
+		font-size: 1rem;
+		font-weight: 700;
 	}
 
+	p {
+		color: $text-secondary;
+		font-size: 0.875rem;
+		line-height: 1.6;
+	}
 }
 </style>

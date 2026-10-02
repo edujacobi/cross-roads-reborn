@@ -24,6 +24,55 @@ const mobileMenu = ref<HTMLInputElement | null>(null);
 const isLogoutModalOpen = ref(false);
 const isCollapsed = ref(false);
 
+const navigationGroups = [
+	{
+		title: "",
+		links: [
+			{
+				label: "Rankings",
+				to: { name: "rankings" },
+				icon: Trophy,
+				activeRouteNames: ["rankings"],
+			},
+		],
+	},
+	{
+		title: "Moderação",
+		links: [
+			{
+				label: "Dashboard",
+				to: { name: "dashboard" },
+				icon: LayoutDashboard,
+				activeRouteNames: ["dashboard"],
+			},
+			{
+				label: "Jogadores",
+				to: { name: "users" },
+				icon: Users,
+				activeRouteNames: ["users", "users-id"],
+			},
+			{
+				label: "Eventos",
+				to: { name: "events" },
+				icon: CalendarDays,
+				activeRouteNames: ["events"],
+			},
+			{
+				label: "Temporada",
+				to: { name: "season" },
+				icon: CalendarSync,
+				activeRouteNames: ["season"],
+			},
+			{
+				label: "VIPs",
+				to: { name: "vips" },
+				icon: Crown,
+				activeRouteNames: ["vips"],
+			},
+		],
+	},
+] as const;
+
 function openLogoutModal() {
 	if (mobileMenu.value) {
 		mobileMenu.value.checked = false;
@@ -148,83 +197,33 @@ const user = computed(() => {
 			class="nav-links"
 			aria-label="Navegação principal"
 		>
-			<NuxtLink
-				to="/"
-				:class="['nav-item', { active: route.path === '/' }]"
-				aria-label="Dashboard"
-				title="Dashboard"
+			<div
+				v-for="group in navigationGroups"
+				:key="group.title ?? 'default'"
+				:class="['nav-group', { 'nav-group--titled': group.title }]"
 			>
-				<LayoutDashboard
-					:size="18"
-					aria-hidden="true"
-				/>
-				<span class="nav-label">Dashboard</span>
-			</NuxtLink>
-
-			<NuxtLink
-				to="/users"
-				:class="['nav-item', { active: route.path.startsWith('/users') }]"
-				aria-label="Jogadores"
-				title="Jogadores"
-			>
-				<Users
-					:size="18"
-					aria-hidden="true"
-				/>
-				<span class="nav-label">Jogadores</span>
-			</NuxtLink>
-
-			<NuxtLink
-				to="/events"
-				:class="['nav-item', { active: route.path.startsWith('/events') }]"
-				aria-label="Eventos"
-				title="Eventos"
-			>
-				<CalendarDays
-					:size="18"
-					aria-hidden="true"
-				/>
-				<span class="nav-label">Eventos</span>
-			</NuxtLink>
-
-			<NuxtLink
-				to="/season"
-				:class="['nav-item', { active: route.path === '/season' }]"
-				aria-label="Temporada"
-				title="Temporada"
-			>
-				<CalendarSync
-					:size="18"
-					aria-hidden="true"
-				/>
-				<span class="nav-label">Temporada</span>
-			</NuxtLink>
-
-			<NuxtLink
-				to="/rankings"
-				:class="['nav-item', { active: route.path.startsWith('/rankings') }]"
-				aria-label="Rankings"
-				title="Rankings"
-			>
-				<Trophy
-					:size="18"
-					aria-hidden="true"
-				/>
-				<span class="nav-label">Rankings</span>
-			</NuxtLink>
-
-			<NuxtLink
-				to="/vips"
-				:class="['nav-item', { active: route.path.startsWith('/vips') }]"
-				aria-label="VIPs"
-				title="VIPs"
-			>
-				<Crown
-					:size="18"
-					aria-hidden="true"
-				/>
-				<span class="nav-label">VIPs</span>
-			</NuxtLink>
+				<h2
+					v-if="group.title"
+					class="nav-group-title"
+				>
+					{{ group.title }}
+				</h2>
+				<NuxtLink
+					v-for="item in group.links"
+					:key="item.label"
+					:to="item.to"
+					:class="['nav-item', { active: item.activeRouteNames.some((name) => name === route.name) }]"
+					:aria-label="item.label"
+					:title="item.label"
+				>
+					<component
+						:is="item.icon"
+						:size="18"
+						aria-hidden="true"
+					/>
+					<span class="nav-label">{{ item.label }}</span>
+				</NuxtLink>
+			</div>
 		</nav>
 
 		<div class="admin-profile">
@@ -385,6 +384,29 @@ const user = computed(() => {
 		overflow-y: auto;
 		overscroll-behavior: contain;
 
+		.nav-group {
+			display: flex;
+			flex-direction: column;
+			gap: $spacing-xs;
+		}
+
+		.nav-group--titled {
+			margin-top: $spacing-md;
+			padding-top: $spacing-md;
+			border-top: 1px solid $border-subtle;
+		}
+
+		.nav-group-title {
+			padding: 0.25rem 0.875rem 0.5rem;
+			color: $text-muted;
+			font-size: 0.6875rem;
+			font-weight: 700;
+			letter-spacing: 0.08em;
+			text-transform: uppercase;
+			white-space: nowrap;
+			transition: opacity 0.2s ease, max-height 0.3s ease;
+		}
+
 		.nav-item {
 			display: grid;
 			grid-template-columns: 18px minmax(0, 1fr);
@@ -530,6 +552,13 @@ const user = computed(() => {
 			.nav-links {
 				padding-right: 0.75rem;
 				padding-left: 0.75rem;
+
+				.nav-group-title {
+					max-height: 0;
+					padding: 0;
+					opacity: 0;
+					overflow: hidden;
+				}
 
 				.nav-item {
 					grid-template-columns: 18px minmax(0, 0fr);
