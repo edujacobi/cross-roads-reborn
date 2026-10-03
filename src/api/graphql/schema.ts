@@ -220,6 +220,9 @@ export const typeDefs = /* GraphQL */ `
         avatarDecoration: String!
         money: Float!
         specialCoin: Float!
+        dailyNextAvailableAt: String
+        nicknameChangeCost: Float!
+        classChangeCost: Float!
         gang: GangInfo
         class: Int!
         className: String!
@@ -385,6 +388,9 @@ export const typeDefs = /* GraphQL */ `
         addSpecialCoins(userId: ID!, amount: Float!): MutationResult!
         setClass(userId: ID!, classId: Int!): MutationResult!
         setNickname(userId: ID!, nickname: String!): MutationResult!
+        claimDailyReward: MutationResult!
+        changeOwnNickname(nickname: String!): MutationResult!
+        changeOwnClass(classId: Int!): MutationResult!
         setVip(userId: ID!, days: Int!, eternal: Boolean!): MutationResult!
         killUser(userId: ID!, days: Int!): MutationResult!
         addBadge(userId: ID!, badgeId: Int!): MutationResult!

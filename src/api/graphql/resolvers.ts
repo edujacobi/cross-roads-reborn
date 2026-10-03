@@ -14,7 +14,7 @@ import {
 	type TopUserRankingCountField,
 	type TopUserRankingField,
 } from "#core/repositories/UserRepository";
-import { ClassList } from "#core/types/Classes";
+import { ClassId, ClassList } from "#core/types/Classes";
 import { AvatarDecorationList } from "#core/types/AvatarDecorations";
 import { Language } from "#core/models/Language";
 import { ItemList } from "#core/types/Items";
@@ -26,6 +26,7 @@ import { ItemType } from "#core/types/Items";
 import { BundleId } from "#core/types/Ids";
 import { addHours, subMinutes } from "date-fns";
 import { getClient } from "#bot/client";
+import { isUserBoosterInOfficialServerByUserId } from "#bot/utils/officialServer";
 import { InvestmentList } from "#core/types/Investments";
 import { GangColor } from "#core/types/GangColors";
 import { randomBytes } from "node:crypto";
@@ -254,6 +255,9 @@ async function mapUserDetail(user: User) {
 		avatarUrl: discordUser.avatarURL(),
 		avatarDecoration: user.AvatarDecoration.Description[Language.English].toLowerCase().replaceAll(" ", "_"),
 		specialCoin: user.SpecialCoin,
+		dailyNextAvailableAt: user.Daily.LastReceived ? addHours(user.Daily.LastReceived, 24).toISOString() : null,
+		nicknameChangeCost: user.GetNicknameChangeCost(),
+		classChangeCost: user.GetClassChangeCost(),
 		gang: gangInfo,
 		class: user.Class,
 		className,
@@ -1229,6 +1233,94 @@ export const resolvers: {
 				success: true,
 				message: `Nickname changed to ${target.Nickname}.`,
 				user: mapUserDetail(target),
+			};
+		},
+
+		claimDailyReward: async (_: unknown, __: unknown, context: GraphQLContext) => {
+			const authUser = assertAuthenticated(context);
+			const player = new User(authUser.userId);
+			const found = await player.GetInfo();
+			if (!found) {
+				return { success: false, message: "Jogador não encontrado.", user: null };
+			}
+			if (!player.CanReceiveDaily()) {
+				return { success: false, message: "Você já resgatou sua recompensa diária.", user: null };
+			}
+
+			const { money } = await player.ReceiveDaily({
+				isBooster: isUserBoosterInOfficialServerByUserId(authUser.userId),
+			});
+			return {
+				success: true,
+				message: `Você recebeu Cr$ ${money.toLocaleString("pt-BR")} na recompensa diária. Sequência atual: ${player.Daily.CurrentStreak}.`,
+				user: null,
+			};
+		},
+
+		changeOwnNickname: async (
+			_: unknown,
+			args: { nickname: string },
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			if (args.nickname.length < 3 || args.nickname.length > 18 || !/^[A-Za-z]+(?: [A-Za-z]+)*$/.test(args.nickname)) {
+				return { success: false, message: "O apelido deve ter de 3 a 18 letras e pode conter espaços simples.", user: null };
+			}
+
+			const player = new User(authUser.userId);
+			const found = await player.GetInfo();
+			if (!found) {
+				return { success: false, message: "Jogador não encontrado.", user: null };
+			}
+			if (args.nickname === player.Nickname) {
+				return { success: false, message: "Esse já é o seu apelido.", user: null };
+			}
+			const nickExists = await UserRepository.SearchByNameOrId(args.nickname);
+			if (nickExists) {
+				return { success: false, message: "Esse apelido já está em uso.", user: null };
+			}
+
+			const cost = player.GetNicknameChangeCost();
+			if (player.Money < cost) {
+				return { success: false, message: `Saldo insuficiente. A alteração custa Cr$ ${cost.toLocaleString("pt-BR")}.`, user: null };
+			}
+			await player.SetNickname(args.nickname, cost || undefined);
+			return {
+				success: true,
+				message: `Seu apelido foi alterado para ${args.nickname}.`,
+				user: null,
+			};
+		},
+
+		changeOwnClass: async (
+			_: unknown,
+			args: { classId: number },
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			const availableClasses = [ClassId.Attorney, ClassId.Entrepreneur, ClassId.Hobo, ClassId.Thief];
+			if (!availableClasses.includes(args.classId)) {
+				return { success: false, message: "Classe inválida.", user: null };
+			}
+
+			const player = new User(authUser.userId);
+			const found = await player.GetInfo();
+			if (!found) {
+				return { success: false, message: "Jogador não encontrado.", user: null };
+			}
+			if (player.Class === args.classId) {
+				return { success: false, message: "Você já possui essa classe.", user: null };
+			}
+
+			const cost = player.GetClassChangeCost();
+			if (player.Money < cost) {
+				return { success: false, message: `Saldo insuficiente. A alteração custa Cr$ ${cost.toLocaleString("pt-BR")}.`, user: null };
+			}
+			await player.SetClass(args.classId, cost || undefined);
+			return {
+				success: true,
+				message: `Sua classe foi alterada para ${ClassList[args.classId].Name[Language.Portuguese]}.`,
+				user: null,
 			};
 		},
 

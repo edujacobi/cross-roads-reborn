@@ -232,6 +232,9 @@ query GetUserDetail($id: ID!) {
 		nickname
 		online
 		money
+		dailyNextAvailableAt
+		nicknameChangeCost
+		classChangeCost
 		avatarUrl
 		avatarDecoration
 		specialCoin
@@ -406,6 +409,27 @@ mutation SetClass($userId: ID!, $classId: Int!) {
 
 mutation SetNickname($userId: ID!, $nickname: String!) {
 	setNickname(userId: $userId, nickname: $nickname) {
+		success
+		message
+	}
+}
+
+mutation ClaimDailyReward {
+	claimDailyReward {
+		success
+		message
+	}
+}
+
+mutation ChangeOwnNickname($nickname: String!) {
+	changeOwnNickname(nickname: $nickname) {
+		success
+		message
+	}
+}
+
+mutation ChangeOwnClass($classId: Int!) {
+	changeOwnClass(classId: $classId) {
 		success
 		message
 	}

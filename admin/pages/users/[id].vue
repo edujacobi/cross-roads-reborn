@@ -11,6 +11,7 @@ import UserInventoryCard from "~/components/UserDetail/UserInventoryCard.vue";
 import UserInvestmentCard from "~/components/UserDetail/UserInvestmentCard.vue";
 import UserMetadataCard from "~/components/UserDetail/UserMetadataCard.vue";
 import UserProfileHeader from "~/components/UserDetail/UserProfileHeader.vue";
+import UserSelfActionsCard from "~/components/UserDetail/UserSelfActionsCard.vue";
 import UserStatusSummary from "~/components/UserDetail/UserStatusSummary.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import { GetUserDetailDocument } from "~/graphql/generated";
@@ -89,6 +90,12 @@ function showFeedback(type: "success" | "error", message: string) {
 			class="user-detail__content"
 		>
 			<UserProfileHeader :user="user" />
+			<UserSelfActionsCard
+				v-if="auth.user.value?.userId === user.id"
+				:user="user"
+				@feedback="showFeedback"
+				@refresh="refetch"
+			/>
 			<UserInventoryCard :items="user.items" />
 			<UserInvestmentCard
 				v-if="user.investment"

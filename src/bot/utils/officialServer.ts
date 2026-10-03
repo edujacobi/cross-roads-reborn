@@ -205,6 +205,22 @@ export async function isUserBoosterInOfficialServer(interaction: ChatInputComman
 	return member.roles.cache.has(boosterRoleId);
 }
 
+export function isUserBoosterInOfficialServerByUserId(userId: string) {
+	if (process.env.NODE_ENV !== "PROD") {
+		return false;
+	}
+
+	const serverId = process.env.SERVER_ID;
+	const boosterRoleId = process.env.BOOSTER_ROLE_ID;
+	if (!serverId || !boosterRoleId) {
+		return false;
+	}
+
+	const guild = getClient().guilds.cache.get(serverId);
+	const member = guild?.members.cache.get(userId);
+	return member?.roles.cache.has(boosterRoleId) ?? false;
+}
+
 /**
  * Checks all members of the official server and synchronizes their VIP role.
  * VIP users without the role will receive it; non-VIP users with the role will lose it.
