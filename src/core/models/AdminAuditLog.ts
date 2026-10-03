@@ -53,7 +53,11 @@ export class AdminAuditLog {
 		});
 	}
 
-	private static parseUserAgent(userAgent: string | null): { deviceType: string; operatingSystem: string; browser: string } {
+	private static parseUserAgent(userAgent: string | null): {
+		deviceType: string;
+		operatingSystem: string;
+		browser: string
+	} {
 		if (!userAgent) {
 			return { deviceType: "Unknown", operatingSystem: "Unknown", browser: "Unknown" };
 		}
@@ -87,10 +91,10 @@ export class AdminAuditLog {
 						: /Chromium/i.test(userAgent)
 							? "Chromium"
 							: /CriOS|Chrome/i.test(userAgent)
-							? "Chrome"
-							: /Safari/i.test(userAgent)
-								? "Safari"
-								: "Unknown";
+								? "Chrome"
+								: /Safari/i.test(userAgent)
+									? "Safari"
+									: "Unknown";
 
 		return { deviceType, operatingSystem, browser };
 	}

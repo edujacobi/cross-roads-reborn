@@ -17,7 +17,7 @@ import {
 import { ClassId, ClassList } from "#core/types/Classes";
 import { AvatarDecorationList } from "#core/types/AvatarDecorations";
 import { Language } from "#core/models/Language";
-import { ItemList } from "#core/types/Items";
+import { ItemList, type Items } from "#core/types/Items";
 import type { AuthUser, GraphQLContext } from "#api/types";
 import { convertHexNumberToString, formatMoney } from "#bot/utils/ui";
 import { UserBadge } from "#core/models/UserBadge";
@@ -463,7 +463,7 @@ export const resolvers: {
 			};
 
 			return await Promise.all(
-				Object.values(ItemList).map(async (item) => {
+				Object.values(ItemList).map(async (item: Items) => {
 					const userCount = await UserItemRepository.CountUsersWithItem(item.Id);
 					const skins = Object.entries(item.Skin).map(([bundleIdStr, skin]) => {
 						const bId = Number(bundleIdStr) as BundleId;
