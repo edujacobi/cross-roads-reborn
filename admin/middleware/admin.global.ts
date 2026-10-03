@@ -1,5 +1,5 @@
 export default defineNuxtRouteMiddleware(async (to) => {
-	if ((to.path !== "/admin" && !to.path.startsWith("/admin/")) || to.path === "/admin/auth/callback") return;
+	if ((to.path !== "/admin" && !to.path.startsWith("/admin/")) || to.path === "/auth/callback") return;
 	if (import.meta.server) return;
 
 	const auth = useAuth();

@@ -99,7 +99,7 @@ export async function createApiServer(): Promise<FastifyInstance> {
 				return reply.redirect(`${frontendUrl}/login?error=${encodeURIComponent(result.error)}`);
 			}
 
-			return reply.redirect(`${frontendUrl}/admin/auth/callback?token=${result.token}`);
+			return reply.redirect(`${frontendUrl}/auth/callback?token=${result.token}`);
 		},
 	);
 
