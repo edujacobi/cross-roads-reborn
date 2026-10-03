@@ -24,6 +24,7 @@ export interface Items {
 	readonly MoreDefense: number,
 	readonly MoreMoneyATK: number,
 	readonly MoreMoneyDEF: number,
+	readonly Extra?: IDescription,
 	readonly Special: {
 		readonly Day: boolean,
 		readonly Night: boolean,
@@ -776,6 +777,11 @@ export const ItemList: ItemListType = {
 		MoreDefense: 0,
 		MoreMoneyATK: 0,
 		MoreMoneyDEF: 0,
+		Extra: {
+			[Language.English]: "+30% chance to escape prison",
+			[Language.Portuguese]: "+30% de chance de fugir da prisão",
+			[Language.Spanish]: "+30% de probabilidad de escapar de prisión",
+		},
 		Special: {
 			Day: false,
 			Night: false,

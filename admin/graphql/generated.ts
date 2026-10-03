@@ -161,6 +161,48 @@ export type InvestmentInfo = {
   nextPaymentValue: Scalars['String']['output'];
 };
 
+export type ItemDetails = {
+  __typename?: 'ItemDetails';
+  attack: Scalars['Int']['output'];
+  blackMarket: Scalars['Boolean']['output'];
+  defaultImagePath: Scalars['String']['output'];
+  defense: Scalars['Int']['output'];
+  extra?: Maybe<Scalars['String']['output']>;
+  id: Scalars['Int']['output'];
+  moneyAttack: Scalars['Float']['output'];
+  moneyDefense: Scalars['Float']['output'];
+  moreAttack: Scalars['Int']['output'];
+  moreDefense: Scalars['Int']['output'];
+  moreMoneyATK: Scalars['Float']['output'];
+  moreMoneyDEF: Scalars['Float']['output'];
+  name: Scalars['String']['output'];
+  nameEn: Scalars['String']['output'];
+  nameEs: Scalars['String']['output'];
+  namePt: Scalars['String']['output'];
+  price: Scalars['Float']['output'];
+  shop: Scalars['Boolean']['output'];
+  skins: Array<ItemSkin>;
+  special: ItemSpecial;
+  type: Scalars['Int']['output'];
+  typeName: Scalars['String']['output'];
+  userCount: Scalars['Int']['output'];
+};
+
+export type ItemSkin = {
+  __typename?: 'ItemSkin';
+  bundleId: Scalars['Int']['output'];
+  bundleName: Scalars['String']['output'];
+  emoteId: Scalars['String']['output'];
+  emoteString: Scalars['String']['output'];
+  imagePath: Scalars['String']['output'];
+};
+
+export type ItemSpecial = {
+  __typename?: 'ItemSpecial';
+  day: Scalars['Boolean']['output'];
+  night: Scalars['Boolean']['output'];
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   addBadge: MutationResult;
@@ -334,6 +376,7 @@ export type Query = {
   dashboardItemPopularity: Array<DashboardItemPopularity>;
   dashboardStats: DashboardStats;
   events: Array<Event>;
+  items: Array<ItemDetails>;
   me?: Maybe<AuthUser>;
   seasonEndPreview: SeasonEndPreview;
   seasonInfo: SeasonInfo;
@@ -886,6 +929,11 @@ export type DeleteUserMutationVariables = Exact<{
 
 export type DeleteUserMutation = { deleteUser: { success: boolean, message: string } };
 
+export type GetItemsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetItemsQuery = { items: Array<{ id: number, type: number, typeName: string, name: string, namePt: string, nameEn: string, nameEs: string, price: number, shop: boolean, blackMarket: boolean, attack: number, defense: number, moneyAttack: number, moneyDefense: number, moreAttack: number, moreDefense: number, moreMoneyATK: number, moreMoneyDEF: number, extra: string | null, userCount: number, defaultImagePath: string, special: { day: boolean, night: boolean }, skins: Array<{ bundleId: number, bundleName: string, emoteId: string, emoteString: string, imagePath: string }> }> };
+
 
 export const GetDashboardStatsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetDashboardStats"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"dashboardStats"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"totalPlayers"}},{"kind":"Field","name":{"kind":"Name","value":"allUsers"}},{"kind":"Field","name":{"kind":"Name","value":"classCounts"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"classId"}},{"kind":"Field","name":{"kind":"Name","value":"count"}}]}},{"kind":"Field","name":{"kind":"Name","value":"bankVaultValue"}},{"kind":"Field","name":{"kind":"Name","value":"casinoVaultValue"}},{"kind":"Field","name":{"kind":"Name","value":"totalGangs"}},{"kind":"Field","name":{"kind":"Name","value":"prisonCount"}},{"kind":"Field","name":{"kind":"Name","value":"hospitalCount"}},{"kind":"Field","name":{"kind":"Name","value":"jobCount"}},{"kind":"Field","name":{"kind":"Name","value":"scavengeCount"}},{"kind":"Field","name":{"kind":"Name","value":"casinoCount"}},{"kind":"Field","name":{"kind":"Name","value":"robberyCount"}},{"kind":"Field","name":{"kind":"Name","value":"beatUpCount"}},{"kind":"Field","name":{"kind":"Name","value":"idleCount"}},{"kind":"Field","name":{"kind":"Name","value":"englishCount"}},{"kind":"Field","name":{"kind":"Name","value":"portugueseCount"}},{"kind":"Field","name":{"kind":"Name","value":"spanishCount"}}]}}]}}]} as unknown as DocumentNode<GetDashboardStatsQuery, GetDashboardStatsQueryVariables>;
 export const GetDashboardHistoryDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetDashboardHistory"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"dashboardHistory"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"totalPlayers"}},{"kind":"Field","name":{"kind":"Name","value":"allUsers"}},{"kind":"Field","name":{"kind":"Name","value":"classCounts"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"classId"}},{"kind":"Field","name":{"kind":"Name","value":"count"}}]}},{"kind":"Field","name":{"kind":"Name","value":"totalGangs"}},{"kind":"Field","name":{"kind":"Name","value":"prisonCount"}},{"kind":"Field","name":{"kind":"Name","value":"hospitalCount"}},{"kind":"Field","name":{"kind":"Name","value":"jobCount"}},{"kind":"Field","name":{"kind":"Name","value":"scavengeCount"}},{"kind":"Field","name":{"kind":"Name","value":"casinoCount"}},{"kind":"Field","name":{"kind":"Name","value":"robberyCount"}},{"kind":"Field","name":{"kind":"Name","value":"beatUpCount"}},{"kind":"Field","name":{"kind":"Name","value":"idleCount"}},{"kind":"Field","name":{"kind":"Name","value":"englishCount"}},{"kind":"Field","name":{"kind":"Name","value":"portugueseCount"}},{"kind":"Field","name":{"kind":"Name","value":"spanishCount"}}]}}]}}]} as unknown as DocumentNode<GetDashboardHistoryQuery, GetDashboardHistoryQueryVariables>;
@@ -921,3 +969,4 @@ export const AddBadgeDocument = {"kind":"Document","definitions":[{"kind":"Opera
 export const RemoveBadgeDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"RemoveBadge"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"userId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"badgeId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"removeBadge"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"userId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"userId"}}},{"kind":"Argument","name":{"kind":"Name","value":"badgeId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"badgeId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<RemoveBadgeMutation, RemoveBadgeMutationVariables>;
 export const SwapUsersDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SwapUsers"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"firstUserId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"secondUserId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"swapUsers"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"firstUserId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"firstUserId"}}},{"kind":"Argument","name":{"kind":"Name","value":"secondUserId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"secondUserId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<SwapUsersMutation, SwapUsersMutationVariables>;
 export const DeleteUserDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"DeleteUser"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"userId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deleteUser"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"userId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"userId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<DeleteUserMutation, DeleteUserMutationVariables>;
+export const GetItemsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetItems"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"items"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"typeName"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"namePt"}},{"kind":"Field","name":{"kind":"Name","value":"nameEn"}},{"kind":"Field","name":{"kind":"Name","value":"nameEs"}},{"kind":"Field","name":{"kind":"Name","value":"price"}},{"kind":"Field","name":{"kind":"Name","value":"shop"}},{"kind":"Field","name":{"kind":"Name","value":"blackMarket"}},{"kind":"Field","name":{"kind":"Name","value":"attack"}},{"kind":"Field","name":{"kind":"Name","value":"defense"}},{"kind":"Field","name":{"kind":"Name","value":"moneyAttack"}},{"kind":"Field","name":{"kind":"Name","value":"moneyDefense"}},{"kind":"Field","name":{"kind":"Name","value":"moreAttack"}},{"kind":"Field","name":{"kind":"Name","value":"moreDefense"}},{"kind":"Field","name":{"kind":"Name","value":"moreMoneyATK"}},{"kind":"Field","name":{"kind":"Name","value":"moreMoneyDEF"}},{"kind":"Field","name":{"kind":"Name","value":"extra"}},{"kind":"Field","name":{"kind":"Name","value":"special"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"day"}},{"kind":"Field","name":{"kind":"Name","value":"night"}}]}},{"kind":"Field","name":{"kind":"Name","value":"skins"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"bundleId"}},{"kind":"Field","name":{"kind":"Name","value":"bundleName"}},{"kind":"Field","name":{"kind":"Name","value":"emoteId"}},{"kind":"Field","name":{"kind":"Name","value":"emoteString"}},{"kind":"Field","name":{"kind":"Name","value":"imagePath"}}]}},{"kind":"Field","name":{"kind":"Name","value":"userCount"}},{"kind":"Field","name":{"kind":"Name","value":"defaultImagePath"}}]}}]}}]} as unknown as DocumentNode<GetItemsQuery, GetItemsQueryVariables>;

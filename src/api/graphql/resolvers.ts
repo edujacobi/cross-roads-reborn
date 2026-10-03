@@ -23,7 +23,8 @@ import { convertHexNumberToString, formatMoney } from "#bot/utils/ui";
 import { UserBadge } from "#core/models/UserBadge";
 import { UserItemRepository } from "#core/repositories/UserItemRepository";
 import { ItemType } from "#core/types/Items";
-import { BundleId } from "#core/types/Ids";
+import { BundleId, ItemId } from "#core/types/Ids";
+import { BundleList } from "#core/types/Skins";
 import { addHours, subMinutes } from "date-fns";
 import { getClient } from "#bot/client";
 import { isUserBoosterInOfficialServerByUserId } from "#bot/utils/officialServer";
@@ -95,31 +96,42 @@ async function recordAdminAction(
 
 function getCooldownValue(user: User, cooldown: string): Date | null {
 	switch (cooldown) {
-	case "scavenge": return user.Scavenge.Time;
-	case "robbery": return user.Wanted.Time;
-	case "beatup": return user.BeatUp.Time;
-	default: return null;
+	case "scavenge":
+		return user.Scavenge.Time;
+	case "robbery":
+		return user.Wanted.Time;
+	case "beatup":
+		return user.BeatUp.Time;
+	default:
+		return null;
 	}
 }
 
 function getActionValue(user: User, action: string): unknown {
 	switch (action) {
-	case "job": return { jobId: user.Job.Id };
-	case "scavenge": return { scavengingId: user.Scavenge.IsScavengingId };
-	case "robbery": return {
-		robbingUserId: user.Robbery.IsRobbingId,
-		beingRobbedByUserId: user.Robbery.IsBeingRobbedById,
-		robbingLocationId: user.Robbery.IsRobbingLocationId,
-		investmentIsDefending: user.Robbery.InvestmentIsDefending,
-		participatingInGangAction: user.Robbery.ParticipatingInGangAction,
-	};
-	case "beatup": return {
-		beatingUserId: user.BeatUp.IsBeatingId,
-		beingBeatUpByUserId: user.BeatUp.IsBeingBeatUpById,
-	};
-	case "casino": return { isInGame: user.Casino.IsInGame };
-	case "gangaction": return { participatingInGangAction: user.Robbery.ParticipatingInGangAction };
-	default: return null;
+	case "job":
+		return { jobId: user.Job.Id };
+	case "scavenge":
+		return { scavengingId: user.Scavenge.IsScavengingId };
+	case "robbery":
+		return {
+			robbingUserId: user.Robbery.IsRobbingId,
+			beingRobbedByUserId: user.Robbery.IsBeingRobbedById,
+			robbingLocationId: user.Robbery.IsRobbingLocationId,
+			investmentIsDefending: user.Robbery.InvestmentIsDefending,
+			participatingInGangAction: user.Robbery.ParticipatingInGangAction,
+		};
+	case "beatup":
+		return {
+			beatingUserId: user.BeatUp.IsBeatingId,
+			beingBeatUpByUserId: user.BeatUp.IsBeingBeatUpById,
+		};
+	case "casino":
+		return { isInGame: user.Casino.IsInGame };
+	case "gangaction":
+		return { participatingInGangAction: user.Robbery.ParticipatingInGangAction };
+	default:
+		return null;
 	}
 }
 
@@ -437,6 +449,70 @@ export const resolvers: {
 					name: item.Description[Language.Portuguese],
 					userCount: await UserItemRepository.CountUsersWithItem(item.Id),
 				})),
+			);
+		},
+
+		items: async (_: unknown, __: unknown, context: GraphQLContext) => {
+			assertAuthenticated(context);
+			const itemTypeNames: Record<ItemType, string> = {
+				[ItemType.Weapon]: "Arma",
+				[ItemType.Wearable]: "Vestível",
+				[ItemType.Accessory]: "Acessório",
+				[ItemType.Consumable]: "Consumível",
+				[ItemType.BeatUp]: "Espancamento",
+			};
+
+			return await Promise.all(
+				Object.values(ItemList).map(async (item) => {
+					const userCount = await UserItemRepository.CountUsersWithItem(item.Id);
+					const skins = Object.entries(item.Skin).map(([bundleIdStr, skin]) => {
+						const bId = Number(bundleIdStr) as BundleId;
+						const bundle = BundleList[bId];
+						const bundleName = bundle?.Description[Language.Portuguese] ?? "Desconhecido";
+						let filename = `${item.Id}_${ItemId[item.Id]}.png`;
+						if (bId !== BundleId.Default) {
+							filename = `${item.Id}_${ItemId[item.Id]}_${BundleId[bId]}.png`;
+						}
+						return {
+							bundleId: bId,
+							bundleName,
+							emoteId: skin.Id,
+							emoteString: skin.String,
+							imagePath: `/images/items/${filename}`,
+						};
+					});
+
+					const defaultFilename = `${item.Id}_${ItemId[item.Id]}.png`;
+
+					return {
+						id: item.Id,
+						type: item.Type,
+						typeName: itemTypeNames[item.Type] ?? "Outro",
+						name: item.Description[Language.Portuguese],
+						namePt: item.Description[Language.Portuguese],
+						nameEn: item.Description[Language.English],
+						nameEs: item.Description[Language.Spanish],
+						price: item.Price,
+						shop: item.Shop,
+						blackMarket: item.BlackMarket,
+						attack: item.Attack,
+						defense: item.Defense,
+						moneyAttack: item.MoneyAttack,
+						moneyDefense: item.MoneyDefense,
+						moreAttack: item.MoreAttack,
+						moreDefense: item.MoreDefense,
+						moreMoneyATK: item.MoreMoneyATK,
+						moreMoneyDEF: item.MoreMoneyDEF,
+						extra: item.Extra ? item.Extra[Language.Portuguese] : undefined,
+						special: {
+							day: item.Special.Day,
+							night: item.Special.Night,
+						},
+						skins,
+						userCount,
+						defaultImagePath: `/images/items/${defaultFilename}`,
+					};
+				}),
 			);
 		},
 
@@ -787,7 +863,12 @@ export const resolvers: {
 				AdminAuditActionId.EndSeason,
 				{ settingId: AdminAuditSettingId.Season },
 				{ number: previousSeason.Number, startDate: previousSeason.StartDate, endDate: previousSeason.EndDate },
-				{ number: newSeason.Number, startDate: newSeason.StartDate, endDate: newSeason.EndDate, isPreSeason: args.isPreSeason },
+				{
+					number: newSeason.Number,
+					startDate: newSeason.StartDate,
+					endDate: newSeason.EndDate,
+					isPreSeason: args.isPreSeason,
+				},
 			);
 			return {
 				success: true,
@@ -902,7 +983,13 @@ export const resolvers: {
 					admin,
 					AdminAuditActionId.DeleteEvent,
 					{ settingId: AdminAuditSettingId.Events },
-					{ id: event.id, type: event.type, value: event.value, periodStart: event.periodStart, periodEnd: event.periodEnd },
+					{
+						id: event.id,
+						type: event.type,
+						value: event.value,
+						periodStart: event.periodStart,
+						periodEnd: event.periodEnd,
+					},
 					null,
 				);
 			}
@@ -1264,7 +1351,11 @@ export const resolvers: {
 		) => {
 			const authUser = assertAuthenticated(context);
 			if (args.nickname.length < 3 || args.nickname.length > 18 || !/^[A-Za-z]+(?: [A-Za-z]+)*$/.test(args.nickname)) {
-				return { success: false, message: "O apelido deve ter de 3 a 18 letras e pode conter espaços simples.", user: null };
+				return {
+					success: false,
+					message: "O apelido deve ter de 3 a 18 letras e pode conter espaços simples.",
+					user: null,
+				};
 			}
 
 			const player = new User(authUser.userId);
@@ -1282,7 +1373,11 @@ export const resolvers: {
 
 			const cost = player.GetNicknameChangeCost();
 			if (player.Money < cost) {
-				return { success: false, message: `Saldo insuficiente. A alteração custa Cr$ ${cost.toLocaleString("pt-BR")}.`, user: null };
+				return {
+					success: false,
+					message: `Saldo insuficiente. A alteração custa Cr$ ${cost.toLocaleString("pt-BR")}.`,
+					user: null,
+				};
 			}
 			await player.SetNickname(args.nickname, cost || undefined);
 			return {
@@ -1314,7 +1409,11 @@ export const resolvers: {
 
 			const cost = player.GetClassChangeCost();
 			if (player.Money < cost) {
-				return { success: false, message: `Saldo insuficiente. A alteração custa Cr$ ${cost.toLocaleString("pt-BR")}.`, user: null };
+				return {
+					success: false,
+					message: `Saldo insuficiente. A alteração custa Cr$ ${cost.toLocaleString("pt-BR")}.`,
+					user: null,
+				};
 			}
 			await player.SetClass(args.classId, cost || undefined);
 			return {

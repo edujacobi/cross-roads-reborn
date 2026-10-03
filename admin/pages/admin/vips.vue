@@ -6,12 +6,10 @@ import { useQuery } from "@vue/apollo-composable";
 import { formatDistance } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { UserCheck } from "lucide-vue-next";
-import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseTable from "~/components/ui/BaseTable.vue";
 import BaseTableFooter from "~/components/ui/BaseTableFooter.vue";
 import PageTitle from "~/components/ui/PageTitle.vue";
-import { imagePaths } from "~/constants/imagePaths";
 import { SearchUsersDocument, type SearchUsersQuery } from "~/graphql/generated";
 
 definePageMeta({
@@ -118,9 +116,9 @@ function remainingVipTime(vipTime: string | null): string {
 
 			<template #footer>
 				<BaseTableFooter
-					:labels="{
-						item: 'VIPs',
-						navigation: 'Paginação de VIPs',
+					:labels="{
+						item: 'VIPs',
+						navigation: 'Paginação de VIPs',
 					}"
 					:index="users.length"
 					:offset="offset"

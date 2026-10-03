@@ -334,9 +334,9 @@ async function removeEvent() {
 				#footer
 			>
 				<BaseTableFooter
-					:labels="{
-						item: 'eventos',
-						navigation: 'Paginação de eventos',
+					:labels="{
+						item: 'eventos',
+						navigation: 'Paginação de eventos',
 					}"
 					:index="pageEvents.length"
 					:offset="(page - 1) * pageSize"

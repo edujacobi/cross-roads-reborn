@@ -55,9 +55,9 @@ defineProps<Props>();
 		</div>
 		<div
 			class="card-body"
-			:class="{
-			'card-body__no-padding-x': noPaddingX,
-			'card-body__no-padding-y': noPaddingY
+			:class="{
+			'card-body__no-padding-x': noPaddingX,
+			'card-body__no-padding-y': noPaddingY
 		}"
 			v-if="!noBody"
 		>

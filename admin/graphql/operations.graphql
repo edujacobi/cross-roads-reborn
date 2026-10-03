@@ -104,20 +104,89 @@ query GetSeasonInfo {
 
 query GetSeasonEndPreview {
 	seasonEndPreview {
-		topMoney { id nickname class value }
-		topGambler { id nickname class value }
-		topSpender { id nickname class value }
-		topThiefProfit { id nickname class value }
-		topThiefQuantity { id nickname class value }
-		topWorker { id nickname class value }
-		topBeater { id nickname class value }
-		topScavenger { id nickname class value }
-		topHospital { id nickname class value }
-		topBriber { id nickname class value }
-		topEscaper { id nickname class value }
-		topDrunk { id nickname class value }
-		topInvestor { id nickname class value }
-		topGang { id name level }
+		topMoney {
+			id
+			nickname
+			class
+			value
+		}
+		topGambler {
+			id
+			nickname
+			class
+			value
+		}
+		topSpender {
+			id
+			nickname
+			class
+			value
+		}
+		topThiefProfit {
+			id
+			nickname
+			class
+			value
+		}
+		topThiefQuantity {
+			id
+			nickname
+			class
+			value
+		}
+		topWorker {
+			id
+			nickname
+			class
+			value
+		}
+		topBeater {
+			id
+			nickname
+			class
+			value
+		}
+		topScavenger {
+			id
+			nickname
+			class
+			value
+		}
+		topHospital {
+			id
+			nickname
+			class
+			value
+		}
+		topBriber {
+			id
+			nickname
+			class
+			value
+		}
+		topEscaper {
+			id
+			nickname
+			class
+			value
+		}
+		topDrunk {
+			id
+			nickname
+			class
+			value
+		}
+		topInvestor {
+			id
+			nickname
+			class
+			value
+		}
+		topGang {
+			id
+			name
+			level
+		}
 		stats {
 			activeUsers
 			activeGangs
@@ -474,5 +543,42 @@ mutation DeleteUser($userId: ID!) {
 	deleteUser(userId: $userId) {
 		success
 		message
+	}
+}
+
+query GetItems {
+	items {
+		id
+		type
+		typeName
+		name
+		namePt
+		nameEn
+		nameEs
+		price
+		shop
+		blackMarket
+		attack
+		defense
+		moneyAttack
+		moneyDefense
+		moreAttack
+		moreDefense
+		moreMoneyATK
+		moreMoneyDEF
+		extra
+		special {
+			day
+			night
+		}
+		skins {
+			bundleId
+			bundleName
+			emoteId
+			emoteString
+			imagePath
+		}
+		userCount
+		defaultImagePath
 	}
 }

@@ -10,6 +10,7 @@ import {
 	LayoutDashboard,
 	LogOut,
 	Menu,
+	Package,
 	ScrollText,
 	Trophy,
 	Users,
@@ -47,44 +48,56 @@ const navigationGroups = computed(() => [
 				icon: Trophy,
 				activeRouteNames: ["rankings"],
 			},
+			{
+				label: "Itens",
+				to: { name: "items" },
+				icon: Package,
+				activeRouteNames: ["items"],
+			},
 		],
 	},
 	...(auth.hasAdminAccess.value
-		? [{
-				title: "Moderação",
-				links: [
-					{
-						label: "Dashboard",
-						to: { name: "admin-dashboard" },
-						icon: LayoutDashboard,
-						activeRouteNames: ["admin-dashboard"],
-					},
-					{
-						label: "Eventos",
-						to: { name: "admin-events" },
-						icon: CalendarDays,
-						activeRouteNames: ["admin-events"],
-					},
-					{
-						label: "Temporada",
-						to: { name: "admin-season" },
-						icon: CalendarSync,
-						activeRouteNames: ["admin-season"],
-					},
-					{
-						label: "VIPs",
-						to: { name: "admin-vips" },
-						icon: Crown,
-						activeRouteNames: ["admin-vips"],
-					},
-					...(auth.canWrite.value ? [{
-						label: "Auditoria",
-						to: { name: "admin-audit-log" },
-						icon: ScrollText,
-						activeRouteNames: ["admin-audit-log"],
-					}] : []),
-				],
-			}]
+		? [
+				{
+					title: "Moderação",
+					links: [
+						{
+							label: "Dashboard",
+							to: { name: "admin-dashboard" },
+							icon: LayoutDashboard,
+							activeRouteNames: ["admin-dashboard"],
+						},
+						{
+							label: "Eventos",
+							to: { name: "admin-events" },
+							icon: CalendarDays,
+							activeRouteNames: ["admin-events"],
+						},
+						{
+							label: "Temporada",
+							to: { name: "admin-season" },
+							icon: CalendarSync,
+							activeRouteNames: ["admin-season"],
+						},
+						{
+							label: "VIPs",
+							to: { name: "admin-vips" },
+							icon: Crown,
+							activeRouteNames: ["admin-vips"],
+						},
+						...(auth.canWrite.value
+							? [
+									{
+										label: "Auditoria",
+										to: { name: "admin-audit-log" },
+										icon: ScrollText,
+										activeRouteNames: ["admin-audit-log"],
+									},
+								]
+							: []),
+					],
+				},
+			]
 		: []),
 ]);
 

@@ -67,6 +67,8 @@ export const imagePaths = {
 		vaultBank: "/images/ui_elements/CentralBank.png",
 		daily: "/images/ui_elements/Heads.png",
 		alms: "/images/ui_elements/Alms.png",
+		shop: "/images/ui_elements/Shop.png",
+		blackMarket: "/images/ui_elements/BlackMarket.png",
 	},
 } as const;
 

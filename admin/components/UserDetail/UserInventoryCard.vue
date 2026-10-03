@@ -96,42 +96,47 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 			<li
 				v-for="item in items"
 				:key="item.id"
-				class="user-inventory__item"
-				:class="{ 'user-inventory__item--compact': isCompactInventory }"
 				:title="isCompactInventory ? item.name : ''"
 			>
-				<LazyNuxtImg
-					class="user-inventory__item-image"
-					:src="getItemImage(item.id, item.skin)"
-					alt=""
-				/>
-				<span
-					v-show="isCompactInventory"
-					class="user-inventory__item-status user-inventory__item-quantity"
-					:class="getItemStatusClasses(item)"
-					aria-hidden="true"
-				/>
-				<div
-					class="user-inventory__item-header"
-					v-if="!isCompactInventory"
+				<NuxtLink
+					:to="`items?id=${item.id}`"
+					target="_blank"
+					class="user-inventory__item"
+					:class="{ 'user-inventory__item--compact': isCompactInventory }"
 				>
-					<h3 class="user-inventory__item-name">{{ item.name }}</h3>
+					<LazyNuxtImg
+						class="user-inventory__item-image"
+						:src="getItemImage(item.id, item.skin)"
+						alt=""
+					/>
 					<span
-						v-if="item.type === ItemType.Consumable"
-						class="user-inventory__item-quantity"
+						v-show="isCompactInventory"
+						class="user-inventory__item-status user-inventory__item-quantity"
 						:class="getItemStatusClasses(item)"
+						aria-hidden="true"
+					/>
+					<div
+						class="user-inventory__item-header"
+						v-if="!isCompactInventory"
 					>
-						{{ item.quantity }}
-						un
-					</span>
-					<span
-						v-else-if="item.remainingTime"
-						class="user-inventory__item-quantity"
-						:class="getItemStatusClasses(item)"
-					>
-						{{ formatDistanceToNow(new Date(item.remainingTime), { locale: ptBR }) }}
-					</span>
-				</div>
+						<h3 class="user-inventory__item-name">{{ item.name }}</h3>
+						<span
+							v-if="item.type === ItemType.Consumable"
+							class="user-inventory__item-quantity"
+							:class="getItemStatusClasses(item)"
+						>
+							{{ item.quantity }}
+							un
+						</span>
+						<span
+							v-else-if="item.remainingTime"
+							class="user-inventory__item-quantity"
+							:class="getItemStatusClasses(item)"
+						>
+							{{ formatDistanceToNow(new Date(item.remainingTime), { locale: ptBR }) }}
+						</span>
+					</div>
+				</NuxtLink>
 			</li>
 		</ul>
 	</BaseCard>
@@ -143,6 +148,7 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 >
 @use "~/assets/scss/variables" as *;
 @use "~/assets/scss/mixins" as *;
+@use "sass:color";
 
 .user-inventory {
 	&__empty {
@@ -184,6 +190,7 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 		display: flex;
 		align-items: center;
 		gap: $spacing-md;
+		transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
 
 		&-image {
 			width: 4rem;
@@ -199,6 +206,13 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 			align-items: center;
 			justify-content: center;
 			aspect-ratio: 1;
+		}
+
+		&:hover,
+		&:focus-visible {
+			background-color: color.adjust($bg-input, $lightness: 5%);
+			border-color:  color.adjust($border-subtle, $lightness: 5%);
+			transform: translateY(-2px);
 		}
 	}
 

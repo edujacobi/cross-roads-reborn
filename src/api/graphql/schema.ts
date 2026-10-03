@@ -363,6 +363,45 @@ export const typeDefs = /* GraphQL */ `
         total: Int!
     }
 
+    type ItemSkin {
+        bundleId: Int!
+        bundleName: String!
+        emoteId: String!
+        emoteString: String!
+        imagePath: String!
+    }
+
+    type ItemSpecial {
+        day: Boolean!
+        night: Boolean!
+    }
+
+    type ItemDetails {
+        id: Int!
+        type: Int!
+        typeName: String!
+        name: String!
+        namePt: String!
+        nameEn: String!
+        nameEs: String!
+        price: Float!
+        shop: Boolean!
+        blackMarket: Boolean!
+        attack: Int!
+        defense: Int!
+        moneyAttack: Float!
+        moneyDefense: Float!
+        moreAttack: Int!
+        moreDefense: Int!
+        moreMoneyATK: Float!
+        moreMoneyDEF: Float!
+        extra: String
+        special: ItemSpecial!
+        skins: [ItemSkin!]!
+        userCount: Int!
+        defaultImagePath: String!
+    }
+
     type Query {
         me: AuthUser
         adminAuditLogs(limit: Int, offset: Int, actionId: Int): AdminAuditLogPage!
@@ -376,6 +415,7 @@ export const typeDefs = /* GraphQL */ `
         topUsers(ranking: UserRanking!, limit: Int, offset: Int): UserRankingResult!
         topGangs(limit: Int, offset: Int): GangRankingResult!
         user(id: ID!): UserDetail
+        items: [ItemDetails!]!
     }
 
     type Mutation {
