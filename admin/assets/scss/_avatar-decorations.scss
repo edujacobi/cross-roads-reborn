@@ -24,19 +24,19 @@
   }
 
   &--developer {
-    $avatar-ring: #00b884;
+    $avatar-ring: linear-gradient(135deg, #00b884, #00b884);
     $avatar-glow: #00b884;
     @include avatarDecoration($avatar-ring, $avatar-glow);
   }
 
   &--moderator {
-    $avatar-ring: #E43950;
+    $avatar-ring: linear-gradient(135deg, #E43950, #E43950);
     $avatar-glow: #E43950;
     @include avatarDecoration($avatar-ring, $avatar-glow);
   }
 
   &--helper {
-    $avatar-ring: #007BFF;
+    $avatar-ring: linear-gradient(135deg, #007BFF, #007BFF);
     $avatar-glow: #007BFF;
     @include avatarDecoration($avatar-ring, $avatar-glow);
   }
