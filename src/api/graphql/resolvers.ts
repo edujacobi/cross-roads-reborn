@@ -863,16 +863,16 @@ export const resolvers: {
 				const attackerUser = rob.attackerId ? userById.get(rob.attackerId) : null;
 				const defenderUser = rob.defenderId ? userById.get(rob.defenderId) : null;
 
-				let attackAvatarUrl: string | null = null;
-				let defendAvatarUrl: string | null = null;
-				try {
-					attackAvatarUrl = (await client.users.fetch(rob.attackerId)).avatarURL();
-					defendAvatarUrl = (await client.users.fetch(rob.defenderId)).avatarURL();
-				}
-				catch {
-					attackAvatarUrl = null;
-					defendAvatarUrl = null;
-				}
+				const [attackAvatarUrl, defendAvatarUrl] = await Promise.all([
+					client.users.fetch(rob.attackerId)
+						.then(user => user.avatarURL())
+						.catch(() => null),
+					rob.defenderId
+						? client.users.fetch(rob.defenderId)
+							.then(user => user.avatarURL())
+							.catch(() => null)
+						: null,
+				]);
 
 				let locationName: string | null = null;
 
