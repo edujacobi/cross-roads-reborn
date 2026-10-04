@@ -240,3 +240,14 @@ export enum InvestmentId {
 	ReligiousCult,
 	StarGalaxy,
 }
+
+export enum LocationId {
+	OldLady,
+	GroceryStore,
+	GasStation,
+	JewelryStore,
+	SmallBank,
+	ItalianMafia,
+	ArmyDepot,
+	JacobiPalace,
+}

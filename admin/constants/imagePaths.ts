@@ -69,6 +69,18 @@ export const imagePaths = {
 		alms: "/images/ui_elements/Alms.png",
 		shop: "/images/ui_elements/Shop.png",
 		blackMarket: "/images/ui_elements/BlackMarket.png",
+		escape: "/images/ui_elements/Escape.png",
+		react: "/images/ui_elements/React.png",
+	},
+	locations: {
+		oldLady: "/images/locations/OldLady_.png",
+		groceryStore: "/images/locations/GroceryStore_2.png",
+		gasStation: "/images/locations/GasStation_.png",
+		jewelry: "/images/locations/Jewelry_.png",
+		smallBank: "/images/locations/SmallBank.png",
+		italianMafia: "/images/locations/ItalianMafia_.png",
+		armyDepot: "/images/locations/ArmyDepot_.png",
+		jacobiPalace: "/images/locations/JacobiPalace_.png",
 	},
 } as const;
 

@@ -406,6 +406,33 @@ query GetUserDetail($id: ID!) {
 	}
 }
 
+query GetUserHistory($userId: ID!, $limit: Int, $offset: Int) {
+	userHistory(userId: $userId, limit: $limit, offset: $offset) {
+		total
+		entries {
+			id
+			attackerId
+			defenderId
+			attacker {
+				id
+				nickname
+				avatarUrl
+			}
+			defender {
+				id
+				nickname
+				avatarUrl
+			}
+			locationId
+			locationName
+			type
+			success
+			money
+			createdAt
+		}
+	}
+}
+
 mutation SetMoney($userId: ID!, $amount: Float!, $mode: SetMoneyMode!) {
 	setMoney(userId: $userId, amount: $amount, mode: $mode) {
 		success

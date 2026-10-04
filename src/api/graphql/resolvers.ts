@@ -28,7 +28,10 @@ import { BundleList } from "#core/types/Skins";
 import { addHours, subMinutes } from "date-fns";
 import { getClient } from "#bot/client";
 import { isUserBoosterInOfficialServerByUserId } from "#bot/utils/officialServer";
-import { InvestmentList } from "#core/types/Investments";
+import { InvestmentList, type InvestmentId } from "#core/types/Investments";
+import { RobHistoryRepository } from "#core/repositories/RobHistoryRepository";
+import { ClashType } from "#core/types/Robbery";
+import { LocationList } from "#core/types/Locations";
 import { GangColor } from "#core/types/GangColors";
 import { randomBytes } from "node:crypto";
 import { logger } from "#shared/log";
@@ -823,6 +826,99 @@ export const resolvers: {
 				voteCount: 0,
 				createdAt: "",
 				updatedAt: "",
+			};
+		},
+
+		userHistory: async (
+			_: unknown,
+			args: { userId: string; limit?: number; offset?: number },
+			context: GraphQLContext,
+		) => {
+			assertAuthenticated(context);
+			const limit = Math.min(Math.max(Math.trunc(args.limit ?? 10), 1), 50);
+			const offset = Math.max(Math.trunc(args.offset ?? 0), 0);
+
+			const [records, total] = await Promise.all([
+				RobHistoryRepository.GetList(args.userId, limit, offset),
+				RobHistoryRepository.Count(args.userId),
+			]);
+
+			const userIds = new Set<string>();
+			for (const rec of records) {
+				if (rec.attackerId) userIds.add(rec.attackerId);
+				if (rec.defenderId) userIds.add(rec.defenderId);
+			}
+
+			const users = await Promise.all(
+				Array.from(userIds).map(async (id) => [
+					id,
+					await UserRepository.FindById(id, ["id", "class", "nickname"]),
+				] as const),
+			);
+			const userById = new Map(users);
+
+			const client = getClient();
+
+			const entries = Promise.all(records.map(async (rob) => {
+				const attackerUser = rob.attackerId ? userById.get(rob.attackerId) : null;
+				const defenderUser = rob.defenderId ? userById.get(rob.defenderId) : null;
+
+				let attackAvatarUrl: string | null = null;
+				let defendAvatarUrl: string | null = null;
+				try {
+					attackAvatarUrl = (await client.users.fetch(rob.attackerId)).avatarURL();
+					defendAvatarUrl = (await client.users.fetch(rob.defenderId)).avatarURL();
+				}
+				catch {
+					attackAvatarUrl = null;
+					defendAvatarUrl = null;
+				}
+
+				let locationName: string | null = null;
+
+				if (rob.type === ClashType.Location && rob.locationId != null) {
+					const loc = LocationList[rob.locationId];
+					if (loc) {
+						locationName = loc.Name[Language.Portuguese];
+					}
+				}
+				else if (rob.type === ClashType.Investment && rob.locationId != null) {
+					const investment = InvestmentList[rob.locationId as InvestmentId];
+					if (investment) {
+						locationName = investment.Name[Language.Portuguese];
+					}
+				}
+
+				return {
+					id: String(rob.id),
+					attackerId: rob.attackerId,
+					defenderId: rob.defenderId ?? null,
+					attacker: attackerUser
+						? {
+							id: attackerUser.id,
+							nickname: attackerUser.nickname || "(Sem Nick)",
+							avatarUrl: attackAvatarUrl,
+						}
+						: null,
+					defender: defenderUser
+						? {
+							id: defenderUser.id,
+							nickname: defenderUser.nickname || "(Sem Nick)",
+							avatarUrl: defendAvatarUrl,
+						}
+						: null,
+					locationId: rob.locationId ?? null,
+					locationName,
+					type: rob.type,
+					success: Boolean(rob.success),
+					money: Number(rob.money),
+					createdAt: rob.createdAt instanceof Date ? rob.createdAt.toISOString() : String(rob.createdAt),
+				};
+			}));
+
+			return {
+				entries,
+				total,
 			};
 		},
 	},

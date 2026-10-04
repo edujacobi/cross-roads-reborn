@@ -261,6 +261,31 @@ export const typeDefs = /* GraphQL */ `
         updatedAt: String!
     }
 
+    type UserHistoryParticipant {
+        id: ID!
+        nickname: String!
+        avatarUrl: String
+    }
+
+    type UserHistoryEntry {
+        id: ID!
+        attackerId: ID!
+        defenderId: ID
+        attacker: UserHistoryParticipant
+        defender: UserHistoryParticipant
+        locationId: Int
+        locationName: String
+        type: Int!
+        success: Boolean!
+        money: Float!
+        createdAt: String!
+    }
+
+    type UserHistoryResult {
+        entries: [UserHistoryEntry!]!
+        total: Int!
+    }
+
     type Event {
         id: Int!
         type: Int!
@@ -415,6 +440,7 @@ export const typeDefs = /* GraphQL */ `
         topUsers(ranking: UserRanking!, limit: Int, offset: Int): UserRankingResult!
         topGangs(limit: Int, offset: Int): GangRankingResult!
         user(id: ID!): UserDetail
+        userHistory(userId: ID!, limit: Int, offset: Int): UserHistoryResult!
         items: [ItemDetails!]!
     }
 

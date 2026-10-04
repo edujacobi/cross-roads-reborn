@@ -1,16 +1,8 @@
 import type { IDescription, IEmote } from "./Interfaces";
 import { Language } from "#core/models/Language";
+import { LocationId } from "#core/types/Ids";
 
-export enum LocationId {
-	OldLady,
-	GroceryStore,
-	GasStation,
-	JewelryStore,
-	SmallBank,
-	ItalianMafia,
-	ArmyDepot,
-	JacobiPalace,
-}
+export { LocationId } from "#core/types/Ids";
 
 export interface Location {
 	readonly Id: LocationId,

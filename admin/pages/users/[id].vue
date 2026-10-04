@@ -7,6 +7,7 @@ import { ArrowLeft } from "lucide-vue-next";
 import UserActivityStatsCard from "~/components/UserDetail/UserActivityStatsCard.vue";
 import UserAdminActions from "~/components/UserDetail/UserAdminActions.vue";
 import UserGangCard from "~/components/UserDetail/UserGangCard.vue";
+import UserHistoryCard from "~/components/UserDetail/UserHistoryCard.vue";
 import UserInventoryCard from "~/components/UserDetail/UserInventoryCard.vue";
 import UserInvestmentCard from "~/components/UserDetail/UserInvestmentCard.vue";
 import UserMetadataCard from "~/components/UserDetail/UserMetadataCard.vue";
@@ -107,6 +108,7 @@ function showFeedback(type: "success" | "error", message: string) {
 			/>
 
 			<UserActivityStatsCard :stats="user.activityStats" />
+			<UserHistoryCard :user-id="user.id" />
 
 			<div
 				v-if="auth.hasAdminAccess.value"
