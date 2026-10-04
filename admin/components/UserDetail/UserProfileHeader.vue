@@ -301,7 +301,8 @@ function getBadgeImage(badgeId: BadgeId): string {
 	}
 
 	&__badge {
-		width: 2.5rem;
+		width: 2rem;
+		object-fit: contain;
 	}
 
 	&__situation {

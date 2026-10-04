@@ -141,7 +141,7 @@ function nextPage() {
 				:size="32"
 				aria-hidden="true"
 			/>
-			<p>Este usuário não possui histórico de roubos ou espancamentos.</p>
+			<p>Este usuário não possui histórico de confrontos.</p>
 		</div>
 
 		<BaseTable

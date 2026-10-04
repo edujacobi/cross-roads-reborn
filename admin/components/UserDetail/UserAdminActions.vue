@@ -438,17 +438,17 @@ async function handleDeleteUser() {
 			class="user-admin-actions__card"
 		>
 			<template #actions>
-				<RefreshButton
-					@refresh="() => refetch()"
-					:loading="loading"
-					aria-label="Atualizar ações administrativas"
-				/>
 				<span
 					v-if="!canWrite"
 					class="user-admin-actions__read-only"
 				>
 					Modo Somente Leitura (Apenas moderadores e desenvolvedores podem executar ações)
 				</span>
+				<RefreshButton
+					@refresh="() => refetch()"
+					:loading="loading"
+					aria-label="Atualizar ações administrativas"
+				/>
 			</template>
 
 			<div

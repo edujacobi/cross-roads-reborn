@@ -65,11 +65,6 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 		class="user-inventory"
 	>
 		<template #actions>
-			<RefreshButton
-				@refresh="() => refetch()"
-				:loading="loading"
-				aria-label="Atualizar inventário"
-			/>
 			<BaseButton
 				variant="ghost"
 				size="sm"
@@ -88,6 +83,11 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 				/>
 				{{ isCompactInventory ? "Visualização detalhada" : "Visualização compacta" }}
 			</BaseButton>
+			<RefreshButton
+				@refresh="() => refetch()"
+				:loading="loading"
+				aria-label="Atualizar inventário"
+			/>
 		</template>
 
 		<div

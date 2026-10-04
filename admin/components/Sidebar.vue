@@ -350,6 +350,7 @@ const user = computed(() => {
 			@include flex-center;
 			max-width: 7rem;
 			height: 2.5rem;
+			object-fit: contain;
 			color: $color-brand;
 			transition: max-width 0.3s ease, opacity 0.2s ease, transform 0.3s ease;
 
