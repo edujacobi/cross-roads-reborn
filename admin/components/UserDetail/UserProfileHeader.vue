@@ -113,6 +113,12 @@ function getBadgeImage(badgeId: BadgeId): string {
 						v-if="showSpecialCoins && user.specialCoin !== null"
 						class="user-profile__coins"
 					>
+						<NuxtImg
+							:src="imagePaths.uiElements.specialCoin"
+							width="14"
+							height="14"
+							alt=""
+						/>
 						{{ user.specialCoin.toLocaleString() }} Moedas especiais
 					</p>
 				</div>
@@ -289,8 +295,12 @@ function getBadgeImage(badgeId: BadgeId): string {
 	}
 
 	&__coins {
+		display: inline-flex;
+		align-items: center;
+		gap: $spacing-xs;
 		font-size: 0.8rem;
-		@include text-gradient;
+		font-weight: 600;
+		@include text-special;
 	}
 
 	&__badges {

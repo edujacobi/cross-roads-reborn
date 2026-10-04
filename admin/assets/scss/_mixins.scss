@@ -25,11 +25,25 @@
   border: 1px solid rgba($accent, $border-opacity);
 }
 
-@mixin text-gradient {
+@mixin text-special {
   background: $text-secondary;
-  background: linear-gradient(35deg, $text-secondary 0%, $color-special 48%, $text-secondary 100%);
+  background: linear-gradient(30deg, $color-special 35%, $text-primary 36%, $color-special 37%, $text-primary 38%, $color-special 39%);
+  background-size: 400% auto;
+  background-position: 0 50%;
   background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
   -webkit-text-fill-color: transparent;
+  animation: animate-background 8s linear infinite;
+
+  @keyframes animate-background {
+    0% {
+      background-position: 400% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
 }
 
 @mixin scrollbar-custom {

@@ -544,9 +544,11 @@ async function handleDeleteUser() {
 					:disabled="!canWrite || specialCoinsLoading"
 					@click="isSpecialCoinsModalOpen = true"
 				>
-					<Coins
-						:size="16"
-						aria-hidden="true"
+					<NuxtImg
+						:src="imagePaths.uiElements.specialCoin"
+						width="18"
+						height="18"
+						alt=""
 					/>
 					Adicionar Moedas Especiais
 				</BaseButton>
