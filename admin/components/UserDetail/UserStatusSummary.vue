@@ -2,20 +2,58 @@
 	setup
 	lang="ts"
 >
+import { useQuery } from "@vue/apollo-composable";
+import { computed } from "vue";
 import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
+import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
+import RefreshButton from "~/components/ui/RefreshButton.vue";
 import { imagePaths } from "~/constants/imagePaths";
-import type { UserDetail } from "~/types/userDetail";
+import { GetUserStatusDocument } from "~/graphql/generated";
 
-defineProps<{ user: UserDetail }>();
+const props = defineProps<{ userId: string }>();
+
+const { result, loading, error, refetch } = useQuery(GetUserStatusDocument, () => ({ id: props.userId }), {
+	fetchPolicy: "cache-and-network",
+});
+const user = computed(() => result.value?.user);
 </script>
 
 <template>
 	<BaseCard
+		v-if="user || loading || error"
 		title="Situação e estados"
 		class="user-status"
 	>
-		<dl class="user-status__rows">
+		<template #actions>
+			<RefreshButton
+				@refresh="() => refetch()"
+				:loading="loading"
+				aria-label="Atualizar situação e estados"
+			/>
+		</template>
+		<div
+			v-if="loading && !user"
+			class="user-status__skeleton"
+			role="status"
+			aria-label="Carregando situação e estados"
+		>
+			<BaseSkeleton
+				v-for="index in 7"
+				:key="index"
+				height="2rem"
+			/>
+		</div>
+		<p
+			v-else-if="error && !user"
+			role="alert"
+		>
+			Não foi possível carregar a situação e os estados.
+		</p>
+		<dl
+			v-else-if="user"
+			class="user-status__rows"
+		>
 			<div class="user-status__row">
 				<dt class="user-status__label">Hospital</dt>
 				<dd class="user-status__value">
@@ -318,6 +356,12 @@ defineProps<{ user: UserDetail }>();
 @use "~/assets/scss/mixins" as *;
 
 .user-status {
+	&__skeleton {
+		display: flex;
+		flex-direction: column;
+		gap: $spacing-sm;
+	}
+
 	&__rows {
 		display: flex;
 		flex-direction: column;

@@ -2,13 +2,21 @@
 	setup
 	lang="ts"
 >
+import { useQuery } from "@vue/apollo-composable";
 import { computed, nextTick, ref } from "vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
+import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
+import RefreshButton from "~/components/ui/RefreshButton.vue";
 import { imagePaths } from "~/constants/imagePaths";
-import type { UserDetail } from "~/types/userDetail";
+import { GetUserActivityStatsDocument } from "~/graphql/generated";
 
-const props = defineProps<{ stats: UserDetail["activityStats"] }>();
+const props = defineProps<{ userId: string }>();
+
+const { result, loading, refetch } = useQuery(GetUserActivityStatsDocument, () => ({ id: props.userId }), {
+	fetchPolicy: "cache-and-network",
+});
+const activityStats = computed(() => result.value?.user?.activityStats);
 
 const tabs = [
 	{ id: "sequence", label: "Sequência", image: imagePaths.uiElements.daily },
@@ -33,7 +41,8 @@ const formatMoney = (value: number) => `Cr$ ${formatCount(value)}`;
 const formatCountAndTotal = (count: number, total: number) => `${formatMoney(total)} (${formatCount(count)})`;
 
 const rows = computed<StatRow[]>(() => {
-	const stats = props.stats;
+	const stats = activityStats.value;
+	if (!stats) return [];
 
 	switch (activeTab.value) {
 		case "sequence":
@@ -139,40 +148,68 @@ async function handleTabKeydown(event: KeyboardEvent, index: number) {
 		class="user-activity"
 	>
 		<template #actions>
-			<div
-				ref="tabList"
-				class="user-activity__tabs"
-				role="tablist"
-				aria-label="Categorias de estatísticas"
-				aria-orientation="horizontal"
-			>
-				<BaseButton
-					:variant="activeTab === tab.id ? 'success' : 'secondary'"
-					v-for="(tab, index) in tabs"
-					:id="`user-activity-tab-${tab.id}`"
-					:key="tab.id"
-					type="button"
-					role="tab"
-					:aria-selected="activeTab === tab.id"
-					aria-controls="user-activity-panel"
-					:tabindex="activeTab === tab.id ? 0 : -1"
-					class="user-activity__tab"
-					:class="{ 'user-activity__tab--active': activeTab === tab.id }"
-					@click="activeTab = tab.id"
-					@keydown="handleTabKeydown($event, index)"
+			<div class="user-activity__actions">
+				<div
+					ref="tabList"
+					class="user-activity__tabs"
+					role="tablist"
+					aria-label="Categorias de estatísticas"
+					aria-orientation="horizontal"
 				>
-					<NuxtImg
-						:src="tab.image"
-						width="16"
-						height="16"
-						alt=""
-					/>
-					{{ tab.label }}
-				</BaseButton>
+					<BaseButton
+						:variant="activeTab === tab.id ? 'success' : 'secondary'"
+						v-for="(tab, index) in tabs"
+						:id="`user-activity-tab-${tab.id}`"
+						:key="tab.id"
+						type="button"
+						role="tab"
+						:aria-selected="activeTab === tab.id"
+						aria-controls="user-activity-panel"
+						:tabindex="activeTab === tab.id ? 0 : -1"
+						class="user-activity__tab"
+						:class="{ 'user-activity__tab--active': activeTab === tab.id }"
+						@click="activeTab = tab.id"
+						@keydown="handleTabKeydown($event, index)"
+					>
+						<NuxtImg
+							:src="tab.image"
+							width="16"
+							height="16"
+							alt=""
+						/>
+						{{ tab.label }}
+					</BaseButton>
+				</div>
+				<RefreshButton
+					@refresh="() => refetch()"
+					:loading="loading"
+					aria-label="Atualizar atividade"
+				/>
 			</div>
 		</template>
 
 		<div
+			v-if="loading && !activityStats"
+			class="user-activity__state"
+			role="status"
+			aria-label="Carregando atividade"
+		>
+			<div class="user-activity__skeleton">
+				<BaseSkeleton
+					v-for="index in 3"
+					:key="index"
+					height="4rem"
+				/>
+			</div>
+		</div>
+		<p
+			v-else-if="!activityStats"
+			class="user-activity__state"
+		>
+			Não foi possível carregar a atividade.
+		</p>
+		<div
+			v-else
 			id="user-activity-panel"
 			role="tabpanel"
 			:aria-labelledby="`user-activity-tab-${activeTab}`"
@@ -200,7 +237,7 @@ async function handleTabKeydown(event: KeyboardEvent, index: number) {
 @use "~/assets/scss/variables" as *;
 
 .user-activity {
-	&__tabs {
+	&__actions {
 		display: flex;
 		flex-wrap: wrap;
 		gap: $spacing-xs;
@@ -211,6 +248,28 @@ async function handleTabKeydown(event: KeyboardEvent, index: number) {
 		}
 	}
 
+	&__tabs {
+		display: flex;
+		flex-wrap: wrap;
+		gap: $spacing-xs;
+		justify-content: end;
+	}
+
+	&__state {
+		padding: $spacing-md;
+		color: $text-muted;
+		font-size: 0.875rem;
+	}
+
+	&__skeleton {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: $spacing-md;
+
+		@media (max-width: 1024px) {
+			grid-template-columns: 1fr;
+		}
+	}
 	&__panel {
 		outline: none;
 	}

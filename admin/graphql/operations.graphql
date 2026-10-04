@@ -295,52 +295,44 @@ query GetTopGangs($limit: Int!, $offset: Int!) {
 	}
 }
 
-query GetUserDetail($id: ID!) {
+query GetUserProfile($id: ID!) {
 	user(id: $id) {
 		id
 		nickname
 		online
 		money
-		dailyNextAvailableAt
-		nicknameChangeCost
-		classChangeCost
 		avatarUrl
 		avatarDecoration
 		specialCoin
-		gang {
-			id
-			name
-			imageUrl
-			color
-			level
-			role
-		}
 		class
 		className
 		attack
 		defense
-		isVip
-		vipEternal
-		vipTime
-		language
-		isInHospital
-		hospitalTime
-		isInPrison
-		prisonTime
-		isWorking
-		jobEndsIn
-		isScavenging
-		isWanted
-		wantedTime
-		isRobbing
-		isBeingRobbed
-		isBeating
-		isBeingBeated
-		isInCasino
-		isDefendingInvestment
-		isInGangAction
-		isDead
-		deadUntil
+		situationId
+		situationText
+		badges {
+			id
+			name
+			description
+		}
+	}
+}
+
+query GetUserInventory($id: ID!) {
+	user(id: $id) {
+		items {
+			id
+			name
+			type
+			quantity
+			skin
+			remainingTime
+		}
+	}
+}
+
+query GetUserInvestment($id: ID!) {
+	user(id: $id) {
 		investment {
 			id
 			name
@@ -349,9 +341,24 @@ query GetUserDetail($id: ID!) {
 			nextPaymentValue
 			henchmanEndsAt
 		}
-		situationId
-		situationText
-		voteCount
+	}
+}
+
+query GetUserGang($id: ID!) {
+	user(id: $id) {
+		gang {
+			id
+			name
+			imageUrl
+			color
+			level
+			role
+		}
+	}
+}
+
+query GetUserActivityStats($id: ID!) {
+	user(id: $id) {
 		activityStats {
 			dailyMaxStreak
 			dailyCurrentStreak
@@ -388,21 +395,58 @@ query GetUserDetail($id: ID!) {
 			shopSpentSum
 			shopSpentCount
 		}
-		items {
-			id
-			name
-			type
-			quantity
-			skin
-			remainingTime
-		}
+	}
+}
+
+query GetUserStatus($id: ID!) {
+	user(id: $id) {
+		isInHospital
+		hospitalTime
+		isInPrison
+		prisonTime
+		isWorking
+		jobEndsIn
+		isScavenging
+		isWanted
+		wantedTime
+		isRobbing
+		isBeingRobbed
+		isBeating
+		isBeingBeated
+		isInCasino
+		isDefendingInvestment
+		isInGangAction
+		isDead
+		deadUntil
+	}
+}
+
+query GetUserMetadata($id: ID!) {
+	user(id: $id) {
+		language
+		voteCount
+		createdAt
+		updatedAt
+	}
+}
+
+query GetUserSelfActions($id: ID!) {
+	user(id: $id) {
+		dailyNextAvailableAt
+		nicknameChangeCost
+		classChangeCost
+		class
+	}
+}
+
+query GetUserAdminActions($id: ID!) {
+	user(id: $id) {
+		isInHospital
+		isInPrison
 		badges {
 			id
 			name
-			description
 		}
-		createdAt
-		updatedAt
 	}
 }
 

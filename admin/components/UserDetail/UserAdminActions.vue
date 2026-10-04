@@ -2,7 +2,7 @@
 	setup
 	lang="ts"
 >
-import { useMutation } from "@vue/apollo-composable";
+import { useMutation, useQuery } from "@vue/apollo-composable";
 import {
 	ArrowLeftRight,
 	Award,
@@ -20,6 +20,8 @@ import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseInput from "~/components/ui/BaseInput.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
+import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
+import RefreshButton from "~/components/ui/RefreshButton.vue";
 import { imagePaths } from "~/constants/imagePaths";
 import {
 	AddBadgeDocument,
@@ -27,6 +29,7 @@ import {
 	CureUserDocument,
 	DeleteUserDocument,
 	FreeUserDocument,
+	GetUserAdminActionsDocument,
 	KillUserDocument,
 	RemoveActionDocument,
 	RemoveBadgeDocument,
@@ -45,9 +48,6 @@ const props = defineProps<{
 	userId: string;
 	isDeveloper: boolean;
 	canWrite: boolean;
-	isInHospital: boolean;
-	isInPrison: boolean;
-	badges: Array<{ id: number; name: string }>;
 }>();
 
 const emit = defineEmits<{
@@ -55,6 +55,14 @@ const emit = defineEmits<{
 	refresh: [];
 	deleted: [];
 }>();
+
+const { result, loading, refetch } = useQuery(GetUserAdminActionsDocument, () => ({ id: props.userId }), {
+	fetchPolicy: "cache-and-network",
+});
+const user = computed(() => result.value?.user);
+const isInHospital = computed(() => user.value?.isInHospital ?? false);
+const isInPrison = computed(() => user.value?.isInPrison ?? false);
+const badges = computed(() => user.value?.badges ?? []);
 
 const { mutate: mutateCure, loading: cureLoading } = useMutation(CureUserDocument);
 const { mutate: mutateFree, loading: freeLoading } = useMutation(FreeUserDocument);
@@ -116,7 +124,7 @@ const classOptions = Object.entries(ClassId).flatMap(([name, id]) =>
 	typeof id === "number" ? [{ id, name: classNames[id] ?? name }] : [],
 );
 const badgeOptions = Object.entries(BadgeId).flatMap(([name, id]) => (typeof id === "number" ? [{ id, name }] : []));
-const availableBadges = computed(() => badgeOptions.filter(({ id }) => !props.badges.some((badge) => badge.id === id)));
+const availableBadges = computed(() => badgeOptions.filter(({ id }) => !badges.value.some((badge) => badge.id === id)));
 
 function showSuccess(message: string) {
 	emit("feedback", "success", message);
@@ -326,7 +334,7 @@ async function handleAddBadge() {
 }
 
 function openRemoveBadgeModal() {
-	selectedRemoveBadge.value = props.badges[0]?.id ?? null;
+	selectedRemoveBadge.value = badges.value[0]?.id ?? null;
 	isRemoveBadgeModalOpen.value = true;
 }
 
@@ -430,6 +438,11 @@ async function handleDeleteUser() {
 			class="user-admin-actions__card"
 		>
 			<template #actions>
+				<RefreshButton
+					@refresh="() => refetch()"
+					:loading="loading"
+					aria-label="Atualizar ações administrativas"
+				/>
 				<span
 					v-if="!canWrite"
 					class="user-admin-actions__read-only"
@@ -438,7 +451,24 @@ async function handleDeleteUser() {
 				</span>
 			</template>
 
-			<div class="user-admin-actions__buttons">
+			<div
+				v-if="loading && !user"
+				class="user-admin-actions__skeleton"
+				role="status"
+				aria-label="Carregando ações administrativas"
+			>
+				<BaseSkeleton
+					v-for="index in 6"
+					:key="index"
+					width="10rem"
+					height="2.5rem"
+				/>
+			</div>
+			<p v-else-if="!user">Não foi possível carregar as ações administrativas.</p>
+			<div
+				v-else
+				class="user-admin-actions__buttons"
+			>
 				<BaseButton
 					variant="secondary"
 					:disabled="!canWrite || !isInHospital || cureLoading"
@@ -1149,6 +1179,12 @@ async function handleDeleteUser() {
 @use "~/assets/scss/variables" as *;
 
 .user-admin-actions {
+	&__skeleton {
+		display: flex;
+		flex-wrap: wrap;
+		gap: $spacing-sm;
+	}
+
 	&__buttons {
 		display: flex;
 		flex-direction: column;

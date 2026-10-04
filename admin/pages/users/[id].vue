@@ -2,8 +2,9 @@
 	setup
 	lang="ts"
 >
-import { useQuery } from "@vue/apollo-composable";
+import { useApolloClient } from "@vue/apollo-composable";
 import { ArrowLeft } from "lucide-vue-next";
+import { ref, watch } from "vue";
 import UserActivityStatsCard from "~/components/UserDetail/UserActivityStatsCard.vue";
 import UserAdminActions from "~/components/UserDetail/UserAdminActions.vue";
 import UserGangCard from "~/components/UserDetail/UserGangCard.vue";
@@ -15,7 +16,6 @@ import UserProfileHeader from "~/components/UserDetail/UserProfileHeader.vue";
 import UserSelfActionsCard from "~/components/UserDetail/UserSelfActionsCard.vue";
 import UserStatusSummary from "~/components/UserDetail/UserStatusSummary.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
-import { GetUserDetailDocument } from "~/graphql/generated";
 
 definePageMeta({
 	middleware: "auth",
@@ -24,30 +24,36 @@ definePageMeta({
 const route = useRoute();
 const auth = useAuth();
 const { showToast } = useToast();
+const { client } = useApolloClient();
 const userId = computed(() => String(route.params.id));
+const profileState = ref<"loading" | "ready" | "not-found" | "error">("loading");
 
-const { result, loading, refetch } = useQuery(GetUserDetailDocument, () => ({ id: userId.value }));
-const user = computed(() => result.value?.user);
-
-useHead({
-	title: () => user.value?.nickname,
+watch(userId, () => {
+	profileState.value = "loading";
 });
 
-const language = computed(() => {
-	switch (user.value?.language) {
-		case "0":
-			return "Inglês";
-		case "1":
-			return "Português";
-		case "2":
-			return "Espanhol";
-		default:
-			return user.value?.language;
-	}
-});
+function setProfileState(state: typeof profileState.value) {
+	profileState.value = state;
+}
 
 function showFeedback(type: "success" | "error", message: string) {
 	showToast({ variant: type, text: message });
+}
+
+function refreshUserDetails() {
+	return client.refetchQueries({
+		include: [
+			"GetUserProfile",
+			"GetUserInventory",
+			"GetUserInvestment",
+			"GetUserGang",
+			"GetUserActivityStats",
+			"GetUserStatus",
+			"GetUserMetadata",
+			"GetUserSelfActions",
+			"GetUserAdminActions",
+		],
+	});
 }
 </script>
 
@@ -70,69 +76,58 @@ function showFeedback(type: "success" | "error", message: string) {
 			</BaseButton>
 		</nav>
 
-		<div
-			v-if="loading"
-			class="user-detail__loading"
-			role="status"
-		>
-			<p>Carregando perfil e inventário do jogador...</p>
-		</div>
+		<UserProfileHeader
+			:user-id="userId"
+			@state="setProfileState"
+		/>
 
 		<div
-			v-else-if="!user"
+			v-if="profileState === 'not-found'"
 			class="user-detail__not-found"
 		>
 			<h1>Jogador não encontrado</h1>
 			<p>O ID {{ userId }} não possui registro na base de dados do jogo.</p>
 		</div>
+		<div
+			v-if="profileState === 'error'"
+			class="user-detail__not-found"
+			role="alert"
+		>
+			<p>Não foi possível carregar o perfil do jogador.</p>
+		</div>
 
 		<div
-			v-else
+			v-show="profileState !== 'not-found' && profileState !== 'error'"
 			class="user-detail__content"
 		>
-			<UserProfileHeader :user="user" />
 			<UserSelfActionsCard
-				v-if="auth.user.value?.userId === user.id"
-				:user="user"
+				v-if="auth.user.value?.userId === userId"
+				:user-id="userId"
 				@feedback="showFeedback"
-				@refresh="refetch"
+				@refresh="refreshUserDetails"
 			/>
-			<UserInventoryCard :items="user.items" />
-			<UserInvestmentCard
-				v-if="user.investment"
-				:investment="user.investment"
-			/>
-			<UserGangCard
-				v-if="user.gang"
-				:gang="user.gang"
-			/>
+			<UserInventoryCard :user-id="userId" />
+			<UserInvestmentCard :user-id="userId" />
+			<UserGangCard :user-id="userId" />
 
-			<UserActivityStatsCard :stats="user.activityStats" />
-			<UserHistoryCard :user-id="user.id" />
+			<UserActivityStatsCard :user-id="userId" />
+			<UserHistoryCard :user-id="userId" />
 
-			<div
-				v-if="auth.hasAdminAccess.value"
-				class="user-detail__columns"
-			>
-				<UserStatusSummary :user="user" />
-				<UserAdminActions
-					:user-id="userId"
-					:is-developer="auth.isDeveloper.value"
-					:can-write="auth.canWrite.value"
-					:is-in-hospital="user.isInHospital"
-					:is-in-prison="user.isInPrison"
-					:badges="user.badges"
-					@feedback="showFeedback"
-					@refresh="refetch"
-					@deleted="navigateTo('/users')"
-				/>
-			</div>
+			<template v-if="auth.hasAdminAccess.value">
+				<div class="user-detail__columns">
+					<UserStatusSummary :user-id="userId" />
+					<UserAdminActions
+						:user-id="userId"
+						:is-developer="auth.isDeveloper.value"
+						:can-write="auth.canWrite.value"
+						@feedback="showFeedback"
+						@refresh="refreshUserDetails"
+						@deleted="navigateTo('/users')"
+					/>
+				</div>
 
-			<UserMetadataCard
-				v-if="auth.hasAdminAccess.value"
-				:user="user"
-				:language="language"
-			/>
+				<UserMetadataCard :user-id="userId" />
+			</template>
 		</div>
 	</main>
 </template>
@@ -153,7 +148,6 @@ function showFeedback(type: "success" | "error", message: string) {
 		margin-bottom: $spacing-xs;
 	}
 
-	&__loading,
 	&__not-found {
 		@include flex-center;
 		flex-direction: column;

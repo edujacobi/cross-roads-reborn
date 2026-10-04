@@ -2,19 +2,69 @@
 	setup
 	lang="ts"
 >
+import { useQuery } from "@vue/apollo-composable";
 import { format } from "date-fns";
+import { computed } from "vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
-import type { UserDetail } from "~/types/userDetail";
+import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
+import RefreshButton from "~/components/ui/RefreshButton.vue";
+import { GetUserMetadataDocument } from "~/graphql/generated";
 
-defineProps<{
-	user: UserDetail;
-	language: string | undefined;
-}>();
+const props = defineProps<{ userId: string }>();
+
+const { result, loading, error, refetch } = useQuery(GetUserMetadataDocument, () => ({ id: props.userId }), {
+	fetchPolicy: "cache-and-network",
+});
+const user = computed(() => result.value?.user);
+const language = computed(() => {
+	switch (user.value?.language) {
+		case "0":
+			return "Inglês";
+		case "1":
+			return "Português";
+		case "2":
+			return "Espanhol";
+		default:
+			return user.value?.language;
+	}
+});
 </script>
 
 <template>
-	<BaseCard class="user-metadata">
-		<dl class="user-metadata__grid">
+	<BaseCard
+		v-if="user || loading || error"
+		class="user-metadata"
+		title="Dados do usuário"
+	>
+		<template #actions>
+			<RefreshButton
+				@refresh="() => refetch()"
+				:loading="loading"
+				aria-label="Atualizar dados do usuário"
+			/>
+		</template>
+		<div
+			v-if="loading && !user"
+			class="user-metadata__skeleton"
+			role="status"
+			aria-label="Carregando dados do usuário"
+		>
+			<BaseSkeleton
+				v-for="index in 4"
+				:key="index"
+				height="3rem"
+			/>
+		</div>
+		<p
+			v-else-if="error && !user"
+			role="alert"
+		>
+			Não foi possível carregar os dados do usuário.
+		</p>
+		<dl
+			v-else-if="user"
+			class="user-metadata__grid"
+		>
 			<div class="user-metadata__item">
 				<dt class="user-metadata__label">Idioma</dt>
 				<dd class="user-metadata__value">{{ language }}</dd>
@@ -46,6 +96,13 @@ defineProps<{
 @use "~/assets/scss/variables" as *;
 
 .user-metadata {
+	&__skeleton {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+		gap: $spacing-md;
+		padding-top: 1.25rem;
+	}
+
 	&__grid {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));

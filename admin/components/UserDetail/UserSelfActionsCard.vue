@@ -2,24 +2,39 @@
 	setup
 	lang="ts"
 >
-import { useMutation } from "@vue/apollo-composable";
+import { useMutation, useQuery } from "@vue/apollo-composable";
 import { CalendarDays, Pencil, UserRound } from "lucide-vue-next";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseInput from "~/components/ui/BaseInput.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
-import { ChangeOwnClassDocument, ChangeOwnNicknameDocument, ClaimDailyRewardDocument } from "~/graphql/generated";
-import type { UserDetail } from "~/types/userDetail";
+import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
+import RefreshButton from "~/components/ui/RefreshButton.vue";
+import {
+	ChangeOwnClassDocument,
+	ChangeOwnNicknameDocument,
+	ClaimDailyRewardDocument,
+	GetUserSelfActionsDocument,
+} from "~/graphql/generated";
 import { ClassId } from "../../../src/core/types/Ids";
 
-const props = defineProps<{ user: UserDetail }>();
+const props = defineProps<{ userId: string }>();
 
 const emit = defineEmits<{
 	feedback: [type: "success" | "error", message: string];
 	refresh: [];
 }>();
 
+const {
+	result: queryResult,
+	loading,
+	error: queryError,
+	refetch,
+} = useQuery(GetUserSelfActionsDocument, () => ({ id: props.userId }), {
+	fetchPolicy: "cache-and-network",
+});
+const user = computed(() => queryResult.value?.user);
 const { mutate: claimDailyReward, loading: dailyLoading } = useMutation(ClaimDailyRewardDocument);
 const { mutate: changeOwnNickname, loading: nicknameLoading } = useMutation(ChangeOwnNicknameDocument);
 const { mutate: changeOwnClass, loading: classLoading } = useMutation(ChangeOwnClassDocument);
@@ -40,7 +55,7 @@ const classOptions = [
 const selectedClassDescription = computed(() => getClassDescription(selectedClass.value));
 const selectedClassModifiers = computed(() => getClassModifiers(selectedClass.value));
 const dailyRemainingMinutes = computed(() => {
-	const availableAt = props.user.dailyNextAvailableAt ? new Date(props.user.dailyNextAvailableAt).getTime() : 0;
+	const availableAt = user.value?.dailyNextAvailableAt ? new Date(user.value.dailyNextAvailableAt).getTime() : 0;
 	return Math.max(0, Math.ceil((availableAt - now.value) / 60_000));
 });
 const canReceiveDaily = computed(() => dailyRemainingMinutes.value === 0);
@@ -60,19 +75,19 @@ const dailyButtonLabel = computed(() => {
 	return `Poderá resgatar em ${remaining}`;
 });
 const nicknameChangeDescription = computed(() =>
-	props.user.nicknameChangeCost === 0
+	user.value?.nicknameChangeCost === 0
 		? "Sua primeira alteração de apelido é gratuita."
-		: `Custo: Cr$ ${props.user.nicknameChangeCost.toLocaleString("pt-BR")}.`,
+		: `Custo: Cr$ ${user.value?.nicknameChangeCost.toLocaleString("pt-BR")}.`,
 );
 const classChangeDescription = computed(() =>
-	props.user.classChangeCost === 0
+	user.value?.classChangeCost === 0
 		? "Sua primeira escolha de classe é gratuita."
-		: `Custo: Cr$ ${props.user.classChangeCost.toLocaleString("pt-BR")}.`,
+		: `Custo: Cr$ ${user.value?.classChangeCost.toLocaleString("pt-BR")}.`,
 );
 
 watch(isClassModalOpen, (isOpen) => {
-	if (isOpen) {
-		selectedClass.value = props.user.class as ClassId;
+	if (isOpen && user.value) {
+		selectedClass.value = user.value.class as ClassId;
 	}
 });
 
@@ -145,8 +160,40 @@ async function handleClassChange() {
 </script>
 
 <template>
-	<BaseCard title="Minha conta">
-		<div class="user-self-actions">
+	<BaseCard
+		v-if="user || loading || queryError"
+		title="Minha conta"
+	>
+		<template #actions>
+			<RefreshButton
+				@refresh="() => refetch()"
+				:loading="loading"
+				aria-label="Atualizar conta"
+			/>
+		</template>
+		<div
+			v-if="loading && !user"
+			class="user-self-actions__skeleton"
+			role="status"
+			aria-label="Carregando ações da conta"
+		>
+			<BaseSkeleton
+				v-for="index in 3"
+				:key="index"
+				width="12rem"
+				height="2.5rem"
+			/>
+		</div>
+		<p
+			v-else-if="queryError && !user"
+			role="alert"
+		>
+			Não foi possível carregar as ações da conta.
+		</p>
+		<div
+			v-else-if="user"
+			class="user-self-actions"
+		>
 			<BaseButton
 				variant="secondary"
 				:disabled="dailyLoading || !canReceiveDaily"
@@ -183,6 +230,7 @@ async function handleClassChange() {
 	</BaseCard>
 
 	<BaseModal
+		v-if="user"
 		:open="isNicknameModalOpen"
 		title="Alterar apelido"
 		:description="nicknameChangeDescription"
@@ -211,6 +259,7 @@ async function handleClassChange() {
 	</BaseModal>
 
 	<BaseModal
+		v-if="user"
 		:open="isClassModalOpen"
 		title="Alterar classe"
 		:description="classChangeDescription"
@@ -281,6 +330,12 @@ async function handleClassChange() {
 @use "sass:color";
 
 .user-self-actions {
+	&__skeleton {
+		display: flex;
+		flex-wrap: wrap;
+		gap: $spacing-sm;
+	}
+
 	display: flex;
 	flex-wrap: wrap;
 	gap: $spacing-sm;

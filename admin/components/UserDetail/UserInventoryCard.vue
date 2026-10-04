@@ -2,19 +2,27 @@
 	setup
 	lang="ts"
 >
+import { useQuery } from "@vue/apollo-composable";
 import { differenceInHours, formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Maximize, Minimize, Package } from "lucide-vue-next";
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
+import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
+import RefreshButton from "~/components/ui/RefreshButton.vue";
 import { imagePaths } from "~/constants/imagePaths";
 import { localStorageKeys } from "~/constants/localStorageKeys";
-import type { UserDetail } from "~/types/userDetail";
+import { GetUserInventoryDocument, type GetUserInventoryQuery } from "~/graphql/generated";
 import { BundleId, ItemId } from "../../../src/core/types/Ids";
 import { ItemType } from "../../../src/core/types/ItemType";
 
-defineProps<{ items: UserDetail["items"] }>();
+const props = defineProps<{ userId: string }>();
+
+const { result, loading, error, refetch } = useQuery(GetUserInventoryDocument, () => ({ id: props.userId }), {
+	fetchPolicy: "cache-and-network",
+});
+const items = computed(() => result.value?.user?.items ?? []);
 
 const isCompactInventory = ref(false);
 const inventoryStorage = useLocalStorage(localStorageKeys.compactInventory);
@@ -28,7 +36,7 @@ function toggleCompactInventory() {
 	inventoryStorage.set(String(isCompactInventory.value));
 }
 
-function getItemStatusClasses(item: UserDetail["items"][number]) {
+function getItemStatusClasses(item: NonNullable<GetUserInventoryQuery["user"]>["items"][number]) {
 	const classes: string[] = [];
 
 	if (item.type === ItemType.Consumable) {
@@ -57,6 +65,11 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 		class="user-inventory"
 	>
 		<template #actions>
+			<RefreshButton
+				@refresh="() => refetch()"
+				:loading="loading"
+				aria-label="Atualizar inventário"
+			/>
 			<BaseButton
 				variant="ghost"
 				size="sm"
@@ -78,7 +91,28 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 		</template>
 
 		<div
-			v-if="items.length === 0"
+			v-if="error && items.length === 0"
+			class="user-inventory__empty"
+			role="alert"
+		>
+			<p>Não foi possível carregar o inventário.</p>
+		</div>
+		<div
+			v-else-if="loading && items.length === 0"
+			class="user-inventory__empty"
+			role="status"
+			aria-label="Carregando inventário"
+		>
+			<div class="user-inventory__skeleton">
+				<BaseSkeleton
+					v-for="index in 4"
+					:key="index"
+					height="6rem"
+				/>
+			</div>
+		</div>
+		<div
+			v-else-if="items.length === 0"
 			class="user-inventory__empty"
 		>
 			<Package
@@ -158,6 +192,21 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 		padding: $spacing-lg;
 		color: $text-muted;
 		font-size: 0.875rem;
+	}
+
+	&__skeleton {
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: $spacing-sm;
+		width: 100%;
+
+		@media (max-width: 1024px) {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+
+		@media (max-width: 540px) {
+			grid-template-columns: 1fr;
+		}
 	}
 
 	&__items {

@@ -2,15 +2,44 @@
 	setup
 	lang="ts"
 >
+import { useQuery } from "@vue/apollo-composable";
+import { computed, watch } from "vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
+import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
+import RefreshButton from "~/components/ui/RefreshButton.vue";
 import { imagePaths } from "~/constants/imagePaths";
-import type { UserDetail } from "~/types/userDetail";
+import { GetUserProfileDocument } from "~/graphql/generated";
 import { BadgeId } from "../../../src/core/types/Ids";
 
-defineProps<{ user: UserDetail }>();
+const props = defineProps<{ userId: string }>();
+const emit = defineEmits<{
+	state: [state: "ready" | "not-found" | "error"];
+}>();
+
+const { result, loading, error, refetch } = useQuery(GetUserProfileDocument, () => ({ id: props.userId }), {
+	fetchPolicy: "cache-and-network",
+});
+const user = computed(() => result.value?.user);
 
 const { getClassImageUrl } = useClasses();
 const { getSituationImageUrl } = useSituation();
+
+watch(
+	[loading, user, error],
+	([isLoading, loadedUser, queryError]) => {
+		if (isLoading) return;
+		if (queryError) {
+			emit("state", loadedUser ? "ready" : "error");
+		} else if (result.value !== undefined) {
+			emit("state", loadedUser ? "ready" : "not-found");
+		}
+	},
+	{ immediate: true },
+);
+
+useHead({
+	title: () => user.value?.nickname,
+});
 
 function getBadgeImage(badgeId: BadgeId): string {
 	// biome-ignore lint/suspicious/noDoubleEquals: GraphQl brings as number, not as BadgeId
@@ -22,97 +51,132 @@ function getBadgeImage(badgeId: BadgeId): string {
 </script>
 
 <template>
-	<BaseCard class="user-profile">
-		<div class="user-profile__main-info">
-			<div class="user-profile__avatar-wrapper">
-				<LazyNuxtImg
-					:class="['user-avatar', `user-avatar--${user.avatarDecoration}`]"
-					:src="user.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'"
-					:alt="user.nickname ? `Avatar de ${user.nickname}` : 'Avatar do jogador'"
-					width="100"
-					height="100"
+	<BaseCard
+		v-if="user || loading"
+		class="user-profile"
+	>
+		<template #actions>
+			<RefreshButton
+				@refresh="() => refetch()"
+				:loading="loading"
+				aria-label="Atualizar perfil"
+			/>
+		</template>
+		<div
+			v-if="loading && !user"
+			class="user-profile__loading"
+			role="status"
+			aria-label="Carregando perfil"
+		>
+			<BaseSkeleton
+				width="6.25rem"
+				height="6.25rem"
+				circle
+			/>
+			<div class="user-profile__loading-details">
+				<BaseSkeleton
+					width="12rem"
+					height="1.5rem"
 				/>
-				<span
-					:class="`user-profile__presence user-profile__presence--${user.online ? 'online' : 'offline'}`"
-					role="img"
-					:aria-label="user.online ? 'Online' : 'Offline'"
-				></span>
-			</div>
-			<div>
-				<div class="user-profile__name-row">
-					<h1 class="user-profile__name">{{ user.nickname || "(Sem Nick)" }}</h1>
-				</div>
-				<p class="user-profile__id"><code>ID: {{ user.id }}</code></p>
-			</div>
-			<div class="user-profile__economy">
-				<p class="user-profile__money">Cr$ {{ user.money.toLocaleString() }}</p>
-				<p class="user-profile__coins">{{ user.specialCoin.toLocaleString() }} Moedas especiais</p>
+				<BaseSkeleton width="7rem" />
+				<BaseSkeleton
+					width="9rem"
+					height="2rem"
+				/>
 			</div>
 		</div>
-		<ul class="user-profile__badges">
-			<li
-				v-for="badge in user.badges"
-				:key="badge.id"
-			>
+		<template v-else-if="user">
+			<div class="user-profile__main-info">
+				<div class="user-profile__avatar-wrapper">
+					<LazyNuxtImg
+						:class="['user-avatar', `user-avatar--${user.avatarDecoration}`]"
+						:src="user.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'"
+						:alt="user.nickname ? `Avatar de ${user.nickname}` : 'Avatar do jogador'"
+						width="100"
+						height="100"
+					/>
+					<span
+						:class="`user-profile__presence user-profile__presence--${user.online ? 'online' : 'offline'}`"
+						role="img"
+						:aria-label="user.online ? 'Online' : 'Offline'"
+					></span>
+				</div>
+				<div>
+					<div class="user-profile__name-row">
+						<h1 class="user-profile__name">{{ user.nickname || "(Sem Nick)" }}</h1>
+					</div>
+					<p class="user-profile__id"><code>ID: {{ user.id }}</code></p>
+				</div>
+				<div class="user-profile__economy">
+					<p class="user-profile__money">Cr$ {{ user.money.toLocaleString() }}</p>
+					<p class="user-profile__coins">{{ user.specialCoin.toLocaleString() }} Moedas especiais</p>
+				</div>
+			</div>
+			<ul class="user-profile__badges">
+				<li
+					v-for="badge in user.badges"
+					:key="badge.id"
+				>
+					<NuxtImg
+						:src="getBadgeImage(badge.id as BadgeId)"
+						:alt="badge.name"
+						:title="badge.name"
+						class="user-profile__badge"
+						width="40"
+						height="40"
+					/>
+				</li>
+			</ul>
+
+			<p class="user-profile__situation">
 				<NuxtImg
-					:src="getBadgeImage(badge.id as BadgeId)"
-					:alt="badge.name"
-					:title="badge.name"
-					class="user-profile__badge"
+					:src="getSituationImageUrl(user.situationId)"
+					class="user-profile__situation-image"
+					alt=""
 					width="40"
 					height="40"
 				/>
-			</li>
-		</ul>
+				{{ user.situationText }}
+			</p>
 
-		<p class="user-profile__situation">
-			<NuxtImg
-				:src="getSituationImageUrl(user.situationId)"
-				class="user-profile__situation-image"
-				alt=""
-				width="40"
-				height="40"
-			/>
-			{{ user.situationText }}
-		</p>
-
-		<div class="user-profile__info">
-			<div class="user-profile__class">
-				<NuxtImg
-					:src="getClassImageUrl(user.class)"
-					class="user-profile__class-image"
-					alt=""
-					width="32"
-					height="32"
-				/>
-				{{ user.className }}
-			</div>
-
-			<div class="user-profile__attributes">
-				<span class="user-profile__attribute">
+			<div class="user-profile__info">
+				<div class="user-profile__class">
 					<NuxtImg
-						:src="imagePaths.attributes.attack"
-						class="user-profile__attribute-image"
+						:src="getClassImageUrl(user.class)"
+						class="user-profile__class-image"
 						alt=""
-						width="24"
-						height="24"
+						width="32"
+						height="32"
 					/>
-					{{ user.attack || 0 }}
-					ATK
-				</span>
-				<span class="user-profile__attribute">
-					<NuxtImg
-						:src="imagePaths.attributes.defense"
-						class="user-profile__attribute-image"
-						alt=""
-						width="24"
-						height="24"
-					/>
-					{{ user.defense || 0 }}
-					DEF
-				</span>
+					{{ user.className }}
+				</div>
+
+				<div class="user-profile__attributes">
+					<span class="user-profile__attribute">
+						<NuxtImg
+							:src="imagePaths.attributes.attack"
+							class="user-profile__attribute-image"
+							alt=""
+							width="24"
+							height="24"
+						/>
+						{{ user.attack || 0 }}
+						ATK
+					</span>
+					<span class="user-profile__attribute">
+						<NuxtImg
+							:src="imagePaths.attributes.defense"
+							class="user-profile__attribute-image"
+							alt=""
+							width="24"
+							height="24"
+						/>
+						{{ user.defense || 0 }}
+						DEF
+					</span>
+				</div>
 			</div>
-		</div>
+		</template>
 	</BaseCard>
 </template>
 
@@ -124,6 +188,20 @@ function getBadgeImage(badgeId: BadgeId): string {
 @use "~/assets/scss/mixins" as *;
 
 .user-profile {
+	&__loading {
+		display: flex;
+		align-items: center;
+		gap: $spacing-md;
+		min-height: 9rem;
+	}
+
+	&__loading-details {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		gap: $spacing-sm;
+	}
+
 	&__main-info {
 		display: flex;
 		align-items: center;

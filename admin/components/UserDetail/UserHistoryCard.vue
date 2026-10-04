@@ -5,13 +5,14 @@
 import { useQuery } from "@vue/apollo-composable";
 import { format, formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { MapPin, RefreshCw, Swords } from "lucide-vue-next";
+import { MapPin, Swords } from "lucide-vue-next";
 import { computed, ref, watch } from "vue";
 import BaseBadge from "~/components/ui/BaseBadge.vue";
-import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
+import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
 import BaseTable from "~/components/ui/BaseTable.vue";
 import BaseTableFooter from "~/components/ui/BaseTableFooter.vue";
+import RefreshButton from "~/components/ui/RefreshButton.vue";
 import { imagePaths } from "~/constants/imagePaths";
 import { GetUserHistoryDocument, type GetUserHistoryQuery } from "~/graphql/generated";
 import { ClashType } from "../../../src/core/types/Robbery";
@@ -91,8 +92,6 @@ function getActionIcon(type: number): string {
 			return imagePaths.situations.beatup;
 		case ClashType.Investment:
 			return imagePaths.situations.gangAction;
-		case ClashType.Location:
-		case ClashType.User:
 		default:
 			return imagePaths.situations.robbery;
 	}
@@ -120,28 +119,30 @@ function nextPage() {
 		no-padding-y
 	>
 		<template #actions>
-			<BaseButton
-				variant="ghost"
-				size="sm"
-				:disabled="loading"
+			<RefreshButton
+				@refresh="() => refetch()"
+				:loading="loading"
 				aria-label="Atualizar histórico"
-				@click="() => refetch()"
-			>
-				<RefreshCw
-					:size="14"
-					:class="{ 'animate-spin': loading }"
-					aria-hidden="true"
-				/>
-				Atualizar
-			</BaseButton>
+			/>
 		</template>
 
 		<div
 			v-if="loading && entries.length === 0"
-			class="user-history-card__state"
+			class="user-history-card__skeleton"
 			role="status"
+			aria-label="Carregando histórico de confrontos"
 		>
-			<p>Carregando histórico de confrontos...</p>
+			<div
+				v-for="row in 5"
+				:key="row"
+				class="user-history-card__skeleton-row"
+			>
+				<BaseSkeleton
+					v-for="column in 6"
+					:key="column"
+					height="2rem"
+				/>
+			</div>
 		</div>
 
 		<div
@@ -231,7 +232,7 @@ function nextPage() {
 								class="history-target"
 							>
 								<NuxtImg
-									v-if="entry.locationId"
+									v-if="entry.locationId !== null"
 									:src="getLocationImageUrl(entry.locationId)"
 									width="32"
 									height="32"
@@ -375,6 +376,19 @@ function nextPage() {
 @use "~/assets/scss/mixins" as *;
 
 .user-history-card {
+	&__skeleton {
+		display: flex;
+		flex-direction: column;
+		gap: $spacing-xs;
+		padding: $spacing-md;
+	}
+
+	&__skeleton-row {
+		display: grid;
+		grid-template-columns: repeat(6, minmax(0, 1fr));
+		gap: $spacing-sm;
+	}
+
 	&__state {
 		@include flex-center;
 		flex-direction: column;
@@ -504,18 +518,5 @@ function nextPage() {
 .history-money {
 	white-space: nowrap;
 	font-size: 1rem;
-}
-
-.animate-spin {
-	animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-	from {
-		transform: rotate(0deg);
-	}
-	to {
-		transform: rotate(360deg);
-	}
 }
 </style>
