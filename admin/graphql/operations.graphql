@@ -432,6 +432,7 @@ query GetUserMetadata($id: ID!) {
 
 query GetUserSelfActions($id: ID!) {
 	user(id: $id) {
+		automaticGrenade
 		dailyNextAvailableAt
 		nicknameChangeCost
 		classChangeCost
@@ -570,6 +571,13 @@ mutation ChangeOwnNickname($nickname: String!) {
 
 mutation ChangeOwnClass($classId: Int!) {
 	changeOwnClass(classId: $classId) {
+		success
+		message
+	}
+}
+
+mutation SetOwnAutomaticGrenade($enabled: Boolean!) {
+	setOwnAutomaticGrenade(enabled: $enabled) {
 		success
 		message
 	}

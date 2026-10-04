@@ -270,6 +270,7 @@ async function mapUserDetail(user: User) {
 		avatarUrl: discordUser.avatarURL(),
 		avatarDecoration: user.AvatarDecoration.Description[Language.English].toLowerCase().replaceAll(" ", "_"),
 		specialCoin: user.SpecialCoin,
+		automaticGrenade: user.AutomaticGrenade,
 		dailyNextAvailableAt: user.Daily.LastReceived ? addHours(user.Daily.LastReceived, 24).toISOString() : null,
 		nicknameChangeCost: user.GetNicknameChangeCost(),
 		classChangeCost: user.GetClassChangeCost(),
@@ -798,12 +799,17 @@ export const resolvers: {
 				return null;
 			}
 			const detail = await mapUserDetail(user);
-			if (authUser.role !== "PLAYER") {
+			if (authUser.role !== "PLAYER" || authUser.userId === user.Id) {
 				return detail;
 			}
 
 			return {
 				...detail,
+				specialCoin: null,
+				automaticGrenade: null,
+				investment: detail.investment
+					? { ...detail.investment, nextPaymentValue: null }
+					: null,
 				language: "",
 				isInHospital: false,
 				hospitalTime: null,
@@ -1515,6 +1521,26 @@ export const resolvers: {
 			return {
 				success: true,
 				message: `Sua classe foi alterada para ${ClassList[args.classId].Name[Language.Portuguese]}.`,
+				user: null,
+			};
+		},
+
+		setOwnAutomaticGrenade: async (
+			_: unknown,
+			args: { enabled: boolean },
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			const player = new User(authUser.userId);
+			const found = await player.GetInfo();
+			if (!found) {
+				return { success: false, message: "Jogador não encontrado.", user: null };
+			}
+
+			await player.SetAutomaticGrenade(args.enabled);
+			return {
+				success: true,
+				message: `Uso automático de granadas ${args.enabled ? "ativado" : "desativado"}.`,
 				user: null,
 			};
 		},

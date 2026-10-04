@@ -26,6 +26,8 @@ const auth = useAuth();
 const { showToast } = useToast();
 const { client } = useApolloClient();
 const userId = computed(() => String(route.params.id));
+const isOwnUser = computed(() => auth.user.value?.userId === userId.value);
+const canViewPrivateDetails = computed(() => isOwnUser.value || auth.hasAdminAccess.value);
 const profileState = ref<"loading" | "ready" | "not-found" | "error">("loading");
 
 watch(userId, () => {
@@ -78,6 +80,7 @@ function refreshUserDetails() {
 
 		<UserProfileHeader
 			:user-id="userId"
+			:show-special-coins="canViewPrivateDetails"
 			@state="setProfileState"
 		/>
 
@@ -107,7 +110,10 @@ function refreshUserDetails() {
 				@refresh="refreshUserDetails"
 			/>
 			<UserInventoryCard :user-id="userId" />
-			<UserInvestmentCard :user-id="userId" />
+			<UserInvestmentCard
+				:user-id="userId"
+				:show-private-info="canViewPrivateDetails"
+			/>
 			<UserGangCard :user-id="userId" />
 
 			<UserActivityStatsCard :user-id="userId" />

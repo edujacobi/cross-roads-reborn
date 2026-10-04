@@ -16,6 +16,7 @@ import {
 	ChangeOwnNicknameDocument,
 	ClaimDailyRewardDocument,
 	GetUserSelfActionsDocument,
+	SetOwnAutomaticGrenadeDocument,
 } from "~/graphql/generated";
 import { ClassId } from "../../../src/core/types/Ids";
 
@@ -38,12 +39,14 @@ const user = computed(() => queryResult.value?.user);
 const { mutate: claimDailyReward, loading: dailyLoading } = useMutation(ClaimDailyRewardDocument);
 const { mutate: changeOwnNickname, loading: nicknameLoading } = useMutation(ChangeOwnNicknameDocument);
 const { mutate: changeOwnClass, loading: classLoading } = useMutation(ChangeOwnClassDocument);
+const { mutate: setAutomaticGrenade, loading: automaticGrenadeLoading } = useMutation(SetOwnAutomaticGrenadeDocument);
 const { getClassDescription, getClassModifiers, getClassName, getClassImageUrl } = useClasses();
 
 const now = ref(Date.now());
 let clockInterval: ReturnType<typeof setInterval> | undefined;
 const isNicknameModalOpen = ref(false);
 const isClassModalOpen = ref(false);
+const isAutomaticGrenadeModalOpen = ref(false);
 const nickname = ref("");
 const selectedClass = ref<ClassId>(ClassId.Attorney);
 const classOptions = [
@@ -157,6 +160,23 @@ async function handleClassChange() {
 		showError(getErrorMessage(error));
 	}
 }
+
+async function handleAutomaticGrenadeChange() {
+	if (!user.value) return;
+
+	try {
+		const result = await setAutomaticGrenade({ enabled: !user.value.automaticGrenade });
+		const response = result?.data?.setOwnAutomaticGrenade;
+		if (response?.success) {
+			isAutomaticGrenadeModalOpen.value = false;
+			showSuccess(response.message);
+		} else {
+			showError(response?.message || "Erro ao atualizar o uso automático de granadas.");
+		}
+	} catch (error: unknown) {
+		showError(getErrorMessage(error));
+	}
+}
 </script>
 
 <template>
@@ -225,6 +245,18 @@ async function handleClassChange() {
 					aria-hidden="true"
 				/>
 				Alterar classe
+			</BaseButton>
+			<BaseButton
+				variant="secondary"
+				@click="isAutomaticGrenadeModalOpen = true"
+			>
+				<NuxtImg
+					src="/images/items/18_Grenade.png"
+					width="18"
+					height="18"
+					alt=""
+				/>
+				{{ user.automaticGrenade ? "Desativar granadas automáticas" : "Ativar granadas automáticas" }}
 			</BaseButton>
 		</div>
 	</BaseCard>
@@ -317,6 +349,35 @@ async function handleClassChange() {
 				@click="handleClassChange"
 			>
 				{{ classLoading ? "Salvando..." : "Confirmar classe" }}
+			</BaseButton>
+		</template>
+	</BaseModal>
+
+	<BaseModal
+		v-if="user"
+		:open="isAutomaticGrenadeModalOpen"
+		title="Uso automático de granadas"
+		description="Configure o consumo automático das granadas do seu inventário."
+		@update:open="isAutomaticGrenadeModalOpen = $event"
+	>
+		<p>Quando ativado, suas granadas serão consumidas automaticamente em roubos contra jogadores e espancamentos.</p>
+		<br>
+		<p>
+			Status atual:
+			<strong>{{ user.automaticGrenade ? "Ativado" : "Desativado" }}</strong>
+		</p>
+		<template #footer>
+			<BaseButton
+				variant="ghost"
+				@click="isAutomaticGrenadeModalOpen = false"
+			>
+				Cancelar
+			</BaseButton>
+			<BaseButton
+				:disabled="automaticGrenadeLoading"
+				@click="handleAutomaticGrenadeChange"
+			>
+				{{ automaticGrenadeLoading ? "Salvando..." : user.automaticGrenade ? "Desativar" : "Confirmar ativação" }}
 			</BaseButton>
 		</template>
 	</BaseModal>

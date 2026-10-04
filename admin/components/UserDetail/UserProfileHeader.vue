@@ -11,7 +11,7 @@ import { imagePaths } from "~/constants/imagePaths";
 import { GetUserProfileDocument } from "~/graphql/generated";
 import { BadgeId } from "../../../src/core/types/Ids";
 
-const props = defineProps<{ userId: string }>();
+const props = defineProps<{ userId: string; showSpecialCoins: boolean }>();
 const emit = defineEmits<{
 	state: [state: "ready" | "not-found" | "error"];
 }>();
@@ -109,7 +109,12 @@ function getBadgeImage(badgeId: BadgeId): string {
 				</div>
 				<div class="user-profile__economy">
 					<p class="user-profile__money">Cr$ {{ user.money.toLocaleString() }}</p>
-					<p class="user-profile__coins">{{ user.specialCoin.toLocaleString() }} Moedas especiais</p>
+					<p
+						v-if="showSpecialCoins && user.specialCoin !== null"
+						class="user-profile__coins"
+					>
+						{{ user.specialCoin.toLocaleString() }} Moedas especiais
+					</p>
 				</div>
 			</div>
 			<ul class="user-profile__badges">

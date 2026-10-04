@@ -13,7 +13,7 @@ import { useInvestment } from "~/composables/useInvestment";
 import { imagePaths } from "~/constants/imagePaths";
 import { GetUserInvestmentDocument } from "~/graphql/generated";
 
-const props = defineProps<{ userId: string }>();
+const props = defineProps<{ userId: string; showPrivateInfo: boolean }>();
 
 const { result, loading, error, refetch } = useQuery(GetUserInvestmentDocument, () => ({ id: props.userId }), {
 	fetchPolicy: "cache-and-network",
@@ -73,7 +73,12 @@ const { getInvestmentImageUrl } = useInvestment();
 				/>
 				<div class="user-investment__data">
 					<p class="user-investment__name">{{ investment.name }}</p>
-					<p class="user-investment__profit">Lucro acumulado: {{ investment.nextPaymentValue }}</p>
+					<p
+						v-if="showPrivateInfo && investment.nextPaymentValue !== null"
+						class="user-investment__profit"
+					>
+						Lucro acumulado: {{ investment.nextPaymentValue }}
+					</p>
 					<time
 						class="user-investment__expiry"
 						:datetime="investment.expiresAt"
