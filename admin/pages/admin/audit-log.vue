@@ -8,6 +8,7 @@ import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
 import BaseTable from "~/components/ui/BaseTable.vue";
 import BaseTableFooter from "~/components/ui/BaseTableFooter.vue";
+import BaseTableSkeleton from "~/components/ui/BaseTableSkeleton.vue";
 import PageTitle from "~/components/ui/PageTitle.vue";
 import { GetAdminAuditLogsDocument, type GetAdminAuditLogsQuery } from "~/graphql/generated";
 
@@ -142,13 +143,12 @@ function nextPage() {
 					</select>
 				</label>
 			</template>
-			<div
+			<BaseTableSkeleton
 				v-if="loading"
-				class="audit-state"
-				role="status"
-			>
-				Carregando registro de auditoria...
-			</div>
+				:rows="pageSize"
+				:columns="6"
+				label="Carregando registro de auditoria"
+			/>
 			<div
 				v-else-if="error"
 				class="audit-state audit-state--error"

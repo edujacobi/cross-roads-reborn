@@ -5,6 +5,7 @@
 import { Calendar } from "lucide-vue-next";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseTable from "~/components/ui/BaseTable.vue";
+import BaseTableSkeleton from "~/components/ui/BaseTableSkeleton.vue";
 import type { GetDashboardHistoryQuery } from "~/graphql/generated";
 
 interface Props {
@@ -21,13 +22,12 @@ defineProps<Props>();
 		no-padding-x
 		no-padding-y
 	>
-		<div
+		<BaseTableSkeleton
 			v-if="historyLoading"
-			class="loading-box"
-			role="status"
-		>
-			<p>Carregando histórico...</p>
-		</div>
+			:rows="10"
+			:columns="7"
+			label="Carregando histórico"
+		/>
 
 		<div
 			v-else-if="history.length === 0"
@@ -87,7 +87,6 @@ defineProps<Props>();
 
 .history-card {
 
-	.loading-box,
 	.empty-box {
 		@include flex-center;
 		flex-direction: column;

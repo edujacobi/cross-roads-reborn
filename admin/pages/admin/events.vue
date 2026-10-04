@@ -11,6 +11,7 @@ import BaseInput from "~/components/ui/BaseInput.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
 import BaseTable from "~/components/ui/BaseTable.vue";
 import BaseTableFooter from "~/components/ui/BaseTableFooter.vue";
+import BaseTableSkeleton from "~/components/ui/BaseTableSkeleton.vue";
 import PageTitle from "~/components/ui/PageTitle.vue";
 import { imagePaths } from "~/constants/imagePaths";
 import {
@@ -226,13 +227,12 @@ async function removeEvent() {
 			no-padding-x
 			no-padding-y
 		>
-			<div
+			<BaseTableSkeleton
 				v-if="loading"
-				class="state-message"
-				role="status"
-			>
-				Carregando eventos...
-			</div>
+				:rows="pageSize"
+				:columns="canWrite ? 7 : 6"
+				label="Carregando eventos"
+			/>
 			<div
 				v-else-if="queryError"
 				class="state-message error-message"

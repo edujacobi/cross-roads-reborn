@@ -11,6 +11,7 @@ import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseInput from "~/components/ui/BaseInput.vue";
 import BaseTable from "~/components/ui/BaseTable.vue";
 import BaseTableFooter from "~/components/ui/BaseTableFooter.vue";
+import BaseTableSkeleton from "~/components/ui/BaseTableSkeleton.vue";
 import PageTitle from "~/components/ui/PageTitle.vue";
 import { imagePaths } from "~/constants/imagePaths";
 import { SearchUsersDocument, type SearchUsersQuery } from "~/graphql/generated";
@@ -96,13 +97,12 @@ function nextPage() {
 				</div>
 			</template>
 
-			<div
+			<BaseTableSkeleton
 				v-if="loading"
-				class="loading-state"
-				role="status"
-			>
-				<p>Buscando jogadores no banco de dados...</p>
-			</div>
+				:rows="limit"
+				:columns="auth.hasAdminAccess.value ? 7 : 5"
+				label="Buscando jogadores no banco de dados"
+			/>
 
 			<div
 				v-else-if="users.length === 0"

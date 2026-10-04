@@ -5,6 +5,7 @@
 import { computed, ref } from "vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseTable from "~/components/ui/BaseTable.vue";
+import BaseTableSkeleton from "~/components/ui/BaseTableSkeleton.vue";
 import type { GetDashboardItemPopularityQuery } from "~/graphql/generated";
 import { ItemId } from "../../../src/core/types/Ids";
 
@@ -48,13 +49,12 @@ function getItemImage(itemId: number) {
 			</label>
 		</template>
 
-		<p
+		<BaseTableSkeleton
 			v-if="loading"
-			class="card-message"
-			role="status"
-		>
-			Carregando itens...
-		</p>
+			:rows="10"
+			:columns="2"
+			label="Carregando itens"
+		/>
 		<p
 			v-else-if="items.length === 0"
 			class="card-message"

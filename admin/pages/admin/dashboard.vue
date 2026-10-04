@@ -12,6 +12,7 @@ import DashboardUserHistory from "~/components/Dashboard/DashboardUserHistory.vu
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import PageTitle from "~/components/ui/PageTitle.vue";
+import RefreshButton from "~/components/ui/RefreshButton.vue";
 import { imagePaths } from "~/constants/imagePaths";
 import {
 	GetDashboardHistoryDocument,
@@ -65,18 +66,11 @@ function refreshData() {
 			subtitle="Visão geral em tempo real da economia e jogadores"
 		>
 			<template #actions>
-				<BaseButton
+				<RefreshButton
 					variant="secondary"
-					size="sm"
-					@click="refreshData()"
-				>
-					<RotateCw
-						:size="15"
-						:class="{ 'spin-icon': statsLoading || historyLoading || itemPopularityLoading }"
-						aria-hidden="true"
-					/>
-					Atualizar
-				</BaseButton>
+					:loading="statsLoading || historyLoading || itemPopularityLoading"
+					@refresh="refreshData()"
+				/>
 			</template>
 		</PageTitle>
 

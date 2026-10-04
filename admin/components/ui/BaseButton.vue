@@ -2,8 +2,10 @@
 	setup
 	lang="ts"
 >
+export type ButtonVariant = "primary" | "secondary" | "danger" | "success" | "ghost";
+
 interface Props {
-	variant?: "primary" | "secondary" | "danger" | "success" | "ghost";
+	variant?: ButtonVariant;
 	size?: "sm" | "md" | "lg";
 	disabled?: boolean;
 	type?: "button" | "submit" | "reset";

@@ -9,9 +9,9 @@ import { MapPin, Swords } from "lucide-vue-next";
 import { computed, ref, watch } from "vue";
 import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
-import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
 import BaseTable from "~/components/ui/BaseTable.vue";
 import BaseTableFooter from "~/components/ui/BaseTableFooter.vue";
+import BaseTableSkeleton from "~/components/ui/BaseTableSkeleton.vue";
 import RefreshButton from "~/components/ui/RefreshButton.vue";
 import { imagePaths } from "~/constants/imagePaths";
 import { GetUserHistoryDocument, type GetUserHistoryQuery } from "~/graphql/generated";
@@ -126,24 +126,12 @@ function nextPage() {
 			/>
 		</template>
 
-		<div
+		<BaseTableSkeleton
 			v-if="loading && entries.length === 0"
-			class="user-history-card__skeleton"
-			role="status"
-			aria-label="Carregando histórico de confrontos"
-		>
-			<div
-				v-for="row in 5"
-				:key="row"
-				class="user-history-card__skeleton-row"
-			>
-				<BaseSkeleton
-					v-for="column in 6"
-					:key="column"
-					height="2rem"
-				/>
-			</div>
-		</div>
+			:rows="limit"
+			:columns="6"
+			label="Carregando histórico de confrontos"
+		/>
 
 		<div
 			v-else-if="entries.length === 0"
@@ -376,19 +364,6 @@ function nextPage() {
 @use "~/assets/scss/mixins" as *;
 
 .user-history-card {
-	&__skeleton {
-		display: flex;
-		flex-direction: column;
-		gap: $spacing-xs;
-		padding: $spacing-md;
-	}
-
-	&__skeleton-row {
-		display: grid;
-		grid-template-columns: repeat(6, minmax(0, 1fr));
-		gap: $spacing-sm;
-	}
-
 	&__state {
 		@include flex-center;
 		flex-direction: column;

@@ -9,6 +9,7 @@ import { UserCheck } from "lucide-vue-next";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseTable from "~/components/ui/BaseTable.vue";
 import BaseTableFooter from "~/components/ui/BaseTableFooter.vue";
+import BaseTableSkeleton from "~/components/ui/BaseTableSkeleton.vue";
 import PageTitle from "~/components/ui/PageTitle.vue";
 import { SearchUsersDocument, type SearchUsersQuery } from "~/graphql/generated";
 
@@ -49,13 +50,12 @@ function remainingVipTime(vipTime: string | null): string {
 			no-padding-x
 			no-padding-y
 		>
-			<div
+			<BaseTableSkeleton
 				v-if="loading"
-				class="list-state"
-				role="status"
-			>
-				Carregando jogadores VIP...
-			</div>
+				:rows="pageSize"
+				:columns="3"
+				label="Carregando jogadores VIP"
+			/>
 			<div
 				v-else-if="error"
 				class="list-state error-state"

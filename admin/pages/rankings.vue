@@ -8,6 +8,7 @@ import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseTable from "~/components/ui/BaseTable.vue";
 import BaseTableFooter from "~/components/ui/BaseTableFooter.vue";
+import BaseTableSkeleton from "~/components/ui/BaseTableSkeleton.vue";
 import { type ImagePath, imagePaths } from "~/constants/imagePaths";
 import { GetTopGangsDocument, GetTopUsersDocument, UserRanking } from "~/graphql/generated";
 
@@ -227,13 +228,12 @@ function nextPage() {
 			no-padding-x
 			no-padding-y
 		>
-			<div
+			<BaseTableSkeleton
 				v-if="loading"
-				class="state-message"
-				role="status"
-			>
-				Carregando ranking...
-			</div>
+				:rows="pageSize"
+				:columns="isGangRanking ? 4 : activeRanking.countLabel ? 3 : 2"
+				label="Carregando ranking"
+			/>
 			<div
 				v-else-if="error"
 				class="state-message error-message"
