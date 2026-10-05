@@ -3,11 +3,10 @@
 	lang="ts"
 >
 import { useQuery } from "@vue/apollo-composable";
-import { format, formatDistance } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { Search, UserCheck } from "lucide-vue-next";
 import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
+import BaseEmptyState from "~/components/ui/BaseEmptyState.vue";
 import BaseInput from "~/components/ui/BaseInput.vue";
 import BaseTable from "~/components/ui/BaseTable.vue";
 import BaseTableFooter from "~/components/ui/BaseTableFooter.vue";
@@ -25,16 +24,14 @@ useHead({
 });
 
 const auth = useAuth();
+const { dateTime, distance } = useDateFormat();
 const searchQuery = ref("");
-const page = ref(1);
-const limit = ref(15);
+const { page, pageSize: limit, offset, resetPage } = usePagination(1, 15);
 const pageSubtitle = computed(() =>
 	auth.hasAdminAccess.value
 		? "Pesquise, visualize inventários e execute ações de moderação e administração"
 		: "Pesquise e visualize os perfis dos jogadores",
 );
-
-const offset = computed(() => (page.value - 1) * limit.value);
 
 const { result, loading } = useQuery(
 	SearchUsersDocument,
@@ -55,7 +52,7 @@ const totalPages = computed(() => Math.ceil(total.value / limit.value) || 1);
 
 function handleSearch(val: string | number) {
 	searchQuery.value = String(val);
-	page.value = 1;
+	resetPage();
 }
 
 function prevPage() {
@@ -104,16 +101,13 @@ function nextPage() {
 				label="Buscando jogadores no banco de dados"
 			/>
 
-			<div
+			<BaseEmptyState
 				v-else-if="users.length === 0"
-				class="empty-state"
+				:icon="UserCheck"
+				:icon-size="36"
 			>
-				<UserCheck
-					:size="36"
-					aria-hidden="true"
-				/>
 				<p>Nenhum jogador encontrado com os critérios de busca.</p>
-			</div>
+			</BaseEmptyState>
 
 			<BaseTable v-else>
 				<table class="users-table">
@@ -234,11 +228,11 @@ function nextPage() {
 								</BaseBadge>
 							</td>
 							<td v-if="auth.hasAdminAccess.value">
-								<time :datetime="u.createdAt">{{ format(u.createdAt, "dd/MM/yyyy hh:mm") }}</time>
+								<time :datetime="u.createdAt">{{ dateTime(u.createdAt) }}</time>
 							</td>
 							<td v-if="auth.hasAdminAccess.value">
 								<time :datetime="u.updatedAt">
-									{{ formatDistance(u.updatedAt, new Date(), { locale: ptBR }) }}
+									{{ distance(u.updatedAt, new Date()) }}
 								</time>
 							</td>
 						</tr>
@@ -248,9 +242,15 @@ function nextPage() {
 
 			<template #footer>
 				<BaseTableFooter
-					:labels="{
-						item: 'jogadores',
-						navigation: 'Paginação de jogadores',
+					:labels="{
+
+
+						item: 'jogadores',
+
+
+						navigation: 'Paginação de jogadores',
+
+
 					}"
 					:index="users.length"
 					:offset="offset"

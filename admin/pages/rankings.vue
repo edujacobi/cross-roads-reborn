@@ -6,6 +6,8 @@ import { useQuery } from "@vue/apollo-composable";
 import { Trophy } from "lucide-vue-next";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
+import BaseEmptyState from "~/components/ui/BaseEmptyState.vue";
+import BaseErrorState from "~/components/ui/BaseErrorState.vue";
 import BaseTable from "~/components/ui/BaseTable.vue";
 import BaseTableFooter from "~/components/ui/BaseTableFooter.vue";
 import BaseTableSkeleton from "~/components/ui/BaseTableSkeleton.vue";
@@ -129,10 +131,9 @@ const gangRanking: RankingList = {
 const rankingOptions = [...rankings, gangRanking];
 
 const auth = useAuth();
+const { format: formatMoney } = useMoneyFormat();
 const activeRanking = ref<RankingList>(rankings[0]);
-const page = ref(1);
-const pageSize = 10;
-const offset = computed(() => (page.value - 1) * pageSize);
+const { page, pageSize, offset } = usePagination(1, 10);
 const {
 	result: userResult,
 	loading: userLoading,
@@ -140,7 +141,7 @@ const {
 	refetch: refetchUsers,
 } = useQuery(GetTopUsersDocument, {
 	ranking: rankings[0].type as UserRanking,
-	limit: pageSize,
+	limit: pageSize.value,
 	offset: 0,
 });
 const {
@@ -148,7 +149,7 @@ const {
 	loading: gangLoading,
 	error: gangError,
 	refetch: refetchGangs,
-} = useQuery(GetTopGangsDocument, { limit: pageSize, offset: 0 });
+} = useQuery(GetTopGangsDocument, { limit: pageSize.value, offset: 0 });
 
 const entries = computed(() => userResult.value?.topUsers.entries ?? []);
 const gangs = computed(() => gangResult.value?.topGangs.entries ?? []);
@@ -158,7 +159,7 @@ const error = computed(() => (isGangRanking.value ? gangError.value : userError.
 const total = computed(() =>
 	isGangRanking.value ? (gangResult.value?.topGangs.total ?? 0) : (userResult.value?.topUsers.total ?? 0),
 );
-const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSize)));
+const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSize.value)));
 watch(totalPages, (lastPage) => {
 	if (page.value > lastPage) page.value = lastPage;
 });
@@ -170,7 +171,7 @@ async function selectRanking(ranking: RankingList) {
 
 async function loadPage(targetPage: number, ranking = activeRanking.value) {
 	page.value = targetPage;
-	const variables = { limit: pageSize, offset: (targetPage - 1) * pageSize };
+	const variables = { limit: pageSize.value, offset: (targetPage - 1) * pageSize.value };
 	if (ranking.type === "GANGS") {
 		await refetchGangs(variables);
 	} else {
@@ -180,7 +181,7 @@ async function loadPage(targetPage: number, ranking = activeRanking.value) {
 
 function formatValue(value: number): string {
 	const formatted = Math.floor(value).toLocaleString("pt-BR").replace(/,/g, ".");
-	return activeRanking.value.isMoney ? `Cr$ ${formatted}` : formatted;
+	return activeRanking.value.isMoney ? formatMoney(formatted) : formatted;
 }
 
 function previousPage() {
@@ -234,23 +235,15 @@ function nextPage() {
 				:columns="isGangRanking ? 4 : activeRanking.countLabel ? 3 : 2"
 				label="Carregando ranking"
 			/>
-			<div
-				v-else-if="error"
-				class="state-message error-message"
-				role="alert"
-			>
+			<BaseErrorState v-else-if="error">
 				Não foi possível carregar este ranking.
-			</div>
-			<div
+			</BaseErrorState>
+			<BaseEmptyState
 				v-else-if="isGangRanking ? gangs.length === 0 : entries.length === 0"
-				class="state-message"
+				:icon="Trophy"
 			>
-				<Trophy
-					:size="32"
-					aria-hidden="true"
-				/>
 				{{ isGangRanking ? "Nenhuma gangue neste ranking." : "Nenhum jogador neste ranking." }}
-			</div>
+			</BaseEmptyState>
 			<BaseTable v-else>
 				<table
 					v-if="isGangRanking"
@@ -371,9 +364,15 @@ function nextPage() {
 				#footer
 			>
 				<BaseTableFooter
-					:labels="{
-						item: isGangRanking ? 'gangues' : 'jogadores',
-						navigation: 'Paginação do ranking',
+					:labels="{
+
+
+						item: isGangRanking ? 'gangues' : 'jogadores',
+
+
+						navigation: 'Paginação do ranking',
+
+
 					}"
 					:index="isGangRanking ? gangs.length : entries.length"
 					:offset="offset"

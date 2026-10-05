@@ -26,6 +26,7 @@ useHead({
 });
 
 const auth = useAuth();
+const { longDate } = useDateFormat();
 const { showToast } = useToast();
 const { client } = useApolloClient();
 const { result, loading, error: queryError, refetch } = useQuery(GetSeasonInfoDocument);
@@ -94,7 +95,7 @@ const wipeStats = computed(() => {
 });
 
 function formatDate(value: string): string {
-	return new Intl.DateTimeFormat("pt-BR", { dateStyle: "long" }).format(new Date(value));
+	return longDate(value);
 }
 
 async function toggleMainHeist() {

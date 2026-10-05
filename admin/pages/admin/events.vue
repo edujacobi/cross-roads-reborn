@@ -7,6 +7,8 @@ import { CalendarDays, Pencil, Plus, Trash2 } from "lucide-vue-next";
 import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
+import BaseEmptyState from "~/components/ui/BaseEmptyState.vue";
+import BaseErrorState from "~/components/ui/BaseErrorState.vue";
 import BaseInput from "~/components/ui/BaseInput.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
 import BaseTable from "~/components/ui/BaseTable.vue";
@@ -52,6 +54,7 @@ const eventTypes = [
 const eventTypeNames = Object.fromEntries(eventTypes.map(({ id, name }) => [id, name]));
 
 const auth = useAuth();
+const { shortDateShortTime } = useDateFormat();
 const { showToast } = useToast();
 const { result, loading, error: queryError, refetch } = useQuery(GetEventsDocument);
 const { mutate: createEvent, loading: creating } = useMutation(CreateEventDocument);
@@ -105,7 +108,7 @@ function beginEdit(event: EventRecord) {
 }
 
 function formatDate(value: string): string {
-	return new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(new Date(value));
+	return shortDateShortTime(value);
 }
 
 function getErrorMessage(caughtError: unknown): string {
@@ -233,23 +236,15 @@ async function removeEvent() {
 				:columns="canWrite ? 7 : 6"
 				label="Carregando eventos"
 			/>
-			<div
-				v-else-if="queryError"
-				class="state-message error-message"
-				role="alert"
-			>
+			<BaseErrorState v-else-if="queryError">
 				Não foi possível carregar os eventos.
-			</div>
-			<div
+			</BaseErrorState>
+			<BaseEmptyState
 				v-else-if="events.length === 0"
-				class="state-message"
+				:icon="CalendarDays"
 			>
-				<CalendarDays
-					:size="32"
-					aria-hidden="true"
-				/>
 				Nenhum evento cadastrado.
-			</div>
+			</BaseEmptyState>
 			<BaseTable v-else>
 				<table class="events-table">
 					<caption class="visually-hidden">
@@ -334,9 +329,15 @@ async function removeEvent() {
 				#footer
 			>
 				<BaseTableFooter
-					:labels="{
-						item: 'eventos',
-						navigation: 'Paginação de eventos',
+					:labels="{
+
+
+						item: 'eventos',
+
+
+						navigation: 'Paginação de eventos',
+
+
 					}"
 					:index="pageEvents.length"
 					:offset="(page - 1) * pageSize"

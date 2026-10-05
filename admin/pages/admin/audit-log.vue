@@ -5,6 +5,8 @@
 import { useQuery } from "@vue/apollo-composable";
 import { ScrollText } from "lucide-vue-next";
 import BaseCard from "~/components/ui/BaseCard.vue";
+import BaseEmptyState from "~/components/ui/BaseEmptyState.vue";
+import BaseErrorState from "~/components/ui/BaseErrorState.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
 import BaseTable from "~/components/ui/BaseTable.vue";
 import BaseTableFooter from "~/components/ui/BaseTableFooter.vue";
@@ -21,16 +23,15 @@ useHead({
 });
 
 const auth = useAuth();
+const { shortDateTime } = useDateFormat();
+const { page, pageSize, offset, resetPage } = usePagination(1, 25);
 const isDeveloper = computed(() => auth.isDeveloper.value);
 const selectedEntry = ref<GetAdminAuditLogsQuery["adminAuditLogs"]["entries"][number] | null>(null);
-const page = ref(1);
 const selectedActionId = ref("");
-const pageSize = 25;
 const paginationLabels = {
 	item: "ações",
 	navigation: "Paginação do registro de auditoria",
 };
-const offset = computed(() => (page.value - 1) * pageSize);
 const { result, loading, error } = useQuery(
 	GetAdminAuditLogsDocument,
 	() => ({
@@ -44,7 +45,15 @@ const { result, loading, error } = useQuery(
 const auditPage = computed(() => result.value?.adminAuditLogs);
 const entries = computed<GetAdminAuditLogsQuery["adminAuditLogs"]["entries"]>(() => auditPage.value?.entries ?? []);
 const total = computed(() => auditPage.value?.total ?? 0);
-const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSize)));
+const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSize.value)));
+
+function prevPage() {
+	if (page.value > 1) page.value--;
+}
+
+function nextPage() {
+	if (page.value < totalPages.value) page.value++;
+}
 
 const actionNames: Record<number, string> = {
 	1: "Alterar permissão do Golpe principal",
@@ -79,7 +88,7 @@ const settingNames: Record<number, string> = {
 const actionOptions = Object.entries(actionNames).map(([id, name]) => ({ id, name }));
 
 watch(selectedActionId, () => {
-	page.value = 1;
+	resetPage();
 });
 
 function formatValue(value: string): string {
@@ -93,7 +102,7 @@ function formatValue(value: string): string {
 }
 
 function formatDate(value: string): string {
-	return new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "medium" }).format(new Date(value));
+	return shortDateTime(value);
 }
 
 function openEntry(entry: GetAdminAuditLogsQuery["adminAuditLogs"]["entries"][number]) {
@@ -104,13 +113,6 @@ function setModalOpen(isOpen: boolean) {
 	if (!isOpen) selectedEntry.value = null;
 }
 
-function prevPage() {
-	if (page.value > 1) page.value--;
-}
-
-function nextPage() {
-	if (page.value < totalPages.value) page.value++;
-}
 </script>
 
 <template>
@@ -149,23 +151,15 @@ function nextPage() {
 				:columns="6"
 				label="Carregando registro de auditoria"
 			/>
-			<div
-				v-else-if="error"
-				class="audit-state audit-state--error"
-				role="alert"
-			>
+			<BaseErrorState v-else-if="error">
 				Não foi possível carregar o registro de auditoria.
-			</div>
-			<div
+			</BaseErrorState>
+			<BaseEmptyState
 				v-else-if="entries.length === 0"
-				class="audit-state"
+				:icon="ScrollText"
 			>
-				<ScrollText
-					:size="32"
-					aria-hidden="true"
-				/>
 				Nenhuma ação administrativa registrada.
-			</div>
+			</BaseEmptyState>
 			<BaseTable v-else>
 				<table>
 					<caption class="visually-hidden">

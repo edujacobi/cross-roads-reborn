@@ -3,12 +3,11 @@
 	lang="ts"
 >
 import { useQuery } from "@vue/apollo-composable";
-import { format, formatDistanceToNow } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { MapPin, Swords } from "lucide-vue-next";
 import { computed, ref, watch } from "vue";
 import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
+import BaseEmptyState from "~/components/ui/BaseEmptyState.vue";
 import BaseTable from "~/components/ui/BaseTable.vue";
 import BaseTableFooter from "~/components/ui/BaseTableFooter.vue";
 import BaseTableSkeleton from "~/components/ui/BaseTableSkeleton.vue";
@@ -23,9 +22,9 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const page = ref(1);
-const limit = ref(10);
-const offset = computed(() => (page.value - 1) * limit.value);
+const { dateTime, relative } = useDateFormat();
+const { format: formatMoney } = useMoneyFormat();
+const { page, pageSize: limit, offset } = usePagination(1, 10);
 
 const { result, loading, refetch } = useQuery(
 	GetUserHistoryDocument,
@@ -58,19 +57,6 @@ const paginationLabels = {
 	item: "confrontos",
 	navigation: "Navegação do histórico",
 };
-
-const numberFormat = new Intl.NumberFormat("pt-BR");
-function formatMoney(amount: number): string {
-	return `Cr$ ${numberFormat.format(amount)}`;
-}
-
-function formatDate(dateString: string): string {
-	return format(new Date(dateString), "dd/MM/yyyy HH:mm");
-}
-
-function formatRelative(dateString: string): string {
-	return formatDistanceToNow(new Date(dateString), { addSuffix: true, locale: ptBR });
-}
 
 function getClashTypeLabel(type: number): string {
 	switch (type) {
@@ -133,16 +119,12 @@ function nextPage() {
 			label="Carregando histórico de confrontos"
 		/>
 
-		<div
+		<BaseEmptyState
 			v-else-if="entries.length === 0"
-			class="user-history-card__state"
+			:icon="Swords"
 		>
-			<Swords
-				:size="32"
-				aria-hidden="true"
-			/>
 			<p>Este usuário não possui histórico de confrontos.</p>
-		</div>
+		</BaseEmptyState>
 
 		<BaseTable
 			v-else
@@ -328,9 +310,9 @@ function nextPage() {
 									:datetime="entry.createdAt"
 									class="history-time__date"
 								>
-									{{ formatDate(entry.createdAt) }}
+									{{ dateTime(entry.createdAt) }}
 								</time>
-								<small class="history-time__relative">{{ formatRelative(entry.createdAt) }}</small>
+								<small class="history-time__relative">{{ relative(entry.createdAt, true) }}</small>
 							</div>
 						</td>
 					</tr>

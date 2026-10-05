@@ -3,10 +3,10 @@
 	lang="ts"
 >
 import { useQuery } from "@vue/apollo-composable";
-import { formatDistance } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { UserCheck } from "lucide-vue-next";
 import BaseCard from "~/components/ui/BaseCard.vue";
+import BaseEmptyState from "~/components/ui/BaseEmptyState.vue";
+import BaseErrorState from "~/components/ui/BaseErrorState.vue";
 import BaseTable from "~/components/ui/BaseTable.vue";
 import BaseTableFooter from "~/components/ui/BaseTableFooter.vue";
 import BaseTableSkeleton from "~/components/ui/BaseTableSkeleton.vue";
@@ -21,20 +21,27 @@ useHead({
 	title: "VIPs",
 });
 
-const page = ref(1);
-const pageSize = 15;
-const offset = computed(() => (page.value - 1) * pageSize);
+const { page, pageSize, offset } = usePagination(1, 15);
+const { distance } = useDateFormat();
 const { result, loading, error } = useQuery(SearchUsersDocument, () => ({
 	vipOnly: true,
-	limit: pageSize,
+	limit: pageSize.value,
 	offset: offset.value,
 }));
 const users = computed<SearchUsersQuery["users"]["users"]>(() => result.value?.users.users ?? []);
 const total = computed(() => result.value?.users.total ?? 0);
-const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSize)));
+const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSize.value)));
+
+function prevPage() {
+	if (page.value > 1) page.value--;
+}
+
+function nextPage() {
+	if (page.value < totalPages.value) page.value++;
+}
 
 function remainingVipTime(vipTime: string | null): string {
-	return vipTime ? formatDistance(new Date(vipTime), new Date(), { locale: ptBR }) : "—";
+	return vipTime ? distance(vipTime, new Date()) : "—";
 }
 </script>
 
@@ -56,23 +63,15 @@ function remainingVipTime(vipTime: string | null): string {
 				:columns="3"
 				label="Carregando jogadores VIP"
 			/>
-			<div
-				v-else-if="error"
-				class="list-state error-state"
-				role="alert"
-			>
+			<BaseErrorState v-else-if="error">
 				Não foi possível carregar os jogadores VIP.
-			</div>
-			<div
+			</BaseErrorState>
+			<BaseEmptyState
 				v-else-if="users.length === 0"
-				class="list-state"
+				:icon="UserCheck"
 			>
-				<UserCheck
-					:size="32"
-					aria-hidden="true"
-				/>
 				Nenhum VIP ativo encontrado.
-			</div>
+			</BaseEmptyState>
 			<BaseTable v-else>
 				<table class="vips-table">
 					<caption class="visually-hidden">
@@ -116,17 +115,23 @@ function remainingVipTime(vipTime: string | null): string {
 
 			<template #footer>
 				<BaseTableFooter
-					:labels="{
-						item: 'VIPs',
-						navigation: 'Paginação de VIPs',
+					:labels="{
+
+
+						item: 'VIPs',
+
+
+						navigation: 'Paginação de VIPs',
+
+
 					}"
 					:index="users.length"
 					:offset="offset"
 					:total="total"
 					:page="page"
 					:pages="totalPages"
-					@click-previous="page--"
-					@click-next="page++"
+ 				@click-previous="prevPage()"
+ 				@click-next="nextPage()"
 				/>
 			</template>
 		</BaseCard>
