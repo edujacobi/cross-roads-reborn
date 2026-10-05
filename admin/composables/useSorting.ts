@@ -13,7 +13,7 @@ export function useSorting(initialColumn?: string, initialDirection: SortDirecti
 	const route = useRoute();
 	const router = useRouter();
 
-	const sortColumn = ref(route.query.sort || initialColumn || "");
+	const sortColumn = ref(typeof route.query.sort === "string" ? route.query.sort : initialColumn || "");
 	const orderParam = route.query.order as string;
 	const sortDirection = ref<SortDirection>(
 		(orderParam === "asc" || orderParam === "desc" ? orderParam : null) || initialDirection,
