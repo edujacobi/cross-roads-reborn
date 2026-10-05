@@ -2,6 +2,7 @@
 	setup
 	lang="ts"
 >
+import GlobalItemDetailModal from "~/components/GlobalItemDetailModal.vue";
 import Sidebar from "~/components/Sidebar.vue";
 </script>
 
@@ -15,6 +16,8 @@ import Sidebar from "~/components/Sidebar.vue";
 				<slot />
 			</div>
 		</div>
+
+		<GlobalItemDetailModal />
 	</div>
 </template>
 

@@ -11,6 +11,7 @@ import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
 import RefreshButton from "~/components/ui/RefreshButton.vue";
+import { useItemDetailModal } from "~/composables/useItemDetailModal";
 import { imagePaths } from "~/constants/imagePaths";
 import { localStorageKeys } from "~/constants/localStorageKeys";
 import { GetUserInventoryDocument, type GetUserInventoryQuery } from "~/graphql/generated";
@@ -35,6 +36,8 @@ function toggleCompactInventory() {
 	isCompactInventory.value = !isCompactInventory.value;
 	inventoryStorage.set(String(isCompactInventory.value));
 }
+
+const { openItemModal } = useItemDetailModal();
 
 function getItemStatusClasses(item: NonNullable<GetUserInventoryQuery["user"]>["items"][number]) {
 	const classes: string[] = [];
@@ -132,11 +135,11 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 				:key="item.id"
 				:title="isCompactInventory ? item.name : ''"
 			>
-				<NuxtLink
-					:to="`items?id=${item.id}`"
-					target="_blank"
+				<button
+					type="button"
 					class="user-inventory__item"
 					:class="{ 'user-inventory__item--compact': isCompactInventory }"
+					@click="openItemModal(item)"
 				>
 					<LazyNuxtImg
 						class="user-inventory__item-image"
@@ -170,7 +173,7 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 							{{ formatDistanceToNow(new Date(item.remainingTime), { locale: ptBR }) }}
 						</span>
 					</div>
-				</NuxtLink>
+				</button>
 			</li>
 		</ul>
 	</BaseCard>
@@ -240,6 +243,8 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 		align-items: center;
 		gap: $spacing-md;
 		transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+		cursor: pointer;
+		width: 100%;
 
 		&-image {
 			width: 4rem;
