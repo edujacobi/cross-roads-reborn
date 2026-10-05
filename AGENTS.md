@@ -164,6 +164,28 @@ When creating a new skin bundle (a themed set of skins), all items in the bundle
 
 ## Coding Standards
 
+### Ponytail — The Laziest Solution That Works
+
+Always apply the "Ponytail" approach: channel a senior dev who prioritizes minimal code, reuses existing patterns, and avoids over-engineering. The best code is the code never written.
+
+**The Ladder** — stop at the first rung that holds:
+
+1. **Does this need to exist at all?** (YAGNI)
+2. **Already in this codebase?** Reuse existing helpers, utils, types.
+3. **Stdlib does it?** Use it.
+4. **Native platform feature covers it?** Use native over libraries.
+5. **Already-installed dependency solves it?** Use it.
+6. **Can it be one line?** One line.
+7. **Only then:** write the minimum code that works.
+
+**Rules:**
+
+- No unrequested abstractions, boilerplate, or scaffolding "for later."
+- Deletion over addition. Fewest files possible. Shortest working diff wins.
+- Bug fixes target the **root cause**, not symptoms.
+- Never lazy about: input validation, error handling, security, accessibility, or explicitly requested features.
+- Never lazy about **understanding the problem** — read the full flow first, then be lazy with the solution.
+
 ### Number Representation
 
 Always separate thousands with an underscore (`_`) for better readability.
