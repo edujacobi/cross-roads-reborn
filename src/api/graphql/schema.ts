@@ -437,7 +437,7 @@ export const typeDefs = /* GraphQL */ `
         events: [Event!]!
         seasonInfo: SeasonInfo!
         seasonEndPreview: SeasonEndPreview!
-        users(search: String, limit: Int, offset: Int, vipOnly: Boolean): UserSearchResult!
+        users(search: String, limit: Int, offset: Int, vipOnly: Boolean, sortBy: String, sortOrder: String): UserSearchResult!
         topUsers(ranking: UserRanking!, limit: Int, offset: Int): UserRankingResult!
         topGangs(limit: Int, offset: Int): GangRankingResult!
         user(id: ID!): UserDetail

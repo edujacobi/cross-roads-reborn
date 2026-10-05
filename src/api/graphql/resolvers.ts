@@ -626,7 +626,7 @@ export const resolvers: {
 
 		users: async (
 			_: unknown,
-			args: { search?: string; limit?: number; offset?: number; vipOnly?: boolean },
+			args: { search?: string; limit?: number; offset?: number; vipOnly?: boolean; sortBy?: string; sortOrder?: string },
 			context: GraphQLContext,
 		) => {
 			const authUser = assertAuthenticated(context);
@@ -641,6 +641,8 @@ export const resolvers: {
 				limit: args.limit,
 				offset: args.offset,
 				vipOnly: args.vipOnly,
+				sortBy: args.sortBy,
+				sortOrder: args.sortOrder,
 			});
 
 			const client = getClient();

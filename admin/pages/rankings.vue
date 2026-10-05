@@ -4,6 +4,8 @@
 >
 import { useQuery } from "@vue/apollo-composable";
 import { Trophy } from "lucide-vue-next";
+import { onMounted } from "vue";
+import { type LocationQueryValue, useRouter } from "vue-router";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseEmptyState from "~/components/ui/BaseEmptyState.vue";
@@ -132,7 +134,13 @@ const rankingOptions = [...rankings, gangRanking];
 
 const auth = useAuth();
 const { format: formatMoney } = useMoneyFormat();
-const activeRanking = ref<RankingList>(rankings[0]);
+const route = useRoute();
+const router = useRouter();
+
+// Restore active ranking from URL query param
+const rankingKey = (route.query.ranking as string) || undefined;
+const activeRanking = ref<RankingList>(rankingOptions.find((r) => r.type === rankingKey) ?? rankings[0]);
+
 const { page, pageSize, offset } = usePagination(1, 10);
 const {
 	result: userResult,
@@ -140,7 +148,7 @@ const {
 	error: userError,
 	refetch: refetchUsers,
 } = useQuery(GetTopUsersDocument, {
-	ranking: rankings[0].type as UserRanking,
+	ranking: activeRanking.value.type as UserRanking,
 	limit: pageSize.value,
 	offset: 0,
 });
@@ -160,13 +168,14 @@ const total = computed(() =>
 	isGangRanking.value ? (gangResult.value?.topGangs.total ?? 0) : (userResult.value?.topUsers.total ?? 0),
 );
 const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSize.value)));
-watch(totalPages, (lastPage) => {
-	if (page.value > lastPage) page.value = lastPage;
-});
 
 async function selectRanking(ranking: RankingList) {
 	activeRanking.value = ranking;
 	await loadPage(1, ranking);
+	const query: { [p: string]: string | null | LocationQueryValue[] } = { ...route.query };
+	query.ranking = ranking.type;
+	delete query.page;
+	await router.replace({ query });
 }
 
 async function loadPage(targetPage: number, ranking = activeRanking.value) {
@@ -179,9 +188,15 @@ async function loadPage(targetPage: number, ranking = activeRanking.value) {
 	}
 }
 
+onMounted(async () => {
+	if (page.value > 1) {
+		await loadPage(page.value);
+	}
+});
+
 function formatValue(value: number): string {
-	const formatted = Math.floor(value).toLocaleString("pt-BR").replace(/,/g, ".");
-	return activeRanking.value.isMoney ? formatMoney(formatted) : formatted;
+	const num = Math.floor(value);
+	return activeRanking.value.isMoney ? formatMoney(num) : num.toLocaleString("pt-BR").replace(/,/g, ".");
 }
 
 function previousPage() {
@@ -235,9 +250,7 @@ function nextPage() {
 				:columns="isGangRanking ? 4 : activeRanking.countLabel ? 3 : 2"
 				label="Carregando ranking"
 			/>
-			<BaseErrorState v-else-if="error">
-				Não foi possível carregar este ranking.
-			</BaseErrorState>
+			<BaseErrorState v-else-if="error"> Não foi possível carregar este ranking. </BaseErrorState>
 			<BaseEmptyState
 				v-else-if="isGangRanking ? gangs.length === 0 : entries.length === 0"
 				:icon="Trophy"

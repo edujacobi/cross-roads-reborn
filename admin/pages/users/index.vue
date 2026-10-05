@@ -3,7 +3,7 @@
 	lang="ts"
 >
 import { useQuery } from "@vue/apollo-composable";
-import { Search, UserCheck } from "lucide-vue-next";
+import { ArrowDown, ArrowUp, ArrowUpDown, Search, UserCheck } from "lucide-vue-next";
 import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseEmptyState from "~/components/ui/BaseEmptyState.vue";
@@ -27,6 +27,7 @@ const auth = useAuth();
 const { dateTime, distance } = useDateFormat();
 const searchQuery = ref("");
 const { page, pageSize: limit, offset, resetPage } = usePagination(1, 15);
+const { sortColumn, sortDirection, toggleSort } = useSorting();
 const pageSubtitle = computed(() =>
 	auth.hasAdminAccess.value
 		? "Pesquise, visualize inventários e execute ações de moderação e administração"
@@ -39,6 +40,8 @@ const { result, loading } = useQuery(
 		search: searchQuery.value.trim() || undefined,
 		limit: limit.value,
 		offset: offset.value,
+		sortBy: sortColumn.value || undefined,
+		sortOrder: sortDirection.value?.toUpperCase() || undefined,
 	}),
 	{ debounce: 300 },
 );
@@ -55,12 +58,17 @@ function handleSearch(val: string | number) {
 	resetPage();
 }
 
+function handleSort(column: string) {
+	toggleSort(column);
+	resetPage();
+}
+
 function prevPage() {
-	if (page.value > 1) page.value--;
+	if (!loading.value && page.value > 1) page.value--;
 }
 
 function nextPage() {
-	if (page.value < totalPages.value) page.value++;
+	if (!loading.value && page.value < totalPages.value) page.value++;
 }
 </script>
 
@@ -109,19 +117,70 @@ function nextPage() {
 				<p>Nenhum jogador encontrado com os critérios de busca.</p>
 			</BaseEmptyState>
 
-			<BaseTable v-else>
+			<BaseTable
+				v-else
+				:sort-column="sortColumn"
+				:sort-direction="sortDirection"
+				@sort="handleSort"
+			>
 				<table class="users-table">
 					<caption class="visually-hidden">
 						Lista de jogadores
 					</caption>
 					<thead>
 						<tr>
-							<th scope="col">Jogador</th>
+							<th
+								scope="col"
+								class="sortable"
+								@click="handleSort('nickname')"
+							>
+								<span class="sort-header-content">
+									Jogador
+									<span class="sort-icons">
+										<ArrowUpDown
+											v-if="sortColumn !== 'nickname'"
+											:size="14"
+											class="sort-icon unsorted"
+										/>
+										<ArrowUp
+											v-else-if="sortDirection === 'asc'"
+											:size="14"
+											class="sort-icon asc"
+										/>
+										<ArrowDown
+											v-else
+											:size="14"
+											class="sort-icon desc"
+										/>
+									</span>
+								</span>
+							</th>
 							<th
 								v-if="auth.hasAdminAccess.value"
 								scope="col"
+								class="sortable"
+								@click="handleSort('id')"
 							>
-								ID
+								<span class="sort-header-content">
+									ID
+									<span class="sort-icons">
+										<ArrowUpDown
+											v-if="sortColumn !== 'id'"
+											:size="14"
+											class="sort-icon unsorted"
+										/>
+										<ArrowUp
+											v-else-if="sortDirection === 'asc'"
+											:size="14"
+											class="sort-icon asc"
+										/>
+										<ArrowDown
+											v-else
+											:size="14"
+											class="sort-icon desc"
+										/>
+									</span>
+								</span>
 							</th>
 							<th scope="col">Grupo</th>
 							<th scope="col">Classe</th>
@@ -129,14 +188,56 @@ function nextPage() {
 							<th
 								v-if="auth.hasAdminAccess.value"
 								scope="col"
+								class="sortable"
+								@click="handleSort('createdAt')"
 							>
-								Criação
+								<span class="sort-header-content">
+									Criação
+									<span class="sort-icons">
+										<ArrowUpDown
+											v-if="sortColumn !== 'createdAt'"
+											:size="14"
+											class="sort-icon unsorted"
+										/>
+										<ArrowUp
+											v-else-if="sortDirection === 'asc'"
+											:size="14"
+											class="sort-icon asc"
+										/>
+										<ArrowDown
+											v-else
+											:size="14"
+											class="sort-icon desc"
+										/>
+									</span>
+								</span>
 							</th>
 							<th
 								v-if="auth.hasAdminAccess.value"
 								scope="col"
+								class="sortable"
+								@click="handleSort('updatedAt')"
 							>
-								Última atualização
+								<span class="sort-header-content">
+									Última atualização
+									<span class="sort-icons">
+										<ArrowUpDown
+											v-if="sortColumn !== 'updatedAt'"
+											:size="14"
+											class="sort-icon unsorted"
+										/>
+										<ArrowUp
+											v-else-if="sortDirection === 'asc'"
+											:size="14"
+											class="sort-icon asc"
+										/>
+										<ArrowDown
+											v-else
+											:size="14"
+											class="sort-icon desc"
+										/>
+									</span>
+								</span>
 							</th>
 						</tr>
 					</thead>
@@ -314,6 +415,52 @@ function nextPage() {
 }
 
 .users-table {
+	th.sortable {
+		cursor: pointer;
+		user-select: none;
+		transition: color 0.15s ease;
+
+		&:hover {
+			color: $text-primary;
+		}
+
+		&:focus-visible {
+			outline: 2px solid $color-special;
+			outline-offset: -2px;
+		}
+
+		.sort-header-content {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+		}
+
+		.sort-icons {
+			display: inline-flex;
+			align-items: center;
+			margin-left: 2px;
+		}
+
+		.sort-icon {
+			opacity: 0.35;
+			transition: opacity 0.15s ease;
+
+			&.unsorted {
+				opacity: 0.35;
+			}
+
+			&.asc,
+			&.desc {
+				opacity: 1;
+				color: $color-special;
+			}
+		}
+
+		&:hover .sort-icon.unsorted {
+			opacity: 0.7;
+		}
+	}
+
 	.clickable-row {
 		cursor: pointer;
 

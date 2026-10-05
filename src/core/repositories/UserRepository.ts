@@ -467,7 +467,14 @@ export class UserRepository {
 	/**
 	 * Searches and paginates users for admin panel.
 	 */
-	static async SearchUsers(options: { search?: string; limit?: number; offset?: number; vipOnly?: boolean }): Promise<{
+	static async SearchUsers(options: {
+		search?: string;
+		limit?: number;
+		offset?: number;
+		vipOnly?: boolean;
+		sortBy?: string;
+		sortOrder?: string;
+	}): Promise<{
 		users: Users[];
 		total: number
 	}> {
@@ -491,11 +498,15 @@ export class UserRepository {
 			});
 		}
 
+		const allowedSortFields = ["nickname", "id", "createdAt", "updatedAt", "class", "situationId"];
+		const sortBy = allowedSortFields.includes(options.sortBy || "") ? options.sortBy : "updatedAt";
+		const sortOrder = (options.sortOrder === "ASC" || options.sortOrder === "DESC") ? options.sortOrder : "DESC";
+
 		const { rows, count } = await Users.findAndCountAll({
 			where: conditions.length ? { [Op.and]: conditions } : {},
 			limit,
 			offset,
-			order: [["updatedAt", "DESC"]],
+			order: [[sortBy, sortOrder]],
 		});
 
 		return { users: rows, total: count };

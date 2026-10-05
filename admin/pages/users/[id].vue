@@ -22,6 +22,7 @@ definePageMeta({
 });
 
 const route = useRoute();
+const router = useRouter();
 const auth = useAuth();
 const { showToast } = useToast();
 const { client } = useApolloClient();
@@ -66,9 +67,9 @@ function refreshUserDetails() {
 			aria-label="Navegação do jogador"
 		>
 			<BaseButton
-				to="/users"
 				variant="ghost"
 				size="sm"
+				@click="router.back()"
 			>
 				<ArrowLeft
 					:size="16"
@@ -128,7 +129,7 @@ function refreshUserDetails() {
 						:can-write="auth.canWrite.value"
 						@feedback="showFeedback"
 						@refresh="refreshUserDetails"
-						@deleted="navigateTo('/users')"
+						@deleted="router.back()"
 					/>
 				</div>
 

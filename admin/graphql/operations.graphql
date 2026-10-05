@@ -238,8 +238,8 @@ mutation DeleteEvent($id: Int!) {
 	}
 }
 
-query SearchUsers($search: String, $limit: Int, $offset: Int, $vipOnly: Boolean) {
-	users(search: $search, limit: $limit, offset: $offset, vipOnly: $vipOnly) {
+query SearchUsers($search: String, $limit: Int, $offset: Int, $vipOnly: Boolean, $sortBy: String, $sortOrder: String) {
+	users(search: $search, limit: $limit, offset: $offset, vipOnly: $vipOnly, sortBy: $sortBy, sortOrder: $sortOrder) {
 		total
 		users {
 			id
