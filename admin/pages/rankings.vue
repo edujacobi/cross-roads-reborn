@@ -291,7 +291,7 @@ function nextPage() {
 								<div class="player-content">
 									<span class="rank-cell">{{ offset + index + 1 }}</span>
 									<LazyNuxtImg
-										class="player-avatar"
+										class="gang-avatar"
 										:src="gang.imageUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'"
 										alt=""
 									/>
@@ -381,15 +381,9 @@ function nextPage() {
 				#footer
 			>
 				<BaseTableFooter
-					:labels="{
-
-
-						item: isGangRanking ? 'gangues' : 'jogadores',
-
-
-						navigation: 'Paginação do ranking',
-
-
+					:labels="{
+						item: isGangRanking ? 'gangues' : 'jogadores',
+						navigation: 'Paginação do ranking',
 					}"
 					:index="isGangRanking ? gangs.length : entries.length"
 					:offset="offset"
@@ -474,6 +468,19 @@ function nextPage() {
 		width: 2rem;
 		height: 2rem;
 		border-width: 2px;
+	}
+}
+
+.gang-avatar {
+	width: 3rem;
+	height: 3rem;
+	border-radius: $radius-sm;
+	object-fit: cover;
+	background-color: rgba($bg-input, 0.15);
+
+	@media (max-width: 768px){
+		width: 2rem;
+		height: 2rem;
 	}
 }
 
