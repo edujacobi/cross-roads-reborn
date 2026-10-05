@@ -68,7 +68,7 @@ query GetEvents {
 	}
 }
 
-query GetAdminAuditLogs($limit: Int!, $offset: Int!, $actionId: Int) {
+query GetAdminAuditLogs($limit: Int, $offset: Int, $actionId: Int) {
 	adminAuditLogs(limit: $limit, offset: $offset, actionId: $actionId) {
 		entries {
 			id

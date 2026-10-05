@@ -35,11 +35,11 @@ const paginationLabels = {
 const { result, loading, error } = useQuery(
 	GetAdminAuditLogsDocument,
 	() => ({
-		limit: pageSize,
+		limit: pageSize.value,
 		offset: offset.value,
 		actionId: selectedActionId.value ? Number(selectedActionId.value) : undefined,
 	}),
-	{ enabled: computed(() => auth.canWrite.value) },
+	{ enabled: auth.canWrite },
 );
 
 const auditPage = computed(() => result.value?.adminAuditLogs);
