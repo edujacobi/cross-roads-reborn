@@ -28,10 +28,7 @@ const { page, pageSize, offset, resetPage } = usePagination(1, 25);
 const isDeveloper = computed(() => auth.isDeveloper.value);
 const selectedEntry = ref<GetAdminAuditLogsQuery["adminAuditLogs"]["entries"][number] | null>(null);
 const selectedActionId = ref("");
-const paginationLabels = {
-	item: "ações",
-	navigation: "Paginação do registro de auditoria",
-};
+
 const { result, loading, error } = useQuery(
 	GetAdminAuditLogsDocument,
 	() => ({
@@ -235,7 +232,8 @@ function setModalOpen(isOpen: boolean) {
 				#footer
 			>
 				<BaseTableFooter
-					:labels="paginationLabels"
+					label-item="ações"
+					label-navigation="Paginação do registro de auditoria"
 					:index="entries.length"
 					:offset="offset"
 					:total="total"

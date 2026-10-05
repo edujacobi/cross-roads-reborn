@@ -6,10 +6,8 @@ import { ChevronLeft, ChevronRight } from "lucide-vue-next";
 import BaseButton from "~/components/ui/BaseButton.vue";
 
 interface Props {
-	labels: {
-		item: string;
-		navigation: string;
-	};
+	labelItem: string;
+	labelNavigation: string;
 	index: number;
 	offset: number;
 	total: number;
@@ -34,12 +32,12 @@ const lastItem = computed(() => Math.min(props.offset + props.index, props.total
 			<strong>{{ firstItem }}-{{ lastItem }}</strong>
 			de
 			<strong>{{ total }}</strong>
-			{{ labels.item }}
+			{{ labelItem }}
 		</span>
 
 		<nav
 			class="base-pagination__controls"
-			:aria-label="labels.navigation"
+			:aria-label="labelNavigation"
 		>
 			<BaseButton
 				variant="secondary"

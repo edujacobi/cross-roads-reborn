@@ -21,13 +21,13 @@ const auth = useAuth();
 		<div class="header-role-indicator">
 			<span
 				v-if="auth.canWrite.value"
-				class="role-hint dev"
+				class="role-hint--dev"
 			>
 				Permissão: Leitura & Escrita
 			</span>
 			<span
 				v-else
-				class="role-hint mod"
+				class="role-hint--mod"
 			>
 				Permissão: Apenas Leitura
 			</span>
@@ -62,21 +62,22 @@ const auth = useAuth();
 		}
 	}
 
-	.role-hint {
+	.role-hint--dev,
+	.role-hint--mod {
 		font-size: 0.75rem;
 		padding: $spacing-xs $spacing-sm;
 		border-radius: $radius-full;
 		font-weight: 500;
+	}
 
-		&.dev {
-			background-color: rgba($color-developer, 0.15);
-			color: color.adjust($color-developer, $lightness: 15%);
-		}
+	.role-hint--dev {
+		background-color: rgba($color-developer, 0.15);
+		color: color.adjust($color-developer, $lightness: 15%);
+	}
 
-		&.mod {
-			background-color: rgba($color-moderator, 0.15);
-			color: color.adjust($color-moderator, $lightness: 20%);
-		}
+	.role-hint--mod {
+		background-color: rgba($color-moderator, 0.15);
+		color: color.adjust($color-moderator, $lightness: 20%);
 	}
 }
 

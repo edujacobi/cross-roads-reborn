@@ -40,38 +40,38 @@ function getSortIcon(column: SortColumn) {
 		<slot v-if="!columns" />
 		<template v-else>
 			<slot name="header">
-				<div class="base-table-header">
+				<div class="base-table__header">
 					<button
 						v-for="column in columns"
 						:key="column.key"
 						type="button"
-						:class="[
-							'sort-header',
-							{ 'sort-active': sortColumn === column.key && column.sortable },
+						:class="[
+							'base-table__sort-header',
+							{ 'base-table__sort-header--active': sortColumn === column.key && column.sortable },
 						]"
 						:disabled="!column.sortable"
 						@click="onHeaderClick(column)"
 					>
-						<span class="sort-label">{{ column.label }}</span>
+						<span class="base-table__sort-label">{{ column.label }}</span>
 						<span
 							v-if="column.sortable"
-							class="sort-icons"
+							class="base-table__sort-icons"
 							aria-hidden="true"
 						>
 							<ArrowUpDown
 								v-if="getSortIcon(column) === 'unsorted'"
 								:size="14"
-								class="sort-icon unsorted"
+								class="base-table__sort-icon unsorted"
 							/>
 							<ArrowUp
 								v-if="getSortIcon(column) === 'asc'"
 								:size="14"
-								class="sort-icon asc"
+								class="base-table__sort-icon asc"
 							/>
 							<ArrowDown
 								v-if="getSortIcon(column) === 'desc'"
 								:size="14"
-								class="sort-icon desc"
+								class="base-table__sort-icon desc"
 							/>
 						</span>
 					</button>
@@ -114,77 +114,77 @@ function getSortIcon(column: SortColumn) {
 			color: $text-secondary;
 		}
 	}
-}
 
-.base-table-header {
-	display: grid;
-	grid-template-columns: subgrid;
-	padding: 0.75rem $spacing-md;
-	border-bottom: 1px solid $border-subtle;
-	background-color: $bg-card;
-}
-
-.sort-header {
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	padding: 0;
-	background: none;
-	border: none;
-	cursor: pointer;
-	color: $text-muted;
-	font-size: 0.75rem;
-	font-weight: 600;
-	text-transform: uppercase;
-	text-align: left;
-	white-space: nowrap;
-	transition: color 0.15s ease;
-
-	&:hover {
-		color: $text-primary;
+	&__header {
+		display: grid;
+		grid-template-columns: subgrid;
+		padding: 0.75rem $spacing-md;
+		border-bottom: 1px solid $border-subtle;
+		background-color: $bg-card;
 	}
 
-	&:focus-visible {
-		outline: 2px solid $color-special;
-		outline-offset: -2px;
-	}
-
-	&:disabled {
-		cursor: default;
-		color: $text-muted;
-	}
-
-	&.sort-active {
-		color: $text-primary;
-	}
-
-	.sort-label {
-		flex: 1;
-	}
-
-	.sort-icons {
+	&__sort-header {
 		display: flex;
 		align-items: center;
-		flex-shrink: 0;
-	}
+		gap: 6px;
+		padding: 0;
+		background: none;
+		border: none;
+		cursor: pointer;
+		color: $text-muted;
+		font-size: 0.75rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		text-align: left;
+		white-space: nowrap;
+		transition: color 0.15s ease;
 
-	.sort-icon {
-		opacity: 0.35;
-		transition: opacity 0.15s ease;
+		&:hover {
+			color: $text-primary;
+		}
 
-		&.unsorted {
+		&:focus-visible {
+			outline: 2px solid $color-special;
+			outline-offset: -2px;
+		}
+
+		&:disabled {
+			cursor: default;
+			color: $text-muted;
+		}
+
+		&--active {
+			color: $text-primary;
+		}
+
+		.sort-label {
+			flex: 1;
+		}
+
+		.sort-icons {
+			display: flex;
+			align-items: center;
+			flex-shrink: 0;
+		}
+
+		.sort-icon {
 			opacity: 0.35;
+			transition: opacity 0.15s ease;
+
+			&.unsorted {
+				opacity: 0.35;
+			}
+
+			&.asc,
+			&.desc {
+				opacity: 1;
+				color: $color-special;
+			}
 		}
 
-		&.asc,
-		&.desc {
-			opacity: 1;
-			color: $color-special;
+		&:hover .sort-icon.unsorted {
+			opacity: 0.7;
 		}
-	}
-
-	&:hover .sort-icon.unsorted {
-		opacity: 0.7;
 	}
 }
 </style>

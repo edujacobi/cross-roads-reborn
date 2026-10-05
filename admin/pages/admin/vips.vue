@@ -113,16 +113,8 @@ function remainingVipTime(vipTime: string | null): string {
 
 			<template #footer>
 				<BaseTableFooter
-					:labels="{
-
-
-						item: 'VIPs',
-
-
-						navigation: 'Paginação de VIPs',
-
-
-					}"
+					label-item="VIPs"
+					label-navigation="Paginação de VIPs"
 					:index="users.length"
 					:offset="offset"
 					:total="total"

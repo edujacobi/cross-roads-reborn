@@ -288,24 +288,24 @@ function nextPage() {
 								scope="row"
 								class="player-cell"
 							>
-								<div class="player-content">
-									<span class="rank-cell">{{ offset + index + 1 }}</span>
+								<div class="rankings-page__player-content">
+									<span class="rankings-page__rank-cell">{{ offset + index + 1 }}</span>
 									<LazyNuxtImg
-										class="gang-avatar"
+										class="rankings-page__gang-avatar"
 										:src="gang.imageUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'"
 										alt=""
 									/>
-									<span class="player-name">{{ gang.name }}</span>
+									<span class="rankings-page__player-name">{{ gang.name }}</span>
 									<span
 										v-if="gang.id === gangResult?.topGangs.currentUserGangId"
-										class="current-user-label"
+										class="rankings-page__current-user-label"
 									>
 										{{ gang.memberRole }}
 									</span>
 								</div>
 							</th>
 							<td>{{ gang.acronym }}</td>
-							<td class="value-cell">{{ gang.level }}</td>
+							<td class="rankings-page__value-cell">{{ gang.level }}</td>
 							<td>{{ gang.experience.toLocaleString("pt-BR") }}</td>
 						</tr>
 					</tbody>
@@ -344,30 +344,30 @@ function nextPage() {
 								scope="row"
 								class="player-cell"
 							>
-								<div class="player-content">
-									<span class="rank-cell">{{ offset + index + 1 }}</span>
+								<div class="rankings-page__player-content">
+									<span class="rankings-page__rank-cell">{{ offset + index + 1 }}</span>
 									<LazyNuxtImg
-										:class="['player-avatar', 'user-avatar', `user-avatar--${entry.avatarDecoration}`]"
+										:class="['rankings-page__player-avatar', 'user-avatar', `user-avatar--${entry.avatarDecoration}`]"
 										:src="entry.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'"
 										alt=""
 									/>
-									<span class="player-name">{{ entry.nickname }}</span>
+									<span class="rankings-page__player-name">{{ entry.nickname }}</span>
 									<span
 										v-if="entry.id === auth.user.value?.userId"
-										class="current-user-label"
+										class="rankings-page__current-user-label"
 									>
 										Você
 									</span>
 									<span
 										v-if="entry.gangName"
-										class="gang-name-label"
+										class="rankings-page__gang-name-label"
 										:style="{ '--gang-color': entry.gangColor ?? '#89999A' }"
 									>
 										{{ entry.gangName }}
 									</span>
 								</div>
 							</th>
-							<td class="value-cell">{{ formatValue(entry.value) }}</td>
+							<td class="rankings-page__value-cell">{{ formatValue(entry.value) }}</td>
 							<td v-if="activeRanking.countLabel">
 								{{ entry.count?.toLocaleString("pt-BR") ?? "—" }}
 							</td>
@@ -381,10 +381,8 @@ function nextPage() {
 				#footer
 			>
 				<BaseTableFooter
-					:labels="{
-						item: isGangRanking ? 'gangues' : 'jogadores',
-						navigation: 'Paginação do ranking',
-					}"
+					:label-item="isGangRanking ? 'gangues' : 'jogadores'"
+					label-navigation="Paginação do ranking"
 					:index="isGangRanking ? gangs.length : entries.length"
 					:offset="offset"
 					:total="total"
@@ -409,6 +407,79 @@ function nextPage() {
 	display: flex;
 	flex-direction: column;
 	gap: $spacing-lg;
+
+	&__rank-cell {
+		color: $text-muted !important;
+		font-variant-numeric: tabular-nums;
+		margin-right: $spacing-md;
+	}
+
+	&__player-content {
+		display: flex;
+		align-items: center;
+		gap: $spacing-md;
+
+		@media (max-width: 768px){
+			gap: $spacing-sm;
+		}
+	}
+
+	&__player-avatar {
+		width: 3rem;
+		height: 3rem;
+		border-radius: 50%;
+		background-color: rgba($bg-input, 0.15);
+		border-width: 3px;
+
+		@media (max-width: 768px){
+			width: 2rem;
+			height: 2rem;
+			border-width: 2px;
+		}
+	}
+
+	&__gang-avatar {
+		width: 3rem;
+		height: 3rem;
+		border-radius: $radius-sm;
+		object-fit: cover;
+		background-color: rgba($bg-input, 0.15);
+
+		@media (max-width: 768px){
+			width: 2rem;
+			height: 2rem;
+		}
+	}
+
+	&__player-name {
+		color: $text-primary;
+		font-weight: 600;
+	}
+
+	&__current-user-label {
+		padding: 0.125rem 0.375rem;
+		border-radius: $radius-xs;
+		background-color: rgba($color-brand, 0.15);
+		color: $color-brand;
+		font-size: 0.6875rem;
+		font-weight: 600;
+		text-transform: uppercase;
+	}
+
+	&__gang-name-label {
+		padding: 0.125rem 0.5rem;
+		border-radius: $radius-full;
+		background-color: color-mix(in srgb, var(--gang-color) 20%, transparent);
+		color: var(--gang-color);
+		border: 1px solid color-mix(in srgb, var(--gang-color) 35%, transparent);
+		font-size: 0.6875rem;
+		font-weight: 600;
+	}
+
+	&__value-cell {
+		font-weight: 600;
+		font-variant-numeric: tabular-nums;
+	}
 }
 
 .ranking-tabs {
@@ -441,89 +512,4 @@ function nextPage() {
 	}
 }
 
-.rank-cell {
-	color: $text-muted !important;
-	font-variant-numeric: tabular-nums;
-	margin-right: $spacing-md;
-}
-
-.player-content {
-	display: flex;
-	align-items: center;
-	gap: $spacing-md;
-
-	@media (max-width: 768px){
-		gap: $spacing-sm;
-	}
-}
-
-.player-avatar {
-	width: 3rem;
-	height: 3rem;
-	border-radius: 50%;
-	background-color: rgba($bg-input, 0.15);
-	border-width: 3px;
-
-	@media (max-width: 768px){
-		width: 2rem;
-		height: 2rem;
-		border-width: 2px;
-	}
-}
-
-.gang-avatar {
-	width: 3rem;
-	height: 3rem;
-	border-radius: $radius-sm;
-	object-fit: cover;
-	background-color: rgba($bg-input, 0.15);
-
-	@media (max-width: 768px){
-		width: 2rem;
-		height: 2rem;
-	}
-}
-
-.player-name {
-	color: $text-primary;
-	font-weight: 600;
-}
-
-.current-user-label {
-	padding: 0.125rem 0.375rem;
-	border-radius: $radius-xs;
-	background-color: rgba($color-brand, 0.15);
-	color: $color-brand;
-	font-size: 0.6875rem;
-	font-weight: 600;
-	text-transform: uppercase;
-}
-
-.gang-name-label {
-	padding: 0.125rem 0.5rem;
-	border-radius: $radius-full;
-	background-color: color-mix(in srgb, var(--gang-color) 20%, transparent);
-	color: var(--gang-color);
-	border: 1px solid color-mix(in srgb, var(--gang-color) 35%, transparent);
-	font-size: 0.6875rem;
-	font-weight: 600;
-}
-
-.value-cell {
-	font-weight: 600;
-	font-variant-numeric: tabular-nums;
-}
-
-.state-message {
-	@include flex-center;
-	flex-direction: column;
-	gap: $spacing-sm;
-	min-height: 9rem;
-	color: $text-muted;
-	text-align: center;
-}
-
-.error-message {
-	color: $color-danger;
-}
 </style>

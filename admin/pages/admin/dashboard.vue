@@ -180,24 +180,6 @@ function refreshData() {
 	gap: $spacing-lg;
 }
 
-.spin-icon {
-	animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-	to {
-		transform: rotate(360deg);
-	}
-}
-
-.section-title {
-	margin: $spacing-sm 0;
-	font-size: 1rem;
-	font-weight: 700;
-	text-transform: uppercase;
-	letter-spacing: 0.05em;
-}
-
 .status-grid {
 	display: grid;
 	grid-template-columns: repeat(4, 1fr);

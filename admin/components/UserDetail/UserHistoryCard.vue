@@ -53,11 +53,6 @@ const entries = computed<HistoryEntry[]>(() => result.value?.userHistory?.entrie
 const total = computed(() => result.value?.userHistory?.total || 0);
 const pages = computed(() => Math.ceil(total.value / limit.value) || 1);
 
-const paginationLabels = {
-	item: "confrontos",
-	navigation: "Navegação do histórico",
-};
-
 function getClashTypeLabel(type: number): string {
 	switch (type) {
 		case ClashType.User:
@@ -325,7 +320,8 @@ function nextPage() {
 			#footer
 		>
 			<BaseTableFooter
-				:labels="paginationLabels"
+				label-item="confrontos"
+				label-navigation="Navegação do histórico"
 				:index="entries.length"
 				:offset="offset"
 				:total="total"

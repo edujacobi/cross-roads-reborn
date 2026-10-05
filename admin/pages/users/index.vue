@@ -85,10 +85,10 @@ function nextPage() {
 			no-padding-y
 		>
 			<template #header>
-				<div class="search-bar">
+				<div class="users-page__search-bar">
 					<Search
 						:size="18"
-						class="search-icon"
+						class="users-page__search-icon"
 						aria-hidden="true"
 					/>
 					<BaseInput
@@ -343,10 +343,8 @@ function nextPage() {
 
 			<template #footer>
 				<BaseTableFooter
-					:labels="{
-						item: 'jogadores',
-						navigation: 'Paginação de jogadores',
-					}"
+					label-item="jogadores"
+					label-navigation="Paginação de jogadores"
 					:index="users.length"
 					:offset="offset"
 					:total="total"
@@ -371,41 +369,31 @@ function nextPage() {
 	display: flex;
 	flex-direction: column;
 	gap: $spacing-lg;
-}
 
-.search-bar {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-	width: 100%;
-	max-width: 28.125rem;
-	position: relative;
+	&__search-bar {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		width: 100%;
+		max-width: 28.125rem;
+		position: relative;
 
-	// ponytail: expand search on mobile screens
-	@media (max-width: 600px) {
-		max-width: 100%;
+		// ponytail: expand search on mobile screens
+		@media (max-width: 600px) {
+			max-width: 100%;
+		}
+
+		&__search-icon {
+			position: absolute;
+			left: 12px;
+			color: $text-muted;
+			pointer-events: none;
+		}
+
+		:deep(.base-input) {
+			padding-left: 2.375rem;
+		}
 	}
-
-	.search-icon {
-		position: absolute;
-		left: 12px;
-		color: $text-muted;
-		pointer-events: none;
-	}
-
-	:deep(.base-input) {
-		padding-left: 2.375rem;
-	}
-}
-
-.loading-state,
-.empty-state {
-	@include flex-center;
-	flex-direction: column;
-	gap: 12px;
-	padding: 3.125rem 1.25rem;
-	color: $text-muted;
-	font-size: 0.875rem;
 }
 
 .users-table {
@@ -506,23 +494,5 @@ function nextPage() {
 		color: $text-muted;
 	}
 
-	.money-cell {
-		font-weight: 700;
-		color: $color-success;
-	}
-
-	.coins-cell {
-		font-weight: 700;
-		color: $color-special;
-	}
-
-	.text-muted {
-		color: $text-muted;
-	}
-
-	.text-right {
-		text-align: right;
-	}
 }
-
 </style>

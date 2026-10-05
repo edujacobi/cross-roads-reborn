@@ -267,7 +267,7 @@ async function removeEvent() {
 							v-for="event in pageEvents"
 							:key="event.id"
 						>
-							<td class="id-cell">{{ event.id }}</td>
+							<td class="events-page__id-cell">{{ event.id }}</td>
 							<td>
 								<NuxtImg
 									style="vertical-align: sub"
@@ -289,7 +289,7 @@ async function removeEvent() {
 							<td><time :datetime="event.periodEnd">{{ formatDate(event.periodEnd) }}</time></td>
 							<td
 								v-if="canWrite"
-								class="actions-cell"
+								class="events-page__actions-cell"
 							>
 								<BaseButton
 									variant="secondary"
@@ -327,16 +327,8 @@ async function removeEvent() {
 				#footer
 			>
 				<BaseTableFooter
-					:labels="{
-
-
-						item: 'eventos',
-
-
-						navigation: 'Paginação de eventos',
-
-
-					}"
+					label-item="eventos"
+					label-navigation="Paginação de eventos"
 					:index="pageEvents.length"
 					:offset="(page - 1) * pageSize"
 					:total="events.length"
@@ -356,18 +348,18 @@ async function removeEvent() {
 		>
 			<form
 				id="event-form"
-				class="event-form"
+				class="events-page__event-form"
 				@submit.prevent="saveEvent()"
 			>
 				<label
 					for="event-type"
-					class="input-label"
+					class="events-page__input-label"
 					>Tipo</label
 				>
 				<select
 					id="event-type"
 					v-model="draft.type"
-					class="event-select"
+					class="events-page__event-select"
 					:disabled="editingEventId !== null"
 					required
 				>
@@ -461,54 +453,41 @@ async function removeEvent() {
 	display: flex;
 	flex-direction: column;
 	gap: $spacing-lg;
-}
 
-.id-cell {
-	font-family: monospace;
-	color: $text-muted !important;
-}
+	&__id-cell {
+		font-family: monospace;
+		color: $text-muted !important;
+	}
 
-.actions-cell {
-	display: flex;
-	gap: $spacing-xs;
-	justify-content: end;
-}
+	&__actions-cell {
+		display: flex;
+		gap: $spacing-xs;
+		justify-content: end;
+	}
 
-.state-message {
-	@include flex-center;
-	flex-direction: column;
-	gap: $spacing-sm;
-	min-height: 9rem;
-	color: $text-muted;
-	text-align: center;
-}
+	&__event-form {
+		display: grid;
+		gap: $spacing-md;
+	}
 
-.error-message {
-	color: $color-danger;
-}
+	&__input-label {
+		margin-bottom: -$spacing-sm;
+		font-size: 0.8125rem;
+		font-weight: 500;
+		color: $text-secondary;
+	}
 
-.event-form {
-	display: grid;
-	gap: $spacing-md;
-}
+	&__event-select {
+		width: 100%;
+		padding: 0.625rem 0.875rem;
+		background-color: $bg-input;
+		border: 1px solid $border-subtle;
+		border-radius: $radius-sm;
+		color: $text-primary;
 
-.input-label {
-	margin-bottom: -$spacing-sm;
-	font-size: 0.8125rem;
-	font-weight: 500;
-	color: $text-secondary;
-}
-
-.event-select {
-	width: 100%;
-	padding: 0.625rem 0.875rem;
-	background-color: $bg-input;
-	border: 1px solid $border-subtle;
-	border-radius: $radius-sm;
-	color: $text-primary;
-
-	&:disabled {
-		opacity: 0.5;
+		&:disabled {
+			opacity: 0.5;
+		}
 	}
 }
 
