@@ -343,9 +343,9 @@ function nextPage() {
 
 			<template #footer>
 				<BaseTableFooter
-					:labels="{
-						item: 'jogadores',
-						navigation: 'Paginação de jogadores',
+					:labels="{
+						item: 'jogadores',
+						navigation: 'Paginação de jogadores',
 					}"
 					:index="users.length"
 					:offset="offset"

@@ -12,7 +12,7 @@
 		"useIgnoreFile": true
 	},
 	"files": {
-		"includes": ["**", "!node_modules", "!.nuxt", "!.output", "!dist"]
+		"includes": ["**", "!node_modules", "!.nuxt", "!.output", "!dist", "!graphql"]
 	},
 	"formatter": {
 		"enabled": true,

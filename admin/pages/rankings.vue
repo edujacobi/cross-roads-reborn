@@ -381,9 +381,9 @@ function nextPage() {
 				#footer
 			>
 				<BaseTableFooter
-					:labels="{
-						item: isGangRanking ? 'gangues' : 'jogadores',
-						navigation: 'Paginação do ranking',
+					:labels="{
+						item: isGangRanking ? 'gangues' : 'jogadores',
+						navigation: 'Paginação do ranking',
 					}"
 					:index="isGangRanking ? gangs.length : entries.length"
 					:offset="offset"

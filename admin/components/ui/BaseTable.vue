@@ -45,9 +45,9 @@ function getSortIcon(column: SortColumn) {
 						v-for="column in columns"
 						:key="column.key"
 						type="button"
-						:class="[
-							'sort-header',
-							{ 'sort-active': sortColumn === column.key && column.sortable },
+						:class="[
+							'sort-header',
+							{ 'sort-active': sortColumn === column.key && column.sortable },
 						]"
 						:disabled="!column.sortable"
 						@click="onHeaderClick(column)"
