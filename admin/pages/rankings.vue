@@ -277,8 +277,12 @@ function nextPage() {
 						<tr
 							v-for="(gang, index) in gangs"
 							:key="gang.id"
+							class="clickable-row"
+							tabindex="0"
 							:class="{ 'current-user': gang.id === gangResult?.topGangs.currentUserGangId }"
 							:style="{ '--highlight-color': gangResult?.topGangs.currentUserGangColor ?? '#89999A' }"
+							@click="navigateTo(`/gangs/${gang.id}`)"
+							@keydown.enter.prevent="navigateTo(`/gangs/${gang.id}`)"
 						>
 							<th
 								scope="row"
@@ -377,15 +381,15 @@ function nextPage() {
 				#footer
 			>
 				<BaseTableFooter
-					:labels="{
-
-
-						item: isGangRanking ? 'gangues' : 'jogadores',
-
-
-						navigation: 'Paginação do ranking',
-
-
+					:labels="{
+
+
+						item: isGangRanking ? 'gangues' : 'jogadores',
+
+
+						navigation: 'Paginação do ranking',
+
+
 					}"
 					:index="isGangRanking ? gangs.length : entries.length"
 					:offset="offset"

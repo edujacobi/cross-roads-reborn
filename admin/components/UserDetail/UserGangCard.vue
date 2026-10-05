@@ -24,7 +24,7 @@ const gang = computed(() => result.value?.user?.gang);
 		title="Gangue"
 		:icon="imagePaths.situations.gangAction"
 		class="user-gang"
-		:style="gang ? { '--user-gang-color': gang.color } : undefined"
+		:style="gang ? { '--highlight-color': gang.color } : undefined"
 	>
 		<template #actions>
 			<RefreshButton
@@ -61,7 +61,15 @@ const gang = computed(() => result.value?.user?.gang);
 				:src="gang.imageUrl || 'https://i.imgur.com/xOUjOlZ.png'"
 				:alt="`Imagem da gangue ${gang.name}`"
 			/>
-			<p class="user-gang__role">{{ gang.role }} de <span class="user-gang__name">{{ gang.name }}</span></p>
+			<p class="user-gang__role">
+				{{ gang.role }} de
+				<NuxtLink
+					:to="`/gangs/${gang.id}`"
+					class="user-gang__name"
+				>
+					{{ gang.name }}
+				</NuxtLink>
+			</p>
 			<p class="user-gang__level">Nível {{ gang.level }}</p>
 		</div>
 	</BaseCard>
@@ -73,9 +81,13 @@ const gang = computed(() => result.value?.user?.gang);
 >
 @use "~/assets/scss/variables" as *;
 
+$highlight-color: var(--highlight-color);
+$border-color: color-mix(in lab, $border-card 100%, $highlight-color 75%);
+$background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
+
 .user-gang {
-	border-color: color-mix(in lab, $border-card 100%, var(--user-gang-color) 75%);
-	background-color: color-mix(in lab, $bg-card 100%, var(--user-gang-color) 15%);
+	border-color: $border-color;
+	background-color: $background-color;
 
 	&__skeleton {
 		display: flex;
@@ -84,7 +96,7 @@ const gang = computed(() => result.value?.user?.gang);
 	}
 
 	:deep(.card-header) {
-		border-color: color-mix(in lab, $border-card 100%, var(--user-gang-color) 75%) !important;
+		border-color: $border-color !important;
 	}
 
 	&__content {
@@ -100,14 +112,15 @@ const gang = computed(() => result.value?.user?.gang);
 	}
 
 	&__image {
-		border-radius: 1rem;
+		border-radius: $radius-lg;
+		border: 1px solid $border-color;
 		aspect-ratio: 1;
 		object-fit: cover;
 		width: 5rem;
 	}
 
 	&__name {
-		color: var(--user-gang-color);
+		color: $highlight-color;
 	}
 
 	&__level {

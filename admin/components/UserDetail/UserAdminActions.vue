@@ -7,7 +7,6 @@ import {
 	ArrowLeftRight,
 	Award,
 	Clock,
-	Coins,
 	DollarSign,
 	Package,
 	Pencil,

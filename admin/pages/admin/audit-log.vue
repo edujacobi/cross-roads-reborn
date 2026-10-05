@@ -112,7 +112,6 @@ function openEntry(entry: GetAdminAuditLogsQuery["adminAuditLogs"]["entries"][nu
 function setModalOpen(isOpen: boolean) {
 	if (!isOpen) selectedEntry.value = null;
 }
-
 </script>
 
 <template>
@@ -151,9 +150,7 @@ function setModalOpen(isOpen: boolean) {
 				:columns="6"
 				label="Carregando registro de auditoria"
 			/>
-			<BaseErrorState v-else-if="error">
-				Não foi possível carregar o registro de auditoria.
-			</BaseErrorState>
+			<BaseErrorState v-else-if="error"> Não foi possível carregar o registro de auditoria. </BaseErrorState>
 			<BaseEmptyState
 				v-else-if="entries.length === 0"
 				:icon="ScrollText"

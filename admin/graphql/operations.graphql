@@ -357,6 +357,52 @@ query GetUserGang($id: ID!) {
 	}
 }
 
+query GetGangDetail($id: ID!) {
+	gang(id: $id) {
+		id
+		name
+		acronym
+		description
+		money
+		level
+		experience
+		xpForNextLevel
+		color
+		imageUrl
+		base {
+			id
+			name
+			modifierDefense
+			modifierAttack
+			modifierPrisonEscape
+		}
+		leaderId
+		leaderNickname
+		leaderAvatarUrl
+		members {
+			userId
+			nickname
+			avatarUrl
+			avatarDecoration
+			roleId
+			roleName
+			permissionCount
+			depositAmount
+			depositTime
+		}
+		roles {
+			id
+			name
+			canInvite
+			canKick
+			canPromote
+			canEditGang
+			canImport
+		}
+		createdAt
+	}
+}
+
 query GetUserActivityStats($id: ID!) {
 	user(id: $id) {
 		activityStats {

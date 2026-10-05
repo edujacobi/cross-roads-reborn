@@ -1,13 +1,9 @@
 import type { IDescription } from "./Interfaces";
 import { Language } from "#core/models/Language";
 import type { IModifier } from "./Classes";
+import { GangBaseId } from "./Ids";
 
-export enum GangBaseId {
-	None,
-	Airport,
-	Bunker,
-	BikeClub
-}
+export { GangBaseId } from "./Ids";
 
 export interface GangModifier {
 	Attack?: IModifier,

@@ -3,13 +3,11 @@
 	lang="ts"
 >
 import { useQuery } from "@vue/apollo-composable";
-import { RotateCw } from "lucide-vue-next";
 import DashboardClassDistribution from "~/components/Dashboard/DashboardClassDistribution.vue";
 import DashboardItemPopularity from "~/components/Dashboard/DashboardItemPopularity.vue";
 import DashboardStatusBox from "~/components/Dashboard/DashboardStatusBox.vue";
 import DashboardUserChart from "~/components/Dashboard/DashboardUserChart.vue";
 import DashboardUserHistory from "~/components/Dashboard/DashboardUserHistory.vue";
-import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import PageTitle from "~/components/ui/PageTitle.vue";
 import RefreshButton from "~/components/ui/RefreshButton.vue";

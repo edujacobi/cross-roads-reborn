@@ -498,15 +498,17 @@ export class UserRepository {
 			});
 		}
 
-		const allowedSortFields = ["nickname", "id", "createdAt", "updatedAt", "class", "situationId"];
-		const sortBy = allowedSortFields.includes(options.sortBy || "") ? options.sortBy : "updatedAt";
+		const allowedSortFields = ["nickname", "id", "createdAt", "updatedAt", "class", "situationId"] as const;
+		const sortByField = allowedSortFields.includes((options.sortBy ?? "") as typeof allowedSortFields[number])
+			? (options.sortBy as typeof allowedSortFields[number])
+			: "updatedAt";
 		const sortOrder = (options.sortOrder === "ASC" || options.sortOrder === "DESC") ? options.sortOrder : "DESC";
 
 		const { rows, count } = await Users.findAndCountAll({
 			where: conditions.length ? { [Op.and]: conditions } : {},
 			limit,
 			offset,
-			order: [[sortBy, sortOrder]],
+			order: [[sortByField, sortOrder as "ASC" | "DESC"]],
 		});
 
 		return { users: rows, total: count };

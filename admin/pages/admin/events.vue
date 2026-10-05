@@ -236,9 +236,7 @@ async function removeEvent() {
 				:columns="canWrite ? 7 : 6"
 				label="Carregando eventos"
 			/>
-			<BaseErrorState v-else-if="queryError">
-				Não foi possível carregar os eventos.
-			</BaseErrorState>
+			<BaseErrorState v-else-if="queryError"> Não foi possível carregar os eventos. </BaseErrorState>
 			<BaseEmptyState
 				v-else-if="events.length === 0"
 				:icon="CalendarDays"
@@ -329,15 +327,15 @@ async function removeEvent() {
 				#footer
 			>
 				<BaseTableFooter
-					:labels="{
-
-
-						item: 'eventos',
-
-
-						navigation: 'Paginação de eventos',
-
-
+					:labels="{
+
+
+						item: 'eventos',
+
+
+						navigation: 'Paginação de eventos',
+
+
 					}"
 					:index="pageEvents.length"
 					:offset="(page - 1) * pageSize"

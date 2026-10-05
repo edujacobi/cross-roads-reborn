@@ -251,3 +251,10 @@ export enum LocationId {
 	ArmyDepot,
 	JacobiPalace,
 }
+
+export enum GangBaseId {
+	None,
+	Airport,
+	Bunker,
+	BikeClub
+}

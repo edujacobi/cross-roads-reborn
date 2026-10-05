@@ -15,19 +15,25 @@ export function useSorting(initialColumn?: string, initialDirection: SortDirecti
 
 	const sortColumn = ref(route.query.sort || initialColumn || "");
 	const orderParam = route.query.order as string;
-	const sortDirection = ref<SortDirection>((orderParam === "asc" || orderParam === "desc" ? orderParam : null) || initialDirection);
+	const sortDirection = ref<SortDirection>(
+		(orderParam === "asc" || orderParam === "desc" ? orderParam : null) || initialDirection,
+	);
 
-	watch([sortColumn, sortDirection], () => {
-		const query: Record<string, string> = { ...route.query };
-		if (sortColumn.value && sortDirection.value) {
-			query.sort = sortColumn.value;
-			query.order = sortDirection.value;
-		} else {
-			delete query.sort;
-			delete query.order;
-		}
-		router.replace({ query });
-	}, { flush: "post" });
+	watch(
+		[sortColumn, sortDirection],
+		() => {
+			const query: Record<string, string> = { ...route.query };
+			if (sortColumn.value && sortDirection.value) {
+				query.sort = sortColumn.value;
+				query.order = sortDirection.value;
+			} else {
+				delete query.sort;
+				delete query.order;
+			}
+			router.replace({ query });
+		},
+		{ flush: "post" },
+	);
 
 	function toggleSort(column: string) {
 		if (sortColumn.value !== column) {

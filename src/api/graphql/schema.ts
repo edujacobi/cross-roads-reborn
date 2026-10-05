@@ -212,6 +212,56 @@ export const typeDefs = /* GraphQL */ `
         color: String!
     }
 
+    type GangMemberInfo {
+        userId: ID!
+        nickname: String!
+        avatarUrl: String
+        avatarDecoration: String
+        roleId: Int!
+        roleName: String!
+        permissionCount: Int!
+        depositAmount: Float!
+        depositTime: String
+    }
+
+    type GangRoleInfo {
+        id: Int!
+        name: String!
+        canInvite: Boolean!
+        canKick: Boolean!
+        canPromote: Boolean!
+        canEditGang: Boolean!
+        canImport: Boolean!
+    }
+
+    type GangBaseInfo {
+        id: Int!
+        name: String!
+        modifierDefense: Float
+        modifierAttack: Float
+        modifierPrisonEscape: Float
+    }
+
+    type GangDetail {
+        id: Int!
+        name: String!
+        acronym: String!
+        description: String!
+        money: Float!
+        level: Int!
+        experience: Int!
+        xpForNextLevel: Int!
+        color: String!
+        imageUrl: String
+        base: GangBaseInfo
+        leaderId: ID!
+        leaderNickname: String
+        leaderAvatarUrl: String
+        members: [GangMemberInfo!]!
+        roles: [GangRoleInfo!]!
+        createdAt: String!
+    }
+
     type UserDetail {
         id: ID!
         nickname: String!
@@ -440,6 +490,7 @@ export const typeDefs = /* GraphQL */ `
         users(search: String, limit: Int, offset: Int, vipOnly: Boolean, sortBy: String, sortOrder: String): UserSearchResult!
         topUsers(ranking: UserRanking!, limit: Int, offset: Int): UserRankingResult!
         topGangs(limit: Int, offset: Int): GangRankingResult!
+        gang(id: ID!): GangDetail
         user(id: ID!): UserDetail
         userHistory(userId: ID!, limit: Int, offset: Int): UserHistoryResult!
         items: [ItemDetails!]!

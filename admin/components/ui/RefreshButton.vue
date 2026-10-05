@@ -29,7 +29,7 @@ const emit = defineEmits<(e: "refresh", value: boolean) => void>();
 			:class="{ 'animate-spin': loading }"
 			aria-hidden="true"
 		/>
-		{{ label ?? loading ? "Atualizando" : "Atualizar" }}
+		{{ (label ?? loading) ? "Atualizando" : "Atualizar" }}
 	</BaseButton>
 </template>
 

@@ -63,9 +63,7 @@ function remainingVipTime(vipTime: string | null): string {
 				:columns="3"
 				label="Carregando jogadores VIP"
 			/>
-			<BaseErrorState v-else-if="error">
-				Não foi possível carregar os jogadores VIP.
-			</BaseErrorState>
+			<BaseErrorState v-else-if="error"> Não foi possível carregar os jogadores VIP. </BaseErrorState>
 			<BaseEmptyState
 				v-else-if="users.length === 0"
 				:icon="UserCheck"
@@ -115,23 +113,23 @@ function remainingVipTime(vipTime: string | null): string {
 
 			<template #footer>
 				<BaseTableFooter
-					:labels="{
-
-
-						item: 'VIPs',
-
-
-						navigation: 'Paginação de VIPs',
-
-
+					:labels="{
+
+
+						item: 'VIPs',
+
+
+						navigation: 'Paginação de VIPs',
+
+
 					}"
 					:index="users.length"
 					:offset="offset"
 					:total="total"
 					:page="page"
 					:pages="totalPages"
- 				@click-previous="prevPage()"
- 				@click-next="nextPage()"
+					@click-previous="prevPage()"
+					@click-next="nextPage()"
 				/>
 			</template>
 		</BaseCard>

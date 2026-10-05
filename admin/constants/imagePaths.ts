@@ -83,6 +83,14 @@ export const imagePaths = {
 		armyDepot: "/images/locations/ArmyDepot_.png",
 		jacobiPalace: "/images/locations/JacobiPalace_.png",
 	},
+	gangBases: {
+		airport: "/images/bases/Airport_.png",
+		airport2x: "/images/bases/Airport_2x.png",
+		bikeclub: "/images/bases/Bikeclub_.png",
+		bikeclub2x: "/images/bases/Bikeclub_2x.png",
+		bunker: "/images/bases/Bunker_.png",
+		bunker2x: "/images/bases/Bunker_2x.png",
+	},
 } as const;
 
 export type ImagePath = {

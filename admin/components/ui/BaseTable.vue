@@ -2,7 +2,7 @@
 	setup
 	lang="ts"
 >
-import { ArrowUp, ArrowDown, ArrowUpDown } from "lucide-vue-next";
+import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-vue-next";
 import type { SortColumn } from "~/composables/useSorting";
 
 const props = withDefaults(
@@ -21,9 +21,7 @@ const props = withDefaults(
 	},
 );
 
-const emit = defineEmits<{
-	(sort: [column: string]): void;
-}>();
+const emit = defineEmits<(sort: [column: string]) => void>();
 
 function onHeaderClick(column: SortColumn) {
 	if (!column.sortable) return;
@@ -47,9 +45,9 @@ function getSortIcon(column: SortColumn) {
 						v-for="column in columns"
 						:key="column.key"
 						type="button"
-						:class="[
-							'sort-header',
-							{ 'sort-active': sortColumn === column.key && column.sortable },
+						:class="[
+							'sort-header',
+							{ 'sort-active': sortColumn === column.key && column.sortable },
 						]"
 						:disabled="!column.sortable"
 						@click="onHeaderClick(column)"
