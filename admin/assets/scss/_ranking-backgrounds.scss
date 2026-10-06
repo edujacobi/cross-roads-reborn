@@ -1,55 +1,79 @@
 @use "./variables" as *;
 @use "./mixins" as *;
 
-@mixin rankingBackground($gradient) {
+@mixin rankingBackground($gradient, $bg-color) {
   background: $gradient;
+  border-radius: $radius-md;
+  overflow: hidden;
   background-origin: border-box;
   background-clip: border-box;
+
+  &:after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 1px solid transparent;
+    background: $bg-color border-box;
+    mask: linear-gradient(#000 0 0) padding-box,
+    linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    border-radius: $radius-md;
+  }
 }
 
 .ranking-background {
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
+  position: relative;
 
   &--purple {
     $background: linear-gradient(90deg, #7345C440, #3F1EB740);
-    @include rankingBackground($background);
+    $bg-color: linear-gradient(90deg, #7345C4, #3F1EB7);
+    @include rankingBackground($background, $bg-color);
   }
 
   &--sunset {
     $background: linear-gradient(90deg, #FD594940, #D6249F40, #285AEB40);
-    @include rankingBackground($background);
+    $bg-color: linear-gradient(90deg, #FD5949, #D6249F, #285AEB);
+    @include rankingBackground($background, $bg-color);
   }
 
   &--sunrise {
     $background: linear-gradient(90deg, #FCB04540, #FD1D1D40, #833AB440);
-    @include rankingBackground($background);
+    $bg-color: linear-gradient(90deg, #FCB045, #FD1D1D, #833AB4);
+    @include rankingBackground($background, $bg-color);
   }
 
   &--cloud {
     $background: linear-gradient(90deg, #94BBE940, #EEAECA40);
-    @include rankingBackground($background);
+    $bg-color: linear-gradient(90deg, #94BBE9, #EEAECA);
+    @include rankingBackground($background, $bg-color);
   }
 
   &--botanical_garden {
     $background: linear-gradient(120deg, #3E805B40 15%, #AAD47B40, #F9FFA140, #e66c9740, #ba4fc240 85%);
-    @include rankingBackground($background);
+    $bg-color: linear-gradient(120deg, #3E805B 15%, #AAD47B, #F9FFA1, #e66c97, #ba4fc2 85%);
+    @include rankingBackground($background, $bg-color);
   }
 
   &--silver {
     $background: linear-gradient(205deg, #d9d9d940, #ADBBC340, #656C7040);
-    @include rankingBackground($background);
+    $bg-color: linear-gradient(205deg, #d9d9d9, #ADBBC3, #656C70);
+    @include rankingBackground($background, $bg-color);
   }
 
   &--rainbow {
     $background: linear-gradient(90deg, #b547c640 15%, #FF635540, #FBA94940, #FAE44240, #8BD44840, #2AA8F240 85%);
-    @include rankingBackground($background);
+    $bg-color: linear-gradient(90deg, #b547c6 15%, #FF6355, #FBA949, #FAE442, #8BD448, #2AA8F2 85%);
+    @include rankingBackground($background, $bg-color);
   }
 
   &--frutigerAero {
     $background: radial-gradient(rgba(255, 255, 255, 0.4) 63%, rgba(255, 255, 255, 0) 69%),
     linear-gradient(205deg, #edb75340, #EDDD5340, #57C78540, #15a7e040, #15a7e040);
-    @include rankingBackground($background);
+    $bg-color: radial-gradient(rgba(255, 255, 255, 0.4) 63%, rgba(255, 255, 255, 0) 69%),
+    linear-gradient(205deg, #edb753, #EDDD53, #57C785, #15a7e0, #15a7e0);
+    @include rankingBackground($background, $bg-color);
   }
 }

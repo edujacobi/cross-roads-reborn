@@ -54,6 +54,10 @@ function getBadgeImage(badgeId: BadgeId): string {
 	<BaseCard
 		v-if="user || loading"
 		class="user-profile"
+		:class="[
+						'ranking-background',
+						`ranking-background--${user?.backgroundDecoration}`,
+					]"
 	>
 		<template #actions>
 			<RefreshButton
@@ -199,6 +203,8 @@ function getBadgeImage(badgeId: BadgeId): string {
 @use "~/assets/scss/mixins" as *;
 
 .user-profile {
+	border-color: transparent;
+
 	&__loading {
 		display: flex;
 		align-items: center;
