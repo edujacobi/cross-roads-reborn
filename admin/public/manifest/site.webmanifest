@@ -1,21 +1,33 @@
 {
-	"name": "Cross Roads",
+	"name": "Cross Roads Reborn Web Interface",
 	"short_name": "Cross Roads",
+	"description": "RPG multiplayer. Construa sua fortuna, encare desafios, jogue em comunidade",
+	"lang": "pt-BR",
+	"start_url": "/",
+	"display": "minimal-ui",
+	"display_override": ["minimal-ui", "standalone", "browser"],
+	"orientation": "any",
+	"categories": ["utilities", "games"],
 	"icons": [
 		{
-			"src": "/web-app-manifest-192x192.png",
-			"sizes": "192x192",
+			"src": "/manifest/favicon-96x96.png",
+			"sizes": "96x96",
 			"type": "image/png",
-			"purpose": "maskable"
+			"purpose": "any maskable"
 		},
 		{
-			"src": "/web-app-manifest-512x512.png",
+			"src": "/manifest/web-app-manifest-192x192.png",
+			"sizes": "192x192",
+			"type": "image/png",
+			"purpose": "any maskable"
+		},
+		{
+			"src": "/manifest/web-app-manifest-512x512.png",
 			"sizes": "512x512",
 			"type": "image/png",
-			"purpose": "maskable"
+			"purpose": "any maskable"
 		}
 	],
-	"theme_color": "#9fe0a3",
-	"background_color": "#009964",
-	"display": "standalone"
+	"theme_color": "#1b2130",
+	"background_color": "#0b0d13"
 }
