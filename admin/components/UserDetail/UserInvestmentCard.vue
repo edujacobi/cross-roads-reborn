@@ -86,7 +86,7 @@ const { getInvestmentImageUrl } = useInvestment();
 						{{ formatDistance(investment.expiresAt, new Date(), { locale: ptBR }) }}
 					</time>
 					<p
-						v-if="investment.henchmanEndsAt"
+						v-if="showPrivateInfo && investment.henchmanEndsAt"
 						class="user-investment__henchman"
 					>
 						<NuxtImg
