@@ -6,10 +6,10 @@ import { useQuery } from "@vue/apollo-composable";
 import { Trophy } from "lucide-vue-next";
 import { onMounted } from "vue";
 import { type LocationQueryValue, useRouter } from "vue-router";
-import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseEmptyState from "~/components/ui/BaseEmptyState.vue";
 import BaseErrorState from "~/components/ui/BaseErrorState.vue";
+import BaseSelector, { type SelectorOption } from "~/components/ui/BaseSelector.vue";
 import BaseTable from "~/components/ui/BaseTable.vue";
 import BaseTableFooter from "~/components/ui/BaseTableFooter.vue";
 import BaseTableSkeleton from "~/components/ui/BaseTableSkeleton.vue";
@@ -132,6 +132,12 @@ const gangRanking: RankingList = {
 };
 const rankingOptions = [...rankings, gangRanking];
 
+const selectorOptions: SelectorOption[] = rankingOptions.map((r) => ({
+	label: r.label,
+	value: r.type,
+	imagePath: r.image,
+}));
+
 const auth = useAuth();
 const { format: formatMoney } = useMoneyFormat();
 const route = useRoute();
@@ -168,6 +174,11 @@ const total = computed(() =>
 	isGangRanking.value ? (gangResult.value?.topGangs.total ?? 0) : (userResult.value?.topUsers.total ?? 0),
 );
 const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSize.value)));
+
+function onRankingChange(value: string) {
+	const ranking = rankingOptions.find((r) => r.type === value);
+	if (ranking) void selectRanking(ranking);
+}
 
 async function selectRanking(ranking: RankingList) {
 	activeRanking.value = ranking;
@@ -217,33 +228,20 @@ function nextPage() {
 			</div>
 		</section>
 
-		<nav
-			class="ranking-tabs"
-			aria-label="Tipos de ranking"
-		>
-			<BaseButton
-				v-for="ranking in rankingOptions"
-				:key="ranking.type"
-				class="ranking-tab"
-				:variant="activeRanking.type === ranking.type ? 'success' : 'secondary'"
-				:class="{ active: activeRanking.type === ranking.type }"
-				:aria-pressed="activeRanking.type === ranking.type"
-				@click="selectRanking(ranking)"
-			>
-				<NuxtImg
-					:src="ranking.image"
-					width="16"
-					alt=""
-				/>
-				{{ ranking.label }}
-			</BaseButton>
-		</nav>
-
 		<BaseCard
 			:title="`Top ${activeRanking.label}`"
 			no-padding-x
 			no-padding-y
 		>
+			<template #actions>
+				<BaseSelector
+					id="ranking-selector"
+					label="Tipo de ranking"
+					:options="selectorOptions"
+					:model-value="activeRanking.type"
+					@update:model-value="onRankingChange"
+				/>
+			</template>
 			<BaseTableSkeleton
 				v-if="loading"
 				:rows="pageSize"
@@ -482,13 +480,6 @@ function nextPage() {
 	}
 }
 
-.ranking-tabs {
-	display: flex;
-	gap: $spacing-xs;
-	overflow-x: auto;
-	padding-bottom: $spacing-xs;
-	@include scrollbar-custom;
-}
 
 .rankings-table {
 	.clickable-row {

@@ -4,6 +4,7 @@
 >
 import { computed, ref } from "vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
+import BaseSelector, { type SelectorOption } from "~/components/ui/BaseSelector.vue";
 import BaseTable from "~/components/ui/BaseTable.vue";
 import BaseTableSkeleton from "~/components/ui/BaseTableSkeleton.vue";
 import type { GetDashboardItemPopularityQuery } from "~/graphql/generated";
@@ -17,7 +18,7 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-const sortBy = ref<"userCount" | "itemId">("userCount");
+const sortBy = ref("userCount");
 
 const sortedItems = computed(() =>
 	[...props.items].sort((first, second) =>
@@ -31,6 +32,11 @@ function getItemImage(itemId: number) {
 	const id = itemId as ItemId;
 	return `/images/items/${id}_${ItemId[id]}.png`;
 }
+
+const sortOptions: SelectorOption[] = [
+	{ label: "Quantidade de usuários", value: "userCount" },
+	{ label: "ID do item", value: "itemId" },
+];
 </script>
 
 <template>
@@ -40,13 +46,12 @@ function getItemImage(itemId: number) {
 		class="item-popularity-card"
 	>
 		<template #actions>
-			<label class="sort-control">
-				Ordenar por
-				<select v-model="sortBy">
-					<option value="userCount">Quantidade de usuários</option>
-					<option value="itemId">ID do item</option>
-				</select>
-			</label>
+			<BaseSelector
+				id="sort-by"
+				v-model="sortBy"
+				label="Ordenar por"
+				:options="sortOptions"
+			/>
 		</template>
 
 		<BaseTableSkeleton
@@ -105,16 +110,6 @@ function getItemImage(itemId: number) {
 	display: flex;
 	align-items: center;
 	gap: $spacing-sm;
-	color: $text-secondary;
-	font-size: 0.8125rem;
-
-	select {
-		padding: 0.4rem 0.6rem;
-		border: 1px solid $border-subtle;
-		border-radius: 6px;
-		background: $bg-card-hover;
-		color: $text-primary;
-	}
 }
 
 .item-name {

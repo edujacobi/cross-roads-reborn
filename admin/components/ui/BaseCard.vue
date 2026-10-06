@@ -23,7 +23,7 @@ defineProps<Props>();
 			class="card-header"
 			:class="{'no-body': noBody}"
 		>
-			<div>
+			<div class="card-header__title-wrapper">
 				<h2
 					v-if="title"
 					class="card-title"
@@ -106,15 +106,22 @@ defineProps<Props>();
 	display: flex;
 	flex-direction: column;
 
+	&:has(.base-selector.is-open) {
+		overflow: visible;
+	}
+
 	.card-header {
 		@include flex-between;
 		padding: $spacing-md 1.25rem;
 		gap: $spacing-sm;
+		flex-wrap: wrap;
 
-		// ponytail: wrap card header when title and actions overflow
-		@media (max-width: 540px) {
-			flex-wrap: wrap;
-			gap: $spacing-sm;
+		&__title-wrapper {
+			display: flex;
+			flex-direction: column;
+			gap: $spacing-xs;
+			flex: 1 1 12rem;
+			min-width: 0;
 		}
 
 		&:not(.no-body){
@@ -148,6 +155,16 @@ defineProps<Props>();
 		&__no-padding-y {
 			padding-block: 0;
 		}
+	}
+
+	.card-actions {
+		display: flex;
+		flex: 0 1 auto;
+		align-items: center;
+		flex-wrap: wrap;
+		justify-content: flex-end;
+		gap: $spacing-sm;
+		margin-left: auto;
 	}
 
 	.card-footer {

@@ -3,9 +3,9 @@
 	lang="ts"
 >
 import { useQuery } from "@vue/apollo-composable";
-import { computed, nextTick, ref } from "vue";
-import BaseButton from "~/components/ui/BaseButton.vue";
+import { computed, ref } from "vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
+import BaseSelector, { type SelectorOption } from "~/components/ui/BaseSelector.vue";
 import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
 import RefreshButton from "~/components/ui/RefreshButton.vue";
 import { imagePaths } from "~/constants/imagePaths";
@@ -30,11 +30,16 @@ const tabs = [
 	{ id: "economy", label: "Economia", image: imagePaths.uiElements.vaultBank },
 ] as const;
 
+const selectorOptions: SelectorOption[] = tabs.map((tab) => ({
+	label: tab.label,
+	value: tab.id,
+	imagePath: tab.image,
+}));
+
 type TabId = (typeof tabs)[number]["id"];
 type StatRow = { label: string; value: string };
 
 const activeTab = ref<TabId>("sequence");
-const tabList = ref<HTMLElement | null>(null);
 const numberFormat = new Intl.NumberFormat("pt-BR");
 const formatCount = (value: number) => numberFormat.format(value);
 const formatMoney = (value: number) => `Cr$ ${formatCount(value)}`;
@@ -114,32 +119,6 @@ const rows = computed<StatRow[]>(() => {
 			];
 	}
 });
-
-async function handleTabKeydown(event: KeyboardEvent, index: number) {
-	let nextIndex: number;
-
-	switch (event.key) {
-		case "ArrowRight":
-			nextIndex = (index + 1) % tabs.length;
-			break;
-		case "ArrowLeft":
-			nextIndex = (index + tabs.length - 1) % tabs.length;
-			break;
-		case "Home":
-			nextIndex = 0;
-			break;
-		case "End":
-			nextIndex = tabs.length - 1;
-			break;
-		default:
-			return;
-	}
-
-	event.preventDefault();
-	activeTab.value = tabs[nextIndex].id;
-	await nextTick();
-	tabList.value?.querySelector<HTMLButtonElement>("[aria-selected='true']")?.focus();
-}
 </script>
 
 <template>
@@ -148,44 +127,17 @@ async function handleTabKeydown(event: KeyboardEvent, index: number) {
 		class="user-activity"
 	>
 		<template #actions>
-			<div class="user-activity__actions">
-				<div
-					ref="tabList"
-					class="user-activity__tabs"
-					role="tablist"
-					aria-label="Categorias de estatísticas"
-					aria-orientation="horizontal"
-				>
-					<BaseButton
-						:variant="activeTab === tab.id ? 'success' : 'secondary'"
-						v-for="(tab, index) in tabs"
-						:id="`user-activity-tab-${tab.id}`"
-						:key="tab.id"
-						type="button"
-						role="tab"
-						:aria-selected="activeTab === tab.id"
-						aria-controls="user-activity-panel"
-						:tabindex="activeTab === tab.id ? 0 : -1"
-						class="user-activity__tab"
-						:class="{ 'user-activity__tab--active': activeTab === tab.id }"
-						@click="activeTab = tab.id"
-						@keydown="handleTabKeydown($event, index)"
-					>
-						<NuxtImg
-							:src="tab.image"
-							width="16"
-							height="16"
-							alt=""
-						/>
-						{{ tab.label }}
-					</BaseButton>
-				</div>
-				<RefreshButton
-					@refresh="() => refetch()"
-					:loading="loading"
-					aria-label="Atualizar atividade"
-				/>
-			</div>
+			<BaseSelector
+				id="activity-stats-selector"
+				:options="selectorOptions"
+				:model-value="activeTab"
+				@update:model-value="activeTab = $event as TabId"
+			/>
+			<RefreshButton
+				@refresh="() => refetch()"
+				:loading="loading"
+				aria-label="Atualizar atividade"
+			/>
 		</template>
 
 		<div
@@ -212,7 +164,6 @@ async function handleTabKeydown(event: KeyboardEvent, index: number) {
 			v-else
 			id="user-activity-panel"
 			role="tabpanel"
-			:aria-labelledby="`user-activity-tab-${activeTab}`"
 			aria-live="polite"
 			class="user-activity__panel"
 		>
@@ -237,24 +188,6 @@ async function handleTabKeydown(event: KeyboardEvent, index: number) {
 @use "~/assets/scss/variables" as *;
 
 .user-activity {
-	&__actions {
-		display: flex;
-		flex-wrap: wrap;
-		gap: $spacing-xs;
-		justify-content: end;
-
-		@media (max-width: 540px) {
-			justify-content: start;
-		}
-	}
-
-	&__tabs {
-		display: flex;
-		flex-wrap: wrap;
-		gap: $spacing-xs;
-		justify-content: end;
-	}
-
 	&__state {
 		padding: $spacing-md;
 		color: $text-muted;
