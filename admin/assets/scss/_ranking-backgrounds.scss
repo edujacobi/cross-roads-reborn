@@ -1,0 +1,55 @@
+@use "./variables" as *;
+@use "./mixins" as *;
+
+@mixin rankingBackground($gradient) {
+  background: $gradient;
+  background-origin: border-box;
+  background-clip: border-box;
+}
+
+.ranking-background {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+
+  &--purple {
+    $background: linear-gradient(90deg, #7345C440, #3F1EB740);
+    @include rankingBackground($background);
+  }
+
+  &--sunset {
+    $background: linear-gradient(90deg, #FD594940, #D6249F40, #285AEB40);
+    @include rankingBackground($background);
+  }
+
+  &--sunrise {
+    $background: linear-gradient(90deg, #FCB04540, #FD1D1D40, #833AB440);
+    @include rankingBackground($background);
+  }
+
+  &--cloud {
+    $background: linear-gradient(90deg, #94BBE940, #EEAECA40);
+    @include rankingBackground($background);
+  }
+
+  &--botanical_garden {
+    $background: linear-gradient(120deg, #3E805B40 15%, #AAD47B40, #F9FFA140, #e66c9740, #ba4fc240 85%);
+    @include rankingBackground($background);
+  }
+
+  &--silver {
+    $background: linear-gradient(205deg, #d9d9d940, #ADBBC340, #656C7040);
+    @include rankingBackground($background);
+  }
+
+  &--rainbow {
+    $background: linear-gradient(90deg, #b547c640 15%, #FF635540, #FBA94940, #FAE44240, #8BD44840, #2AA8F240 85%);
+    @include rankingBackground($background);
+  }
+
+  &--frutigerAero {
+    $background: radial-gradient(rgba(255, 255, 255, 0.4) 63%, rgba(255, 255, 255, 0) 69%),
+    linear-gradient(205deg, #edb75340, #EDDD5340, #57C78540, #15a7e040, #15a7e040);
+    @include rankingBackground($background);
+  }
+}

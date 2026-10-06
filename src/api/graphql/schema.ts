@@ -90,6 +90,7 @@ export const typeDefs = /* GraphQL */ `
         nickname: String!
         avatarUrl: String
         avatarDecoration: String!
+        backgroundDecoration: String!
         class: Int!
         isVip: Boolean!
         vipEternal: Boolean!
@@ -112,6 +113,7 @@ export const typeDefs = /* GraphQL */ `
         nickname: String!
         avatarUrl: String
         avatarDecoration: String!
+        backgroundDecoration: String!
         gangName: String
         gangColor: String
         value: Float!
@@ -217,6 +219,7 @@ export const typeDefs = /* GraphQL */ `
         nickname: String!
         avatarUrl: String
         avatarDecoration: String
+        backgroundDecoration: String
         roleId: Int!
         roleName: String!
         permissionCount: Int!
@@ -268,6 +271,7 @@ export const typeDefs = /* GraphQL */ `
         online: Boolean!
         avatarUrl: String
         avatarDecoration: String!
+        backgroundDecoration: String!
         money: Float!
         specialCoin: Float
         automaticGrenade: Boolean

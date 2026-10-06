@@ -92,7 +92,7 @@
 
   &:hover,
   &:focus-visible {
-    background-color: $bg-hover;
+    backdrop-filter: brightness(0.8);
   }
 
   &:focus-visible {

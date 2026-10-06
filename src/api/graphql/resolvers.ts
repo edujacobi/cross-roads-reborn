@@ -16,6 +16,7 @@ import {
 } from "#core/repositories/UserRepository";
 import { ClassId, ClassList } from "#core/types/Classes";
 import { AvatarDecorationList } from "#core/types/AvatarDecorations";
+import { BackgroundDecorationList } from "#core/types/BackgroundDecorations";
 import { Language } from "#core/models/Language";
 import { ItemList, type Items } from "#core/types/Items";
 import type { AuthUser, GraphQLContext } from "#api/types";
@@ -269,6 +270,7 @@ async function mapUserDetail(user: User) {
 		money: user.Money,
 		avatarUrl: discordUser.avatarURL(),
 		avatarDecoration: user.AvatarDecoration.Description[Language.English].toLowerCase().replaceAll(" ", "_"),
+		backgroundDecoration: user.BackgroundDecoration.Description[Language.English].toLowerCase().replaceAll(" ", "_"),
 		specialCoin: user.SpecialCoin,
 		automaticGrenade: user.AutomaticGrenade,
 		dailyNextAvailableAt: user.Daily.LastReceived ? addHours(user.Daily.LastReceived, 24).toISOString() : null,
@@ -684,6 +686,9 @@ export const resolvers: {
 					avatarDecoration: AvatarDecorationList[user.AvatarDecoration.Id].Description[Language.English]
 						.toLowerCase()
 						.replaceAll(" ", "_"),
+					backgroundDecoration: BackgroundDecorationList[user.BackgroundDecoration.Id].Description[Language.English]
+						.toLowerCase()
+						.replaceAll(" ", "_"),
 					class: user.Class,
 					isVip: authUser.role !== "PLAYER" && user.IsVip(),
 					vipEternal: authUser.role !== "PLAYER" && user.VipEternal,
@@ -747,6 +752,7 @@ export const resolvers: {
 					nickname: user.nickname || "(Sem Nick)",
 					avatarUrl,
 					avatarDecoration: AvatarDecorationList[user.avatarDecoration].Description[Language.English].toLowerCase().replaceAll(" ", "_"),
+					backgroundDecoration: BackgroundDecorationList[user.backgroundDecoration].Description[Language.English].toLowerCase().replaceAll(" ", "_"),
 					gangName: gangByUserId.get(user.id) ?? null,
 					gangColor: gangColorByUserId.get(user.id) ?? null,
 					value: Number(user[ranking.orderField]),
@@ -834,7 +840,7 @@ export const resolvers: {
 					}
 
 					const role = roles.find(r => r.id === member.roleId);
-					const user = await UserRepository.FindById(member.userId, ["id", "nickname", "avatarDecoration"]);
+					const user = await UserRepository.FindById(member.userId, ["id", "nickname", "avatarDecoration", "backgroundDecoration"]);
 					let permCount = 0;
 					if (role) {
 						if (role.canInvite) permCount++;
@@ -848,6 +854,7 @@ export const resolvers: {
 						nickname: user?.nickname ?? member.userId,
 						avatarUrl,
 						avatarDecoration: AvatarDecorationList[user?.avatarDecoration ?? 0].Description[Language.English].toLowerCase().replaceAll(" ", "_"),
+						backgroundDecoration: BackgroundDecorationList[user?.backgroundDecoration ?? 0].Description[Language.English].toLowerCase().replaceAll(" ", "_"),
 						roleId: member.roleId,
 						roleName: role?.name ?? "Unknown",
 						permissionCount: permCount,

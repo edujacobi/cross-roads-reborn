@@ -333,7 +333,11 @@ function nextPage() {
 							:key="entry.id"
 							class="clickable-row"
 							tabindex="0"
-							:class="{ 'current-user': entry.id === auth.user.value?.userId }"
+							:class="[
+								'ranking-background',
+								`ranking-background--${entry.backgroundDecoration}`,
+								{ 'current-user': entry.id === auth.user.value?.userId },
+							]"
 							:style="{ '--highlight-color': entry.gangColor ?? '#89999A' }"
 							@click="navigateTo(`/users/${entry.id}`)"
 							@keydown.enter.prevent="navigateTo(`/users/${entry.id}`)"
@@ -366,7 +370,10 @@ function nextPage() {
 								</div>
 							</th>
 							<td class="rankings-page__value-cell">{{ formatValue(entry.value) }}</td>
-							<td v-if="activeRanking.countLabel">
+							<td
+								class="rankings-page__value-cell"
+								v-if="activeRanking.countLabel"
+							>
 								{{ entry.count?.toLocaleString("pt-BR") ?? "—" }}
 							</td>
 						</tr>
@@ -476,6 +483,8 @@ function nextPage() {
 
 	&__value-cell {
 		font-weight: 600;
+		font-size: 1.1rem;
+		color: $text-primary;
 		font-variant-numeric: tabular-nums;
 	}
 }

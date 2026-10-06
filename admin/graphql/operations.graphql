@@ -246,6 +246,7 @@ query SearchUsers($search: String, $limit: Int, $offset: Int, $vipOnly: Boolean,
 			nickname
 			avatarUrl
 			avatarDecoration
+			backgroundDecoration
 			class
 			isVip
 			vipEternal
@@ -268,6 +269,7 @@ query GetTopUsers($ranking: UserRanking!, $limit: Int!, $offset: Int!) {
 			nickname
 			avatarUrl
 			avatarDecoration
+			backgroundDecoration
 			gangName
 			gangColor
 			value
@@ -303,6 +305,7 @@ query GetUserProfile($id: ID!) {
 		money
 		avatarUrl
 		avatarDecoration
+		backgroundDecoration
 		specialCoin
 		class
 		className
@@ -384,6 +387,7 @@ query GetGangDetail($id: ID!) {
 			nickname
 			avatarUrl
 			avatarDecoration
+			backgroundDecoration
 			roleId
 			roleName
 			permissionCount
