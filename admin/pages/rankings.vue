@@ -422,7 +422,7 @@ function nextPage() {
 	&__player-content {
 		display: flex;
 		align-items: center;
-		gap: $spacing-md;
+		gap: $spacing-sm;
 
 		@media (max-width: $bp-tablet){
 			gap: $spacing-sm;
@@ -435,6 +435,7 @@ function nextPage() {
 		border-radius: $radius-full;
 		background-color: $bg-subtle;
 		border-width: 3px;
+		margin-right: $spacing-xs;
 
 		@media (max-width: $bp-tablet){
 			width: 2rem;
@@ -473,12 +474,12 @@ function nextPage() {
 
 	&__gang-name-label {
 		padding: 0.125rem 0.5rem;
-		border-radius: $radius-full;
-		background-color: color-mix(in srgb, var(--gang-color) 20%, transparent);
+		border-radius: $radius-xs;
+		background-color: color-mix(in srgb, var(--gang-color) 15%, transparent);
 		color: var(--gang-color);
-		border: 1px solid color-mix(in srgb, var(--gang-color) 35%, transparent);
-		font-size: 0.6875rem;
-		font-weight: 600;
+		border: 1px solid color-mix(in srgb, var(--gang-color) 15%, transparent);
+		font-size: 0.6rem;
+		font-weight: 700;
 	}
 
 	&__value-cell {

@@ -55,8 +55,8 @@ function getBadgeImage(badgeId: BadgeId): string {
 		v-if="user || loading"
 		class="user-profile"
 		:class="[
-						'ranking-background',
-						`ranking-background--${user?.backgroundDecoration}`,
+						'profile-background',
+						`profile-background--${user?.backgroundDecoration}`,
 					]"
 	>
 		<template #actions>

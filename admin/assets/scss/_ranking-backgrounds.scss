@@ -1,10 +1,12 @@
 @use "./variables" as *;
 @use "./mixins" as *;
+@use "sass:list";
+@use "sass:string";
+@use "sass:map";
+@use "sass:meta";
 
 @mixin rankingBackground($gradient, $bg-color) {
   background: $gradient;
-  border-radius: $radius-md;
-  overflow: hidden;
   background-origin: border-box;
   background-clip: border-box;
 
@@ -17,63 +19,105 @@
     mask: linear-gradient(#000 0 0) padding-box,
     linear-gradient(#000 0 0);
     mask-composite: exclude;
-    border-radius: $radius-md;
+    border-radius: 1px;
   }
 }
 
-.ranking-background {
+@function apply-alpha($colors, $alpha) {
+  $result: null;
+  @each $item in $colors {
+    @if meta.type-of($item) == 'list' {
+      $hex: list.nth($item, 1);
+      $stop: list.nth($item, 2);
+      $result: list.append($result, string.unquote($hex + $alpha + " " + $stop), $separator: comma);
+    } @else {
+      $result: list.append($result, string.unquote($item + $alpha), $separator: comma);
+    }
+  }
+  @return $result;
+}
+
+$palettes: (
+        "purple": (
+                angle: 90deg,
+                colors: (#7345C4, #3F1EB7),
+        ),
+        "sunset": (
+                angle: 90deg,
+                colors: (#FD5949, #D6249F, #285AEB),
+        ),
+        "sunrise": (
+                angle: 90deg,
+                colors: (#FCB045, #FD1D1D, #833AB4),
+        ),
+        "cloud": (
+                angle: 90deg,
+                colors: (#94BBE9, #EEAECA),
+        ),
+        "botanical_garden": (
+                angle: 120deg,
+                colors: (#3E805B 15%, #AAD47B, #F9FFA1, #e66c97, #ba4fc2 85%),
+        ),
+        "silver": (
+                angle: 205deg,
+                colors: (#d9d9d9, #ADBBC3, #656C70),
+        ),
+        "rainbow": (
+                angle: 90deg,
+                colors: (#b547c6 15%, #FF6355, #FBA949, #FAE442, #8BD448, #2AA8F2 85%),
+        ),
+);
+
+@each $name, $palette in $palettes {
+  .ranking-background--#{$name} {
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    position: relative;
+
+    $bg: linear-gradient(map.get($palette, angle), apply-alpha(map.get($palette, colors), "40"));
+    $border: linear-gradient(map.get($palette, angle), apply-alpha(map.get($palette, colors), "80"));
+    @include rankingBackground($bg, $border);
+  }
+
+  .profile-background--#{$name} {
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    position: relative;
+
+    $bg: linear-gradient(map.get($palette, angle), apply-alpha(map.get($palette, colors), "20"));
+    $border: linear-gradient(map.get($palette, angle), map.get($palette, colors));
+    @include rankingBackground($bg, $border);
+
+    &:after {
+      border-radius: $radius-md;
+    }
+  }
+}
+
+.ranking-background--frutigerAero {
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
   position: relative;
 
-  &--purple {
-    $background: linear-gradient(90deg, #7345C440, #3F1EB740);
-    $bg-color: linear-gradient(90deg, #7345C4, #3F1EB7);
-    @include rankingBackground($background, $bg-color);
-  }
+  $bg: radial-gradient(rgba(255, 255, 255, 0.4) 63%, rgba(255, 255, 255, 0) 69%),
+  linear-gradient(205deg, #edb75340, #EDDD5340, #57C78540, #15a7e040, #15a7e040);
+  $border: radial-gradient(rgba(255, 255, 255, 0.4) 63%, rgba(255, 255, 255, 0) 69%),
+  linear-gradient(205deg, #edb75380, #EDDD5380, #57C78580, #15a7e080, #15a7e080);
+  @include rankingBackground($bg, $border);
+}
 
-  &--sunset {
-    $background: linear-gradient(90deg, #FD594940, #D6249F40, #285AEB40);
-    $bg-color: linear-gradient(90deg, #FD5949, #D6249F, #285AEB);
-    @include rankingBackground($background, $bg-color);
-  }
+.profile-background--frutigerAero {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  position: relative;
 
-  &--sunrise {
-    $background: linear-gradient(90deg, #FCB04540, #FD1D1D40, #833AB440);
-    $bg-color: linear-gradient(90deg, #FCB045, #FD1D1D, #833AB4);
-    @include rankingBackground($background, $bg-color);
-  }
-
-  &--cloud {
-    $background: linear-gradient(90deg, #94BBE940, #EEAECA40);
-    $bg-color: linear-gradient(90deg, #94BBE9, #EEAECA);
-    @include rankingBackground($background, $bg-color);
-  }
-
-  &--botanical_garden {
-    $background: linear-gradient(120deg, #3E805B40 15%, #AAD47B40, #F9FFA140, #e66c9740, #ba4fc240 85%);
-    $bg-color: linear-gradient(120deg, #3E805B 15%, #AAD47B, #F9FFA1, #e66c97, #ba4fc2 85%);
-    @include rankingBackground($background, $bg-color);
-  }
-
-  &--silver {
-    $background: linear-gradient(205deg, #d9d9d940, #ADBBC340, #656C7040);
-    $bg-color: linear-gradient(205deg, #d9d9d9, #ADBBC3, #656C70);
-    @include rankingBackground($background, $bg-color);
-  }
-
-  &--rainbow {
-    $background: linear-gradient(90deg, #b547c640 15%, #FF635540, #FBA94940, #FAE44240, #8BD44840, #2AA8F240 85%);
-    $bg-color: linear-gradient(90deg, #b547c6 15%, #FF6355, #FBA949, #FAE442, #8BD448, #2AA8F2 85%);
-    @include rankingBackground($background, $bg-color);
-  }
-
-  &--frutigerAero {
-    $background: radial-gradient(rgba(255, 255, 255, 0.4) 63%, rgba(255, 255, 255, 0) 69%),
-    linear-gradient(205deg, #edb75340, #EDDD5340, #57C78540, #15a7e040, #15a7e040);
-    $bg-color: radial-gradient(rgba(255, 255, 255, 0.4) 63%, rgba(255, 255, 255, 0) 69%),
-    linear-gradient(205deg, #edb753, #EDDD53, #57C785, #15a7e0, #15a7e0);
-    @include rankingBackground($background, $bg-color);
-  }
+  $bg: radial-gradient(rgba(255, 255, 255, 0.4) 63%, rgba(255, 255, 255, 0) 69%),
+  linear-gradient(205deg, #edb75320, #EDDD5320, #57C78520, #15a7e020, #15a7e020);
+  $border: radial-gradient(rgba(255, 255, 255, 0.4) 63%, rgba(255, 255, 255, 0) 69%),
+  linear-gradient(205deg, #edb753, #EDDD53, #57C785, #15a7e0, #15a7e0);
+  @include rankingBackground($bg, $border);
 }
