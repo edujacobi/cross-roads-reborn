@@ -70,7 +70,19 @@ export function useAuth() {
 		return fetchUser();
 	}
 
-	function loginWithDiscord() {
+	async function loginWithDiscord() {
+		// Ensure token is loaded from localStorage in case initAuth hasn't run yet
+		if (!token.value) {
+			token.value = tokenStorage.get();
+		}
+		// If we already have a valid token, skip Discord OAuth and go straight to the target
+		if (token.value) {
+			await fetchUser();
+			if (user.value) {
+				navigateTo(hasAdminAccess.value ? "/admin/dashboard" : "/users");
+				return;
+			}
+		}
 		const apiBase = config.public.apiBaseUrl;
 		window.location.href = `${apiBase}/auth/discord/login`;
 	}
