@@ -365,7 +365,7 @@ function nextPage() {
 										class="rankings-page__gang-name-label"
 										:style="{ '--gang-color': entry.gangColor ?? '#89999A' }"
 									>
-										{{ entry.gangName }}
+										{{ entry.gangAcronym }}
 									</span>
 								</div>
 							</th>

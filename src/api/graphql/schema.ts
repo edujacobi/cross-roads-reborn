@@ -115,6 +115,7 @@ export const typeDefs = /* GraphQL */ `
         avatarDecoration: String!
         backgroundDecoration: String!
         gangName: String
+        gangAcronym: String
         gangColor: String
         value: Float!
         count: Float

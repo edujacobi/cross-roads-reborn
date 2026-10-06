@@ -271,6 +271,7 @@ query GetTopUsers($ranking: UserRanking!, $limit: Int!, $offset: Int!) {
 			avatarDecoration
 			backgroundDecoration
 			gangName
+			gangAcronym
 			gangColor
 			value
 			count

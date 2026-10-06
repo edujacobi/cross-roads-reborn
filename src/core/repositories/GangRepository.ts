@@ -7,14 +7,14 @@ import type { NullishPropertiesOf } from "sequelize/lib/utils";
 export class GangRepository {
 	static async FindById(
 		id: number,
-		attributes?: (keyof Gangs)[]
+		attributes?: (keyof Gangs)[],
 	): Promise<Gangs | null> {
 		return await Gangs.findByPk(id, attributes ? { attributes } : undefined);
 	}
 
 	static async FindAllByIds(ids: number[]): Promise<Gangs[]> {
 		return await Gangs.findAll({
-			attributes: ["id", "name", "color"],
+			attributes: ["id", "name", "color", "acronym"],
 			where: { id: { [Op.in]: ids } },
 		});
 	}
@@ -57,9 +57,9 @@ export class GangRepository {
 			where: {
 				[Op.or]: {
 					name: { [Op.like]: name },
-					acronym: { [Op.like]: acronym }
-				}
-			}
+					acronym: { [Op.like]: acronym },
+				},
+			},
 		});
 	}
 
@@ -67,20 +67,20 @@ export class GangRepository {
 		return await Gangs.findOne({
 			include: [{
 				model: GangMembers,
-				where: { userId }
-			}]
+				where: { userId },
+			}],
 		});
 	}
 
 	static async Create(
-		values: Optional<InferCreationAttributes<Gangs>, NullishPropertiesOf<InferCreationAttributes<Gangs>>>
+		values: Optional<InferCreationAttributes<Gangs>, NullishPropertiesOf<InferCreationAttributes<Gangs>>>,
 	): Promise<Gangs> {
 		return await Gangs.create(values);
 	}
 
 	static async Update(
 		id: number,
-		values: Partial<InferAttributes<Gangs>>
+		values: Partial<InferAttributes<Gangs>>,
 	): Promise<[number]> {
 		return await Gangs.update(values, {
 			where: { id },

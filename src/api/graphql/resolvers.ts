@@ -730,10 +730,12 @@ export const resolvers: {
 			const memberships = await GangMemberRepository.FindAllByUserIds(users.map(user => user.id));
 			const gangs = await GangRepository.FindAllByIds([...new Set(memberships.map(member => member.gangId))]);
 			const gangNames = new Map(gangs.map(gang => [gang.id, gang.name]));
+			const gangAcronyms = new Map(gangs.map(gang => [gang.id, gang.acronym]));
 			const gangColors = new Map(
 				gangs.map(gang => [gang.id, convertHexNumberToString(GangColor[gang.color].Color)]),
 			);
 			const gangByUserId = new Map(memberships.map(member => [member.userId, gangNames.get(member.gangId) ?? null]));
+			const gangAcronymByUserId = new Map(memberships.map(member => [member.userId, gangAcronyms.get(member.gangId) ?? null]));
 			const gangColorByUserId = new Map(
 				memberships.map(member => [member.userId, gangColors.get(member.gangId) ?? null]),
 			);
@@ -754,6 +756,7 @@ export const resolvers: {
 					avatarDecoration: AvatarDecorationList[user.avatarDecoration].Description[Language.English].toLowerCase().replaceAll(" ", "_"),
 					backgroundDecoration: BackgroundDecorationList[user.backgroundDecoration].Description[Language.English].toLowerCase().replaceAll(" ", "_"),
 					gangName: gangByUserId.get(user.id) ?? null,
+					gangAcronym: gangAcronymByUserId.get(user.id) ?? null,
 					gangColor: gangColorByUserId.get(user.id) ?? null,
 					value: Number(user[ranking.orderField]),
 					count: ranking.countField ? Number(user[ranking.countField]) : null,
