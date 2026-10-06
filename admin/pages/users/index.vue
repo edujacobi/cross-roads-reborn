@@ -383,16 +383,16 @@ function nextPage() {
 			max-width: 100%;
 		}
 
-		&__search-icon {
-			position: absolute;
-			left: 12px;
-			color: $text-muted;
-			pointer-events: none;
-		}
-
 		:deep(.base-input) {
 			padding-left: 2.375rem;
 		}
+	}
+	
+	&__search-icon {
+		position: absolute;
+		left: 12px;
+		color: $text-muted;
+		pointer-events: none;
 	}
 }
 
