@@ -203,7 +203,9 @@ function getBadgeImage(badgeId: BadgeId): string {
 @use "~/assets/scss/mixins" as *;
 
 .user-profile {
-	border-color: transparent;
+	&:not(.profile-background--default) {
+		border: none;
+	}
 
 	&__loading {
 		display: flex;
@@ -314,11 +316,17 @@ function getBadgeImage(badgeId: BadgeId): string {
 		flex-wrap: wrap;
 		align-items: center;
 		gap: $spacing-sm;
-		border-bottom: 1px solid $border-subtle;
-		padding-bottom: $spacing-md;
+		margin-bottom: $spacing-md;
 		list-style: none;
-		margin: 0;
 		padding-left: 0;
+
+		&:after {
+			content: "";
+			display: block;
+			height: 1px;
+			width: 100%;
+			background: var(--profile-border-gradient, $border-subtle);
+		}
 	}
 
 	&__badge {
@@ -356,7 +364,7 @@ function getBadgeImage(badgeId: BadgeId): string {
 	&__class-image {
 		width: 2rem;
 		border-radius: $radius-full;
-		background-color: $border-card;
+		background-color: color-mix(in srgb, $bg-input 50%, transparent);
 		margin-right: $spacing-sm;
 	}
 

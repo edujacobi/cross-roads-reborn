@@ -87,7 +87,8 @@ $palettes: (
     position: relative;
 
     $bg: linear-gradient(map.get($palette, angle), apply-alpha(map.get($palette, colors), "20"));
-    $border: linear-gradient(map.get($palette, angle), map.get($palette, colors));
+    $border: linear-gradient(map.get($palette, angle), apply-alpha(map.get($palette, colors), "80"));
+    --profile-border-gradient: #{$border};
     @include rankingBackground($bg, $border);
 
     &:after {
@@ -119,5 +120,6 @@ $palettes: (
   linear-gradient(205deg, #edb75320, #EDDD5320, #57C78520, #15a7e020, #15a7e020);
   $border: radial-gradient(rgba(255, 255, 255, 0.4) 63%, rgba(255, 255, 255, 0) 69%),
   linear-gradient(205deg, #edb753, #EDDD53, #57C785, #15a7e0, #15a7e0);
+  --profile-border-gradient: #{$border};
   @include rankingBackground($bg, $border);
 }
