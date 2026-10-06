@@ -394,7 +394,7 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 	gap: 1.25rem;
 	align-items: flex-start;
 
-	@media (max-width: 600px) {
+	@media (max-width: $bp-mobile) {
 		flex-direction: column;
 		align-items: center;
 		text-align: center;
@@ -407,7 +407,7 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 		height: 6rem;
 		border-radius: $radius-lg;
 		object-fit: cover;
-		background-color: rgba($bg-input, 0.15);
+		background-color: $bg-subtle;
 		border: 1px solid $border-color;
 	}
 
@@ -453,7 +453,7 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 
 	&__track {
 		height: 0.75rem;
-		background-color: rgba($bg-input, 0.65);
+		background-color: $bg-input-field;
 		border-radius: $radius-full;
 		overflow: hidden;
 	}
@@ -462,7 +462,7 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 		height: 100%;
 		background: linear-gradient(90deg, $highlight-color, color-mix(in srgb, $highlight-color 70%, white));
 		border-radius: $radius-full;
-		transition: width 0.3s ease;
+		transition: width $transition-slow ease;
 	}
 
 	&__max {
@@ -547,17 +547,7 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 }
 
 .clickable-row {
-	cursor: pointer;
-
-	&:hover,
-	&:focus-visible {
-		background-color: rgba($bg-input, 0.12);
-	}
-
-	&:focus-visible {
-		outline: 2px solid $color-special;
-		outline-offset: -2px;
-	}
+	@include row-hover;
 }
 
 .role-badge {
@@ -578,7 +568,7 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 		width: 0.5rem;
 		height: 0.5rem;
 		background-color: $highlight-color;
-		border-radius: 50%;
+		border-radius: $radius-full;
 	}
 
 	// 0 permissions: small circle

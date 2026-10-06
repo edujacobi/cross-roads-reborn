@@ -33,7 +33,7 @@ defineProps<Props>();
 	@include flex-between;
 	gap: $spacing-md;
 
-	@media (max-width: 600px) {
+	@media (max-width: $bp-mobile) {
 		align-items: flex-start;
 		flex-direction: column;
 	}

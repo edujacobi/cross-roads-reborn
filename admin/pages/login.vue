@@ -168,7 +168,7 @@ onMounted(async () => {
 	.info-box {
 		width: 100%;
 		padding: 0.875rem $spacing-md;
-		background-color: rgba($bg-input, 0.6);
+		background-color: $bg-input-field;
 		border: 1px solid $border-subtle;
 		border-radius: $radius-sm;
 		font-size: 0.8125rem;

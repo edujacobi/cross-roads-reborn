@@ -137,15 +137,14 @@ function getSortIcon(column: SortColumn) {
 		text-transform: uppercase;
 		text-align: left;
 		white-space: nowrap;
-		transition: color 0.15s ease;
+		@include transition-color;
 
 		&:hover {
 			color: $text-primary;
 		}
 
 		&:focus-visible {
-			outline: 2px solid $color-special;
-			outline-offset: -2px;
+			@include focus-outline;
 		}
 
 		&:disabled {
@@ -169,7 +168,7 @@ function getSortIcon(column: SortColumn) {
 
 		.sort-icon {
 			opacity: 0.35;
-			transition: opacity 0.15s ease;
+			@include transition-opacity;
 
 			&.unsorted {
 				opacity: 0.35;

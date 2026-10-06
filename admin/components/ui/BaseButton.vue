@@ -56,7 +56,7 @@ withDefaults(defineProps<Props>(), {
   border-radius: $radius-sm;
   border: 1px solid transparent;
   cursor: pointer;
-  transition: all 0.15s ease-in-out;
+  @include transition-all;
   outline: none;
 
   &:disabled {

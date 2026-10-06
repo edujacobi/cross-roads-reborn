@@ -150,17 +150,7 @@ function remainingVipTime(vipTime: string | null): string {
 	}
 
 	.clickable-row {
-		cursor: pointer;
-
-		&:hover,
-		&:focus-visible {
-			background-color: rgba($bg-input, 0.12);
-		}
-
-		&:focus-visible {
-			outline: 2px solid $color-special;
-			outline-offset: -2px;
-		}
+		@include row-hover;
 	}
 
 	.player-cell-content {
@@ -171,12 +161,12 @@ function remainingVipTime(vipTime: string | null): string {
 		font-weight: 600;
 	}
 
-	.profile-img {
-		width: 2rem;
-		height: 2rem;
-		border-radius: 50%;
-		border: 1px solid rgba($bg-input, 0.3);
-	}
+		.profile-img {
+			width: 2rem;
+			height: 2rem;
+			border-radius: $radius-full;
+			border: 1px solid $bg-border;
+		}
 
 	.id-cell {
 		font-family: monospace;

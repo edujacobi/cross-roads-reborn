@@ -640,10 +640,10 @@ async function endCurrentSeason() {
 	height: 1.75rem;
 	padding: 0.1875rem;
 	border: 1px solid $border-subtle;
-	border-radius: 999px;
+	border-radius: $radius-full;
 	background: $bg-input;
 	cursor: pointer;
-	transition: background-color 0.15s ease-in-out;
+	transition: background-color $transition-fast ease-in-out;
 
 	&[aria-checked="true"] {
 		background: $color-success;
@@ -655,17 +655,16 @@ async function endCurrentSeason() {
 	}
 
 	&:focus-visible {
-		outline: 2px solid $border-focus;
-		outline-offset: 2px;
+		@include focus-outline($border-focus, 2px);
 	}
 
 	.switch-thumb {
 		display: block;
 		width: 1.25rem;
 		height: 1.25rem;
-		border-radius: 50%;
+		border-radius: $radius-full;
 		background: $text-primary;
-		transition: transform 0.15s ease-in-out;
+		transition: transform $transition-fast ease-in-out;
 	}
 
 	&[aria-checked="true"] .switch-thumb {
@@ -689,7 +688,7 @@ async function endCurrentSeason() {
 	color: $color-danger;
 }
 
-@media (max-width: 600px) {
+@media (max-width: $bp-mobile) {
 	.heist-setting {
 		align-items: flex-start;
 	}

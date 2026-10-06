@@ -86,7 +86,7 @@ onMounted(async () => {
 		height: 3rem;
 		border: 3px solid $border-subtle;
 		border-top-color: $color-brand;
-		border-radius: 50%;
+		border-radius: $radius-full;
 		margin: 0 auto 1.25rem;
 		animation: spin 0.8s linear infinite;
 	}

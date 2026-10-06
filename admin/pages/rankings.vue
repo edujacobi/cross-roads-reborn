@@ -419,7 +419,7 @@ function nextPage() {
 		align-items: center;
 		gap: $spacing-md;
 
-		@media (max-width: 768px){
+		@media (max-width: $bp-tablet){
 			gap: $spacing-sm;
 		}
 	}
@@ -427,11 +427,11 @@ function nextPage() {
 	&__player-avatar {
 		width: 3rem;
 		height: 3rem;
-		border-radius: 50%;
-		background-color: rgba($bg-input, 0.15);
+		border-radius: $radius-full;
+		background-color: $bg-subtle;
 		border-width: 3px;
 
-		@media (max-width: 768px){
+		@media (max-width: $bp-tablet){
 			width: 2rem;
 			height: 2rem;
 			border-width: 2px;
@@ -443,9 +443,9 @@ function nextPage() {
 		height: 3rem;
 		border-radius: $radius-sm;
 		object-fit: cover;
-		background-color: rgba($bg-input, 0.15);
+		background-color: $bg-subtle;
 
-		@media (max-width: 768px){
+		@media (max-width: $bp-tablet){
 			width: 2rem;
 			height: 2rem;
 		}
@@ -492,17 +492,7 @@ function nextPage() {
 
 .rankings-table {
 	.clickable-row {
-		cursor: pointer;
-
-		&:hover,
-		&:focus-visible {
-			background-color: rgba($bg-input, 0.12);
-		}
-
-		&:focus-visible {
-			outline: 2px solid $color-special;
-			outline-offset: -2px;
-		}
+		@include row-hover;
 	}
 
 	tr.current-user,

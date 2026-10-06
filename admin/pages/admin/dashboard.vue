@@ -201,7 +201,7 @@ function refreshData() {
 	grid-template-columns: repeat(2, minmax(0, 1fr));
 	gap: $spacing-md;
 
-	@media (max-width: 600px) {
+	@media (max-width: $bp-mobile) {
 		grid-template-columns: 1fr;
 	}
 }

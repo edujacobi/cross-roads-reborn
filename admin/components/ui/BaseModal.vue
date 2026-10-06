@@ -129,7 +129,7 @@ const emit = defineEmits<(e: "update:open", value: boolean) => void>();
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.15s;
+      transition: all $transition-fast;
 
       &:hover {
         color: $text-primary;
@@ -146,7 +146,7 @@ const emit = defineEmits<(e: "update:open", value: boolean) => void>();
     @include flex-between;
     padding: $spacing-md 1.5rem;
     border-top: 1px solid $border-subtle;
-    background-color: rgba($bg-input, 0.4);
+    background-color: $bg-medium;
     gap: 12px;
 
     // ponytail: stack dialog buttons on mobile

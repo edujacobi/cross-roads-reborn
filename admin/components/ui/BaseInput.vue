@@ -48,6 +48,7 @@ defineEmits<(e: "update:modelValue", value: string | number) => void>();
 	scoped
 >
 @use "~/assets/scss/variables" as *;
+@use "~/assets/scss/mixins" as *;
 
 .base-input-wrapper {
   display: flex;
@@ -69,7 +70,7 @@ defineEmits<(e: "update:modelValue", value: string | number) => void>();
     border-radius: $radius-sm;
     color: $text-primary;
     outline: none;
-    transition: border-color 0.15s ease-in-out;
+    transition: border-color $transition-fast ease-in-out;
 
     &::placeholder {
       color: $text-muted;

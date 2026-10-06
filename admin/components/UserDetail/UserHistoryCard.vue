@@ -403,7 +403,7 @@ function nextPage() {
 		color: $text-primary;
 		text-decoration: none;
 		font-weight: 500;
-		transition: color 0.15s ease;
+		@include transition-color;
 		padding: $spacing-xs $spacing-md $spacing-xs $spacing-xs;
 		border-radius: $radius-full;
 

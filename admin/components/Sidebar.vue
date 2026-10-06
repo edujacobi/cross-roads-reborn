@@ -338,7 +338,7 @@ const user = computed(() => {
 	flex-direction: column;
 	flex-shrink: 0;
 	position: relative;
-	transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+	transition: width $transition-slow cubic-bezier(0.2, 0.8, 0.2, 1);
 
 	.brand {
 		flex-shrink: 0;
@@ -352,7 +352,7 @@ const user = computed(() => {
 			height: 2.5rem;
 			object-fit: contain;
 			color: $color-brand;
-			transition: max-width 0.3s ease, opacity 0.2s ease, transform 0.3s ease;
+			transition: max-width $transition-slow ease, opacity $transition-normal ease, transform $transition-slow ease;
 
 			.img {
 				width: 7rem;
@@ -366,7 +366,7 @@ const user = computed(() => {
 			color: $text-secondary;
 			cursor: pointer;
 
-			@media (max-width: 768px) {
+			@media (max-width: $bp-tablet) {
 				display: flex;
 			}
 		}
@@ -387,7 +387,7 @@ const user = computed(() => {
 		border-radius: $radius-full;
 		cursor: pointer;
 		transform: translate(50%, -50%);
-		transition: color 0.15s ease, background-color 0.15s ease;
+		transition: color $transition-fast ease, background-color $transition-fast ease;
 
 		&:hover {
 			color: $color-brand;
@@ -395,8 +395,7 @@ const user = computed(() => {
 		}
 
 		&:focus-visible {
-			outline: 2px solid $color-brand;
-			outline-offset: 2px;
+			@include focus-outline($color-brand, 2px);
 		}
 
 		.collapse-icon--collapsed {
@@ -404,7 +403,7 @@ const user = computed(() => {
 		}
 
 		svg {
-			transition: transform 0.3s ease;
+			transition: transform $transition-slow ease;
 		}
 	}
 
@@ -438,7 +437,7 @@ const user = computed(() => {
 			letter-spacing: 0.08em;
 			text-transform: uppercase;
 			white-space: nowrap;
-			transition: opacity 0.2s ease, max-height 0.3s ease;
+			transition: opacity $transition-normal ease, max-height $transition-slow ease;
 		}
 
 		.nav-item {
@@ -451,7 +450,7 @@ const user = computed(() => {
 			font-size: 0.875rem;
 			font-weight: 500;
 			color: $text-secondary;
-			transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out, grid-template-columns 0.3s ease, gap 0.3s ease, padding 0.3s ease;
+			transition: background-color $transition-fast ease-in-out, color $transition-fast ease-in-out, grid-template-columns $transition-slow ease, gap $transition-slow ease, padding $transition-slow ease;
 
 			&:hover {
 				background-color: $bg-card-hover;
@@ -469,7 +468,7 @@ const user = computed(() => {
 			max-width: 10rem;
 			overflow: hidden;
 			white-space: nowrap;
-			transition: max-width 0.3s ease, opacity 0.2s ease, transform 0.3s ease;
+			transition: max-width $transition-slow ease, opacity $transition-normal ease, transform $transition-slow ease;
 		}
 	}
 
@@ -481,7 +480,7 @@ const user = computed(() => {
 		gap: $spacing-sm;
 		padding: $spacing-sm;
 		justify-content: flex-start;
-		background-color: rgba($bg-input, 0.5);
+		background-color: $bg-card-header;
 
 		.admin-info {
 			display: flex;
@@ -490,7 +489,7 @@ const user = computed(() => {
 			gap: $spacing-sm;
 			border-radius: $radius-sm;
 			padding: $spacing-sm 1rem $spacing-sm $spacing-sm;
-			transition: background-color 0.15s;
+			transition: background-color $transition-fast;
 
 			&:hover {
 				background-color: $border-subtle;
@@ -500,7 +499,7 @@ const user = computed(() => {
 		.admin-avatar {
 			width: 2.375rem;
 			height: 2.375rem;
-			border-radius: 50%;
+			border-radius: $radius-full;
 			border-width: 2px;
 			flex: 0 0 auto;
 		}
@@ -522,7 +521,7 @@ const user = computed(() => {
 			min-width: 0;
 			max-width: 10rem;
 			overflow: hidden;
-			transition: max-width 0.3s ease, opacity 0.2s ease;
+			transition: max-width $transition-slow ease, opacity $transition-normal ease;
 
 			.admin-name {
 				display: block;
@@ -543,7 +542,7 @@ const user = computed(() => {
 			cursor: pointer;
 			padding: 0.375rem;
 			border-radius: $radius-xs;
-			transition: all 0.15s;
+			transition: all $transition-fast;
 			margin-right: 0.25rem;
 
 			&:hover {
@@ -553,7 +552,7 @@ const user = computed(() => {
 		}
 	}
 
-	@media (max-width: 768px) {
+	@media (max-width: $bp-tablet) {
 		position: fixed;
 		inset: 0;
 		z-index: 1000;
@@ -563,7 +562,7 @@ const user = computed(() => {
 		border-left:  1px solid $border-subtle;
 		transform: translateX(125%);
 		visibility: hidden;
-		transition: transform 0.3s ease-in-out, visibility 0.3s;
+		transition: transform $transition-slow ease-in-out, visibility $transition-slow;
 
 		.collapse-toggle {
 			display: none;
@@ -643,13 +642,12 @@ const user = computed(() => {
 	height: 1px;
 	opacity: 0;
 
-	@media (max-width: 768px) {
+	@media (max-width: $bp-tablet) {
 		display: block;
 	}
 
 	&:focus-visible + .mobile-menu-open {
-		outline: 2px solid $color-brand;
-		outline-offset: 3px;
+		@include focus-outline($color-brand, 3px);
 	}
 
 	&:checked ~ .mobile-menu-open {
@@ -688,7 +686,7 @@ const user = computed(() => {
 	display: none;
 	cursor: pointer;
 
-	@media (max-width: 768px) {
+	@media (max-width: $bp-tablet) {
 		@include flex-center;
 		position: fixed;
 		bottom: 1rem;

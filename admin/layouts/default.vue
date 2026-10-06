@@ -34,7 +34,7 @@ import Sidebar from "~/components/Sidebar.vue";
 	overflow: hidden;
 
 	// ponytail: stack sidebar and content on mobile
-	@media (max-width: 768px) {
+	@media (max-width: $bp-tablet) {
 		flex-direction: column;
 		height: auto;
 		min-height: 100vh;
@@ -49,7 +49,7 @@ import Sidebar from "~/components/Sidebar.vue";
 	overflow: hidden;
 
 	// ponytail: allow natural scrolling on mobile
-	@media (max-width: 768px) {
+	@media (max-width: $bp-tablet) {
 		overflow: visible;
 	}
 }
@@ -61,7 +61,7 @@ import Sidebar from "~/components/Sidebar.vue";
 	@include scrollbar-custom;
 
 	// ponytail: compact padding on mobile
-	@media (max-width: 768px) {
+	@media (max-width: $bp-tablet) {
 		padding: $spacing-md;
 		overflow-y: visible;
 	}

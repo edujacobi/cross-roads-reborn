@@ -90,6 +90,7 @@ onBeforeUnmount(() => {
 	scoped
 >
 @use "~/assets/scss/variables" as *;
+@use "~/assets/scss/mixins" as *;
 @use "sass:color";
 
 .toast-container {
@@ -180,8 +181,7 @@ onBeforeUnmount(() => {
 		}
 
 		&:focus-visible {
-			outline: 2px solid $color-brand;
-			outline-offset: 2px;
+			@include focus-outline($color-brand, 2px);
 		}
 	}
 }
@@ -189,7 +189,7 @@ onBeforeUnmount(() => {
 .toast-enter-active,
 .toast-leave-active,
 .toast-move {
-	transition: opacity 0.2s ease, transform 0.2s ease;
+	transition: opacity $transition-normal ease, transform $transition-normal ease;
 }
 
 .toast-enter-from,

@@ -55,9 +55,30 @@ defineProps<Props>();
 		</div>
 		<div
 			class="card-body"
-			:class="{
-			'card-body__no-padding-x': noPaddingX,
-			'card-body__no-padding-y': noPaddingY
+			:class="{
+
+
+
+
+
+
+
+			'card-body__no-padding-x': noPaddingX,
+
+
+
+
+
+
+
+			'card-body__no-padding-y': noPaddingY
+
+
+
+
+
+
+
 		}"
 			v-if="!noBody"
 		>
@@ -132,7 +153,7 @@ defineProps<Props>();
 	.card-footer {
 		padding: 0.75rem 1.25rem;
 		border-top: 1px solid $border-subtle;
-		background-color: rgba($bg-input, 0.5);
+		background-color: $bg-card-header;
 	}
 }
 </style>

@@ -282,6 +282,7 @@ function setModalOpen(isOpen: boolean) {
 	scoped
 >
 @use "~/assets/scss/variables" as *;
+@use "~/assets/scss/mixins" as *;
 
 .audit-log-page {
 	display: flex;
@@ -329,7 +330,7 @@ function setModalOpen(isOpen: boolean) {
 	flex: 0 0 36px;
 	width: 36px;
 	height: 36px;
-	border-radius: 50%;
+	border-radius: $radius-full;
 	object-fit: cover;
 }
 
@@ -356,12 +357,11 @@ function setModalOpen(isOpen: boolean) {
 
 	&:hover,
 	&:focus-visible {
-		background-color: rgba($bg-input, 0.12);
+		background-color: $bg-hover;
 	}
 
 	&:focus-visible {
-		outline: 2px solid $color-brand;
-		outline-offset: -2px;
+		@include focus-outline($color-brand);
 	}
 }
 

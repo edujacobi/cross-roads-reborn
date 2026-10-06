@@ -39,7 +39,7 @@ withDefaults(defineProps<Props>(), {
 	animation: skeleton-shimmer 1.5s ease-in-out infinite;
 
 	&--circle {
-		border-radius: 50%;
+		border-radius: $radius-full;
 	}
 }
 

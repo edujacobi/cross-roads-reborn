@@ -65,3 +65,50 @@
     }
   }
 }
+
+@mixin focus-outline($color: $color-special, $offset: -2px) {
+  outline: 2px solid $color;
+  outline-offset: $offset;
+}
+
+@mixin transition-color {
+  transition: color $transition-fast ease;
+}
+
+@mixin transition-bg {
+  transition: background-color $transition-fast ease;
+}
+
+@mixin transition-all {
+  transition: all $transition-fast ease-in-out;
+}
+
+@mixin transition-opacity {
+  transition: opacity $transition-fast ease;
+}
+
+@mixin row-hover {
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    background-color: $bg-hover;
+  }
+
+  &:focus-visible {
+    @include focus-outline;
+  }
+}
+
+@mixin truncate {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+@mixin avatar-placeholder {
+  width: 2rem;
+  height: 2rem;
+  border-radius: $radius-full;
+  background-color: $bg-subtle;
+}

@@ -379,7 +379,7 @@ function nextPage() {
 		position: relative;
 
 		// ponytail: expand search on mobile screens
-		@media (max-width: 600px) {
+		@media (max-width: $bp-mobile) {
 			max-width: 100%;
 		}
 
@@ -397,18 +397,17 @@ function nextPage() {
 }
 
 .users-table {
-	th.sortable {
+		th.sortable {
 		cursor: pointer;
 		user-select: none;
-		transition: color 0.15s ease;
+		@include transition-color;
 
 		&:hover {
 			color: $text-primary;
 		}
 
 		&:focus-visible {
-			outline: 2px solid $color-special;
-			outline-offset: -2px;
+			@include focus-outline;
 		}
 
 		.sort-header-content {
@@ -425,7 +424,7 @@ function nextPage() {
 
 		.sort-icon {
 			opacity: 0.35;
-			transition: opacity 0.15s ease;
+			@include transition-opacity;
 
 			&.unsorted {
 				opacity: 0.35;
@@ -444,17 +443,7 @@ function nextPage() {
 	}
 
 	.clickable-row {
-		cursor: pointer;
-
-		&:hover,
-		&:focus-visible {
-			background-color: rgba($bg-input, 0.12);
-		}
-
-		&:focus-visible {
-			outline: 2px solid $color-special;
-			outline-offset: -2px;
-		}
+		@include row-hover;
 	}
 
 	.player-cell-content {
@@ -469,10 +458,7 @@ function nextPage() {
 
 		.profile-img {
 			@include flex-center;
-			width: 2rem;
-			height: 2rem;
-			border-radius: 50%;
-			background-color: rgba($bg-input, 0.15);
+			@include avatar-placeholder;
 			color: $bg-input;
 		}
 

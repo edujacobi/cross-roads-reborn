@@ -50,7 +50,7 @@ input[type="checkbox"]:not(.mobile-menu-toggle) {
   border: 1px solid $border-subtle;
   border-radius: 0.35rem;
   cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
+  transition: background-color $transition-fast ease, border-color $transition-fast ease;
 
   &::before {
     width: 0.35rem;
@@ -59,7 +59,7 @@ input[type="checkbox"]:not(.mobile-menu-toggle) {
     border-width: 0 2px 2px 0;
     content: "";
     transform: rotate(45deg) scale(0);
-    transition: transform 0.12s ease-in-out;
+    transition: transform $transition-fast ease-in-out;
   }
 
   &:checked {
@@ -72,8 +72,7 @@ input[type="checkbox"]:not(.mobile-menu-toggle) {
   }
 
   &:focus-visible {
-    outline: 2px solid $color-brand;
-    outline-offset: 2px;
+    @include focus-outline($color-brand, 2px);
   }
 }
 

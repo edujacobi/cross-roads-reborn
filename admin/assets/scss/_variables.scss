@@ -63,3 +63,20 @@ $radius-full: 9999px;
 $shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
 $shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
 $shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.5);
+
+// Breakpoints
+$bp-mobile: 600px;
+$bp-tablet: 768px;
+
+// Transition Durations
+$transition-fast: 0.15s;
+$transition-normal: 0.2s;
+$transition-slow: 0.3s;
+
+// Common Background Opacities
+$bg-hover: rgba($bg-input, 0.12);
+$bg-subtle: rgba($bg-input, 0.15);
+$bg-medium: rgba($bg-input, 0.4);
+$bg-card-header: rgba($bg-input, 0.5);
+$bg-input-field: rgba($bg-input, 0.6);
+$bg-border: rgba($bg-input, 0.3);
