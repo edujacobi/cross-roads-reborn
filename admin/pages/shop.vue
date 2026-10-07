@@ -19,6 +19,7 @@ import {
 	GetUserInventoryDocument,
 	GetUserProfileDocument
 } from "~/graphql/generated";
+import { BundleId, ItemId } from "../../src/core/types/Ids";
 import { ItemType } from "../../src/core/types/ItemType";
 
 definePageMeta({
@@ -132,6 +133,17 @@ function getOwnershipText(item: Item): string {
 		const hours = getUserItemHours(item.id);
 		return `${hours}h/360h`;
 	}
+}
+
+function getItemImage(itemId: number, bundleId: number = 0): string {
+	let filename = `${itemId}_${ItemId[itemId]}.png`;
+	if (bundleId !== 0) filename = `${itemId}_${ItemId[itemId]}_${BundleId[bundleId]}.png`;
+	return `/images/items/${filename}`;
+}
+
+function getUserItemSkin(itemId: number): number {
+	const ui = userItems.value.find((i) => i.id === itemId);
+	return ui?.skin ?? 0;
 }
 
 function isInCart(itemId: number): boolean {
@@ -309,7 +321,7 @@ onUnmounted(() => {
 					>
 						<LazyNuxtImg
 							class="shop-item-card__image"
-							:src="item.defaultImagePath"
+							:src="getItemImage(item.id, getUserItemSkin(item.id))"
 							:alt="`Mais informações de ${item.name}`"
 							:title="`Mais informações de ${item.name}`"
 							width="56"
