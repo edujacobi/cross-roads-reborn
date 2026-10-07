@@ -331,13 +331,9 @@ function nextPage() {
 						<tr
 							v-for="(entry, index) in entries"
 							:key="entry.id"
-							class="clickable-row"
+							class="clickable-row ranking-background"
 							tabindex="0"
-							:class="[
-								'ranking-background',
-								`ranking-background--${entry.backgroundDecoration}`,
-								{ 'current-user': entry.id === auth.user.value?.userId },
-							]"
+							:class="[`ranking-background--${entry.backgroundDecoration}`, { 'current-user': entry.id === auth.user.value?.userId }]"
 							:style="{ '--highlight-color': entry.gangColor ?? '#89999A' }"
 							@click="navigateTo(`/users/${entry.id}`)"
 							@keydown.enter.prevent="navigateTo(`/users/${entry.id}`)"

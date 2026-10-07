@@ -53,11 +53,8 @@ function getBadgeImage(badgeId: BadgeId): string {
 <template>
 	<BaseCard
 		v-if="user || loading"
-		class="user-profile"
-		:class="[
-						'profile-background',
-						`profile-background--${user?.backgroundDecoration}`,
-					]"
+		class="user-profile profile-background"
+		:class="`profile-background--${user?.backgroundDecoration}`"
 	>
 		<template #actions>
 			<RefreshButton
