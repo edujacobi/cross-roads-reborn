@@ -7,6 +7,7 @@ import { ChevronDown, CreditCard, Minus, Plus, ShoppingBasket, X } from "lucide-
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import PageTitle from "~/components/ui/PageTitle.vue";
+import SegmentedProgressBar from "~/components/ui/SegmentedProgressBar.vue";
 import { useAuth } from "~/composables/useAuth";
 import { useItemDetailModal } from "~/composables/useItemDetailModal";
 import { useMoneyFormat } from "~/composables/useMoneyFormat";
@@ -138,11 +139,21 @@ function getMaxUnits(itemId: number, itemType: ItemType): number {
 	}
 }
 
-function getOwnershipText(item: Item): string {
+function getOwnershipLabel(item: Item): string {
 	if (item.type === ItemType.Consumable) {
 		const qty = getUserItemQuantity(item.id);
-		if (qty > 0) return `${qty}/${MAX_UNITS}`;
-		return `0/${MAX_UNITS}`;
+		return `${qty} de ${MAX_UNITS} unidades`;
+	}
+	else {
+		const hours = getUserItemHours(item.id);
+		return `${hours} de ${MAX_HOURS} horas`;
+	}
+}
+
+function getOwnershipTitle(item: Item): string {
+	if (item.type === ItemType.Consumable) {
+		const qty = getUserItemQuantity(item.id);
+		return `${qty}/${MAX_UNITS} un`;
 	}
 	else {
 		const hours = getUserItemHours(item.id);
@@ -445,9 +456,15 @@ onUnmounted(() => {
 								<span class="shop-item-card__stat">{{ item.extra }}</span>
 							</div>
 
-							<div class="shop-item-card__meta">
-								<span class="shop-item-card__ownership">{{ getOwnershipText(item) }}</span>
-								<span class="shop-item-card__price">
+ 						<div class="shop-item-card__meta">
+ 							<SegmentedProgressBar
+ 								:value="item.type === ItemType.Consumable ? getUserItemQuantity(item.id) : getUserItemHours(item.id)"
+ 								:max="item.type === ItemType.Consumable ? MAX_UNITS : MAX_HOURS"
+ 								:segments="item.type === ItemType.Consumable ? 20 : 5"
+ 								:label="getOwnershipLabel(item)"
+ 								:popover="getOwnershipTitle(item)"
+ 							/>
+ 							<span class="shop-item-card__price">
 									Cr$
 									<span class="shop-item-card__price--value">
 										{{ formatPlain(item.price) }}
@@ -679,8 +696,6 @@ onUnmounted(() => {
 		grid-template-columns: 1fr 320px;
 		gap: $spacing-lg;
 		position: relative;
-		container-name: shop;
-		container-type: inline-size;
 
 		@media (max-width: 1024px) {
 			grid-template-columns: 1fr;
@@ -689,6 +704,8 @@ onUnmounted(() => {
 
 	&__items {
 		min-width: 0;
+		container-name: shop;
+		container-type: inline-size;
 	}
 
 	&__grid {
@@ -696,15 +713,15 @@ onUnmounted(() => {
 		grid-template-columns: repeat(6, minmax(0, 1fr));
 		gap: $spacing-sm;
 
-		@container shop (width < 1300px) {
+		@container shop (width < 900px) {
 			grid-template-columns: repeat(5, minmax(0, 1fr));
 		}
 
-		@container shop (width < 1100px) {
+		@container shop (width < 768px) {
 			grid-template-columns: repeat(4, minmax(0, 1fr));
 		}
 
-		@container shop (width < 900px) {
+		@container shop (width < 600px) {
 			grid-template-columns: repeat(3, minmax(0, 1fr));
 		}
 
@@ -741,6 +758,13 @@ onUnmounted(() => {
 			&--open {
 				transform: translateY(0);
 			}
+		}
+
+		@media (max-width: 375px) {
+			width: 100%;
+			left: 0;
+			right: 0;
+			max-width: unset;
 		}
 
 		&-header {
@@ -1055,11 +1079,10 @@ onUnmounted(() => {
 	}
 
 	&--disabled {
-		opacity: 0.4;
-		pointer-events: none;
+		opacity: 0.5;
 
 		.shop-item-card__image {
-			filter: grayscale(1);
+			filter: grayscale(0.5);
 		}
 	}
 
@@ -1086,7 +1109,7 @@ onUnmounted(() => {
 	&__info {
 		display: flex;
 		flex-direction: column;
-		gap: $spacing-xs;
+		gap: $spacing-sm;
 		flex-grow: 1;
 		min-width: 0;
 	}
@@ -1120,6 +1143,7 @@ onUnmounted(() => {
 		flex-direction: column;
 		align-items: flex-start;
 		font-size: 0.75rem;
+		gap: $spacing-xs;
 	}
 
 	&__price {
