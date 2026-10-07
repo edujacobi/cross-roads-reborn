@@ -713,18 +713,14 @@ query GetItems {
 	}
 }
 
+query GetBlackMarketOpen {
+	blackMarketOpen
+}
+
 mutation BuyItem($itemId: Int!, $units: Int!) {
 	buyItem(itemId: $itemId, units: $units) {
 		success
 		message
 		money
-		items {
-			id
-			name
-			type
-			quantity
-			skin
-			remainingTime
-		}
 	}
 }

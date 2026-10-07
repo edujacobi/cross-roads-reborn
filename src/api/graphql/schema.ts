@@ -499,13 +499,13 @@ export const typeDefs = /* GraphQL */ `
         user(id: ID!): UserDetail
         userHistory(userId: ID!, limit: Int, offset: Int): UserHistoryResult!
         items: [ItemDetails!]!
+        blackMarketOpen: Boolean!
     }
 
     type ShopBuyResult {
         success: Boolean!
         message: String!
         money: Float!
-        items: [UserItemInfo!]!
     }
 
     type Mutation {

@@ -14,6 +14,7 @@ import { useToast } from "~/composables/useToast";
 import { imagePaths } from "~/constants/imagePaths";
 import {
 	BuyItemDocument,
+	GetBlackMarketOpenDocument,
 	GetItemsDocument,
 	type GetItemsQuery,
 	GetUserInventoryDocument,
@@ -38,10 +39,20 @@ const { showToast } = useToast();
 const { openItemModal } = useItemDetailModal();
 
 const { result: itemsResult, loading: itemsLoading, error: itemsError } = useQuery(GetItemsDocument);
-const shopItems = computed(() => {
+const allShopItems = computed(() => {
 	const all = itemsResult.value?.items ?? [];
-	return all.filter((item) => item.shop);
+	return all.filter((item) => item.shop || item.blackMarket);
 });
+
+const { result: blackMarketResult, loading: blackMarketLoading } = useQuery(GetBlackMarketOpenDocument);
+const blackMarketOpen = computed(() => blackMarketResult.value?.blackMarketOpen ?? false);
+
+const shopItems = computed(() => allShopItems.value.toSorted((a, b) => {
+		if (a.blackMarket && !b.blackMarket) return 1;
+		if (!a.blackMarket && b.blackMarket) return -1;
+		return a.id - b.id;
+	}
+));
 
 const userId = computed(() => authUser.value?.userId ?? "");
 const { result: profileResult, loading: profileLoading, refetch: refetchProfile } = useQuery(
@@ -109,29 +120,33 @@ function getUserItemQuantity(itemId: number): number {
 	return ui?.quantity ?? 0;
 }
 
+const MAX_UNITS = 20;
+const MAX_HOURS = 360;
+const HOURS_PER_BUY = 72;
+
 function getMaxUnits(itemId: number, itemType: ItemType): number {
 	if (itemType === ItemType.Consumable) {
 		const currentQty = getUserItemQuantity(itemId);
-		const remaining = 20 - currentQty;
+		const remaining = MAX_UNITS - currentQty;
 		return Math.max(0, remaining);
 	}
 	else {
 		const currentHours = getUserItemHours(itemId);
-		if (currentHours >= 360) return 0;
-		const remainingHours = 360 - currentHours;
-		return Math.floor(remainingHours / 72);
+		if (currentHours >= MAX_HOURS) return 0;
+		const remainingHours = MAX_HOURS - currentHours;
+		return Math.floor(remainingHours / HOURS_PER_BUY);
 	}
 }
 
 function getOwnershipText(item: Item): string {
 	if (item.type === ItemType.Consumable) {
 		const qty = getUserItemQuantity(item.id);
-		if (qty > 0) return `${qty}/20`;
-		return "0/20";
+		if (qty > 0) return `${qty}/${MAX_UNITS}`;
+		return `0/${MAX_UNITS}`;
 	}
 	else {
 		const hours = getUserItemHours(item.id);
-		return `${hours}h/360h`;
+		return `${hours}h/${MAX_HOURS}h`;
 	}
 }
 
@@ -146,12 +161,52 @@ function getUserItemSkin(itemId: number): number {
 	return ui?.skin ?? 0;
 }
 
-function isInCart(itemId: number): boolean {
-	return cartItems.value.has(itemId);
+interface ItemCardState {
+	inCart: boolean;
+	cartUnits: number;
+	maxUnits: number;
+	isDisabled: boolean;
+	disabledReason: "limit" | "blackmarket" | null;
+	addButtonLabel: string;
+	addButtonAriaLabel: string;
+	plusButtonDisabled: boolean;
 }
 
-function getCartUnits(itemId: number): number {
-	return cartItems.value.get(itemId)?.units ?? 0;
+function getItemCardState(item: Item): ItemCardState {
+	const inCart = cartItems.value.has(item.id);
+	const cartUnits = cartItems.value.get(item.id)?.units ?? 0;
+	const maxUnits = getMaxUnits(item.id, item.type);
+	const blackMarketClosed = item.blackMarket && !blackMarketOpen.value;
+	const isDisabled = maxUnits <= 0 || blackMarketClosed;
+
+	let disabledReason: "limit" | "blackmarket" | null = null;
+	let addButtonLabel = "Adicionar";
+	let addButtonAriaLabel = `Adicionar ${item.name} ao carrinho`;
+
+	if (blackMarketClosed) {
+		disabledReason = "blackmarket";
+		addButtonLabel = "Indisponível";
+		addButtonAriaLabel = "Mercado Negro fechado";
+	}
+	else if (maxUnits <= 0) {
+		disabledReason = "limit";
+		addButtonLabel = "Limite";
+		addButtonAriaLabel = "Limite atingido";
+	}
+
+	const inCartMax = Math.min(maxUnits, 10);
+	const plusButtonDisabled = cartUnits >= inCartMax;
+
+	return {
+		inCart,
+		cartUnits,
+		maxUnits,
+		isDisabled,
+		disabledReason,
+		addButtonLabel,
+		addButtonAriaLabel,
+		plusButtonDisabled,
+	};
 }
 
 function addToCart(item: Item) {
@@ -170,7 +225,7 @@ function addToCart(item: Item) {
 			price: item.price,
 			units: 1,
 			type: item.type,
-			imageUrl: item.defaultImagePath
+			imageUrl: getItemImage(item.id, getUserItemSkin(item.id))
 		});
 	}
 }
@@ -209,6 +264,7 @@ async function confirmPurchase() {
 	const cartArray = Array.from(cartItems.value.values());
 	let successCount = 0;
 	let failMessages: string[] = [];
+	const purchasedItemIds = new Set<number>();
 
 	for (const cartItem of cartArray) {
 		try {
@@ -219,6 +275,7 @@ async function confirmPurchase() {
 
 			if (res?.data?.buyItem?.success) {
 				successCount += cartItem.units;
+				purchasedItemIds.add(cartItem.itemId);
 			}
 			else {
 				failMessages.push(res?.data?.buyItem?.message ?? "Erro desconhecido");
@@ -230,6 +287,12 @@ async function confirmPurchase() {
 	}
 
 	if (successCount > 0) {
+		for (const itemId of purchasedItemIds) {
+			removeFromCart(itemId);
+		}
+		await refetchProfile();
+		await refetchInventory();
+
 		if (failMessages.length > 0) {
 			showToast({
 				variant: "warning",
@@ -242,9 +305,6 @@ async function confirmPurchase() {
 				text: `Compra realizada! ${successCount} unidade(s) adquirida(s).`,
 			});
 		}
-		clearCart();
-		await refetchProfile();
-		await refetchInventory();
 	}
 	else {
 		showToast({
@@ -290,12 +350,12 @@ onUnmounted(() => {
 <template>
 	<main class="shop-page">
 		<PageTitle
-			title="Loja"
+			:title="blackMarketOpen ? 'Mercado Negro' : 'Loja'"
 			subtitle="Navegue pelos itens disponíveis e adicione ao carrinho para comprar."
 		/>
 
 		<div
-			v-if="itemsLoading || profileLoading || inventoryLoading"
+			v-if="itemsLoading || profileLoading || inventoryLoading || blackMarketLoading"
 			class="shop-page__state"
 		>
 			<p>Carregando loja...</p>
@@ -318,6 +378,10 @@ onUnmounted(() => {
 						v-for="item in shopItems"
 						:key="item.id"
 						class="shop-item-card"
+						:class="{
+							'shop-item-card--black-market': item.blackMarket,
+							'shop-item-card--disabled': item.blackMarket && !blackMarketOpen
+						}"
 					>
 						<LazyNuxtImg
 							class="shop-item-card__image"
@@ -391,47 +455,48 @@ onUnmounted(() => {
 								</span>
 							</div>
 
-							<div class="shop-item-card__actions">
-								<BaseButton
-									v-if="!isInCart(item.id)"
-									type="button"
-									variant="secondary"
-									size="sm"
-									:disabled="getMaxUnits(item.id, item.type) <= 0"
-									:aria-label="getMaxUnits(item.id, item.type) <= 0 ? 'Limite atingido' : `Adicionar ${item.name} ao carrinho`"
-									@click="addToCart(item)"
-								>
-									<ShoppingBasket
-										v-if="getMaxUnits(item.id, item.type) > 0"
-										:size="16"
-									/>
-									{{ getMaxUnits(item.id, item.type) <= 0 ? "Limite" : "Adicionar" }}
-								</BaseButton>
+ 						<div class="shop-item-card__actions">
+ 							<BaseButton
+ 								v-if="!getItemCardState(item).inCart"
+ 								type="button"
+ 								variant="secondary"
+ 								size="sm"
+ 								:disabled="getItemCardState(item).isDisabled"
+ 								:aria-label="getItemCardState(item).addButtonAriaLabel"
+ 								@click="addToCart(item)"
+ 								:title="item.blackMarket && !blackMarketOpen ? 'O Mercado Negro é aberto aos domingos, sábados e sextas após as 18h' : null"
+ 							>
+ 								<ShoppingBasket
+ 									v-if="getItemCardState(item).disabledReason === null"
+ 									:size="16"
+ 								/>
+ 								{{ getItemCardState(item).addButtonLabel }}
+ 							</BaseButton>
 
-								<div
-									v-else
-									class="shop-item-card__quantity"
-								>
-									<button
-										type="button"
-										class="shop-item-card__qty-btn"
-										aria-label="Remover unidade"
-										@click="updateCartUnits(item.id, -1)"
-									>
-										<Minus :size="14" />
-									</button>
-									<span class="shop-item-card__qty-value">{{ getCartUnits(item.id) }}</span>
-									<button
-										type="button"
-										class="shop-item-card__qty-btn"
-										:disabled="getCartUnits(item.id) >= Math.min(getMaxUnits(item.id, item.type), 10)"
-										aria-label="Adicionar unidade"
-										@click="updateCartUnits(item.id, 1)"
-									>
-										<Plus :size="14" />
-									</button>
-								</div>
-							</div>
+ 							<div
+ 								v-else-if="!(item.blackMarket && !blackMarketOpen)"
+ 								class="shop-item-card__quantity"
+ 							>
+ 								<button
+ 									type="button"
+ 									class="shop-item-card__qty-btn"
+ 									aria-label="Remover unidade"
+ 									@click="updateCartUnits(item.id, -1)"
+ 								>
+ 									<Minus :size="14" />
+ 								</button>
+ 								<span class="shop-item-card__qty-value">{{ getItemCardState(item).cartUnits }}</span>
+ 								<button
+ 									type="button"
+ 									class="shop-item-card__qty-btn"
+ 									:disabled="getItemCardState(item).plusButtonDisabled"
+ 									aria-label="Adicionar unidade"
+ 									@click="updateCartUnits(item.id, 1)"
+ 								>
+ 									<Plus :size="14" />
+ 								</button>
+ 							</div>
+ 						</div>
 						</div>
 					</div>
 				</div>
@@ -508,7 +573,7 @@ onUnmounted(() => {
 										class="shop-page__cart-qty-btn"
 										aria-label="Adicionar unidade"
 										@click="updateCartUnits(item.itemId, 1)"
-										:disabled="getCartUnits(item.itemId) >= Math.min(getMaxUnits(item.itemId, item.type), 10)"
+										:disabled="item.units >= Math.min(getMaxUnits(item.itemId, item.type), 10)"
 									>
 										<Plus :size="14" />
 									</button>
@@ -976,6 +1041,27 @@ onUnmounted(() => {
 	display: flex;
 	flex-direction: column;
 	gap: $spacing-md;
+	position: relative;
+	overflow: hidden;
+
+	&--black-market {
+		$color-black-market: #5136b3;
+		border-color: $color-black-market;
+		background: linear-gradient(115deg, $bg-card, color-mix(in lab, $bg-card 100%, $color-black-market 40%));
+
+		.shop-item-card__price {
+			color: color-mix(in lab, $text-primary 100%, $color-black-market 70%);
+		}
+	}
+
+	&--disabled {
+		opacity: 0.4;
+		pointer-events: none;
+
+		.shop-item-card__image {
+			filter: grayscale(1);
+		}
+	}
 
 	&__image {
 		width: 100%;
@@ -1064,8 +1150,8 @@ onUnmounted(() => {
 	}
 
 	&__qty-btn {
-		width: 1.5rem;
-		height: 1.5rem;
+		width: 1.75rem;
+		height: 1.75rem;
 		display: flex;
 		align-items: center;
 		justify-content: center;

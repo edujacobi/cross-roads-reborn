@@ -188,6 +188,17 @@ const topUserRankings = {
 	{ orderField: TopUserRankingField; countField?: TopUserRankingCountField }
 >;
 
+function isBlackMarketOpen(): boolean {
+	const OPENNING_HOUR = 21;
+	const now = new Date();
+	const day = now.getUTCDay();
+	const hours = now.getUTCHours();
+	const SUNDAY = 0;
+	const FRIDAY = 5;
+	const SATURDAY = 6;
+	return day === SUNDAY || day === SATURDAY || (day === FRIDAY && hours >= OPENNING_HOUR);
+}
+
 function mapUserItems(user: User) {
 	return (user.Items || []).map((item) => {
 		const itemDef = ItemList[item.Id];
@@ -462,6 +473,8 @@ export const resolvers: {
 				})),
 			);
 		},
+
+ 	blackMarketOpen: () => isBlackMarketOpen(),
 
 		items: async (_: unknown, __: unknown, context: GraphQLContext) => {
 			assertAuthenticated(context);
@@ -1849,25 +1862,18 @@ export const resolvers: {
 			const player = new User(authUser.userId);
 			const found = await player.GetInfo();
 			if (!found) {
-				return { success: false, message: "Jogador não encontrado.", money: 0, items: [] };
+				return { success: false, message: "Jogador não encontrado.", money: 0 };
 			}
 
 			const item = ItemList[args.itemId];
 			if (!item) {
-				return {
-					success: false,
-					message: "Item não encontrado.",
-					money: player.Money,
-					items: mapUserItems(player),
-				};
+				return { success: false, message: "Item não encontrado.", money: player.Money };
 			}
 			if (!item.Shop) {
-				return {
-					success: false,
-					message: "Este item não está à venda.",
-					money: player.Money,
-					items: mapUserItems(player),
-				};
+				return { success: false, message: "Este item não está à venda.", money: player.Money };
+			}
+			if (item.BlackMarket && !isBlackMarketOpen()) {
+				return { success: false, message: "O Mercado Negro está fechado.", money: player.Money };
 			}
 
 			const units = Math.max(1, Math.min(10, args.units ?? 1));
@@ -1888,7 +1894,7 @@ export const resolvers: {
 			}
 
 			if (purchasedUnits === 0) {
-				return { success: false, message: firstErrorMessage, money: player.Money, items: mapUserItems(player) };
+				return { success: false, message: firstErrorMessage, money: player.Money };
 			}
 
 			const successMessage = purchasedUnits === units
@@ -1899,7 +1905,6 @@ export const resolvers: {
 				success: purchasedUnits > 0,
 				message: successMessage,
 				money: player.Money,
-				items: mapUserItems(player),
 			};
 		},
 	},
