@@ -1,5 +1,5 @@
 import { computed, ref, watch } from "vue";
-import { useRouter } from "vue-router/auto";
+import { type LocationQueryValue, useRouter } from "vue-router";
 
 export function usePagination(initialPage = 1, initialPageSize = 15) {
 	const route = useRoute();
@@ -12,7 +12,7 @@ export function usePagination(initialPage = 1, initialPageSize = 15) {
 	watch(
 		page,
 		(newPage) => {
-			const query: Record<string, string> = { ...route.query };
+			const query: { [p: string]: string | null | LocationQueryValue[] } = { ...route.query };
 			if (newPage === 1) {
 				delete query.page;
 			} else {

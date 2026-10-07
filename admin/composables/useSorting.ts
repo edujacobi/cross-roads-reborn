@@ -1,5 +1,5 @@
 import { computed, ref, watch } from "vue";
-import { useRouter } from "vue-router/auto";
+import { type LocationQueryValue, useRouter } from "vue-router";
 
 export type SortDirection = "asc" | "desc" | null;
 
@@ -22,7 +22,7 @@ export function useSorting(initialColumn?: string, initialDirection: SortDirecti
 	watch(
 		[sortColumn, sortDirection],
 		() => {
-			const query: Record<string, string> = { ...route.query };
+			const query: { [p: string]: string | null | LocationQueryValue[] } = { ...route.query };
 			if (sortColumn.value && sortDirection.value) {
 				query.sort = sortColumn.value;
 				query.order = sortDirection.value;
