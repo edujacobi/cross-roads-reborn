@@ -6,6 +6,7 @@ import { useMutation, useQuery } from "@vue/apollo-composable";
 import { ChevronDown, CreditCard, Minus, Plus, ShoppingBasket, X } from "lucide-vue-next";
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
+import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
 import PageTitle from "~/components/ui/PageTitle.vue";
 import SegmentedProgressBar from "~/components/ui/SegmentedProgressBar.vue";
 import { useAuth } from "~/composables/useAuth";
@@ -61,6 +62,7 @@ const { result: profileResult, loading: profileLoading, refetch: refetchProfile 
 	() => ({ id: userId.value }),
 	{
 		enabled: !!userId.value,
+		fetchPolicy: "cache-and-network",
 	},
 );
 const userMoney = computed(() => profileResult.value?.user?.money ?? 0);
@@ -70,6 +72,7 @@ const { result: inventoryResult, loading: inventoryLoading, refetch: refetchInve
 	() => ({ id: userId.value }),
 	{
 		enabled: !!userId.value,
+		fetchPolicy: "cache-and-network",
 	},
 );
 const userItems = computed(() => inventoryResult.value?.user?.items ?? []);
@@ -367,9 +370,27 @@ onUnmounted(() => {
 
 		<div
 			v-if="itemsLoading || profileLoading || inventoryLoading || blackMarketLoading"
-			class="shop-page__state"
+			class="shop-page__skeleton"
+			role="status"
+			aria-label="Carregando loja"
 		>
-			<p>Carregando loja...</p>
+			<div class="shop-page__grid">
+				<div
+					v-for="i in 18"
+					:key="i"
+					class="shop-item-card shop-item-card--skeleton"
+				>
+					<BaseSkeleton class="shop-item-card__image" height="6rem" />
+					<div class="shop-item-card__info">
+						<BaseSkeleton height="1.2rem" width="70%" />
+						<BaseSkeleton height="0.8rem" width="50%" />
+						<BaseSkeleton height="0.375rem" width="100%" />
+						<BaseSkeleton height="1rem" width="40%" />
+						<BaseSkeleton height="2rem" width="100%" />
+					</div>
+				</div>
+			</div>
+			<BaseSkeleton class="shop-page__skeleton--cart" />
 		</div>
 
 		<div
@@ -691,6 +712,21 @@ onUnmounted(() => {
 		}
 	}
 
+	&__skeleton {
+		min-width: 0;
+		container-name: shop;
+		container-type: inline-size;
+		display: flex;
+		gap: $spacing-lg;
+
+		&--cart {
+			width: unset !important;
+			height: unset !important;
+			max-width: 320px;
+			flex: 1;
+		}
+	}
+
 	&__layout {
 		display: grid;
 		grid-template-columns: 1fr 320px;
@@ -712,6 +748,7 @@ onUnmounted(() => {
 		display: grid;
 		grid-template-columns: repeat(6, minmax(0, 1fr));
 		gap: $spacing-sm;
+		flex-grow: 1;
 
 		@container shop (width < 900px) {
 			grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -855,17 +892,7 @@ onUnmounted(() => {
 			flex-direction: column;
 			gap: $spacing-xs;
 			padding: $spacing-sm;
-			//background-color: $bg-input;
-			//border-radius: $radius-sm;
 			border-bottom: 1px solid $border-subtle;
-			//&:after {
-			//	content: '';
-			//	margin-top: $spacing-sm;
-			//	display: block;
-			//	height: 1px;
-			//	margin-bottom: $spacing-sm;
-			//	background-color: $border-subtle;
-			//}
 		}
 
 		&-item-info {
@@ -1084,6 +1111,11 @@ onUnmounted(() => {
 		.shop-item-card__image {
 			filter: grayscale(0.5);
 		}
+	}
+
+	&--skeleton {
+		pointer-events: none;
+		border: none;
 	}
 
 	&__image {
