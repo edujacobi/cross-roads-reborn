@@ -19,6 +19,7 @@ import {
 } from "lucide-vue-next";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
+import { hasUnreadUpdates } from "~/composables/useUnreadUpdates";
 import { imagePaths } from "~/constants/imagePaths";
 import { localStorageKeys } from "~/constants/localStorageKeys";
 
@@ -28,6 +29,7 @@ const sidebarStorage = useLocalStorage(localStorageKeys.sidebarCollapsed);
 const mobileMenu = ref<HTMLInputElement | null>(null);
 const isLogoutModalOpen = ref(false);
 const isCollapsed = ref(false);
+const hasNew = hasUnreadUpdates();
 
 onMounted(() => {
 	isCollapsed.value = sidebarStorage.get() === "true";
@@ -60,6 +62,7 @@ const navigationGroups = computed(() => [
 				to: { name: "updates" },
 				icon: Scroll,
 				activeRouteNames: ["updates"],
+				hasNewBadge: true,
 			},
 		],
 	},
@@ -262,6 +265,12 @@ const user = computed(() => {
 						aria-hidden="true"
 					/>
 					<span class="nav-label">{{ item.label }}</span>
+					<span
+						v-if="item.hasNewBadge && hasNew"
+						class="nav-item-new-badge"
+					>
+						NOVO
+					</span>
 				</NuxtLink>
 			</div>
 		</nav>
@@ -469,6 +478,10 @@ const user = computed(() => {
 				color: $color-brand;
 				font-weight: 600;
 			}
+
+			&:has(.nav-item-new-badge){
+				grid-template-columns: 18px minmax(0, 1fr) 3rem;
+			}
 		}
 
 		.nav-label {
@@ -476,6 +489,20 @@ const user = computed(() => {
 			overflow: hidden;
 			white-space: nowrap;
 			transition: max-width $transition-slow ease, opacity $transition-normal ease, transform $transition-slow ease;
+		}
+
+		.nav-item-new-badge {
+			display: inline-block;
+			padding: $spacing-xs $spacing-sm;
+			margin-left: auto;
+			font-size: 0.625rem;
+			font-weight: 700;
+			letter-spacing: 0.05em;
+			color: $text-primary;
+			background-color: $color-danger;
+			box-shadow: 0 0 16px 0 $color-danger;
+			border-radius: $radius-full;
+			line-height: 1;
 		}
 	}
 

@@ -8,6 +8,7 @@ import BaseEmptyState from "~/components/ui/BaseEmptyState.vue";
 import BaseErrorState from "~/components/ui/BaseErrorState.vue";
 import BaseTableSkeleton from "~/components/ui/BaseTableSkeleton.vue";
 import PageTitle from "~/components/ui/PageTitle.vue";
+import { markUpdatesAsRead } from "~/composables/useUnreadUpdates";
 
 definePageMeta({
 	middleware: "auth",
@@ -23,7 +24,7 @@ interface UpdateSection {
 	description: string;
 }
 
-interface UpdateFile {
+export interface UpdateFile {
 	version: string;
 	title: string;
 	date: string;
@@ -62,6 +63,7 @@ async function loadUpdates() {
 			}
 			return 0;
 		});
+		markUpdatesAsRead(updates.value[0]?.version);
 	} catch (e) {
 		error.value = e instanceof Error ? e.message : "Erro ao carregar atualizações.";
 	} finally {
