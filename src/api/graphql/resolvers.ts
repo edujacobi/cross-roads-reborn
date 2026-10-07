@@ -22,6 +22,7 @@ import { ItemList, type Items } from "#core/types/Items";
 import type { AuthUser, GraphQLContext } from "#api/types";
 import { convertHexNumberToString, formatMoney } from "#bot/utils/ui";
 import { UserBadge } from "#core/models/UserBadge";
+import { Shop } from "#core/models/Shop";
 import { UserItemRepository } from "#core/repositories/UserItemRepository";
 import { ItemType } from "#core/types/Items";
 import { BundleId, ItemId } from "#core/types/Ids";
@@ -187,16 +188,8 @@ const topUserRankings = {
 	{ orderField: TopUserRankingField; countField?: TopUserRankingCountField }
 >;
 
-async function mapUserDetail(user: User) {
-	const now = new Date();
-	const isInHospital = user.Hospital.Time > now;
-	const isInPrison = user.Prison.Time > now;
-	const isWorking = user.Job.EndsIn > now && user.Job.Id !== null;
-	const isScavenging = user.Scavenge.Time > now && user.Scavenge.IsScavengingId !== null;
-	const isWanted = user.Wanted.Time > now;
-	const isDead = user.DeadUntil > now;
-
-	const items = (user.Items || []).map((item) => {
+function mapUserItems(user: User) {
+	return (user.Items || []).map((item) => {
 		const itemDef = ItemList[item.Id];
 		return {
 			id: item.Id,
@@ -207,6 +200,18 @@ async function mapUserDetail(user: User) {
 			remainingTime: item.RemainingTime ? item.RemainingTime.toISOString() : null,
 		};
 	});
+}
+
+async function mapUserDetail(user: User) {
+	const now = new Date();
+	const isInHospital = user.Hospital.Time > now;
+	const isInPrison = user.Prison.Time > now;
+	const isWorking = user.Job.EndsIn > now && user.Job.Id !== null;
+	const isScavenging = user.Scavenge.Time > now && user.Scavenge.IsScavengingId !== null;
+	const isWanted = user.Wanted.Time > now;
+	const isDead = user.DeadUntil > now;
+
+	const items = mapUserItems(user);
 
 	const className = ClassList[user.Class]?.Name?.[Language.Portuguese] || "None";
 
@@ -1832,6 +1837,69 @@ export const resolvers: {
 				success: true,
 				message: "User and all related data deleted.",
 				user: null,
+			};
+		},
+
+		buyItem: async (
+			_: unknown,
+			args: { itemId: number; units?: number },
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			const player = new User(authUser.userId);
+			const found = await player.GetInfo();
+			if (!found) {
+				return { success: false, message: "Jogador não encontrado.", money: 0, items: [] };
+			}
+
+			const item = ItemList[args.itemId];
+			if (!item) {
+				return {
+					success: false,
+					message: "Item não encontrado.",
+					money: player.Money,
+					items: mapUserItems(player),
+				};
+			}
+			if (!item.Shop) {
+				return {
+					success: false,
+					message: "Este item não está à venda.",
+					money: player.Money,
+					items: mapUserItems(player),
+				};
+			}
+
+			const units = Math.max(1, Math.min(10, args.units ?? 1));
+			const shop = new Shop(player);
+			let purchasedUnits = 0;
+			let firstErrorMessage = "";
+
+			for (let i = 0; i < units; i++) {
+				const { canBuy, message } = await shop.CanUserBuyItem(item);
+				if (!canBuy) {
+					if (!firstErrorMessage) {
+						firstErrorMessage = message;
+					}
+					break;
+				}
+				await player.BuyItem(item);
+				purchasedUnits++;
+			}
+
+			if (purchasedUnits === 0) {
+				return { success: false, message: firstErrorMessage, money: player.Money, items: mapUserItems(player) };
+			}
+
+			const successMessage = purchasedUnits === units
+				? `Você comprou ${purchasedUnits} unidade(s) de ${item.Description[Language.Portuguese]}.`
+				: `Compra parcial: ${purchasedUnits}/${units} unidade(s) de ${item.Description[Language.Portuguese]}. ${firstErrorMessage}`;
+
+			return {
+				success: purchasedUnits > 0,
+				message: successMessage,
+				money: player.Money,
+				items: mapUserItems(player),
 			};
 		},
 	},

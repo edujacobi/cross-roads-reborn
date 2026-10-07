@@ -13,6 +13,7 @@ import {
 	Package,
 	Scroll,
 	ScrollText,
+	ShoppingBasket,
 	Trophy,
 	Users,
 	X,
@@ -56,6 +57,12 @@ const navigationGroups = computed(() => [
 				to: { name: "items" },
 				icon: Package,
 				activeRouteNames: ["items"],
+			},
+			{
+				label: "Loja",
+				to: { name: "shop" },
+				icon: ShoppingBasket,
+				activeRouteNames: ["shop"],
 			},
 			{
 				label: "Atualizações",
@@ -725,7 +732,7 @@ const user = computed(() => {
 		position: fixed;
 		bottom: 1rem;
 		right: 1rem;
-		z-index: 1001;
+		z-index: 100;
 		width: 4rem;
 		height: 4rem;
 		color: $text-primary;
@@ -734,6 +741,11 @@ const user = computed(() => {
 		border-radius: $radius-full;
 		box-shadow: $shadow-lg;
 		cursor: pointer;
+		transition: transform 0.2s ease;
+
+		&:hover {
+			transform: scale(1.05);
+		}
 	}
 }
 </style>

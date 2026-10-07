@@ -501,6 +501,13 @@ export const typeDefs = /* GraphQL */ `
         items: [ItemDetails!]!
     }
 
+    type ShopBuyResult {
+        success: Boolean!
+        message: String!
+        money: Float!
+        items: [UserItemInfo!]!
+    }
+
     type Mutation {
         setMoney(userId: ID!, amount: Float!, mode: SetMoneyMode!): MutationResult!
         cureUser(userId: ID!): MutationResult!
@@ -526,5 +533,6 @@ export const typeDefs = /* GraphQL */ `
         deleteEvent(id: Int!): EventMutationResult!
         setMainHeistAllowed(allowed: Boolean!): SeasonMutationResult!
         endSeason(isPreSeason: Boolean!): SeasonMutationResult!
+        buyItem(itemId: Int!, units: Int): ShopBuyResult!
     }
 `;
