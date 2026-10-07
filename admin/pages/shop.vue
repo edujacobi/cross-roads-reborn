@@ -310,7 +310,8 @@ onUnmounted(() => {
 						<LazyNuxtImg
 							class="shop-item-card__image"
 							:src="item.defaultImagePath"
-							alt=""
+							:alt="`Mais informações de ${item.name}`"
+							:title="`Mais informações de ${item.name}`"
 							width="56"
 							@click="openItemModal(item)"
 						/>
