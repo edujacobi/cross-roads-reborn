@@ -21,7 +21,7 @@ const props = withDefaults(
 	},
 );
 
-const emit = defineEmits<(sort: [column: string]) => void>();
+const emit = defineEmits<(e: "sort", column: string) => void>();
 
 function onHeaderClick(column: SortColumn) {
 	if (!column.sortable) return;
