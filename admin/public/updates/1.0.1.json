@@ -1,0 +1,18 @@
+{
+	"version": "1.0.1",
+	"title": "Teste update",
+	"comment": "Somente testando aqui né, vai que...",
+	"date": "06/10/2026",
+	"sections": [
+		{
+			"title": "Attack ATK Ataque",
+			"description": "Attack ATK Ataque Attack ATK Ataque Attack ATK Ataque Attack ATK Ataque Attack ATK Ataque Attack ATK Ataque Attack ATK Ataque Attack ATK Ataque.",
+			"imageUrl": "/images/attributes/attack.png"
+		},
+		{
+			"title": "Correções de bugs",
+			"description": "Otimizamos o carregamento das páginas e reduzimos o tempo de resposta das APIs.",
+			"imageUrl": "/images/badges/BugCatcher.png"
+		}
+	]
+}

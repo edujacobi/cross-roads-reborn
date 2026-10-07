@@ -1,0 +1,18 @@
+{
+	"version": "1.0.0",
+	"title": "Lançamento Inicial",
+	"comment": "Um lançamento inicial é mais importante que um relançamento final.",
+	"date": "05/10/2026",
+	"sections": [
+		{
+			"title": "Novo Sistema de Inventário",
+			"description": "Implementamos um novo sistema de inventário com suporte a skins e itens especiais.",
+			"imageUrl": "/images/attributes/experience.png"
+		},
+		{
+			"title": "Melhorias de Performance",
+			"description": "Otimizamos o carregamento das páginas e reduzimos o tempo de resposta das APIs.",
+			"imageUrl": "/images/attributes/speed.png"
+		}
+	]
+}
