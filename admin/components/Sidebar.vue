@@ -14,7 +14,9 @@ import {
 	Package,
 	Scroll,
 	ScrollText,
+	ShieldAlert,
 	ShoppingBasket,
+	Stethoscope,
 	Trophy,
 	Users,
 	X,
@@ -70,6 +72,18 @@ const navigationGroups = computed(() => [
 				to: { name: "jobs" },
 				icon: HardHat,
 				activeRouteNames: ["jobs"],
+			},
+			{
+				label: "Hospital",
+				to: { name: "hospital" },
+				icon: Stethoscope,
+				activeRouteNames: ["hospital"],
+			},
+			{
+				label: "Prisão",
+				to: { name: "prison" },
+				icon: ShieldAlert,
+				activeRouteNames: ["prison"],
 			},
 			{
 				label: "Atualizações",

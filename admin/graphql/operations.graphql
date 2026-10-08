@@ -787,3 +787,61 @@ mutation CancelJob {
 		}
 	}
 }
+
+query GetHospitalizedUsers($search: String, $limit: Int, $offset: Int, $sortBy: String, $sortOrder: String) {
+	hospitalizedUsers(search: $search, limit: $limit, offset: $offset, sortBy: $sortBy, sortOrder: $sortOrder) {
+		total
+		entries {
+			id
+			nickname
+			avatarUrl
+			avatarDecoration
+			class
+			hospitalTime
+			hospitalCount
+		}
+	}
+}
+
+query GetPrisoners($search: String, $limit: Int, $offset: Int, $sortBy: String, $sortOrder: String) {
+	prisoners(search: $search, limit: $limit, offset: $offset, sortBy: $sortBy, sortOrder: $sortOrder) {
+		total
+		entries {
+			id
+			nickname
+			avatarUrl
+			avatarDecoration
+			class
+			prisonTime
+			robberyFailureCount
+			escapeCount
+		}
+	}
+}
+
+mutation PayPrivateHospital {
+	payPrivateHospital {
+		success
+		message
+		money
+		privatePrice
+	}
+}
+
+mutation AttemptPrisonEscape {
+	attemptPrisonEscape {
+		success
+		message
+		money
+		isWanted
+	}
+}
+
+mutation PayBribePrison {
+	payBribePrison {
+		success
+		message
+		money
+		bribeAccepted
+	}
+}

@@ -188,6 +188,48 @@ export class UserRepository {
 	}
 
 	/**
+	 * Finds hospitalized users with pagination, search, and sorting.
+	 */
+	static async FindHospitalized(options: {
+		search?: string;
+		limit?: number;
+		offset?: number;
+		sortBy?: string;
+		sortOrder?: string;
+	}): Promise<{
+		users: Users[];
+		total: number
+	}> {
+		const limit = Math.min(options.limit || 20, 100);
+		const offset = options.offset || 0;
+		const conditions: any[] = [{ hospitalTime: { [Op.gt]: new Date() } }];
+		if (options.search) {
+			conditions.push({
+				[Op.or]: [
+					{ id: { [Op.like]: `%${options.search}%` } },
+					{ nickname: { [Op.like]: `%${options.search}%` } },
+				],
+			});
+		}
+
+		const allowedSortFields = ["nickname", "id", "hospitalTime", "hospitalCount"] as const;
+		const sortByField = allowedSortFields.includes((options.sortBy ?? "") as typeof allowedSortFields[number])
+			? (options.sortBy as typeof allowedSortFields[number])
+			: "hospitalTime";
+		const sortOrder = (options.sortOrder === "ASC" || options.sortOrder === "DESC") ? options.sortOrder : "DESC";
+
+		const { rows, count } = await Users.findAndCountAll({
+			attributes: ["id", "nickname", "avatarUrl", "avatarDecoration", "class", "hospitalTime", "hospitalCount"],
+			where: { [Op.and]: conditions },
+			limit,
+			offset,
+			order: [[sortByField, sortOrder as "ASC" | "DESC"]],
+		});
+
+		return { users: rows, total: count };
+	}
+
+	/**
 	 * Finds all users who are currently in prison.
 	 */
 	static async FindAllPrisoners(): Promise<Users[]> {
@@ -196,6 +238,48 @@ export class UserRepository {
 			order: [["prisonTime", "DESC"]],
 			where: { prisonTime: { [Op.gt]: new Date() } },
 		});
+	}
+
+	/**
+	 * Finds prisoners with pagination, search, and sorting.
+	 */
+	static async FindPrisoners(options: {
+		search?: string;
+		limit?: number;
+		offset?: number;
+		sortBy?: string;
+		sortOrder?: string;
+	}): Promise<{
+		users: Users[];
+		total: number
+	}> {
+		const limit = Math.min(options.limit || 20, 100);
+		const offset = options.offset || 0;
+		const conditions: any[] = [{ prisonTime: { [Op.gt]: new Date() } }];
+		if (options.search) {
+			conditions.push({
+				[Op.or]: [
+					{ id: { [Op.like]: `%${options.search}%` } },
+					{ nickname: { [Op.like]: `%${options.search}%` } },
+				],
+			});
+		}
+
+		const allowedSortFields = ["nickname", "id", "prisonTime", "robberyFailureCount", "escapeCount"] as const;
+		const sortByField = allowedSortFields.includes((options.sortBy ?? "") as typeof allowedSortFields[number])
+			? (options.sortBy as typeof allowedSortFields[number])
+			: "prisonTime";
+		const sortOrder = (options.sortOrder === "ASC" || options.sortOrder === "DESC") ? options.sortOrder : "DESC";
+
+		const { rows, count } = await Users.findAndCountAll({
+			attributes: ["id", "nickname", "avatarUrl", "avatarDecoration", "class", "prisonTime", "robberyFailureCount", "escapeCount"],
+			where: { [Op.and]: conditions },
+			limit,
+			offset,
+			order: [[sortByField, sortOrder as "ASC" | "DESC"]],
+		});
+
+		return { users: rows, total: count };
 	}
 
 	/**
