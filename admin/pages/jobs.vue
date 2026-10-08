@@ -3,7 +3,7 @@
 	lang="ts"
 >
 import { useMutation, useQuery } from "@vue/apollo-composable";
-import { ChevronDown, ChevronUp, Clock, Coins, HardHat, X } from "lucide-vue-next";
+import { ChevronDown, Clock, Coins, HardHat, X } from "lucide-vue-next";
 import { computed, ref } from "vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
@@ -261,12 +261,6 @@ function formatDuration(hours: number): string {
 						<div class="job-card__header">
 							<h3 class="job-card__name">
 								{{ job.name }}
-								<span
-									v-if="job.special"
-									class="job-card__badge"
-								>
-									🌙 Mercado Negro
-								</span>
 							</h3>
 						</div>
 						<div class="job-card__body">
@@ -280,94 +274,74 @@ function formatDuration(hours: number): string {
 									<span>{{ formatMoney(job.salary) }}</span>
 								</div>
 							</div>
-							<ul
-								v-if="job.needItems.length > 0"
-								class="job-card__items"
-								:aria-label="job.needItems.length === 1 ? 'Item necessário' : 'Itens necessários'"
-							>
-								<li
-									v-for="item in job.needItems"
-									:key="item.id"
+							<div class="job-card__button-row">
+								<BaseButton
+									:variant="canStartJob(job) ? 'primary' : 'secondary'"
+									:disabled="!canStartJob(job) || startingJob"
+									:loading="startingJob"
+									:title="job.special && !blackMarketOpen ? 'O Mercado Negro é aberto aos domingos, sábados e sextas após as 18h' : undefined"
+									@click="handleStartJob(job)"
 								>
-									<NuxtImg
-										:src="item.defaultImagePath"
-										width="30"
-										:alt="item.name"
-									>
-										{{ item.name }}
-									</NuxtImg>
-								</li>
-							</ul>
-							<BaseButton
-								:variant="canStartJob(job) ? 'primary' : 'secondary'"
-								:disabled="!canStartJob(job) || startingJob"
-								:loading="startingJob"
-								:title="job.special && !blackMarketOpen ? 'O Mercado Negro é aberto aos domingos, sábados e sextas após as 18h' : undefined"
-								@click="handleStartJob(job)"
-							>
-								{{ isUserBusy ? "Indisponível" : "Iniciar" }}
-							</BaseButton>
+									{{ isUserBusy ? "Indisponível" : "Iniciar" }}
+								</BaseButton>
+								<button
+									type="button"
+									class="job-card__chevron"
+									:class="{ 'job-card__chevron--expanded': expandedJobs.has(job.id) }"
+									:aria-expanded="expandedJobs.has(job.id)"
+									:aria-label="expandedJobs.has(job.id) ? 'Fechar detalhes' : 'Abrir detalhes'"
+									@click="toggleJobDetails(job.id)"
+								>
+									<ChevronDown :size="20" />
+								</button>
+							</div>
 						</div>
-						<button
-							type="button"
-							class="job-card__chevron"
-							:aria-expanded="expandedJobs.has(job.id)"
-							:aria-label="expandedJobs.has(job.id) ? 'Fechar detalhes' : 'Abrir detalhes'"
-							@click="toggleJobDetails(job.id)"
-						>
-							<ChevronDown
-								v-if="!expandedJobs.has(job.id)"
-								:size="20"
-							/>
-							<ChevronUp
-								v-else
-								:size="20"
-							/>
-						</button>
 					</div>
 
-					<dl
-						v-if="expandedJobs.has(job.id)"
-						class="job-card__row job-card__details"
-					>
-						<div class="job-card__detail-row">
-							<dt class="job-card__detail-label">Duração</dt>
-							<dd class="job-card__detail-value">
-								<time :datetime="`PT${Math.round(job.duration * 60)}M`">{{ formatDuration(job.duration) }}</time>
-							</dd>
-						</div>
-						<div class="job-card__detail-row">
-							<dt class="job-card__detail-label">Salário</dt>
-							<dd class="job-card__detail-value">{{ formatMoney(job.salary) }}</dd>
-						</div>
-						<div
-							v-if="job.needItems.length > 0"
-							class="job-card__detail-row"
+					<div class="job-card__details-wrapper">
+						<dl
+							:class="{ 'job-card__details--collapsed': !expandedJobs.has(job.id) }"
+							class="job-card__row job-card__details"
 						>
-							<dt class="job-card__detail-label">Itens necessários</dt>
-							<dd class="job-card__detail-items">
-								<span
-									v-for="item in job.needItems"
-									:key="item.id"
-									class="job-card__detail-item"
-								>
-									<NuxtImg
-										:src="item.defaultImagePath"
-										width="24"
-										:alt="item.name"
-									/>
-									{{ item.name }}
-								</span>
-							</dd>
-						</div>
-						<div
-							v-else
-							class="job-card__detail-row"
-						>
-							<dt class="job-card__detail-label">Itens necessários</dt>
-							<dd class="job-card__detail-value job-card__detail-empty">Nenhum</dd>
-						</div>
-					</dl>
+							<div class="job-card__detail-row">
+								<dt class="job-card__detail-label">Duração</dt>
+								<dd class="job-card__detail-value">
+									<time :datetime="`PT${Math.round(job.duration * 60)}M`">{{ formatDuration(job.duration) }}</time>
+								</dd>
+							</div>
+							<div class="job-card__detail-row">
+								<dt class="job-card__detail-label">Salário</dt>
+								<dd class="job-card__detail-value">{{ formatMoney(job.salary) }}</dd>
+							</div>
+							<div
+								v-if="job.needItems.length > 0"
+								class="job-card__detail-row"
+							>
+								<dt class="job-card__detail-label">Itens necessários</dt>
+								<dd class="job-card__detail-items">
+									<span
+										v-for="item in job.needItems"
+										:key="item.id"
+										class="job-card__detail-item"
+									>
+										<NuxtImg
+											:src="item.defaultImagePath"
+											width="24"
+											:alt="item.name"
+										/>
+										{{ item.name }}
+									</span>
+								</dd>
+							</div>
+							<div
+								v-else
+								class="job-card__detail-row"
+							>
+								<dt class="job-card__detail-label">Itens necessários</dt>
+								<dd class="job-card__detail-value job-card__detail-empty">Nenhum</dd>
+							</div>
+						</dl>
+					</div>
 				</li>
 			</ul>
 		</div>
@@ -384,6 +358,8 @@ function formatDuration(hours: number): string {
 	display: flex;
 	flex-direction: column;
 	gap: $spacing-lg;
+	container-name: page;
+	container-type: inline-size;
 }
 
 .jobs-loading {
@@ -453,10 +429,6 @@ function formatDuration(hours: number): string {
 		font-size: 0.875rem;
 		color: $text-secondary;
 	}
-
-	button {
-		margin-left: auto;
-	}
 }
 
 
@@ -502,10 +474,9 @@ function formatDuration(hours: number): string {
 		align-items: center;
 		gap: $spacing-md;
 
-		&:not(:first-child) {
-			margin-top: $spacing-md;
-			padding-top: $spacing-md;
-			border-top: 1px solid $border-card;
+		@container page (width < 500px) {
+			flex-direction: column;
+			align-items: flex-start;
 		}
 	}
 
@@ -528,22 +499,15 @@ function formatDuration(hours: number): string {
 		flex-wrap: wrap;
 	}
 
-	&__badge {
-		font-size: 0.6875rem;
-		font-weight: 600;
-		background-color: rgba(81, 54, 179, 0.2);
-		color: #a78bfa;
-		padding: 0.125rem 0.5rem;
-		border-radius: 999px;
-	}
-
 	&__body {
 		display: flex;
 		align-items: center;
+		justify-content: space-between;
 		flex-wrap: wrap;
 		gap: $spacing-sm;
 		flex: 1;
 		min-width: 0;
+		width: 100%;
 	}
 
 	&__stats {
@@ -560,26 +524,10 @@ function formatDuration(hours: number): string {
 		color: $text-secondary;
 	}
 
-	&__items {
+	&__button-row {
 		display: flex;
-		flex-direction: row;
-		gap: $spacing-xs;
-		font-size: 0.75rem;
-		list-style: none;
-	}
-
-	&__items-list {
-		display: flex;
-		flex-wrap: wrap;
 		gap: $spacing-sm;
-	}
-
-	&__item-name {
-		background-color: $bg-input;
-		padding: 0.125rem 0.5rem;
-		border-radius: $radius-xs;
-		color: $text-primary;
-		font-weight: 500;
+		margin-left: auto;
 	}
 
 	&__chevron {
@@ -591,11 +539,29 @@ function formatDuration(hours: number): string {
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		transition: color 0.15s ease;
+		transition: color 0.15s ease, transform 0.2s ease;
 		flex-shrink: 0;
 
 		&:hover {
 			color: $text-primary;
+		}
+
+		&--expanded {
+			transform: rotate(180deg);
+		}
+	}
+
+	&__details-wrapper {
+		overflow: hidden;
+		max-height: 0;
+		opacity: 0;
+		transition: max-height 0.25s ease, opacity 0.2s ease, margin-top 0.25s ease;
+		margin-top: 0;
+
+		&:has(.job-card__details:not(.job-card__details--collapsed)) {
+			max-height: 300px;
+			opacity: 1;
+			margin-top: $spacing-md;
 		}
 	}
 
@@ -605,6 +571,10 @@ function formatDuration(hours: number): string {
 		gap: $spacing-md;
 		align-items: flex-start;
 		width: 100%;
+
+		&--collapsed {
+			visibility: hidden;
+		}
 	}
 
 	&__detail-row {
@@ -652,9 +622,6 @@ function formatDuration(hours: number): string {
 		font-style: italic;
 	}
 
-	button {
-		margin-left: auto;
-	}
 }
 
 .jobs-error {
@@ -664,4 +631,5 @@ function formatDuration(hours: number): string {
 	padding: $spacing-xl;
 	color: $text-secondary;
 }
+
 </style>
