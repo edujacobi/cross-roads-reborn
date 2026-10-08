@@ -40,5 +40,16 @@ export function useDateFormat() {
 		return formatDistance(new Date(date1), new Date(date2), { locale: ptBR });
 	}
 
-	return { shortDateTime, shortDateShortTime, longDate, dateTime, relative, distance };
+	function decimalHoursToDeclarative(decimalHours: number) {
+		const hours = Math.floor(decimalHours);
+		const minutes = Math.round((decimalHours - hours) * 60);
+
+		if (minutes === 0) {
+			return `${hours}h`;
+		}
+
+		return `${hours}h${minutes}min`;
+	}
+
+	return { shortDateTime, shortDateShortTime, longDate, dateTime, relative, distance, decimalHoursToDeclarative };
 }

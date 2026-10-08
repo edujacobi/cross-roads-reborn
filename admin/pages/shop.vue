@@ -421,7 +421,10 @@ onUnmounted(() => {
 							:alt="`Mais informações de ${item.name}`"
 							:title="`Mais informações de ${item.name}`"
 							width="56"
+							tabindex="0"
 							@click="openItemModal(item)"
+							@keydown.enter.prevent="openItemModal(item)"
+							@keydown.space.prevent="openItemModal(item)"
 						/>
 						<div class="shop-item-card__info">
 							<h3 class="shop-item-card__name">{{ item.name }}</h3>
