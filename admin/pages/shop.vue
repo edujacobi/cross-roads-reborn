@@ -415,8 +415,8 @@ onUnmounted(() => {
 							'shop-item-card--disabled': item.blackMarket && !blackMarketOpen
 						}"
 					>
-						<span :data-tooltip-text="`Mais informações de ${item.name}`"
-							  data-tooltip-direction="bottom">
+ 						<span :data-popover-text="`Mais informações de ${item.name}`"
+ 							  data-popover-direction="bottom">
 						<LazyNuxtImg
 							class="shop-item-card__image"
 							:src="getItemImage(item.id, getUserItemSkin(item.id))"
@@ -507,8 +507,8 @@ onUnmounted(() => {
  								:disabled="getItemCardState(item).isDisabled"
  								:aria-label="getItemCardState(item).addButtonAriaLabel"
  								@click="addToCart(item)"
-								:data-tooltip-text="item.blackMarket && !blackMarketOpen ? 'O Mercado Negro é aberto aos domingos, sábados e sextas após as 18h' : undefined"
-								data-tooltip-direction="top"
+  								:data-popover-text="item.blackMarket && !blackMarketOpen ? 'O Mercado Negro é aberto aos domingos, sábados e sextas após as 18h' : undefined"
+  								data-popover-direction="top"
  							>
  								<ShoppingBasket
  									v-if="getItemCardState(item).disabledReason === null"

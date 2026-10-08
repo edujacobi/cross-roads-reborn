@@ -234,7 +234,11 @@ onUnmounted(() => {
 
 						}"
 					>
-						<div class="job-card__row">
+						<div
+							class="job-card__row"
+							:data-popover-text="job.special && !blackMarketOpen ? 'O Mercado Negro é aberto aos domingos, sábados e sextas após as 18h' : undefined"
+							data-popover-direction="top"
+						>
 							<div class="job-card__header">
 								<h3 class="job-card__name">
 									{{ job.name }}
@@ -258,8 +262,6 @@ onUnmounted(() => {
 										:variant="canStartJob(job) ? 'primary' : 'secondary'"
 										:disabled="!canStartJob(job) || startingJob"
 										:loading="startingJob"
-										:data-tooltip-text="job.special && !blackMarketOpen ? 'O Mercado Negro é aberto aos domingos, sábados e sextas após as 18h' : undefined"
-										data-tooltip-direction="top"
 										@click="handleStartJob(job)"
 									>
 										{{ isUserBusy ? "Indisponível" : "Iniciar" }}

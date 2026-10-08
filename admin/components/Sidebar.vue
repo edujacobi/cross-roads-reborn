@@ -272,6 +272,8 @@ const user = computed(() => {
 					:to="item.to"
 					:class="['nav-item', { active: item.activeRouteNames.some((name) => name === route.name) }]"
 					:aria-label="item.label"
+					:data-popover-text="isCollapsed ? item.label : undefined"
+					data-popover-direction="right"
 				>
 					<component
 						:is="item.icon"
