@@ -2,8 +2,6 @@
 	setup
 	lang="ts"
 >
-import BasePopover from "~/components/ui/BasePopover.vue";
-
 interface Props {
 	/** Current value (hours for time-based, count for quantity-based) */
 	value: number;
@@ -26,33 +24,30 @@ const filledPercentage = computed(() => {
 </script>
 
 <template>
-	<BasePopover
-		:text="popover"
-		position="top"
+	<div
+		class="segmented-progress"
+		role="progressbar"
+		:aria-valuenow="value"
+		:aria-valuemin="0"
+		:aria-valuemax="max"
+		:aria-label="label"
+		:data-popover-text="popover"
+		data-popover-direction="top"
 	>
-		<div
-			class="segmented-progress"
-			role="progressbar"
-			:aria-valuenow="value"
-			:aria-valuemin="0"
-			:aria-valuemax="max"
-			:aria-label="label"
-		>
-			<div class="segmented-progress__track">
+		<div class="segmented-progress__track">
+			<div
+				class="segmented-progress__fill"
+				:style="{ width: `${filledPercentage}%` }"
+			/>
+			<div class="segmented-progress__segments">
 				<div
-					class="segmented-progress__fill"
-					:style="{ width: `${filledPercentage}%` }"
+					v-for="i in segments"
+					:key="i"
+					class="segmented-progress__segment"
 				/>
-				<div class="segmented-progress__segments">
-					<div
-						v-for="i in segments"
-						:key="i"
-						class="segmented-progress__segment"
-					/>
-				</div>
 			</div>
 		</div>
-	</BasePopover>
+	</div>
 </template>
 
 <style

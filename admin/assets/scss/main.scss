@@ -155,3 +155,49 @@ body {
     scroll-behavior: smooth;
   }
 }
+
+// Global Tooltip
+[data-tooltip-text] {
+  position: relative;
+
+  &:hover::after {
+    content: attr(data-tooltip-text);
+    position: absolute;
+    padding: 0.25rem 0.5rem;
+    background-color: $bg-card;
+    color: $text-primary;
+    border: 1px solid $border-card;
+    border-radius: $radius-sm;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 9999;
+    box-shadow: $shadow-sm;
+    opacity: 1;
+  }
+
+  &[data-tooltip-direction="top"]:hover::after {
+    bottom: calc(100% + 0.5rem);
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  &[data-tooltip-direction="bottom"]:hover::after {
+    top: calc(100% + 0.5rem);
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  &[data-tooltip-direction="left"]:hover::after {
+    top: 50%;
+    right: calc(100% + 0.5rem);
+    transform: translateY(-50%);
+  }
+
+  &[data-tooltip-direction="right"]:hover::after {
+    top: 50%;
+    left: calc(100% + 0.5rem);
+    transform: translateY(-50%);
+  }
+}

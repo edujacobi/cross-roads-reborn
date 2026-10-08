@@ -133,7 +133,8 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 			<li
 				v-for="item in items"
 				:key="item.id"
-				:title="isCompactInventory ? item.name : ''"
+				:data-popover-text="isCompactInventory ? item.name : undefined"
+				data-popover-direction="top"
 			>
 				<button
 					type="button"

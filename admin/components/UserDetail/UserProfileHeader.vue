@@ -128,11 +128,12 @@ function getBadgeImage(badgeId: BadgeId): string {
 				<li
 					v-for="badge in user.badges"
 					:key="badge.id"
+					:data-popover-text="badge.name"
+					data-popover-direction="top"
 				>
 					<NuxtImg
 						:src="getBadgeImage(badge.id as BadgeId)"
 						:alt="badge.name"
-						:title="badge.name"
 						class="user-profile__badge"
 						width="40"
 						height="40"

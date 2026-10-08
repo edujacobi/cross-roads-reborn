@@ -225,7 +225,8 @@ const user = computed(() => {
 				type="button"
 				class="collapse-toggle"
 				:aria-label="isCollapsed ? 'Expandir menu' : 'Recolher menu'"
-				:title="isCollapsed ? 'Expandir menu' : 'Recolher menu'"
+				:data-popover-text="isCollapsed ? 'Expandir menu' : 'Recolher menu'"
+				data-popover-direction="top"
 				:aria-expanded="!isCollapsed"
 				aria-controls="admin-sidebar"
 				@click="toggleCollapsed"
@@ -271,7 +272,6 @@ const user = computed(() => {
 					:to="item.to"
 					:class="['nav-item', { active: item.activeRouteNames.some((name) => name === route.name) }]"
 					:aria-label="item.label"
-					:title="item.label"
 				>
 					<component
 						:is="item.icon"
@@ -291,6 +291,8 @@ const user = computed(() => {
 
 		<div class="admin-profile">
 			<NuxtLink
+				data-popover-text="Meu inventário"
+				data-popover-direction="top"
 				:to="`/users/${user?.id}`"
 				class="admin-info"
 				:aria-label="user?.username ? `Perfil de ${user.username}` : 'Perfil do administrador'"
@@ -317,7 +319,8 @@ const user = computed(() => {
 			<button
 				type="button"
 				class="logout-btn"
-				title="Encerrar sessão"
+				data-popover-text="Encerrar sessão"
+				data-popover-direction="top"
 				aria-label="Encerrar sessão"
 				@click="openLogoutModal"
 			>
@@ -332,9 +335,9 @@ const user = computed(() => {
 	<BaseModal
 		:open="isLogoutModalOpen"
 		title="Encerrar sessão"
-		description="Tem certeza de que deseja sair da sua conta?"
 		@update:open="isLogoutModalOpen = $event"
 	>
+		<p>Tem certeza de que deseja sair da sua conta?</p>
 		<template #footer>
 			<BaseButton
 				variant="secondary"

@@ -295,7 +295,8 @@ async function removeEvent() {
 									variant="secondary"
 									size="sm"
 									:aria-label="`Editar evento ${event.id}`"
-									:title="`Editar evento ${event.id}`"
+									:data-tooltip-text="`Editar evento ${event.id}`"
+									data-tooltip-direction="top"
 									@click="beginEdit(event)"
 								>
 									<Pencil
@@ -308,7 +309,8 @@ async function removeEvent() {
 									size="sm"
 									:disabled="deletingEventId !== null"
 									:aria-label="`Excluir evento ${event.id}`"
-									:title="`Excluir evento ${event.id}`"
+									:data-tooltip-text="`Excluir evento ${event.id}`"
+									data-tooltip-direction="top"
 									@click="requestDelete(event)"
 								>
 									<Trash2

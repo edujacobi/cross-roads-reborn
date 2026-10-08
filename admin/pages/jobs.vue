@@ -258,7 +258,8 @@ onUnmounted(() => {
 										:variant="canStartJob(job) ? 'primary' : 'secondary'"
 										:disabled="!canStartJob(job) || startingJob"
 										:loading="startingJob"
-										:title="job.special && !blackMarketOpen ? 'O Mercado Negro é aberto aos domingos, sábados e sextas após as 18h' : undefined"
+										:data-tooltip-text="job.special && !blackMarketOpen ? 'O Mercado Negro é aberto aos domingos, sábados e sextas após as 18h' : undefined"
+										data-tooltip-direction="top"
 										@click="handleStartJob(job)"
 									>
 										{{ isUserBusy ? "Indisponível" : "Iniciar" }}
