@@ -724,3 +724,66 @@ mutation BuyItem($itemId: Int!, $units: Int!) {
 		money
 	}
 }
+
+query GetJobs {
+	jobs {
+		id
+		name
+		duration
+		salary
+		special
+		needItems {
+			id
+			name
+			defaultImagePath
+		}
+	}
+}
+
+query GetUserJobStatus($id: ID!) {
+	user(id: $id) {
+		isWorking
+		currentJobId
+		jobEndsIn
+		isScavenging
+		isInPrison
+		isInHospital
+		isInCasino
+		isRobbing
+		isBeingRobbed
+		isBeating
+		isBeingBeated
+		isDefendingInvestment
+		isInGangAction
+		isDead
+		items {
+			id
+		}
+	}
+}
+
+mutation StartJob($jobId: Int!) {
+	startJob(jobId: $jobId) {
+		success
+		message
+		user {
+			id
+			isWorking
+			jobEndsIn
+			money
+		}
+	}
+}
+
+mutation CancelJob {
+	cancelJob {
+		success
+		message
+		user {
+			id
+			isWorking
+			jobEndsIn
+			money
+		}
+	}
+}

@@ -19,6 +19,9 @@ import { AvatarDecorationList } from "#core/types/AvatarDecorations";
 import { BackgroundDecorationList } from "#core/types/BackgroundDecorations";
 import { Language } from "#core/models/Language";
 import { ItemList, type Items } from "#core/types/Items";
+import { getJobList, JobList } from "#core/types/Jobs";
+import type { JobId } from "#core/types/Jobs";
+import { getJobClassModifier } from "#core/types/Classes";
 import type { AuthUser, GraphQLContext } from "#api/types";
 import { convertHexNumberToString, formatMoney } from "#bot/utils/ui";
 import { UserBadge } from "#core/models/UserBadge";
@@ -306,6 +309,7 @@ async function mapUserDetail(user: User) {
 		isInPrison,
 		prisonTime: isInPrison ? user.Prison.Time.toISOString() : null,
 		isWorking,
+		currentJobId: isWorking ? user.Job.Id : null,
 		jobEndsIn: isWorking ? user.Job.EndsIn.toISOString() : null,
 		isScavenging,
 		isWanted,
@@ -474,7 +478,39 @@ export const resolvers: {
 			);
 		},
 
- 	blackMarketOpen: () => isBlackMarketOpen(),
+		blackMarketOpen: () => isBlackMarketOpen(),
+
+		jobs: async (_: unknown, __: unknown, context: GraphQLContext) => {
+			const authUser = assertAuthenticated(context);
+			const player = new User(authUser.userId);
+			await player.GetInfo();
+
+			const eventActiveValue = await Event.GetActiveFromType(EventType.JOB_TIME_MULTIPLIER);
+			const userClassModifier = getJobClassModifier(player.Class);
+
+			const sortedJobs = [...getJobList()].sort((a, b) => Number(a.Special) - Number(b.Special));
+
+			return sortedJobs.map((job) => {
+				const needItems = (job.NeedItem || []).map((itemId) => {
+					const itemDef = ItemList[itemId];
+					const defaultFilename = `${itemId}_${ItemId[itemId]}.png`;
+					return {
+						id: itemId,
+						name: itemDef?.Description?.[Language.Portuguese] || itemDef?.Description?.[Language.English] || `Item #${itemId}`,
+						defaultImagePath: `/images/items/${defaultFilename}`,
+					};
+				});
+
+				return {
+					id: job.Id,
+					name: job.Description[Language.Portuguese],
+					duration: job.Duration * eventActiveValue,
+					salary: Math.round(job.Salary * userClassModifier),
+					special: job.Special,
+					needItems,
+				};
+			});
+		},
 
 		items: async (_: unknown, __: unknown, context: GraphQLContext) => {
 			assertAuthenticated(context);
@@ -1905,6 +1941,107 @@ export const resolvers: {
 				success: purchasedUnits > 0,
 				message: successMessage,
 				money: player.Money,
+			};
+		},
+
+		startJob: async (
+			_: unknown,
+			args: { jobId: number },
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			const player = new User(authUser.userId);
+			const found = await player.GetInfo();
+			if (!found) {
+				return { success: false, message: "Jogador não encontrado.", user: null };
+			}
+
+			const job = JobList[args.jobId];
+			if (!job) {
+				return { success: false, message: "Trabalho não encontrado.", user: null };
+			}
+
+			if (job.Special && !isBlackMarketOpen()) {
+				return { success: false, message: "O Mercado Negro está fechado.", user: null };
+			}
+
+			if (player.Job.EndsIn > new Date() && player.Job.Id !== null) {
+				return { success: false, message: "Você já está trabalhando.", user: null };
+			}
+			if (player.Scavenge.Time > new Date() && player.Scavenge.IsScavengingId !== null) {
+				return { success: false, message: "Você já está farejando.", user: null };
+			}
+			if (player.Prison.Time > new Date()) {
+				return { success: false, message: "Você está na prisão.", user: null };
+			}
+			if (player.Hospital.Time > new Date()) {
+				return { success: false, message: "Você está no hospital.", user: null };
+			}
+			if (player.Casino.IsInGame) {
+				return { success: false, message: "Você está no cassino.", user: null };
+			}
+			if (player.BeatUp.IsBeatingId !== null) {
+				return { success: false, message: "Você está agredindo alguém.", user: null };
+			}
+			if (player.Robbery.IsRobbingId !== null || player.Robbery.IsRobbingLocationId !== null) {
+				return { success: false, message: "Você está roubando.", user: null };
+			}
+			if (player.Robbery.IsBeingRobbedById !== null) {
+				return { success: false, message: "Você está sendo roubado.", user: null };
+			}
+			if (player.IsDefendingInvestment()) {
+				return { success: false, message: "Você está defendendo seu investimento.", user: null };
+			}
+			if (player.IsParticipatingInGangAction()) {
+				return { success: false, message: "Você está em uma ação de gangue.", user: null };
+			}
+
+			if (job.NeedItem) {
+				const missingItems = job.NeedItem.filter(
+					(neededId) => !player.Items.some((userItem) => userItem.Id === neededId),
+				);
+				if (missingItems.length > 0) {
+					const missingNames = missingItems.map((id) => {
+						const itemDef = ItemList[id];
+						return itemDef?.Description?.[Language.Portuguese] || itemDef?.Description?.[Language.English] || `Item #${id}`;
+					});
+					return { success: false, message: `Itens necessários: ${missingNames.join(", ")}.`, user: null };
+				}
+			}
+
+			await player.StartJob(args.jobId as JobId);
+			const userDetail = await mapUserDetail(player);
+
+			return {
+				success: true,
+				message: `Você começou o trabalho: ${job.Description[Language.Portuguese]}.`,
+				user: userDetail,
+			};
+		},
+
+		cancelJob: async (
+			_: unknown,
+			__: unknown,
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			const player = new User(authUser.userId);
+			const found = await player.GetInfo();
+			if (!found) {
+				return { success: false, message: "Jogador não encontrado.", user: null };
+			}
+
+			if (player.Job.Id === null) {
+				return { success: false, message: "Você não está trabalhando.", user: null };
+			}
+
+			await player.CancelJob();
+			const userDetail = await mapUserDetail(player);
+
+			return {
+				success: true,
+				message: "Trabalho cancelado.",
+				user: userDetail,
 			};
 		},
 	},

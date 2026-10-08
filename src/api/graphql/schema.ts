@@ -293,6 +293,7 @@ export const typeDefs = /* GraphQL */ `
         isInPrison: Boolean!
         prisonTime: String
         isWorking: Boolean!
+        currentJobId: Int
         jobEndsIn: String
         isScavenging: Boolean!
         isWanted: Boolean!
@@ -483,6 +484,27 @@ export const typeDefs = /* GraphQL */ `
         defaultImagePath: String!
     }
 
+    type JobNeedItem {
+        id: Int!
+        name: String!
+        defaultImagePath: String!
+    }
+
+    type JobInfo {
+        id: Int!
+        name: String!
+        duration: Float!
+        salary: Float!
+        special: Boolean!
+        needItems: [JobNeedItem!]!
+    }
+
+    type JobMutationResult {
+        success: Boolean!
+        message: String!
+        user: UserDetail
+    }
+
     type Query {
         me: AuthUser
         adminAuditLogs(limit: Int, offset: Int, actionId: Int): AdminAuditLogPage!
@@ -500,6 +522,7 @@ export const typeDefs = /* GraphQL */ `
         userHistory(userId: ID!, limit: Int, offset: Int): UserHistoryResult!
         items: [ItemDetails!]!
         blackMarketOpen: Boolean!
+        jobs: [JobInfo!]!
     }
 
     type ShopBuyResult {
@@ -534,5 +557,7 @@ export const typeDefs = /* GraphQL */ `
         setMainHeistAllowed(allowed: Boolean!): SeasonMutationResult!
         endSeason(isPreSeason: Boolean!): SeasonMutationResult!
         buyItem(itemId: Int!, units: Int): ShopBuyResult!
+        startJob(jobId: Int!): JobMutationResult!
+        cancelJob: JobMutationResult!
     }
 `;

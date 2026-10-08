@@ -7,6 +7,7 @@ import {
 	CalendarSync,
 	ChevronLeft,
 	Crown,
+	HardHat,
 	LayoutDashboard,
 	LogOut,
 	Menu,
@@ -63,6 +64,12 @@ const navigationGroups = computed(() => [
 				to: { name: "shop" },
 				icon: ShoppingBasket,
 				activeRouteNames: ["shop"],
+			},
+			{
+				label: "Trabalhos",
+				to: { name: "jobs" },
+				icon: HardHat,
+				activeRouteNames: ["jobs"],
 			},
 			{
 				label: "Atualizações",
