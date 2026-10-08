@@ -505,6 +505,58 @@ export const typeDefs = /* GraphQL */ `
         user: UserDetail
     }
 
+    type HospitalizedUser {
+        id: ID!
+        nickname: String!
+        avatarUrl: String
+        avatarDecoration: String
+        class: Int!
+        hospitalTime: String!
+        hospitalCount: Int!
+    }
+
+    type PrisonerUser {
+        id: ID!
+        nickname: String!
+        avatarUrl: String
+        avatarDecoration: String
+        class: Int!
+        prisonTime: String!
+        robberyFailureCount: Int!
+        escapeCount: Int!
+    }
+
+    type HospitalizedUserPage {
+        entries: [HospitalizedUser!]!
+        total: Int!
+    }
+
+    type PrisonerUserPage {
+        entries: [PrisonerUser!]!
+        total: Int!
+    }
+
+    type HospitalResult {
+        success: Boolean!
+        message: String!
+        money: Float!
+        privatePrice: Float
+    }
+
+    type PrisonEscapeResult {
+        success: Boolean!
+        message: String!
+        money: Float!
+        isWanted: Boolean
+    }
+
+    type PrisonBribeResult {
+        success: Boolean!
+        message: String!
+        money: Float!
+        bribeAccepted: Boolean
+    }
+
     type Query {
         me: AuthUser
         adminAuditLogs(limit: Int, offset: Int, actionId: Int): AdminAuditLogPage!
@@ -523,6 +575,8 @@ export const typeDefs = /* GraphQL */ `
         items: [ItemDetails!]!
         blackMarketOpen: Boolean!
         jobs: [JobInfo!]!
+        hospitalizedUsers(search: String, limit: Int, offset: Int, sortBy: String, sortOrder: String): HospitalizedUserPage!
+        prisoners(search: String, limit: Int, offset: Int, sortBy: String, sortOrder: String): PrisonerUserPage!
     }
 
     type ShopBuyResult {
@@ -559,5 +613,8 @@ export const typeDefs = /* GraphQL */ `
         buyItem(itemId: Int!, units: Int): ShopBuyResult!
         startJob(jobId: Int!): JobMutationResult!
         cancelJob: JobMutationResult!
+        payPrivateHospital: HospitalResult!
+        attemptPrisonEscape: PrisonEscapeResult!
+        payBribePrison: PrisonBribeResult!
     }
 `;
