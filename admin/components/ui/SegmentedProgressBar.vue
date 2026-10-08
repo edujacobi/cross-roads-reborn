@@ -2,6 +2,8 @@
 	setup
 	lang="ts"
 >
+import BasePopover from "~/components/ui/BasePopover.vue";
+
 interface Props {
 	/** Current value (hours for time-based, count for quantity-based) */
 	value: number;
@@ -12,7 +14,7 @@ interface Props {
 	/** Accessibility label for screen readers */
 	label: string;
 	/** Hover tooltip text (e.g., "72h/360h" or "14/20 un") */
-	popover?: string;
+	popover: string;
 }
 
 const props = defineProps<Props>();
@@ -24,29 +26,33 @@ const filledPercentage = computed(() => {
 </script>
 
 <template>
-	<div
-		class="segmented-progress"
-		role="progressbar"
-		:aria-valuenow="value"
-		:aria-valuemin="0"
-		:aria-valuemax="max"
-		:aria-label="label"
-		:aria-describedby="popover ?? undefined"
+	<BasePopover
+		:text="popover"
+		position="top"
 	>
-		<div class="segmented-progress__track">
-			<div
-				class="segmented-progress__fill"
-				:style="{ width: `${filledPercentage}%` }"
-			/>
-			<div class="segmented-progress__segments">
+		<div
+			class="segmented-progress"
+			role="progressbar"
+			:aria-valuenow="value"
+			:aria-valuemin="0"
+			:aria-valuemax="max"
+			:aria-label="label"
+		>
+			<div class="segmented-progress__track">
 				<div
-					v-for="i in segments"
-					:key="i"
-					class="segmented-progress__segment"
+					class="segmented-progress__fill"
+					:style="{ width: `${filledPercentage}%` }"
 				/>
+				<div class="segmented-progress__segments">
+					<div
+						v-for="i in segments"
+						:key="i"
+						class="segmented-progress__segment"
+					/>
+				</div>
 			</div>
 		</div>
-	</div>
+	</BasePopover>
 </template>
 
 <style
@@ -60,25 +66,6 @@ const filledPercentage = computed(() => {
 	min-width: 6rem;
 	position: relative;
 	cursor: default;
-
-	&:hover::after {
-		content: attr(aria-describedby);
-		position: absolute;
-		bottom: calc(100% + 0.5rem);
-		left: 50%;
-		transform: translateX(-50%);
-		padding: 0.25rem 0.5rem;
-		background-color: $bg-card;
-		color: $text-primary;
-		border: 1px solid $border-card;
-		border-radius: $radius-sm;
-		font-size: 0.6875rem;
-		font-weight: 600;
-		white-space: nowrap;
-		pointer-events: none;
-		z-index: 10;
-		box-shadow: $shadow-sm;
-	}
 
 	&__track {
 		position: relative;
