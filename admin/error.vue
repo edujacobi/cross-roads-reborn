@@ -101,8 +101,8 @@ async function copyErrorMessage() {
 	lang="scss"
 	scoped
 >
-@use "~/assets/scss/variables" as *;
-@use "~/assets/scss/mixins" as *;
+@use "./assets/scss/variables" as *;
+@use "./assets/scss/mixins" as *;
 
 .error {
 	@include flex-center;
