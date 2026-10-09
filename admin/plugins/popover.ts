@@ -73,13 +73,27 @@ export default defineNuxtPlugin(() => {
 		}
 	}
 
+	function onClick(e: MouseEvent) {
+		const target = e.target as HTMLElement;
+		const text = target.dataset?.popoverText;
+
+		if (text) {
+			showPopover(target);
+		}
+		else if (currentTarget) {
+			hidePopover();
+		}
+	}
+
 	document.addEventListener("mouseenter", onMouseEnter, true);
 	document.addEventListener("mouseleave", onMouseLeave, true);
+	document.addEventListener("click", onClick, true);
 
 	if (import.meta.hot) {
 		import.meta.hot.dispose(() => {
 			document.removeEventListener("mouseenter", onMouseEnter, true);
 			document.removeEventListener("mouseleave", onMouseLeave, true);
+			document.removeEventListener("click", onClick, true);
 		});
 	}
 });
