@@ -16,7 +16,7 @@ describe("API server proxy handling", () => {
 			expect(response.json()).toEqual({ ip: "203.0.113.10" });
 		}
 		finally {
-			await app.close();
+			await app.close({ force: true });
 		}
 	});
 });

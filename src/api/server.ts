@@ -16,6 +16,7 @@ export async function createApiServer(): Promise<FastifyInstance> {
 	const app = fastify({
 		logger: false,
 		trustProxy: "loopback",
+		forceCloseConnections: true,
 	});
 
 	// CORS configuration
