@@ -98,7 +98,7 @@ function remainingVipTime(vipTime: string | null): string {
 								<div class="player-cell-content">
 									<NuxtImg
 										class="profile-img"
-										:src="vip.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'"
+										:src="vip.avatarUrl || useFallbackUserImage(vip.id)"
 										:alt="vip.nickname ? `Avatar de ${vip.nickname}` : 'Avatar do jogador'"
 									/>
 									<span>{{ vip.nickname || "(Sem Nick)" }}</span>

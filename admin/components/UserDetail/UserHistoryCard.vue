@@ -12,6 +12,7 @@ import BaseTable from "~/components/ui/BaseTable.vue";
 import BaseTableFooter from "~/components/ui/BaseTableFooter.vue";
 import BaseTableSkeleton from "~/components/ui/BaseTableSkeleton.vue";
 import RefreshButton from "~/components/ui/RefreshButton.vue";
+import { useFallbackUserImage } from "~/composables/useFallbackImage";
 import { imagePaths } from "~/constants/imagePaths";
 import { GetUserHistoryDocument, type GetUserHistoryQuery } from "~/graphql/generated";
 import { ClashType } from "../../../src/core/types/Robbery";
@@ -160,7 +161,7 @@ function nextPage() {
 									:class="{ 'history-user__link--current': entry.attackerId === userId }"
 								>
 									<LazyNuxtImg
-										:src="entry.attacker.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'"
+										:src="entry.attacker.avatarUrl || useFallbackUserImage(entry.attacker.id)"
 										alt=""
 										width="22"
 										height="22"
@@ -232,7 +233,7 @@ function nextPage() {
 									:class="{ 'history-user__link--current': entry.defenderId === userId }"
 								>
 									<LazyNuxtImg
-										:src="entry.defender.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'"
+										:src="entry.defender.avatarUrl || useFallbackUserImage(entry.defender.id)"
 										alt=""
 										width="32"
 										height="32"
@@ -260,7 +261,7 @@ function nextPage() {
 										:class="{ 'history-user__link--current': entry.defenderId === userId }"
 									>
 										<LazyNuxtImg
-											:src="entry.defender.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'"
+											:src="entry.defender.avatarUrl || useFallbackUserImage(entry.defender.id)"
 											alt=""
 											width="22"
 											height="22"

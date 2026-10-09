@@ -13,6 +13,7 @@ import BaseSelector, { type SelectorOption } from "~/components/ui/BaseSelector.
 import BaseTable from "~/components/ui/BaseTable.vue";
 import BaseTableFooter from "~/components/ui/BaseTableFooter.vue";
 import BaseTableSkeleton from "~/components/ui/BaseTableSkeleton.vue";
+import { useFallbackUserImage } from "~/composables/useFallbackImage";
 import { type ImagePath, imagePaths } from "~/constants/imagePaths";
 import { GetTopGangsDocument, GetTopUsersDocument, UserRanking } from "~/graphql/generated";
 
@@ -290,7 +291,7 @@ function nextPage() {
 									<span class="rankings-page__rank-cell">{{ offset + index + 1 }}</span>
 									<LazyNuxtImg
 										class="rankings-page__gang-avatar"
-										:src="gang.imageUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'"
+										:src="gang.imageUrl || useFallbackGangImage(gang.id)"
 										alt=""
 									/>
 									<span class="rankings-page__player-name">{{ gang.name }}</span>
@@ -346,7 +347,7 @@ function nextPage() {
 									<span class="rankings-page__rank-cell">{{ offset + index + 1 }}</span>
 									<LazyNuxtImg
 										:class="['rankings-page__player-avatar', 'user-avatar', `user-avatar--${entry.avatarDecoration}`]"
-										:src="entry.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'"
+										:src="entry.avatarUrl || useFallbackUserImage(entry.id)"
 										alt=""
 									/>
 									<span class="rankings-page__player-name">{{ entry.nickname }}</span>

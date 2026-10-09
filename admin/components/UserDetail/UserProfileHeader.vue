@@ -7,6 +7,7 @@ import { computed, watch } from "vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
 import RefreshButton from "~/components/ui/RefreshButton.vue";
+import { useFallbackUserImage } from "~/composables/useFallbackImage";
 import { useMoneyFormat } from "~/composables/useMoneyFormat";
 import { imagePaths } from "~/constants/imagePaths";
 import { GetUserProfileDocument } from "~/graphql/generated";
@@ -93,7 +94,7 @@ function getBadgeImage(badgeId: BadgeId): string {
 				<div class="user-profile__avatar-wrapper">
 					<LazyNuxtImg
 						:class="['user-avatar', `user-avatar--${user.avatarDecoration}`]"
-						:src="user.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'"
+						:src="user.avatarUrl || useFallbackUserImage(user.id)"
 						:alt="user.nickname ? `Avatar de ${user.nickname}` : 'Avatar do jogador'"
 						width="100"
 						height="100"

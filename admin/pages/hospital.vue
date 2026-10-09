@@ -17,6 +17,7 @@ import BaseTable from "~/components/ui/BaseTable.vue";
 import BaseTableFooter from "~/components/ui/BaseTableFooter.vue";
 import BaseTableSkeleton from "~/components/ui/BaseTableSkeleton.vue";
 import PageTitle from "~/components/ui/PageTitle.vue";
+import { useFallbackUserImage } from "~/composables/useFallbackImage";
 import { useMoneyFormat } from "~/composables/useMoneyFormat";
 import { imagePaths } from "~/constants/imagePaths";
 import {
@@ -330,7 +331,7 @@ async function handlePayPrivate() {
 								<div class="player-cell-content">
 									<NuxtImg
 										:class="['profile-img', 'user-avatar', `user-avatar--${entry.avatarDecoration}`]"
-										:src="entry.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'"
+										:src="entry.avatarUrl || useFallbackUserImage(entry.id)"
 										:alt="entry.nickname ? `Avatar de ${entry.nickname}` : 'Avatar do jogador'"
 										width="32"
 										height="32"

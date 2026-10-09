@@ -23,6 +23,7 @@ import ShopIcon from "~/components/icons/ShopIcon.vue";
 import TrophyIcon from "~/components/icons/TrophyIcon.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
+import { useFallbackUserImage } from "~/composables/useFallbackImage";
 import { hasUnreadUpdates } from "~/composables/useUnreadUpdates";
 import { imagePaths } from "~/constants/imagePaths";
 import { localStorageKeys } from "~/constants/localStorageKeys";
@@ -189,7 +190,7 @@ const user = computed(() => {
 	return {
 		id: authUser.userId,
 		username: authUser.username,
-		avatarUrl: authUser.avatar || "https://cdn.discordapp.com/embed/avatars/0.png",
+		avatarUrl: authUser.avatar || useFallbackUserImage(authUser.userId),
 		avatarDecoration: authUser.avatarDecoration || "default",
 		role: mapRole[authUser.role],
 	};

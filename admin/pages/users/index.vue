@@ -12,6 +12,7 @@ import BaseTable from "~/components/ui/BaseTable.vue";
 import BaseTableFooter from "~/components/ui/BaseTableFooter.vue";
 import BaseTableSkeleton from "~/components/ui/BaseTableSkeleton.vue";
 import PageTitle from "~/components/ui/PageTitle.vue";
+import { useFallbackUserImage } from "~/composables/useFallbackImage";
 import { imagePaths } from "~/constants/imagePaths";
 import { SearchUsersDocument, type SearchUsersQuery } from "~/graphql/generated";
 
@@ -257,7 +258,7 @@ function nextPage() {
 								<div class="player-cell-content">
 									<NuxtImg
 										:class="['profile-img', 'user-avatar', `user-avatar--${u.avatarDecoration}`]"
-										:src="u.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'"
+										:src="u.avatarUrl || useFallbackUserImage(u.id)"
 										:alt="u.nickname ? `Avatar de ${u.nickname}` : 'Avatar do jogador'"
 										width="32"
 										height="32"
@@ -387,7 +388,7 @@ function nextPage() {
 			padding-left: 2.375rem;
 		}
 	}
-	
+
 	&__search-icon {
 		position: absolute;
 		left: 12px;

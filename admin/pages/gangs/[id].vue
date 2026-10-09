@@ -82,7 +82,7 @@ const expPercent = computed(() => Math.round(expRatio.value * 100));
 				<div class="gang-header">
 					<NuxtImg
 						class="gang-header__avatar"
-						:src="gang.imageUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'"
+						:src="gang.imageUrl || useFallbackGangImage(gang.id)"
 						alt=""
 						width="96"
 						height="96"
@@ -154,7 +154,7 @@ const expPercent = computed(() => Math.round(expRatio.value * 100));
 											<div class="member-cell">
 												<NuxtImg
 													:class="['member-avatar', 'user-avatar', member.avatarDecoration ? `user-avatar--${member.avatarDecoration}` : '']"
-													:src="member.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'"
+													:src="member.avatarUrl || useFallbackUserImage(member.userId)"
 													alt=""
 													width="32"
 													height="32"
