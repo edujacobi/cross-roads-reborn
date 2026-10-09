@@ -2,7 +2,7 @@ import fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest }
 import cors from "@fastify/cors";
 import { createSchema, createYoga } from "graphql-yoga";
 import { typeDefs } from "#api/graphql/schema";
-import { resolvers } from "#api/graphql/resolvers";
+import { resolvers } from "#api/graphql/resolvers/index";
 import { verifyAuthToken } from "#api/auth/jwt";
 import { buildDiscordAuthUrl, handleDiscordCallback, getFrontendUrl } from "#api/auth/discord";
 import type { GraphQLContext } from "#api/types";
