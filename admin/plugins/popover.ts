@@ -60,7 +60,7 @@ export default defineNuxtPlugin(() => {
 
 	function onMouseEnter(e: MouseEvent) {
 		const target = e.target as HTMLElement;
-		const text = target.dataset.popoverText;
+		const text = target.dataset?.popoverText;
 		if (text && target !== currentTarget) {
 			showPopover(target);
 		}
