@@ -5,13 +5,11 @@ import { CrColors } from "#bot/utils/colors";
 import { deferUpdate, replyWithContainer } from "#bot/utils/discordInteractions";
 import { EmoteId, EmoteString } from "#bot/utils/emotes";
 import { defaultComponent, formatMoney } from "#bot/utils/ui";
-import { Gang } from "#core/models/Gang";
 import { globalStrings, Language, type Localization } from "#core/models/Language";
 import { Pagination } from "#core/models/Pagination";
 import { Prison, PrisonFailureReason } from "#core/models/Prison";
 import type { User } from "#core/models/User";
 import { ClassList, getPrisonEscapeClassModifier } from "#core/types/Classes";
-import { GangBases } from "#core/types/GangBases";
 import { ItemId } from "#core/types/Ids";
 import { ItemList } from "#core/types/Items";
 import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder, time, TimestampStyles } from "discord.js";
@@ -53,15 +51,7 @@ module.exports = {
 			await prison.CalculateEscapeChance();
 
 			const userClassModifier = getPrisonEscapeClassModifier(user.Class);
-
-			// Gang Modifiers
-			let gangModifier = 0;
-			if (user.GangId) {
-				const gang = await Gang.GetById(user.GangId);
-				if (gang) {
-					gangModifier = (GangBases[gang.BaseId].Modifier?.PrisonEscape?.Positive || 0) * gang.Level;
-				}
-			}
+			const gangModifier = await prison.getGangEscapeModifier();
 
 			let text = `${s.userFree}`;
 			if (user.IsWanted()) {
@@ -234,147 +224,29 @@ module.exports = {
 
 						await replyWithContainer(interaction, container);
 
-						await wait(prison.Escape.DefaultDuration * 1_000);
+						// Poll until the backend finishes the escape, with a timeout bound
+						const escapeTimeout = prison.Escape.DefaultDuration * 1_000 * 2 + 10_000;
+						const pollStart = Date.now();
+						while (Date.now() - pollStart < escapeTimeout) {
+							await wait(500);
+							await user.GetInfo();
+							if (!user.IsEscaping()) break;
+						}
 
-						const { success, totalTime } = await prison.EndEscape();
-
-						const jetpack = `${user.GetItemSkin(ItemList[ItemId.Jetpack])} ${ItemList[ItemId.Jetpack].Description[user.Language]}`;
-
-						const successTexts = {
-							[Language.English]: [
-								"During sunbathing, you take advantage of the distraction of the police and manage to escape by jumping over the prison wall.",
-								"You dug a small tunnel, but with great effort, it allows you to escape.",
-								"You noticed that your cellmate is digging a hole in the floor. Together you manage to escape.",
-								"While being transferred from your cell, you notice some open gates and manage to escape.",
-								"A detainee started a riot, and in the midst of the confusion, you manage to escape.",
-							],
-							[Language.Portuguese]: [
-								"Durante o banho de sol você aproveita a distração dos policiais e consegue fugir pulando o muro da prisão",
-								"Você cavou um túnel pequeno, mas que com muito esforço, te permite fugir",
-								"Você percebeu que seu parceiro de cela está cavando um buraco no piso. Juntos vocês conseguiram fugir",
-								"Enquanto te transferiam de cela, você percebe alguns portões abertos e consegue fugir",
-								"Um detento começou uma rebelião, e no meio da confusão você consegue fugir",
-							],
-							[Language.Spanish]: [
-								"Durante el baño de sol, aprovechas la distracción de los policías y logras escapar saltando el muro de la prisión.",
-								"Cavaste un pequeño túnel, pero con mucho esfuerzo, te permite escapar.",
-								"Notaste que tu compañero de celda está cavando un agujero en el piso. Juntos logran escapar.",
-								"Durante tu traslado de celda, notas algunas puertas abiertas y logras escapar.",
-								"Un detenido comenzó una revuelta, y en medio de la confusión, logras escapar.",
-							],
-						};
-
-						const successTextsJetpack = {
-							[Language.English]: [
-								`Even with little fuel, your ${jetpack} worked very well, and you managed to escape`,
-								`You used your ${jetpack}, and despite the difficulty, managed to escape without a scratch`,
-								`Your ${jetpack} took a while to start and drew the attention of the police, but you managed to escape`,
-								`During sunbathing, you simply turn on your ${jetpack} and fly away without any problems`,
-								`You used the flames from your ${jetpack} to melt the iron bars of the window and managed to escape`,
-							],
-							[Language.Portuguese]: [
-								`Mesmo com pouco combustível, sua ${jetpack} funcionou muito bem e você conseguiu fugir`,
-								`Você utilizou sua ${jetpack} e apesar da dificuldade, consegue fugir sem sofrer nenhum arranhão`,
-								`Sua ${jetpack} demorou pra pegar e chamou a atenção dos policiais, porém você consegue fugir`,
-								`Durante o banho de sol você simplesmente liga sua ${jetpack} e foge voando sem problemas`,
-								`Você usou as chamas da sua ${jetpack} para derreter as barras de ferro da janela e consegue fugir`,
-							],
-							[Language.Spanish]: [
-								`A pesar de tener poco combustible, tu ${jetpack} funcionó muy bien y lograste escapar`,
-								`Usaste tu ${jetpack} y, a pesar de la dificultad, lograste escapar sin ningún rasguño`,
-								`Tu ${jetpack} tardó en arrancar y llamó la atención de la policía, pero lograste escapar`,
-								`Durante el baño de sol, simplemente enciendes tu ${jetpack} y te escapas volando sin problemas`,
-								`Usaste las llamas de tu ${jetpack} para derretir las barras de hierro de la ventana y lograste escapar`,
-							],
-						};
-
-						const wantedTexts = {
-							[Language.English]: [
-								"but the police are on your tail!",
-								"but the police have set the dogs to sniff you out!",
-								"but the police are conducting searches!",
-								"but the police have reported your disappearance!",
-								"but the police are looking for you!",
-							],
-							[Language.Portuguese]: [
-								"mas a polícia está na sua cola!",
-								"mas a polícia colocou os cães para te farejar!",
-								"mas a polícia está fazendo buscas!",
-								"mas a polícia já informou seu desaparecimento!",
-								"mas a polícia está te procurando!",
-							],
-							[Language.Spanish]: [
-								"¡pero la policía está en tu cola!",
-								"¡pero la policía ha puesto a los perros a olfatearte!",
-								"¡pero la policía está haciendo búsquedas!",
-								"¡pero la policía ya ha informado de tu desaparición!",
-								"¡pero la policía te está buscando!",
-							],
-						};
-
-						const failureTexts = {
-							[Language.English]: [
-								"You tried to start a riot to escape, but a snitch ratted you out",
-								"You dug a small tunnel, but unfortunately the police discovered it",
-								"You tried to take another inmate hostage, but he managed to escape and alert the police",
-								"During sunbathing, you tried to cause a fight between gang members, the police did not like it",
-								"You tried to saw the bars of the cell with a file, but ended up making too much noise and alerted the police",
-							],
-							[Language.Portuguese]: [
-								"Você tentou iniciar uma rebelião para conseguir fugir, mas um X9 te denunciou",
-								"Você cavou um túnel pequeno, mas infelizmente a polícia descobriu",
-								"Você tentou fazer outro detento refém, mas ele conseguiu escapar e avisar os policiais",
-								"Durante o banho de sol, você tentou causar uma briga entre membros de gangue, os policiais não gostaram",
-								"Você tentou serrar as barras da cela com uma lima, mas acabou fazendo muito barulho e alertando os policiais",
-							],
-							[Language.Spanish]: [
-								"Intentaste iniciar una revuelta para escapar, pero un chivato te delató",
-								"Cavaste un pequeño túnel, pero lamentablemente la policía lo descubrió",
-								"Intentaste tomar a otro detenido como rehén, pero logró escapar y avisar a los policías",
-								"Durante el baño de sol, intentaste provocar una pelea entre miembros de bandas, a los policías no les gustó",
-								"Intentaste serrar las barras de la celda con una lima, pero hiciste demasiado ruido y alertaste a los policías",
-							],
-						};
-
-						const failureTextsJetpack = {
-							[Language.English]: [
-								`You tried to fly with your ${jetpack}, but it had little fuel, and you slowly descended to the police`,
-								`You used your ${jetpack} to pass through the gates, but you were knocked down by a shock barrier`,
-								`You try to start your ${jetpack} to escape, but alerted the police`,
-								`You prepare to escape with your ${jetpack}, but another inmate alerted the police`,
-								`You start to fly with the ${jetpack}, but other inmates cling to you in the hope of escaping together, and you are dragged to the ground`,
-							],
-							[Language.Portuguese]: [
-								`Você tentou voar com sua ${jetpack}, mas ela estava com pouco combustível e você desceu lentamente até os policiais`,
-								`Você usou sua ${jetpack} para passar pelos portões, mas foi derrubado por uma barreira de choque`,
-								`Você tenta ligar sua ${jetpack} para fugir, mas alertou os policias`,
-								`Você se prepara para fugir com sua ${jetpack}, mas outro detento avisou os policiais`,
-								`Você começa a voar com a ${jetpack}, mas outros detentos se agarram em você na esperança de fugir juntos, mas você é arrastado para o chão`,
-							],
-							[Language.Spanish]: [
-								`Intentaste volar con tu ${jetpack}, pero tenía poco combustible y descendiste lentamente hasta la policía`,
-								`Usaste tu ${jetpack} para pasar por las puertas, pero fuiste derribado por una barrera de choque`,
-								`Intentas encender tu ${jetpack} para escapar, pero alertaste a la policía`,
-								`Te preparas para escapar con tu ${jetpack}, pero otro detenido avisó a la policía`,
-								`Empiezas a volar con el ${jetpack}, pero otros detenidos se aferran a ti con la esperanza de escapar juntos, y eres arrastrado al suelo`,
-							],
-						};
+						// Re-create Prison instance with fresh user data to avoid stale state
+						const freshPrison = new Prison(user);
+						const success = !user.IsInPrison();
+						const totalTime = freshPrison.calculateTotalTime();
+						const message = freshPrison.generateEscapeMessage(success, totalTime, user.Language);
 
 						if (success) {
-							const arraySuccess = prison.Escape.HasJetpack ? successTextsJetpack : successTexts;
-							const textSuccess = arraySuccess[user.Language][Math.floor(Math.random() * arraySuccess[user.Language].length)];
-							const textWanted = wantedTexts[user.Language][Math.floor(Math.random() * wantedTexts[user.Language].length)];
-
 							container
-								.changeTextFromSectionId(1, `### ${emote} ${s.escapeSuccess}\n${textSuccess}\n-# ${textWanted}`)
+								.changeTextFromSectionId(1, `### ${emote} ${s.escapeSuccess}\n${message}`)
 								.changeFooterText(s.escapeWaitMinutes(Prison.EscapeTimeInMinutesWanted));
 						}
 						else {
-							const arrayFailure = prison.Escape.HasJetpack ? failureTextsJetpack : failureTexts;
-							const textFailure = arrayFailure[user.Language][Math.floor(Math.random() * arrayFailure[user.Language].length)];
-
 							container
-								.changeTextFromSectionId(1, `### ${emote} ${s.escapeFailure}\n${textFailure}. ${s.escapeWillBeInPrison(totalTime)}\n-# ${s.free} ${time(user.Prison.Time, TimestampStyles.RelativeTime)}`);
+								.changeTextFromSectionId(1, `### ${emote} ${s.escapeFailure}\n${message}\n-# ${s.free} ${time(user.Prison.Time, TimestampStyles.RelativeTime)}`);
 						}
 
 						return replyWithContainer(interaction, container);

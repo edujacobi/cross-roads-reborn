@@ -190,22 +190,28 @@ export async function createApiServer(): Promise<FastifyInstance> {
 				if (!freshUser.IsEscaping()) {
 					clearInterval(pollInterval);
 					const success = !freshUser.IsInPrison();
-					const message = success
-						? "Fuga concluída!"
-						: "Fuga fracassada!";
 					sendEvent(JSON.stringify({
 						type: "escape-ended",
 						isInPrison: freshUser.IsInPrison(),
 						isWanted: success,
-						message,
 					}));
 					reply.raw.end();
 				}
 			}, 500);
 
+			// Timeout bound: 2× default escape duration (40s) + 10s safety margin
+			const ESCAPE_SSE_TIMEOUT_MS = 90_000;
+			const timeout = setTimeout(() => {
+				clearInterval(pollInterval);
+				sendEvent(JSON.stringify({ type: "closed" }));
+				reply.raw.end();
+			}, ESCAPE_SSE_TIMEOUT_MS);
+			timeout.unref();
+
 			// Cleanup on client disconnect
 			req.raw.on("close", () => {
 				clearInterval(pollInterval);
+				clearTimeout(timeout);
 			});
 		}
 		else {

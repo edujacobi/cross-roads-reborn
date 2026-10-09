@@ -14,7 +14,7 @@ import UserBundles from "#core/database/UserBundles";
 import { UserInvestments } from "#core/database/UserInvestments";
 import { UserItems } from "#core/database/UserItems";
 import { Users } from "#core/database/Users";
-import { Op, QueryTypes, type InferAttributes, type InferCreationAttributes, type Optional } from "sequelize";
+import { Op, QueryTypes, type InferAttributes, type InferCreationAttributes, type Optional, type WhereOptions } from "sequelize";
 import { type NullishPropertiesOf } from "sequelize/lib/utils";
 
 import type { Language } from "#core/models/Language";
@@ -202,7 +202,7 @@ export class UserRepository {
 	}> {
 		const limit = Math.min(options.limit || 20, 100);
 		const offset = options.offset || 0;
-		const conditions: any[] = [{ hospitalTime: { [Op.gt]: new Date() } }];
+		const conditions: WhereOptions<Users>[] = [{ hospitalTime: { [Op.gt]: new Date() } }];
 		if (options.search) {
 			conditions.push({
 				[Op.or]: [
@@ -255,7 +255,7 @@ export class UserRepository {
 	}> {
 		const limit = Math.min(options.limit || 20, 100);
 		const offset = options.offset || 0;
-		const conditions: any[] = [{ prisonTime: { [Op.gt]: new Date() } }];
+		const conditions: WhereOptions<Users>[] = [{ prisonTime: { [Op.gt]: new Date() } }];
 		if (options.search) {
 			conditions.push({
 				[Op.or]: [
@@ -564,7 +564,7 @@ export class UserRepository {
 	}> {
 		const limit = Math.min(options.limit || 20, 100);
 		const offset = options.offset || 0;
-		const conditions = [];
+		const conditions: WhereOptions<Users>[] = [];
 		if (options.search) {
 			conditions.push({
 				[Op.or]: [
