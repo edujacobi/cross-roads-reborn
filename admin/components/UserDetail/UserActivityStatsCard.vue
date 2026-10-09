@@ -8,6 +8,7 @@ import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseSelector, { type SelectorOption } from "~/components/ui/BaseSelector.vue";
 import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
 import RefreshButton from "~/components/ui/RefreshButton.vue";
+import { useMoneyFormat } from "~/composables/useMoneyFormat";
 import { imagePaths } from "~/constants/imagePaths";
 import { GetUserActivityStatsDocument } from "~/graphql/generated";
 
@@ -40,9 +41,7 @@ type TabId = (typeof tabs)[number]["id"];
 type StatRow = { label: string; value: string };
 
 const activeTab = ref<TabId>("sequence");
-const numberFormat = new Intl.NumberFormat("pt-BR");
-const formatCount = (value: number) => numberFormat.format(value);
-const formatMoney = (value: number) => `Cr$ ${formatCount(value)}`;
+const { formatMoney, formatPlain: formatCount } = useMoneyFormat();
 const formatCountAndTotal = (count: number, total: number) => `${formatMoney(total)} (${formatCount(count)})`;
 
 const rows = computed<StatRow[]>(() => {

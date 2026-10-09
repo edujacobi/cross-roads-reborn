@@ -5,6 +5,7 @@
 import { useMutation, useQuery } from "@vue/apollo-composable";
 import { ArrowDown, ArrowUp, ArrowUpDown, Search } from "lucide-vue-next";
 import { computed, ref } from "vue";
+// biome-ignore lint/correctness/noUnusedImports: HospitalIcon is used in template
 import HospitalIcon from "~/components/icons/HospitalIcon.vue";
 import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
@@ -16,6 +17,7 @@ import BaseTable from "~/components/ui/BaseTable.vue";
 import BaseTableFooter from "~/components/ui/BaseTableFooter.vue";
 import BaseTableSkeleton from "~/components/ui/BaseTableSkeleton.vue";
 import PageTitle from "~/components/ui/PageTitle.vue";
+import { useMoneyFormat } from "~/composables/useMoneyFormat";
 import { imagePaths } from "~/constants/imagePaths";
 import {
 	GetHospitalizedUsersDocument,
@@ -86,17 +88,13 @@ const isUserHospitalized = computed(() => {
 });
 
 const showPrivateModal = ref(false);
+const { formatMoney } = useMoneyFormat();
 
 function formatPrivateCost() {
 	if (privateHospitalCost.value === 0) {
 		return "...";
 	}
-	return new Intl.NumberFormat("pt-BR", {
-		style: "currency",
-		currency: "BRL",
-		minimumFractionDigits: 0,
-		maximumFractionDigits: 0,
-	}).format(privateHospitalCost.value);
+	return formatMoney(privateHospitalCost.value);
 }
 
 function handleSearch(val: string | number) {

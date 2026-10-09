@@ -36,7 +36,7 @@ useHead({
 type Job = GetJobsQuery["jobs"][number];
 
 const { user: authUser } = useAuth();
-const { format: formatMoney } = useMoneyFormat();
+const { formatMoney } = useMoneyFormat();
 const { showToast } = useToast();
 const { distance, decimalHoursToDeclarative } = useDateFormat();
 const { openItemModal } = useItemDetailModal();

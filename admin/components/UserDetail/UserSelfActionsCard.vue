@@ -11,6 +11,7 @@ import BaseInput from "~/components/ui/BaseInput.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
 import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
 import RefreshButton from "~/components/ui/RefreshButton.vue";
+import { useMoneyFormat } from "~/composables/useMoneyFormat";
 import {
 	ChangeOwnClassDocument,
 	ChangeOwnNicknameDocument,
@@ -41,6 +42,7 @@ const { mutate: changeOwnNickname, loading: nicknameLoading } = useMutation(Chan
 const { mutate: changeOwnClass, loading: classLoading } = useMutation(ChangeOwnClassDocument);
 const { mutate: setAutomaticGrenade, loading: automaticGrenadeLoading } = useMutation(SetOwnAutomaticGrenadeDocument);
 const { getClassDescription, getClassModifiers, getClassName, getClassImageUrl } = useClasses();
+const { formatMoney } = useMoneyFormat();
 
 const now = ref(Date.now());
 let clockInterval: ReturnType<typeof setInterval> | undefined;
@@ -80,12 +82,12 @@ const dailyButtonLabel = computed(() => {
 const nicknameChangeDescription = computed(() =>
 	user.value?.nicknameChangeCost === 0
 		? "Sua primeira alteração de apelido é gratuita."
-		: `Custo: Cr$ ${user.value?.nicknameChangeCost.toLocaleString("pt-BR")}.`,
+		: `Custo: ${formatMoney(user.value?.nicknameChangeCost ?? 0)}.`,
 );
 const classChangeDescription = computed(() =>
 	user.value?.classChangeCost === 0
 		? "Sua primeira escolha de classe é gratuita."
-		: `Custo: Cr$ ${user.value?.classChangeCost.toLocaleString("pt-BR")}.`,
+		: `Custo: ${formatMoney(user.value?.classChangeCost ?? 0)}.`,
 );
 
 watch(isClassModalOpen, (isOpen) => {

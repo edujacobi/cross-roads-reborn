@@ -139,7 +139,7 @@ const selectorOptions: SelectorOption[] = rankingOptions.map((r) => ({
 }));
 
 const auth = useAuth();
-const { format: formatMoney } = useMoneyFormat();
+const { formatMoney } = useMoneyFormat();
 const route = useRoute();
 const router = useRouter();
 

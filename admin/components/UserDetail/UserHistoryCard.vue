@@ -23,7 +23,7 @@ interface Props {
 const props = defineProps<Props>();
 
 const { dateTime, relative } = useDateFormat();
-const { format: formatMoney } = useMoneyFormat();
+const { formatMoney } = useMoneyFormat();
 const { page, pageSize: limit, offset } = usePagination(1, 10);
 
 const { result, loading, refetch } = useQuery(

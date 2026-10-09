@@ -37,7 +37,7 @@ useHead({
 type Item = GetItemsQuery["items"][number];
 
 const { user: authUser } = useAuth();
-const { format: formatMoney, formatPlain } = useMoneyFormat();
+const { formatMoney, formatPlain } = useMoneyFormat();
 const { showToast } = useToast();
 const { openItemModal } = useItemDetailModal();
 

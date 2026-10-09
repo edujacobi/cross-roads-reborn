@@ -16,6 +16,7 @@ import BaseTable from "~/components/ui/BaseTable.vue";
 import BaseTableFooter from "~/components/ui/BaseTableFooter.vue";
 import BaseTableSkeleton from "~/components/ui/BaseTableSkeleton.vue";
 import PageTitle from "~/components/ui/PageTitle.vue";
+import { useMoneyFormat } from "~/composables/useMoneyFormat";
 import { imagePaths } from "~/constants/imagePaths";
 import {
 	AttemptPrisonEscapeDocument,
@@ -174,7 +175,10 @@ async function listenToEscapeSSE() {
 				if (line.startsWith("data: ")) {
 					const data = JSON.parse(line.slice(6));
 					if (data.type === "escape-ended") {
-						await onEscapeResult(data.isWanted, data.message || (data.isWanted ? "Fuga bem-sucedida!" : "Fuga fracassada!"));
+						await onEscapeResult(
+							data.isWanted,
+							data.message || (data.isWanted ? "Fuga bem-sucedida!" : "Fuga fracassada!"),
+						);
 						return;
 					}
 					if (data.type === "not-escaping") {
@@ -233,19 +237,19 @@ async function recoverInterruptedEscape() {
 }
 
 onMounted(async () => {
-  await new Promise<void>((resolve) => {
-    const unwatch = watch(
-      () => userStatusResult.value?.myPrisonStatus,
-      (status) => {
-        if (status) {
-          unwatch();
-          resolve();
-        }
-      },
-      { immediate: true },
-    );
-  });
-  await recoverInterruptedEscape();
+	await new Promise<void>((resolve) => {
+		const unwatch = watch(
+			() => userStatusResult.value?.myPrisonStatus,
+			(status) => {
+				if (status) {
+					unwatch();
+					resolve();
+				}
+			},
+			{ immediate: true },
+		);
+	});
+	await recoverInterruptedEscape();
 });
 
 async function handleBribe() {
@@ -264,16 +268,13 @@ async function handleBribe() {
 	await Promise.all([auth.fetchUser(), refetchPrisoners(), refetchPrisonStatus(), refetchBribeCost()]);
 }
 
+const { formatMoney } = useMoneyFormat();
+
 function formatBribeCost() {
 	if (bribeCost.value === 0) {
 		return "...";
 	}
-	return new Intl.NumberFormat("pt-BR", {
-		style: "currency",
-		currency: "BRL",
-		minimumFractionDigits: 0,
-		maximumFractionDigits: 0,
-	}).format(bribeCost.value);
+	return formatMoney(bribeCost.value);
 }
 </script>
 

@@ -22,7 +22,7 @@ useHead({
 
 const route = useRoute();
 const router = useRouter();
-const { format: formatMoney } = useMoneyFormat();
+const { formatMoney } = useMoneyFormat();
 const { getGangBaseImageUrl } = useGangBase();
 
 const gangId = computed(() => String(route.params.id));

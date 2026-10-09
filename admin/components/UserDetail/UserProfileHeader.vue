@@ -7,6 +7,7 @@ import { computed, watch } from "vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
 import RefreshButton from "~/components/ui/RefreshButton.vue";
+import { useMoneyFormat } from "~/composables/useMoneyFormat";
 import { imagePaths } from "~/constants/imagePaths";
 import { GetUserProfileDocument } from "~/graphql/generated";
 import { BadgeId } from "../../../src/core/types/Ids";
@@ -23,6 +24,7 @@ const user = computed(() => result.value?.user);
 
 const { getClassImageUrl } = useClasses();
 const { getSituationImageUrl } = useSituation();
+const { formatMoney, formatPlain } = useMoneyFormat();
 
 watch(
 	[loading, user, error],
@@ -109,7 +111,7 @@ function getBadgeImage(badgeId: BadgeId): string {
 					<p class="user-profile__id"><code>ID: {{ user.id }}</code></p>
 				</div>
 				<div class="user-profile__economy">
-					<p class="user-profile__money">Cr$ {{ user.money.toLocaleString() }}</p>
+					<p class="user-profile__money">{{ formatMoney(user.money) }}</p>
 					<p
 						v-if="showSpecialCoins && user.specialCoin !== null"
 						class="user-profile__coins"
@@ -120,7 +122,7 @@ function getBadgeImage(badgeId: BadgeId): string {
 							height="14"
 							alt=""
 						/>
-						{{ user.specialCoin.toLocaleString() }} Moedas especiais
+						{{ formatPlain(user.specialCoin) }} Moedas especiais
 					</p>
 				</div>
 			</div>

@@ -7,6 +7,7 @@ import { Moon, Sun } from "lucide-vue-next";
 import { watch } from "vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
 import { useItemDetailModal } from "~/composables/useItemDetailModal";
+import { useMoneyFormat } from "~/composables/useMoneyFormat";
 import { imagePaths } from "~/constants/imagePaths";
 import { GetItemsDocument, type GetItemsQuery } from "~/graphql/generated";
 import { ItemType } from "../../src/core/types/ItemType";
@@ -65,15 +66,7 @@ const typeData: Record<
 	},
 };
 
-function formatMoney(amount: number) {
-	return new Intl.NumberFormat("pt-BR", {
-		style: "currency",
-		currency: "BRL",
-		maximumFractionDigits: 0,
-	})
-		.format(amount)
-		.replace("R$", "Cr$");
-}
+const { formatMoney } = useMoneyFormat();
 </script>
 
 <template>

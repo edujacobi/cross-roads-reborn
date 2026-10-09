@@ -11,6 +11,7 @@ import DashboardUserHistory from "~/components/Dashboard/DashboardUserHistory.vu
 import BaseCard from "~/components/ui/BaseCard.vue";
 import PageTitle from "~/components/ui/PageTitle.vue";
 import RefreshButton from "~/components/ui/RefreshButton.vue";
+import { useMoneyFormat } from "~/composables/useMoneyFormat";
 import { imagePaths } from "~/constants/imagePaths";
 import {
 	GetDashboardHistoryDocument,
@@ -43,6 +44,7 @@ const {
 } = useQuery(GetDashboardHistoryDocument);
 
 const stats = computed<GetDashboardStatsQuery["dashboardStats"] | undefined>(() => statsResult.value?.dashboardStats);
+const { formatMoney } = useMoneyFormat();
 const itemPopularity = computed<GetDashboardItemPopularityQuery["dashboardItemPopularity"]>(
 	() => itemPopularityResult.value?.dashboardItemPopularity || [],
 );
@@ -119,14 +121,14 @@ function refreshData() {
 				:icon="imagePaths.uiElements.vaultBank"
 				no-body
 			>
-				<template #actions>Cr$ {{ (stats?.bankVaultValue ?? 0).toLocaleString("pt-BR") }}</template>
+				<template #actions>{{ formatMoney(stats?.bankVaultValue ?? 0) }}</template>
 			</BaseCard>
 			<BaseCard
 				title="Cofre do Cassino"
 				:icon="imagePaths.uiElements.vaultCasino"
 				no-body
 			>
-				<template #actions> Cr$ {{ (stats?.casinoVaultValue ?? 0).toLocaleString("pt-BR") }} </template>
+				<template #actions> {{ formatMoney(stats?.casinoVaultValue ?? 0) }} </template>
 			</BaseCard>
 		</section>
 

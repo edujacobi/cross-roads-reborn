@@ -8,6 +8,7 @@ import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
 import PageTitle from "~/components/ui/PageTitle.vue";
+import { useMoneyFormat } from "~/composables/useMoneyFormat";
 import { type ImagePath, imagePaths } from "~/constants/imagePaths";
 import {
 	EndSeasonDocument,
@@ -145,9 +146,13 @@ async function showSeasonRankings() {
 	}
 }
 
+const { formatMoney, formatPlain } = useMoneyFormat();
+
 function formatRankingValue(key: UserRankingKey, value: number): string {
-	const formatted = Math.floor(value).toLocaleString("pt-BR");
-	return moneyRankingKeys.has(key) ? `Cr$ ${formatted}` : key === "topDrunk" ? `${formatted} cervejas` : formatted;
+	const num = Math.floor(value);
+	if (moneyRankingKeys.has(key)) return formatMoney(num);
+	if (key === "topDrunk") return `${formatPlain(num)} cervejas`;
+	return formatPlain(num);
 }
 
 async function endCurrentSeason() {
@@ -381,7 +386,7 @@ async function endCurrentSeason() {
 						v-for="stat in wipeStats"
 						:key="stat.label"
 					>
-						<strong>{{ stat.value.toLocaleString("pt-BR") }}</strong>
+						<strong>{{ formatPlain(stat.value) }}</strong>
 						<span>{{ stat.label }}</span>
 					</li>
 				</ul>
