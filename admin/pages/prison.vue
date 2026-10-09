@@ -3,8 +3,9 @@
 	lang="ts"
 >
 import { useMutation, useQuery } from "@vue/apollo-composable";
-import { ArrowDown, ArrowUp, ArrowUpDown, Search, ShieldAlert } from "lucide-vue-next";
+import { ArrowDown, ArrowUp, ArrowUpDown, Search } from "lucide-vue-next";
 import { computed, ref } from "vue";
+import PrisonIcon from "~/components/icons/PrisonIcon.vue";
 import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
@@ -30,6 +31,7 @@ const auth = useAuth();
 const { distance } = useDateFormat();
 const { getClassImageUrl, getClassName } = useClasses();
 const { showToast } = useToast();
+// const { openItemModal } = useItemDetailModal();
 
 const searchQuery = ref("");
 const { page, pageSize: limit, offset, resetPage } = usePagination(1, 15);
@@ -59,9 +61,9 @@ const total = computed(() => result.value?.prisoners?.total || 0);
 const totalPages = computed(() => Math.ceil(total.value / limit.value) || 1);
 
 const isUserImprisoned = computed(() => {
-	const userId = auth.user?.userId;
+	const userId = auth.user?.value?.userId;
 	if (!userId) return false;
-	return entries.value.some(e => e.id === userId);
+	return entries.value.some((e) => e.id === userId);
 });
 
 const showEscapeModal = ref(false);
@@ -86,30 +88,30 @@ function nextPage() {
 }
 
 async function handleEscape() {
-	const { data, error } = await attemptEscape();
-	if (error) {
-		showToast({ message: "Erro ao tentar fugir.", variant: "error" });
+	const res = await attemptEscape();
+	if (res?.errors) {
+		showToast({ text: "Erro ao tentar fugir.", variant: "error" });
 		return;
 	}
-	if (data?.attemptPrisonEscape?.success) {
-		showToast({ message: data.attemptPrisonEscape.message, variant: "success" });
+	if (res?.data?.attemptPrisonEscape?.success) {
+		showToast({ text: res?.data.attemptPrisonEscape.message, variant: "success" });
 		showEscapeModal.value = false;
 	} else {
-		showToast({ message: data?.attemptPrisonEscape?.message || "Erro desconhecido.", variant: "error" });
+		showToast({ text: res?.data?.attemptPrisonEscape?.message || "Erro desconhecido.", variant: "error" });
 	}
 }
 
 async function handleBribe() {
-	const { data, error } = await payBribe();
-	if (error) {
-		showToast({ message: "Erro ao tentar subornar.", variant: "error" });
+	const res = await payBribe();
+	if (res?.errors) {
+		showToast({ text: "Erro ao tentar subornar.", variant: "error" });
 		return;
 	}
-	if (data?.payBribePrison?.bribeAccepted) {
-		showToast({ message: data.payBribePrison.message, variant: "success" });
+	if (res?.data?.payBribePrison?.bribeAccepted) {
+		showToast({ text: res?.data.payBribePrison.message, variant: "success" });
 		showBribeModal.value = false;
 	} else {
-		showToast({ message: data?.payBribePrison?.message || "Erro desconhecido.", variant: "error" });
+		showToast({ text: res?.data?.payBribePrison?.message || "Erro desconhecido.", variant: "error" });
 	}
 }
 </script>
@@ -121,20 +123,33 @@ async function handleBribe() {
 			subtitle="Ao tentar roubar alguém e falhar, você será preso por um tempo determinado pelo seu ATK."
 		/>
 
-		<BaseCard
-			class="info-card"
-			title="Prisão"
-			subtitle="Estar preso limita muitas de suas ações no jogo, como trabalhar, investir, apostar, vasculhar, e claro, roubar."
-			:icon="imagePaths.situations.prison"
-		>
+		<BaseCard class="info-card">
+			<template #header>
+				<div class="info-card__header">Você está vadiando</div>
+			</template>
 			<div class="info-card__content">
 				<div class="info-card__section">
+					<p>
+						Estar preso limita muitas de suas ações no jogo, como trabalhar, investir, apostar, vasculhar, e claro,
+						roubar.
+					</p>
+				</div>
+				<div class="info-card__section">
 					<h3>Fugir</h3>
-					<p>Você tem 20% de chance de fugir da prisão! Se possuir um Mochila a Jato, a chance aumenta para 30%.</p>
+					<p>
+						Você tem 20% (50% se possuir uma Jetpack) de chance de fugir da prisão!
+						<!--						<span class="info-card__section-icon" @click="openItemModal({id: 17})">-->
+						<!--							<NuxtImg src="images/items/17_Jetpack.png" alt="" width="20"/>-->
+						<!--							Jetpack-->
+						<!--						</span>-->
+					</p>
 				</div>
 				<div class="info-card__section">
 					<h3>Subornar</h3>
-					<p>Os guardas são gananciosos, e quanto maior o seu ATK, mais eles pedirão! Eles também podem recusar seu suborno, mas ficarão com seu dinheiro.</p>
+					<p>
+						Os guardas são gananciosos, e quanto maior o seu ATK, mais eles pedirão! Eles também podem recusar seu
+						suborno, mas ficarão com seu dinheiro.
+					</p>
 				</div>
 			</div>
 			<template
@@ -142,23 +157,32 @@ async function handleBribe() {
 				#actions
 			>
 				<BaseButton
-					variant="primary"
+					variant="secondary"
 					:loading="escaping"
 					@click="showEscapeModal = true"
 				>
+					<NuxtImg
+						:src="imagePaths.uiElements.escape"
+						width="16"
+					/>
 					Fugir
 				</BaseButton>
 				<BaseButton
-					variant="primary"
+					variant="secondary"
 					:loading="bribing"
 					@click="showBribeModal = true"
 				>
+					<NuxtImg
+						:src="imagePaths.badges.topBribery"
+						width="16"
+					/>
 					Subornar
 				</BaseButton>
 			</template>
 		</BaseCard>
 
 		<BaseCard
+			title="Prisioneiros"
 			class="table-card"
 			no-padding-x
 			no-padding-y
@@ -190,7 +214,7 @@ async function handleBribe() {
 
 			<BaseEmptyState
 				v-else-if="entries.length === 0"
-				:icon="ShieldAlert"
+				:icon="PrisonIcon"
 				:icon-size="36"
 			>
 				<p>Nenhum jogador preso no momento.</p>
@@ -266,7 +290,7 @@ async function handleBribe() {
 								@click="handleSort('robberyFailureCount')"
 							>
 								<span class="sort-header-content">
-									Presos
+									Vezes preso
 									<span class="sort-icons">
 										<ArrowUpDown
 											v-if="sortColumn !== 'robberyFailureCount'"
@@ -351,10 +375,10 @@ async function handleBribe() {
 									{{ distance(entry.prisonTime, new Date()) }}
 								</time>
 							</td>
-							<td class="count-cell">
+							<td>
 								{{ entry.robberyFailureCount }}
 							</td>
-							<td class="count-cell">
+							<td>
 								{{ entry.escapeCount }}
 							</td>
 						</tr>
@@ -380,10 +404,13 @@ async function handleBribe() {
 		<BaseModal
 			:open="showEscapeModal"
 			title="Tentar fugir"
-			@close="showEscapeModal = false"
+			@update:open="showEscapeModal = $event"
 		>
-			<p>Tem certeza que deseja tentar fugir da prisão? Você tem uma chance de sucesso, mas se falhar, ficará preso por mais tempo.</p>
-			<template #actions>
+			<p>
+				Tem certeza que deseja tentar fugir da prisão? Você tem uma chance de sucesso, mas se falhar, ficará preso por
+				mais tempo.
+			</p>
+			<template #footer>
 				<BaseButton
 					variant="secondary"
 					@click="showEscapeModal = false"
@@ -395,6 +422,10 @@ async function handleBribe() {
 					:loading="escaping"
 					@click="handleEscape"
 				>
+					<NuxtImg
+						:src="imagePaths.uiElements.escape"
+						width="16"
+					/>
 					Fugir
 				</BaseButton>
 			</template>
@@ -403,10 +434,15 @@ async function handleBribe() {
 		<BaseModal
 			:open="showBribeModal"
 			title="Subornar os guardas"
-			@close="showBribeModal = false"
+			@update:open="showBribeModal = $event"
 		>
-			<p>Tem certeza que deseja subornar os guardas? O valor será descontado da sua conta, mas eles podem recusar o suborno e ficar com o dinheiro.</p>
-			<template #actions>
+			<p>
+				<!--				<em-->
+				<!--					>Sabemos que você tem um certo dinheiro escondido aí... Nos dê {{ getBribeCost() }} e deixaremos você sair de-->
+				<!--					fininho.</em-->
+				<!--				>-->
+			</p>
+			<template #footer>
 				<BaseButton
 					variant="secondary"
 					@click="showBribeModal = false"
@@ -418,6 +454,10 @@ async function handleBribe() {
 					:loading="bribing"
 					@click="handleBribe"
 				>
+					<NuxtImg
+						:src="imagePaths.badges.topBribery"
+						width="16"
+					/>
 					Subornar
 				</BaseButton>
 			</template>
@@ -463,6 +503,18 @@ async function handleBribe() {
 }
 
 .info-card {
+	&__header {
+		display: flex;
+		align-items: center;
+		gap: $spacing-sm;
+
+		p {
+			font-size: 0.8rem;
+			font-weight: 600;
+			color: $text-primary;
+		}
+	}
+
 	&__content {
 		display: flex;
 		flex-direction: column;
@@ -481,6 +533,27 @@ async function handleBribe() {
 			font-size: 0.875rem;
 			color: $text-secondary;
 			line-height: 1.5;
+			display: flex;
+			align-items: center;
+		}
+
+		span {
+			margin-left: $spacing-xs;
+			display: inline-flex;
+			align-items: center;
+			gap: $spacing-sm;
+			background-color: $bg-input;
+			padding: 0.2rem 0.75rem;
+			border-radius: $radius-xs;
+			font-size: 0.8125rem;
+			font-weight: 500;
+			color: $text-primary;
+			cursor: pointer;
+			border: 1px solid transparent;
+
+			&:hover {
+				border: 1px solid $border-card;
+			}
 		}
 	}
 }
@@ -561,10 +634,6 @@ async function handleBribe() {
 		font-size: inherit;
 		font-weight: 400;
 		text-transform: none;
-	}
-
-	.count-cell {
-		text-align: center;
 	}
 }
 </style>

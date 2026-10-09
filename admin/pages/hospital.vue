@@ -17,6 +17,8 @@ import BaseTableSkeleton from "~/components/ui/BaseTableSkeleton.vue";
 import PageTitle from "~/components/ui/PageTitle.vue";
 import { imagePaths } from "~/constants/imagePaths";
 import { GetHospitalizedUsersDocument, PayPrivateHospitalDocument } from "~/graphql/generated";
+import HospitalIcon from "~/components/icons/HospitalIcon.vue";
+import TrophyIcon from "~/components/icons/TrophyIcon.vue";
 
 definePageMeta({
 	middleware: "auth",
@@ -56,7 +58,7 @@ const total = computed(() => result.value?.hospitalizedUsers?.total || 0);
 const totalPages = computed(() => Math.ceil(total.value / limit.value) || 1);
 
 const isUserHospitalized = computed(() => {
-	const userId = auth.user?.userId;
+	const userId = auth.user?.value?.userId;
 	if (!userId) return false;
 	return entries.value.some(e => e.id === userId);
 });
@@ -82,16 +84,17 @@ function nextPage() {
 }
 
 async function handlePayPrivate() {
-	const { data, error } = await payPrivate();
-	if (error) {
-		showToast({ message: "Erro ao pagar tratamento particular.", variant: "error" });
+	const res = await payPrivate();
+	if (res?.errors) {
+		showToast({ text: "Erro ao pagar tratamento particular.", variant: "error" });
 		return;
 	}
-	if (data?.payPrivateHospital?.success) {
-		showToast({ message: data.payPrivateHospital.message, variant: "success" });
+	if (res?.data?.payPrivateHospital?.success) {
+		showToast({ text: res?.data?.payPrivateHospital.message, variant: "success" });
 		showPrivateModal.value = false;
-	} else {
-		showToast({ message: data?.payPrivateHospital?.message || "Erro desconhecido.", variant: "error" });
+	}
+	else {
+		showToast({ text: res?.data?.payPrivateHospital?.message || "Erro desconhecido.", variant: "error" });
 	}
 }
 </script>
@@ -105,14 +108,14 @@ async function handlePayPrivate() {
 
 		<BaseCard
 			class="info-card"
-			title="Hospital"
 			subtitle="Usuários hospitalizados possuem -5 DEF e -5% $DEF."
 			:icon="imagePaths.situations.hospital"
 		>
 			<div class="info-card__content">
 				<div class="info-card__section">
 					<h3>Serviço público</h3>
-					<p>Infelizmente não temos mais leitos livres, então você precisará esperar no corredor até ser atendido.</p>
+					<p>Infelizmente não temos mais leitos livres, então você precisará esperar no corredor até ser
+						atendido.</p>
 				</div>
 				<div class="info-card__section">
 					<h3>Atendimento particular</h3>
@@ -182,12 +185,12 @@ async function handlePayPrivate() {
 						Lista de jogadores hospitalizados
 					</caption>
 					<thead>
-						<tr>
-							<th
-								scope="col"
-								class="sortable"
-								@click="handleSort('nickname')"
-							>
+					<tr>
+						<th
+							scope="col"
+							class="sortable"
+							@click="handleSort('nickname')"
+						>
 								<span class="sort-header-content">
 									Jogador
 									<span class="sort-icons">
@@ -208,12 +211,12 @@ async function handlePayPrivate() {
 										/>
 									</span>
 								</span>
-							</th>
-							<th
-								scope="col"
-								class="sortable"
-								@click="handleSort('hospitalTime')"
-							>
+						</th>
+						<th
+							scope="col"
+							class="sortable"
+							@click="handleSort('hospitalTime')"
+						>
 								<span class="sort-header-content">
 									Solta em
 									<span class="sort-icons">
@@ -234,12 +237,12 @@ async function handlePayPrivate() {
 										/>
 									</span>
 								</span>
-							</th>
-							<th
-								scope="col"
-								class="sortable"
-								@click="handleSort('hospitalCount')"
-							>
+						</th>
+						<th
+							scope="col"
+							class="sortable"
+							@click="handleSort('hospitalCount')"
+						>
 								<span class="sort-header-content">
 									Hospitalizações
 									<span class="sort-icons">
@@ -260,50 +263,50 @@ async function handlePayPrivate() {
 										/>
 									</span>
 								</span>
-							</th>
-						</tr>
+						</th>
+					</tr>
 					</thead>
 					<tbody>
-						<tr
-							v-for="entry in entries"
-							:key="entry.id"
-							class="clickable-row"
-							tabindex="0"
-							@click="navigateTo(`/users/${entry.id}`)"
-							@keydown.enter.prevent="navigateTo(`/users/${entry.id}`)"
+					<tr
+						v-for="entry in entries"
+						:key="entry.id"
+						class="clickable-row"
+						tabindex="0"
+						@click="navigateTo(`/users/${entry.id}`)"
+						@keydown.enter.prevent="navigateTo(`/users/${entry.id}`)"
+					>
+						<th
+							scope="row"
+							class="player-cell"
 						>
-							<th
-								scope="row"
-								class="player-cell"
-							>
-								<div class="player-cell-content">
+							<div class="player-cell-content">
+								<NuxtImg
+									:class="['profile-img', 'user-avatar', `user-avatar--${entry.avatarDecoration}`]"
+									:src="entry.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'"
+									:alt="entry.nickname ? `Avatar de ${entry.nickname}` : 'Avatar do jogador'"
+									width="32"
+									height="32"
+								/>
+								<span class="nickname">{{ entry.nickname || "(Sem Nick)" }}</span>
+								<BaseBadge variant="neutral">
 									<NuxtImg
-										:class="['profile-img', 'user-avatar', `user-avatar--${entry.avatarDecoration}`]"
-										:src="entry.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'"
-										:alt="entry.nickname ? `Avatar de ${entry.nickname}` : 'Avatar do jogador'"
-										width="32"
-										height="32"
+										:src="getClassImageUrl(entry.class)"
+										width="16"
+										alt=""
 									/>
-									<span class="nickname">{{ entry.nickname || "(Sem Nick)" }}</span>
-									<BaseBadge variant="neutral">
-										<NuxtImg
-											:src="getClassImageUrl(entry.class)"
-											width="16"
-											alt=""
-										/>
-										{{ getClassName(entry.class) }}
-									</BaseBadge>
-								</div>
-							</th>
-							<td>
-								<time :datetime="entry.hospitalTime">
-									{{ distance(entry.hospitalTime, new Date()) }}
-								</time>
-							</td>
-							<td class="count-cell">
-								{{ entry.hospitalCount }}
-							</td>
-						</tr>
+									{{ getClassName(entry.class) }}
+								</BaseBadge>
+							</div>
+						</th>
+						<td>
+							<time :datetime="entry.hospitalTime">
+								{{ distance(entry.hospitalTime, new Date()) }}
+							</time>
+						</td>
+						<td>
+							{{ entry.hospitalCount }}
+						</td>
+					</tr>
 					</tbody>
 				</table>
 			</BaseTable>
@@ -329,7 +332,7 @@ async function handlePayPrivate() {
 			@close="showPrivateModal = false"
 		>
 			<p>Tem certeza que deseja pagar pelo tratamento particular? Você sairá do hospital imediatamente.</p>
-			<template #actions>
+			<template #footer>
 				<BaseButton
 					variant="secondary"
 					@click="showPrivateModal = false"
@@ -484,10 +487,6 @@ async function handlePayPrivate() {
 		font-size: inherit;
 		font-weight: 400;
 		text-transform: none;
-	}
-
-	.count-cell {
-		text-align: center;
 	}
 }
 </style>

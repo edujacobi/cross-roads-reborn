@@ -19,11 +19,14 @@ defineProps<Props>();
 <template>
 	<div class="base-card">
 		<div
-			v-if="title || $slots.header"
+			v-if="title || subtitle || $slots.header"
 			class="card-header"
 			:class="{'no-body': noBody}"
 		>
-			<div class="card-header__title-wrapper">
+			<div
+				v-if="title || subtitle"
+				class="card-header__title-wrapper"
+			>
 				<h2
 					v-if="title"
 					class="card-title"
@@ -100,7 +103,7 @@ defineProps<Props>();
 			min-width: 0;
 		}
 
-		&:not(.no-body){
+		&:not(.no-body) {
 			border-bottom: 1px solid $border-subtle;
 		}
 

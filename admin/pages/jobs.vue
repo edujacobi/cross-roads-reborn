@@ -5,6 +5,7 @@
 import { useMutation, useQuery } from "@vue/apollo-composable";
 import { ChevronDown, Clock, Coins, HardHat, X } from "lucide-vue-next";
 import { computed, onMounted, onUnmounted, ref } from "vue";
+import JobsIcon from "~/components/icons/JobsIcon.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
 import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
@@ -248,9 +249,9 @@ onUnmounted(() => {
 								<div class="job-card__stats">
 									<div class="job-card__stat">
 										<Clock :size="14" />
-										<time :datetime="`PT${Math.round(job.duration * 60)}M`">{{
-											decimalHoursToDeclarative(job.duration)
-										}}</time>
+										<time :datetime="`PT${Math.round(job.duration * 60)}M`">
+											{{ decimalHoursToDeclarative(job.duration) }}
+										</time>
 									</div>
 									<div class="job-card__stat">
 										<Coins :size="14" />
@@ -288,9 +289,9 @@ onUnmounted(() => {
 								<div class="job-card__detail-row">
 									<dt class="job-card__detail-label">Duração</dt>
 									<dd class="job-card__detail-value">
-										<time :datetime="`PT${Math.round(job.duration * 60)}M`">{{
-											decimalHoursToDeclarative(job.duration)
-										}}</time>
+										<time :datetime="`PT${Math.round(job.duration * 60)}M`">
+											{{ decimalHoursToDeclarative(job.duration) }}
+										</time>
 									</dd>
 								</div>
 								<div class="job-card__detail-row">
@@ -342,7 +343,10 @@ onUnmounted(() => {
 			>
 				<div class="jobs-page__aside-header">
 					<div class="jobs-page__aside-title">
-						<HardHat :size="20" />
+						<JobsIcon
+							:size="22"
+							variant="solid"
+						/>
 						<h2>Resumo</h2>
 					</div>
 					<button

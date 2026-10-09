@@ -219,7 +219,7 @@ export class UserRepository {
 		const sortOrder = (options.sortOrder === "ASC" || options.sortOrder === "DESC") ? options.sortOrder : "DESC";
 
 		const { rows, count } = await Users.findAndCountAll({
-			attributes: ["id", "nickname", "avatarUrl", "avatarDecoration", "class", "hospitalTime", "hospitalCount"],
+			attributes: ["id", "nickname", "avatarDecoration", "class", "hospitalTime", "hospitalCount"],
 			where: { [Op.and]: conditions },
 			limit,
 			offset,
@@ -272,7 +272,7 @@ export class UserRepository {
 		const sortOrder = (options.sortOrder === "ASC" || options.sortOrder === "DESC") ? options.sortOrder : "DESC";
 
 		const { rows, count } = await Users.findAndCountAll({
-			attributes: ["id", "nickname", "avatarUrl", "avatarDecoration", "class", "prisonTime", "robberyFailureCount", "escapeCount"],
+			attributes: ["id", "nickname", "avatarDecoration", "class", "prisonTime", "robberyFailureCount", "escapeCount"],
 			where: { [Op.and]: conditions },
 			limit,
 			offset,

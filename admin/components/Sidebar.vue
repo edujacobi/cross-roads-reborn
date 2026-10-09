@@ -7,25 +7,25 @@ import {
 	CalendarSync,
 	ChevronLeft,
 	Crown,
-	HardHat,
 	LayoutDashboard,
 	LogOut,
 	Menu,
 	Package,
 	Scroll,
 	ScrollText,
-	ShieldAlert,
-	ShoppingBasket,
-	Stethoscope,
-	Trophy,
 	Users,
 	X,
 } from "lucide-vue-next";
+import HospitalIcon from "~/components/icons/HospitalIcon.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
 import { hasUnreadUpdates } from "~/composables/useUnreadUpdates";
 import { imagePaths } from "~/constants/imagePaths";
 import { localStorageKeys } from "~/constants/localStorageKeys";
+import TrophyIcon from "~/components/icons/TrophyIcon.vue";
+import JobsIcon from "~/components/icons/JobsIcon.vue";
+import ShopIcon from "~/components/icons/ShopIcon.vue";
+import PrisonIcon from "~/components/icons/PrisonIcon.vue";
 
 const auth = useAuth();
 const route = useRoute();
@@ -52,7 +52,8 @@ const navigationGroups = computed(() => [
 			{
 				label: "Rankings",
 				to: { name: "rankings" },
-				icon: Trophy,
+				icon: TrophyIcon,
+				size: 20,
 				activeRouteNames: ["rankings"],
 			},
 			{
@@ -64,25 +65,28 @@ const navigationGroups = computed(() => [
 			{
 				label: "Loja",
 				to: { name: "shop" },
-				icon: ShoppingBasket,
+				icon: ShopIcon,
+				size: 20,
 				activeRouteNames: ["shop"],
 			},
 			{
 				label: "Trabalhos",
 				to: { name: "jobs" },
-				icon: HardHat,
+				icon: JobsIcon,
+				size: 20,
 				activeRouteNames: ["jobs"],
 			},
 			{
 				label: "Hospital",
 				to: { name: "hospital" },
-				icon: Stethoscope,
+				icon: HospitalIcon,
+				size: 20,
 				activeRouteNames: ["hospital"],
 			},
 			{
 				label: "Prisão",
 				to: { name: "prison" },
-				icon: ShieldAlert,
+				icon: PrisonIcon,
 				activeRouteNames: ["prison"],
 			},
 			{
@@ -96,46 +100,46 @@ const navigationGroups = computed(() => [
 	},
 	...(auth.hasAdminAccess.value
 		? [
-				{
-					title: "Moderação",
-					links: [
-						{
-							label: "Dashboard",
-							to: { name: "admin-dashboard" },
-							icon: LayoutDashboard,
-							activeRouteNames: ["admin-dashboard"],
-						},
-						{
-							label: "Eventos",
-							to: { name: "admin-events" },
-							icon: CalendarDays,
-							activeRouteNames: ["admin-events"],
-						},
-						{
-							label: "Temporada",
-							to: { name: "admin-season" },
-							icon: CalendarSync,
-							activeRouteNames: ["admin-season"],
-						},
-						{
-							label: "VIPs",
-							to: { name: "admin-vips" },
-							icon: Crown,
-							activeRouteNames: ["admin-vips"],
-						},
-						...(auth.canWrite.value
-							? [
-									{
-										label: "Auditoria",
-										to: { name: "admin-audit-log" },
-										icon: ScrollText,
-										activeRouteNames: ["admin-audit-log"],
-									},
-								]
-							: []),
-					],
-				},
-			]
+			{
+				title: "Moderação",
+				links: [
+					{
+						label: "Dashboard",
+						to: { name: "admin-dashboard" },
+						icon: LayoutDashboard,
+						activeRouteNames: ["admin-dashboard"],
+					},
+					{
+						label: "Eventos",
+						to: { name: "admin-events" },
+						icon: CalendarDays,
+						activeRouteNames: ["admin-events"],
+					},
+					{
+						label: "Temporada",
+						to: { name: "admin-season" },
+						icon: CalendarSync,
+						activeRouteNames: ["admin-season"],
+					},
+					{
+						label: "VIPs",
+						to: { name: "admin-vips" },
+						icon: Crown,
+						activeRouteNames: ["admin-vips"],
+					},
+					...(auth.canWrite.value
+						? [
+							{
+								label: "Auditoria",
+								to: { name: "admin-audit-log" },
+								icon: ScrollText,
+								activeRouteNames: ["admin-audit-log"],
+							},
+						]
+						: []),
+				],
+			},
+		]
 		: []),
 ]);
 
@@ -291,8 +295,9 @@ const user = computed(() => {
 				>
 					<component
 						:is="item.icon"
-						:size="18"
+						:size="item.size ?? 18"
 						aria-hidden="true"
+						variant="solid"
 					/>
 					<span class="nav-label">{{ item.label }}</span>
 					<span
@@ -512,7 +517,7 @@ const user = computed(() => {
 				font-weight: 600;
 			}
 
-			&:has(.nav-item-new-badge){
+			&:has(.nav-item-new-badge) {
 				grid-template-columns: 18px minmax(0, 1fr) 3rem;
 			}
 		}
@@ -626,7 +631,7 @@ const user = computed(() => {
 		width: 80%;
 		height: 100dvh;
 		border-right: none;
-		border-left:  1px solid $border-subtle;
+		border-left: 1px solid $border-subtle;
 		transform: translateX(125%);
 		visibility: hidden;
 		transition: transform $transition-slow ease-in-out, visibility $transition-slow;
@@ -676,9 +681,10 @@ const user = computed(() => {
 			}
 
 			.admin-profile {
-				.admin-info{
+				.admin-info {
 					padding: 0.5rem;
 				}
+
 				.admin-details {
 					max-width: 0;
 					opacity: 0;

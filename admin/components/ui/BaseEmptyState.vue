@@ -19,6 +19,7 @@ withDefaults(defineProps<Props>(), {
 		<Component
 			:is="icon"
 			:size="iconSize"
+			variant="solid"
 			aria-hidden="true"
 		/>
 		<slot />

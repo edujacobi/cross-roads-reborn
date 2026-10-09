@@ -3,8 +3,9 @@
 	lang="ts"
 >
 import { useMutation, useQuery } from "@vue/apollo-composable";
-import { ChevronDown, CreditCard, Minus, Plus, ShoppingBasket, X } from "lucide-vue-next";
+import { ChevronDown, CreditCard, Minus, Plus, X } from "lucide-vue-next";
 import { computed, onMounted, onUnmounted, ref } from "vue";
+import ShopIcon from "~/components/icons/ShopIcon.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
 import PageTitle from "~/components/ui/PageTitle.vue";
@@ -20,7 +21,7 @@ import {
 	GetItemsDocument,
 	type GetItemsQuery,
 	GetUserInventoryDocument,
-	GetUserProfileDocument
+	GetUserProfileDocument,
 } from "~/graphql/generated";
 import { BundleId, ItemId } from "../../src/core/types/Ids";
 import { ItemType } from "../../src/core/types/ItemType";
@@ -53,7 +54,7 @@ const shopItems = computed(() => allShopItems.value.toSorted((a, b) => {
 		if (a.blackMarket && !b.blackMarket) return 1;
 		if (!a.blackMarket && b.blackMarket) return -1;
 		return a.id - b.id;
-	}
+	},
 ));
 
 const userId = computed(() => authUser.value?.userId ?? "");
@@ -239,7 +240,7 @@ function addToCart(item: Item) {
 			price: item.price,
 			units: 1,
 			type: item.type,
-			imageUrl: getItemImage(item.id, getUserItemSkin(item.id))
+			imageUrl: getItemImage(item.id, getUserItemSkin(item.id)),
 		});
 	}
 }
@@ -380,17 +381,17 @@ onUnmounted(() => {
 					:key="i"
 					class="shop-item-card shop-item-card--skeleton"
 				>
-					<BaseSkeleton class="shop-item-card__image" height="6rem" />
+					<BaseSkeleton class="shop-item-card__image" height="6rem"/>
 					<div class="shop-item-card__info">
-						<BaseSkeleton height="1.2rem" width="70%" />
-						<BaseSkeleton height="0.8rem" width="50%" />
-						<BaseSkeleton height="0.375rem" width="100%" />
-						<BaseSkeleton height="1rem" width="40%" />
-						<BaseSkeleton height="2rem" width="100%" />
+						<BaseSkeleton height="1.2rem" width="70%"/>
+						<BaseSkeleton height="0.8rem" width="50%"/>
+						<BaseSkeleton height="0.375rem" width="100%"/>
+						<BaseSkeleton height="1rem" width="40%"/>
+						<BaseSkeleton height="2rem" width="100%"/>
 					</div>
 				</div>
 			</div>
-			<BaseSkeleton class="shop-page__skeleton--cart" />
+			<BaseSkeleton class="shop-page__skeleton--cart"/>
 		</div>
 
 		<div
@@ -416,7 +417,7 @@ onUnmounted(() => {
 						}"
 					>
  						<span :data-popover-text="`Mais informações de ${item.name}`"
- 							  data-popover-direction="bottom">
+							  data-popover-direction="bottom">
 						<LazyNuxtImg
 							class="shop-item-card__image"
 							:src="getItemImage(item.id, getUserItemSkin(item.id))"
@@ -482,15 +483,15 @@ onUnmounted(() => {
 								<span class="shop-item-card__stat">{{ item.extra }}</span>
 							</div>
 
- 						<div class="shop-item-card__meta">
- 							<SegmentedProgressBar
- 								:value="item.type === ItemType.Consumable ? getUserItemQuantity(item.id) : getUserItemHours(item.id)"
- 								:max="item.type === ItemType.Consumable ? MAX_UNITS : MAX_HOURS"
- 								:segments="item.type === ItemType.Consumable ? 20 : 5"
- 								:label="getOwnershipLabel(item)"
- 								:popover="getOwnershipTitle(item)"
- 							/>
- 							<span class="shop-item-card__price">
+							<div class="shop-item-card__meta">
+								<SegmentedProgressBar
+									:value="item.type === ItemType.Consumable ? getUserItemQuantity(item.id) : getUserItemHours(item.id)"
+									:max="item.type === ItemType.Consumable ? MAX_UNITS : MAX_HOURS"
+									:segments="item.type === ItemType.Consumable ? 20 : 5"
+									:label="getOwnershipLabel(item)"
+									:popover="getOwnershipTitle(item)"
+								/>
+								<span class="shop-item-card__price">
 									Cr$
 									<span class="shop-item-card__price--value">
 										{{ formatPlain(item.price) }}
@@ -498,49 +499,52 @@ onUnmounted(() => {
 								</span>
 							</div>
 
- 						<div class="shop-item-card__actions">
- 							<BaseButton
- 								v-if="!getItemCardState(item).inCart"
- 								type="button"
- 								variant="secondary"
- 								size="sm"
- 								:disabled="getItemCardState(item).isDisabled"
- 								:aria-label="getItemCardState(item).addButtonAriaLabel"
- 								@click="addToCart(item)"
-  								:data-popover-text="item.blackMarket && !blackMarketOpen ? 'O Mercado Negro é aberto aos domingos, sábados e sextas após as 18h' : undefined"
-  								data-popover-direction="top"
- 							>
- 								<ShoppingBasket
- 									v-if="getItemCardState(item).disabledReason === null"
- 									:size="16"
- 								/>
- 								{{ getItemCardState(item).addButtonLabel }}
- 							</BaseButton>
+							<div class="shop-item-card__actions">
+								<BaseButton
+									v-if="!getItemCardState(item).inCart"
+									type="button"
+									variant="secondary"
+									size="sm"
+									:disabled="getItemCardState(item).isDisabled"
+									:aria-label="getItemCardState(item).addButtonAriaLabel"
+									@click="addToCart(item)"
+									:data-popover-text="item.blackMarket && !blackMarketOpen ? 'O Mercado Negro é aberto aos domingos, sábados e sextas após as 18h' : undefined"
+									data-popover-direction="top"
+								>
+									<ShopIcon
+										v-if="getItemCardState(item).disabledReason === null"
+										variant="solid"
+										:size="18"
+									/>
+									{{ getItemCardState(item).addButtonLabel }}
+								</BaseButton>
 
- 							<div
- 								v-else-if="!(item.blackMarket && !blackMarketOpen)"
- 								class="shop-item-card__quantity"
- 							>
- 								<button
- 									type="button"
- 									class="shop-item-card__qty-btn"
- 									aria-label="Remover unidade"
- 									@click="updateCartUnits(item.id, -1)"
- 								>
- 									<Minus :size="14" />
- 								</button>
- 								<span class="shop-item-card__qty-value">{{ getItemCardState(item).cartUnits }}</span>
- 								<button
- 									type="button"
- 									class="shop-item-card__qty-btn"
- 									:disabled="getItemCardState(item).plusButtonDisabled"
- 									aria-label="Adicionar unidade"
- 									@click="updateCartUnits(item.id, 1)"
- 								>
- 									<Plus :size="14" />
- 								</button>
- 							</div>
- 						</div>
+								<div
+									v-else-if="!(item.blackMarket && !blackMarketOpen)"
+									class="shop-item-card__quantity"
+								>
+									<button
+										type="button"
+										class="shop-item-card__qty-btn"
+										aria-label="Remover unidade"
+										@click="updateCartUnits(item.id, -1)"
+									>
+										<Minus :size="14"/>
+									</button>
+									<span class="shop-item-card__qty-value">{{
+											getItemCardState(item).cartUnits
+										}}</span>
+									<button
+										type="button"
+										class="shop-item-card__qty-btn"
+										:disabled="getItemCardState(item).plusButtonDisabled"
+										aria-label="Adicionar unidade"
+										@click="updateCartUnits(item.id, 1)"
+									>
+										<Plus :size="14"/>
+									</button>
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -553,7 +557,7 @@ onUnmounted(() => {
 			>
 				<div class="shop-page__cart-header">
 					<div class="shop-page__cart-title">
-						<ShoppingBasket :size="20" />
+						<ShopIcon :size="22" variant="solid"/>
 						<h2>Carrinho</h2>
 						<span
 							v-if="cartItemCount > 0"
@@ -568,7 +572,7 @@ onUnmounted(() => {
 						aria-label="Fechar carrinho"
 						@click="toggleCart"
 					>
-						<ChevronDown :size="20" />
+						<ChevronDown :size="20"/>
 					</button>
 				</div>
 
@@ -599,7 +603,9 @@ onUnmounted(() => {
 									/>
 									{{ item.name }}
 								</span>
-								<span class="shop-page__cart-item-price">{{ formatMoney(item.price * item.units) }}</span>
+								<span class="shop-page__cart-item-price">{{
+										formatMoney(item.price * item.units)
+									}}</span>
 							</div>
 							<div class="shop-page__cart-item-controls">
 								<div class="shop-page__cart-quantity">
@@ -609,7 +615,7 @@ onUnmounted(() => {
 										aria-label="Remover unidade"
 										@click="updateCartUnits(item.itemId, -1)"
 									>
-										<Minus :size="14" />
+										<Minus :size="14"/>
 									</button>
 									<span class="shop-page__cart-qty-value">{{ item.units }}</span>
 									<button
@@ -619,7 +625,7 @@ onUnmounted(() => {
 										@click="updateCartUnits(item.itemId, 1)"
 										:disabled="item.units >= Math.min(getMaxUnits(item.itemId, item.type), 10)"
 									>
-										<Plus :size="14" />
+										<Plus :size="14"/>
 									</button>
 								</div>
 								<button
@@ -628,7 +634,7 @@ onUnmounted(() => {
 									aria-label="Remover {{ item.name }} do carrinho"
 									@click="removeFromCart(item.itemId)"
 								>
-									<X :size="16" />
+									<X :size="16"/>
 								</button>
 							</div>
 						</li>
@@ -642,7 +648,10 @@ onUnmounted(() => {
 						aria-live="polite"
 					>
 						<span class="shop-page__cart-total-label">Total</span>
-						<span class="shop-page__cart-total-value" :class="{'insufficient': !canAfford && cartItemCount > 0}">{{ formatMoney(cartTotal) }}</span>
+						<span class="shop-page__cart-total-value"
+							  :class="{'insufficient': !canAfford && cartItemCount > 0}">{{
+								formatMoney(cartTotal)
+							}}</span>
 					</div>
 
 					<div class="shop-page__cart-money">
@@ -659,7 +668,7 @@ onUnmounted(() => {
 							:aria-label="cartItemCount === 0 ? 'Carrinho vazio' : !canAfford ? 'Saldo insuficiente' : 'Confirmar compra'"
 							@click="confirmPurchase"
 						>
-							<CreditCard :size="18" />
+							<CreditCard :size="18"/>
 							{{ buying ? "Comprando..." : "Confirmar compra" }}
 						</BaseButton>
 					</div>
@@ -683,7 +692,7 @@ onUnmounted(() => {
 				:aria-expanded="cartOpen"
 				@click="toggleCart"
 			>
-				<ShoppingBasket :size="24" />
+				<ShopIcon :size="24"/>
 				<span
 					v-if="cartItemCount > 0"
 					class="shop-page__cart-toggle-badge"
@@ -792,7 +801,7 @@ onUnmounted(() => {
 			width: 320px;
 			max-width: 85vw;
 			max-height: 100vh;
-			border-radius: $radius-md $radius-md 0 0 ;
+			border-radius: $radius-md $radius-md 0 0;
 			transform: translateY(100%);
 			transition: transform 0.2s ease;
 			z-index: 100;
@@ -843,7 +852,7 @@ onUnmounted(() => {
 			//color: $color-danger;
 			//border: $color-danger 1px solid;
 			//border-radius: $radius-xs;
-			background-color:$color-danger;
+			background-color: $color-danger;
 			color: $text-primary;
 			border-radius: $radius-full;
 			font-size: 0.7rem;
