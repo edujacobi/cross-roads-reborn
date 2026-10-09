@@ -42,6 +42,17 @@ export const meResolvers: {
 			return prison.CalculateBribeValue();
 		},
 
+		privateHospitalCost: async (_: unknown, __: unknown, context: GraphQLContext) => {
+			const authUser = assertAuthenticated(context);
+			const player = new User(authUser.userId);
+			const found = await player.GetInfo();
+			if (!found) {
+				return 0;
+			}
+			const hospital = new Hospital(player);
+			return hospital.PrivatePrice;
+		},
+
 		myPrisonStatus: async (_: unknown, __: unknown, context: GraphQLContext) => {
 			const authUser = assertAuthenticated(context);
 			const player = new User(authUser.userId);

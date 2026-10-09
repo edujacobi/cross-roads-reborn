@@ -588,6 +588,7 @@ export const typeDefs = /* GraphQL */ `
         hospitalizedUsers(search: String, limit: Int, offset: Int, sortBy: String, sortOrder: String): HospitalizedUserPage!
         prisoners(search: String, limit: Int, offset: Int, sortBy: String, sortOrder: String): PrisonerUserPage!
         bribeCost: Float
+        privateHospitalCost: Float
         myPrisonStatus: MyPrisonStatus!
     }
 

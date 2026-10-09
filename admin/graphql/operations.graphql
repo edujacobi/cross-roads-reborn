@@ -853,6 +853,10 @@ query GetBribeCost {
 	bribeCost
 }
 
+query GetPrivateHospitalCost {
+	privateHospitalCost
+}
+
 query GetMyPrisonStatus {
 	myPrisonStatus {
 		isInPrison

@@ -3,8 +3,9 @@
 	lang="ts"
 >
 import { useMutation, useQuery } from "@vue/apollo-composable";
-import { ArrowDown, ArrowUp, ArrowUpDown, Search, Stethoscope } from "lucide-vue-next";
+import { ArrowDown, ArrowUp, ArrowUpDown, Search } from "lucide-vue-next";
 import { computed, ref } from "vue";
+import HospitalIcon from "~/components/icons/HospitalIcon.vue";
 import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
@@ -16,9 +17,11 @@ import BaseTableFooter from "~/components/ui/BaseTableFooter.vue";
 import BaseTableSkeleton from "~/components/ui/BaseTableSkeleton.vue";
 import PageTitle from "~/components/ui/PageTitle.vue";
 import { imagePaths } from "~/constants/imagePaths";
-import { GetHospitalizedUsersDocument, PayPrivateHospitalDocument } from "~/graphql/generated";
-import HospitalIcon from "~/components/icons/HospitalIcon.vue";
-import TrophyIcon from "~/components/icons/TrophyIcon.vue";
+import {
+	GetHospitalizedUsersDocument,
+	GetPrivateHospitalCostDocument,
+	PayPrivateHospitalDocument,
+} from "~/graphql/generated";
 
 definePageMeta({
 	middleware: "auth",
@@ -32,12 +35,17 @@ const auth = useAuth();
 const { distance } = useDateFormat();
 const { getClassImageUrl, getClassName } = useClasses();
 const { showToast } = useToast();
+const { getSituationImageUrl, getSituationName } = useSituation();
 
 const searchQuery = ref("");
 const { page, pageSize: limit, offset, resetPage } = usePagination(1, 15);
 const { sortColumn, sortDirection, toggleSort } = useSorting();
 
-const { result, loading } = useQuery(
+const {
+	result,
+	loading,
+	refetch: refetchHospitalized,
+} = useQuery(
 	GetHospitalizedUsersDocument,
 	() => ({
 		search: searchQuery.value.trim() || undefined,
@@ -53,17 +61,43 @@ const { mutate: payPrivate, loading: payingPrivate } = useMutation(PayPrivateHos
 	fetchPolicy: "network-only",
 });
 
+const { result: privateCostResult, refetch: refetchPrivateCost } = useQuery(
+	GetPrivateHospitalCostDocument,
+	{},
+	{
+		fetchPolicy: "network-only",
+	},
+);
+
+const privateHospitalCost = computed(() => privateCostResult.value?.privateHospitalCost || 0);
+
 const entries = computed(() => result.value?.hospitalizedUsers?.entries || []);
 const total = computed(() => result.value?.hospitalizedUsers?.total || 0);
 const totalPages = computed(() => Math.ceil(total.value / limit.value) || 1);
 
+const userSituationId = computed(() => auth.user?.value?.situationId ?? 0);
+const userSituationName = computed(() => getSituationName(userSituationId.value));
+const userSituationImage = computed(() => getSituationImageUrl(userSituationId.value));
+
 const isUserHospitalized = computed(() => {
 	const userId = auth.user?.value?.userId;
 	if (!userId) return false;
-	return entries.value.some(e => e.id === userId);
+	return entries.value.some((e) => e.id === userId);
 });
 
 const showPrivateModal = ref(false);
+
+function formatPrivateCost() {
+	if (privateHospitalCost.value === 0) {
+		return "...";
+	}
+	return new Intl.NumberFormat("pt-BR", {
+		style: "currency",
+		currency: "BRL",
+		minimumFractionDigits: 0,
+		maximumFractionDigits: 0,
+	}).format(privateHospitalCost.value);
+}
 
 function handleSearch(val: string | number) {
 	searchQuery.value = String(val);
@@ -92,8 +126,8 @@ async function handlePayPrivate() {
 	if (res?.data?.payPrivateHospital?.success) {
 		showToast({ text: res?.data?.payPrivateHospital.message, variant: "success" });
 		showPrivateModal.value = false;
-	}
-	else {
+		await Promise.all([auth.fetchUser(), refetchHospitalized(), refetchPrivateCost()]);
+	} else {
 		showToast({ text: res?.data?.payPrivateHospital?.message || "Erro desconhecido.", variant: "error" });
 	}
 }
@@ -106,16 +140,27 @@ async function handlePayPrivate() {
 			subtitle="Público, Gratuito e de Qualidade!"
 		/>
 
-		<BaseCard
-			class="info-card"
-			subtitle="Usuários hospitalizados possuem -5 DEF e -5% $DEF."
-			:icon="imagePaths.situations.hospital"
-		>
+		<BaseCard class="info-card">
+			<template #header>
+				<div class="info-card__header">
+					Você está
+					<NuxtImg
+						:src="userSituationImage"
+						class="info-card__situation-image"
+						alt=""
+						width="28"
+						height="28"
+					/>
+					{{ userSituationName }}
+				</div>
+			</template>
 			<div class="info-card__content">
 				<div class="info-card__section">
+					<p>Usuários hospitalizados possuem -5 DEF e defendem -5% grana.</p>
+				</div>
+				<div class="info-card__section">
 					<h3>Serviço público</h3>
-					<p>Infelizmente não temos mais leitos livres, então você precisará esperar no corredor até ser
-						atendido.</p>
+					<p>Infelizmente não temos mais leitos livres, então você precisará esperar no corredor até ser atendido.</p>
 				</div>
 				<div class="info-card__section">
 					<h3>Atendimento particular</h3>
@@ -127,17 +172,22 @@ async function handlePayPrivate() {
 				#actions
 			>
 				<BaseButton
-					variant="primary"
+					variant="secondary"
 					:loading="payingPrivate"
 					@click="showPrivateModal = true"
 				>
-					Pagar tratamento particular
+					<NuxtImg
+						:src="imagePaths.badges.topHospital"
+						width="16"
+					/>
+					Pagar particular
 				</BaseButton>
 			</template>
 		</BaseCard>
 
 		<BaseCard
 			class="table-card"
+			title="Hospitalizados"
 			no-padding-x
 			no-padding-y
 		>
@@ -168,7 +218,7 @@ async function handlePayPrivate() {
 
 			<BaseEmptyState
 				v-else-if="entries.length === 0"
-				:icon="Stethoscope"
+				:icon="HospitalIcon"
 				:icon-size="36"
 			>
 				<p>Nenhum jogador hospitalizado no momento.</p>
@@ -185,12 +235,12 @@ async function handlePayPrivate() {
 						Lista de jogadores hospitalizados
 					</caption>
 					<thead>
-					<tr>
-						<th
-							scope="col"
-							class="sortable"
-							@click="handleSort('nickname')"
-						>
+						<tr>
+							<th
+								scope="col"
+								class="sortable"
+								@click="handleSort('nickname')"
+							>
 								<span class="sort-header-content">
 									Jogador
 									<span class="sort-icons">
@@ -211,14 +261,14 @@ async function handlePayPrivate() {
 										/>
 									</span>
 								</span>
-						</th>
-						<th
-							scope="col"
-							class="sortable"
-							@click="handleSort('hospitalTime')"
-						>
+							</th>
+							<th
+								scope="col"
+								class="sortable"
+								@click="handleSort('hospitalTime')"
+							>
 								<span class="sort-header-content">
-									Solta em
+									Curado em
 									<span class="sort-icons">
 										<ArrowUpDown
 											v-if="sortColumn !== 'hospitalTime'"
@@ -237,12 +287,12 @@ async function handlePayPrivate() {
 										/>
 									</span>
 								</span>
-						</th>
-						<th
-							scope="col"
-							class="sortable"
-							@click="handleSort('hospitalCount')"
-						>
+							</th>
+							<th
+								scope="col"
+								class="sortable"
+								@click="handleSort('hospitalCount')"
+							>
 								<span class="sort-header-content">
 									Hospitalizações
 									<span class="sort-icons">
@@ -263,50 +313,50 @@ async function handlePayPrivate() {
 										/>
 									</span>
 								</span>
-						</th>
-					</tr>
+							</th>
+						</tr>
 					</thead>
 					<tbody>
-					<tr
-						v-for="entry in entries"
-						:key="entry.id"
-						class="clickable-row"
-						tabindex="0"
-						@click="navigateTo(`/users/${entry.id}`)"
-						@keydown.enter.prevent="navigateTo(`/users/${entry.id}`)"
-					>
-						<th
-							scope="row"
-							class="player-cell"
+						<tr
+							v-for="entry in entries"
+							:key="entry.id"
+							class="clickable-row"
+							tabindex="0"
+							@click="navigateTo(`/users/${entry.id}`)"
+							@keydown.enter.prevent="navigateTo(`/users/${entry.id}`)"
 						>
-							<div class="player-cell-content">
-								<NuxtImg
-									:class="['profile-img', 'user-avatar', `user-avatar--${entry.avatarDecoration}`]"
-									:src="entry.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'"
-									:alt="entry.nickname ? `Avatar de ${entry.nickname}` : 'Avatar do jogador'"
-									width="32"
-									height="32"
-								/>
-								<span class="nickname">{{ entry.nickname || "(Sem Nick)" }}</span>
-								<BaseBadge variant="neutral">
+							<th
+								scope="row"
+								class="player-cell"
+							>
+								<div class="player-cell-content">
 									<NuxtImg
-										:src="getClassImageUrl(entry.class)"
-										width="16"
-										alt=""
+										:class="['profile-img', 'user-avatar', `user-avatar--${entry.avatarDecoration}`]"
+										:src="entry.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'"
+										:alt="entry.nickname ? `Avatar de ${entry.nickname}` : 'Avatar do jogador'"
+										width="32"
+										height="32"
 									/>
-									{{ getClassName(entry.class) }}
-								</BaseBadge>
-							</div>
-						</th>
-						<td>
-							<time :datetime="entry.hospitalTime">
-								{{ distance(entry.hospitalTime, new Date()) }}
-							</time>
-						</td>
-						<td>
-							{{ entry.hospitalCount }}
-						</td>
-					</tr>
+									<span class="nickname">{{ entry.nickname || "(Sem Nick)" }}</span>
+									<BaseBadge variant="neutral">
+										<NuxtImg
+											:src="getClassImageUrl(entry.class)"
+											width="16"
+											alt=""
+										/>
+										{{ getClassName(entry.class) }}
+									</BaseBadge>
+								</div>
+							</th>
+							<td>
+								<time :datetime="entry.hospitalTime">
+									{{ distance(entry.hospitalTime, new Date()) }}
+								</time>
+							</td>
+							<td>
+								{{ entry.hospitalCount }}
+							</td>
+						</tr>
 					</tbody>
 				</table>
 			</BaseTable>
@@ -329,9 +379,11 @@ async function handlePayPrivate() {
 		<BaseModal
 			:open="showPrivateModal"
 			title="Pagar tratamento particular"
-			@close="showPrivateModal = false"
+			@update:open="showPrivateModal = $event"
 		>
-			<p>Tem certeza que deseja pagar pelo tratamento particular? Você sairá do hospital imediatamente.</p>
+			<p>
+				<em> Seu tratamento custará <strong>{{ formatPrivateCost() }}</strong> e será somente uma injeçãozinha.</em>
+			</p>
 			<template #footer>
 				<BaseButton
 					variant="secondary"
@@ -389,6 +441,18 @@ async function handlePayPrivate() {
 }
 
 .info-card {
+	&__header {
+		display: flex;
+		align-items: center;
+		gap: $spacing-sm;
+
+		p {
+			font-size: 0.8rem;
+			font-weight: 600;
+			color: $text-primary;
+		}
+	}
+
 	&__content {
 		display: flex;
 		flex-direction: column;

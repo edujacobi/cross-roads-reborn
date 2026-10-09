@@ -44,7 +44,7 @@ const searchQuery = ref("");
 const { page, pageSize: limit, offset, resetPage } = usePagination(1, 15);
 const { sortColumn, sortDirection, toggleSort } = useSorting();
 
-const { result, loading } = useQuery(
+const { result, loading, refetch: refetchPrisoners } = useQuery(
 	GetPrisonersDocument,
 	() => ({
 		search: searchQuery.value.trim() || undefined,
@@ -63,7 +63,7 @@ const { mutate: payBribe, loading: bribing } = useMutation(PayBribePrisonDocumen
 	fetchPolicy: "network-only",
 });
 
-const { result: bribeCostResult } = useQuery(
+const { result: bribeCostResult, refetch: refetchBribeCost } = useQuery(
 	GetBribeCostDocument,
 	{},
 	{
@@ -73,7 +73,7 @@ const { result: bribeCostResult } = useQuery(
 
 const bribeCost = computed(() => bribeCostResult.value?.bribeCost || 0);
 
-const { result: userStatusResult } = useQuery(
+const { result: userStatusResult, refetch: refetchPrisonStatus } = useQuery(
 	GetMyPrisonStatusDocument,
 	{},
 	{
@@ -128,6 +128,12 @@ async function handleEscape() {
 	if (res?.data?.attemptPrisonEscape?.success) {
 		showToast({ text: res?.data.attemptPrisonEscape.message, variant: "success" });
 		showEscapeModal.value = false;
+		await Promise.all([
+			auth.fetchUser(),
+			refetchPrisoners(),
+			refetchPrisonStatus(),
+			refetchBribeCost(),
+		]);
 	} else {
 		showToast({ text: res?.data?.attemptPrisonEscape?.message || "Erro desconhecido.", variant: "error" });
 	}
@@ -142,6 +148,12 @@ async function handleBribe() {
 	if (res?.data?.payBribePrison?.bribeAccepted) {
 		showToast({ text: res?.data.payBribePrison.message, variant: "success" });
 		showBribeModal.value = false;
+		await Promise.all([
+			auth.fetchUser(),
+			refetchPrisoners(),
+			refetchPrisonStatus(),
+			refetchBribeCost(),
+		]);
 	} else {
 		showToast({ text: res?.data?.payBribePrison?.message || "Erro desconhecido.", variant: "error" });
 	}

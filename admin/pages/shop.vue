@@ -366,7 +366,7 @@ onUnmounted(() => {
 	<main class="shop-page">
 		<PageTitle
 			:title="blackMarketOpen ? 'Mercado Negro' : 'Loja'"
-			subtitle="Navegue pelos itens disponíveis e adicione ao carrinho para comprar."
+			subtitle="Navegue pelos itens disponíveis e adicione ao carrinho para comprar. Todos os itens tem duração de 72 horas!"
 		/>
 
 		<div

@@ -555,6 +555,7 @@ export type Query = {
   me?: Maybe<AuthUser>;
   myPrisonStatus: MyPrisonStatus;
   prisoners: PrisonerUserPage;
+  privateHospitalCost?: Maybe<Scalars['Float']['output']>;
   seasonEndPreview: SeasonEndPreview;
   seasonInfo: SeasonInfo;
   topGangs: GangRankingResult;
@@ -1347,6 +1348,11 @@ export type GetBribeCostQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type GetBribeCostQuery = { bribeCost: number | null };
 
+export type GetPrivateHospitalCostQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetPrivateHospitalCostQuery = { privateHospitalCost: number | null };
+
 export type GetMyPrisonStatusQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -1411,4 +1417,5 @@ export const PayPrivateHospitalDocument = {"kind":"Document","definitions":[{"ki
 export const AttemptPrisonEscapeDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"AttemptPrisonEscape"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"attemptPrisonEscape"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"money"}},{"kind":"Field","name":{"kind":"Name","value":"isWanted"}}]}}]}}]} as unknown as DocumentNode<AttemptPrisonEscapeMutation, AttemptPrisonEscapeMutationVariables>;
 export const PayBribePrisonDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"PayBribePrison"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"payBribePrison"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"money"}},{"kind":"Field","name":{"kind":"Name","value":"bribeAccepted"}},{"kind":"Field","name":{"kind":"Name","value":"bribeCost"}}]}}]}}]} as unknown as DocumentNode<PayBribePrisonMutation, PayBribePrisonMutationVariables>;
 export const GetBribeCostDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetBribeCost"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"bribeCost"}}]}}]} as unknown as DocumentNode<GetBribeCostQuery, GetBribeCostQueryVariables>;
+export const GetPrivateHospitalCostDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetPrivateHospitalCost"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"privateHospitalCost"}}]}}]} as unknown as DocumentNode<GetPrivateHospitalCostQuery, GetPrivateHospitalCostQueryVariables>;
 export const GetMyPrisonStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetMyPrisonStatus"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"myPrisonStatus"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"isInPrison"}},{"kind":"Field","name":{"kind":"Name","value":"prisonTime"}},{"kind":"Field","name":{"kind":"Name","value":"escapeHasTried"}},{"kind":"Field","name":{"kind":"Name","value":"prisonHasPaidBribe"}}]}}]}}]} as unknown as DocumentNode<GetMyPrisonStatusQuery, GetMyPrisonStatusQueryVariables>;
