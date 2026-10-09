@@ -262,6 +262,8 @@ export async function mapUserDetail(user: User) {
 		hospitalTime: isInHospital ? user.Hospital.Time.toISOString() : null,
 		isInPrison,
 		prisonTime: isInPrison ? user.Prison.Time.toISOString() : null,
+		escapeHasTried: user.Escape.HasTried,
+		prisonHasPaidBribe: user.Prison.HasPaidBribe,
 		isWorking,
 		currentJobId: isWorking ? user.Job.Id : null,
 		jobEndsIn: isWorking ? user.Job.EndsIn.toISOString() : null,

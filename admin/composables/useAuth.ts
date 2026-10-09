@@ -6,6 +6,7 @@ export interface AuthUser {
 	avatar: string | null;
 	avatarDecoration?: string;
 	role: "DEVELOPER" | "MODERATOR" | "HELPER" | "PLAYER";
+	situationId: number;
 }
 
 export function useAuth() {

@@ -292,6 +292,8 @@ export const typeDefs = /* GraphQL */ `
         hospitalTime: String
         isInPrison: Boolean!
         prisonTime: String
+        escapeHasTried: Boolean!
+        prisonHasPaidBribe: Boolean!
         isWorking: Boolean!
         currentJobId: Int
         jobEndsIn: String
@@ -555,6 +557,14 @@ export const typeDefs = /* GraphQL */ `
         message: String!
         money: Float!
         bribeAccepted: Boolean
+        bribeCost: Float
+    }
+
+    type MyPrisonStatus {
+        isInPrison: Boolean!
+        prisonTime: String
+        escapeHasTried: Boolean!
+        prisonHasPaidBribe: Boolean!
     }
 
     type Query {
@@ -577,6 +587,8 @@ export const typeDefs = /* GraphQL */ `
         jobs: [JobInfo!]!
         hospitalizedUsers(search: String, limit: Int, offset: Int, sortBy: String, sortOrder: String): HospitalizedUserPage!
         prisoners(search: String, limit: Int, offset: Int, sortBy: String, sortOrder: String): PrisonerUserPage!
+        bribeCost: Float
+        myPrisonStatus: MyPrisonStatus!
     }
 
     type ShopBuyResult {

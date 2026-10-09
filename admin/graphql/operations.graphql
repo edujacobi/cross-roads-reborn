@@ -756,6 +756,8 @@ query GetUserJobStatus($id: ID!) {
 		isDefendingInvestment
 		isInGangAction
 		isDead
+		escapeHasTried
+		prisonHasPaidBribe
 		items {
 			id
 		}
@@ -843,5 +845,19 @@ mutation PayBribePrison {
 		message
 		money
 		bribeAccepted
+		bribeCost
+	}
+}
+
+query GetBribeCost {
+	bribeCost
+}
+
+query GetMyPrisonStatus {
+	myPrisonStatus {
+		isInPrison
+		prisonTime
+		escapeHasTried
+		prisonHasPaidBribe
 	}
 }

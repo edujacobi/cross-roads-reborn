@@ -17,7 +17,13 @@ import BaseTableFooter from "~/components/ui/BaseTableFooter.vue";
 import BaseTableSkeleton from "~/components/ui/BaseTableSkeleton.vue";
 import PageTitle from "~/components/ui/PageTitle.vue";
 import { imagePaths } from "~/constants/imagePaths";
-import { AttemptPrisonEscapeDocument, GetPrisonersDocument, PayBribePrisonDocument } from "~/graphql/generated";
+import {
+	AttemptPrisonEscapeDocument,
+	GetBribeCostDocument,
+	GetMyPrisonStatusDocument,
+	GetPrisonersDocument,
+	PayBribePrisonDocument,
+} from "~/graphql/generated";
 
 definePageMeta({
 	middleware: "auth",
@@ -30,6 +36,7 @@ useHead({
 const auth = useAuth();
 const { distance } = useDateFormat();
 const { getClassImageUrl, getClassName } = useClasses();
+const { getSituationImageUrl, getSituationName } = useSituation();
 const { showToast } = useToast();
 // const { openItemModal } = useItemDetailModal();
 
@@ -56,9 +63,34 @@ const { mutate: payBribe, loading: bribing } = useMutation(PayBribePrisonDocumen
 	fetchPolicy: "network-only",
 });
 
+const { result: bribeCostResult } = useQuery(
+	GetBribeCostDocument,
+	{},
+	{
+		fetchPolicy: "network-only",
+	},
+);
+
+const bribeCost = computed(() => bribeCostResult.value?.bribeCost || 0);
+
+const { result: userStatusResult } = useQuery(
+	GetMyPrisonStatusDocument,
+	{},
+	{
+		fetchPolicy: "network-only",
+	},
+);
+
+const escapeHasTried = computed(() => userStatusResult.value?.myPrisonStatus?.escapeHasTried || false);
+const prisonHasPaidBribe = computed(() => userStatusResult.value?.myPrisonStatus?.prisonHasPaidBribe || false);
+
 const entries = computed(() => result.value?.prisoners?.entries || []);
 const total = computed(() => result.value?.prisoners?.total || 0);
 const totalPages = computed(() => Math.ceil(total.value / limit.value) || 1);
+
+const userSituationId = computed(() => auth.user?.value?.situationId ?? 0);
+const userSituationName = computed(() => getSituationName(userSituationId.value));
+const userSituationImage = computed(() => getSituationImageUrl(userSituationId.value));
 
 const isUserImprisoned = computed(() => {
 	const userId = auth.user?.value?.userId;
@@ -114,6 +146,18 @@ async function handleBribe() {
 		showToast({ text: res?.data?.payBribePrison?.message || "Erro desconhecido.", variant: "error" });
 	}
 }
+
+function formatBribeCost() {
+	if (bribeCost.value === 0) {
+		return "...";
+	}
+	return new Intl.NumberFormat("pt-BR", {
+		style: "currency",
+		currency: "BRL",
+		minimumFractionDigits: 0,
+		maximumFractionDigits: 0,
+	}).format(bribeCost.value);
+}
 </script>
 
 <template>
@@ -125,7 +169,17 @@ async function handleBribe() {
 
 		<BaseCard class="info-card">
 			<template #header>
-				<div class="info-card__header">Você está vadiando</div>
+				<div class="info-card__header">
+					Você está
+					<NuxtImg
+						:src="userSituationImage"
+						class="info-card__situation-image"
+						alt=""
+						width="28"
+						height="28"
+					/>
+					{{ userSituationName }}
+				</div>
 			</template>
 			<div class="info-card__content">
 				<div class="info-card__section">
@@ -159,6 +213,7 @@ async function handleBribe() {
 				<BaseButton
 					variant="secondary"
 					:loading="escaping"
+					:disabled="escapeHasTried"
 					@click="showEscapeModal = true"
 				>
 					<NuxtImg
@@ -170,6 +225,7 @@ async function handleBribe() {
 				<BaseButton
 					variant="secondary"
 					:loading="bribing"
+					:disabled="prisonHasPaidBribe"
 					@click="showBribeModal = true"
 				>
 					<NuxtImg
@@ -437,10 +493,10 @@ async function handleBribe() {
 			@update:open="showBribeModal = $event"
 		>
 			<p>
-				<!--				<em-->
-				<!--					>Sabemos que você tem um certo dinheiro escondido aí... Nos dê {{ getBribeCost() }} e deixaremos você sair de-->
-				<!--					fininho.</em-->
-				<!--				>-->
+				<em>
+					Sabemos que você tem um certo dinheiro escondido aí... Nos dê <strong>{{ formatBribeCost() }}</strong> e
+					deixaremos você sair de fininho.
+				</em>
 			</p>
 			<template #footer>
 				<BaseButton
@@ -513,6 +569,10 @@ async function handleBribe() {
 			font-weight: 600;
 			color: $text-primary;
 		}
+	}
+
+	&__situation-image {
+		flex-shrink: 0;
 	}
 
 	&__content {

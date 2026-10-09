@@ -31,6 +31,38 @@ export const meResolvers: {
 
 		blackMarketOpen: () => isBlackMarketOpen(),
 
+		bribeCost: async (_: unknown, __: unknown, context: GraphQLContext) => {
+			const authUser = assertAuthenticated(context);
+			const player = new User(authUser.userId);
+			const found = await player.GetInfo();
+			if (!found) {
+				return 0;
+			}
+			const prison = new Prison(player);
+			return prison.CalculateBribeValue();
+		},
+
+		myPrisonStatus: async (_: unknown, __: unknown, context: GraphQLContext) => {
+			const authUser = assertAuthenticated(context);
+			const player = new User(authUser.userId);
+			const found = await player.GetInfo();
+			if (!found) {
+				return {
+					isInPrison: false,
+					prisonTime: null,
+					escapeHasTried: false,
+					prisonHasPaidBribe: false,
+				};
+			}
+			const isInPrison = player.IsInPrison();
+			return {
+				isInPrison,
+				prisonTime: isInPrison ? player.Prison.Time.toISOString() : null,
+				escapeHasTried: player.Escape.HasTried,
+				prisonHasPaidBribe: player.Prison.HasPaidBribe,
+			};
+		},
+
 		jobs: async (_: unknown, __: unknown, context: GraphQLContext) => {
 			const authUser = assertAuthenticated(context);
 			const player = new User(authUser.userId);
@@ -497,18 +529,20 @@ export const meResolvers: {
 			const player = new User(authUser.userId);
 			const found = await player.GetInfo();
 			if (!found) {
-				return { success: false, message: "Jogador não encontrado.", money: 0, bribeAccepted: false };
+				return { success: false, message: "Jogador não encontrado.", money: 0, bribeAccepted: false, bribeCost: 0 };
 			}
 
 			const prison = new Prison(player);
 			const { canBribe } = await prison.CanBribe();
 
 			if (!canBribe) {
+				const bribeCost = prison.CalculateBribeValue();
 				return {
 					success: false,
 					message: "Você não pode subornar no momento.",
 					money: player.Money,
 					bribeAccepted: false,
+					bribeCost,
 				};
 			}
 
@@ -519,6 +553,7 @@ export const meResolvers: {
 					message: `Você não tem dinheiro suficiente. Precisa de ${formatMoney(bribeValue, Language.Portuguese)}.`,
 					money: player.Money,
 					bribeAccepted: false,
+					bribeCost: bribeValue,
 				};
 			}
 
@@ -530,6 +565,7 @@ export const meResolvers: {
 					message: "Suborno aceito! Você foi liberado.",
 					money: player.Money,
 					bribeAccepted: true,
+					bribeCost: bribeValue,
 				};
 			}
 
@@ -538,6 +574,7 @@ export const meResolvers: {
 				message: "Suborno recusado! Os guardas ficaram com o dinheiro.",
 				money: player.Money,
 				bribeAccepted: false,
+				bribeCost: bribeValue,
 			};
 		},
 	},

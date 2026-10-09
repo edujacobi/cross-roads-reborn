@@ -119,11 +119,14 @@ export async function createApiServer(): Promise<FastifyInstance> {
 		}
 
 		const userModel = await new User(user.userId).GetSimpleInfo(undefined, undefined, { skipGangLookup: true });
+		if (userModel) {
+			await userModel.GetSituation();
+		}
 		const avatarDecoration = userModel?.AvatarDecoration.Description[Language.English]
 			.toLowerCase()
 			.replaceAll(" ", "_") ?? "default";
 
-		return reply.send({ user: { ...user, avatarDecoration } });
+		return reply.send({ user: { ...user, avatarDecoration, situationId: userModel?.Situation.Id ?? 0 } });
 	});
 
 	// Health Check
