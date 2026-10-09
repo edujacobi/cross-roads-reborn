@@ -6,15 +6,14 @@ import { useMutation, useQuery } from "@vue/apollo-composable";
 import { ChevronDown, CreditCard, Minus, Plus, X } from "lucide-vue-next";
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import ShopIcon from "~/components/icons/ShopIcon.vue";
+import ShopItemCard from "~/components/ShopItemCard.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
 import PageTitle from "~/components/ui/PageTitle.vue";
-import SegmentedProgressBar from "~/components/ui/SegmentedProgressBar.vue";
 import { useAuth } from "~/composables/useAuth";
 import { useItemDetailModal } from "~/composables/useItemDetailModal";
 import { useMoneyFormat } from "~/composables/useMoneyFormat";
 import { useToast } from "~/composables/useToast";
-import { imagePaths } from "~/constants/imagePaths";
 import {
 	BuyItemDocument,
 	GetBlackMarketOpenDocument,
@@ -37,26 +36,22 @@ useHead({
 type Item = GetItemsQuery["items"][number];
 
 const { user: authUser } = useAuth();
-const { formatMoney, formatPlain } = useMoneyFormat();
+const { formatMoney } = useMoneyFormat();
 const { showToast } = useToast();
 const { openItemModal } = useItemDetailModal();
 
 const { result: itemsResult, loading: itemsLoading, error: itemsError } = useQuery(GetItemsDocument);
-const allShopItems = computed(() => {
+const shopItems = computed(() => {
 	const all = itemsResult.value?.items ?? [];
-	return all.filter((item) => item.shop || item.blackMarket);
+	return all.filter((item) => item.shop);
+});
+const blackMarketItems = computed(() => {
+	const all = itemsResult.value?.items ?? [];
+	return all.filter((item) => item.blackMarket);
 });
 
 const { result: blackMarketResult, loading: blackMarketLoading } = useQuery(GetBlackMarketOpenDocument);
 const blackMarketOpen = computed(() => blackMarketResult.value?.blackMarketOpen ?? false);
-
-const shopItems = computed(() =>
-	allShopItems.value.toSorted((a, b) => {
-		if (a.blackMarket && !b.blackMarket) return 1;
-		if (!a.blackMarket && b.blackMarket) return -1;
-		return a.id - b.id;
-	}),
-);
 
 const userId = computed(() => authUser.value?.userId ?? "");
 const {
@@ -174,7 +169,7 @@ function getUserItemSkin(itemId: number): number {
 	return ui?.skin ?? 0;
 }
 
-interface ItemCardState {
+export interface ItemCardState {
 	inCart: boolean;
 	cartUnits: number;
 	maxUnits: number;
@@ -355,7 +350,7 @@ onUnmounted(() => {
 <template>
 	<main class="shop-page">
 		<PageTitle
-			:title="blackMarketOpen ? 'Mercado Negro' : 'Loja'"
+			title="Loja"
 			subtitle="Navegue pelos itens disponíveis e adicione ao carrinho para comprar. Todos os itens tem duração de 72 horas!"
 		/>
 
@@ -367,7 +362,7 @@ onUnmounted(() => {
 		>
 			<div class="shop-page__grid">
 				<div
-					v-for="i in 18"
+					v-for="i in 14"
 					:key="i"
 					class="shop-item-card shop-item-card--skeleton"
 				>
@@ -397,146 +392,50 @@ onUnmounted(() => {
 		>
 			<section class="shop-page__items">
 				<div class="shop-page__grid">
-					<div
+					<ShopItemCard
 						v-for="item in shopItems"
 						:key="item.id"
-						class="shop-item-card"
-						:class="{
-							'shop-item-card--black-market': item.blackMarket,
-							'shop-item-card--disabled': item.blackMarket && !blackMarketOpen
-						}"
-					>
- 						<span :data-popover-text="`Mais informações de ${item.name}`"
-							  data-popover-direction="bottom">
-						<LazyNuxtImg
-							class="shop-item-card__image"
-							:src="getItemImage(item.id, getUserItemSkin(item.id))"
-							:alt="`Mais informações de ${item.name}`"
-							width="56"
-							tabindex="0"
-							@click="openItemModal(item)"
-							@keydown.enter.prevent="openItemModal(item)"
-							@keydown.space.prevent="openItemModal(item)"
-						/>
-							</span>
-						<div class="shop-item-card__info">
-							<h3 class="shop-item-card__name">{{ item.name }}</h3>
+						:item="item"
+						:card-state="getItemCardState(item)"
+						:get-item-image="getItemImage"
+						:get-user-item-skin="getUserItemSkin"
+						:get-ownership-label="getOwnershipLabel"
+						:get-ownership-title="getOwnershipTitle"
+						:get-user-item-quantity="getUserItemQuantity"
+						:get-user-item-hours="getUserItemHours"
+						:open-item-modal="openItemModal"
+						:add-to-cart="addToCart"
+						:update-cart-units="updateCartUnits"
+						:max-units="MAX_UNITS"
+						:max-hours="MAX_HOURS"
+					/>
+				</div>
 
-							<div
-								class="shop-item-card__stats"
-								v-if="item.type === ItemType.Weapon"
-							>
-								<span class="shop-item-card__stat">
-									<NuxtImg
-										:src="imagePaths.attributes.attack"
-										width="20"
-										alt=""
-									/>
-									{{ item.attack }}
-								</span>
-								<span class="shop-item-card__stat">
-									<NuxtImg
-										:src="imagePaths.attributes.defense"
-										width="20"
-										alt=""
-									/>
-									{{ item.defense }}
-								</span>
-							</div>
+				<PageTitle
+					title="Mercado Negro"
+					subtitle="Olhe para essas belezinhas! O Mercado Negro é aberto aos domingos, sábados e sextas após as 18h"
+				/>
 
-							<div
-								class="shop-item-card__stats"
-								v-else-if="item.type !== ItemType.Accessory"
-							>
-								<span class="shop-item-card__stat">
-									<NuxtImg
-										:src="imagePaths.attributes.attack"
-										width="20"
-										alt=""
-									/>
-									+{{ item.moreAttack }}
-								</span>
-								<span class="shop-item-card__stat">
-									<NuxtImg
-										:src="imagePaths.attributes.defense"
-										width="20"
-										alt=""
-									/>
-									+{{ item.moreDefense }}
-								</span>
-							</div>
-
-							<div
-								class="shop-item-card__stats"
-								v-else-if="item.extra"
-							>
-								<span class="shop-item-card__stat">{{ item.extra }}</span>
-							</div>
-
-							<div class="shop-item-card__meta">
-								<SegmentedProgressBar
-									:value="item.type === ItemType.Consumable ? getUserItemQuantity(item.id) : getUserItemHours(item.id)"
-									:max="item.type === ItemType.Consumable ? MAX_UNITS : MAX_HOURS"
-									:segments="item.type === ItemType.Consumable ? 20 : 5"
-									:label="getOwnershipLabel(item)"
-									:popover="getOwnershipTitle(item)"
-								/>
-								<span class="shop-item-card__price">
-									Cr$
-									<span class="shop-item-card__price--value">
-										{{ formatPlain(item.price) }}
-									</span>
-								</span>
-							</div>
-
-							<div class="shop-item-card__actions">
-								<BaseButton
-									v-if="!getItemCardState(item).inCart"
-									type="button"
-									variant="secondary"
-									size="sm"
-									:disabled="getItemCardState(item).isDisabled"
-									:aria-label="getItemCardState(item).addButtonAriaLabel"
-									@click="addToCart(item)"
-									:data-popover-text="item.blackMarket && !blackMarketOpen ? 'O Mercado Negro é aberto aos domingos, sábados e sextas após as 18h' : undefined"
-									data-popover-direction="top"
-								>
-									<ShopIcon
-										v-if="getItemCardState(item).disabledReason === null"
-										variant="solid"
-										:size="18"
-									/>
-									{{ getItemCardState(item).addButtonLabel }}
-								</BaseButton>
-
-								<div
-									v-else-if="!(item.blackMarket && !blackMarketOpen)"
-									class="shop-item-card__quantity"
-								>
-									<button
-										type="button"
-										class="shop-item-card__qty-btn"
-										aria-label="Remover unidade"
-										@click="updateCartUnits(item.id, -1)"
-									>
-										<Minus :size="14"/>
-									</button>
-									<span class="shop-item-card__qty-value">{{
-											getItemCardState(item).cartUnits
-										}}</span>
-									<button
-										type="button"
-										class="shop-item-card__qty-btn"
-										:disabled="getItemCardState(item).plusButtonDisabled"
-										aria-label="Adicionar unidade"
-										@click="updateCartUnits(item.id, 1)"
-									>
-										<Plus :size="14"/>
-									</button>
-								</div>
-							</div>
-						</div>
-					</div>
+				<div class="shop-page__grid">
+					<ShopItemCard
+						v-for="item in blackMarketItems"
+						:key="item.id"
+						:item="item"
+						:card-state="getItemCardState(item)"
+						:is-black-market="true"
+						:is-disabled="!blackMarketOpen"
+						:get-item-image="getItemImage"
+						:get-user-item-skin="getUserItemSkin"
+						:get-ownership-label="getOwnershipLabel"
+						:get-ownership-title="getOwnershipTitle"
+						:get-user-item-quantity="getUserItemQuantity"
+						:get-user-item-hours="getUserItemHours"
+						:open-item-modal="openItemModal"
+						:add-to-cart="addToCart"
+						:update-cart-units="updateCartUnits"
+						:max-units="MAX_UNITS"
+						:max-hours="MAX_HOURS"
+					/>
 				</div>
 			</section>
 
@@ -747,6 +646,9 @@ onUnmounted(() => {
 		min-width: 0;
 		container-name: shop;
 		container-type: inline-size;
+		gap: $spacing-lg;
+		display: flex;
+		flex-direction: column;
 	}
 
 	&__grid {
@@ -1089,162 +991,8 @@ onUnmounted(() => {
 	}
 }
 
-.shop-item-card {
-	padding: 0.875rem;
-	background-color: $bg-card;
-	border: 1px solid $border-card;
-	border-radius: $radius-sm;
-	display: flex;
-	flex-direction: column;
-	gap: $spacing-md;
-	position: relative;
-	overflow: hidden;
-
-	&--black-market {
-		$color-black-market: #5136b3;
-		border-color: $color-black-market;
-		background: linear-gradient(115deg, $bg-card, color-mix(in lab, $bg-card 100%, $color-black-market 40%));
-
-		.shop-item-card__price {
-			color: color-mix(in lab, $text-primary 100%, $color-black-market 70%);
-		}
-	}
-
-	&--disabled {
-		opacity: 0.5;
-
-		.shop-item-card__image {
-			filter: grayscale(0.5);
-		}
-	}
-
-	&--skeleton {
-		pointer-events: none;
-		border: none;
-	}
-
-	&__image {
-		width: 100%;
-		height: 6rem;
-		flex: 0 0 6rem;
-		object-fit: contain;
-		padding: $spacing-sm;
-		border-radius: $radius-sm;
-		border: 1px solid transparent;
-		transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
-		cursor: pointer;
-
-		&:hover,
-		&:focus-visible {
-			background-color: $bg-input;
-			border-color: $border-card;
-			transform: translateY(-2px);
-			outline: none;
-		}
-	}
-
-	&__info {
-		display: flex;
-		flex-direction: column;
-		gap: $spacing-sm;
-		flex-grow: 1;
-		min-width: 0;
-	}
-
-	&__name {
-		font-size: 0.9375rem;
-		font-weight: 600;
-		color: $text-primary;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		overflow: hidden;
-		max-height: 1lh;
-	}
-
-	&__stats {
-		display: flex;
-		flex-wrap: wrap;
-		gap: $spacing-xs;
-		font-size: 0.75rem;
-		font-weight: 600;
-	}
-
-	&__stat {
-		color: $color-attribute;
-		display: flex;
-		align-items: center;
-	}
-
-	&__meta {
-		display: flex;
-		flex-direction: column;
-		align-items: flex-start;
-		font-size: 0.75rem;
-		gap: $spacing-xs;
-	}
-
-	&__price {
-		font-weight: 700;
-		color: $color-brand;
-
-		&--value {
-			font-size: 1rem;
-		}
-	}
-
-	&__ownership {
-		color: $text-secondary;
-		font-size: 0.6875rem;
-	}
-
-	&__actions {
-		margin-top: auto;
-		display: flex;
-		flex-direction: column;
-	}
-
-	&__quantity {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: $spacing-xs;
-	}
-
-	&__qty-btn {
-		width: 1.75rem;
-		height: 1.75rem;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		background-color: $bg-card;
-		border: 1px solid $border-subtle;
-		border-radius: $radius-sm;
-		color: $text-primary;
-		cursor: pointer;
-		transition: background-color 0.2s ease;
-
-		&:hover {
-			background-color: $bg-hover;
-		}
-
-		&:disabled {
-			opacity: 0.4;
-			cursor: not-allowed;
-		}
-	}
-
-	&__qty-value {
-		min-width: 1.25rem;
-		text-align: center;
-		font-size: 0.8125rem;
-		font-weight: 600;
-		color: $text-primary;
-	}
-}
-
 @media (prefers-reduced-motion: reduce) {
 	.shop-page__cart,
-	.shop-item-card,
 	.shop-page__cart-toggle {
 		transition: none !important;
 	}
