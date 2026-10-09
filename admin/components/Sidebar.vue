@@ -2,6 +2,7 @@
 	setup
 	lang="ts"
 >
+import { useQuery } from "@vue/apollo-composable";
 import {
 	CalendarDays,
 	CalendarSync,
@@ -27,6 +28,7 @@ import { useFallbackUserImage } from "~/composables/useFallbackImage";
 import { hasUnreadUpdates } from "~/composables/useUnreadUpdates";
 import { imagePaths } from "~/constants/imagePaths";
 import { localStorageKeys } from "~/constants/localStorageKeys";
+import { GetBlackMarketOpenDocument } from "~/graphql/generated";
 
 const auth = useAuth();
 const route = useRoute();
@@ -35,6 +37,9 @@ const mobileMenu = ref<HTMLInputElement | null>(null);
 const isLogoutModalOpen = ref(false);
 const isCollapsed = ref(false);
 const hasNew = hasUnreadUpdates();
+
+const { result: blackMarketResult } = useQuery(GetBlackMarketOpenDocument);
+const blackMarketOpen = computed(() => blackMarketResult.value?.blackMarketOpen ?? false);
 
 onMounted(() => {
 	isCollapsed.value = sidebarStorage.get() === "true";
@@ -69,6 +74,7 @@ const navigationGroups = computed(() => [
 				icon: ShopIcon,
 				size: 20,
 				activeRouteNames: ["shop"],
+				blackMarketBadge: true,
 			},
 			{
 				label: "Trabalhos",
@@ -300,13 +306,21 @@ const user = computed(() => {
 						aria-hidden="true"
 						variant="solid"
 					/>
-					<span class="nav-label">{{ item.label }}</span>
-					<span
-						v-if="item.hasNewBadge && hasNew"
-						class="nav-item-new-badge"
-					>
-						NOVO
-					</span>
+					<div class="nav-label">
+						<p>{{ item.label }}</p>
+						<span
+							v-if="item.hasNewBadge && hasNew"
+							class="nav-item-badge nav-item-badge__new"
+						>
+							NOVO
+						</span>
+						<span
+							v-if="item.blackMarketBadge && blackMarketOpen"
+							class="nav-item-badge nav-item-badge__blackmarket"
+						>
+							Mercado Negro
+						</span>
+					</div>
 				</NuxtLink>
 			</div>
 		</nav>
@@ -518,19 +532,19 @@ const user = computed(() => {
 				font-weight: 600;
 			}
 
-			&:has(.nav-item-new-badge) {
-				grid-template-columns: 18px minmax(0, 1fr) 3rem;
+			&:has(.nav-item-badge) {
+				grid-template-columns: 18px minmax(0, 1fr);
 			}
 		}
 
 		.nav-label {
-			max-width: 10rem;
-			overflow: hidden;
 			white-space: nowrap;
 			transition: max-width $transition-slow ease, opacity $transition-normal ease, transform $transition-slow ease;
+			display: flex;
+			justify-content: space-between;
 		}
 
-		.nav-item-new-badge {
+		.nav-item-badge {
 			display: inline-block;
 			padding: $spacing-xs $spacing-sm;
 			margin-left: auto;
@@ -538,10 +552,19 @@ const user = computed(() => {
 			font-weight: 700;
 			letter-spacing: 0.05em;
 			color: $text-primary;
-			background-color: $color-danger;
-			box-shadow: 0 0 16px 0 $color-danger;
 			border-radius: $radius-full;
 			line-height: 1;
+			white-space: nowrap;
+
+			&__new {
+				background-color: $color-danger;
+				box-shadow: 0 0 16px 0 $color-danger;
+			}
+
+			&__blackmarket {
+				background-color: $color-success;
+				box-shadow: 0 0 16px 0 $color-success;
+			}
 		}
 	}
 
