@@ -186,33 +186,33 @@ watch(isOpen, (open) => {
 				class="selector-dropdown"
 				role="listbox"
 			>
-					<div
-						v-for="(option, index) in options"
-						:key="option.value"
-						role="option"
-						:aria-selected="option.value === modelValue"
-						tabindex="-1"
-						class="selector-option"
-						:class="{ 'is-selected': option.value === modelValue, 'is-focused': index === focusedIndex }"
-						@click="selectOption(option.value)"
-						@keydown="(e) => handleOptionKeydown(e, option.value)"
-						@mouseenter="focusedIndex = index"
-					>
-						<NuxtImg
-							v-if="option.imagePath"
-							:src="option.imagePath"
-							alt=""
-							width="20"
-							height="20"
-							class="selector-option-image"
-						/>
-						<span
-							v-else-if="option.colorHex"
-							class="selector-option-swatch"
-							:style="{ backgroundColor: option.colorHex }"
-						/>
-						<span class="selector-option-label">{{ option.label }}</span>
-					</div>
+				<div
+					v-for="(option, index) in options"
+					:key="option.value"
+					role="option"
+					:aria-selected="option.value === modelValue"
+					tabindex="-1"
+					class="selector-option"
+					:class="{ 'is-selected': option.value === modelValue, 'is-focused': index === focusedIndex }"
+					@click="selectOption(option.value)"
+					@keydown="(e) => handleOptionKeydown(e, option.value)"
+					@mouseenter="focusedIndex = index"
+				>
+					<NuxtImg
+						v-if="option.imagePath"
+						:src="option.imagePath"
+						alt=""
+						width="20"
+						height="20"
+						class="selector-option-image"
+					/>
+					<span
+						v-else-if="option.colorHex"
+						class="selector-option-swatch"
+						:style="{ backgroundColor: option.colorHex }"
+					/>
+					<span class="selector-option-label">{{ option.label }}</span>
+				</div>
 			</div>
 		</div>
 	</div>

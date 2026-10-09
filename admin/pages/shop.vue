@@ -107,6 +107,12 @@ const cartTotal = computed(() => {
 
 const canAfford = computed(() => cartItemCount.value > 0 && cartTotal.value <= userMoney.value && !buying.value);
 
+const cartItemsArray = computed(() => Array.from(cartItems.value.values()));
+
+const MAX_UNITS = 20;
+const MAX_HOURS = 360;
+const HOURS_PER_BUY = 72;
+
 function getUserItemHours(itemId: number): number {
 	const ui = userItems.value.find((i) => i.id === itemId);
 	if (!ui?.remainingTime) return 0;
@@ -121,10 +127,6 @@ function getUserItemQuantity(itemId: number): number {
 	return ui?.quantity ?? 0;
 }
 
-const MAX_UNITS = 20;
-const MAX_HOURS = 360;
-const HOURS_PER_BUY = 72;
-
 function getMaxUnits(itemId: number, itemType: ItemType): number {
 	if (itemType === ItemType.Consumable) {
 		const currentQty = getUserItemQuantity(itemId);
@@ -135,26 +137,6 @@ function getMaxUnits(itemId: number, itemType: ItemType): number {
 		if (currentHours >= MAX_HOURS) return 0;
 		const remainingHours = MAX_HOURS - currentHours;
 		return Math.floor(remainingHours / HOURS_PER_BUY);
-	}
-}
-
-function getOwnershipLabel(item: Item): string {
-	if (item.type === ItemType.Consumable) {
-		const qty = getUserItemQuantity(item.id);
-		return `${qty} de ${MAX_UNITS} unidades`;
-	} else {
-		const hours = getUserItemHours(item.id);
-		return `${hours} de ${MAX_HOURS} horas`;
-	}
-}
-
-function getOwnershipTitle(item: Item): string {
-	if (item.type === ItemType.Consumable) {
-		const qty = getUserItemQuantity(item.id);
-		return `${qty}/${MAX_UNITS} un`;
-	} else {
-		const hours = getUserItemHours(item.id);
-		return `${hours}h/${MAX_HOURS}h`;
 	}
 }
 
@@ -366,17 +348,35 @@ onUnmounted(() => {
 					:key="i"
 					class="shop-item-card shop-item-card--skeleton"
 				>
-					<BaseSkeleton class="shop-item-card__image" height="6rem"/>
+					<BaseSkeleton
+						class="shop-item-card__image"
+						height="6rem"
+					/>
 					<div class="shop-item-card__info">
-						<BaseSkeleton height="1.2rem" width="70%"/>
-						<BaseSkeleton height="0.8rem" width="50%"/>
-						<BaseSkeleton height="0.375rem" width="100%"/>
-						<BaseSkeleton height="1rem" width="40%"/>
-						<BaseSkeleton height="2rem" width="100%"/>
+						<BaseSkeleton
+							height="1.2rem"
+							width="70%"
+						/>
+						<BaseSkeleton
+							height="0.8rem"
+							width="50%"
+						/>
+						<BaseSkeleton
+							height="0.375rem"
+							width="100%"
+						/>
+						<BaseSkeleton
+							height="1rem"
+							width="40%"
+						/>
+						<BaseSkeleton
+							height="2rem"
+							width="100%"
+						/>
 					</div>
 				</div>
 			</div>
-			<BaseSkeleton class="shop-page__skeleton--cart"/>
+			<BaseSkeleton class="shop-page__skeleton--cart" />
 		</div>
 
 		<div
@@ -397,17 +397,11 @@ onUnmounted(() => {
 						:key="item.id"
 						:item="item"
 						:card-state="getItemCardState(item)"
-						:get-item-image="getItemImage"
-						:get-user-item-skin="getUserItemSkin"
-						:get-ownership-label="getOwnershipLabel"
-						:get-ownership-title="getOwnershipTitle"
-						:get-user-item-quantity="getUserItemQuantity"
-						:get-user-item-hours="getUserItemHours"
+						:user-items="userItems"
+						:black-market-open="blackMarketOpen"
 						:open-item-modal="openItemModal"
 						:add-to-cart="addToCart"
 						:update-cart-units="updateCartUnits"
-						:max-units="MAX_UNITS"
-						:max-hours="MAX_HOURS"
 					/>
 				</div>
 
@@ -424,17 +418,11 @@ onUnmounted(() => {
 						:card-state="getItemCardState(item)"
 						:is-black-market="true"
 						:is-disabled="!blackMarketOpen"
-						:get-item-image="getItemImage"
-						:get-user-item-skin="getUserItemSkin"
-						:get-ownership-label="getOwnershipLabel"
-						:get-ownership-title="getOwnershipTitle"
-						:get-user-item-quantity="getUserItemQuantity"
-						:get-user-item-hours="getUserItemHours"
+						:user-items="userItems"
+						:black-market-open="blackMarketOpen"
 						:open-item-modal="openItemModal"
 						:add-to-cart="addToCart"
 						:update-cart-units="updateCartUnits"
-						:max-units="MAX_UNITS"
-						:max-hours="MAX_HOURS"
 					/>
 				</div>
 			</section>
@@ -446,7 +434,10 @@ onUnmounted(() => {
 			>
 				<div class="shop-page__cart-header">
 					<div class="shop-page__cart-title">
-						<ShopIcon :size="22" variant="solid"/>
+						<ShopIcon
+							:size="22"
+							variant="solid"
+						/>
 						<h2>Carrinho</h2>
 						<span
 							v-if="cartItemCount > 0"
@@ -461,7 +452,7 @@ onUnmounted(() => {
 						aria-label="Fechar carrinho"
 						@click="toggleCart"
 					>
-						<ChevronDown :size="20"/>
+						<ChevronDown :size="20" />
 					</button>
 				</div>
 
@@ -478,7 +469,7 @@ onUnmounted(() => {
 						class="shop-page__cart-list"
 					>
 						<li
-							v-for="[, item] in cartItems"
+							v-for="item in cartItemsArray"
 							:key="item.itemId"
 							class="shop-page__cart-item"
 						>
@@ -492,9 +483,7 @@ onUnmounted(() => {
 									/>
 									{{ item.name }}
 								</span>
-								<span class="shop-page__cart-item-price">{{
-										formatMoney(item.price * item.units)
-									}}</span>
+								<span class="shop-page__cart-item-price">{{ formatMoney(item.price * item.units) }}</span>
 							</div>
 							<div class="shop-page__cart-item-controls">
 								<div class="shop-page__cart-quantity">
@@ -504,7 +493,7 @@ onUnmounted(() => {
 										aria-label="Remover unidade"
 										@click="updateCartUnits(item.itemId, -1)"
 									>
-										<Minus :size="14"/>
+										<Minus :size="14" />
 									</button>
 									<span class="shop-page__cart-qty-value">{{ item.units }}</span>
 									<button
@@ -514,7 +503,7 @@ onUnmounted(() => {
 										@click="updateCartUnits(item.itemId, 1)"
 										:disabled="item.units >= Math.min(getMaxUnits(item.itemId, item.type), 10)"
 									>
-										<Plus :size="14"/>
+										<Plus :size="14" />
 									</button>
 								</div>
 								<button
@@ -523,7 +512,7 @@ onUnmounted(() => {
 									aria-label="Remover {{ item.name }} do carrinho"
 									@click="removeFromCart(item.itemId)"
 								>
-									<X :size="16"/>
+									<X :size="16" />
 								</button>
 							</div>
 						</li>
@@ -537,10 +526,13 @@ onUnmounted(() => {
 						aria-live="polite"
 					>
 						<span class="shop-page__cart-total-label">Total</span>
-						<span class="shop-page__cart-total-value"
-							  :class="{'insufficient': !canAfford && cartItemCount > 0}">{{
+						<span
+							class="shop-page__cart-total-value"
+							:class="{'insufficient': !canAfford && cartItemCount > 0}"
+							>{{
 								formatMoney(cartTotal)
-							}}</span>
+							}}</span
+						>
 					</div>
 
 					<div class="shop-page__cart-money">
@@ -557,7 +549,7 @@ onUnmounted(() => {
 							:aria-label="cartItemCount === 0 ? 'Carrinho vazio' : !canAfford ? 'Saldo insuficiente' : 'Confirmar compra'"
 							@click="confirmPurchase"
 						>
-							<CreditCard :size="18"/>
+							<CreditCard :size="18" />
 							{{ buying ? "Comprando..." : "Confirmar compra" }}
 						</BaseButton>
 					</div>
@@ -581,7 +573,7 @@ onUnmounted(() => {
 				:aria-expanded="cartOpen"
 				@click="toggleCart"
 			>
-				<ShopIcon :size="26"/>
+				<ShopIcon :size="26" />
 				<span
 					v-if="cartItemCount > 0"
 					class="shop-page__cart-toggle-badge"
@@ -628,6 +620,32 @@ onUnmounted(() => {
 			height: unset !important;
 			max-width: 320px;
 			flex: 1;
+		}
+	}
+
+	.shop-item-card {
+		padding: 0.875rem;
+		background-color: $bg-card;
+		border: 1px solid $border-card;
+		border-radius: $radius-sm;
+		display: flex;
+		flex-direction: column;
+		gap: $spacing-md;
+
+		&--skeleton {
+			pointer-events: none;
+			border: none;
+		}
+
+		&__image {
+			width: 100%;
+			height: 6rem;
+		}
+
+		&__info {
+			display: flex;
+			flex-direction: column;
+			gap: $spacing-sm;
 		}
 	}
 

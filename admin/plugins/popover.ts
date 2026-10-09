@@ -79,8 +79,7 @@ export default defineNuxtPlugin(() => {
 
 		if (text) {
 			showPopover(target);
-		}
-		else if (currentTarget) {
+		} else if (currentTarget) {
 			hidePopover();
 		}
 	}

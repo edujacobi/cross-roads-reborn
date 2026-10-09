@@ -8,13 +8,15 @@ import BaseButton from "~/components/ui/BaseButton.vue";
 import SegmentedProgressBar from "~/components/ui/SegmentedProgressBar.vue";
 import { useMoneyFormat } from "~/composables/useMoneyFormat";
 import { imagePaths } from "~/constants/imagePaths";
-import type { GetItemsQuery } from "~/graphql/generated";
+import type { GetItemsQuery, GetUserInventoryQuery } from "~/graphql/generated";
 import type { ItemCardState } from "~/pages/shop.vue";
+import { BundleId, ItemId } from "../../src/core/types/Ids";
 import { ItemType } from "../../src/core/types/ItemType";
 
 const { formatPlain } = useMoneyFormat();
 
 type Item = GetItemsQuery["items"][number];
+type UserItem = NonNullable<GetUserInventoryQuery["user"]>["items"][number];
 
 const props = withDefaults(
 	defineProps<{
@@ -22,37 +24,73 @@ const props = withDefaults(
 		cardState: ItemCardState;
 		isBlackMarket?: boolean;
 		isDisabled?: boolean;
-		getItemImage: (itemId: number, bundleId?: number) => string;
-		getUserItemSkin: (itemId: number) => number;
-		getOwnershipLabel: (item: Item) => string;
-		getOwnershipTitle: (item: Item) => string;
-		getUserItemQuantity: (itemId: number) => number;
-		getUserItemHours: (itemId: number) => number;
+		userItems: UserItem[];
+		blackMarketOpen: boolean;
 		openItemModal: (item: Item) => void;
 		addToCart: (item: Item) => void;
 		updateCartUnits: (itemId: number, delta: number) => void;
-		maxUnits: number;
-		maxHours: number;
 	}>(),
 	{
 		isBlackMarket: false,
 		isDisabled: false,
+		userItems: () => [],
 	},
 );
 
-const emit = defineEmits<{
-	clickAddToCart: [item: Item];
-	clickUpdateUnits: [itemId: number, delta: number];
-}>();
+const MAX_UNITS = 20;
+const MAX_HOURS = 360;
+
+function getUserItemHours(itemId: number): number {
+	const ui = props.userItems.find((i) => i.id === itemId);
+	if (!ui?.remainingTime) return 0;
+	const remaining = new Date(ui.remainingTime);
+	const now = new Date();
+	const diffMs = remaining.getTime() - now.getTime();
+	return Math.max(0, Math.floor(diffMs / (1000 * 60 * 60)));
+}
+
+function getUserItemQuantity(itemId: number): number {
+	const ui = props.userItems.find((i) => i.id === itemId);
+	return ui?.quantity ?? 0;
+}
+
+function getOwnershipLabel(): string {
+	if (props.item.type === ItemType.Consumable) {
+		const qty = getUserItemQuantity(props.item.id);
+		return `${qty} de ${MAX_UNITS} unidades`;
+	} else {
+		const hours = getUserItemHours(props.item.id);
+		return `${hours} de ${MAX_HOURS} horas`;
+	}
+}
+
+function getOwnershipTitle(): string {
+	if (props.item.type === ItemType.Consumable) {
+		const qty = getUserItemQuantity(props.item.id);
+		return `${qty}/${MAX_UNITS} un`;
+	} else {
+		const hours = getUserItemHours(props.item.id);
+		return `${hours}h/${MAX_HOURS}h`;
+	}
+}
+
+function getItemImage(itemId: number, bundleId: number = 0): string {
+	let filename = `${itemId}_${ItemId[itemId]}.png`;
+	if (bundleId !== 0) filename = `${itemId}_${ItemId[itemId]}_${BundleId[bundleId]}.png`;
+	return `/images/items/${filename}`;
+}
+
+function getUserItemSkin(itemId: number): number {
+	const ui = props.userItems.find((i) => i.id === itemId);
+	return ui?.skin ?? 0;
+}
 
 function handleAddToCart(item: Item) {
 	props.addToCart(item);
-	emit("clickAddToCart", item);
 }
 
 function handleUpdateUnits(itemId: number, delta: number) {
 	props.updateCartUnits(itemId, delta);
-	emit("clickUpdateUnits", itemId, delta);
 }
 </script>
 
@@ -136,10 +174,10 @@ function handleUpdateUnits(itemId: number, delta: number) {
 			<div class="shop-item-card__meta">
 				<SegmentedProgressBar
 					:value="item.type === ItemType.Consumable ? getUserItemQuantity(item.id) : getUserItemHours(item.id)"
-					:max="item.type === ItemType.Consumable ? maxUnits : maxHours"
+					:max="item.type === ItemType.Consumable ? MAX_UNITS : MAX_HOURS"
 					:segments="item.type === ItemType.Consumable ? 20 : 5"
-					:label="getOwnershipLabel(item)"
-					:popover="getOwnershipTitle(item)"
+					:label="getOwnershipLabel()"
+					:popover="getOwnershipTitle()"
 				/>
 				<span class="shop-item-card__price">
 					Cr$
