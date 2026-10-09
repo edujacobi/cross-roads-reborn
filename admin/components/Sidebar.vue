@@ -17,6 +17,7 @@ import {
 	Users,
 	X,
 } from "lucide-vue-next";
+import GangIcon from "~/components/icons/GangIcon.vue";
 import HospitalIcon from "~/components/icons/HospitalIcon.vue";
 import JobsIcon from "~/components/icons/JobsIcon.vue";
 import PrisonIcon from "~/components/icons/PrisonIcon.vue";
@@ -99,7 +100,7 @@ const navigationGroups = computed(() => [
 			{
 				label: "Gangues",
 				to: { name: "gangs" },
-				icon: Scroll,
+				icon: GangIcon,
 				activeRouteNames: ["gangs"],
 			},
 			{
