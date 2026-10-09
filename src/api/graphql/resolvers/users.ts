@@ -21,6 +21,18 @@ import { getClient } from "#bot/client";
 import { assertAuthenticated, mapUserDetail, topUserRankings } from "./helpers";
 import type { ResolverFn } from "./helpers";
 
+function formatAvatarDecoration(decorationId: number): string {
+	return AvatarDecorationList[decorationId].Description[Language.English]
+		.toLowerCase()
+		.replaceAll(" ", "_");
+}
+
+function formatBackgroundDecoration(decorationId: number): string {
+	return BackgroundDecorationList[decorationId].Description[Language.English]
+		.toLowerCase()
+		.replaceAll(" ", "_");
+}
+
 export const userResolvers: {
 	Query: Record<string, ResolverFn>;
 } = {
@@ -82,12 +94,8 @@ export const userResolvers: {
 					id: user.Id,
 					nickname: user.Nickname,
 					avatarUrl,
-					avatarDecoration: AvatarDecorationList[user.AvatarDecoration.Id].Description[Language.English]
-						.toLowerCase()
-						.replaceAll(" ", "_"),
-					backgroundDecoration: BackgroundDecorationList[user.BackgroundDecoration.Id].Description[Language.English]
-						.toLowerCase()
-						.replaceAll(" ", "_"),
+					avatarDecoration: formatAvatarDecoration(user.AvatarDecoration.Id),
+					backgroundDecoration: formatBackgroundDecoration(user.BackgroundDecoration.Id),
 					class: user.Class,
 					isVip: authUser.role !== "PLAYER" && user.IsVip(),
 					vipEternal: authUser.role !== "PLAYER" && user.VipEternal,
@@ -152,8 +160,8 @@ export const userResolvers: {
 					id: user.id,
 					nickname: user.nickname || "(Sem Nick)",
 					avatarUrl,
-					avatarDecoration: AvatarDecorationList[user.avatarDecoration].Description[Language.English].toLowerCase().replaceAll(" ", "_"),
-					backgroundDecoration: BackgroundDecorationList[user.backgroundDecoration].Description[Language.English].toLowerCase().replaceAll(" ", "_"),
+					avatarDecoration: formatAvatarDecoration(user.avatarDecoration),
+					backgroundDecoration: formatBackgroundDecoration(user.backgroundDecoration),
 					gangName: gangByUserId.get(user.id) ?? null,
 					gangAcronym: gangAcronymByUserId.get(user.id) ?? null,
 					gangColor: gangColorByUserId.get(user.id) ?? null,
@@ -331,7 +339,7 @@ export const userResolvers: {
 					id: user.id,
 					nickname: user.nickname || "(Sem Nick)",
 					avatarUrl: avatarUrl,
-					avatarDecoration: user.avatarDecoration,
+					avatarDecoration: formatAvatarDecoration(user.avatarDecoration),
 					class: user.class,
 					hospitalTime: user.hospitalTime instanceof Date ? user.hospitalTime.toISOString() : String(user.hospitalTime),
 					hospitalCount: Number(user.hospitalCount),
@@ -370,7 +378,7 @@ export const userResolvers: {
 					id: user.id,
 					nickname: user.nickname || "(Sem Nick)",
 					avatarUrl: avatarUrl,
-					avatarDecoration: user.avatarDecoration,
+					avatarDecoration: formatAvatarDecoration(user.avatarDecoration),
 					class: user.class,
 					prisonTime: user.prisonTime instanceof Date ? user.prisonTime.toISOString() : String(user.prisonTime),
 					robberyFailureCount: Number(user.robberyFailureCount),
