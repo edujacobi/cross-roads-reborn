@@ -5,7 +5,7 @@ import { resolvers } from "#api/graphql/resolvers";
 import { AdminAuditLog } from "#core/models/AdminAuditLog";
 import { Dashboard } from "#core/models/Dashboard";
 import { Event, EventType } from "#core/models/Event";
-import { User } from "#core/models/User";
+import { SituationId, User } from "#core/models/User";
 import { Vault } from "#core/models/Vault";
 import { UserRepository } from "#core/repositories/UserRepository";
 import { UserItemRepository } from "#core/repositories/UserItemRepository";
@@ -17,6 +17,7 @@ describe("API Auth and Resolvers", () => {
 		username: "DevTester",
 		avatar: null,
 		role: "DEVELOPER",
+		situationId: SituationId.Idling,
 	};
 
 	const modUser: AuthUser = {
@@ -24,6 +25,7 @@ describe("API Auth and Resolvers", () => {
 		username: "ModTester",
 		avatar: null,
 		role: "MODERATOR",
+		situationId: SituationId.Idling,
 	};
 
 	const helperUser: AuthUser = {
@@ -31,6 +33,7 @@ describe("API Auth and Resolvers", () => {
 		username: "HelperTester",
 		avatar: null,
 		role: "HELPER",
+		situationId: SituationId.Idling,
 	};
 
 	const playerUser: AuthUser = {
@@ -38,6 +41,7 @@ describe("API Auth and Resolvers", () => {
 		username: "PlayerTester",
 		avatar: null,
 		role: "PLAYER",
+		situationId: SituationId.Idling,
 	};
 
 	afterEach(() => vi.restoreAllMocks());
@@ -208,7 +212,11 @@ describe("API Auth and Resolvers", () => {
 
 		it("should reject setMoney when user is HELPER", async () => {
 			await expect(
-				resolvers.Mutation.setMoney(null, { userId: "target123", amount: 1000, mode: "ADD" }, { user: helperUser }),
+				resolvers.Mutation.setMoney(null, {
+					userId: "target123",
+					amount: 1000,
+					mode: "ADD",
+				}, { user: helperUser }),
 			).rejects.toThrow("Forbidden: This role has read-only access.");
 		});
 

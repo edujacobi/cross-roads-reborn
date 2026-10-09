@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { resolvers } from "#api/graphql/resolvers";
 import { AdminAuditLog } from "#core/models/AdminAuditLog";
-import { User } from "#core/models/User";
+import { SituationId, User } from "#core/models/User";
 import { UserBadge } from "#core/models/UserBadge";
 import { UserRepository } from "#core/repositories/UserRepository";
 import { UserItemRepository } from "#core/repositories/UserItemRepository";
@@ -24,6 +24,7 @@ const moderator = {
 	username: "ModTester",
 	avatar: null,
 	role: "MODERATOR" as const,
+	situationId: SituationId.Idling,
 };
 
 const developer = {

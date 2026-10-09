@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { resolvers } from "#api/graphql/resolvers";
 import type { AuthUser } from "#api/types";
-import { User } from "#core/models/User";
+import { SituationId, User } from "#core/models/User";
 import { UserRepository } from "#core/repositories/UserRepository";
 import { ClassId } from "#core/types/Classes";
 
@@ -10,6 +10,8 @@ const player: AuthUser = {
 	username: "Player",
 	avatar: null,
 	role: "PLAYER",
+	situationId: SituationId.Idling,
+	gangId: 1,
 };
 
 describe("Player self-service actions", () => {

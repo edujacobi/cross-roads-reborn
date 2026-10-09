@@ -2,6 +2,7 @@ import { UserBadge } from "#core/models/UserBadge";
 import type { AuthUser, UserRole } from "#api/types";
 import { signAuthToken } from "#api/auth/jwt";
 import { logger } from "#shared/log";
+import { SituationId } from "#core/types/Ids";
 
 export interface DiscordOAuthUser {
 	id: string;
@@ -37,7 +38,10 @@ export function buildDiscordAuthUrl(): string {
 	return `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=identify`;
 }
 
-export async function handleDiscordCallback(code: string): Promise<{ token: string; user: AuthUser } | { error: string; status: number }> {
+export async function handleDiscordCallback(code: string): Promise<{ token: string; user: AuthUser } | {
+	error: string;
+	status: number
+}> {
 	const clientId = getDiscordClientId();
 	const clientSecret = getDiscordClientSecret();
 	const redirectUri = getDiscordRedirectUri();
@@ -115,6 +119,7 @@ export async function handleDiscordCallback(code: string): Promise<{ token: stri
 			username: discordUser.global_name || discordUser.username,
 			avatar: avatarUrl,
 			role,
+			situationId: SituationId.Idling,
 		};
 
 		const token = signAuthToken(authUser);

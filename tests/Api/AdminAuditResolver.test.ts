@@ -3,6 +3,7 @@ import { resolvers } from "#api/graphql/resolvers";
 import { AdminAuditLog } from "#core/models/AdminAuditLog";
 import { UserRepository } from "#core/repositories/UserRepository";
 import { AdminAuditActionId, AdminAuditSettingId } from "#core/types/AdminAuditLog";
+import { SituationId } from "#core/types/Ids";
 
 const { mockClient } = vi.hoisted(() => ({
 	mockClient: {
@@ -55,10 +56,19 @@ describe("Admin audit log resolver", () => {
 				createdAt: new Date("2026-01-01T00:00:00.000Z"),
 			}],
 		});
-		vi.spyOn(UserRepository, "FindById").mockResolvedValue({ id: "222", nickname: "Current game nickname" } as never);
+		vi.spyOn(UserRepository, "FindById").mockResolvedValue({
+			id: "222",
+			nickname: "Current game nickname",
+		} as never);
 
 		const result = await resolvers.Query.adminAuditLogs(null, {}, {
-			user: { userId: "111", username: "Old name", avatar: null, role: "DEVELOPER" },
+			user: {
+				userId: "111",
+				username: "Old name",
+				avatar: null,
+				role: "DEVELOPER",
+				situationId: SituationId.Idling,
+			},
 		});
 
 		expect(result.entries[0]).toMatchObject({
@@ -93,7 +103,13 @@ describe("Admin audit log resolver", () => {
 		const findUser = vi.spyOn(UserRepository, "FindById");
 
 		const result = await resolvers.Query.adminAuditLogs(null, {}, {
-			user: { userId: "111", username: "Old name", avatar: null, role: "DEVELOPER" },
+			user: {
+				userId: "111",
+				username: "Old name",
+				avatar: null,
+				role: "DEVELOPER",
+				situationId: SituationId.Idling,
+			},
 		});
 
 		expect(result.entries[0]).toMatchObject({
@@ -107,7 +123,13 @@ describe("Admin audit log resolver", () => {
 		const getPage = vi.spyOn(AdminAuditLog, "GetPage").mockResolvedValue({ entries: [], total: 0 });
 
 		await resolvers.Query.adminAuditLogs(null, { actionId: AdminAuditActionId.SetMoney }, {
-			user: { userId: "111", username: "Developer", avatar: null, role: "DEVELOPER" },
+			user: {
+				userId: "111",
+				username: "Developer",
+				avatar: null,
+				role: "DEVELOPER",
+				situationId: SituationId.Idling,
+			},
 		});
 
 		expect(getPage).toHaveBeenCalledWith(25, 0, AdminAuditActionId.SetMoney);
@@ -133,7 +155,13 @@ describe("Admin audit log resolver", () => {
 		});
 
 		const result = await resolvers.Query.adminAuditLogs(null, {}, {
-			user: { userId: "333", username: "Moderator", avatar: null, role: "MODERATOR" },
+			user: {
+				userId: "333",
+				username: "Moderator",
+				avatar: null,
+				role: "MODERATOR",
+				situationId: SituationId.Idling,
+			},
 		});
 
 		expect(result.entries[0]).toMatchObject({

@@ -117,7 +117,7 @@ const bases = [
 			subtitle="Crie sua gangue e trabalhe em equipe! Participe de assaltos em grupo e lutas generalizadas!"
 		>
 			<template #actions>
-				<template v-if="!userGang">
+				<template v-if="userGang">
 					<BaseButton
 						variant="secondary"
 						:to="`/gangs/${userGang}`"
