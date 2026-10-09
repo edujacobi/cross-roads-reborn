@@ -2,6 +2,7 @@
 	setup
 	lang="ts"
 >
+import { useMutation } from "@vue/apollo-composable";
 import { computed, ref } from "vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
@@ -10,6 +11,7 @@ import BaseModal from "~/components/ui/BaseModal.vue";
 import BaseSelector from "~/components/ui/BaseSelector.vue";
 import PageTitle from "~/components/ui/PageTitle.vue";
 import { imagePaths } from "~/constants/imagePaths";
+import { CreateGangDocument } from "~/graphql/generated";
 
 definePageMeta({
 	middleware: "auth",
@@ -20,6 +22,7 @@ useHead({
 });
 
 const auth = useAuth();
+const { showToast } = useToast();
 
 const userGang = computed(() => auth.user?.value?.gangId ?? 0);
 
@@ -43,6 +46,8 @@ const gangColors = [
 	{ value: "pink", label: "Rosa", colorHex: "#EB459E" },
 ];
 
+const { mutate: createGangMutation, loading: creating } = useMutation(CreateGangDocument);
+
 function resetDraft() {
 	draft.value = {
 		name: "",
@@ -54,9 +59,28 @@ function resetDraft() {
 }
 
 async function createGang() {
-	// TODO: Implement gang creation via GraphQL mutation
-	isCreateModalOpen.value = false;
-	resetDraft();
+	const res = await createGangMutation({
+		name: draft.value.name,
+		acronym: draft.value.acronym,
+		description: draft.value.description,
+		color: draft.value.color,
+		imageUrl: draft.value.imageUrl || null,
+	});
+
+	if (res?.errors?.[0]) {
+		showToast({ text: res.errors[0].message ?? "Falha ao criar gangue.", variant: "error" });
+		return;
+	}
+	if (res?.data?.createGang?.success) {
+		showToast({ text: "Gangue criada com sucesso!", variant: "success" });
+		isCreateModalOpen.value = false;
+		resetDraft();
+		// Refresh auth data so userGang updates
+		await auth.fetchUser();
+	} else {
+		const message = res?.data?.createGang?.message ?? "Falha ao criar gangue.";
+		showToast({ text: message, variant: "error" });
+	}
 }
 
 const bases = [
@@ -243,6 +267,7 @@ const bases = [
 			<template #footer>
 				<BaseButton
 					variant="secondary"
+					:disabled="creating"
 					@click="isCreateModalOpen = false"
 				>
 					Cancelar
@@ -250,8 +275,9 @@ const bases = [
 				<BaseButton
 					type="submit"
 					form="create-gang-form"
+					:disabled="creating"
 				>
-					Criar gangue
+					{{ creating ? "Criando..." : "Criar gangue" }}
 				</BaseButton>
 			</template>
 		</BaseModal>

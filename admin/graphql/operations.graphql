@@ -865,3 +865,10 @@ query GetMyPrisonStatus {
 		prisonHasPaidBribe
 	}
 }
+
+mutation CreateGang($name: String!, $acronym: String!, $description: String!, $color: String!, $imageUrl: String) {
+	createGang(name: $name, acronym: $acronym, description: $description, color: $color, imageUrl: $imageUrl) {
+		success
+		message
+	}
+}

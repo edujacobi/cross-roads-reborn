@@ -25,5 +25,6 @@ export const resolvers: {
 		...seasonResolvers.Mutation,
 		...eventResolvers.Mutation,
 		...adminResolvers.Mutation,
+		...gangResolvers.Mutation,
 	},
 };

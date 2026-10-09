@@ -562,6 +562,11 @@ export const typeDefs = /* GraphQL */ `
         bribeCost: Float
     }
 
+    type GangMutationResult {
+        success: Boolean!
+        message: String!
+    }
+
     type MyPrisonStatus {
         isInPrison: Boolean!
         prisonTime: String
@@ -632,5 +637,6 @@ export const typeDefs = /* GraphQL */ `
         payPrivateHospital: HospitalResult!
         attemptPrisonEscape: PrisonEscapeStartResult!
         payBribePrison: PrisonBribeResult!
+        createGang(name: String!, acronym: String!, description: String!, color: String!, imageUrl: String): GangMutationResult!
     }
 `;
