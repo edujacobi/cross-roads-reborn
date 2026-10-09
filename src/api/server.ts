@@ -118,7 +118,7 @@ export async function createApiServer(): Promise<FastifyInstance> {
 			return reply.status(401).send({ error: "Invalid or expired token." });
 		}
 
-		const userModel = await new User(user.userId).GetSimpleInfo(undefined, undefined, { skipGangLookup: true });
+		const userModel = await new User(user.userId).GetSimpleInfo();
 		if (userModel) {
 			await userModel.GetSituation();
 		}
@@ -126,7 +126,14 @@ export async function createApiServer(): Promise<FastifyInstance> {
 			.toLowerCase()
 			.replaceAll(" ", "_") ?? "default";
 
-		return reply.send({ user: { ...user, avatarDecoration, situationId: userModel?.Situation.Id ?? 0 } });
+		return reply.send({
+			user: {
+				...user,
+				avatarDecoration,
+				situationId: userModel?.Situation.Id ?? 0,
+				gangId: userModel?.GangId,
+			},
+		});
 	});
 
 	// SSE: Prison Escape Status
@@ -200,7 +207,8 @@ export async function createApiServer(): Promise<FastifyInstance> {
 			req.raw.on("close", () => {
 				clearInterval(pollInterval);
 			});
-		} else {
+		}
+		else {
 			// Not escaping, send current status and close
 			sendEvent(JSON.stringify({
 				type: "not-escaping",

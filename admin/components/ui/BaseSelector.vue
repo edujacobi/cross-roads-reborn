@@ -8,6 +8,7 @@ export interface SelectorOption {
 	label: string;
 	value: string;
 	imagePath?: string;
+	colorHex?: string;
 }
 
 interface Props {
@@ -163,6 +164,11 @@ watch(isOpen, (open) => {
 						height="20"
 						class="selector-trigger-image"
 					/>
+					<span
+						v-else-if="selectedOption?.colorHex"
+						class="selector-trigger-swatch"
+						:style="{ backgroundColor: selectedOption.colorHex }"
+					/>
 					<span class="selector-trigger-label">{{ selectedLabel }}</span>
 				</span>
 				<ChevronDown
@@ -180,28 +186,33 @@ watch(isOpen, (open) => {
 				class="selector-dropdown"
 				role="listbox"
 			>
-				<div
-					v-for="(option, index) in options"
-					:key="option.value"
-					role="option"
-					:aria-selected="option.value === modelValue"
-					tabindex="-1"
-					class="selector-option"
-					:class="{ 'is-selected': option.value === modelValue, 'is-focused': index === focusedIndex }"
-					@click="selectOption(option.value)"
-					@keydown="(e) => handleOptionKeydown(e, option.value)"
-					@mouseenter="focusedIndex = index"
-				>
-					<NuxtImg
-						v-if="option.imagePath"
-						:src="option.imagePath"
-						alt=""
-						width="20"
-						height="20"
-						class="selector-option-image"
-					/>
-					<span class="selector-option-label">{{ option.label }}</span>
-				</div>
+					<div
+						v-for="(option, index) in options"
+						:key="option.value"
+						role="option"
+						:aria-selected="option.value === modelValue"
+						tabindex="-1"
+						class="selector-option"
+						:class="{ 'is-selected': option.value === modelValue, 'is-focused': index === focusedIndex }"
+						@click="selectOption(option.value)"
+						@keydown="(e) => handleOptionKeydown(e, option.value)"
+						@mouseenter="focusedIndex = index"
+					>
+						<NuxtImg
+							v-if="option.imagePath"
+							:src="option.imagePath"
+							alt=""
+							width="20"
+							height="20"
+							class="selector-option-image"
+						/>
+						<span
+							v-else-if="option.colorHex"
+							class="selector-option-swatch"
+							:style="{ backgroundColor: option.colorHex }"
+						/>
+						<span class="selector-option-label">{{ option.label }}</span>
+					</div>
 			</div>
 		</div>
 	</div>
@@ -297,6 +308,14 @@ watch(isOpen, (open) => {
 			.selector-trigger-image {
 				flex-shrink: 0;
 			}
+
+			.selector-trigger-swatch {
+				flex-shrink: 0;
+				width: 20px;
+				height: 20px;
+				border-radius: 50%;
+				border: 2px solid $border-subtle;
+			}
 		}
 
 		.selector-chevron {
@@ -353,6 +372,14 @@ watch(isOpen, (open) => {
 
 		.selector-option-image {
 			flex-shrink: 0;
+		}
+
+		.selector-option-swatch {
+			flex-shrink: 0;
+			width: 20px;
+			height: 20px;
+			border-radius: 50%;
+			border: 2px solid $border-subtle;
 		}
 
 		.selector-option-label {

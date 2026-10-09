@@ -7,6 +7,7 @@ export interface AuthUser {
 	avatarDecoration?: string;
 	role: "DEVELOPER" | "MODERATOR" | "HELPER" | "PLAYER";
 	situationId: number;
+	gangId?: number;
 }
 
 export function useAuth() {

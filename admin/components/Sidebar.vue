@@ -97,6 +97,12 @@ const navigationGroups = computed(() => [
 				activeRouteNames: ["prison"],
 			},
 			{
+				label: "Gangues",
+				to: { name: "gangs" },
+				icon: Scroll,
+				activeRouteNames: ["gangs"],
+			},
+			{
 				label: "Atualizações",
 				to: { name: "updates" },
 				icon: Scroll,

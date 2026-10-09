@@ -6,6 +6,8 @@ export interface AuthUser {
 	avatar: string | null;
 	avatarDecoration?: string;
 	role: UserRole;
+	situationId: number;
+	gangId?: number;
 }
 
 export interface GraphQLContext {

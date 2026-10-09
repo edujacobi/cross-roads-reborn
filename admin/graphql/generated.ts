@@ -43,7 +43,9 @@ export type AdminAuditLogPage = {
 export type AuthUser = {
   __typename?: 'AuthUser';
   avatar?: Maybe<Scalars['String']['output']>;
+  gangId?: Maybe<Scalars['Int']['output']>;
   role: Role;
+  situationId: Scalars['Int']['output'];
   userId: Scalars['ID']['output'];
   username: Scalars['String']['output'];
 };

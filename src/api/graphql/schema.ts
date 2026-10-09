@@ -31,6 +31,8 @@ export const typeDefs = /* GraphQL */ `
         username: String!
         avatar: String
         role: Role!
+        situationId: Int!
+        gangId: Int
     }
 
     type ClassCount {
