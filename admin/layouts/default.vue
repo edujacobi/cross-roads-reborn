@@ -64,6 +64,7 @@ import Sidebar from "~/components/Sidebar.vue";
 	@media (max-width: $bp-tablet) {
 		padding: $spacing-md;
 		overflow-y: visible;
+		margin-bottom: 5rem;
 	}
 }
 </style>
