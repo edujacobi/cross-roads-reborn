@@ -295,7 +295,7 @@ async function removeEvent() {
 									variant="secondary"
 									size="sm"
 									:aria-label="`Editar evento ${event.id}`"
- 									:data-popover-text="`Editar evento ${event.id}`"
+									:data-popover-text="`Editar evento ${event.id}`"
 									data-popover-direction="top"
 									@click="beginEdit(event)"
 								>
@@ -309,7 +309,7 @@ async function removeEvent() {
 									size="sm"
 									:disabled="deletingEventId !== null"
 									:aria-label="`Excluir evento ${event.id}`"
- 									:data-popover-text="`Excluir evento ${event.id}`"
+									:data-popover-text="`Excluir evento ${event.id}`"
 									data-popover-direction="top"
 									@click="requestDelete(event)"
 								>

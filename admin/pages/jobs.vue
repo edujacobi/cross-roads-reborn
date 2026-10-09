@@ -3,7 +3,7 @@
 	lang="ts"
 >
 import { useMutation, useQuery } from "@vue/apollo-composable";
-import { ChevronDown, Clock, Coins, HardHat, X } from "lucide-vue-next";
+import { ChevronDown, Clock, Coins, X } from "lucide-vue-next";
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import JobsIcon from "~/components/icons/JobsIcon.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
@@ -227,12 +227,9 @@ onUnmounted(() => {
 						v-for="job in jobs"
 						:key="job.id"
 						class="job-card"
-						:class="{
-
-							'job-card--black-market': job.special,
-
-							'job-card--disabled': job.special && !blackMarketOpen,
-
+						:class="{
+							'job-card--black-market': job.special,
+							'job-card--disabled': job.special && !blackMarketOpen,
 						}"
 					>
 						<div
@@ -425,7 +422,7 @@ onUnmounted(() => {
 				:aria-expanded="asideOpen"
 				@click="toggleAside"
 			>
-				<HardHat :size="24" />
+				<JobsIcon :size="26" />
 				<span
 					v-if="currentJob"
 					class="jobs-page__aside-toggle-badge"

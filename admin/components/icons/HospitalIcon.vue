@@ -2,35 +2,31 @@
 	setup
 	lang="ts"
 >
-interface Props {
-	size: string | number;
-	variant?: "outline" | "solid" | "normal";
-}
+import type { DefaultIconProps } from "~/components/icons/types";
 
-const props = defineProps<Props>();
+const props = defineProps<DefaultIconProps>();
 
 const fillOptions = {
-	"outline": "transparent",
-	"solid": "currentColor",
-	"normal": "#E54747",
+	outline: "transparent",
+	solid: "currentColor",
+	normal: "#E54747",
 };
 
 const strokeOptions = {
-	"outline": "currentColor",
-	"solid": "none",
-	"normal": "black",
+	outline: "currentColor",
+	solid: "none",
+	normal: "black",
 };
 
 const detailOptions = {
-	"outline": "currentColor",
-	"solid": "black",
-	"normal": "black",
+	outline: "currentColor",
+	solid: "black",
+	normal: "black",
 };
 
 const fill = computed(() => fillOptions[props.variant || "normal"]);
 const stroke = computed(() => strokeOptions[props.variant || "normal"]);
 const detail = computed(() => detailOptions[props.variant || "normal"]);
-
 </script>
 
 <template>

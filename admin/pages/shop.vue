@@ -50,32 +50,33 @@ const allShopItems = computed(() => {
 const { result: blackMarketResult, loading: blackMarketLoading } = useQuery(GetBlackMarketOpenDocument);
 const blackMarketOpen = computed(() => blackMarketResult.value?.blackMarketOpen ?? false);
 
-const shopItems = computed(() => allShopItems.value.toSorted((a, b) => {
+const shopItems = computed(() =>
+	allShopItems.value.toSorted((a, b) => {
 		if (a.blackMarket && !b.blackMarket) return 1;
 		if (!a.blackMarket && b.blackMarket) return -1;
 		return a.id - b.id;
-	},
-));
+	}),
+);
 
 const userId = computed(() => authUser.value?.userId ?? "");
-const { result: profileResult, loading: profileLoading, refetch: refetchProfile } = useQuery(
-	GetUserProfileDocument,
-	() => ({ id: userId.value }),
-	{
-		enabled: !!userId.value,
-		fetchPolicy: "cache-and-network",
-	},
-);
+const {
+	result: profileResult,
+	loading: profileLoading,
+	refetch: refetchProfile,
+} = useQuery(GetUserProfileDocument, () => ({ id: userId.value }), {
+	enabled: !!userId.value,
+	fetchPolicy: "cache-and-network",
+});
 const userMoney = computed(() => profileResult.value?.user?.money ?? 0);
 
-const { result: inventoryResult, loading: inventoryLoading, refetch: refetchInventory } = useQuery(
-	GetUserInventoryDocument,
-	() => ({ id: userId.value }),
-	{
-		enabled: !!userId.value,
-		fetchPolicy: "cache-and-network",
-	},
-);
+const {
+	result: inventoryResult,
+	loading: inventoryLoading,
+	refetch: refetchInventory,
+} = useQuery(GetUserInventoryDocument, () => ({ id: userId.value }), {
+	enabled: !!userId.value,
+	fetchPolicy: "cache-and-network",
+});
 const userItems = computed(() => inventoryResult.value?.user?.items ?? []);
 
 const { mutate: buyItem, loading: buying } = useMutation(BuyItemDocument);
@@ -134,8 +135,7 @@ function getMaxUnits(itemId: number, itemType: ItemType): number {
 		const currentQty = getUserItemQuantity(itemId);
 		const remaining = MAX_UNITS - currentQty;
 		return Math.max(0, remaining);
-	}
-	else {
+	} else {
 		const currentHours = getUserItemHours(itemId);
 		if (currentHours >= MAX_HOURS) return 0;
 		const remainingHours = MAX_HOURS - currentHours;
@@ -147,8 +147,7 @@ function getOwnershipLabel(item: Item): string {
 	if (item.type === ItemType.Consumable) {
 		const qty = getUserItemQuantity(item.id);
 		return `${qty} de ${MAX_UNITS} unidades`;
-	}
-	else {
+	} else {
 		const hours = getUserItemHours(item.id);
 		return `${hours} de ${MAX_HOURS} horas`;
 	}
@@ -158,8 +157,7 @@ function getOwnershipTitle(item: Item): string {
 	if (item.type === ItemType.Consumable) {
 		const qty = getUserItemQuantity(item.id);
 		return `${qty}/${MAX_UNITS} un`;
-	}
-	else {
+	} else {
 		const hours = getUserItemHours(item.id);
 		return `${hours}h/${MAX_HOURS}h`;
 	}
@@ -202,8 +200,7 @@ function getItemCardState(item: Item): ItemCardState {
 		disabledReason = "blackmarket";
 		addButtonLabel = "Indisponível";
 		addButtonAriaLabel = "Mercado Negro fechado";
-	}
-	else if (maxUnits <= 0) {
+	} else if (maxUnits <= 0) {
 		disabledReason = "limit";
 		addButtonLabel = "Limite";
 		addButtonAriaLabel = "Limite atingido";
@@ -232,8 +229,7 @@ function addToCart(item: Item) {
 	if (current) {
 		const newUnits = Math.min(current.units + 1, maxUnits);
 		cartItems.value.set(item.id, { ...current, units: newUnits });
-	}
-	else {
+	} else {
 		cartItems.value.set(item.id, {
 			itemId: item.id,
 			name: item.name,
@@ -263,8 +259,7 @@ function updateCartUnits(itemId: number, delta: number) {
 
 	if (clampedUnits <= 0) {
 		removeFromCart(itemId);
-	}
-	else {
+	} else {
 		cartItems.value.set(itemId, { ...cartItem, units: clampedUnits });
 	}
 }
@@ -291,12 +286,10 @@ async function confirmPurchase() {
 			if (res?.data?.buyItem?.success) {
 				successCount += cartItem.units;
 				purchasedItemIds.add(cartItem.itemId);
-			}
-			else {
+			} else {
 				failMessages.push(res?.data?.buyItem?.message ?? "Erro desconhecido");
 			}
-		}
-		catch (e: unknown) {
+		} catch (e: unknown) {
 			failMessages.push(getErrorMessage(e));
 		}
 	}
@@ -313,15 +306,13 @@ async function confirmPurchase() {
 				variant: "warning",
 				text: `Compra parcial: ${successCount} unidade(s) comprada(s). ${failMessages.join(" ")}`,
 			});
-		}
-		else {
+		} else {
 			showToast({
 				variant: "success",
 				text: `Compra realizada! ${successCount} unidade(s) adquirida(s).`,
 			});
 		}
-	}
-	else {
+	} else {
 		showToast({
 			variant: "error",
 			text: failMessages.join(" ") || "Falha na compra.",
@@ -335,8 +326,7 @@ function toggleCart() {
 		if (lastFocusedElement.value) {
 			lastFocusedElement.value.focus();
 		}
-	}
-	else {
+	} else {
 		lastFocusedElement.value = document.activeElement as HTMLElement | null;
 		cartOpen.value = true;
 	}
@@ -692,7 +682,7 @@ onUnmounted(() => {
 				:aria-expanded="cartOpen"
 				@click="toggleCart"
 			>
-				<ShopIcon :size="24"/>
+				<ShopIcon :size="26"/>
 				<span
 					v-if="cartItemCount > 0"
 					class="shop-page__cart-toggle-badge"

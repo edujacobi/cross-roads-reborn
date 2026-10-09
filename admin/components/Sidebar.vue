@@ -17,15 +17,15 @@ import {
 	X,
 } from "lucide-vue-next";
 import HospitalIcon from "~/components/icons/HospitalIcon.vue";
+import JobsIcon from "~/components/icons/JobsIcon.vue";
+import PrisonIcon from "~/components/icons/PrisonIcon.vue";
+import ShopIcon from "~/components/icons/ShopIcon.vue";
+import TrophyIcon from "~/components/icons/TrophyIcon.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
 import { hasUnreadUpdates } from "~/composables/useUnreadUpdates";
 import { imagePaths } from "~/constants/imagePaths";
 import { localStorageKeys } from "~/constants/localStorageKeys";
-import TrophyIcon from "~/components/icons/TrophyIcon.vue";
-import JobsIcon from "~/components/icons/JobsIcon.vue";
-import ShopIcon from "~/components/icons/ShopIcon.vue";
-import PrisonIcon from "~/components/icons/PrisonIcon.vue";
 
 const auth = useAuth();
 const route = useRoute();
@@ -100,46 +100,46 @@ const navigationGroups = computed(() => [
 	},
 	...(auth.hasAdminAccess.value
 		? [
-			{
-				title: "Moderação",
-				links: [
-					{
-						label: "Dashboard",
-						to: { name: "admin-dashboard" },
-						icon: LayoutDashboard,
-						activeRouteNames: ["admin-dashboard"],
-					},
-					{
-						label: "Eventos",
-						to: { name: "admin-events" },
-						icon: CalendarDays,
-						activeRouteNames: ["admin-events"],
-					},
-					{
-						label: "Temporada",
-						to: { name: "admin-season" },
-						icon: CalendarSync,
-						activeRouteNames: ["admin-season"],
-					},
-					{
-						label: "VIPs",
-						to: { name: "admin-vips" },
-						icon: Crown,
-						activeRouteNames: ["admin-vips"],
-					},
-					...(auth.canWrite.value
-						? [
-							{
-								label: "Auditoria",
-								to: { name: "admin-audit-log" },
-								icon: ScrollText,
-								activeRouteNames: ["admin-audit-log"],
-							},
-						]
-						: []),
-				],
-			},
-		]
+				{
+					title: "Moderação",
+					links: [
+						{
+							label: "Dashboard",
+							to: { name: "admin-dashboard" },
+							icon: LayoutDashboard,
+							activeRouteNames: ["admin-dashboard"],
+						},
+						{
+							label: "Eventos",
+							to: { name: "admin-events" },
+							icon: CalendarDays,
+							activeRouteNames: ["admin-events"],
+						},
+						{
+							label: "Temporada",
+							to: { name: "admin-season" },
+							icon: CalendarSync,
+							activeRouteNames: ["admin-season"],
+						},
+						{
+							label: "VIPs",
+							to: { name: "admin-vips" },
+							icon: Crown,
+							activeRouteNames: ["admin-vips"],
+						},
+						...(auth.canWrite.value
+							? [
+									{
+										label: "Auditoria",
+										to: { name: "admin-audit-log" },
+										icon: ScrollText,
+										activeRouteNames: ["admin-audit-log"],
+									},
+								]
+							: []),
+					],
+				},
+			]
 		: []),
 ]);
 
