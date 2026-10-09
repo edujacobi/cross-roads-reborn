@@ -1,0 +1,23 @@
+{
+	"version": "1.0.2",
+	"title": "Bastante coisa",
+	"comment": "Ainda não vou escrever updates sérios aqui",
+	"date": "08/10/2026",
+	"sections": [
+		{
+			"title": "Trabalhos",
+			"description": "Tentando mostrar pro chefe que você faz direito",
+			"imageUrl": "/images/situations/job.png"
+		},
+		{
+			"title": "Hospital",
+			"description": "Com tudo que você tem direito",
+			"imageUrl": "/images/situations/hospital.png"
+		},
+		{
+			"title": "Prisão",
+			"description": "Ignorando todos os seus direitos",
+			"imageUrl": "/images/situations/prison.png"
+		}
+	]
+}
