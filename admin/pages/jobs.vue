@@ -149,6 +149,7 @@ async function handleCancelJob() {
 	} catch {
 		showToast({ text: "Erro ao cancelar trabalho.", variant: "error" });
 	}
+	showCancelModal.value = false;
 }
 
 function toggleAside() {
@@ -227,9 +228,9 @@ onUnmounted(() => {
 						v-for="job in jobs"
 						:key="job.id"
 						class="job-card"
-						:class="{
-							'job-card--black-market': job.special,
-							'job-card--disabled': job.special && !blackMarketOpen,
+						:class="{
+							'job-card--black-market': job.special,
+							'job-card--disabled': job.special && !blackMarketOpen,
 						}"
 					>
 						<div
