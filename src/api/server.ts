@@ -129,6 +129,88 @@ export async function createApiServer(): Promise<FastifyInstance> {
 		return reply.send({ user: { ...user, avatarDecoration, situationId: userModel?.Situation.Id ?? 0 } });
 	});
 
+	// SSE: Prison Escape Status
+	app.get("/sse/escape-status", async (req: FastifyRequest, reply: FastifyReply) => {
+		const authHeader = req.headers.authorization;
+		if (!authHeader || !authHeader.startsWith("Bearer ")) {
+			return reply.status(401).send({ error: "Missing or invalid authorization header." });
+		}
+
+		const token = authHeader.substring(7);
+		const user = verifyAuthToken(token);
+		if (!user) {
+			return reply.status(401).send({ error: "Invalid or expired token." });
+		}
+
+		const userModel = new User(user.userId);
+		const found = await userModel.GetInfo();
+		if (!found) {
+			return reply.status(404).send({ error: "User not found." });
+		}
+
+		// Set SSE headers with CORS
+		const origin = req.headers.origin || "http://localhost:3000";
+		reply.raw.writeHead(200, {
+			"Content-Type": "text/event-stream",
+			"Cache-Control": "no-cache",
+			Connection: "keep-alive",
+			"X-Accel-Buffering": "no",
+			"Access-Control-Allow-Origin": origin,
+			"Access-Control-Allow-Headers": "Content-Type, Authorization",
+		});
+
+		const sendEvent = (data: string) => {
+			reply.raw.write(`data: ${data}\n\n`);
+		};
+
+		if (userModel.IsEscaping()) {
+			sendEvent(JSON.stringify({
+				type: "escaping",
+				escapeTime: userModel.Escape.Time.toISOString(),
+			}));
+
+			// Wait for escape to end by polling
+			const pollInterval = setInterval(async () => {
+				const freshUser = new User(user.userId);
+				const freshFound = await freshUser.GetInfo();
+				if (!freshFound) {
+					clearInterval(pollInterval);
+					sendEvent(JSON.stringify({ type: "closed" }));
+					reply.raw.end();
+					return;
+				}
+
+				if (!freshUser.IsEscaping()) {
+					clearInterval(pollInterval);
+					const success = !freshUser.IsInPrison();
+					const message = success
+						? "Fuga concluída!"
+						: "Fuga fracassada!";
+					sendEvent(JSON.stringify({
+						type: "escape-ended",
+						isInPrison: freshUser.IsInPrison(),
+						isWanted: success,
+						message,
+					}));
+					reply.raw.end();
+				}
+			}, 500);
+
+			// Cleanup on client disconnect
+			req.raw.on("close", () => {
+				clearInterval(pollInterval);
+			});
+		} else {
+			// Not escaping, send current status and close
+			sendEvent(JSON.stringify({
+				type: "not-escaping",
+				isInPrison: userModel.IsInPrison(),
+				escapeHasTried: userModel.Escape.HasTried,
+			}));
+			reply.raw.end();
+		}
+	});
+
 	// Health Check
 	app.get("/health", async () => {
 		return { status: "ok", timestamp: new Date().toISOString() };

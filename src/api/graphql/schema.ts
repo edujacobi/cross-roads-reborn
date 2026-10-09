@@ -545,12 +545,12 @@ export const typeDefs = /* GraphQL */ `
         privatePrice: Float
     }
 
-    type PrisonEscapeResult {
+    type PrisonEscapeStartResult {
         success: Boolean!
         message: String!
-        money: Float!
-        isWanted: Boolean
+        duration: Int!
     }
+
 
     type PrisonBribeResult {
         success: Boolean!
@@ -564,6 +564,7 @@ export const typeDefs = /* GraphQL */ `
         isInPrison: Boolean!
         prisonTime: String
         escapeHasTried: Boolean!
+        escapeTime: String
         prisonHasPaidBribe: Boolean!
     }
 
@@ -627,7 +628,7 @@ export const typeDefs = /* GraphQL */ `
         startJob(jobId: Int!): JobMutationResult!
         cancelJob: JobMutationResult!
         payPrivateHospital: HospitalResult!
-        attemptPrisonEscape: PrisonEscapeResult!
+        attemptPrisonEscape: PrisonEscapeStartResult!
         payBribePrison: PrisonBribeResult!
     }
 `;

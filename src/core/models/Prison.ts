@@ -1,4 +1,4 @@
-import type { User } from "./User";
+import { User } from "./User";
 import { Language } from "./Language";
 import { UserRepository } from "#core/repositories/UserRepository";
 import { formatMoney } from "#bot/utils/ui";
@@ -24,6 +24,15 @@ export enum PrisonFailureReason {
 	BribeInHospital,
 }
 
+const activeEscapes = new Map<string, { userId: string; timer: NodeJS.Timeout }>();
+
+export function cleanupActiveEscapes() {
+	for (const [userId, data] of activeEscapes.entries()) {
+		clearTimeout(data.timer);
+		activeEscapes.delete(userId);
+	}
+}
+
 export class Prison {
 	User: User;
 
@@ -43,7 +52,9 @@ export class Prison {
 	static BribeTimeInMinutesWanted = 40;
 	static EscapeTimeInMinutesWanted = 40;
 
-	static async Arrest(user: User, durationInMinutes: number, { isFromRobbery = true }: { isFromRobbery?: boolean } = {}) {
+	static async Arrest(user: User, durationInMinutes: number, { isFromRobbery = true }: {
+		isFromRobbery?: boolean
+	} = {}) {
 		const prisonTimeMultiplier = await Event.GetActiveFromType(EventType.PRISON_TIME_MULTIPLIER);
 
 		const factor = user.Class === ClassId.Thief ? 1.15 : 1.0;
@@ -135,9 +146,33 @@ export class Prison {
 			escapeTime: this.User.Escape.Time,
 		});
 		Log.Info(`User ${this.User.Nickname} (Id: ${this.User.Id}) started a escape attempt from prison ${this.Escape.HasJetpack ? "with a jetpack" : ""}.`);
+
+		// Schedule automatic escape end
+		const userId = this.User.Id;
+		const durationMs = this.Escape.DefaultDuration * 1_000;
+		const timer = setTimeout(async () => {
+			activeEscapes.delete(userId);
+			try {
+				const user = new User(userId);
+				const found = await user.GetInfo();
+				if (found && user.IsEscaping()) {
+					const prison = new Prison(user);
+					await prison.CalculateEscapeChance();
+					await prison.EndEscape();
+					Log.Info(`Auto-ended escape for user ${user.Nickname} (Id: ${userId})`);
+				}
+			} catch (err) {
+				Log.Error(`Failed to auto-end escape for user ${userId}: ${err}`);
+			}
+		}, durationMs);
+		activeEscapes.set(userId, { userId, timer });
 	}
 
-	async EndEscape() {
+	async EndEscape(): Promise<{ success: boolean; totalTime: number; message: string }> {
+		if (!this.User.IsEscaping()) {
+			return { success: false, totalTime: 0, message: "Você não está tentando fugir." };
+		}
+
 		await Notification.Dismiss(this.User.Id, NotificationType.Free);
 
 		const baseTime = 15;
@@ -180,7 +215,62 @@ export class Prison {
 			wantedTime: this.User.Wanted.Time,
 		});
 
-		return { success, totalTime };
+		const message = this.generateEscapeMessage(success, totalTime);
+
+		return { success, totalTime, message };
+	}
+
+	generateEscapeMessage(success: boolean, totalTime: number): string {
+		const successTexts = [
+			"Durante o banho de sol você aproveita a distração dos policiais e consegue fugir pulando o muro da prisão",
+			"Você cavou um túnel pequeno, mas que com muito esforço, te permite fugir",
+			"Você percebeu que seu parceiro de cela está cavando um buraco no piso. Juntos vocês conseguiram fugir",
+			"Enquanto te transferiam de cela, você percebe alguns portões abertos e consegue fugir",
+			"Um detento começou uma rebelião, e no meio da confusão você consegue fugir",
+		];
+
+		const successTextsJetpack = [
+			"Mesmo com pouco combustível, sua Jetpack funcionou muito bem e você conseguiu fugir",
+			"Você utilizou sua Jetpack e apesar da dificuldade, consegue fugir sem sofrer nenhum arranhão",
+			"Sua Jetpack demorou pra pegar e chamou a atenção dos policiais, porém você consegue fugir",
+			"Durante o banho de sol você simplesmente liga sua Jetpack e foge voando sem problemas",
+			"Você usou as chamas da sua Jetpack para derreter as barras de ferro da janela e consegue fugir",
+		];
+
+		const wantedTexts = [
+			"mas a polícia está na sua cola!",
+			"mas a polícia colocou os cães para te farejar!",
+			"mas a polícia está fazendo buscas!",
+			"mas a polícia já informou seu desaparecimento!",
+			"mas a polícia está te procurando!",
+		];
+
+		const failureTexts = [
+			"Você tentou iniciar uma rebelião para conseguir fugir, mas um X9 te denunciou",
+			"Você cavou um túnel pequeno, mas infelizmente a polícia descobriu",
+			"Você tentou fazer outro detento refém, mas ele conseguiu escapar e avisar os policiais",
+			"Durante o banho de sol, você tentou causar uma briga entre membros de gangue, os policiais não gostaram",
+			"Você tentou serrar as barras da cela com uma lima, mas acabou fazendo muito barulho e alertando os policiais",
+		];
+
+		const failureTextsJetpack = [
+			"Você tentou voar com sua Jetpack, mas ela estava com pouco combustível e você desceu lentamente até os policiais",
+			"Você usou sua Jetpack para passar pelos portões, mas foi derrubado por uma barreira de choque",
+			"Você tenta ligar sua Jetpack para fugir, mas alertou os policias",
+			"Você se prepara para fugir com sua Jetpack, mas outro detento avisou os policiais",
+			"Você começa a voar com a Jetpack, mas outros detentos se agarram em você na esperança de fugir juntos, mas você é arrastado para o chão",
+		];
+
+		if (success) {
+			const arraySuccess = this.Escape.HasJetpack ? successTextsJetpack : successTexts;
+			const textSuccess = arraySuccess[Math.floor(Math.random() * arraySuccess.length)];
+			const textWanted = wantedTexts[Math.floor(Math.random() * wantedTexts.length)];
+			return `${textSuccess} ${textWanted}`;
+		}
+
+		const arrayFailure = this.Escape.HasJetpack ? failureTextsJetpack : failureTexts;
+		const textFailure = arrayFailure[Math.floor(Math.random() * arrayFailure.length)];
+		return `${textFailure}. Você ficará preso por mais ${totalTime} minutos.`;
 	}
 
 	async CanBribe() {

@@ -4,7 +4,7 @@
 >
 import { useMutation, useQuery } from "@vue/apollo-composable";
 import { ArrowDown, ArrowUp, ArrowUpDown, Search } from "lucide-vue-next";
-import { computed, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import PrisonIcon from "~/components/icons/PrisonIcon.vue";
 import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
@@ -44,7 +44,11 @@ const searchQuery = ref("");
 const { page, pageSize: limit, offset, resetPage } = usePagination(1, 15);
 const { sortColumn, sortDirection, toggleSort } = useSorting();
 
-const { result, loading, refetch: refetchPrisoners } = useQuery(
+const {
+	result,
+	loading,
+	refetch: refetchPrisoners,
+} = useQuery(
 	GetPrisonersDocument,
 	() => ({
 		search: searchQuery.value.trim() || undefined,
@@ -82,6 +86,10 @@ const { result: userStatusResult, refetch: refetchPrisonStatus } = useQuery(
 );
 
 const escapeHasTried = computed(() => userStatusResult.value?.myPrisonStatus?.escapeHasTried || false);
+const escapeTime = computed(() => {
+	const raw = userStatusResult.value?.myPrisonStatus?.escapeTime;
+	return raw ? new Date(raw) : null;
+});
 const prisonHasPaidBribe = computed(() => userStatusResult.value?.myPrisonStatus?.prisonHasPaidBribe || false);
 
 const entries = computed(() => result.value?.prisoners?.entries || []);
@@ -99,7 +107,12 @@ const isUserImprisoned = computed(() => {
 });
 
 const showEscapeModal = ref(false);
+const showEscapeLoadingModal = ref(false);
+const showEscapeResultModal = ref(false);
+const escapeResultMessage = ref("");
+const escapeResultSuccess = ref(false);
 const showBribeModal = ref(false);
+const isEscaping = ref(false);
 
 function handleSearch(val: string | number) {
 	searchQuery.value = String(val);
@@ -119,25 +132,121 @@ function nextPage() {
 	if (!loading.value && page.value < totalPages.value) page.value++;
 }
 
+async function onEscapeResult(success: boolean, message: string) {
+	showEscapeLoadingModal.value = false;
+	isEscaping.value = false;
+	escapeResultMessage.value = message;
+	escapeResultSuccess.value = success;
+	showEscapeResultModal.value = true;
+	await Promise.all([auth.fetchUser(), refetchPrisoners(), refetchPrisonStatus(), refetchBribeCost()]);
+}
+
+async function listenToEscapeSSE() {
+	const config = useRuntimeConfig();
+	const token = useAuth().token.value;
+	if (!token) return;
+
+	try {
+		const response = await fetch(`${config.public.apiBaseUrl}/sse/escape-status`, {
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
+		});
+
+		if (!response.ok) {
+			isEscaping.value = false;
+			return;
+		}
+
+		const reader = response.body?.getReader();
+		const decoder = new TextDecoder();
+		let buffer = "";
+
+		while (reader) {
+			const { done, value } = await reader.read();
+			if (done) break;
+
+			buffer += decoder.decode(value, { stream: true });
+			const lines = buffer.split("\n\n");
+			buffer = lines.pop() || "";
+
+			for (const line of lines) {
+				if (line.startsWith("data: ")) {
+					const data = JSON.parse(line.slice(6));
+					if (data.type === "escape-ended") {
+						await onEscapeResult(data.isWanted, data.message || (data.isWanted ? "Fuga bem-sucedida!" : "Fuga fracassada!"));
+						return;
+					}
+					if (data.type === "not-escaping") {
+						isEscaping.value = false;
+						return;
+					}
+				}
+			}
+		}
+	} catch {
+		isEscaping.value = false;
+	}
+}
+
 async function handleEscape() {
+	showEscapeModal.value = false;
+	showEscapeLoadingModal.value = true;
+	isEscaping.value = true;
+
 	const res = await attemptEscape();
 	if (res?.errors) {
+		showEscapeLoadingModal.value = false;
+		isEscaping.value = false;
 		showToast({ text: "Erro ao tentar fugir.", variant: "error" });
 		return;
 	}
-	if (res?.data?.attemptPrisonEscape?.success) {
-		showToast({ text: res?.data.attemptPrisonEscape.message, variant: "success" });
-		showEscapeModal.value = false;
-		await Promise.all([
-			auth.fetchUser(),
-			refetchPrisoners(),
-			refetchPrisonStatus(),
-			refetchBribeCost(),
-		]);
-	} else {
+	if (!res?.data?.attemptPrisonEscape?.success) {
+		showEscapeLoadingModal.value = false;
+		isEscaping.value = false;
 		showToast({ text: res?.data?.attemptPrisonEscape?.message || "Erro desconhecido.", variant: "error" });
+		return;
+	}
+
+	// Listen to SSE for escape result
+	listenToEscapeSSE();
+}
+
+async function recoverInterruptedEscape() {
+	if (!escapeTime.value) return;
+
+	showEscapeLoadingModal.value = true;
+	isEscaping.value = true;
+
+	const now = new Date();
+	const timeDiff = escapeTime.value.getTime() - now.getTime();
+
+	if (timeDiff > 0) {
+		// Still escaping, listen to SSE
+		listenToEscapeSSE();
+	} else {
+		// Escape should have ended already, refresh status
+		isEscaping.value = false;
+		showEscapeLoadingModal.value = false;
+		await Promise.all([auth.fetchUser(), refetchPrisoners(), refetchPrisonStatus(), refetchBribeCost()]);
 	}
 }
+
+onMounted(async () => {
+  await new Promise<void>((resolve) => {
+    const unwatch = watch(
+      () => userStatusResult.value?.myPrisonStatus,
+      (status) => {
+        if (status) {
+          unwatch();
+          resolve();
+        }
+      },
+      { immediate: true },
+    );
+  });
+  await recoverInterruptedEscape();
+});
 
 async function handleBribe() {
 	const res = await payBribe();
@@ -147,16 +256,12 @@ async function handleBribe() {
 	}
 	if (res?.data?.payBribePrison?.bribeAccepted) {
 		showToast({ text: res?.data.payBribePrison.message, variant: "success" });
-		showBribeModal.value = false;
-		await Promise.all([
-			auth.fetchUser(),
-			refetchPrisoners(),
-			refetchPrisonStatus(),
-			refetchBribeCost(),
-		]);
 	} else {
 		showToast({ text: res?.data?.payBribePrison?.message || "Erro desconhecido.", variant: "error" });
 	}
+
+	showBribeModal.value = false;
+	await Promise.all([auth.fetchUser(), refetchPrisoners(), refetchPrisonStatus(), refetchBribeCost()]);
 }
 
 function formatBribeCost() {
@@ -225,7 +330,7 @@ function formatBribeCost() {
 				<BaseButton
 					variant="secondary"
 					:loading="escaping"
-					:disabled="escapeHasTried"
+					:disabled="escapeHasTried || showEscapeLoadingModal || isEscaping"
 					@click="showEscapeModal = true"
 				>
 					<NuxtImg
@@ -500,6 +605,37 @@ function formatBribeCost() {
 		</BaseModal>
 
 		<BaseModal
+			class="escape-loading-modal"
+			:open="showEscapeLoadingModal"
+			title="Tentando fugir..."
+			@update:open="showEscapeLoadingModal = $event"
+		>
+			<div class="escape-loading">
+				<NuxtImg
+					:src="imagePaths.uiElements.escape"
+					width="100"
+				/>
+				<div class="escape-loading__spinner"></div>
+			</div>
+		</BaseModal>
+
+		<BaseModal
+			:open="showEscapeResultModal"
+			:title="escapeResultSuccess ? 'Fuga bem-sucedida!' : 'Fuga fracassada'"
+			@update:open="showEscapeResultModal = $event"
+		>
+			<p>{{ escapeResultMessage }}</p>
+			<template #footer>
+				<BaseButton
+					variant="primary"
+					@click="showEscapeResultModal = false"
+				>
+					Entendi
+				</BaseButton>
+			</template>
+		</BaseModal>
+
+		<BaseModal
 			:open="showBribeModal"
 			title="Subornar os guardas"
 			@update:open="showBribeModal = $event"
@@ -706,6 +842,40 @@ function formatBribeCost() {
 		font-size: inherit;
 		font-weight: 400;
 		text-transform: none;
+	}
+}
+
+.escape-loading {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: $spacing-md;
+	padding: $spacing-lg 0;
+
+	&__spinner {
+		width: 3rem;
+		height: 3rem;
+		border: 4px solid $border-subtle;
+		border-top-color: $color-brand;
+		border-radius: 50%;
+		animation: spin 0.8s linear infinite;
+	}
+
+	&__text {
+		font-size: 1rem;
+		font-weight: 600;
+		color: $text-primary;
+		text-align: center;
+	}
+}
+
+.escape-loading-modal :deep(.dialog-header) {
+	display: none;
+}
+
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
 	}
 }
 </style>

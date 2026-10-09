@@ -834,8 +834,7 @@ mutation AttemptPrisonEscape {
 	attemptPrisonEscape {
 		success
 		message
-		money
-		isWanted
+		duration
 	}
 }
 
@@ -862,6 +861,7 @@ query GetMyPrisonStatus {
 		isInPrison
 		prisonTime
 		escapeHasTried
+		escapeTime
 		prisonHasPaidBribe
 	}
 }

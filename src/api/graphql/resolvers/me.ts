@@ -62,6 +62,7 @@ export const meResolvers: {
 					isInPrison: false,
 					prisonTime: null,
 					escapeHasTried: false,
+					escapeTime: null,
 					prisonHasPaidBribe: false,
 				};
 			}
@@ -70,6 +71,7 @@ export const meResolvers: {
 				isInPrison,
 				prisonTime: isInPrison ? player.Prison.Time.toISOString() : null,
 				escapeHasTried: player.Escape.HasTried,
+				escapeTime: player.Escape.Time ? player.Escape.Time.toISOString() : null,
 				prisonHasPaidBribe: player.Prison.HasPaidBribe,
 			};
 		},
@@ -495,7 +497,7 @@ export const meResolvers: {
 			const player = new User(authUser.userId);
 			const found = await player.GetInfo();
 			if (!found) {
-				return { success: false, message: "Jogador não encontrado.", money: 0, isWanted: false };
+				return { success: false, message: "Jogador não encontrado.", duration: 0 };
 			}
 
 			const prison = new Prison(player);
@@ -505,31 +507,20 @@ export const meResolvers: {
 				return {
 					success: false,
 					message: "Você não pode tentar fugir no momento.",
-					money: player.Money,
-					isWanted: false,
+					duration: 0,
 				};
 			}
 
 			await prison.CalculateEscapeChance();
 			await prison.StartEscape();
-			const { success } = await prison.EndEscape();
-
-			if (success) {
-				return {
-					success: true,
-					message: "Fuga bem-sucedida! A polícia está na sua cola!",
-					money: player.Money,
-					isWanted: true,
-				};
-			}
 
 			return {
-				success: false,
-				message: "Fuga fracassada! Você ficará preso por mais tempo.",
-				money: player.Money,
-				isWanted: false,
+				success: true,
+				message: "Tentando fugir...",
+				duration: prison.Escape.DefaultDuration,
 			};
 		},
+
 
 		payBribePrison: async (
 			_: unknown,
