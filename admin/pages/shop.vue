@@ -226,7 +226,7 @@ function updateCartUnits(itemId: number, delta: number) {
 	const cartItem = cartItems.value.get(itemId);
 	if (!cartItem) return;
 
-	const shopItem = shopItems.value.find((i) => i.id === itemId);
+	const shopItem = shopItems.value.find((i) => i.id === itemId) || blackMarketItems.value.find((i) => i.id === itemId);
 	if (!shopItem) return;
 
 	const maxUnits = getMaxUnits(shopItem.id, shopItem.type);

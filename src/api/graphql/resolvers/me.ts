@@ -310,7 +310,7 @@ export const meResolvers: {
 			if (!item) {
 				return { success: false, message: "Item não encontrado.", money: player.Money };
 			}
-			if (!item.Shop) {
+			if (!item.Shop && !item.BlackMarket) {
 				return { success: false, message: "Este item não está à venda.", money: player.Money };
 			}
 			if (item.BlackMarket && !isBlackMarketOpen()) {
