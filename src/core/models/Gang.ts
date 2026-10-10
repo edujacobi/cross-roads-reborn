@@ -42,6 +42,11 @@ export enum GangImportFailureReason {
 	NotEnoughMoney
 }
 
+export interface GangCreateResult {
+	gang: Gang | null;
+	reason?: "notEnoughMoney" | "alreadyInGang" | "gangExists" | null;
+}
+
 export interface GangMember {
 	UserId: string;
 	Nickname: string;
@@ -171,25 +176,25 @@ export class Gang {
 	 * @param description The description of the gang.
 	 * @param color The color of the gang.
 	 * @param image The image URL of the gang (optional).
-	 * @returns The created gang object, or null if creation failed.
+	 * @returns The result object with the created gang or a failure reason.
 	 */
-	static async Create(user: User, name: string, acronym: string, description: string, color: GangColorId, image: string | null = null): Promise<Gang | null> {
+	static async Create(user: User, name: string, acronym: string, description: string, color: GangColorId, image: string | null = null): Promise<GangCreateResult> {
 		if (user.Money < Gang.CREATION_COST) {
-			return null;
+			return { gang: null, reason: "notEnoughMoney" };
 		}
 
 		// Check if user is already in a gang
 		const existingMembership = await GangMemberRepository.FindByUserId(user.Id);
 
 		if (existingMembership) {
-			return null;
+			return { gang: null, reason: "alreadyInGang" };
 		}
 
 		// Check if gang with same name exists
 		const existingGang = await GangRepository.FindByName(name);
 
 		if (existingGang) {
-			return null;
+			return { gang: null, reason: "gangExists" };
 		}
 
 		try {
@@ -273,11 +278,11 @@ export class Gang {
 			newGang.CreatedAt = gang.createdAt;
 			newGang.UpdatedAt = gang.updatedAt;
 
-			return newGang;
+			return { gang: newGang, reason: null };
 		}
 		catch (err) {
 			Log.Warning(`Failed to create gang '${name}' for user ${user.Nickname} (Id: ${user.Id}): ${err}`);
-			return null;
+			return { gang: null, reason: null };
 		}
 	}
 

@@ -195,16 +195,19 @@ export const gangResolvers: {
 				return { success: false, message: "User not found." };
 			}
 
-			const gang = await Gang.Create(user, args.name, args.acronym.toLocaleUpperCase("en"), args.description, colorId, args.imageUrl || null);
+			const result = await Gang.Create(user, args.name, args.acronym.toLocaleUpperCase("en"), args.description, colorId, args.imageUrl || null);
 
-			if (gang) {
+			if (result.gang) {
 				return { success: true, message: "Gang created successfully." };
 			}
 
-			return {
-				success: false,
-				message: "Failed to create gang. User may already be in a gang or the name is taken.",
+			const reasonMessages: Record<string, string> = {
+				notEnoughMoney: "You don't have enough money to create a gang.",
+				alreadyInGang: "You are already in a gang.",
+				gangExists: "A gang with this name already exists.",
 			};
+			const message = result.reason ? (reasonMessages[result.reason] ?? "Failed to create gang.") : "Failed to create gang.";
+			return { success: false, message };
 		},
 	},
 };

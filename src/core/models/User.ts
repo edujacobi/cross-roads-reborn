@@ -1736,13 +1736,13 @@ export class User {
 			return null;
 		}
 
-		const gang = await Gang.Create(this, name, acronym, description, color, image);
+		const result = await Gang.Create(this, name, acronym, description, color, image);
 
-		if (gang) {
-			this.GangId = gang.Id;
+		if (result.gang) {
+			this.GangId = result.gang.Id;
 		}
 
-		return gang;
+		return result.gang;
 	}
 
 	/**
