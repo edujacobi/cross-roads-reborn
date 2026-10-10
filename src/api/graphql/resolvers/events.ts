@@ -42,7 +42,7 @@ export const eventResolvers: {
 				|| !Number.isFinite(periodEnd.getTime())
 				|| periodStart >= periodEnd
 			) {
-				return { success: false, message: "Invalid event data." };
+				return { success: false, message: "Dados do evento inválidos." };
 			}
 
 			const success = await Event.Create(args.type, args.value, periodStart, periodEnd);
@@ -57,7 +57,7 @@ export const eventResolvers: {
 			}
 			return {
 				success,
-				message: success ? "Event created successfully." : "Failed to create event.",
+ 			message: success ? "Evento criado com sucesso." : "Falha ao criar evento.",
 			};
 		},
 
@@ -69,13 +69,13 @@ export const eventResolvers: {
 			const admin = assertCanWrite(context);
 			const event = await Event.GetById(args.id);
 			if (!event) {
-				return { success: false, message: "Event not found." };
+				return { success: false, message: "Evento não encontrado." };
 			}
 
 			const updatedData: Partial<Events> = {};
 			if (args.value !== undefined && args.value !== null) {
 				if (!Number.isFinite(args.value)) {
-					return { success: false, message: "Invalid event value." };
+ 				return { success: false, message: "Valor do evento inválido." };
 				}
 				updatedData.value = args.value;
 			}
@@ -91,12 +91,12 @@ export const eventResolvers: {
 				|| !Number.isFinite(periodEnd.getTime())
 				|| periodStart >= periodEnd
 			) {
-				return { success: false, message: "Event start must be before its end." };
+				return { success: false, message: "O início do evento deve ser anterior ao fim." };
 			}
 			if (args.periodStart !== undefined && args.periodStart !== null) updatedData.periodStart = periodStart;
 			if (args.periodEnd !== undefined && args.periodEnd !== null) updatedData.periodEnd = periodEnd;
 			if (!Object.keys(updatedData).length) {
-				return { success: false, message: "No event changes provided." };
+				return { success: false, message: "Nenhuma alteração fornecida para o evento." };
 			}
 
 			const previousValue = {
@@ -118,7 +118,7 @@ export const eventResolvers: {
 			}
 			return {
 				success,
-				message: success ? "Event updated successfully." : "Failed to update event.",
+ 			message: success ? "Evento atualizado com sucesso." : "Falha ao atualizar evento.",
 			};
 		},
 
@@ -143,7 +143,7 @@ export const eventResolvers: {
 			}
 			return {
 				success,
-				message: success ? "Event deleted successfully." : "Event not found or could not be deleted.",
+ 			message: success ? "Evento excluído com sucesso." : "Evento não encontrado ou não pode ser excluído.",
 			};
 		},
 	},

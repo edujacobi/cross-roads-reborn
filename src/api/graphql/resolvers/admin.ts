@@ -88,18 +88,18 @@ export const adminResolvers: {
 		) => {
 			const admin = assertCanWrite(context);
 			if (!Number.isSafeInteger(args.amount)) {
-				return { success: false, message: "Money amount must be a safe integer.", user: null };
+				return { success: false, message: "O valor do dinheiro deve ser um número inteiro válido.", user: null };
 			}
 
 			const target = new User(args.userId);
 			const found = await target.GetInfo();
 			if (!found) {
-				return { success: false, message: "User not found.", user: null };
+				return { success: false, message: "Usuário não encontrado.", user: null };
 			}
 
 			const money = args.mode === "ADD" ? target.Money + args.amount : args.amount;
 			if (!Number.isSafeInteger(money)) {
-				return { success: false, message: "Updated money must be a safe integer.", user: null };
+				return { success: false, message: "O dinheiro atualizado deve ser um número inteiro válido.", user: null };
 			}
 
 			const previousMoney = target.Money;
@@ -110,7 +110,7 @@ export const adminResolvers: {
 
 			return {
 				success: true,
-				message: `Money successfully updated to ${formatMoney(target.Money, Language.English)} for ${target.Nickname}.`,
+				message: `Dinheiro atualizado para ${formatMoney(target.Money, Language.Portuguese)} de ${target.Nickname}.`,
 				user: mapUserDetail(target),
 			};
 		},
@@ -120,7 +120,7 @@ export const adminResolvers: {
 			const target = new User(args.userId);
 			const found = await target.GetInfo();
 			if (!found) {
-				return { success: false, message: "User not found.", user: null };
+				return { success: false, message: "Usuário não encontrado.", user: null };
 			}
 
 			const previousValue = target.Hospital.Time;
@@ -130,7 +130,7 @@ export const adminResolvers: {
 
 			return {
 				success: true,
-				message: `User ${target.Nickname} has been cured from the hospital.`,
+				message: `Usuário ${target.Nickname} foi curado do hospital.`,
 				user: mapUserDetail(target),
 			};
 		},
@@ -140,7 +140,7 @@ export const adminResolvers: {
 			const target = new User(args.userId);
 			const found = await target.GetInfo();
 			if (!found) {
-				return { success: false, message: "User not found.", user: null };
+				return { success: false, message: "Usuário não encontrado.", user: null };
 			}
 
 			const previousValue = {
@@ -164,7 +164,7 @@ export const adminResolvers: {
 
 			return {
 				success: true,
-				message: `User ${target.Nickname} has been freed from prison.`,
+				message: `Usuário ${target.Nickname} foi libertado da prisão.`,
 				user: mapUserDetail(target),
 			};
 		},
@@ -178,7 +178,7 @@ export const adminResolvers: {
 			const target = new User(args.userId);
 			const found = await target.GetInfo();
 			if (!found) {
-				return { success: false, message: "User not found.", user: null };
+				return { success: false, message: "Usuário não encontrado.", user: null };
 			}
 
 			const previousValue = getCooldownValue(target, args.cooldown);
@@ -194,7 +194,7 @@ export const adminResolvers: {
 
 			return {
 				success: true,
-				message: `Cooldown ${args.cooldown} reset for ${target.Nickname}.`,
+				message: `Cooldown ${args.cooldown} resetado para ${target.Nickname}.`,
 				user: mapUserDetail(target),
 			};
 		},
@@ -208,7 +208,7 @@ export const adminResolvers: {
 			const target = new User(args.userId);
 			const found = await target.GetInfo();
 			if (!found) {
-				return { success: false, message: "User not found.", user: null };
+				return { success: false, message: "Usuário não encontrado.", user: null };
 			}
 
 			const previousValue = getActionValue(target, args.action);
@@ -224,7 +224,7 @@ export const adminResolvers: {
 
 			return {
 				success: true,
-				message: `Action ${args.action} removed for ${target.Nickname}.`,
+				message: `Ação ${args.action} removida para ${target.Nickname}.`,
 				user: mapUserDetail(target),
 			};
 		},
@@ -237,15 +237,15 @@ export const adminResolvers: {
 			const admin = assertCanWrite(context);
 			const itemData = ItemList[args.itemId];
 			if (!itemData) {
-				return { success: false, message: `Item with Id ${args.itemId} was not found.`, user: null };
+				return { success: false, message: `Item com Id ${args.itemId} não encontrado.`, user: null };
 			}
 			if (itemData.Type === ItemType.Consumable && (!Number.isInteger(args.hoursOrQuantity) || args.hoursOrQuantity < 0)) {
-				return { success: false, message: "Consumable quantity must be a non-negative integer.", user: null };
+				return { success: false, message: "A quantidade do consumível deve ser um número inteiro não negativo.", user: null };
 			}
 			const target = new User(args.userId);
 			const found = await target.GetInfo();
 			if (!found) {
-				return { success: false, message: "User not found.", user: null };
+				return { success: false, message: "Usuário não encontrado.", user: null };
 			}
 
 			const existingItem = await UserItemRepository.FindByUserAndItem(args.userId, args.itemId);
@@ -324,7 +324,7 @@ export const adminResolvers: {
 			);
 			return {
 				success: true,
-				message: `Item ${itemData.Description[Language.English]} updated for ${target.Nickname}.`,
+				message: `Item ${itemData.Description[Language.Portuguese]} atualizado para ${target.Nickname}.`,
 				user: mapUserDetail(target),
 			};
 		},
@@ -336,17 +336,17 @@ export const adminResolvers: {
 		) => {
 			const admin = assertCanWrite(context);
 			if (!Number.isSafeInteger(args.amount)) {
-				return { success: false, message: "Special coin amount must be a safe integer.", user: null };
+				return { success: false, message: "O valor de moedas especiais deve ser um número inteiro válido.", user: null };
 			}
 
 			const target = new User(args.userId);
 			const found = await target.GetInfo();
 			if (!found) {
-				return { success: false, message: "User not found.", user: null };
+				return { success: false, message: "Usuário não encontrado.", user: null };
 			}
 
 			if (!Number.isSafeInteger(target.SpecialCoin + args.amount)) {
-				return { success: false, message: "Updated special coins must be a safe integer.", user: null };
+				return { success: false, message: "As moedas especiais atualizadas devem ser um número inteiro válido.", user: null };
 			}
 
 			const previousValue = target.SpecialCoin;
@@ -355,7 +355,7 @@ export const adminResolvers: {
 			await recordAdminAction(admin, AdminAuditActionId.AddSpecialCoins, { userId: target.Id }, previousValue, target.SpecialCoin);
 			return {
 				success: true,
-				message: `Added ${args.amount} Special Coins to ${target.Nickname}.`,
+				message: `Adicionado ${args.amount} Moedas Especiais a ${target.Nickname}.`,
 				user: mapUserDetail(target),
 			};
 		},
@@ -369,16 +369,16 @@ export const adminResolvers: {
 			const target = new User(args.userId);
 			const found = await target.GetInfo();
 			if (!found) {
-				return { success: false, message: "User not found.", user: null };
+				return { success: false, message: "Usuário não encontrado.", user: null };
 			}
 			const previousValue = target.Class;
 			await target.SetClass(args.classId);
 			await target.GetInfo();
 			await recordAdminAction(admin, AdminAuditActionId.SetClass, { userId: target.Id }, previousValue, target.Class);
-			const className = ClassList[args.classId]?.Name[Language.English] || "Unknown";
+			const className = ClassList[args.classId]?.Name[Language.Portuguese] || "Desconhecido";
 			return {
 				success: true,
-				message: `Class updated to ${className} for ${target.Nickname}.`,
+				message: `Classe atualizada para ${className} de ${target.Nickname}.`,
 				user: mapUserDetail(target),
 			};
 		},
@@ -392,7 +392,7 @@ export const adminResolvers: {
 			const target = new User(args.userId);
 			const found = await target.GetInfo();
 			if (!found) {
-				return { success: false, message: "User not found.", user: null };
+				return { success: false, message: "Usuário não encontrado.", user: null };
 			}
 			const previousValue = target.Nickname;
 			await target.SetNickname(args.nickname);
@@ -400,7 +400,7 @@ export const adminResolvers: {
 			await recordAdminAction(admin, AdminAuditActionId.SetNickname, { userId: target.Id }, previousValue, target.Nickname);
 			return {
 				success: true,
-				message: `Nickname changed to ${target.Nickname}.`,
+				message: `Apelido alterado para ${target.Nickname}.`,
 				user: mapUserDetail(target),
 			};
 		},
@@ -414,7 +414,7 @@ export const adminResolvers: {
 			const target = new User(args.userId);
 			const found = await target.GetInfo();
 			if (!found) {
-				return { success: false, message: "User not found.", user: null };
+				return { success: false, message: "Usuário não encontrado.", user: null };
 			}
 			const wasEternalVip = target.VipEternal;
 			const previousValue = { eternal: target.VipEternal, expiresAt: target.VipTime };
@@ -433,8 +433,8 @@ export const adminResolvers: {
 			return {
 				success: true,
 				message: args.eternal
-					? `Set ${target.Nickname} as an eternal VIP.`
-					: `Added ${args.days} days of VIP to ${target.Nickname}.`,
+					? `${target.Nickname} foi definido como VIP eterno.`
+					: `Adicionado ${args.days} dias de VIP a ${target.Nickname}.`,
 				user: mapUserDetail(target),
 			};
 		},
@@ -448,7 +448,7 @@ export const adminResolvers: {
 			const target = new User(args.userId);
 			const found = await target.GetInfo();
 			if (!found) {
-				return { success: false, message: "User not found.", user: null };
+				return { success: false, message: "Usuário não encontrado.", user: null };
 			}
 			const previousValue = target.DeadUntil;
 			const deadUntil = await target.Kill(args.days);
@@ -456,7 +456,7 @@ export const adminResolvers: {
 			await recordAdminAction(admin, AdminAuditActionId.KillUser, { userId: target.Id }, previousValue, deadUntil);
 			return {
 				success: true,
-				message: `Killed ${target.Nickname} for ${args.days} days (Dead until ${deadUntil.toISOString()}).`,
+				message: `${target.Nickname} foi morto por ${args.days} dias (Morto até ${deadUntil.toISOString()}).`,
 				user: mapUserDetail(target),
 			};
 		},
@@ -470,7 +470,7 @@ export const adminResolvers: {
 			const target = new User(args.userId);
 			const found = await target.GetInfo();
 			if (!found) {
-				return { success: false, message: "User not found.", user: null };
+				return { success: false, message: "Usuário não encontrado.", user: null };
 			}
 			const previousValue = (await UserBadge.GetList(args.userId)).some(badge => badge.BadgeId === args.badgeId);
 			const success = await UserBadge.Create(args.userId, args.badgeId);
@@ -480,7 +480,7 @@ export const adminResolvers: {
 			}
 			return {
 				success,
-				message: success ? `Badge ${args.badgeId} added to ${target.Nickname}.` : `Failed to add badge (or already exists).`,
+				message: success ? `Badge ${args.badgeId} adicionado a ${target.Nickname}.` : `Falha ao adicionar badge (ou já existe).`,
 				user: mapUserDetail(target),
 			};
 		},
@@ -494,7 +494,7 @@ export const adminResolvers: {
 			const target = new User(args.userId);
 			const found = await target.GetInfo();
 			if (!found) {
-				return { success: false, message: "User not found.", user: null };
+				return { success: false, message: "Usuário não encontrado.", user: null };
 			}
 			const previousValue = (await UserBadge.GetList(args.userId)).some(badge => badge.BadgeId === args.badgeId);
 			const success = await UserBadge.Delete(args.userId, args.badgeId);
@@ -504,7 +504,7 @@ export const adminResolvers: {
 			}
 			return {
 				success,
-				message: success ? `Badge ${args.badgeId} removed from ${target.Nickname}.` : `Failed to remove badge (not found).`,
+				message: success ? `Badge ${args.badgeId} removido de ${target.Nickname}.` : `Falha ao remover badge (não encontrado).`,
 				user: mapUserDetail(target),
 			};
 		},
@@ -516,7 +516,7 @@ export const adminResolvers: {
 		) => {
 			const admin = assertDeveloper(context);
 			if (args.firstUserId === args.secondUserId) {
-				return { success: false, message: "Choose two different users.", user: null };
+				return { success: false, message: "Escolha dois usuários diferentes.", user: null };
 			}
 
 			const [firstUser, secondUser] = await Promise.all([
@@ -524,7 +524,7 @@ export const adminResolvers: {
 				UserRepository.FindById(args.secondUserId, ["id", "nickname"]),
 			]);
 			if (!firstUser || !secondUser) {
-				return { success: false, message: "One or both users were not found.", user: null };
+				return { success: false, message: "Um ou ambos os usuários não foram encontrados.", user: null };
 			}
 
 			const previousValue = {
@@ -550,7 +550,7 @@ export const adminResolvers: {
 
 			return {
 				success: true,
-				message: `Swapped all account data between ${firstUser.nickname} and ${secondUser.nickname}. Updated ${updatedTables.length} table references.`,
+				message: `Todos os dados da conta entre ${firstUser.nickname} e ${secondUser.nickname} foram trocados. ${updatedTables.length} referências de tabela atualizadas.`,
 				user: null,
 			};
 		},
@@ -564,7 +564,7 @@ export const adminResolvers: {
 			const target = await UserRepository.FindById(args.userId, ["id", "nickname"]);
 			const deleted = await UserRepository.DeleteUser(args.userId);
 			if (!deleted) {
-				return { success: false, message: "User not found.", user: null };
+				return { success: false, message: "Usuário não encontrado.", user: null };
 			}
 
 			await recordAdminAction(
@@ -577,7 +577,7 @@ export const adminResolvers: {
 			logger.warn(`Developer ${admin.username} (${admin.userId}) deleted user ${args.userId} and all related data.`);
 			return {
 				success: true,
-				message: "User and all related data deleted.",
+				message: "Usuário e todos os dados relacionados foram excluídos.",
 				user: null,
 			};
 		},

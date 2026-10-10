@@ -20,7 +20,7 @@ import { logger } from "#shared/log";
 
 export function assertAuthenticated(context: GraphQLContext): AuthUser {
 	if (!context.user) {
-		throw new GraphQLError("Authentication required to perform this action.", {
+		throw new GraphQLError("Autenticação necessária para realizar esta ação.", {
 			extensions: { code: "UNAUTHORIZED" },
 		});
 	}
@@ -34,7 +34,7 @@ export type AdminActor = AuthUser & {
 export function assertAdmin(context: GraphQLContext): AuthUser {
 	const user = assertAuthenticated(context);
 	if (user.role === "PLAYER") {
-		throw new GraphQLError("Forbidden: Admin access required.", {
+		throw new GraphQLError("Acesso negado: É necessário acesso de administrador.", {
 			extensions: { code: "FORBIDDEN" },
 		});
 	}
@@ -44,7 +44,7 @@ export function assertAdmin(context: GraphQLContext): AuthUser {
 export function assertCanWrite(context: GraphQLContext): AdminActor {
 	const user = assertAuthenticated(context);
 	if (user.role !== "DEVELOPER" && user.role !== "MODERATOR") {
-		throw new GraphQLError("Forbidden: This role has read-only access.", {
+		throw new GraphQLError("Acesso negado: Este papel tem acesso somente leitura.", {
 			extensions: { code: "FORBIDDEN" },
 		});
 	}
@@ -57,7 +57,7 @@ export function assertCanWrite(context: GraphQLContext): AdminActor {
 export function assertDeveloper(context: GraphQLContext): AdminActor {
 	const user = assertAuthenticated(context);
 	if (user.role !== "DEVELOPER") {
-		throw new GraphQLError("Forbidden: Developer access required.", {
+		throw new GraphQLError("Acesso negado: É necessário acesso de desenvolvedor.", {
 			extensions: { code: "FORBIDDEN" },
 		});
 	}

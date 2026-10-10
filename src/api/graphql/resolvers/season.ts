@@ -119,7 +119,7 @@ export const seasonResolvers: {
 			);
 			return {
 				success: true,
-				message: `Main heist ${args.allowed ? "enabled" : "disabled"}.`,
+				message: `Golpe principal ${args.allowed ? "ativado" : "desativado"}.`,
 			};
 		},
 
@@ -147,9 +147,9 @@ export const seasonResolvers: {
 			return {
 				success: true,
 				message: args.isPreSeason
-					? "Pre-season values reset and a new season started."
-					: "Season ended, winners awarded, announcements sent, and a new season started.",
-			};
+					? "Valores da pré-temporada resetados e uma nova temporada iniciada."
+					: "Temporada encerrada, vencedores premiados, anúncios enviados e uma nova temporada iniciada.",
+		};
 		},
 	},
 };

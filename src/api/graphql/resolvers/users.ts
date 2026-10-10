@@ -51,7 +51,7 @@ export const userResolvers: {
 		) => {
 			const authUser = assertAuthenticated(context);
 			if (authUser.role === "PLAYER" && args.vipOnly) {
-				throw new GraphQLError("Forbidden: VIP filtering is restricted to admins.", {
+				throw new GraphQLError("Acesso negado: Filtragem VIP é restrita a administradores.", {
 					extensions: { code: "FORBIDDEN" },
 				});
 			}
@@ -125,7 +125,7 @@ export const userResolvers: {
 			const limit = args.limit ?? 15;
 			const offset = args.offset ?? 0;
 			if (!Number.isInteger(limit) || limit < 1 || limit > 100 || !Number.isInteger(offset) || offset < 0) {
-				throw new GraphQLError("Invalid ranking pagination.", {
+				throw new GraphQLError("Paginação de ranking inválida.", {
 					extensions: { code: "BAD_USER_INPUT" },
 				});
 			}

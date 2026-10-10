@@ -176,37 +176,37 @@ export const gangResolvers: {
 			};
 			const colorId = colorMap[args.color?.toLowerCase()];
 			if (colorId === undefined) {
-				return { success: false, message: "Invalid color." };
+				return { success: false, message: "Cor inválida." };
 			}
 
 			// Validate input
 			if (!args.name || args.name.length < 4 || args.name.length > 50) {
-				return { success: false, message: "Name must be between 4 and 50 characters." };
+				return { success: false, message: "O nome deve ter entre 4 e 50 caracteres." };
 			}
 			if (!args.acronym || args.acronym.length < 2 || args.acronym.length > 3) {
-				return { success: false, message: "Acronym must be between 2 and 3 characters." };
+				return { success: false, message: "O acrônimo deve ter entre 2 e 3 caracteres." };
 			}
 			if (!args.description || args.description.length > 200) {
-				return { success: false, message: "Description must not exceed 200 characters." };
+				return { success: false, message: "A descrição não pode exceder 200 caracteres." };
 			}
 
 			const user = await new User(authUser.userId).GetInfo();
 			if (!user) {
-				return { success: false, message: "User not found." };
+				return { success: false, message: "Usuário não encontrado." };
 			}
 
 			const result = await Gang.Create(user, args.name, args.acronym.toLocaleUpperCase("en"), args.description, colorId, args.imageUrl || null);
 
 			if (result.gang) {
-				return { success: true, message: "Gang created successfully." };
+				return { success: true, message: "Gangue criada com sucesso." };
 			}
 
 			const reasonMessages: Record<string, string> = {
-				notEnoughMoney: "You don't have enough money to create a gang.",
-				alreadyInGang: "You are already in a gang.",
-				gangExists: "A gang with this name already exists.",
+				notEnoughMoney: "Você não tem dinheiro suficiente para criar uma gangue.",
+				alreadyInGang: "Você já está em uma gangue.",
+				gangExists: "Já existe uma gangue com este nome.",
 			};
-			const message = result.reason ? (reasonMessages[result.reason] ?? "Failed to create gang.") : "Failed to create gang.";
+			const message = result.reason ? (reasonMessages[result.reason] ?? "Falha ao criar gangue.") : "Falha ao criar gangue.";
 			return { success: false, message };
 		},
 	},
