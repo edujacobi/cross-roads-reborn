@@ -149,7 +149,7 @@ export const seasonResolvers: {
 				message: args.isPreSeason
 					? "Valores da pré-temporada resetados e uma nova temporada iniciada."
 					: "Temporada encerrada, vencedores premiados, anúncios enviados e uma nova temporada iniciada.",
-		};
+			};
 		},
 	},
 };

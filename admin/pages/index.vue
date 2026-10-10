@@ -3,11 +3,34 @@
 	lang="ts"
 >
 import { Coins, LogIn, Swords, UsersRound } from "lucide-vue-next";
+import { onMounted, onUnmounted, ref } from "vue";
+import GangIcon from "~/components/icons/GangIcon.vue";
+import HospitalIcon from "~/components/icons/HospitalIcon.vue";
+import JobsIcon from "~/components/icons/JobsIcon.vue";
+import PrisonIcon from "~/components/icons/PrisonIcon.vue";
+import ShopIcon from "~/components/icons/ShopIcon.vue";
+import TrophyIcon from "~/components/icons/TrophyIcon.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import { imagePaths } from "~/constants/imagePaths";
 
 definePageMeta({
 	layout: false,
+});
+
+const glowX = ref(0);
+const glowY = ref(0);
+
+const handleMouseMove = (e: MouseEvent) => {
+	glowX.value = e.clientX;
+	glowY.value = e.clientY;
+};
+
+onMounted(() => {
+	window.addEventListener("mousemove", handleMouseMove);
+});
+
+onUnmounted(() => {
+	window.removeEventListener("mousemove", handleMouseMove);
 });
 
 useSeoMeta({
@@ -27,6 +50,10 @@ useSeoMeta({
 </script>
 
 <template>
+	<div
+		class="mouse-glow"
+		:style="{ left: `${glowX}px`, top: `${glowY}px` }"
+	/>
 	<main class="game-home">
 		<header class="game-home__header">
 			<NuxtImg
@@ -82,6 +109,73 @@ useSeoMeta({
 				/>
 				<h2>Jogue em comunidade</h2>
 				<p>Crie ou participe de uma gangue, colabore com outros jogadores e dispute rankings.</p>
+			</article>
+		</section>
+
+		<p class="game-home__features-description">Saiba o que é possível em Cross Roads Reborn:</p>
+
+		<section
+			class="game-home__features"
+			aria-label="Características do jogo"
+		>
+			<article class="game-feature">
+				<JobsIcon
+					:size="26"
+					variant="solid"
+					aria-hidden="true"
+				/>
+				<h2>Escolha seu emprego</h2>
+				<p>De açougueiro a espião, cada profissão oferece ganhos garantidos diferentes.</p>
+			</article>
+
+			<article class="game-feature">
+				<PrisonIcon
+					:size="26"
+					variant="solid"
+					aria-hidden="true"
+				/>
+				<h2>Cumpra pena</h2>
+				<p>Erros têm consequência: fique na prisão ou tente fugir, por sua conta e risco.</p>
+			</article>
+
+			<article class="game-feature">
+				<HospitalIcon
+					:size="26"
+					variant="solid"
+					aria-hidden="true"
+				/>
+				<h2>Sem plano de saúde</h2>
+				<p>Recupere sua saúde no hospital após brigas ou acidentes para continuar jogando.</p>
+			</article>
+
+			<article class="game-feature">
+				<ShopIcon
+					:size="26"
+					variant="solid"
+					aria-hidden="true"
+				/>
+				<h2>Leve itens</h2>
+				<p>Compre armas e acessórios para se equipar e se liberar novos alvos.</p>
+			</article>
+
+			<article class="game-feature">
+				<GangIcon
+					:size="26"
+					variant="solid"
+					aria-hidden="true"
+				/>
+				<h2>Gangues</h2>
+				<p>Forme sua gangue e domine a cidade com seus aliados.</p>
+			</article>
+
+			<article class="game-feature">
+				<TrophyIcon
+					:size="26"
+					variant="solid"
+					aria-hidden="true"
+				/>
+				<h2>Rankings</h2>
+				<p>Dispute o topo das classificações por riqueza, combates e influência.</p>
 			</article>
 		</section>
 	</main>
@@ -148,6 +242,13 @@ useSeoMeta({
 			grid-template-columns: 1fr;
 		}
 	}
+
+	&__features-description {
+		margin: $spacing-xl 0 $spacing-lg;
+		font-size: 1rem;
+		font-weight: 600;
+		color: $text-secondary;
+	}
 }
 
 .game-feature {
@@ -172,5 +273,19 @@ useSeoMeta({
 		font-size: 0.875rem;
 		line-height: 1.6;
 	}
+}
+
+.mouse-glow {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 400px;
+	height: 400px;
+	margin-left: -200px;
+	margin-top: -200px;
+	pointer-events: none;
+	background: radial-gradient(circle, rgba(34, 197, 94, 0.12) 0%, transparent 70%);
+	z-index: 0;
+	transition: left 0.05s ease-out, top 0.05s ease-out;
 }
 </style>
