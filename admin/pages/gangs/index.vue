@@ -243,7 +243,7 @@ const bases = [
 						v-model="draft.description"
 						class="gangs-page__textarea"
 						placeholder="Descreva sua gangue"
-						maxlength="200"
+						maxlength="500"
 						required
 					/>
 				</div>

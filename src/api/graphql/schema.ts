@@ -638,5 +638,6 @@ export const typeDefs = /* GraphQL */ `
         attemptPrisonEscape: PrisonEscapeStartResult!
         payBribePrison: PrisonBribeResult!
         createGang(name: String!, acronym: String!, description: String!, color: String!, imageUrl: String): GangMutationResult!
+        updateGang(id: ID!, name: String, acronym: String, description: String, color: String, imageUrl: String): GangMutationResult!
     }
 `;

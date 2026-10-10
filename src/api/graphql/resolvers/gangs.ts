@@ -186,8 +186,8 @@ export const gangResolvers: {
 			if (!args.acronym || args.acronym.length < 2 || args.acronym.length > 3) {
 				return { success: false, message: "O acrônimo deve ter entre 2 e 3 caracteres." };
 			}
-			if (!args.description || args.description.length > 200) {
-				return { success: false, message: "A descrição não pode exceder 200 caracteres." };
+			if (!args.description || args.description.length > 500) {
+				return { success: false, message: "A descrição não pode exceder 500 caracteres." };
 			}
 
 			const user = await new User(authUser.userId).GetInfo();
@@ -208,6 +208,79 @@ export const gangResolvers: {
 			};
 			const message = result.reason ? (reasonMessages[result.reason] ?? "Falha ao criar gangue.") : "Falha ao criar gangue.";
 			return { success: false, message };
+		},
+
+		updateGang: async (
+			_: unknown,
+			args: {
+				id: string;
+				name?: string;
+				acronym?: string;
+				description?: string;
+				color?: string;
+				imageUrl?: string
+			},
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+
+			const gang = await Gang.GetById(Number(args.id));
+			if (!gang) {
+				return { success: false, message: "Gangue não encontrada." };
+			}
+
+			// Check edit permission: leader or role with canEditGang
+			const canEdit = gang.CanEdit(authUser.userId);
+			if (!canEdit) {
+				return { success: false, message: "Você não tem permissão para editar esta gangue." };
+			}
+
+			// Map color string to GangColorId enum if provided
+			let colorId: GangColorId | null = null;
+			if (args.color) {
+				const colorMap: Record<string, GangColorId> = {
+					grey: GangColorId.Grey,
+					purple: GangColorId.Purple,
+					blue: GangColorId.Blue,
+					green: GangColorId.Green,
+					yellow: GangColorId.Yellow,
+					orange: GangColorId.Orange,
+					red: GangColorId.Red,
+					pink: GangColorId.Pink,
+				};
+				colorId = colorMap[args.color?.toLowerCase()];
+				if (colorId === undefined) {
+					return { success: false, message: "Cor inválida." };
+				}
+			}
+
+			// Validate name if provided
+			if (args.name && (args.name.length < 4 || args.name.length > 50)) {
+				return { success: false, message: "O nome deve ter entre 4 e 50 caracteres." };
+			}
+
+			// Validate acronym if provided
+			if (args.acronym && (args.acronym.length < 2 || args.acronym.length > 3)) {
+				return { success: false, message: "O acrônimo deve ter entre 2 e 3 caracteres." };
+			}
+
+			// Validate description if provided
+			if (args.description && args.description.length > 500) {
+				return { success: false, message: "A descrição não pode exceder 500 caracteres." };
+			}
+
+			const success = await gang.Edit(
+				args.name ?? null,
+				args.acronym?.toLocaleUpperCase("en") ?? null,
+				args.description ?? null,
+				colorId,
+				args.imageUrl ?? null,
+			);
+
+			if (success) {
+				return { success: true, message: "Gangue atualizada com sucesso." };
+			}
+			return { success: false, message: "Falha ao atualizar gangue." };
 		},
 	},
 };

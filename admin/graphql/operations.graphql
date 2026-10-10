@@ -872,3 +872,10 @@ mutation CreateGang($name: String!, $acronym: String!, $description: String!, $c
 		message
 	}
 }
+
+mutation UpdateGang($id: ID!, $name: String, $acronym: String, $description: String, $color: String, $imageUrl: String) {
+	updateGang(id: $id, name: $name, acronym: $acronym, description: $description, color: $color, imageUrl: $imageUrl) {
+		success
+		message
+	}
+}

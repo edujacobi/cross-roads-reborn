@@ -2,15 +2,18 @@
 	setup
 	lang="ts"
 >
-import { useQuery } from "@vue/apollo-composable";
-import { ArrowLeft, Shield, ShieldAlert, ShieldCheck } from "lucide-vue-next";
+import { useMutation, useQuery } from "@vue/apollo-composable";
+import { ArrowLeft, Pencil, Shield, ShieldAlert, ShieldCheck } from "lucide-vue-next";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseErrorState from "~/components/ui/BaseErrorState.vue";
+import BaseInput from "~/components/ui/BaseInput.vue";
+import BaseModal from "~/components/ui/BaseModal.vue";
+import BaseSelector from "~/components/ui/BaseSelector.vue";
 import BaseTable from "~/components/ui/BaseTable.vue";
 import BaseTableSkeleton from "~/components/ui/BaseTableSkeleton.vue";
 import { imagePaths } from "~/constants/imagePaths";
-import { GetGangDetailDocument } from "~/graphql/generated";
+import { GetGangDetailDocument, UpdateGangDocument } from "~/graphql/generated";
 
 definePageMeta({
 	middleware: "auth",
@@ -24,10 +27,12 @@ const route = useRoute();
 const router = useRouter();
 const { formatMoney } = useMoneyFormat();
 const { getGangBaseImageUrl } = useGangBase();
+const auth = useAuth();
+const { showToast } = useToast();
 
 const gangId = computed(() => String(route.params.id));
 
-const { result: gangData, loading, error } = useQuery(GetGangDetailDocument, () => ({ id: gangId.value }));
+const { result: gangData, loading, error, refetch } = useQuery(GetGangDetailDocument, () => ({ id: gangId.value }));
 
 const gang = computed(() => gangData.value?.gang);
 const expRatio = computed(() => {
@@ -35,6 +40,87 @@ const expRatio = computed(() => {
 	return Math.min(gang.value.experience / gang.value.xpForNextLevel, 1);
 });
 const expPercent = computed(() => Math.round(expRatio.value * 100));
+
+// Edit gang functionality
+const gangColors = [
+	{ value: "grey", label: "Cinza", colorHex: "#89999A" },
+	{ value: "purple", label: "Roxo", colorHex: "#7345C4" },
+	{ value: "blue", label: "Azul", colorHex: "#448aff" },
+	{ value: "green", label: "Verde", colorHex: "#4caf50" },
+	{ value: "yellow", label: "Amarelo", colorHex: "#fdd835" },
+	{ value: "orange", label: "Laranja", colorHex: "#ff9100" },
+	{ value: "red", label: "Vermelho", colorHex: "#e53935" },
+	{ value: "pink", label: "Rosa", colorHex: "#EB459E" },
+];
+
+const canEdit = computed(() => {
+	if (!gang.value) return false;
+	const userId = auth.user.value?.userId;
+	if (!userId) return false;
+	if (gang.value.leaderId === userId) return true;
+	const member = gang.value.members.find((m) => m.userId === userId);
+	if (!member) return false;
+	const role = gang.value.roles.find((r) => r.id === member.roleId);
+	return role?.canEditGang ?? false;
+});
+
+const isEditModalOpen = ref(false);
+const editDraft = ref({
+	name: "",
+	acronym: "",
+	description: "",
+	color: "",
+	imageUrl: "",
+});
+
+const { mutate: updateGangMutation, loading: updating } = useMutation(UpdateGangDocument);
+
+function openEditModal() {
+	if (!gang.value) return;
+	// Map hex color back to color name
+	const hexToColor: Record<string, string> = {
+		"#89999A": "grey",
+		"#7345C4": "purple",
+		"#448AFF": "blue",
+		"#4CAF50": "green",
+		"#FDD835": "yellow",
+		"#FF9100": "orange",
+		"#E53935": "red",
+		"#EB459E": "pink",
+	};
+	editDraft.value = {
+		name: gang.value.name,
+		acronym: gang.value.acronym,
+		description: gang.value.description,
+		color: hexToColor[gang.value.color?.toUpperCase()] ?? "",
+		imageUrl: gang.value.imageUrl ?? "",
+	};
+	isEditModalOpen.value = true;
+}
+
+async function updateGang() {
+	const res = await updateGangMutation({
+		id: gangId.value,
+		name: editDraft.value.name || null,
+		acronym: editDraft.value.acronym || null,
+		description: editDraft.value.description || null,
+		color: editDraft.value.color || null,
+		imageUrl: editDraft.value.imageUrl || null,
+	});
+
+	if (res?.errors?.[0]) {
+		showToast({ text: res.errors[0].message ?? "Falha ao atualizar gangue.", variant: "error" });
+		return;
+	}
+	if (res?.data?.updateGang?.success) {
+		showToast({ text: "Gangue atualizada com sucesso!", variant: "success" });
+		isEditModalOpen.value = false;
+		await refetch();
+	} else {
+		const message = res?.data?.updateGang?.message ?? "Falha ao atualizar gangue.";
+		showToast({ text: message, variant: "error" });
+	}
+}
 </script>
 
 <template>
@@ -88,7 +174,21 @@ const expPercent = computed(() => Math.round(expRatio.value * 100));
 						height="96"
 					/>
 					<div class="gang-header__info">
-						<h1 class="gang-header__title">[{{ gang.acronym }}] {{ gang.name }}</h1>
+						<div class="gang-header__title-row">
+							<h1 class="gang-header__title">[{{ gang.acronym }}] {{ gang.name }}</h1>
+							<BaseButton
+								v-if="canEdit"
+								variant="ghost"
+								size="sm"
+								@click="openEditModal()"
+							>
+								<Pencil
+									:size="16"
+									aria-hidden="true"
+								/>
+								Editar gangue
+							</BaseButton>
+						</div>
 						<p class="gang-header__description">{{ gang.description || "—" }}</p>
 						<p class="gang-header__stats">
 							{{ formatMoney(gang.money) }}
@@ -327,6 +427,89 @@ const expPercent = computed(() => Math.round(expRatio.value * 100));
 					• ID: {{ gang.id }}
 				</div>
 			</div>
+
+			<!-- Edit Gang Modal -->
+			<BaseModal
+				:open="isEditModalOpen"
+				title="Editar gangue"
+				description="Edite as informações da gangue."
+				@update:open="isEditModalOpen = $event"
+			>
+				<form
+					id="edit-gang-form"
+					class="gangs-page__create-form"
+					@submit.prevent="updateGang()"
+				>
+					<BaseInput
+						id="edit-gang-name"
+						label="Nome"
+						placeholder="Nome da gangue"
+						:minlength="4"
+						:maxlength="50"
+						required
+						:model-value="editDraft.name"
+						@update:model-value="editDraft.name = String($event)"
+					/>
+					<BaseInput
+						id="edit-gang-acronym"
+						label="Acrônimo"
+						placeholder="Ex: GUN"
+						:minlength="2"
+						:maxlength="3"
+						required
+						:model-value="editDraft.acronym"
+						@update:model-value="editDraft.acronym = String($event)"
+					/>
+					<div class="gangs-page__form-field">
+						<label
+							for="edit-gang-description"
+							class="gangs-page__input-label"
+						>
+							Descrição
+						</label>
+						<textarea
+							id="edit-gang-description"
+							v-model="editDraft.description"
+							class="gangs-page__textarea"
+							placeholder="Descreva sua gangue"
+							maxlength="500"
+							required
+						/>
+					</div>
+					<BaseSelector
+						id="edit-gang-color"
+						label="Cor"
+						placeholder="Selecione uma cor"
+						:options="gangColors"
+						:model-value="editDraft.color"
+						required
+						@update:model-value="editDraft.color = String($event)"
+					/>
+					<BaseInput
+						id="edit-gang-image"
+						label="URL da imagem (opcional)"
+						placeholder="https://..."
+						:model-value="editDraft.imageUrl"
+						@update:model-value="editDraft.imageUrl = String($event)"
+					/>
+				</form>
+				<template #footer>
+					<BaseButton
+						variant="secondary"
+						:disabled="updating"
+						@click="isEditModalOpen = false"
+					>
+						Cancelar
+					</BaseButton>
+					<BaseButton
+						type="submit"
+						form="edit-gang-form"
+						:disabled="updating"
+					>
+						{{ updating ? "Salvando..." : "Salvar alterações" }}
+					</BaseButton>
+				</template>
+			</BaseModal>
 		</template>
 	</main>
 </template>
@@ -341,6 +524,50 @@ const expPercent = computed(() => Math.round(expRatio.value * 100));
 $highlight-color: var(--highlight-color);
 $border-color: color-mix(in lab, $border-card 100%, $highlight-color 75%);
 $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
+
+.gangs-page {
+	&__create-form {
+		display: flex;
+		flex-direction: column;
+		gap: $spacing-md;
+	}
+
+	&__form-field {
+		display: flex;
+		flex-direction: column;
+		gap: $spacing-xs;
+		width: 100%;
+	}
+
+	&__input-label {
+		font-size: 0.8125rem;
+		font-weight: 500;
+		color: $text-secondary;
+	}
+
+	&__textarea {
+		width: 100%;
+		padding: 0.625rem 0.875rem;
+		background-color: $bg-input;
+		border: 1px solid $border-subtle;
+		border-radius: $radius-sm;
+		color: $text-primary;
+		outline: none;
+		resize: vertical;
+		min-height: 80px;
+		font-family: inherit;
+		font-size: 0.875rem;
+		transition: border-color $transition-fast ease-in-out;
+
+		&::placeholder {
+			color: $text-muted;
+		}
+
+		&:focus {
+			border-color: $color-brand;
+		}
+	}
+}
 
 .gang-detail {
 	display: flex;
@@ -399,6 +626,18 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 		align-items: center;
 		text-align: center;
 		gap: $spacing-md;
+	}
+
+	&__title-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: $spacing-sm;
+
+		@media (max-width: $bp-mobile) {
+			flex-direction: column;
+			align-items: center;
+		}
 	}
 
 	&__avatar {
