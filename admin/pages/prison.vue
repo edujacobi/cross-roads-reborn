@@ -5,6 +5,7 @@
 import { useMutation, useQuery } from "@vue/apollo-composable";
 import { ArrowDown, ArrowUp, ArrowUpDown, Search } from "lucide-vue-next";
 import { computed, onMounted, ref, watch } from "vue";
+import { ClassId } from "~/../src/core/types/Ids";
 import PrisonIcon from "~/components/icons/PrisonIcon.vue";
 import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
@@ -271,6 +272,20 @@ async function handleBribe() {
 
 const { formatMoney } = useMoneyFormat();
 
+const userClass = computed(() => auth.user?.value?.class ?? ClassId.None);
+
+const baseChance = computed(() => {
+	const baseChanceValue = 20;
+	const thiefBonus = userClass.value === ClassId.Thief ? 5 : 0;
+	return baseChanceValue + thiefBonus;
+});
+
+const jetpackChance = computed(() => {
+	const jetpackChanceValue = 50;
+	const thiefBonus = userClass.value === ClassId.Thief ? 5 : 0;
+	return jetpackChanceValue + thiefBonus;
+});
+
 function formatBribeCost() {
 	if (bribeCost.value === 0) {
 		return "...";
@@ -310,7 +325,7 @@ function formatBribeCost() {
 				<div class="info-card__section">
 					<h3>Fugir</h3>
 					<p>
-						Você tem 20% (50% se possuir uma Jetpack) de chance de fugir da prisão!
+						Você tem {{ baseChance }}% ({{ jetpackChance }}% se possuir uma Jetpack) de chance de fugir da prisão!
 						<!--						<span class="info-card__section-icon" @click="openItemModal({id: 17})">-->
 						<!--							<NuxtImg src="images/items/17_Jetpack.png" alt="" width="20"/>-->
 						<!--							Jetpack-->

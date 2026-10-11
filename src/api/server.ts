@@ -133,6 +133,7 @@ export async function createApiServer(): Promise<FastifyInstance> {
 				avatarDecoration,
 				situationId: userModel?.Situation.Id ?? 0,
 				gangId: userModel?.GangId,
+				class: userModel?.Class ?? 0,
 			},
 		});
 	});

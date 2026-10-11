@@ -8,6 +8,7 @@ export interface AuthUser {
 	role: "DEVELOPER" | "MODERATOR" | "HELPER" | "PLAYER";
 	situationId: number;
 	gangId?: number;
+	class: number;
 }
 
 export function useAuth() {
