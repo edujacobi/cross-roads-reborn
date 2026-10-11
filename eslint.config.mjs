@@ -19,7 +19,7 @@ const compat = new FlatCompat({
 
 export default defineConfig([
 	// admin/ is linted by Biome — exclude it here
-	globalIgnores(["build/*", "admin/**"]),
+	globalIgnores(["build/*", "web-interface/**"]),
 	{
 		extends: compat.extends(
 			"eslint:recommended",

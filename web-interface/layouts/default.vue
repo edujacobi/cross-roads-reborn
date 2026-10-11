@@ -7,7 +7,7 @@ import Sidebar from "~/components/Sidebar.vue";
 </script>
 
 <template>
-	<div class="admin-layout">
+	<div class="main-layout">
 		<Sidebar />
 
 		<!-- Main Content Area -->
@@ -28,7 +28,7 @@ import Sidebar from "~/components/Sidebar.vue";
 @use "~/assets/scss/variables" as *;
 @use "~/assets/scss/mixins" as *;
 
-.admin-layout {
+.main-layout {
 	display: flex;
 	height: 100vh;
 	overflow: hidden;

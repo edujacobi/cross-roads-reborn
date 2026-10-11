@@ -45,7 +45,7 @@ onMounted(async () => {
 					aria-hidden="true"
 				/>
 				<h1>Autenticando...</h1>
-				<p>Validando permissões e conectando ao Cross Roads Admin.</p>
+				<p>Validando permissões e conectando ao Cross Roads Reborn.</p>
 			</div>
 
 			<div

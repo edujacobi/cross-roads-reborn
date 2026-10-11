@@ -5,7 +5,12 @@ const config: CodegenConfig = {
 	documents: "graphql/operations.graphql",
 	generates: {
 		"graphql/generated.ts": {
-			plugins: ["typescript", "typescript-operations", "typed-document-node"],
+			plugins: [
+				{ add: { content: "/* eslint-disable */\n// @ts-nocheck" } },
+				"typescript",
+				"typescript-operations",
+				"typed-document-node",
+			],
 			config: {
 				useTypeImports: true,
 			},

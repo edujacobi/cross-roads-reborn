@@ -22,7 +22,7 @@ commands.
 
 The roadmap is:
 [x] Admin Dashboard, with all functionalities from admin commmands.
-[ ] Basic User Info and functionalities. No Complex features.
+[x] Basic User Info and functionalities. No Complex features.
 [ ] Complex Features, like Robberies, Beat Ups, Gang Management, Casino
 [ ] Deprecate Discord Bot Commands
 

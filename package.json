@@ -24,8 +24,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "tsc:check": "tsc --noEmit",
-    "admin:dev": "npm --prefix admin run dev",
-    "admin:build": "npm --prefix admin run build"
+    "web:dev": "npm --prefix web-interface run dev",
+    "web:build": "npm --prefix web-interface run build"
   },
   "keywords": [
     "discord",

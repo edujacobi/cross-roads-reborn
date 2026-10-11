@@ -1,6 +1,6 @@
-﻿# Cross-Roads Reborn — Admin Panel
+﻿# Cross-Roads Reborn — Web Interface
 
-A single-page admin interface for the Cross-Roads Reborn Discord bot,
+A single-page web interface for the Cross-Roads Reborn Discord bot,
 built with **Nuxt 3**, **Apollo Client**, and **GraphQL**.
 
 ---
@@ -11,7 +11,7 @@ Login is done via **Discord OAuth2**. After clicking "Login with Discord" on
 the `/login` page you are redirected to Discord, then back to `/auth/callback`
 where a signed JWT is stored in `localStorage`.
 
-Roles are enforced both on the API server (GraphQL resolvers) and the frontend:
+Roles are enforced both on the API server (GraphQL resolvers) and the frontend for Admin actions:
 
 | Role      | Read | Write (mutations) |
 |-----------|:----:|:-----------------:|

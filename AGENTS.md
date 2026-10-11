@@ -80,6 +80,15 @@ serving as the contract between them.
 - **Access**: Private to the `Repositories` layer. Commands, Models, and Strategies should never query the database
   directly.
 
+### 6. The New Frontend (Web Interface with Nuxt/Vue)
+
+- **Location**: `web-interface/`
+- **Role**: Provides a web-based interface for users to interact with the bot's features
+- **Framework**: Nuxt 3 with Vue 3 and TypeScript.
+- **Restrictions**:
+    - Should respond only in Language.Portuguese (Brazilian Portuguese) for user-facing text.
+    - All API calls should be routed through a dedicated backend service or API layer, not directly to the database.
+
 ## Localization
 
 - **User Facing**: All strings sent to Discord must be localized.
