@@ -35,7 +35,8 @@ useHead({
 
 type Job = GetJobsQuery["jobs"][number];
 
-const { user: authUser } = useAuth();
+const auth = useAuth();
+const { user: authUser } = auth;
 const { formatMoney } = useMoneyFormat();
 const { showToast } = useToast();
 const { distance, decimalHoursToDeclarative } = useDateFormat();
@@ -128,7 +129,7 @@ async function handleStartJob(job: Job) {
 		const result = await startJob({ jobId: job.id });
 		if (result?.data?.startJob.success) {
 			showToast({ text: result.data.startJob.message, variant: "success" });
-			await refetchStatus();
+			await Promise.all([auth.fetchUser(), refetchStatus()]);
 		} else {
 			showToast({ text: result?.data?.startJob.message || "Erro ao iniciar trabalho.", variant: "error" });
 		}
@@ -142,7 +143,7 @@ async function handleCancelJob() {
 		const result = await cancelJob();
 		if (result?.data?.cancelJob.success) {
 			showToast({ text: result.data.cancelJob.message, variant: "success" });
-			await refetchStatus();
+			await Promise.all([auth.fetchUser(), refetchStatus()]);
 		} else {
 			showToast({ text: result?.data?.cancelJob.message || "Erro ao cancelar trabalho.", variant: "error" });
 		}

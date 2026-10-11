@@ -43,20 +43,23 @@ function showFeedback(type: "success" | "error", message: string) {
 	showToast({ variant: type, text: message });
 }
 
-function refreshUserDetails() {
-	return client.refetchQueries({
-		include: [
-			"GetUserProfile",
-			"GetUserInventory",
-			"GetUserInvestment",
-			"GetUserGang",
-			"GetUserActivityStats",
-			"GetUserStatus",
-			"GetUserMetadata",
-			"GetUserSelfActions",
-			"GetUserAdminActions",
-		],
-	});
+async function refreshUserDetails() {
+	await Promise.all([
+		auth.fetchUser(),
+		client.refetchQueries({
+			include: [
+				"GetUserProfile",
+				"GetUserInventory",
+				"GetUserInvestment",
+				"GetUserGang",
+				"GetUserActivityStats",
+				"GetUserStatus",
+				"GetUserMetadata",
+				"GetUserSelfActions",
+				"GetUserAdminActions",
+			],
+		}),
+	]);
 }
 </script>
 

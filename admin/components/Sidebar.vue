@@ -38,6 +38,7 @@ const mobileMenu = ref<HTMLInputElement | null>(null);
 const isLogoutModalOpen = ref(false);
 const isCollapsed = ref(false);
 const hasNew = hasUnreadUpdates();
+const { getSituationName, getSituationImageUrl } = useSituation();
 
 const { result: blackMarketResult } = useQuery(GetBlackMarketOpenDocument);
 const blackMarketOpen = computed(() => blackMarketResult.value?.blackMarketOpen ?? false);
@@ -95,12 +96,14 @@ const navigationGroups = computed(() => [
 				label: "Prisão",
 				to: { name: "prison" },
 				icon: PrisonIcon,
+				size: 20,
 				activeRouteNames: ["prison"],
 			},
 			{
 				label: "Gangues",
 				to: { name: "gangs" },
 				icon: GangIcon,
+				size: 20,
 				activeRouteNames: ["gangs"],
 			},
 			{
@@ -181,22 +184,8 @@ watch(
 
 const user = computed(() => {
 	const authUser = auth.user.value;
-	const mapRole = {
-		DEVELOPER: {
-			description: "Desenvolvedor",
-			image: "/images/badges/Developer.png",
-		},
-		MODERATOR: {
-			description: "Moderador",
-			image: "/images/badges/Moderator.png",
-		},
-		HELPER: {
-			description: "Ajudante",
-			image: "/images/badges/Helper.png",
-		},
-	};
 
-	if (!authUser || authUser.role === "PLAYER") {
+	if (!authUser) {
 		return;
 	}
 
@@ -205,7 +194,8 @@ const user = computed(() => {
 		username: authUser.username,
 		avatarUrl: authUser.avatar || useFallbackUserImage(authUser.userId),
 		avatarDecoration: authUser.avatarDecoration || "default",
-		role: mapRole[authUser.role],
+		situationText: getSituationName(authUser.situationId),
+		situationImageUrl: getSituationImageUrl(authUser.situationId),
 	};
 });
 </script>
@@ -217,7 +207,7 @@ const user = computed(() => {
 		class="mobile-menu-toggle"
 		type="checkbox"
 		aria-label="Menu de navegação"
-		aria-controls="admin-sidebar"
+		aria-controls="user-sidebar"
 	>
 	<!-- biome-ignore lint/a11y/noLabelWithoutControl: External labels toggle the CSS-controlled checkbox. -->
 	<label
@@ -237,9 +227,9 @@ const user = computed(() => {
 		aria-hidden="true"
 	/>
 	<aside
-		id="admin-sidebar"
+		id="user-sidebar"
 		:class="['sidebar', { 'sidebar--collapsed': isCollapsed }]"
-		aria-label="Painel administrativo"
+		aria-label="Painel do usuário"
 	>
 		<div class="brand">
 			<div class="brand-icon">
@@ -260,7 +250,7 @@ const user = computed(() => {
 				:data-popover-text="isCollapsed ? 'Expandir menu' : 'Recolher menu'"
 				data-popover-direction="top"
 				:aria-expanded="!isCollapsed"
-				aria-controls="admin-sidebar"
+				aria-controls="user-sidebar"
 				@click="toggleCollapsed"
 			>
 				<component
@@ -332,30 +322,30 @@ const user = computed(() => {
 			</div>
 		</nav>
 
-		<div class="admin-profile">
+		<div class="user-profile">
 			<NuxtLink
 				data-popover-text="Meu inventário"
 				data-popover-direction="top"
 				:to="`/users/${user?.id}`"
-				class="admin-info"
-				:aria-label="user?.username ? `Perfil de ${user.username}` : 'Perfil do administrador'"
+				class="user-info"
+				:aria-label="user?.username ? `Perfil de ${user.username}` : 'Perfil do usuário'"
 			>
 				<LazyNuxtImg
 					:src="user?.avatarUrl"
-					:class="['admin-avatar', 'user-avatar', `user-avatar--${user?.avatarDecoration}`]"
+					:class="['user-avatar', `user-avatar--${user?.avatarDecoration}`]"
 					alt=""
 				/>
-				<div class="admin-details">
-					<span class="admin-name">{{ user?.username }}</span>
-					<p class="admin-role">
+				<div class="user-details">
+					<span class="user-name">{{ user?.username }}</span>
+					<p class="user-situation">
 						<NuxtImg
-							:src="user?.role.image"
-							class="img-role"
+							:src="user?.situationImageUrl"
+							class="img-situation"
 							width="16"
 							height="16"
 							alt=""
 						/>
-						{{ user?.role.description }}
+						{{ user?.situationText }}
 					</p>
 				</div>
 			</NuxtLink>
@@ -575,7 +565,7 @@ const user = computed(() => {
 		}
 	}
 
-	.admin-profile {
+	.user-profile {
 		flex-shrink: 0;
 		border-top: 1px solid $border-subtle;
 		display: flex;
@@ -585,7 +575,7 @@ const user = computed(() => {
 		justify-content: flex-start;
 		background-color: $bg-card-header;
 
-		.admin-info {
+		.user-info {
 			display: flex;
 			flex: 1;
 			min-width: 0;
@@ -599,34 +589,33 @@ const user = computed(() => {
 			}
 		}
 
-		.admin-avatar {
+		.user-avatar {
 			width: 2.375rem;
 			height: 2.375rem;
-			border-radius: $radius-full;
 			border-width: 2px;
 			flex: 0 0 auto;
 		}
 
-		.admin-role {
+		.user-situation {
 			color: $text-secondary;
 			font-size: 0.85rem;
 			display: flex;
 			align-items: center;
 			gap: $spacing-xs;
 
-			.img-role {
+			.img-situation {
 				width: 16px;
 			}
 		}
 
-		.admin-details {
+		.user-details {
 			flex: 1;
 			min-width: 0;
 			max-width: 10rem;
 			overflow: hidden;
 			transition: max-width $transition-slow ease, opacity $transition-normal ease;
 
-			.admin-name {
+			.user-name {
 				display: block;
 				font-size: 0.8125rem;
 				font-weight: 600;
@@ -711,12 +700,12 @@ const user = computed(() => {
 				}
 			}
 
-			.admin-profile {
-				.admin-info {
+			.user-profile {
+				.user-info {
 					padding: 0.5rem;
 				}
 
-				.admin-details {
+				.user-details {
 					max-width: 0;
 					opacity: 0;
 				}

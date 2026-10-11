@@ -35,7 +35,8 @@ useHead({
 
 type Item = GetItemsQuery["items"][number];
 
-const { user: authUser } = useAuth();
+const auth = useAuth();
+const { user: authUser } = auth;
 const { formatMoney } = useMoneyFormat();
 const { showToast } = useToast();
 const { openItemModal } = useItemDetailModal();
@@ -275,8 +276,7 @@ async function confirmPurchase() {
 		for (const itemId of purchasedItemIds) {
 			removeFromCart(itemId);
 		}
-		await refetchProfile();
-		await refetchInventory();
+		await Promise.all([auth.fetchUser(), refetchProfile(), refetchInventory()]);
 
 		if (failMessages.length > 0) {
 			showToast({
