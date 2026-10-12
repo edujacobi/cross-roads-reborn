@@ -120,7 +120,7 @@ describe("Admin action mutations", () => {
 			}, { user: moderator }),
 		).resolves.toEqual({
 			success: false,
-			message: "Consumable quantity must be a non-negative integer.",
+			message: "A quantidade do consumível deve ser um número inteiro não negativo.",
 			user: null,
 		});
 
@@ -197,7 +197,7 @@ describe("Admin action mutations", () => {
 
 		await expect(
 			resolvers.Mutation.setVip(null, { userId: "target123", days: 30, eternal: true }, { user: moderator }),
-		).resolves.toMatchObject({ success: true, message: expect.stringContaining("eternal VIP") });
+		).resolves.toMatchObject({ success: true, message: expect.stringContaining("VIP eterno") });
 
 		expect(setEternalVip).toHaveBeenCalledWith(true);
 		expect(addVip).not.toHaveBeenCalled();
@@ -258,7 +258,7 @@ describe("Admin action mutations", () => {
 				firstUserId: "first123",
 				secondUserId: "second123",
 			}, { user: moderator }),
-		).rejects.toThrow("Forbidden: Developer access required.");
+		).rejects.toThrow("Acesso negado: É necessário acesso de desenvolvedor.");
 
 		expect(findById).not.toHaveBeenCalled();
 		expect(swapUsers).not.toHaveBeenCalled();
@@ -279,7 +279,7 @@ describe("Admin action mutations", () => {
 			}, { user: developer }),
 		).resolves.toMatchObject({
 			success: true,
-			message: expect.stringContaining("First and Second"),
+			message: expect.stringContaining("First e Second foram trocados"),
 		});
 
 		expect(findById).toHaveBeenCalledTimes(2);
@@ -295,7 +295,7 @@ describe("Admin action mutations", () => {
 				firstUserId: "same123",
 				secondUserId: "same123",
 			}, { user: developer }),
-		).resolves.toMatchObject({ success: false, message: "Choose two different users." });
+		).resolves.toMatchObject({ success: false, message: "Escolha dois usuários diferentes." });
 
 		expect(findById).not.toHaveBeenCalled();
 		expect(swapUsers).not.toHaveBeenCalled();

@@ -93,20 +93,20 @@ describe("API Auth and Resolvers", () => {
 	describe("RBAC Permissions on GraphQL Resolvers", () => {
 		it("should reject queries when unauthenticated", async () => {
 			await expect(resolvers.Query.dashboardStats(null, {}, { user: null })).rejects.toThrow(
-				"Authentication required to perform this action.",
+				"Autenticação necessária para realizar esta ação.",
 			);
 		});
 
 		it("should reject admin queries from players", async () => {
 			await expect(
 				resolvers.Query.dashboardStats(null, {}, { user: playerUser }),
-			).rejects.toThrow("Forbidden: Admin access required.");
+			).rejects.toThrow("Acesso negado: É necessário acesso de administrador.");
 		});
 
 		it("should reject VIP filtering from players", async () => {
 			await expect(
 				resolvers.Query.users(null, { vipOnly: true }, { user: playerUser }),
-			).rejects.toThrow("Forbidden: VIP filtering is restricted to admins.");
+			).rejects.toThrow("Acesso negado: Filtragem VIP é restrita a administradores.");
 		});
 
 		it("allows Developers and moderators to read audit logs, but rejects helpers", async () => {
@@ -129,7 +129,7 @@ describe("API Auth and Resolvers", () => {
 		it("should reject mutations when unauthenticated", async () => {
 			await expect(
 				resolvers.Mutation.cureUser(null, { userId: "target123" }, { user: null }),
-			).rejects.toThrow("Authentication required to perform this action.");
+			).rejects.toThrow("Autenticação necessária para realizar esta ação.");
 		});
 
 		it("should allow dashboard queries when user is HELPER", async () => {
@@ -180,13 +180,13 @@ describe("API Auth and Resolvers", () => {
 			vi.spyOn(User.prototype, "GetInfo").mockResolvedValue(null);
 			await expect(
 				resolvers.Mutation.cureUser(null, { userId: "target123" }, { user: modUser }),
-			).resolves.toMatchObject({ success: false, message: "User not found." });
+			).resolves.toMatchObject({ success: false, message: "Usuário não encontrado." });
 		});
 
 		it("should reject mutations when user is HELPER (read-only)", async () => {
 			await expect(
 				resolvers.Mutation.cureUser(null, { userId: "target123" }, { user: helperUser }),
-			).rejects.toThrow("Forbidden: This role has read-only access.");
+			).rejects.toThrow("Acesso negado: Este papel tem acesso somente leitura.");
 		});
 
 		it("should allow developers to delete users", async () => {
@@ -196,7 +196,7 @@ describe("API Auth and Resolvers", () => {
 				resolvers.Mutation.deleteUser(null, { userId: "target123" }, { user: devUser }),
 			).resolves.toMatchObject({
 				success: true,
-				message: "User and all related data deleted.",
+				message: "Usuário e todos os dados relacionados foram excluídos.",
 			});
 			expect(deleteUser).toHaveBeenCalledWith("target123");
 		});
@@ -206,7 +206,7 @@ describe("API Auth and Resolvers", () => {
 
 			await expect(
 				resolvers.Mutation.deleteUser(null, { userId: "target123" }, { user: modUser }),
-			).rejects.toThrow("Forbidden: Developer access required.");
+			).rejects.toThrow("Acesso negado: É necessário acesso de desenvolvedor.");
 			expect(deleteUser).not.toHaveBeenCalled();
 		});
 
@@ -217,7 +217,7 @@ describe("API Auth and Resolvers", () => {
 					amount: 1000,
 					mode: "ADD",
 				}, { user: helperUser }),
-			).rejects.toThrow("Forbidden: This role has read-only access.");
+			).rejects.toThrow("Acesso negado: Este papel tem acesso somente leitura.");
 		});
 
 		it("should reject non-integer and unsafe setMoney amounts", async () => {
@@ -228,7 +228,7 @@ describe("API Auth and Resolvers", () => {
 					resolvers.Mutation.setMoney(null, { userId: "target123", amount, mode: "ADD" }, { user: modUser }),
 				).resolves.toMatchObject({
 					success: false,
-					message: "Money amount must be a safe integer.",
+					message: "O valor do dinheiro deve ser um número inteiro válido.",
 				});
 			}
 
@@ -243,7 +243,7 @@ describe("API Auth and Resolvers", () => {
 					resolvers.Mutation.addSpecialCoins(null, { userId: "target123", amount }, { user: modUser }),
 				).resolves.toMatchObject({
 					success: false,
-					message: "Special coin amount must be a safe integer.",
+					message: "O valor de moedas especiais deve ser um número inteiro válido.",
 				});
 			}
 
@@ -262,7 +262,7 @@ describe("API Auth and Resolvers", () => {
 					periodStart: "2027-01-01T00:00:00.000Z",
 					periodEnd: "2027-01-02T00:00:00.000Z",
 				}, { user: helperUser }),
-			).rejects.toThrow("Forbidden: This role has read-only access.");
+			).rejects.toThrow("Acesso negado: Este papel tem acesso somente leitura.");
 
 			expect(createEvent).not.toHaveBeenCalled();
 		});
@@ -277,7 +277,7 @@ describe("API Auth and Resolvers", () => {
 					periodStart: "2027-01-02T00:00:00.000Z",
 					periodEnd: "2027-01-01T00:00:00.000Z",
 				}, { user: modUser }),
-			).resolves.toEqual({ success: false, message: "Invalid event data." });
+			).resolves.toEqual({ success: false, message: "Dados do evento inválidos." });
 
 			expect(createEvent).not.toHaveBeenCalled();
 		});

@@ -97,6 +97,6 @@ describe("Player self-service actions", () => {
 	it("rejects self-service mutations when unauthenticated", async () => {
 		await expect(
 			resolvers.Mutation.changeOwnClass(null, { classId: ClassId.Thief }, { user: null }),
-		).rejects.toThrow("Authentication required to perform this action.");
+		).rejects.toThrow("Autenticação necessária para realizar esta ação.");
 	});
 });
