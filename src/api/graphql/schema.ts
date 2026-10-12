@@ -300,6 +300,7 @@ export const typeDefs = /* GraphQL */ `
         currentJobId: Int
         jobEndsIn: String
         isScavenging: Boolean!
+        scavengingId: Int
         isWanted: Boolean!
         wantedTime: String
         isRobbing: Boolean!
@@ -553,6 +554,46 @@ export const typeDefs = /* GraphQL */ `
         duration: Int!
     }
 
+    enum ScavengeRewardItemType {
+        Consumable
+        Duration
+    }
+
+    type ScavengeRewardItem {
+        itemId: Int!
+        name: String!
+        itemType: ScavengeRewardItemType!
+        durationMin: Float!
+        durationMax: Float!
+        defaultImagePath: String!
+    }
+
+    type ScavengeLocation {
+        id: Int!
+        name: String!
+        subtitle: String!
+        emoteString: String!
+        needAttack: Int!
+        successChance: Float!
+        prisonChance: Float!
+        hospitalChance: Float!
+        rewardMoneyMin: Float!
+        rewardMoneyMax: Float!
+        rewardItems: [ScavengeRewardItem!]!
+        prisonText: String!
+        hospitalText: String!
+    }
+
+    type ScavengeStatus {
+        isScavenging: Boolean!
+        scavengingId: Int
+        scavengeTime: String
+    }
+
+    type ScavengeStartResult {
+        success: Boolean!
+        message: String!
+    }
 
     type PrisonBribeResult {
         success: Boolean!
@@ -598,6 +639,8 @@ export const typeDefs = /* GraphQL */ `
         bribeCost: Float
         privateHospitalCost: Float
         myPrisonStatus: MyPrisonStatus!
+        scavengeLocations: [ScavengeLocation!]!
+        myScavengeStatus: ScavengeStatus!
     }
 
     type ShopBuyResult {
@@ -637,6 +680,7 @@ export const typeDefs = /* GraphQL */ `
         payPrivateHospital: HospitalResult!
         attemptPrisonEscape: PrisonEscapeStartResult!
         payBribePrison: PrisonBribeResult!
+        startScavenge(placeId: Int!): ScavengeStartResult!
         createGang(name: String!, acronym: String!, description: String!, color: String!, imageUrl: String): GangMutationResult!
         updateGang(id: ID!, name: String, acronym: String, description: String, color: String, imageUrl: String): GangMutationResult!
     }

@@ -126,6 +126,11 @@ export class Scavenge {
 
 		await this.User.GetInfo();
 
+		// Guard: if already ended (IsScavengingId cleared), return empty result to prevent double execution
+		if (this.User.Scavenge.IsScavengingId === null) {
+			return { success: false };
+		}
+
 		const success = Math.random() * 100 < this.SuccessChance;
 		const result: {
 			success: boolean;

@@ -879,3 +879,43 @@ mutation UpdateGang($id: ID!, $name: String, $acronym: String, $description: Str
 		message
 	}
 }
+
+	query GetScavengeLocations {
+		scavengeLocations {
+			id
+			name
+			subtitle
+			emoteString
+			needAttack
+			successChance
+			prisonChance
+			hospitalChance
+			rewardMoneyMin
+			rewardMoneyMax
+			rewardItems {
+				itemId
+				name
+				itemType
+				durationMin
+				durationMax
+				defaultImagePath
+			}
+			prisonText
+			hospitalText
+		}
+	}
+
+query GetMyScavengeStatus {
+	myScavengeStatus {
+		isScavenging
+		scavengingId
+		scavengeTime
+	}
+}
+
+mutation StartScavenge($placeId: Int!) {
+	startScavenge(placeId: $placeId) {
+		success
+		message
+	}
+}

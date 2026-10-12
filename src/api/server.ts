@@ -9,6 +9,8 @@ import type { GraphQLContext } from "#api/types";
 import { logger } from "#shared/log";
 import { User } from "#core/models/User";
 import { Language } from "#core/models/Language";
+import { Scavenge } from "#core/models/Scavenge";
+import { ScavengeList } from "#core/types/Scavenge";
 
 let server: FastifyInstance | null = null;
 
@@ -222,6 +224,176 @@ export async function createApiServer(): Promise<FastifyInstance> {
 				type: "not-escaping",
 				isInPrison: userModel.IsInPrison(),
 				escapeHasTried: userModel.Escape.HasTried,
+			}));
+			reply.raw.end();
+		}
+	});
+
+	// SSE: Scavenge Status
+	app.get("/sse/scavenge-status", async (req: FastifyRequest, reply: FastifyReply) => {
+		const authHeader = req.headers.authorization;
+		if (!authHeader || !authHeader.startsWith("Bearer ")) {
+			return reply.status(401).send({ error: "Missing or invalid authorization header." });
+		}
+
+		const token = authHeader.substring(7);
+		const user = verifyAuthToken(token);
+		if (!user) {
+			return reply.status(401).send({ error: "Invalid or expired token." });
+		}
+
+		const userModel = new User(user.userId);
+		const found = await userModel.GetInfo();
+		if (!found) {
+			return reply.status(404).send({ error: "User not found." });
+		}
+
+		// Set SSE headers with CORS
+		const origin = req.headers.origin || "http://localhost:3000";
+		reply.raw.writeHead(200, {
+			"Content-Type": "text/event-stream",
+			"Cache-Control": "no-cache",
+			Connection: "keep-alive",
+			"X-Accel-Buffering": "no",
+			"Access-Control-Allow-Origin": origin,
+			"Access-Control-Allow-Headers": "Content-Type, Authorization",
+		});
+
+		const sendEvent = (data: string) => {
+			reply.raw.write(`data: ${data}\n\n`);
+		};
+
+		if (userModel.IsScavenging()) {
+			const scavengingId = userModel.Scavenge.IsScavengingId!;
+			const placeName = ScavengeList[scavengingId]?.Description[Language.Portuguese] || "Local desconhecido";
+			sendEvent(JSON.stringify({
+				type: "scavenging",
+				scavengingId,
+				placeName,
+			}));
+
+			// Calculate wait time same as bot command: 10s + 2s per placeId
+			const waitMs = 10_000 + (2_000 * scavengingId);
+
+			// Poll every 2s to check if scavenge ended early (e.g. cleared by admin)
+			const pollInterval = setInterval(async () => {
+				const freshUser = new User(user.userId);
+				const freshFound = await freshUser.GetInfo();
+				if (!freshFound) {
+					clearInterval(pollInterval);
+					sendEvent(JSON.stringify({ type: "closed" }));
+					reply.raw.end();
+					return;
+				}
+
+				// If user is no longer scavenging before the wait period, end early
+				if (!freshUser.IsScavenging()) {
+					clearInterval(pollInterval);
+					sendEvent(JSON.stringify({
+						type: "scavenge-ended",
+						success: false,
+						rewardDescription: "",
+						hospitalized: false,
+						hospitalTime: null,
+						inprisoned: false,
+						prisonTime: null,
+						failureReason: "Vasculhar foi interrompido.",
+					}));
+					reply.raw.end();
+				}
+			}, 2000);
+
+			// After the wait period, call EndScavenge (idempotent guard prevents double execution)
+			setTimeout(async () => {
+				clearInterval(pollInterval);
+
+				const freshUser = new User(user.userId);
+				const freshFound = await freshUser.GetInfo();
+				if (!freshFound) {
+					sendEvent(JSON.stringify({ type: "closed" }));
+					reply.raw.end();
+					return;
+				}
+
+				// EndScavenge is idempotent: if already ended by another caller, it returns early
+				const scavenge = new Scavenge(freshUser, scavengingId);
+				const result = await scavenge.EndScavenge();
+
+				// If EndScavenge returned early (already ended), determine result from user state
+				if (result.success === false && !result.rewardDescription && !result.hospitalized && !result.inprisoned) {
+					const place = ScavengeList[scavengingId];
+					const hospitalized = freshUser.IsInHospital();
+					const inprisoned = freshUser.IsInPrison();
+					const success = !hospitalized && !inprisoned;
+
+					let failureReason = "";
+					if (!success && place) {
+						if (hospitalized) {
+							failureReason = place.Hospital.Text[Language.Portuguese];
+						} else if (inprisoned) {
+							failureReason = place.Prison.Text[Language.Portuguese];
+						}
+					}
+
+					sendEvent(JSON.stringify({
+						type: "scavenge-ended",
+						success,
+						rewardDescription: "",
+						hospitalized,
+						hospitalTime: hospitalized ? freshUser.Hospital.Time.toISOString() : null,
+						inprisoned,
+						prisonTime: inprisoned ? freshUser.Prison.Time.toISOString() : null,
+						failureReason,
+					}));
+					reply.raw.end();
+					return;
+				}
+
+				// Determine failure reason from the place
+				let failureReason = "";
+				if (!result.success) {
+					const place = ScavengeList[scavengingId];
+					if (place) {
+						if (result.hospitalized) {
+							failureReason = place.Hospital.Text[Language.Portuguese];
+						} else if (result.inprisoned) {
+							failureReason = place.Prison.Text[Language.Portuguese];
+						}
+					}
+				}
+
+				sendEvent(JSON.stringify({
+					type: "scavenge-ended",
+					success: result.success,
+					rewardDescription: result.rewardDescription || "",
+					hospitalized: result.hospitalized || false,
+					hospitalTime: result.hospitalTime ? result.hospitalTime.toISOString() : null,
+					inprisoned: result.inprisoned || false,
+					prisonTime: result.prisonTime ? result.prisonTime.toISOString() : null,
+					failureReason,
+				}));
+				reply.raw.end();
+			}, waitMs);
+
+			// Timeout: 120s (scavenge wait is 10-26s, plus safety margin)
+			const SCAVENGE_SSE_TIMEOUT_MS = 120_000;
+			const timeout = setTimeout(() => {
+				clearInterval(pollInterval);
+				sendEvent(JSON.stringify({ type: "closed" }));
+				reply.raw.end();
+			}, SCAVENGE_SSE_TIMEOUT_MS);
+			timeout.unref();
+
+			// Cleanup on client disconnect
+			req.raw.on("close", () => {
+				clearInterval(pollInterval);
+				clearTimeout(timeout);
+			});
+		}
+		else {
+			// Not scavenging, send current status and close
+			sendEvent(JSON.stringify({
+				type: "not-scavenging",
 			}));
 			reply.raw.end();
 		}

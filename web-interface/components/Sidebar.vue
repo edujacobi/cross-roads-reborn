@@ -21,6 +21,7 @@ import GangIcon from "~/components/icons/GangIcon.vue";
 import HospitalIcon from "~/components/icons/HospitalIcon.vue";
 import JobsIcon from "~/components/icons/JobsIcon.vue";
 import PrisonIcon from "~/components/icons/PrisonIcon.vue";
+import ScavengeIcon from "~/components/icons/ScavengeIcon.vue";
 import ShopIcon from "~/components/icons/ShopIcon.vue";
 import TrophyIcon from "~/components/icons/TrophyIcon.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
@@ -84,6 +85,13 @@ const navigationGroups = computed(() => [
 				icon: JobsIcon,
 				size: 20,
 				activeRouteNames: ["jobs"],
+			},
+			{
+				label: "Vasculhar",
+				to: { name: "scavenge" },
+				icon: ScavengeIcon,
+				size: 20,
+				activeRouteNames: ["scavenge"],
 			},
 			{
 				label: "Hospital",

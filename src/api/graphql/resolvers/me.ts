@@ -7,6 +7,9 @@ import { BundleId, ItemId } from "#core/types/Ids";
 import { BundleList } from "#core/types/Skins";
 import { getJobList, JobList } from "#core/types/Jobs";
 import type { JobId } from "#core/types/Jobs";
+import { ScavengeFailureReason, ScavengeList } from "#core/types/Scavenge";
+import { Scavenge } from "#core/models/Scavenge";
+import { getScavengeDurationClassModifier } from "#core/types/Classes";
 import { ClassId, ClassList } from "#core/types/Classes";
 import { getJobClassModifier } from "#core/types/Classes";
 import { Event, EventType } from "#core/models/Event";
@@ -106,6 +109,71 @@ export const meResolvers: {
 					needItems,
 				};
 			});
+		},
+
+		scavengeLocations: async (_: unknown, __: unknown, context: GraphQLContext) => {
+			const authUser = assertAuthenticated(context);
+			const player = new User(authUser.userId);
+			await player.GetInfo();
+
+			const userClassDurationModifier = getScavengeDurationClassModifier(player.Class);
+
+			return Object.values(ScavengeList).map((place) => {
+ 				const rewardItems = place.Reward.Items.map((item: { Id: number; Duration: { Min: number; Max: number } }) => {
+					const itemDef = ItemList[item.Id];
+					const defaultFilename = `${item.Id}_${ItemId[item.Id]}.png`;
+					const isConsumable = itemDef?.Type === ItemType.Consumable;
+					const durationMin = isConsumable
+						? item.Duration.Min + 1
+						: item.Duration.Min * userClassDurationModifier;
+					const durationMax = isConsumable
+						? item.Duration.Max + 1
+						: item.Duration.Max * userClassDurationModifier;
+					return {
+						itemId: item.Id,
+						name: itemDef?.Description?.[Language.Portuguese] || itemDef?.Description?.[Language.English] || `Item #${item.Id}`,
+						itemType: isConsumable ? "Consumable" : "Duration",
+						durationMin,
+						durationMax,
+						defaultImagePath: `/images/items/${defaultFilename}`,
+					};
+				});
+
+				return {
+					id: place.Id,
+					name: place.Description[Language.Portuguese],
+					subtitle: place.Subtitle[Language.Portuguese],
+					emoteString: place.Emote.String,
+					needAttack: place.NeedAttack,
+					successChance: place.SuccessChance,
+					prisonChance: place.Prison.Chance,
+					hospitalChance: place.Hospital.Chance,
+					rewardMoneyMin: Math.floor(place.Reward.Money.Min * userClassDurationModifier),
+					rewardMoneyMax: Math.floor(place.Reward.Money.Max * userClassDurationModifier),
+					rewardItems,
+					prisonText: place.Prison.Text[Language.Portuguese],
+					hospitalText: place.Hospital.Text[Language.Portuguese],
+				};
+			});
+		},
+
+		myScavengeStatus: async (_: unknown, __: unknown, context: GraphQLContext) => {
+			const authUser = assertAuthenticated(context);
+			const player = new User(authUser.userId);
+			const found = await player.GetInfo();
+			if (!found) {
+				return {
+					isScavenging: false,
+					scavengingId: null,
+					scavengeTime: null,
+				};
+			}
+			const isScavenging = player.IsScavenging();
+			return {
+				isScavenging,
+				scavengingId: isScavenging ? player.Scavenge.IsScavengingId : null,
+				scavengeTime: player.Scavenge.Time > new Date() ? player.Scavenge.Time.toISOString() : null,
+			};
 		},
 
 		items: async (_: unknown, __: unknown, context: GraphQLContext) => {
@@ -577,6 +645,66 @@ export const meResolvers: {
 				money: player.Money,
 				bribeAccepted: false,
 				bribeCost: bribeValue,
+			};
+		},
+
+		startScavenge: async (
+			_: unknown,
+			args: { placeId: number },
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			const player = new User(authUser.userId);
+			const found = await player.GetInfo();
+			if (!found) {
+				return { success: false, message: "Jogador não encontrado." };
+			}
+
+			const place = ScavengeList[args.placeId];
+			if (!place) {
+				return { success: false, message: "Local não encontrado." };
+			}
+
+			if (player.Attributes.Attack < place.NeedAttack) {
+				return { success: false, message: `Ataque insuficiente. Você precisa de ${place.NeedAttack} de ATK.` };
+			}
+
+			const scavenge = new Scavenge(player, args.placeId);
+			const { canScavenge, reason } = await scavenge.CanScavenge();
+
+			if (!canScavenge) {
+				let message = "";
+				switch (reason) {
+				case ScavengeFailureReason.UserScavengeTime:
+					message = "Você já vasculhou recentemente. Aguarde 1 hora.";
+					break;
+				case ScavengeFailureReason.UserScavenging:
+					message = "Você já está vasculhando.";
+					break;
+				case ScavengeFailureReason.UserWorking:
+					message = "Você está trabalhando.";
+					break;
+				case ScavengeFailureReason.UserPrison:
+					message = "Você está na prisão.";
+					break;
+				case ScavengeFailureReason.UserHospital:
+					message = "Você está no hospital.";
+					break;
+				case ScavengeFailureReason.UserCasino:
+					message = "Você está no cassino.";
+					break;
+				default:
+					message = "Você não pode vasculhar no momento.";
+					break;
+				}
+				return { success: false, message };
+			}
+
+			await scavenge.StartScavenge();
+
+			return {
+				success: true,
+				message: "Vasculhando...",
 			};
 		},
 	},

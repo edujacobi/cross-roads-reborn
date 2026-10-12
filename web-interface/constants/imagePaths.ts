@@ -91,6 +91,16 @@ export const imagePaths = {
 		bunker: "/images/bases/Bunker_.png",
 		bunker2x: "/images/bases/Bunker_2x.png",
 	},
+	scavengeLocations: {
+		dump: "/images/scavenge/Dump.png",
+		forest: "/images/scavenge/Forest.png",
+		sewer: "/images/scavenge/Sewer.png",
+		weaponFactory: "/images/scavenge/WeaponFactory.png",
+		drugLab: "/images/scavenge/DrugLab.png",
+		nuclearPlant: "/images/scavenge/NuclearPlant.png",
+		alienShip: "/images/scavenge/AlienShip.png",
+		militaryBase: "/images/scavenge/MilitaryBase.png",
+	},
 } as const;
 
 export type ImagePath = {

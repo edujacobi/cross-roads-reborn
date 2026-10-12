@@ -258,3 +258,14 @@ export enum GangBaseId {
 	Bunker,
 	BikeClub
 }
+
+export enum ScavengeId {
+	Dump,
+	Forest,
+	Sewer,
+	WeaponFactory,
+	DrugLab,
+	NuclearPlant,
+	AlienShip,
+	MilitaryBase,
+}

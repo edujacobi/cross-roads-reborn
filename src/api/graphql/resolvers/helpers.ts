@@ -268,6 +268,7 @@ export async function mapUserDetail(user: User) {
 		currentJobId: isWorking ? user.Job.Id : null,
 		jobEndsIn: isWorking ? user.Job.EndsIn.toISOString() : null,
 		isScavenging,
+		scavengingId: isScavenging ? user.Scavenge.IsScavengingId : null,
 		isWanted,
 		wantedTime: isWanted ? user.Wanted.Time.toISOString() : null,
 		isRobbing: user.Robbery.IsRobbingId !== null || user.Robbery.IsRobbingLocationId !== null,

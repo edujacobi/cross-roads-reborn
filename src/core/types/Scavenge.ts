@@ -2,18 +2,9 @@ import { Language } from "#core/models/Language";
 import type { IDescription, IEmote } from "./Interfaces";
 import { ItemList } from "./Items";
 import { EmoteId, EmoteString } from "#bot/utils/emotes";
-import { ItemId } from "./Ids";
+import { ItemId, ScavengeId } from "./Ids";
 
-export enum ScavengeId {
-	Dump,
-	Forest,
-	Sewer,
-	WeaponFactory,
-	DrugLab,
-	NuclearPlant,
-	AlienShip,
-	MilitaryBase,
-}
+export { ScavengeId } from "./Ids";
 
 export enum ScavengeRewardType {
 	Money,
