@@ -4,7 +4,7 @@
 >
 import { useMutation, useQuery } from "@vue/apollo-composable";
 import { ChevronDown } from "lucide-vue-next";
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import HospitalIcon from "~/components/icons/HospitalIcon.vue";
 import PrisonIcon from "~/components/icons/PrisonIcon.vue";
 import ScavengeIcon from "~/components/icons/ScavengeIcon.vue";
@@ -251,6 +251,12 @@ async function listenToScavengeSSE() {
 						showLoadingModal.value = false;
 						return;
 					}
+					if (data.type === "not-scavenging") {
+						sseInProgress = false;
+						showLoadingModal.value = false;
+						void refetchStatus();
+						return;
+					}
 				} catch {
 					// Ignore parse errors for partial lines
 				}
@@ -265,14 +271,27 @@ async function listenToScavengeSSE() {
 }
 
 const scavengingLocationName = computed(() => {
-	if (scavengingId.value === null) return "";
-	const loc = locations.value.find((l) => l.id === scavengingId.value);
+	const locationId = scavengingId.value ?? selectedLocationId.value;
+	if (locationId === null || locationId === undefined) return "";
+	const loc = locations.value.find((l) => l.id === locationId);
 	return loc?.name || "";
 });
 
-// Reload protection: check on mount if user was scavenging
-onMounted(() => {
-	// If already scavenging on mount (reload protection), show loading modal
+// Reload protection: wait for status query to resolve, then check if user was scavenging
+onMounted(async () => {
+	await new Promise<void>((resolve) => {
+		const unwatch = watch(
+			() => scavengeStatus.value,
+			(status) => {
+				if (status) {
+					unwatch();
+					resolve();
+				}
+			},
+			{ immediate: true },
+		);
+	});
+
 	if (isScavenging.value) {
 		showLoadingModal.value = true;
 		listenToScavengeSSE();
@@ -316,7 +335,6 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 						height="2rem"
 					/>
 					<BaseSkeleton
-						class="scavenge-card__stats"
 						height="3rem"
 					/>
 				</div>
@@ -343,9 +361,6 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 						v-for="location in locations"
 						:key="location.id"
 						class="scavenge-card"
-						:class="{
-							'scavenge-card--disabled': !canScavenge(location),
-						}"
 					>
 						<div class="scavenge-card__row">
 							<div class="scavenge-card__header">
@@ -360,7 +375,6 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 									<span
 										v-if="location.needAttack > 0"
 										class="scavenge-card__atk-badge"
-										:class="{ 'scavenge-card__atk-badge--met': userAttack >= location.needAttack }"
 									>
 										<NuxtImg
 											:src="imagePaths.attributes.attack"
@@ -581,7 +595,7 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 		<BaseModal
 			class="scavenge-modal-loading"
 			:open="showLoadingModal"
-			title="Vasculhando..."
+			title="Vasculho em andamento"
 			@update:open="showLoadingModal = $event"
 		>
 			<div class="scavenge-modal-loading__content">
@@ -593,7 +607,7 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 					<span class="sr-only">Vasculhando...</span>
 				</div>
 				<p class="scavenge-modal-loading__text">
-					{{ isScavenging && scavengingLocationName ? `Vasculhando ${scavengingLocationName}...` : "Vasculhando..." }}
+					{{ scavengingLocationName ? `Vasculhando ${scavengingLocationName}...` : "Vasculhando..." }}
 				</p>
 			</div>
 		</BaseModal>
@@ -606,16 +620,16 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 		>
 			<div
 				v-if="resultSuccess"
-				class="scavenge-result scavenge-result--success"
+				class="scavenge-result"
 			>
 				<p>{{ resultRewardDescription }}</p>
 			</div>
 			<div
 				v-else
-				class="scavenge-result scavenge-result--failure"
+				class="scavenge-result"
 			>
 				<p v-if="resultFailureReason">{{ resultFailureReason }}</p>
-				<p v-else>Você não encontrou nada enquanto vasculhava</p>
+				<p v-else>Você não encontrou nada enquanto vasculhava.</p>
 			</div>
 			<template #footer>
 				<BaseButton
@@ -639,34 +653,6 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 	display: flex;
 	flex-direction: column;
 	gap: $spacing-lg;
-}
-
-.scavenge-info-card {
-	display: flex;
-	align-items: flex-start;
-	gap: $spacing-sm;
-	padding: $spacing-md;
-	background: color-mix(in lab, $bg-card 100%, $color-scavenge 10%);
-	border: 1px solid $color-scavenge;
-	border-radius: $radius-sm;
-
-	svg {
-		flex-shrink: 0;
-		color: $color-scavenge;
-		margin-top: 0.125rem;
-	}
-
-	&__text {
-		display: flex;
-		flex-direction: column;
-		gap: 0.25rem;
-
-		p {
-			margin: 0;
-			font-size: 0.875rem;
-			color: $text-secondary;
-		}
-	}
 }
 
 .scavenge-page__loading {
@@ -994,25 +980,6 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 		}
 	}
 
-	&__stats {
-		display: flex;
-		flex-wrap: wrap;
-		gap: $spacing-sm;
-		font-size: 0.8125rem;
-		font-weight: 500;
-	}
-
-	&__stat {
-		display: flex;
-		align-items: center;
-		gap: $spacing-xs;
-		color: $text-secondary;
-
-		&--success {
-			color: $color-success;
-		}
-	}
-
 	&__button-row {
 		display: flex;
 		gap: $spacing-sm;
@@ -1164,12 +1131,6 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 	color: $text-secondary;
 }
 
-.scavenge-confirm-warning {
-	color: $color-danger;
-	font-size: 0.875rem;
-	font-weight: 500;
-}
-
 .scavenge-modal-loading {
 	:deep(.base-modal__header) {
 		display: none;
@@ -1208,18 +1169,6 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 		margin: 0;
 	}
 
-	&--success p {
-		color: $color-success;
-		font-weight: 600;
-	}
-
-	&--failure p {
-		color: $color-danger;
-	}
-
-	&__outcome {
-		font-weight: 600;
-	}
 }
 
 @keyframes spin {

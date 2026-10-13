@@ -90,10 +90,18 @@ export class Scavenge {
 	}
 
 	async StartScavenge() {
-		this.User.Scavenge.IsScavengingId = this.PlaceId;
-		await this.User.Update({
-			scavengingId: this.User.Scavenge.IsScavengingId,
-		});
+		// Idempotent: only set IsScavengingId if not already set (allows SSE endpoint to call safely)
+		if (this.User.Scavenge.IsScavengingId === null) {
+			this.User.Scavenge.IsScavengingId = this.PlaceId;
+			await this.User.Update({
+				scavengingId: this.User.Scavenge.IsScavengingId,
+			});
+		}
+
+		// Skip re-initializing if already done
+		if (this.SuccessChance !== 0) {
+			return;
+		}
 
 		const place = ScavengeList[this.PlaceId];
 		this.RewardItems = place.Reward.Items.map(item => ({
@@ -124,15 +132,17 @@ export class Scavenge {
 	async EndScavenge() {
 		const place = ScavengeList[this.PlaceId];
 
-		await this.User.GetInfo();
-
-		// Guard: if already ended (IsScavengingId cleared), return empty result to prevent double execution
-		if (this.User.Scavenge.IsScavengingId === null) {
-			return { success: false };
+		// Atomic guard: clear scavengingId only if not already null, so only the first caller proceeds
+		const wonRace = await UserRepository.ClearScavengingId(this.User.Id);
+		if (!wonRace) {
+			return { completed: false, success: false, rewardDescription: "", hospitalized: false, inprisoned: false };
 		}
+
+		await this.User.GetInfo();
 
 		const success = Math.random() * 100 < this.SuccessChance;
 		const result: {
+			completed: boolean;
 			success: boolean;
 			rewardType?: ScavengeRewardType;
 			rewardValue?: number;
@@ -144,7 +154,7 @@ export class Scavenge {
 			hospitalTime?: Date;
 			inprisoned?: boolean;
 			prisonTime?: Date;
-		} = { success };
+		} = { completed: true, success };
 
 		if (success) {
 			const rewardMoney = Math.random() < 0.25;
@@ -248,7 +258,6 @@ export class Scavenge {
 		this.User.Scavenge.Count += 1;
 		const scavengeTimeMultiplier = await Event.GetActiveFromType(EventType.SCAVENGE_TIME_MULTIPLIER);
 		this.User.Scavenge.Time = addMinutes(new Date(), 60 * scavengeTimeMultiplier); // 1 hour cooldown * multiplier
-		this.User.Scavenge.IsScavengingId = null;
 
 		await Notification.Scavenge(this.User);
 
@@ -267,7 +276,6 @@ export class Scavenge {
 
 			scavengeCount: this.User.Scavenge.Count,
 			scavengeTime: this.User.Scavenge.Time,
-			scavengingId: this.User.Scavenge.IsScavengingId,
 		});
 
 		return result;

@@ -6,6 +6,7 @@ import { ClassId } from "#core/types/Classes";
 import { Scavenge } from "#core/models/Scavenge";
 import { ScavengeId, ScavengeFailureReason } from "#core/types/Scavenge";
 import { LocationId } from "#core/types/Locations";
+import { UserRepository } from "#core/repositories/UserRepository";
 
 // --- Global Mocks ---
 
@@ -153,6 +154,16 @@ describe("Scavenge", () => {
 			const scavenge = new Scavenge(user, ScavengeId.Dump);
 			await scavenge.StartScavenge();
 			expect(user.Scavenge.IsScavengingId).toBe(ScavengeId.Dump);
+		});
+
+		it("Should report when another flow already ended the scavenge", async () => {
+			vi.spyOn(UserRepository, "ClearScavengingId").mockResolvedValue(false);
+			const scavenge = new Scavenge(user, ScavengeId.Dump);
+
+			await expect(scavenge.EndScavenge()).resolves.toMatchObject({
+				completed: false,
+				success: false,
+			});
 		});
 	});
 });

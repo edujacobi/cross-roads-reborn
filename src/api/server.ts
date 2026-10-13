@@ -13,6 +13,8 @@ import { Scavenge } from "#core/models/Scavenge";
 import { ScavengeList } from "#core/types/Scavenge";
 
 let server: FastifyInstance | null = null;
+// ponytail: in-memory deduplication assumes one API process; use shared job storage if horizontally scaled.
+const activeScavengeFlows = new Map<string, Promise<Awaited<ReturnType<Scavenge["EndScavenge"]>> | null>>();
 
 export async function createApiServer(): Promise<FastifyInstance> {
 	const app = fastify({
@@ -275,90 +277,63 @@ export async function createApiServer(): Promise<FastifyInstance> {
 			// Calculate wait time same as bot command: 10s + 2s per placeId
 			const waitMs = 10_000 + (2_000 * scavengingId);
 
-			// Poll every 2s to check if scavenge ended early (e.g. cleared by admin)
-			const pollInterval = setInterval(async () => {
-				const freshUser = new User(user.userId);
-				const freshFound = await freshUser.GetInfo();
-				if (!freshFound) {
-					clearInterval(pollInterval);
-					sendEvent(JSON.stringify({ type: "closed" }));
-					reply.raw.end();
-					return;
-				}
-
-				// If user is no longer scavenging before the wait period, end early
-				if (!freshUser.IsScavenging()) {
-					clearInterval(pollInterval);
-					sendEvent(JSON.stringify({
-						type: "scavenge-ended",
-						success: false,
-						rewardDescription: "",
-						hospitalized: false,
-						hospitalTime: null,
-						inprisoned: false,
-						prisonTime: null,
-						failureReason: "Vasculhar foi interrompido.",
-					}));
-					reply.raw.end();
-				}
-			}, 2000);
-
-			// After the wait period, call EndScavenge (idempotent guard prevents double execution)
-			setTimeout(async () => {
-				clearInterval(pollInterval);
-
-				const freshUser = new User(user.userId);
-				const freshFound = await freshUser.GetInfo();
-				if (!freshFound) {
-					sendEvent(JSON.stringify({ type: "closed" }));
-					reply.raw.end();
-					return;
-				}
-
-				// EndScavenge is idempotent: if already ended by another caller, it returns early
-				const scavenge = new Scavenge(freshUser, scavengingId);
-				const result = await scavenge.EndScavenge();
-
-				// If EndScavenge returned early (already ended), determine result from user state
-				if (result.success === false && !result.rewardDescription && !result.hospitalized && !result.inprisoned) {
-					const place = ScavengeList[scavengingId];
-					const hospitalized = freshUser.IsInHospital();
-					const inprisoned = freshUser.IsInPrison();
-					const success = !hospitalized && !inprisoned;
-
-					let failureReason = "";
-					if (!success && place) {
-						if (hospitalized) {
-							failureReason = place.Hospital.Text[Language.Portuguese];
-						} else if (inprisoned) {
-							failureReason = place.Prison.Text[Language.Portuguese];
-						}
+			let flow = activeScavengeFlows.get(user.userId);
+			if (!flow) {
+				flow = (async () => {
+					const activeUser = new User(user.userId);
+					if (!(await activeUser.GetInfo()) || activeUser.Scavenge.IsScavengingId !== scavengingId) {
+						return null;
 					}
 
-					sendEvent(JSON.stringify({
-						type: "scavenge-ended",
-						success,
-						rewardDescription: "",
-						hospitalized,
-						hospitalTime: hospitalized ? freshUser.Hospital.Time.toISOString() : null,
-						inprisoned,
-						prisonTime: inprisoned ? freshUser.Prison.Time.toISOString() : null,
-						failureReason,
-					}));
+					const scavenge = new Scavenge(activeUser, scavengingId);
+					await scavenge.StartScavenge();
+					await new Promise(resolve => setTimeout(resolve, waitMs));
+					return await scavenge.EndScavenge();
+				})();
+				activeScavengeFlows.set(user.userId, flow);
+
+				const clearFlow = () => {
+					if (activeScavengeFlows.get(user.userId) === flow) {
+						activeScavengeFlows.delete(user.userId);
+					}
+				};
+				void flow.then(clearFlow, clearFlow);
+			}
+
+			// Timeout: 120s (scavenge wait is 10-26s, plus safety margin)
+			const SCAVENGE_SSE_TIMEOUT_MS = 120_000;
+			const timeout = setTimeout(() => {
+				if (!reply.raw.destroyed && !reply.raw.writableEnded) {
+					sendEvent(JSON.stringify({ type: "closed" }));
+					reply.raw.end();
+				}
+			}, SCAVENGE_SSE_TIMEOUT_MS);
+			timeout.unref();
+
+			// Disconnecting a client must not cancel the backend-owned scavenge.
+			reply.raw.on("close", () => {
+				clearTimeout(timeout);
+			});
+
+			try {
+				const result = await flow;
+				clearTimeout(timeout);
+
+				if (reply.raw.destroyed || reply.raw.writableEnded) return;
+				if (!result?.completed) {
+					sendEvent(JSON.stringify({ type: "closed" }));
 					reply.raw.end();
 					return;
 				}
 
-				// Determine failure reason from the place
 				let failureReason = "";
 				if (!result.success) {
 					const place = ScavengeList[scavengingId];
-					if (place) {
-						if (result.hospitalized) {
-							failureReason = place.Hospital.Text[Language.Portuguese];
-						} else if (result.inprisoned) {
-							failureReason = place.Prison.Text[Language.Portuguese];
-						}
+					if (result.hospitalized) {
+						failureReason = place.Hospital.Text[Language.Portuguese];
+					}
+					else if (result.inprisoned) {
+						failureReason = place.Prison.Text[Language.Portuguese];
 					}
 				}
 
@@ -373,22 +348,15 @@ export async function createApiServer(): Promise<FastifyInstance> {
 					failureReason,
 				}));
 				reply.raw.end();
-			}, waitMs);
-
-			// Timeout: 120s (scavenge wait is 10-26s, plus safety margin)
-			const SCAVENGE_SSE_TIMEOUT_MS = 120_000;
-			const timeout = setTimeout(() => {
-				clearInterval(pollInterval);
-				sendEvent(JSON.stringify({ type: "closed" }));
-				reply.raw.end();
-			}, SCAVENGE_SSE_TIMEOUT_MS);
-			timeout.unref();
-
-			// Cleanup on client disconnect
-			req.raw.on("close", () => {
-				clearInterval(pollInterval);
+			}
+			catch (error) {
 				clearTimeout(timeout);
-			});
+				logger.error("Failed to complete scavenge SSE flow:", error);
+				if (!reply.raw.destroyed && !reply.raw.writableEnded) {
+					sendEvent(JSON.stringify({ type: "closed" }));
+					reply.raw.end();
+				}
+			}
 		}
 		else {
 			// Not scavenging, send current status and close

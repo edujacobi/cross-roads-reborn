@@ -82,6 +82,24 @@ export class UserRepository {
 	}
 
 	/**
+	 * Atomically clear scavengingId only if it's not already null.
+	 * Returns true if this call was the one that cleared it (first caller).
+	 * Returns false if scavengingId was already null (another caller already ended it).
+	 */
+	static async ClearScavengingId(id: string): Promise<boolean> {
+		const [affected] = await Users.update(
+			{ scavengingId: null },
+			{
+				where: {
+					id,
+					scavengingId: { [Op.ne]: null },
+				},
+			},
+		);
+		return affected > 0;
+	}
+
+	/**
 	 * Deletes a user and all data that references their ID in one transaction.
 	 */
 	static async DeleteUser(id: string): Promise<boolean> {
