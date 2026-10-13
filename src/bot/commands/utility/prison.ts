@@ -211,7 +211,16 @@ module.exports = {
 							return replyWithContainer(interaction, container);
 						}
 
-						await prison.StartEscape();
+						if (!await prison.StartEscape()) {
+							container = defaultComponent({
+								user: user,
+								color: CrColors.Police,
+								description: `${s.escapeHasTried} ${EmoteString.Prison}`,
+								footer: formatMoney(user.Money, user.Language),
+							});
+
+							return replyWithContainer(interaction, container);
+						}
 
 						const emote = prison.Escape.HasJetpack ? user.GetItemSkin(ItemList[ItemId.Jetpack]) : EmoteString.Escape;
 

@@ -3,6 +3,7 @@ import { User } from "#core/models/User";
 import { Language } from "#core/models/Language";
 import { ClassId } from "#core/types/Classes";
 import { Prison, PrisonFailureReason } from "#core/models/Prison";
+import { UserRepository } from "#core/repositories/UserRepository";
 
 // --- Global Mocks ---
 
@@ -84,6 +85,17 @@ describe("Prison", () => {
 			const prison = new Prison(user);
 			const result = await prison.CanEscape();
 			expect(result.canEscape).toBe(true);
+		});
+	});
+
+	describe("When starting an escape", () => {
+		it("Should not start a duplicate escape after another request claimed it", async () => {
+			user.Prison.Time = new Date(Date.now() + 3_600_000);
+			vi.spyOn(UserRepository, "TryStartEscape").mockResolvedValue(false);
+			const prison = new Prison(user);
+
+			await expect(prison.StartEscape()).resolves.toBe(false);
+			expect(user.Escape.HasTried).toBe(false);
 		});
 	});
 });

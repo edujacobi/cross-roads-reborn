@@ -99,6 +99,20 @@ export class UserRepository {
 		return affected > 0;
 	}
 
+	static async TryStartEscape(id: string, escapeTime: Date): Promise<boolean> {
+		const [affected] = await Users.update(
+			{ escapeHasTried: true, escapeTime },
+			{
+				where: {
+					id,
+					escapeHasTried: false,
+					prisonTime: { [Op.gt]: new Date() },
+				},
+			},
+		);
+		return affected > 0;
+	}
+
 	/**
 	 * Deletes a user and all data that references their ID in one transaction.
 	 */

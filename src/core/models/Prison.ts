@@ -144,13 +144,11 @@ export class Prison {
 	}
 
 	async StartEscape() {
-		this.User.Escape.HasTried = true;
-		this.User.Escape.Time = addSeconds(new Date(), this.Escape.DefaultDuration);
+		const escapeTime = addSeconds(new Date(), this.Escape.DefaultDuration);
+		if (!await UserRepository.TryStartEscape(this.User.Id, escapeTime)) return false;
 
-		await this.User.Update({
-			escapeHasTried: this.User.Escape.HasTried,
-			escapeTime: this.User.Escape.Time,
-		});
+		this.User.Escape.HasTried = true;
+		this.User.Escape.Time = escapeTime;
 		Log.Info(`User ${this.User.Nickname} (Id: ${this.User.Id}) started a escape attempt from prison ${this.Escape.HasJetpack ? "with a jetpack" : ""}.`);
 
 		// Schedule automatic escape end
@@ -173,6 +171,7 @@ export class Prison {
 			}
 		}, durationMs);
 		activeEscapes.set(userId, { userId, timer });
+		return true;
 	}
 
 	async EndEscape(): Promise<{ success: boolean; totalTime: number; message: string }> {

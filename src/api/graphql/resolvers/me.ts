@@ -580,7 +580,13 @@ export const meResolvers: {
 			}
 
 			await prison.CalculateEscapeChance();
-			await prison.StartEscape();
+			if (!await prison.StartEscape()) {
+				return {
+					success: false,
+					message: "Você não pode tentar fugir no momento.",
+					duration: 0,
+				};
+			}
 
 			return {
 				success: true,
