@@ -136,6 +136,7 @@ export async function createApiServer(): Promise<FastifyInstance> {
 				situationId: userModel?.Situation.Id ?? 0,
 				gangId: userModel?.GangId,
 				class: userModel?.Class ?? 0,
+				isVip: userModel?.IsVip() ?? false,
 			},
 		});
 	});

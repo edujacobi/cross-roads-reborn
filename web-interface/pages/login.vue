@@ -58,12 +58,7 @@ onMounted(async () => {
 			</div>
 
 			<aside class="info-box">
-				<p>
-					Entre com Discord para acessar os perfis dos jogadores. Membros
-					<strong class="dev">Desenvolvedores</strong>, <strong class="mod">Moderadores</strong> e
-					<strong class="helper">Ajudantes</strong>
-					também podem acessar as ferramentas administrativas.
-				</p>
+				<p>Durante o período de beta fechado, o acesso está disponível para usuários VIP e administradores.</p>
 			</aside>
 
 			<div class="button-row">
@@ -175,16 +170,6 @@ onMounted(async () => {
 		color: $text-muted;
 		margin-bottom: $spacing-lg;
 		line-height: 1.5;
-
-		.dev {
-			color: $color-developer;
-		}
-		.mod {
-			color: $color-moderator;
-		}
-		.helper {
-			color: $color-helper;
-		}
 	}
 
 	.button-row{
