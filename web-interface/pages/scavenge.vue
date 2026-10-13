@@ -111,6 +111,8 @@ const resultRewardImage = ref("");
 const resultLocationName = ref("");
 const resultCooldownEndsAt = ref<Date | null>(null);
 const resultFailureReason = ref("");
+const resultFailureType = ref<"hospital" | "prison" | null>(null);
+const resultFailureEndsAt = ref<Date | null>(null);
 
 // SSE abort controller
 let sseAbortController: AbortController | null = null;
@@ -199,6 +201,10 @@ function onScavengeResult(data: {
 	quantity?: number | null;
 	duration?: number | null;
 	cooldownEndsAt?: string | null;
+	hospitalized?: boolean;
+	hospitalTime?: string | null;
+	inprisoned?: boolean;
+	prisonTime?: string | null;
 }) {
 	showLoadingModal.value = false;
 	resultSuccess.value = data.success;
@@ -214,6 +220,9 @@ function onScavengeResult(data: {
 			: `${rewardItem.name} (${(data.duration ?? 0).toFixed(1)}h)`
 		: (data.rewardDescription ?? "");
 	resultFailureReason.value = data.failureReason ?? "";
+	resultFailureType.value = data.hospitalized ? "hospital" : data.inprisoned ? "prison" : null;
+	const failureEndsAt = data.hospitalized ? data.hospitalTime : data.inprisoned ? data.prisonTime : null;
+	resultFailureEndsAt.value = failureEndsAt ? new Date(failureEndsAt) : null;
 	showResultModal.value = true;
 
 	void Promise.all([auth.fetchUser(), refetchStatus(), refetchActivity(), refetchProfile(), refetchStatusQuery()]);
@@ -665,8 +674,30 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 				v-else
 				class="scavenge-result"
 			>
-				<p v-if="resultFailureReason">{{ resultFailureReason }}</p>
-				<p v-else>Você não encontrou nada enquanto vasculhava.</p>
+				<p
+					v-if="resultFailureType"
+					class="scavenge-result__failure"
+					:class="`scavenge-result__failure--${resultFailureType}`"
+				>
+					<PrisonIcon
+						v-if="resultFailureType === 'prison'"
+						:size="18"
+						variant="solid"
+					/>
+					<HospitalIcon
+						v-else
+						:size="18"
+						variant="solid"
+					/>
+					<span>
+						{{ resultFailureReason }}
+						<template v-if="resultFailureEndsAt">
+							{{ resultFailureType === "prison" ? "Será solto" : "Será curado" }}
+							em {{ distance(new Date(), resultFailureEndsAt) }}.
+						</template>
+					</span>
+				</p>
+				<p v-else>Você não encontrou nada enquanto vasculhava {{ resultLocationName }}.</p>
 			</div>
 			<template #footer>
 				<BaseButton
@@ -1201,6 +1232,20 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 	display: flex;
 	flex-direction: column;
 	gap: $spacing-sm;
+
+	&__failure {
+		display: flex;
+		align-items: flex-start;
+		gap: $spacing-xs;
+
+		&--prison {
+			color: $color-prison;
+		}
+
+		&--hospital {
+			color: $color-hospital;
+		}
+	}
 
 	&__reward {
 		display: flex;
