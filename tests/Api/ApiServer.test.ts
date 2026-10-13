@@ -20,3 +20,21 @@ describe("API server proxy handling", () => {
 		}
 	});
 });
+
+describe("SSE status routes", () => {
+	it("requires bearer authentication", async () => {
+		const app = await createApiServer();
+
+		try {
+			for (const url of ["/sse/escape-status", "/sse/scavenge-status"]) {
+				const response = await app.inject({ method: "GET", url });
+
+				expect(response.statusCode).toBe(401);
+				expect(response.json()).toEqual({ error: "Missing or invalid authorization header." });
+			}
+		}
+		finally {
+			await app.close();
+		}
+	});
+});
