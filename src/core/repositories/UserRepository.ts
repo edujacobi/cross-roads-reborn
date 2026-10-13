@@ -99,6 +99,16 @@ export class UserRepository {
 		return affected > 0;
 	}
 
+	static async TryStartCasinoGame(id: string): Promise<boolean> {
+		const [affected] = await Users.update(
+			{ casinoIsInGame: true },
+			{
+				where: { id, casinoIsInGame: false },
+			},
+		);
+		return affected > 0;
+	}
+
 	static async TryStartEscape(id: string, escapeTime: Date): Promise<boolean> {
 		const [affected] = await Users.update(
 			{ escapeHasTried: true, escapeTime },

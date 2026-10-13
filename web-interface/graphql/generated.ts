@@ -52,6 +52,23 @@ export type AuthUser = {
   username: Scalars['String']['output'];
 };
 
+export type CasinoPlayResult = {
+  __typename?: 'CasinoPlayResult';
+  amount?: Maybe<Scalars['Float']['output']>;
+  message: Scalars['String']['output'];
+  money: Scalars['Float']['output'];
+  prize?: Maybe<Scalars['Float']['output']>;
+  resultSide?: Maybe<Scalars['String']['output']>;
+  selectedSide?: Maybe<Scalars['String']['output']>;
+  success: Scalars['Boolean']['output'];
+  won?: Maybe<Scalars['Boolean']['output']>;
+};
+
+export type CasinoStatus = {
+  __typename?: 'CasinoStatus';
+  money: Scalars['Float']['output'];
+};
+
 export type ClassCount = {
   __typename?: 'ClassCount';
   classId: Scalars['Int']['output'];
@@ -234,6 +251,41 @@ export type GangRoleInfo = {
   name: Scalars['String']['output'];
 };
 
+export type HorseRaceBetResult = {
+  __typename?: 'HorseRaceBetResult';
+  amount?: Maybe<Scalars['Float']['output']>;
+  horseId?: Maybe<Scalars['Int']['output']>;
+  horseName?: Maybe<Scalars['String']['output']>;
+  message: Scalars['String']['output'];
+  money: Scalars['Float']['output'];
+  multiplier?: Maybe<Scalars['Float']['output']>;
+  raceTime?: Maybe<Scalars['String']['output']>;
+  success: Scalars['Boolean']['output'];
+};
+
+export type HorseRaceHorse = {
+  __typename?: 'HorseRaceHorse';
+  description: Scalars['String']['output'];
+  emote: Scalars['String']['output'];
+  id: Scalars['Int']['output'];
+  multiplier: Scalars['Float']['output'];
+  name: Scalars['String']['output'];
+};
+
+export type HorseRaceStatus = {
+  __typename?: 'HorseRaceStatus';
+  betAmount?: Maybe<Scalars['Float']['output']>;
+  betHorseId?: Maybe<Scalars['Int']['output']>;
+  hasBet: Scalars['Boolean']['output'];
+  horses: Array<HorseRaceHorse>;
+  isBettingOpen: Scalars['Boolean']['output'];
+  maxBet: Scalars['Float']['output'];
+  money: Scalars['Float']['output'];
+  raceId?: Maybe<Scalars['Int']['output']>;
+  raceTime?: Maybe<Scalars['String']['output']>;
+  totalBets: Scalars['Int']['output'];
+};
+
 export type HospitalResult = {
   __typename?: 'HospitalResult';
   message: Scalars['String']['output'];
@@ -335,12 +387,38 @@ export type JobNeedItem = {
   name: Scalars['String']['output'];
 };
 
+export type LotteryPurchaseResult = {
+  __typename?: 'LotteryPurchaseResult';
+  message: Scalars['String']['output'];
+  money: Scalars['Float']['output'];
+  success: Scalars['Boolean']['output'];
+  ticketId?: Maybe<Scalars['Int']['output']>;
+};
+
+export type LotteryStatus = {
+  __typename?: 'LotteryStatus';
+  drawId?: Maybe<Scalars['Int']['output']>;
+  drawTime?: Maybe<Scalars['String']['output']>;
+  hasActiveDraw: Scalars['Boolean']['output'];
+  hasTicket: Scalars['Boolean']['output'];
+  isMegaDraw: Scalars['Boolean']['output'];
+  money: Scalars['Float']['output'];
+  previousPrize?: Maybe<Scalars['Float']['output']>;
+  previousWinnerName?: Maybe<Scalars['String']['output']>;
+  prizePool: Scalars['Float']['output'];
+  ticketCost?: Maybe<Scalars['Float']['output']>;
+  ticketId?: Maybe<Scalars['Int']['output']>;
+  ticketPrice?: Maybe<Scalars['Float']['output']>;
+  totalTickets: Scalars['Int']['output'];
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   addBadge: MutationResult;
   addSpecialCoins: MutationResult;
   attemptPrisonEscape: PrisonEscapeStartResult;
   buyItem: ShopBuyResult;
+  buyLotteryTicket: LotteryPurchaseResult;
   cancelGangImport: GangMutationResult;
   cancelJob: JobMutationResult;
   changeOwnClass: MutationResult;
@@ -360,6 +438,8 @@ export type Mutation = {
   leaveGang: GangMutationResult;
   payBribePrison: PrisonBribeResult;
   payPrivateHospital: HospitalResult;
+  placeHorseRaceBet: HorseRaceBetResult;
+  playCoinFlip: CasinoPlayResult;
   removeAction: MutationResult;
   removeBadge: MutationResult;
   resetCooldown: MutationResult;
@@ -488,6 +568,19 @@ export type MutationKillUserArgs = {
 
 export type MutationLeaveGangArgs = {
   gangId: Scalars['ID']['input'];
+};
+
+
+export type MutationPlaceHorseRaceBetArgs = {
+  amount: Scalars['Int']['input'];
+  horseId: Scalars['Int']['input'];
+  raceId: Scalars['Int']['input'];
+};
+
+
+export type MutationPlayCoinFlipArgs = {
+  amount: Scalars['Float']['input'];
+  side: Scalars['String']['input'];
 };
 
 
@@ -681,6 +774,9 @@ export type Query = {
   items: Array<ItemDetails>;
   jobs: Array<JobInfo>;
   me?: Maybe<AuthUser>;
+  myCasinoStatus: CasinoStatus;
+  myHorseRaceStatus: HorseRaceStatus;
+  myLotteryStatus: LotteryStatus;
   myPrisonStatus: MyPrisonStatus;
   myScavengeStatus: ScavengeStatus;
   prisoners: PrisonerUserPage;
@@ -1670,6 +1766,43 @@ export type StartScavengeMutationVariables = Exact<{
 
 export type StartScavengeMutation = { startScavenge: { success: boolean, message: string } };
 
+export type GetMyLotteryStatusQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetMyLotteryStatusQuery = { myLotteryStatus: { hasActiveDraw: boolean, drawId: number | null, drawTime: string | null, ticketPrice: number | null, ticketCost: number | null, isMegaDraw: boolean, totalTickets: number, prizePool: number, hasTicket: boolean, ticketId: number | null, previousWinnerName: string | null, previousPrize: number | null, money: number } };
+
+export type BuyLotteryTicketMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type BuyLotteryTicketMutation = { buyLotteryTicket: { success: boolean, message: string, money: number, ticketId: number | null } };
+
+export type GetMyHorseRaceStatusQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetMyHorseRaceStatusQuery = { myHorseRaceStatus: { raceId: number | null, raceTime: string | null, isBettingOpen: boolean, totalBets: number, hasBet: boolean, betHorseId: number | null, betAmount: number | null, maxBet: number, money: number, horses: Array<{ id: number, name: string, description: string, emote: string, multiplier: number }> } };
+
+export type PlaceHorseRaceBetMutationVariables = Exact<{
+  raceId: number;
+  horseId: number;
+  amount: number;
+}>;
+
+
+export type PlaceHorseRaceBetMutation = { placeHorseRaceBet: { success: boolean, message: string, money: number, horseId: number | null, horseName: string | null, multiplier: number | null, amount: number | null, raceTime: string | null } };
+
+export type PlayCoinFlipMutationVariables = Exact<{
+  side: string;
+  amount: number;
+}>;
+
+
+export type PlayCoinFlipMutation = { playCoinFlip: { success: boolean, message: string, money: number, won: boolean | null, resultSide: string | null, selectedSide: string | null, amount: number | null, prize: number | null } };
+
+export type GetMyCasinoStatusQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetMyCasinoStatusQuery = { myCasinoStatus: { money: number } };
+
 
 export const GetDashboardStatsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetDashboardStats"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"dashboardStats"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"totalPlayers"}},{"kind":"Field","name":{"kind":"Name","value":"allUsers"}},{"kind":"Field","name":{"kind":"Name","value":"classCounts"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"classId"}},{"kind":"Field","name":{"kind":"Name","value":"count"}}]}},{"kind":"Field","name":{"kind":"Name","value":"bankVaultValue"}},{"kind":"Field","name":{"kind":"Name","value":"casinoVaultValue"}},{"kind":"Field","name":{"kind":"Name","value":"totalGangs"}},{"kind":"Field","name":{"kind":"Name","value":"prisonCount"}},{"kind":"Field","name":{"kind":"Name","value":"hospitalCount"}},{"kind":"Field","name":{"kind":"Name","value":"jobCount"}},{"kind":"Field","name":{"kind":"Name","value":"scavengeCount"}},{"kind":"Field","name":{"kind":"Name","value":"casinoCount"}},{"kind":"Field","name":{"kind":"Name","value":"robberyCount"}},{"kind":"Field","name":{"kind":"Name","value":"beatUpCount"}},{"kind":"Field","name":{"kind":"Name","value":"idleCount"}},{"kind":"Field","name":{"kind":"Name","value":"englishCount"}},{"kind":"Field","name":{"kind":"Name","value":"portugueseCount"}},{"kind":"Field","name":{"kind":"Name","value":"spanishCount"}}]}}]}}]} as unknown as DocumentNode<GetDashboardStatsQuery, GetDashboardStatsQueryVariables>;
 export const GetDashboardHistoryDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetDashboardHistory"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"dashboardHistory"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"totalPlayers"}},{"kind":"Field","name":{"kind":"Name","value":"allUsers"}},{"kind":"Field","name":{"kind":"Name","value":"classCounts"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"classId"}},{"kind":"Field","name":{"kind":"Name","value":"count"}}]}},{"kind":"Field","name":{"kind":"Name","value":"totalGangs"}},{"kind":"Field","name":{"kind":"Name","value":"prisonCount"}},{"kind":"Field","name":{"kind":"Name","value":"hospitalCount"}},{"kind":"Field","name":{"kind":"Name","value":"jobCount"}},{"kind":"Field","name":{"kind":"Name","value":"scavengeCount"}},{"kind":"Field","name":{"kind":"Name","value":"casinoCount"}},{"kind":"Field","name":{"kind":"Name","value":"robberyCount"}},{"kind":"Field","name":{"kind":"Name","value":"beatUpCount"}},{"kind":"Field","name":{"kind":"Name","value":"idleCount"}},{"kind":"Field","name":{"kind":"Name","value":"englishCount"}},{"kind":"Field","name":{"kind":"Name","value":"portugueseCount"}},{"kind":"Field","name":{"kind":"Name","value":"spanishCount"}}]}}]}}]} as unknown as DocumentNode<GetDashboardHistoryQuery, GetDashboardHistoryQueryVariables>;
@@ -1746,3 +1879,9 @@ export const UpdateGangDocument = {"kind":"Document","definitions":[{"kind":"Ope
 export const GetScavengeLocationsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetScavengeLocations"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"scavengeLocations"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"subtitle"}},{"kind":"Field","name":{"kind":"Name","value":"emoteString"}},{"kind":"Field","name":{"kind":"Name","value":"needAttack"}},{"kind":"Field","name":{"kind":"Name","value":"successChance"}},{"kind":"Field","name":{"kind":"Name","value":"prisonChance"}},{"kind":"Field","name":{"kind":"Name","value":"hospitalChance"}},{"kind":"Field","name":{"kind":"Name","value":"rewardMoneyMin"}},{"kind":"Field","name":{"kind":"Name","value":"rewardMoneyMax"}},{"kind":"Field","name":{"kind":"Name","value":"rewardItems"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"itemId"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"itemType"}},{"kind":"Field","name":{"kind":"Name","value":"durationMin"}},{"kind":"Field","name":{"kind":"Name","value":"durationMax"}},{"kind":"Field","name":{"kind":"Name","value":"defaultImagePath"}}]}},{"kind":"Field","name":{"kind":"Name","value":"prisonText"}},{"kind":"Field","name":{"kind":"Name","value":"hospitalText"}}]}}]}}]} as unknown as DocumentNode<GetScavengeLocationsQuery, GetScavengeLocationsQueryVariables>;
 export const GetMyScavengeStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetMyScavengeStatus"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"myScavengeStatus"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"isScavenging"}},{"kind":"Field","name":{"kind":"Name","value":"scavengingId"}},{"kind":"Field","name":{"kind":"Name","value":"scavengeTime"}}]}}]}}]} as unknown as DocumentNode<GetMyScavengeStatusQuery, GetMyScavengeStatusQueryVariables>;
 export const StartScavengeDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"StartScavenge"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"placeId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"startScavenge"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"placeId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"placeId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<StartScavengeMutation, StartScavengeMutationVariables>;
+export const GetMyLotteryStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetMyLotteryStatus"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"myLotteryStatus"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hasActiveDraw"}},{"kind":"Field","name":{"kind":"Name","value":"drawId"}},{"kind":"Field","name":{"kind":"Name","value":"drawTime"}},{"kind":"Field","name":{"kind":"Name","value":"ticketPrice"}},{"kind":"Field","name":{"kind":"Name","value":"ticketCost"}},{"kind":"Field","name":{"kind":"Name","value":"isMegaDraw"}},{"kind":"Field","name":{"kind":"Name","value":"totalTickets"}},{"kind":"Field","name":{"kind":"Name","value":"prizePool"}},{"kind":"Field","name":{"kind":"Name","value":"hasTicket"}},{"kind":"Field","name":{"kind":"Name","value":"ticketId"}},{"kind":"Field","name":{"kind":"Name","value":"previousWinnerName"}},{"kind":"Field","name":{"kind":"Name","value":"previousPrize"}},{"kind":"Field","name":{"kind":"Name","value":"money"}}]}}]}}]} as unknown as DocumentNode<GetMyLotteryStatusQuery, GetMyLotteryStatusQueryVariables>;
+export const BuyLotteryTicketDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"BuyLotteryTicket"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"buyLotteryTicket"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"money"}},{"kind":"Field","name":{"kind":"Name","value":"ticketId"}}]}}]}}]} as unknown as DocumentNode<BuyLotteryTicketMutation, BuyLotteryTicketMutationVariables>;
+export const GetMyHorseRaceStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetMyHorseRaceStatus"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"myHorseRaceStatus"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"raceId"}},{"kind":"Field","name":{"kind":"Name","value":"raceTime"}},{"kind":"Field","name":{"kind":"Name","value":"isBettingOpen"}},{"kind":"Field","name":{"kind":"Name","value":"totalBets"}},{"kind":"Field","name":{"kind":"Name","value":"hasBet"}},{"kind":"Field","name":{"kind":"Name","value":"betHorseId"}},{"kind":"Field","name":{"kind":"Name","value":"betAmount"}},{"kind":"Field","name":{"kind":"Name","value":"maxBet"}},{"kind":"Field","name":{"kind":"Name","value":"money"}},{"kind":"Field","name":{"kind":"Name","value":"horses"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"emote"}},{"kind":"Field","name":{"kind":"Name","value":"multiplier"}}]}}]}}]}}]} as unknown as DocumentNode<GetMyHorseRaceStatusQuery, GetMyHorseRaceStatusQueryVariables>;
+export const PlaceHorseRaceBetDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"PlaceHorseRaceBet"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"raceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"horseId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"amount"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"placeHorseRaceBet"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"raceId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"raceId"}}},{"kind":"Argument","name":{"kind":"Name","value":"horseId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"horseId"}}},{"kind":"Argument","name":{"kind":"Name","value":"amount"},"value":{"kind":"Variable","name":{"kind":"Name","value":"amount"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"money"}},{"kind":"Field","name":{"kind":"Name","value":"horseId"}},{"kind":"Field","name":{"kind":"Name","value":"horseName"}},{"kind":"Field","name":{"kind":"Name","value":"multiplier"}},{"kind":"Field","name":{"kind":"Name","value":"amount"}},{"kind":"Field","name":{"kind":"Name","value":"raceTime"}}]}}]}}]} as unknown as DocumentNode<PlaceHorseRaceBetMutation, PlaceHorseRaceBetMutationVariables>;
+export const PlayCoinFlipDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"PlayCoinFlip"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"side"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"amount"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Float"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"playCoinFlip"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"side"},"value":{"kind":"Variable","name":{"kind":"Name","value":"side"}}},{"kind":"Argument","name":{"kind":"Name","value":"amount"},"value":{"kind":"Variable","name":{"kind":"Name","value":"amount"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"money"}},{"kind":"Field","name":{"kind":"Name","value":"won"}},{"kind":"Field","name":{"kind":"Name","value":"resultSide"}},{"kind":"Field","name":{"kind":"Name","value":"selectedSide"}},{"kind":"Field","name":{"kind":"Name","value":"amount"}},{"kind":"Field","name":{"kind":"Name","value":"prize"}}]}}]}}]} as unknown as DocumentNode<PlayCoinFlipMutation, PlayCoinFlipMutationVariables>;
+export const GetMyCasinoStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetMyCasinoStatus"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"myCasinoStatus"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"money"}}]}}]}}]} as unknown as DocumentNode<GetMyCasinoStatusQuery, GetMyCasinoStatusQueryVariables>;

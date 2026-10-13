@@ -613,6 +613,76 @@ export const typeDefs = /* GraphQL */ `
         scavengeTime: String
     }
 
+    type LotteryStatus {
+        hasActiveDraw: Boolean!
+        drawId: Int
+        drawTime: String
+        ticketPrice: Float
+        ticketCost: Float
+        isMegaDraw: Boolean!
+        totalTickets: Int!
+        prizePool: Float!
+        hasTicket: Boolean!
+        ticketId: Int
+        previousWinnerName: String
+        previousPrize: Float
+        money: Float!
+    }
+
+    type CasinoStatus {
+        money: Float!
+    }
+
+    type HorseRaceHorse {
+        id: Int!
+        name: String!
+        description: String!
+        emote: String!
+        multiplier: Float!
+    }
+
+    type HorseRaceStatus {
+        raceId: Int
+        raceTime: String
+        isBettingOpen: Boolean!
+        totalBets: Int!
+        hasBet: Boolean!
+        betHorseId: Int
+        betAmount: Float
+        maxBet: Float!
+        money: Float!
+        horses: [HorseRaceHorse!]!
+    }
+
+    type CasinoPlayResult {
+        success: Boolean!
+        message: String!
+        money: Float!
+        won: Boolean
+        resultSide: String
+        selectedSide: String
+        amount: Float
+        prize: Float
+    }
+
+    type LotteryPurchaseResult {
+        success: Boolean!
+        message: String!
+        money: Float!
+        ticketId: Int
+    }
+
+    type HorseRaceBetResult {
+        success: Boolean!
+        message: String!
+        money: Float!
+        horseId: Int
+        horseName: String
+        multiplier: Float
+        amount: Float
+        raceTime: String
+    }
+
     type ScavengeStartResult {
         success: Boolean!
         message: String!
@@ -665,6 +735,9 @@ export const typeDefs = /* GraphQL */ `
         myPrisonStatus: MyPrisonStatus!
         scavengeLocations: [ScavengeLocation!]!
         myScavengeStatus: ScavengeStatus!
+        myLotteryStatus: LotteryStatus!
+        myHorseRaceStatus: HorseRaceStatus!
+        myCasinoStatus: CasinoStatus!
     }
 
     type ShopBuyResult {
@@ -705,6 +778,9 @@ export const typeDefs = /* GraphQL */ `
         attemptPrisonEscape: PrisonEscapeStartResult!
         payBribePrison: PrisonBribeResult!
         startScavenge(placeId: Int!): ScavengeStartResult!
+        playCoinFlip(side: String!, amount: Float!): CasinoPlayResult!
+        buyLotteryTicket: LotteryPurchaseResult!
+        placeHorseRaceBet(raceId: Int!, horseId: Int!, amount: Int!): HorseRaceBetResult!
         createGang(name: String!, acronym: String!, description: String!, color: String!, imageUrl: String): GangMutationResult!
         updateGang(id: ID!, name: String, acronym: String, description: String, color: String, imageUrl: String): GangMutationResult!
         startGangImport(gangId: ID!): GangMutationResult!

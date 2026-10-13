@@ -118,26 +118,33 @@ export class HorseRacing {
 			return { Success: false, Reason: BetFailureReason.AlreadyBet, Message: "" };
 		}
 
-		await HorseRacingRepository.CreateBet({
-			userId: this.User.Id,
-			raceId,
-			horseNumber: horseId,
-			amount,
-		});
+		if (!await Casino.StartUserGame(this.User)) {
+			await this.User.GetInfo();
+			const currentStatus = await Casino.CanUserPlayGame(this.User, amount);
+			return { Success: false, Reason: BetFailureReason.CannotPlay, Message: currentStatus.message || "Você já está jogando no cassino." };
+		}
 
-		race.totalBets += 1;
-		race.totalAmount += amount;
-		await HorseRacingRepository.UpdateRace(race.id, {
-			totalBets: race.totalBets,
-			totalAmount: race.totalAmount,
-		});
+		try {
+			await HorseRacingRepository.CreateBet({
+				userId: this.User.Id,
+				raceId,
+				horseNumber: horseId,
+				amount,
+			});
 
-		this.User.Money -= amount;
-		await this.User.Update({ money: this.User.Money });
+			await HorseRacingRepository.AddBetToRace(race.id, amount);
 
-		Log.Info(`User ${this.User.Nickname} bet ${formatMoney(amount, Language.English)} on horse ${horse.Name[Language.English]} (x${horse.Multiplier}) in race ${raceId}.`);
+			this.User.Money -= amount;
+			await this.User.Update({ money: this.User.Money });
 
-		return { Success: true, Horse: horse, Amount: amount, RaceTime: race.raceTime };
+			Log.Info(`User ${this.User.Nickname} bet ${formatMoney(amount, Language.English)} on horse ${horse.Name[Language.English]} (x${horse.Multiplier}) in race ${raceId}.`);
+
+			return { Success: true, Horse: horse, Amount: amount, RaceTime: race.raceTime };
+		}
+		finally {
+			this.User.Casino.IsInGame = false;
+			await this.User.Update({ casinoIsInGame: false });
+		}
 	}
 
 	/**

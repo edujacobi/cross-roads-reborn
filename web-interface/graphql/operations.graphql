@@ -1043,3 +1043,83 @@ mutation StartScavenge($placeId: Int!) {
 		message
 	}
 }
+
+query GetMyLotteryStatus {
+	myLotteryStatus {
+		hasActiveDraw
+		drawId
+		drawTime
+		ticketPrice
+		ticketCost
+		isMegaDraw
+		totalTickets
+		prizePool
+		hasTicket
+		ticketId
+		previousWinnerName
+		previousPrize
+		money
+	}
+}
+
+mutation BuyLotteryTicket {
+	buyLotteryTicket {
+		success
+		message
+		money
+		ticketId
+	}
+}
+
+query GetMyHorseRaceStatus {
+	myHorseRaceStatus {
+		raceId
+		raceTime
+		isBettingOpen
+		totalBets
+		hasBet
+		betHorseId
+		betAmount
+		maxBet
+		money
+		horses {
+			id
+			name
+			description
+			emote
+			multiplier
+		}
+	}
+}
+
+mutation PlaceHorseRaceBet($raceId: Int!, $horseId: Int!, $amount: Int!) {
+	placeHorseRaceBet(raceId: $raceId, horseId: $horseId, amount: $amount) {
+		success
+		message
+		money
+		horseId
+		horseName
+		multiplier
+		amount
+		raceTime
+	}
+}
+
+mutation PlayCoinFlip($side: String!, $amount: Float!) {
+	playCoinFlip(side: $side, amount: $amount) {
+		success
+		message
+		money
+		won
+		resultSide
+		selectedSide
+		amount
+		prize
+	}
+}
+
+query GetMyCasinoStatus {
+	myCasinoStatus {
+		money
+	}
+}

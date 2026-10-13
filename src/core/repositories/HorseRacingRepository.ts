@@ -45,6 +45,13 @@ export class HorseRacingRepository {
 		});
 	}
 
+	static async AddBetToRace(id: number, amount: number): Promise<void> {
+		await HorseRaces.increment(
+			{ totalBets: 1, totalAmount: amount },
+			{ where: { id } },
+		);
+	}
+
 	static async DestroyAllRaces(): Promise<number> {
 		return await HorseRaces.destroy({
 			where: {},

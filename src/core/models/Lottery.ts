@@ -67,23 +67,30 @@ export class Lottery {
 			return { success: false, message: s.alreadyBought };
 		}
 
-		const ticket = await LotteryRepository.CreateTicket({
-			userId: user.Id,
-			drawId: draw.id,
-			amount: ticketCost,
-		});
+		if (!await Casino.StartUserGame(user)) {
+			await user.GetInfo();
+			const currentStatus = await Casino.CanUserPlayGame(user, ticketCost);
+			return { success: false, message: currentStatus.message || "Você já está jogando no cassino." };
+		}
 
-		draw.totalTickets += 1;
-		draw.totalAmount += fullPrice; // Always add full price to pot
-		await LotteryRepository.UpdateDraw(draw.id, {
-			totalTickets: draw.totalTickets,
-			totalAmount: draw.totalAmount,
-		});
+		try {
+			const ticket: LotteryTickets = await LotteryRepository.CreateTicket({
+				userId: user.Id,
+				drawId: draw.id,
+				amount: ticketCost,
+			});
 
-		user.Money -= ticketCost;
-		await user.Update({ money: user.Money });
+			await LotteryRepository.AddTicketToDraw(draw.id, fullPrice);
 
-		return { success: true, message: s.buySuccess(formatMoney(ticketCost, user.Language)), ticketId: ticket.id, amount: ticketCost };
+			user.Money -= ticketCost;
+			await user.Update({ money: user.Money });
+
+			return { success: true, message: s.buySuccess(formatMoney(ticketCost, user.Language)), ticketId: ticket.id, amount: ticketCost };
+		}
+		finally {
+			user.Casino.IsInGame = false;
+			await user.Update({ casinoIsInGame: false });
+		}
 	}
 
 	static async RunDraw(drawId: number) {

@@ -59,6 +59,13 @@ export class LotteryRepository {
 		});
 	}
 
+	static async AddTicketToDraw(id: number, amount: number): Promise<void> {
+		await LotteryDraws.increment(
+			{ totalTickets: 1, totalAmount: amount },
+			{ where: { id } },
+		);
+	}
+
 	static async DestroyAllDraws(): Promise<number> {
 		return await LotteryDraws.destroy({
 			where: {},

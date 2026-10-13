@@ -22,6 +22,11 @@ import type { ResolverFn } from "./helpers";
 import { formatMoney } from "#bot/utils/ui";
 import { Prison } from "#core/models/Prison";
 import { Hospital, HospitalFailureReason } from "#core/models/Hospital";
+import { Casino } from "#core/models/Casino";
+import { Lottery } from "#core/models/Lottery";
+import { BetFailureReason, HorseRacing } from "#core/models/HorseRacing";
+import { HorseList } from "#core/types/Horses";
+import { getCasinoClassModifier } from "#core/types/Classes";
 
 export const meResolvers: {
 	Query: Record<string, ResolverFn>;
@@ -174,6 +179,77 @@ export const meResolvers: {
 				scavengingId: isScavenging ? player.Scavenge.IsScavengingId : null,
 				scavengeTime: player.Scavenge.Time > new Date() ? player.Scavenge.Time.toISOString() : null,
 			};
+		},
+
+		myLotteryStatus: async (_: unknown, __: unknown, context: GraphQLContext) => {
+			const authUser = assertAuthenticated(context);
+			const player = new User(authUser.userId);
+			if (!await player.GetInfo()) {
+				throw new Error("Jogador não encontrado.");
+			}
+
+			const draw = await Lottery.GetNextDraw();
+			const lastWinner = await Lottery.GetLastWinner();
+			const ticket = draw ? await Lottery.HasUserBoughtTicket(player.Id, draw.id) : null;
+
+			return {
+				hasActiveDraw: !!draw,
+				drawId: draw?.id ?? null,
+				drawTime: draw?.drawTime.toISOString() ?? null,
+				ticketPrice: draw ? Lottery.GetTicketPrice(draw.drawTime) : null,
+				ticketCost: draw ? Lottery.GetTicketCost(draw.drawTime, player.IsVip()) : null,
+				isMegaDraw: draw ? Lottery.IsMegaDraw(draw.drawTime) : false,
+				totalTickets: draw?.totalTickets ?? 0,
+				prizePool: draw?.totalAmount ?? 0,
+				hasTicket: !!ticket,
+				ticketId: ticket?.id ?? null,
+				previousWinnerName: lastWinner?.user?.Nickname ?? null,
+				previousPrize: lastWinner?.ticket?.winnings ?? null,
+				money: player.Money,
+			};
+		},
+
+		myHorseRaceStatus: async (_: unknown, __: unknown, context: GraphQLContext) => {
+			const authUser = assertAuthenticated(context);
+			const player = new User(authUser.userId);
+			if (!await player.GetInfo()) {
+				throw new Error("Jogador não encontrado.");
+			}
+
+			const racing = new HorseRacing(player);
+			let raceInfo = await racing.GetRaceInfo();
+			if (!raceInfo) {
+				await HorseRacing.ScheduleNextRace();
+				raceInfo = await racing.GetRaceInfo();
+			}
+
+			return {
+				raceId: raceInfo?.race.id ?? null,
+				raceTime: raceInfo?.race.raceTime.toISOString() ?? null,
+				isBettingOpen: raceInfo?.isBettingOpen ?? false,
+				totalBets: raceInfo?.race.totalBets ?? 0,
+				hasBet: !!raceInfo?.userBet,
+				betHorseId: raceInfo?.userBet?.horseNumber ?? null,
+				betAmount: raceInfo?.userBet?.amount ?? null,
+				maxBet: racing.CalculateMaxBet(),
+				money: player.Money,
+				horses: HorseList.map(horse => ({
+					id: horse.Id,
+					name: horse.Name[Language.Portuguese],
+					description: horse.Description[Language.Portuguese],
+					emote: horse.Emote,
+					multiplier: horse.Multiplier,
+				})),
+			};
+		},
+
+		myCasinoStatus: async (_: unknown, __: unknown, context: GraphQLContext) => {
+			const authUser = assertAuthenticated(context);
+			const player = new User(authUser.userId);
+			if (!await player.GetInfo()) {
+				throw new Error("Jogador não encontrado.");
+			}
+			return { money: player.Money };
 		},
 
 		items: async (_: unknown, __: unknown, context: GraphQLContext) => {
@@ -711,6 +787,107 @@ export const meResolvers: {
 			return {
 				success: true,
 				message: "Vasculhando...",
+			};
+		},
+
+		playCoinFlip: async (
+			_: unknown,
+			args: { side: string; amount: number },
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			const player = new User(authUser.userId);
+			if (!await player.GetInfo()) {
+				return { success: false, message: "Jogador não encontrado.", money: 0 };
+			}
+
+			if (!["HEADS", "TAILS"].includes(args.side) || !Number.isFinite(args.amount) || args.amount < 500) {
+				return { success: false, message: "Escolha um lado e aposte pelo menos Cr$ 500.", money: player.Money };
+			}
+
+			const { canPlay, message } = await Casino.CanUserPlayGame(player, args.amount);
+			if (!canPlay) {
+				return { success: false, message, money: player.Money };
+			}
+
+			if (!await Casino.StartUserGame(player)) {
+				return { success: false, message: "Você já está jogando no cassino.", money: player.Money };
+			}
+			try {
+				const resultSide = Math.random() < 0.5 ? "HEADS" : "TAILS";
+				const won = resultSide === args.side;
+				const prize = won ? Math.round(args.amount * 0.5 * getCasinoClassModifier(player.Class)) : 0;
+
+				if (won) {
+					await Casino.FinishUserGameWithWin(player, prize, args.amount);
+				}
+				else {
+					await Casino.FinishUserGameWithLoss(player, args.amount);
+				}
+
+				return {
+					success: true,
+					message: won ? `Você ganhou ${formatMoney(prize + args.amount, Language.Portuguese)}!` : "A moeda caiu do outro lado. Você perdeu a aposta.",
+					money: player.Money,
+					won,
+					resultSide,
+					selectedSide: args.side,
+					amount: args.amount,
+					prize,
+				};
+			}
+			finally {
+				player.Casino.IsInGame = false;
+				await player.Update({ casinoIsInGame: false });
+			}
+		},
+
+		buyLotteryTicket: async (_: unknown, __: unknown, context: GraphQLContext) => {
+			const authUser = assertAuthenticated(context);
+			const player = new User(authUser.userId);
+			if (!await player.GetInfo()) {
+				return { success: false, message: "Jogador não encontrado.", money: 0, ticketId: null };
+			}
+
+			const result = await Lottery.BuyTicket(player);
+			return {
+				success: result.success,
+				message: result.message,
+				money: player.Money,
+				ticketId: result.ticketId ?? null,
+			};
+		},
+
+		placeHorseRaceBet: async (
+			_: unknown,
+			args: { raceId: number; horseId: number; amount: number },
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			const player = new User(authUser.userId);
+			if (!await player.GetInfo()) {
+				return { success: false, message: "Jogador não encontrado.", money: 0 };
+			}
+
+			const result = await new HorseRacing(player).PlaceBet(args.raceId, args.horseId, args.amount);
+			if (!result.Success) {
+				const message = result.Reason === BetFailureReason.BetTooLow
+					? `A aposta mínima é ${formatMoney(HorseRacing.MIN_BET, Language.Portuguese)}.`
+					: result.Reason === BetFailureReason.BetTooHigh
+						? `A aposta máxima é ${formatMoney(new HorseRacing(player).CalculateMaxBet(), Language.Portuguese)}.`
+						: result.Message || "Não foi possível registrar a aposta.";
+				return { success: false, message, money: player.Money };
+			}
+
+			return {
+				success: true,
+				message: `Aposta registrada em ${result.Horse.Name[Language.Portuguese]}.`,
+				money: player.Money,
+				horseId: result.Horse.Id,
+				horseName: result.Horse.Name[Language.Portuguese],
+				multiplier: result.Horse.Multiplier,
+				amount: result.Amount,
+				raceTime: result.RaceTime.toISOString(),
 			};
 		},
 	},

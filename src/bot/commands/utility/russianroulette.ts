@@ -212,7 +212,17 @@ module.exports = {
 				return warn(interaction, unavailableMessage);
 			}
 
-			await Promise.all(participants.map(player => Casino.StartUserGame(player)));
+			const startedGames = await Promise.all(participants.map(player => Casino.StartUserGame(player)));
+			if (startedGames.some(started => !started)) {
+				await Promise.all(participants
+					.filter((player, index) => startedGames[index] && player.Casino.IsInGame)
+					.map(async player => {
+						player.Casino.IsInGame = false;
+						await player.Update({ casinoIsInGame: false });
+					}),
+				);
+				return warn(interaction, s.unavailableUsers("A participant started another casino game."));
+			}
 
 			participants.sort(() => Math.random() - 0.5);
 			const participantsStatus = participants.map(p => ({ user: p, alive: true }));

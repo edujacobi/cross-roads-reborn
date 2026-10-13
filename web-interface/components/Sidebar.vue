@@ -7,6 +7,7 @@ import {
 	CalendarDays,
 	CalendarSync,
 	ChevronLeft,
+	Coins,
 	Crown,
 	LayoutDashboard,
 	LogOut,
@@ -79,6 +80,12 @@ const navigationGroups = computed(() => [
 				size: 20,
 				activeRouteNames: ["shop"],
 				blackMarketBadge: true,
+			},
+			{
+				label: "Cassino",
+				to: { name: "casino" },
+				icon: Coins,
+				activeRouteNames: ["casino", "casino-game"],
 			},
 			{
 				label: "Trabalhos",

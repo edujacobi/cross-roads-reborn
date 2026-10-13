@@ -90,12 +90,15 @@ export class Casino {
 		return { canPlay, message };
 	}
 
-	static async StartUserGame(user: User) {
+	static async StartUserGame(user: User): Promise<boolean> {
+		const started = await UserRepository.TryStartCasinoGame(user.Id);
+		if (!started) {
+			return false;
+		}
+
 		user.Casino.IsInGame = true;
-		await user.Update({
-			casinoIsInGame: user.Casino.IsInGame,
-		});
 		Log.Info(`User ${user.Nickname} (Id: ${user.Id}) is now in a Casino Game.`);
+		return true;
 	}
 
 	static async FinishUserGameWithWin(user: User, prize: number, betAmount?: number) {
