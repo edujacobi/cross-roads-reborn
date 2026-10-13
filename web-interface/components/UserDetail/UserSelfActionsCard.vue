@@ -3,14 +3,11 @@
 	lang="ts"
 >
 import { useMutation, useQuery } from "@vue/apollo-composable";
-import { CalendarDays, Pencil, UserRound } from "lucide-vue-next";
+import { CalendarDays, CircleUserRound, Pencil, UserRound, X } from "lucide-vue-next";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
-import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseInput from "~/components/ui/BaseInput.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
-import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
-import RefreshButton from "~/components/ui/RefreshButton.vue";
 import { useMoneyFormat } from "~/composables/useMoneyFormat";
 import {
 	ChangeOwnClassDocument,
@@ -28,12 +25,7 @@ const emit = defineEmits<{
 	refresh: [];
 }>();
 
-const {
-	result: queryResult,
-	loading,
-	error: queryError,
-	refetch,
-} = useQuery(GetUserSelfActionsDocument, () => ({ id: props.userId }), {
+const { result: queryResult } = useQuery(GetUserSelfActionsDocument, () => ({ id: props.userId }), {
 	fetchPolicy: "cache-and-network",
 });
 const user = computed(() => queryResult.value?.user);
@@ -46,6 +38,7 @@ const { formatMoney } = useMoneyFormat();
 
 const now = ref(Date.now());
 let clockInterval: ReturnType<typeof setInterval> | undefined;
+const isFloatingActionsOpen = ref(false);
 const isNicknameModalOpen = ref(false);
 const isClassModalOpen = ref(false);
 const isAutomaticGrenadeModalOpen = ref(false);
@@ -182,44 +175,17 @@ async function handleAutomaticGrenadeChange() {
 </script>
 
 <template>
-	<BaseCard
-		v-if="user || loading || queryError"
-		title="Minha conta"
-	>
-		<template #actions>
-			<RefreshButton
-				@refresh="() => refetch()"
-				:loading="loading"
-				aria-label="Atualizar conta"
-			/>
-		</template>
-		<div
-			v-if="loading && !user"
-			class="user-self-actions__skeleton"
-			role="status"
-			aria-label="Carregando ações da conta"
-		>
-			<BaseSkeleton
-				v-for="index in 3"
-				:key="index"
-				width="12rem"
-				height="2.5rem"
-			/>
-		</div>
-		<p
-			v-else-if="queryError && !user"
-			role="alert"
-		>
-			Não foi possível carregar as ações da conta.
-		</p>
-		<div
-			v-else-if="user"
-			class="user-self-actions"
+	<template v-if="user">
+		<section
+			v-show="isFloatingActionsOpen"
+			id="user-self-actions-floating-menu"
+			class="user-self-actions__floating-menu"
+			aria-label="Ações da minha conta"
 		>
 			<BaseButton
 				variant="secondary"
 				:disabled="dailyLoading || !canReceiveDaily"
-				@click="handleDailyReward"
+				@click="isFloatingActionsOpen = false; handleDailyReward()"
 			>
 				<CalendarDays
 					:size="16"
@@ -229,7 +195,7 @@ async function handleAutomaticGrenadeChange() {
 			</BaseButton>
 			<BaseButton
 				variant="secondary"
-				@click="isNicknameModalOpen = true"
+				@click="isFloatingActionsOpen = false; isNicknameModalOpen = true"
 			>
 				<Pencil
 					:size="16"
@@ -240,7 +206,7 @@ async function handleAutomaticGrenadeChange() {
 			<BaseButton
 				variant="secondary"
 				:disabled="classOptions.length === 0"
-				@click="isClassModalOpen = true"
+				@click="isFloatingActionsOpen = false; isClassModalOpen = true"
 			>
 				<UserRound
 					:size="16"
@@ -250,7 +216,7 @@ async function handleAutomaticGrenadeChange() {
 			</BaseButton>
 			<BaseButton
 				variant="secondary"
-				@click="isAutomaticGrenadeModalOpen = true"
+				@click="isFloatingActionsOpen = false; isAutomaticGrenadeModalOpen = true"
 			>
 				<NuxtImg
 					src="/images/items/18_Grenade.png"
@@ -260,8 +226,28 @@ async function handleAutomaticGrenadeChange() {
 				/>
 				{{ user.automaticGrenade ? "Desativar granadas automáticas" : "Ativar granadas automáticas" }}
 			</BaseButton>
-		</div>
-	</BaseCard>
+		</section>
+
+		<button
+			type="button"
+			class="user-self-actions__floating-toggle"
+			:aria-label="isFloatingActionsOpen ? 'Fechar ações da conta' : 'Abrir ações da conta'"
+			aria-controls="user-self-actions-floating-menu"
+			:aria-expanded="isFloatingActionsOpen"
+			@click="isFloatingActionsOpen = !isFloatingActionsOpen"
+		>
+			<X
+				v-if="isFloatingActionsOpen"
+				:size="24"
+				aria-hidden="true"
+			/>
+			<CircleUserRound
+				v-else
+				:size="24"
+				aria-hidden="true"
+			/>
+		</button>
+	</template>
 
 	<BaseModal
 		v-if="user"
@@ -397,6 +383,51 @@ async function handleAutomaticGrenadeChange() {
 		display: flex;
 		flex-wrap: wrap;
 		gap: $spacing-sm;
+	}
+
+	&__floating-toggle {
+		position: fixed;
+		left: calc(50% - 2rem);
+		bottom: 1rem;
+		z-index: 20;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 4rem;
+		height: 4rem;
+		border: 1px solid $border-subtle;
+		border-radius: $radius-full;
+		background-color: $bg-sidebar;
+		color: $text-primary;
+		box-shadow: $shadow-lg;
+		cursor: pointer;
+		transition: transform 0.2s ease;
+
+		&:hover {
+			transform: scale(1.05);
+		}
+	}
+
+	&__floating-menu {
+		position: fixed;
+		left: 50%;
+		bottom: 5.75rem;
+		z-index: 20;
+		display: flex;
+		flex-direction: column;
+		gap: $spacing-sm;
+		width: min(20rem, calc(100vw - 2rem));
+		box-sizing: border-box;
+		padding: $spacing-sm;
+		border: 1px solid $border-card;
+		border-radius: $radius-md;
+		background-color: $bg-card;
+		box-shadow: $shadow-lg;
+		transform: translateX(-50%);
+
+		.base-button {
+			width: 100%;
+		}
 	}
 
 	display: flex;
