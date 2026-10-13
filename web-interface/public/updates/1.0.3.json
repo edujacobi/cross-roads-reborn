@@ -1,0 +1,22 @@
+{
+	"version": "1.0.3",
+	"title": "Vasculhar e correções",
+	"comment": "Agora dá pra vasculhar.",
+	"date": "12/10/2026",
+	"sections": [
+		{
+			"title": "Vasculhar",
+			"description": "Procure itens e dinheiro em locais pouco convencionais.",
+			"imageUrl": "/images/situations/scavenging.png"
+		},
+		{
+			"title": "Gangue",
+			"description": "Agora dá pra criar e editar sua gangue por aqui",
+			"imageUrl": "/images/situations/gang-action.png"
+		},
+		{
+			"title": "Situação na sidebar",
+			"description": "A situação atual do jogador agora aparece na barra lateral, pra você não se perder."
+		}
+	]
+}
