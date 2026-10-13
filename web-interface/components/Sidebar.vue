@@ -31,6 +31,7 @@ import { hasUnreadUpdates } from "~/composables/useUnreadUpdates";
 import { imagePaths } from "~/constants/imagePaths";
 import { localStorageKeys } from "~/constants/localStorageKeys";
 import { GetBlackMarketOpenDocument } from "~/graphql/generated";
+import { SituationId } from "../../src/core/types/Ids";
 
 const auth = useAuth();
 const route = useRoute();
@@ -204,6 +205,7 @@ const user = computed(() => {
 		avatarDecoration: authUser.avatarDecoration || "default",
 		situationText: getSituationName(authUser.situationId),
 		situationImageUrl: getSituationImageUrl(authUser.situationId),
+		isDead: authUser.situationId === SituationId.Dead,
 	};
 });
 </script>
@@ -345,7 +347,24 @@ const user = computed(() => {
 				/>
 				<div class="user-details">
 					<span class="user-name">{{ user?.username }}</span>
-					<p class="user-situation">
+					<NuxtLink
+						v-if="user?.isDead"
+						to="/cemetery"
+						class="user-situation"
+					>
+						<NuxtImg
+							:src="user?.situationImageUrl"
+							class="img-situation"
+							width="16"
+							height="16"
+							alt=""
+						/>
+						{{ user?.situationText }}
+					</NuxtLink>
+					<p
+						v-else
+						class="user-situation"
+					>
 						<NuxtImg
 							:src="user?.situationImageUrl"
 							class="img-situation"

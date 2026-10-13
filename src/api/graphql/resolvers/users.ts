@@ -375,6 +375,31 @@ export const userResolvers: {
 			return { entries, total };
 		},
 
+		deadUsers: async (_: unknown, __: unknown, context: GraphQLContext) => {
+			assertAuthenticated(context);
+			const users = await UserRepository.FindAllDead();
+			const client = getClient();
+
+			return Promise.all(users.map(async (user) => {
+				let avatarUrl: string | null = null;
+				try {
+					avatarUrl = (await client.users.fetch(user.id)).avatarURL();
+				}
+				catch {
+					avatarUrl = null;
+				}
+
+				return {
+					id: user.id,
+					nickname: user.nickname || "(Sem Nick)",
+					avatarUrl,
+					avatarDecoration: formatAvatarDecoration(user.avatarDecoration),
+					class: user.class,
+					deadUntil: user.deadUntil instanceof Date ? user.deadUntil.toISOString() : String(user.deadUntil),
+				};
+			}));
+		},
+
 		prisoners: async (
 			_: unknown,
 			args: { search?: string; limit?: number; offset?: number; sortBy?: string; sortOrder?: string },

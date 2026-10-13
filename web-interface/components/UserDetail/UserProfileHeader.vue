@@ -240,7 +240,13 @@ function getBadgeImage(badgeId: BadgeId): string {
 					Não foi possível carregar a situação.
 				</span>
 				<template v-else-if="status">
-					<span>{{ situationAction }}</span>
+					<NuxtLink
+						v-if="status.isDead"
+						to="/cemetery"
+					>
+						{{ situationAction }}
+					</NuxtLink>
+					<span v-else>{{ situationAction }}</span>
 					<NuxtLink
 						v-if="status.isWorking"
 						to="/jobs"

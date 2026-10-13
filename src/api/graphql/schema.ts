@@ -534,6 +534,15 @@ export const typeDefs = /* GraphQL */ `
         hospitalCount: Int!
     }
 
+    type DeadUser {
+        id: ID!
+        nickname: String!
+        avatarUrl: String
+        avatarDecoration: String
+        class: Int!
+        deadUntil: String!
+    }
+
     type PrisonerUser {
         id: ID!
         nickname: String!
@@ -649,6 +658,7 @@ export const typeDefs = /* GraphQL */ `
         blackMarketOpen: Boolean!
         jobs: [JobInfo!]!
         hospitalizedUsers(search: String, limit: Int, offset: Int, sortBy: String, sortOrder: String): HospitalizedUserPage!
+        deadUsers: [DeadUser!]!
         prisoners(search: String, limit: Int, offset: Int, sortBy: String, sortOrder: String): PrisonerUserPage!
         bribeCost: Float
         privateHospitalCost: Float

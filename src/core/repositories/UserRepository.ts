@@ -319,7 +319,7 @@ export class UserRepository {
 	 */
 	static async FindAllDead(): Promise<Users[]> {
 		return await Users.findAll({
-			attributes: ["nickname", "class", "deadUntil"],
+			attributes: ["id", "nickname", "avatarDecoration", "class", "deadUntil"],
 			order: [["deadUntil", "DESC"]],
 			where: { deadUntil: { [Op.gt]: new Date() } },
 		});

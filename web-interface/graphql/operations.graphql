@@ -918,6 +918,17 @@ query GetHospitalizedUsers($search: String, $limit: Int, $offset: Int, $sortBy: 
 	}
 }
 
+query GetDeadUsers {
+	deadUsers {
+		id
+		nickname
+		avatarUrl
+		avatarDecoration
+		class
+		deadUntil
+	}
+}
+
 query GetPrisoners($search: String, $limit: Int, $offset: Int, $sortBy: String, $sortOrder: String) {
 	prisoners(search: $search, limit: $limit, offset: $offset, sortBy: $sortBy, sortOrder: $sortOrder) {
 		total
