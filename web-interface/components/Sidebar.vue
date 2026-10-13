@@ -489,6 +489,7 @@ const user = computed(() => {
 		flex-direction: column;
 		gap: $spacing-xs;
 		overflow-y: auto;
+		overflow-x: hidden;
 		overscroll-behavior: contain;
 
 		.nav-group {
