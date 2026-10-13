@@ -150,6 +150,7 @@ export class Scavenge {
 			item?: Items;
 			quantity?: number;
 			duration?: number;
+			cooldownEndsAt?: Date;
 			hospitalized?: boolean;
 			hospitalTime?: Date;
 			inprisoned?: boolean;
@@ -277,6 +278,8 @@ export class Scavenge {
 			scavengeCount: this.User.Scavenge.Count,
 			scavengeTime: this.User.Scavenge.Time,
 		});
+
+		result.cooldownEndsAt = this.User.Scavenge.Time;
 
 		return result;
 	}

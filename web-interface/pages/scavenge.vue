@@ -107,6 +107,9 @@ const showResultModal = ref(false);
 const selectedLocationId = ref<number | null>(null);
 const resultSuccess = ref(false);
 const resultRewardDescription = ref("");
+const resultRewardImage = ref("");
+const resultLocationName = ref("");
+const resultCooldownEndsAt = ref<Date | null>(null);
 const resultFailureReason = ref("");
 
 // SSE abort controller
@@ -188,11 +191,29 @@ async function handleStartScavenge() {
 	listenToScavengeSSE();
 }
 
-function onScavengeResult(success: boolean, rewardDescription: string, failureReason: string) {
+function onScavengeResult(data: {
+	success: boolean;
+	rewardDescription?: string;
+	failureReason?: string;
+	itemId?: number | null;
+	quantity?: number | null;
+	duration?: number | null;
+	cooldownEndsAt?: string | null;
+}) {
 	showLoadingModal.value = false;
-	resultSuccess.value = success;
-	resultRewardDescription.value = rewardDescription;
-	resultFailureReason.value = failureReason;
+	resultSuccess.value = data.success;
+	const locationId = scavengingId.value ?? selectedLocationId.value;
+	const location = locations.value.find((item) => item.id === locationId);
+	const rewardItem = location?.rewardItems.find((item) => item.itemId === data.itemId);
+	resultRewardImage.value = rewardItem?.defaultImagePath ?? "";
+	resultLocationName.value = location?.name ?? "";
+	resultCooldownEndsAt.value = data.cooldownEndsAt ? new Date(data.cooldownEndsAt) : null;
+	resultRewardDescription.value = rewardItem
+		? rewardItem.itemType === "Consumable"
+			? `${data.quantity ?? 0} ${rewardItem.name}`
+			: `${rewardItem.name} (${(data.duration ?? 0).toFixed(1)}h)`
+		: (data.rewardDescription ?? "");
+	resultFailureReason.value = data.failureReason ?? "";
 	showResultModal.value = true;
 
 	void Promise.all([auth.fetchUser(), refetchStatus(), refetchActivity(), refetchProfile(), refetchStatusQuery()]);
@@ -243,7 +264,7 @@ async function listenToScavengeSSE() {
 					const data = JSON.parse(line.slice(6));
 					if (data.type === "scavenge-ended") {
 						sseInProgress = false;
-						onScavengeResult(data.success, data.rewardDescription || "", data.failureReason || "");
+						onScavengeResult(data);
 						return;
 					}
 					if (data.type === "closed") {
@@ -334,9 +355,7 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 						class="scavenge-card__header"
 						height="2rem"
 					/>
-					<BaseSkeleton
-						height="3rem"
-					/>
+					<BaseSkeleton height="3rem" />
 				</div>
 			</div>
 			<BaseSkeleton class="scavenge-page__loading-aside" />
@@ -599,6 +618,10 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 			@update:open="showLoadingModal = $event"
 		>
 			<div class="scavenge-modal-loading__content">
+				<NuxtImg
+					:src="imagePaths.badges.topScavenge"
+					width="100"
+				/>
 				<div
 					class="scavenge-modal-loading__spinner"
 					role="status"
@@ -622,7 +645,21 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 				v-if="resultSuccess"
 				class="scavenge-result"
 			>
-				<p>{{ resultRewardDescription }}</p>
+				<p>Você encontrou</p>
+				<div class="scavenge-result__reward">
+					<NuxtImg
+						v-if="resultRewardImage"
+						:src="resultRewardImage"
+						:alt="resultRewardDescription"
+						width="40"
+						height="40"
+					/>
+					<strong>{{ resultRewardDescription }}</strong>
+				</div>
+				<p v-if="resultLocationName">enquanto vasculhava {{ resultLocationName }}</p>
+				<p v-if="resultCooldownEndsAt">
+					Poderá vasculhar novamente em {{ distance(new Date(), resultCooldownEndsAt) }}
+				</p>
 			</div>
 			<div
 				v-else
@@ -1164,6 +1201,16 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 	display: flex;
 	flex-direction: column;
 	gap: $spacing-sm;
+
+	&__reward {
+		display: flex;
+		align-items: center;
+		gap: $spacing-sm;
+
+		img {
+			object-fit: contain;
+		}
+	}
 
 	p {
 		margin: 0;

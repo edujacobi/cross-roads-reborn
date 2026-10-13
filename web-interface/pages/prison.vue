@@ -632,7 +632,13 @@ function formatBribeCost() {
 					:src="imagePaths.uiElements.escape"
 					width="100"
 				/>
-				<div class="escape-loading__spinner"></div>
+				<div
+					class="escape-loading__spinner"
+					role="status"
+					aria-label="Carregando"
+				>
+					<span class="sr-only">Tentando fugir...</span>
+				</div>
 			</div>
 		</BaseModal>
 
