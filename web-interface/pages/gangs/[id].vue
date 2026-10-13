@@ -14,9 +14,11 @@ import BaseTable from "~/components/ui/BaseTable.vue";
 import BaseTableSkeleton from "~/components/ui/BaseTableSkeleton.vue";
 import { imagePaths } from "~/constants/imagePaths";
 import {
+	CancelGangImportDocument,
 	CreateGangRoleDocument,
 	type GangRoleInfo,
 	GetGangDetailDocument,
+	StartGangImportDocument,
 	UpdateGangDocument,
 	UpdateGangRoleDocument,
 } from "~/graphql/generated";
@@ -32,7 +34,8 @@ useHead({
 const route = useRoute();
 const router = useRouter();
 const { formatMoney } = useMoneyFormat();
-const { getGangBaseImageUrl } = useGangBase();
+const { relative } = useDateFormat();
+const { getGangBaseImageUrl, getGangBaseShipmentImageUrl } = useGangBase();
 const auth = useAuth();
 const { showToast } = useToast();
 
@@ -73,6 +76,60 @@ const editingRole = ref<GangRoleInfo | null>(null);
 const roleDraft = ref(emptyRoleDraft());
 const { mutate: createGangRole, loading: creatingRole } = useMutation(CreateGangRoleDocument);
 const { mutate: updateGangRole, loading: updatingRole } = useMutation(UpdateGangRoleDocument);
+const { mutate: startGangImport, loading: startingImport } = useMutation(StartGangImportDocument);
+const { mutate: cancelGangImport, loading: cancellingImport } = useMutation(CancelGangImportDocument);
+const isImportCancelConfirmationOpen = ref(false);
+const importProgressTime = ref(Date.now());
+let importProgressTimer: ReturnType<typeof setInterval> | undefined;
+
+onMounted(() => {
+	importProgressTimer = setInterval(() => {
+		importProgressTime.value = Date.now();
+	}, 1_000);
+});
+
+onUnmounted(() => {
+	if (importProgressTimer) clearInterval(importProgressTimer);
+});
+
+const importProgress = computed(() => {
+	const startedAt = gang.value?.shipmentStartedAt;
+	const arrivesAt = gang.value?.shipmentArrivesAt;
+	if (!startedAt || !arrivesAt) return 0;
+
+	const startedAtMs = new Date(startedAt).getTime();
+	const durationMs = new Date(arrivesAt).getTime() - startedAtMs;
+	return Math.min(100, Math.max(0, ((importProgressTime.value - startedAtMs) / durationMs) * 100));
+});
+
+async function startGangShipmentImport() {
+	try {
+		const result = (await startGangImport({ gangId: gangId.value }))?.data?.startGangImport;
+		showToast({
+			text: result?.message ?? "Falha ao iniciar a importação.",
+			variant: result?.success ? "success" : "error",
+		});
+		if (result?.success) await refetch();
+	} catch (caughtError: unknown) {
+		showToast({ text: caughtError instanceof Error ? caughtError.message : "Erro inesperado.", variant: "error" });
+	}
+}
+
+async function cancelGangShipmentImport() {
+	try {
+		const result = (await cancelGangImport({ gangId: gangId.value }))?.data?.cancelGangImport;
+		showToast({
+			text: result?.message ?? "Falha ao cancelar a importação.",
+			variant: result?.success ? "success" : "error",
+		});
+		if (result?.success) {
+			isImportCancelConfirmationOpen.value = false;
+			await refetch();
+		}
+	} catch (caughtError: unknown) {
+		showToast({ text: caughtError instanceof Error ? caughtError.message : "Erro inesperado.", variant: "error" });
+	}
+}
 
 function emptyRoleDraft() {
 	return { name: "", canInvite: false, canKick: false, canPromote: false, canEditGang: false, canImport: false };
@@ -352,10 +409,32 @@ async function updateGang() {
 							</table>
 						</BaseTable>
 					</BaseCard>
+
 					<BaseCard
 						v-if="gang.base"
 						title="Base da gangue"
 					>
+						<template
+							v-if="gang.canViewShipmentInfo && gang.canImport"
+							#actions
+						>
+							<BaseButton
+								v-if="gang.shipmentArrivesAt"
+								variant="danger"
+								:disabled="cancellingImport"
+								@click="isImportCancelConfirmationOpen = true"
+							>
+								Cancelar importação
+							</BaseButton>
+							<BaseButton
+								v-else
+								variant="success"
+								:disabled="startingImport || !gang.canStartImport"
+								@click="startGangShipmentImport()"
+							>
+								Iniciar importação
+							</BaseButton>
+						</template>
 						<div class="gang-base-info">
 							<NuxtImg
 								v-if="gang.base.id"
@@ -407,6 +486,51 @@ async function updateGang() {
 								</template>
 							</div>
 						</div>
+						<template v-if="gang.canViewShipmentInfo">
+							<div
+								v-if="gang.shipmentArrivesAt"
+								class="gang-import"
+							>
+								<h3>Importação</h3>
+								<div class="gang-import__description">
+									<p>Uma importação está atualmente em trânsito.</p>
+									<span>Chega {{ relative(gang.shipmentArrivesAt, true) }}</span>
+									<span>Chance de sucesso: {{ Math.floor((gang.importSuccessChance ?? 0) * 100) }}%</span>
+								</div>
+								<div
+									class="gang-import__progress"
+									role="progressbar"
+									:aria-valuenow="Math.floor(importProgress)"
+									aria-valuemin="0"
+									aria-valuemax="100"
+									aria-label="Progresso da importação"
+								>
+									<div class="gang-import__track">
+										<div
+											class="gang-import__fill"
+											:style="{ width: `${importProgress}%` }"
+										/>
+									</div>
+									<NuxtImg
+										:src="getGangBaseShipmentImageUrl(gang.base.id)"
+										width="36"
+										height="36"
+										class="gang-import__truck"
+										:style="{ left: `${importProgress}%` }"
+										alt=""
+									/>
+								</div>
+							</div>
+							<div
+								v-else
+								class="gang-import gang-import__ready"
+							>
+								<h3>Importação</h3>
+								<span>Custo: {{ formatMoney(gang.importCost ?? 0) }}</span>
+								<span>Chance de sucesso: {{ Math.floor((gang.importSuccessChance ?? 0) * 100) }}%</span>
+								<span v-if="gang.canImport && !gang.canStartImport">Importação indisponível no momento.</span>
+							</div>
+						</template>
 					</BaseCard>
 				</div>
 				<!-- Roles Table -->
@@ -585,41 +709,41 @@ async function updateGang() {
 						</span>
 						<fieldset class="role-permissions">
 							<legend>Permissões</legend>
-							<label
-								><input
+							<label>
+								<input
 									v-model="roleDraft.canInvite"
 									type="checkbox"
 								>
-								Convidar</label
-							>
-							<label
-								><input
+								Convidar
+							</label>
+							<label>
+								<input
 									v-model="roleDraft.canKick"
 									type="checkbox"
 								>
-								Expulsar</label
-							>
-							<label
-								><input
+								Expulsar
+							</label>
+							<label>
+								<input
 									v-model="roleDraft.canPromote"
 									type="checkbox"
 								>
-								Promover</label
-							>
-							<label
-								><input
+								Promover
+							</label>
+							<label>
+								<input
 									v-model="roleDraft.canEditGang"
 									type="checkbox"
 								>
-								Editar gangue</label
-							>
-							<label
-								><input
+								Editar gangue
+							</label>
+							<label>
+								<input
 									v-model="roleDraft.canImport"
 									type="checkbox"
 								>
-								Importar</label
-							>
+								Importar
+							</label>
 						</fieldset>
 					</form>
 					<template #footer>
@@ -655,6 +779,30 @@ async function updateGang() {
 					• ID: {{ gang.id }}
 				</div>
 			</div>
+
+			<BaseModal
+				:open="isImportCancelConfirmationOpen"
+				title="Cancelar importação"
+				@update:open="isImportCancelConfirmationOpen = $event"
+			>
+				<p>Deseja cancelar a importação ativa? O reembolso será parcial.</p>
+				<template #footer>
+					<BaseButton
+						variant="secondary"
+						:disabled="cancellingImport"
+						@click="isImportCancelConfirmationOpen = false"
+					>
+						Voltar
+					</BaseButton>
+					<BaseButton
+						variant="danger"
+						:disabled="cancellingImport"
+						@click="cancelGangShipmentImport()"
+					>
+						{{ cancellingImport ? "Cancelando..." : "Confirmar cancelamento" }}
+					</BaseButton>
+				</template>
+			</BaseModal>
 
 			<!-- Edit Gang Modal -->
 			<BaseModal
@@ -1002,6 +1150,59 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 		font-size: 0.8125rem;
 		color: $color-attribute;
 		margin: 0;
+	}
+}
+
+.gang-import {
+	display: flex;
+	flex-direction: column;
+	gap: $spacing-md;
+	margin-top: $spacing-md;
+	padding-top: $spacing-md;
+	border-top: 1px solid $border-subtle;
+
+	&__description,
+	&__ready {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		color: $text-secondary;
+		font-size: 0.8125rem;
+	}
+
+	&__description p {
+		margin: 0;
+		color: $text-primary;
+		font-size: 0.875rem;
+		font-weight: 600;
+	}
+
+	&__progress {
+		position: relative;
+		padding-top: 0.5rem;
+	}
+
+	&__track {
+		height: 0.875rem;
+		overflow: hidden;
+		border-radius: $radius-full;
+		background-color: $bg-input-field;
+	}
+
+	&__fill {
+		height: 100%;
+		border-radius: inherit;
+		background-color: $highlight-color;
+		transition: width 1s linear;
+	}
+
+	&__truck {
+		position: absolute;
+		top: -0.15rem;
+		transform: translateX(-50%);
+		color: $text-primary;
+		filter: drop-shadow(0 1px 2px $background-color);
+		transition: left 1s linear;
 	}
 }
 

@@ -260,6 +260,13 @@ export const typeDefs = /* GraphQL */ `
         color: String!
         imageUrl: String
         base: GangBaseInfo
+        shipmentStartedAt: String
+        shipmentArrivesAt: String
+        importCost: Float
+        importSuccessChance: Float
+        canImport: Boolean!
+        canStartImport: Boolean
+        canViewShipmentInfo: Boolean!
         leaderId: ID!
         leaderNickname: String
         leaderAvatarUrl: String
@@ -683,6 +690,8 @@ export const typeDefs = /* GraphQL */ `
         startScavenge(placeId: Int!): ScavengeStartResult!
         createGang(name: String!, acronym: String!, description: String!, color: String!, imageUrl: String): GangMutationResult!
         updateGang(id: ID!, name: String, acronym: String, description: String, color: String, imageUrl: String): GangMutationResult!
+        startGangImport(gangId: ID!): GangMutationResult!
+        cancelGangImport(gangId: ID!): GangMutationResult!
         createGangRole(gangId: ID!, name: String!, canInvite: Boolean!, canKick: Boolean!, canPromote: Boolean!, canEditGang: Boolean!, canImport: Boolean!): GangMutationResult!
         updateGangRole(gangId: ID!, roleId: Int!, name: String!, canInvite: Boolean!, canKick: Boolean!, canPromote: Boolean!, canEditGang: Boolean!, canImport: Boolean!): GangMutationResult!
     }

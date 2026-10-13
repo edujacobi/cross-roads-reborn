@@ -90,6 +90,9 @@ export const imagePaths = {
 		bikeclub2x: "/images/bases/Bikeclub_2x.png",
 		bunker: "/images/bases/Bunker_.png",
 		bunker2x: "/images/bases/Bunker_2x.png",
+		airportShipment: "/images/bases/AirportShipment.png",
+		bikeclubShipment: "/images/bases/BikeclubShipment.png",
+		bunkerShipment: "/images/bases/BunkerShipment.png",
 	},
 	scavengeLocations: {
 		dump: "/images/scavenge/Dump.png",

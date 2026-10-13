@@ -5,12 +5,12 @@ import { UserRepository } from "#core/repositories/UserRepository";
 import { AvatarDecorationList } from "#core/types/AvatarDecorations";
 import { BackgroundDecorationList } from "#core/types/BackgroundDecorations";
 import { Language } from "#core/models/Language";
-import { Gang, GangPermission } from "#core/models/Gang";
+import { Gang, GangImportFailureReason, GangPermission } from "#core/models/Gang";
 import { User } from "#core/models/User";
 import { GangBases, GangBaseId } from "#core/types/GangBases";
 import { GangColor, GangColorId } from "#core/types/GangColors";
 import type { GraphQLContext } from "#api/types";
-import { convertHexNumberToString } from "#bot/utils/ui";
+import { convertHexNumberToString, formatMoney } from "#bot/utils/ui";
 import { getClient } from "#bot/client";
 import { assertAuthenticated } from "./helpers";
 import type { ResolverFn } from "./helpers";
@@ -78,7 +78,7 @@ export const gangResolvers: {
 		},
 
 		gang: async (_: unknown, args: { id: string }, context: GraphQLContext) => {
-			assertAuthenticated(context);
+			const authUser = assertAuthenticated(context);
 
 			const gang = await GangRepository.FindById(Number(args.id));
 			if (!gang) {
@@ -94,6 +94,21 @@ export const gangResolvers: {
 				UserRepository.FindById(gang.leaderId, ["id", "nickname"]),
 			]);
 
+			const importState = new Gang();
+			importState.Level = gang.level;
+			importState.BaseId = gang.baseId ?? GangBaseId.None;
+			importState.Money = gang.money;
+			importState.ImportArrivesAt = gang.shipmentArrivesAt;
+			importState.LastImportSuccess = gang.lastShipmentSuccess;
+			importState.LastImportCancelled = gang.lastShipmentCancelled;
+			const canStartImport = (await importState.CanStartImport()).can;
+			const canViewShipmentInfo = authUser.role === "DEVELOPER"
+				|| gang.leaderId === authUser.userId
+				|| members.some(member => member.userId === authUser.userId);
+			const canImport = gang.leaderId === authUser.userId || members.some(member =>
+				member.userId === authUser.userId
+				&& roles.some(role => role.id === member.roleId && role.canImportShipments),
+			);
 
 			const client = getClient();
 
@@ -153,6 +168,15 @@ export const gangResolvers: {
 						modifierPrisonEscape: baseConfig.Modifier.PrisonEscape?.Positive ?? baseConfig.Modifier.PrisonEscape?.Negative ?? null,
 					}
 					: null,
+				shipmentStartedAt: canViewShipmentInfo && gang.shipmentArrivesAt
+					? new Date(gang.shipmentArrivesAt.getTime() - Gang.IMPORT_WAIT_HOURS * 3_600_000).toISOString()
+					: null,
+				shipmentArrivesAt: canViewShipmentInfo ? gang.shipmentArrivesAt?.toISOString() ?? null : null,
+				importCost: canViewShipmentInfo ? importState.GetImportCost() : null,
+				importSuccessChance: canViewShipmentInfo ? importState.GetImportSuccessChance() : null,
+				canImport,
+				canStartImport: canViewShipmentInfo ? canStartImport : null,
+				canViewShipmentInfo,
 				leaderId: gang.leaderId,
 				leaderNickname: leader?.nickname ?? null,
 				leaderAvatarUrl: null,
@@ -297,6 +321,67 @@ export const gangResolvers: {
 				return { success: true, message: "Gangue atualizada com sucesso." };
 			}
 			return { success: false, message: "Falha ao atualizar gangue." };
+		},
+
+		startGangImport: async (
+			_: unknown,
+			args: { gangId: string },
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			const gangId = Number(args.gangId);
+			if (!Number.isSafeInteger(gangId)) {
+				return { success: false, message: "Gangue não encontrada." };
+			}
+
+			const gang = await Gang.GetById(gangId);
+			if (!gang) {
+				return { success: false, message: "Gangue não encontrada." };
+			}
+			if (!gang.CanImportShipments(authUser.userId)) {
+				return { success: false, message: "Você não tem permissão para importar cargas." };
+			}
+
+			const check = await gang.CanStartImport();
+			if (!check.can) {
+				const messages: Record<GangImportFailureReason, string> = {
+					[GangImportFailureReason.NoBase]: "Sua gangue precisa ter uma base para importar cargas.",
+					[GangImportFailureReason.ActiveImport]: "Já existe uma importação em trânsito.",
+					[GangImportFailureReason.Cooldown]: "A importação está em período de espera.",
+					[GangImportFailureReason.CancelCooldown]: "A importação está em período de espera após um cancelamento.",
+					[GangImportFailureReason.NotEnoughMoney]: "O banco da gangue não tem dinheiro suficiente.",
+				};
+				return { success: false, message: check.reason === undefined ? "Não foi possível iniciar a importação." : messages[check.reason] };
+			}
+
+			await gang.StartImport();
+			return { success: true, message: "Importação iniciada com sucesso." };
+		},
+
+		cancelGangImport: async (
+			_: unknown,
+			args: { gangId: string },
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			const gangId = Number(args.gangId);
+			if (!Number.isSafeInteger(gangId)) {
+				return { success: false, message: "Gangue não encontrada." };
+			}
+
+			const gang = await Gang.GetById(gangId);
+			if (!gang) {
+				return { success: false, message: "Gangue não encontrada." };
+			}
+			if (!gang.CanImportShipments(authUser.userId)) {
+				return { success: false, message: "Você não tem permissão para cancelar importações." };
+			}
+			if (!gang.IsImportActive()) {
+				return { success: false, message: "Não há uma importação ativa para cancelar." };
+			}
+
+			const refund = await gang.CancelImport();
+			return { success: true, message: `Importação cancelada. ${formatMoney(refund, Language.Portuguese)} foi reembolsado ao banco da gangue.` };
 		},
 
 		createGangRole: async (

@@ -373,6 +373,13 @@ query GetGangDetail($id: ID!) {
 		xpForNextLevel
 		color
 		imageUrl
+		shipmentStartedAt
+		shipmentArrivesAt
+		importCost
+		importSuccessChance
+		canImport
+		canStartImport
+		canViewShipmentInfo
 		base {
 			id
 			name
@@ -405,6 +412,20 @@ query GetGangDetail($id: ID!) {
 			canImport
 		}
 		createdAt
+	}
+}
+
+mutation StartGangImport($gangId: ID!) {
+	startGangImport(gangId: $gangId) {
+		success
+		message
+	}
+}
+
+mutation CancelGangImport($gangId: ID!) {
+	cancelGangImport(gangId: $gangId) {
+		success
+		message
 	}
 }
 
