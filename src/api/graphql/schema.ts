@@ -683,5 +683,7 @@ export const typeDefs = /* GraphQL */ `
         startScavenge(placeId: Int!): ScavengeStartResult!
         createGang(name: String!, acronym: String!, description: String!, color: String!, imageUrl: String): GangMutationResult!
         updateGang(id: ID!, name: String, acronym: String, description: String, color: String, imageUrl: String): GangMutationResult!
+        createGangRole(gangId: ID!, name: String!, canInvite: Boolean!, canKick: Boolean!, canPromote: Boolean!, canEditGang: Boolean!, canImport: Boolean!): GangMutationResult!
+        updateGangRole(gangId: ID!, roleId: Int!, name: String!, canInvite: Boolean!, canKick: Boolean!, canPromote: Boolean!, canEditGang: Boolean!, canImport: Boolean!): GangMutationResult!
     }
 `;

@@ -3,7 +3,7 @@
 	lang="ts"
 >
 import { useMutation, useQuery } from "@vue/apollo-composable";
-import { ArrowLeft, Pencil, Shield, ShieldAlert, ShieldCheck } from "lucide-vue-next";
+import { ArrowLeft, Pencil, Plus, Shield, ShieldAlert, ShieldCheck } from "lucide-vue-next";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseErrorState from "~/components/ui/BaseErrorState.vue";
@@ -13,7 +13,13 @@ import BaseSelector from "~/components/ui/BaseSelector.vue";
 import BaseTable from "~/components/ui/BaseTable.vue";
 import BaseTableSkeleton from "~/components/ui/BaseTableSkeleton.vue";
 import { imagePaths } from "~/constants/imagePaths";
-import { GetGangDetailDocument, UpdateGangDocument } from "~/graphql/generated";
+import {
+	CreateGangRoleDocument,
+	type GangRoleInfo,
+	GetGangDetailDocument,
+	UpdateGangDocument,
+	UpdateGangRoleDocument,
+} from "~/graphql/generated";
 
 definePageMeta({
 	middleware: "auth",
@@ -35,11 +41,82 @@ const gangId = computed(() => String(route.params.id));
 const { result: gangData, loading, error, refetch } = useQuery(GetGangDetailDocument, () => ({ id: gangId.value }));
 
 const gang = computed(() => gangData.value?.gang);
+const rolesByPermissionCount = computed(() =>
+	[...(gang.value?.roles ?? [])]
+		.filter((role) => role.id !== gang.value?.members.find((member) => member.userId === gang.value?.leaderId)?.roleId)
+		.sort((a, b) => getRolePermissionCount(b) - getRolePermissionCount(a)),
+);
 const expRatio = computed(() => {
 	if (!gang.value || gang.value.level >= 10) return 1;
 	return Math.min(gang.value.experience / gang.value.xpForNextLevel, 1);
 });
 const expPercent = computed(() => Math.round(expRatio.value * 100));
+
+function getRolePermissionCount(role: GangRoleInfo) {
+	return [role.canInvite, role.canKick, role.canPromote, role.canEditGang, role.canImport].filter(Boolean).length;
+}
+
+const roleDraftPermissionCount = computed(
+	() =>
+		[
+			roleDraft.value.canInvite,
+			roleDraft.value.canKick,
+			roleDraft.value.canPromote,
+			roleDraft.value.canEditGang,
+			roleDraft.value.canImport,
+		].filter(Boolean).length,
+);
+
+const canManageRoles = computed(() => gang.value?.leaderId === auth.user.value?.userId);
+const isRoleEditorOpen = ref(false);
+const editingRole = ref<GangRoleInfo | null>(null);
+const roleDraft = ref(emptyRoleDraft());
+const { mutate: createGangRole, loading: creatingRole } = useMutation(CreateGangRoleDocument);
+const { mutate: updateGangRole, loading: updatingRole } = useMutation(UpdateGangRoleDocument);
+
+function emptyRoleDraft() {
+	return { name: "", canInvite: false, canKick: false, canPromote: false, canEditGang: false, canImport: false };
+}
+
+function beginCreateRole() {
+	editingRole.value = null;
+	roleDraft.value = emptyRoleDraft();
+	isRoleEditorOpen.value = true;
+}
+
+function beginEditRole(role: GangRoleInfo) {
+	editingRole.value = role;
+	roleDraft.value = {
+		name: role.name,
+		canInvite: role.canInvite,
+		canKick: role.canKick,
+		canPromote: role.canPromote,
+		canEditGang: role.canEditGang,
+		canImport: role.canImport,
+	};
+	isRoleEditorOpen.value = true;
+}
+
+async function saveRole() {
+	const variables = { gangId: gangId.value, ...roleDraft.value, name: roleDraft.value.name.trim() };
+	try {
+		const result = editingRole.value
+			? (await updateGangRole({ ...variables, roleId: editingRole.value.id }))?.data?.updateGangRole
+			: (await createGangRole(variables))?.data?.createGangRole;
+		if (!result?.success) {
+			showToast({ text: result?.message ?? "Falha ao salvar o cargo.", variant: "error" });
+			return;
+		}
+		showToast({ text: result.message, variant: "success" });
+		isRoleEditorOpen.value = false;
+		await refetch();
+	} catch (caughtError: unknown) {
+		showToast({
+			text: caughtError instanceof Error ? caughtError.message : "Erro inesperado.",
+			variant: "error",
+		});
+	}
+}
 
 // Edit gang functionality
 const gangColors = [
@@ -338,6 +415,21 @@ async function updateGang() {
 					no-padding-x
 					no-padding-y
 				>
+					<template
+						v-if="canManageRoles"
+						#actions
+					>
+						<BaseButton
+							@click="beginCreateRole()"
+							variant="secondary"
+						>
+							<Plus
+								:size="16"
+								aria-hidden="true"
+							/>
+							Criar cargo
+						</BaseButton>
+					</template>
 					<BaseTable>
 						<table class="gang-roles-table">
 							<caption class="visually-hidden">
@@ -351,15 +443,48 @@ async function updateGang() {
 									<th scope="col">Promover</th>
 									<th scope="col">Editar</th>
 									<th scope="col">Importar</th>
+									<th
+										v-if="canManageRoles"
+										scope="col"
+									>
+										<span class="visually-hidden">Ações</span>
+									</th>
 								</tr>
 							</thead>
 							<tbody>
+								<tr>
+									<th scope="row">
+										<span
+											class="role-badge"
+											data-perm="leader"
+										>
+											Líder
+										</span>
+									</th>
+									<td
+										v-for="permission in 5"
+										:key="permission"
+										class="perm-cell"
+									>
+										<ShieldCheck
+											:size="16"
+											class="perm-icon perm-icon--yes"
+											aria-label="Sim"
+										/>
+									</td>
+									<td v-if="canManageRoles"></td>
+								</tr>
 								<tr
-									v-for="role in gang.roles"
+									v-for="role in rolesByPermissionCount"
 									:key="role.id"
 								>
 									<th scope="row">
-										{{ role.name }}
+										<span
+											class="role-badge"
+											:data-perm="getRolePermissionCount(role)"
+										>
+											{{ role.name }}
+										</span>
 									</th>
 									<td class="perm-cell">
 										<component
@@ -406,11 +531,114 @@ async function updateGang() {
 											:aria-label="role.canImport ? 'Sim' : 'Não'"
 										/>
 									</td>
+									<td
+										v-if="canManageRoles"
+										class="role-actions-cell"
+									>
+										<BaseButton
+											variant="secondary"
+											size="sm"
+											:aria-label="`Editar cargo ${role.name}`"
+											@click="beginEditRole(role)"
+											:data-popover-text="`Editar cargo ${role.name}`"
+											data-popover-position="top"
+										>
+											<Pencil
+												:size="15"
+												aria-hidden="true"
+											/>
+										</BaseButton>
+									</td>
 								</tr>
 							</tbody>
 						</table>
 					</BaseTable>
 				</BaseCard>
+
+				<BaseModal
+					:open="isRoleEditorOpen"
+					:title="editingRole ? 'Editar cargo' : 'Criar cargo'"
+					description="Defina o nome e as permissões do cargo."
+					@update:open="isRoleEditorOpen = $event"
+				>
+					<form
+						id="gang-role-form"
+						class="gangs-page__create-form"
+						@submit.prevent="saveRole()"
+					>
+						<BaseInput
+							id="gang-role-name"
+							label="Nome"
+							placeholder="Nome do cargo"
+							:minlength="2"
+							:maxlength="20"
+							required
+							:model-value="roleDraft.name"
+							@update:model-value="roleDraft.name = String($event)"
+						/>
+						<span
+							class="role-badge role-editor-badge"
+							:data-perm="roleDraftPermissionCount"
+							:style="{ '--highlight-color': gang?.color ?? '#89999A' }"
+						>
+							{{ roleDraft.name || "Nome do cargo" }}
+						</span>
+						<fieldset class="role-permissions">
+							<legend>Permissões</legend>
+							<label
+								><input
+									v-model="roleDraft.canInvite"
+									type="checkbox"
+								>
+								Convidar</label
+							>
+							<label
+								><input
+									v-model="roleDraft.canKick"
+									type="checkbox"
+								>
+								Expulsar</label
+							>
+							<label
+								><input
+									v-model="roleDraft.canPromote"
+									type="checkbox"
+								>
+								Promover</label
+							>
+							<label
+								><input
+									v-model="roleDraft.canEditGang"
+									type="checkbox"
+								>
+								Editar gangue</label
+							>
+							<label
+								><input
+									v-model="roleDraft.canImport"
+									type="checkbox"
+								>
+								Importar</label
+							>
+						</fieldset>
+					</form>
+					<template #footer>
+						<BaseButton
+							variant="secondary"
+							:disabled="creatingRole || updatingRole"
+							@click="isRoleEditorOpen = false"
+						>
+							Cancelar
+						</BaseButton>
+						<BaseButton
+							type="submit"
+							form="gang-role-form"
+							:disabled="creatingRole || updatingRole"
+						>
+							{{ creatingRole || updatingRole ? "Salvando..." : "Salvar cargo" }}
+						</BaseButton>
+					</template>
+				</BaseModal>
 
 				<!-- Metadata -->
 				<div class="gang-detail__meta">
@@ -567,6 +795,32 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 			border-color: $color-brand;
 		}
 	}
+}
+
+.role-permissions {
+	display: flex;
+	flex-direction: column;
+	gap: $spacing-sm;
+	border: 0;
+	padding: 0;
+	color: $text-secondary;
+	font-size: 0.875rem;
+
+	legend {
+		margin-bottom: $spacing-xs;
+		font-weight: 600;
+		color: $text-primary;
+	}
+
+	label {
+		display: flex;
+		align-items: center;
+		gap: $spacing-sm;
+	}
+}
+
+.role-editor-badge {
+	align-self: flex-start;
 }
 
 .gang-detail {
@@ -825,12 +1079,11 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 
 	// 2 permissions: triangle
 	&[data-perm="2"]::before {
-		width: 0;
-		height: 0;
-		background-color: transparent;
-		border-left: 0.4rem solid transparent;
-		border-right: 0.4rem solid transparent;
-		border-bottom: 0.7rem solid $highlight-color;
+		width: 0.5rem;
+		height: 0.5rem;
+		transform: translateY(-50%) translateX(20%);
+		clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+		border-radius: 0;
 	}
 
 	// 3 permissions: diamond (losange)
@@ -838,11 +1091,11 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 		width: 0.35rem;
 		height: 0.35rem;
 		border-radius: 0;
-		transform: translateY(-60%) translateX(40%)  rotate(45deg);
+		transform: translateY(-50%) translateX(40%)  rotate(45deg);
 	}
 
 	// 4 permissions: pentagon
-	&[data-perm="4"]::before {
+	&[data-perm="4"]::before, &[data-perm="5"]::before {
 		width: 0.6rem;
 		height: 0.575rem;
 		border-radius: 0;

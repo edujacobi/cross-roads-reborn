@@ -408,6 +408,54 @@ query GetGangDetail($id: ID!) {
 	}
 }
 
+mutation CreateGangRole(
+	$gangId: ID!
+	$name: String!
+	$canInvite: Boolean!
+	$canKick: Boolean!
+	$canPromote: Boolean!
+	$canEditGang: Boolean!
+	$canImport: Boolean!
+) {
+	createGangRole(
+		gangId: $gangId
+		name: $name
+		canInvite: $canInvite
+		canKick: $canKick
+		canPromote: $canPromote
+		canEditGang: $canEditGang
+		canImport: $canImport
+	) {
+		success
+		message
+	}
+}
+
+mutation UpdateGangRole(
+	$gangId: ID!
+	$roleId: Int!
+	$name: String!
+	$canInvite: Boolean!
+	$canKick: Boolean!
+	$canPromote: Boolean!
+	$canEditGang: Boolean!
+	$canImport: Boolean!
+) {
+	updateGangRole(
+		gangId: $gangId
+		roleId: $roleId
+		name: $name
+		canInvite: $canInvite
+		canKick: $canKick
+		canPromote: $canPromote
+		canEditGang: $canEditGang
+		canImport: $canImport
+	) {
+		success
+		message
+	}
+}
+
 query GetUserActivityStats($id: ID!) {
 	user(id: $id) {
 		activityStats {

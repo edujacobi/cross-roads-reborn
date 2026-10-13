@@ -5,7 +5,7 @@ import { UserRepository } from "#core/repositories/UserRepository";
 import { AvatarDecorationList } from "#core/types/AvatarDecorations";
 import { BackgroundDecorationList } from "#core/types/BackgroundDecorations";
 import { Language } from "#core/models/Language";
-import { Gang } from "#core/models/Gang";
+import { Gang, GangPermission } from "#core/models/Gang";
 import { User } from "#core/models/User";
 import { GangBases, GangBaseId } from "#core/types/GangBases";
 import { GangColor, GangColorId } from "#core/types/GangColors";
@@ -14,6 +14,22 @@ import { convertHexNumberToString } from "#bot/utils/ui";
 import { getClient } from "#bot/client";
 import { assertAuthenticated } from "./helpers";
 import type { ResolverFn } from "./helpers";
+
+function getGangRolePermissions(args: {
+	canInvite: boolean;
+	canKick: boolean;
+	canPromote: boolean;
+	canEditGang: boolean;
+	canImport: boolean;
+}): GangPermission[] {
+	return [
+		args.canInvite ? GangPermission.Invite : null,
+		args.canKick ? GangPermission.Kick : null,
+		args.canPromote ? GangPermission.Promote : null,
+		args.canEditGang ? GangPermission.EditGang : null,
+		args.canImport ? GangPermission.ImportShipments : null,
+	].filter((permission): permission is GangPermission => permission !== null);
+}
 
 export const gangResolvers: {
 	Query: Record<string, ResolverFn>;
@@ -282,6 +298,72 @@ export const gangResolvers: {
 			}
 			return { success: false, message: "Falha ao atualizar gangue." };
 		},
+
+		createGangRole: async (
+			_: unknown,
+			args: {
+				gangId: string;
+				name: string;
+				canInvite: boolean;
+				canKick: boolean;
+				canPromote: boolean;
+				canEditGang: boolean;
+				canImport: boolean;
+			},
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			const gangId = Number(args.gangId);
+			if (!Number.isSafeInteger(gangId)) {
+				return { success: false, message: "Gangue não encontrada." };
+			}
+			const gang = await Gang.GetById(gangId);
+			if (!gang) {
+				return { success: false, message: "Gangue não encontrada." };
+			}
+			const name = args.name.trim();
+			if (name.length < 2 || name.length > 20) {
+				return { success: false, message: "O nome do cargo deve ter entre 2 e 20 caracteres." };
+			}
+
+			const success = await gang.CreateRole(authUser.userId, name, getGangRolePermissions(args));
+			return success
+				? { success: true, message: "Cargo criado com sucesso." }
+				: { success: false, message: "Falha ao criar cargo. Verifique se o nome já está em uso." };
+		},
+
+		updateGangRole: async (
+			_: unknown,
+			args: {
+				gangId: string;
+				roleId: number;
+				name: string;
+				canInvite: boolean;
+				canKick: boolean;
+				canPromote: boolean;
+				canEditGang: boolean;
+				canImport: boolean;
+			},
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			const gangId = Number(args.gangId);
+			if (!Number.isSafeInteger(gangId) || !Number.isSafeInteger(args.roleId)) {
+				return { success: false, message: "Cargo não encontrado." };
+			}
+			const gang = await Gang.GetById(gangId);
+			if (!gang) {
+				return { success: false, message: "Gangue não encontrada." };
+			}
+			const name = args.name.trim();
+			if (name.length < 2 || name.length > 20) {
+				return { success: false, message: "O nome do cargo deve ter entre 2 e 20 caracteres." };
+			}
+
+			const success = await gang.EditRole(authUser.userId, args.roleId, getGangRolePermissions(args), name);
+			return success
+				? { success: true, message: "Cargo atualizado com sucesso." }
+				: { success: false, message: "Falha ao atualizar cargo. Verifique as permissões e o nome." };
+		},
 	},
 };
-

@@ -1193,6 +1193,9 @@ export class Gang {
 			if (!role || role.gangId !== this.Id) {
 				return false;
 			}
+			if (this.Members.some(member => member.UserId === this.LeaderId && member.RoleId === roleId)) {
+				return false;
+			}
 
 			await role.update({
 				name: name || role.name,
