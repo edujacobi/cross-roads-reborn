@@ -6,6 +6,7 @@ import { type User } from "#core/models/User";
 import { Language } from "#core/models/Language";
 import { ItemList } from "#core/types/Items";
 import { InvestmentList } from "#core/types/Investments";
+import { LocationList } from "#core/types/Locations";
 import { ClassList } from "#core/types/Classes";
 import { GangColor } from "#core/types/GangColors";
 import type { AuthUser, GraphQLContext } from "#api/types";
@@ -14,6 +15,7 @@ import { UserBadge } from "#core/models/UserBadge";
 import { addHours, subMinutes } from "date-fns";
 import { getClient } from "#bot/client";
 import type { TopUserRankingCountField, TopUserRankingField } from "#core/repositories/UserRepository";
+import { UserRepository } from "#core/repositories/UserRepository";
 import { logger } from "#shared/log";
 
 // ─── Auth Guards ────────────────────────────────────────────────────────────
@@ -184,16 +186,22 @@ export async function mapUserDetail(user: User) {
 	const className = ClassList[user.Class]?.Name?.[Language.Portuguese] || "None";
 
 	const client = getClient();
+	const activityTargetId =
+		user.BeatUp.IsBeingBeatUpById ??
+		user.BeatUp.IsBeatingId ??
+		user.Robbery.IsBeingRobbedById ??
+		user.Robbery.IsRobbingId;
 
 	// eslint-disable-next-line prefer-const
-	let [badges, discordUser, gang] = await Promise.all([
-		UserBadge.GetList(user.Id),
+	let [badges, discordUser, gang, activityTarget] = await Promise.all([
+		UserBadge.GetList(user.Id, Language.Portuguese),
 		client.users.fetch(user.Id),
 		user.GetGang(),
+		activityTargetId ? UserRepository.FindById(activityTargetId, ["nickname"]) : null,
 	]);
 
 	if (user.IsVip()) {
-		badges = UserBadge.AddVIPBadgeInList(badges, user);
+		badges = UserBadge.AddVIPBadgeInList(badges, user, Language.Portuguese);
 	}
 
 	const badgeList = badges.map(b => {
@@ -269,6 +277,16 @@ export async function mapUserDetail(user: User) {
 		jobEndsIn: isWorking ? user.Job.EndsIn.toISOString() : null,
 		isScavenging,
 		scavengingId: isScavenging ? user.Scavenge.IsScavengingId : null,
+		robberUserId: user.Robbery.IsRobbingId,
+		robbedByUserId: user.Robbery.IsBeingRobbedById,
+		robberyLocationId: user.Robbery.IsRobbingLocationId,
+		robberyLocationName:
+			user.Robbery.IsRobbingLocationId === null
+				? null
+				: LocationList[user.Robbery.IsRobbingLocationId]?.Name[Language.Portuguese] ?? null,
+		beaterUserId: user.BeatUp.IsBeatingId,
+		beatenByUserId: user.BeatUp.IsBeingBeatUpById,
+		activityTargetNickname: activityTarget ? `${activityTarget.nickname}` : null,
 		isWanted,
 		wantedTime: isWanted ? user.Wanted.Time.toISOString() : null,
 		isRobbing: user.Robbery.IsRobbingId !== null || user.Robbery.IsRobbingLocationId !== null,
@@ -282,7 +300,6 @@ export async function mapUserDetail(user: User) {
 		deadUntil: isDead ? user.DeadUntil.toISOString() : null,
 		investment: investment,
 		situationId: user.Situation.Id,
-		situationText: user.Situation.ComplexUI,
 		items,
 		voteCount: user.Vote.Count,
 		activityStats: {

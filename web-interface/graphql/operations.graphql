@@ -313,7 +313,6 @@ query GetUserProfile($id: ID!) {
 		attack
 		defense
 		situationId
-		situationText
 		badges {
 			id
 			name
@@ -525,14 +524,23 @@ query GetUserStatus($id: ID!) {
 		isInPrison
 		prisonTime
 		isWorking
+		currentJobId
 		jobEndsIn
 		isScavenging
+		scavengingId
 		isWanted
 		wantedTime
 		isRobbing
 		isBeingRobbed
+		robberUserId
+		robbedByUserId
+		robberyLocationId
+		robberyLocationName
 		isBeating
 		isBeingBeated
+		beaterUserId
+		beatenByUserId
+		activityTargetNickname
 		isInCasino
 		isDefendingInvestment
 		isInGangAction
