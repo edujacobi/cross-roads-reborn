@@ -74,7 +74,7 @@ const { getInvestmentImageUrl } = useInvestment();
 				<div class="user-investment__data">
 					<p class="user-investment__name">{{ investment.name }}</p>
 					<p
-						v-if="showPrivateInfo && investment.nextPaymentValue !== null"
+						v-if="showPrivateInfo && investment.nextPaymentValue"
 						class="user-investment__profit"
 					>
 						Lucro acumulado: {{ investment.nextPaymentValue }}
@@ -101,7 +101,10 @@ const { getInvestmentImageUrl } = useInvestment();
 					</p>
 				</div>
 			</div>
-			<p class="user-investment__defense">
+			<p
+				v-if="showPrivateInfo"
+				class="user-investment__defense"
+			>
 				<NuxtImg
 					class="user-investment__defense-image"
 					:src="imagePaths.attributes.defense"

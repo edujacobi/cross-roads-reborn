@@ -340,8 +340,8 @@ query GetUserInvestment($id: ID!) {
 		investment {
 			id
 			name
-			defense
 			expiresAt
+			defense
 			nextPaymentValue
 			henchmanEndsAt
 		}

@@ -29,6 +29,7 @@ const { client } = useApolloClient();
 const userId = computed(() => String(route.params.id));
 const isOwnUser = computed(() => auth.user.value?.userId === userId.value);
 const canViewPrivateDetails = computed(() => isOwnUser.value || auth.hasAdminAccess.value);
+const canViewPrivateInvestmentInfo = computed(() => isOwnUser.value || auth.isDeveloper.value);
 const profileState = ref<"loading" | "ready" | "not-found" | "error">("loading");
 
 watch(userId, () => {
@@ -116,7 +117,7 @@ async function refreshUserDetails() {
 			<UserInventoryCard :user-id="userId" />
 			<UserInvestmentCard
 				:user-id="userId"
-				:show-private-info="canViewPrivateDetails"
+				:show-private-info="canViewPrivateInvestmentInfo"
 			/>
 			<UserGangCard :user-id="userId" />
 

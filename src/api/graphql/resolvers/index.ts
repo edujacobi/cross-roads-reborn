@@ -10,7 +10,9 @@ import type { ResolverFn } from "./helpers";
 export const resolvers: {
 	Query: Record<string, ResolverFn>;
 	Mutation: Record<string, ResolverFn>;
+	UserDetail: Record<string, ResolverFn>;
 } = {
+	UserDetail: userResolvers.UserDetail,
 	Query: {
 		...meResolvers.Query,
 		...userResolvers.Query,

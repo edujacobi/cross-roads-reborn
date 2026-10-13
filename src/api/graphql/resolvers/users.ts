@@ -35,7 +35,36 @@ function formatBackgroundDecoration(decorationId: number): string {
 
 export const userResolvers: {
 	Query: Record<string, ResolverFn>;
+	UserDetail: Record<string, ResolverFn>;
 } = {
+	UserDetail: {
+		investment: (parent: unknown, _: unknown, context: GraphQLContext) => {
+			const user = parent as {
+				id: string;
+				investment: {
+					id: number;
+					defense: number;
+					nextPaymentValue: string | null;
+					henchmanEndsAt?: string | null;
+				} | null;
+			};
+			if (!user.investment) {
+				return null;
+			}
+
+			const viewer = assertAuthenticated(context);
+			if (viewer.role === "DEVELOPER" || viewer.userId === user.id) {
+				return user.investment;
+			}
+
+			return {
+				...user.investment,
+				defense: null,
+				nextPaymentValue: null,
+				henchmanEndsAt: null,
+			};
+		},
+	},
 	Query: {
 		users: async (
 			_: unknown,
@@ -189,9 +218,6 @@ export const userResolvers: {
 				...detail,
 				specialCoin: null,
 				automaticGrenade: null,
-				investment: detail.investment
-					? { ...detail.investment, nextPaymentValue: null }
-					: null,
 				language: "",
 				isInHospital: false,
 				hospitalTime: null,

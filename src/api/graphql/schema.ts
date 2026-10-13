@@ -202,7 +202,7 @@ export const typeDefs = /* GraphQL */ `
     type InvestmentInfo {
         id: Int!
         name: String!
-        defense: Int!
+        defense: Int
         expiresAt: String!
         nextPaymentValue: String
         henchmanEndsAt: String
