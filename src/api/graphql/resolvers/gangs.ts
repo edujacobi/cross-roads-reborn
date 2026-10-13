@@ -14,6 +14,8 @@ import { convertHexNumberToString, formatMoney } from "#bot/utils/ui";
 import { getClient } from "#bot/client";
 import { assertAuthenticated } from "./helpers";
 import type { ResolverFn } from "./helpers";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Collection, ComponentType, type Message } from "discord.js";
+import { logger } from "#shared/log";
 
 function getGangRolePermissions(args: {
 	canInvite: boolean;
@@ -93,6 +95,7 @@ export const gangResolvers: {
 				GangRoleRepository.FindAllByGangId(gang.id),
 				UserRepository.FindById(gang.leaderId, ["id", "nickname"]),
 			]);
+			const currentUser = await UserRepository.FindById(authUser.userId, ["money"]);
 
 			const importState = new Gang();
 			importState.Level = gang.level;
@@ -154,6 +157,7 @@ export const gangResolvers: {
 				acronym: gang.acronym.toUpperCase(),
 				description: gang.description ?? "",
 				money: gang.money,
+				maxDepositAmount: Math.min(currentUser?.money ?? 0, Gang.MAX_DEPOSIT_PER_DAY * gang.level),
 				level: gang.level,
 				experience: gang.experience,
 				xpForNextLevel,
@@ -449,6 +453,219 @@ export const gangResolvers: {
 			return success
 				? { success: true, message: "Cargo atualizado com sucesso." }
 				: { success: false, message: "Falha ao atualizar cargo. Verifique as permissões e o nome." };
+		},
+
+		updateGangMemberRole: async (
+			_: unknown,
+			args: { gangId: string; targetUserId: string; roleId: number },
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			const gang = await Gang.GetById(Number(args.gangId));
+			if (!gang) {
+				return { success: false, message: "Gangue não encontrada." };
+			}
+			const targetMember = gang.Members.find(member => member.UserId === args.targetUserId);
+			const leaderRoleId = gang.Members.find(member => member.UserId === gang.LeaderId)?.RoleId;
+			if (!targetMember || targetMember.UserId === gang.LeaderId || args.roleId === leaderRoleId) {
+				return { success: false, message: "Membro ou cargo inválido." };
+			}
+
+			const success = await gang.ChangeRole(authUser.userId, args.targetUserId, args.roleId);
+			return success
+				? { success: true, message: "Cargo do membro alterado com sucesso." }
+				: { success: false, message: "Você não tem permissão para alterar este cargo." };
+		},
+
+		depositGang: async (
+			_: unknown,
+			args: { gangId: string; amount: number },
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			if (!Number.isSafeInteger(args.amount) || args.amount <= 0) {
+				return { success: false, message: "Informe um valor inteiro maior que zero." };
+			}
+
+			const gang = await Gang.GetById(Number(args.gangId));
+			const user = await new User(authUser.userId).GetInfo();
+			if (!gang || !user) {
+				return { success: false, message: "Gangue ou usuário não encontrado." };
+			}
+
+			const check = await gang.CanDeposit(user, args.amount);
+			if (!check.canDeposit) {
+				return { success: false, message: check.text || "Não é possível depositar agora." };
+			}
+
+			await gang.Deposit(user, args.amount);
+			return { success: true, message: "Depósito realizado com sucesso." };
+		},
+
+		leaveGang: async (
+			_: unknown,
+			args: { gangId: string },
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			const gang = await Gang.GetById(Number(args.gangId));
+			const user = await new User(authUser.userId).GetInfo();
+			if (!gang || !user || !gang.Members.some(member => member.UserId === user.Id)) {
+				return { success: false, message: "Você não faz parte desta gangue." };
+			}
+
+			const success = await gang.LeaveGang(user);
+			return success
+				? { success: true, message: gang.LeaderId === user.Id ? "Gangue encerrada com sucesso." : "Você saiu da gangue." }
+				: { success: false, message: "O líder não pode sair enquanto houver outros membros." };
+		},
+
+		transferGang: async (
+			_: unknown,
+			args: { gangId: string; targetUserId: string },
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			const gang = await Gang.GetById(Number(args.gangId));
+			if (!gang) {
+				return { success: false, message: "Gangue não encontrada." };
+			}
+			const [currentUser, targetUser] = await Promise.all([
+				new User(authUser.userId).GetInfo(),
+				new User(args.targetUserId).GetInfo(),
+			]);
+			if (!currentUser || !targetUser || !gang.Members.some(member => member.UserId === targetUser.Id)) {
+				return { success: false, message: "Membro inválido para transferência." };
+			}
+
+			const success = await gang.TransferLeadership(currentUser, targetUser);
+			return success
+				? { success: true, message: "Liderança transferida com sucesso." }
+				: { success: false, message: "Apenas o líder pode transferir a liderança." };
+		},
+
+		inviteGangMember: async (
+			_: unknown,
+			args: { gangId: string; targetUserId: string },
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			const gang = await Gang.GetById(Number(args.gangId));
+			if (!gang) {
+				return { success: false, message: "Gangue não encontrada." };
+			}
+			if (!gang.CanInvite(authUser.userId)) {
+				return { success: false, message: "Você não tem permissão para convidar membros." };
+			}
+			if (authUser.userId === args.targetUserId) {
+				return { success: false, message: "Você não pode convidar a si mesmo." };
+			}
+
+			const targetUser = await new User(args.targetUserId).GetInfo();
+			if (!targetUser) {
+				return { success: false, message: "Usuário não encontrado." };
+			}
+			const validation = await gang.CanInviteUser(targetUser);
+			if (!validation.canInvite) {
+				return { success: false, message: "Este usuário não pode entrar na gangue." };
+			}
+
+			const client = getClient();
+			let inviteCooldown = client.invites.get(gang.Id);
+			if (!inviteCooldown) {
+				inviteCooldown = new Collection<string, number>();
+				client.invites.set(gang.Id, inviteCooldown);
+			}
+			const lastInviteTime = inviteCooldown.get(targetUser.Id) ?? 0;
+			if (Date.now() - lastInviteTime < 3 * 60_000) {
+				return { success: false, message: "Aguarde antes de enviar outro convite para este usuário." };
+			}
+
+			const strings = {
+				[Language.English]: {
+					invitation: `You were invited to join **${gang.Name} [${gang.Acronym}]**.`,
+					accept: "Accept",
+					decline: "Decline",
+					accepted: "You joined the gang.",
+					declined: "You declined the gang invitation.",
+					failed: "The invitation is no longer valid.",
+					expired: "This gang invitation expired.",
+				},
+				[Language.Portuguese]: {
+					invitation: `Você foi convidado para entrar na gangue **${gang.Name} [${gang.Acronym}]**.`,
+					accept: "Aceitar",
+					decline: "Recusar",
+					accepted: "Você entrou na gangue.",
+					declined: "Você recusou o convite da gangue.",
+					failed: "Este convite não é mais válido.",
+					expired: "Este convite para a gangue expirou.",
+				},
+				[Language.Spanish]: {
+					invitation: `Te invitaron a unirte a la cuadrilla **${gang.Name} [${gang.Acronym}]**.`,
+					accept: "Aceptar",
+					decline: "Rechazar",
+					accepted: "Te uniste a la cuadrilla.",
+					declined: "Rechazaste la invitación.",
+					failed: "La invitación ya no es válida.",
+					expired: "La invitación a la cuadrilla expiró.",
+				},
+			}[targetUser.Language];
+
+			const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+				new ButtonBuilder().setCustomId("accept").setLabel(strings.accept).setStyle(ButtonStyle.Success),
+				new ButtonBuilder().setCustomId("decline").setLabel(strings.decline).setStyle(ButtonStyle.Secondary),
+			);
+			inviteCooldown.set(targetUser.Id, Date.now());
+			let invitation: Message<boolean>;
+			try {
+				const discordUser = await client.users.fetch(targetUser.Id);
+				invitation = await discordUser.send({ content: strings.invitation, components: [row] });
+			}
+			catch (error) {
+				logger.warn({ error, gangId: gang.Id, targetUserId: targetUser.Id }, "Failed to send gang invitation.");
+				inviteCooldown.delete(targetUser.Id);
+				return { success: false, message: "Não foi possível enviar uma mensagem privada para este usuário." };
+			}
+
+			const collector = invitation.createMessageComponentCollector({
+				componentType: ComponentType.Button,
+				filter: interaction => interaction.user.id === targetUser.Id,
+				max: 1,
+				time: 3 * 60_000,
+			});
+			collector.on("collect", async interaction => {
+				let message = strings.declined;
+				try {
+					await interaction.deferUpdate();
+					if (interaction.customId === "accept") {
+						const [currentGang] = await Promise.all([
+							Gang.GetById(gang.Id),
+							targetUser.GetInfo(),
+						]);
+						message = currentGang
+							&& currentGang.CanInvite(authUser.userId)
+							&& targetUser.Money >= Gang.JOIN_COST
+							&& await currentGang.AcceptInvite(targetUser)
+							? strings.accepted
+							: strings.failed;
+					}
+					await invitation.edit({ content: message, components: [] });
+				}
+				catch (error) {
+					logger.error({ error, gangId: gang.Id, targetUserId: targetUser.Id }, "Failed to process gang invitation response.");
+					await invitation.edit({ content: strings.failed, components: [] }).catch(editError => {
+						logger.warn({ error: editError, gangId: gang.Id, targetUserId: targetUser.Id }, "Failed to update gang invitation response.");
+					});
+				}
+			});
+			collector.on("end", (collected) => {
+				if (collected.size > 0) return;
+				void invitation.edit({ content: strings.expired, components: [] }).catch(error => {
+					logger.warn({ error, gangId: gang.Id, targetUserId: targetUser.Id }, "Failed to expire gang invitation.");
+				});
+			});
+
+			return { success: true, message: "Convite enviado por mensagem privada." };
 		},
 	},
 };

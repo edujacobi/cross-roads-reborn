@@ -3,7 +3,19 @@
 	lang="ts"
 >
 import { useMutation, useQuery } from "@vue/apollo-composable";
-import { ArrowLeft, Pencil, Plus, Shield, ShieldAlert, ShieldCheck } from "lucide-vue-next";
+import {
+	ArrowLeft,
+	Crown,
+	LogOut,
+	Pencil,
+	Plus,
+	Shield,
+	ShieldAlert,
+	ShieldCheck,
+	UserPlus,
+	UserRoundCog,
+	Wallet,
+} from "lucide-vue-next";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseErrorState from "~/components/ui/BaseErrorState.vue";
@@ -16,10 +28,17 @@ import { imagePaths } from "~/constants/imagePaths";
 import {
 	CancelGangImportDocument,
 	CreateGangRoleDocument,
+	DepositGangDocument,
 	type GangRoleInfo,
 	GetGangDetailDocument,
+	InviteGangMemberDocument,
+	LeaveGangDocument,
+	SearchUsersDocument,
+	type SearchUsersQuery,
 	StartGangImportDocument,
+	TransferGangDocument,
 	UpdateGangDocument,
+	UpdateGangMemberRoleDocument,
 	UpdateGangRoleDocument,
 } from "~/graphql/generated";
 
@@ -44,10 +63,39 @@ const gangId = computed(() => String(route.params.id));
 const { result: gangData, loading, error, refetch } = useQuery(GetGangDetailDocument, () => ({ id: gangId.value }));
 
 const gang = computed(() => gangData.value?.gang);
+const maxDepositAmount = computed(() => gang.value?.maxDepositAmount ?? 0);
+const currentUserId = computed(() => auth.user.value?.userId);
+const currentMember = computed(() => gang.value?.members.find((member) => member.userId === currentUserId.value));
+const currentRole = computed(() => gang.value?.roles.find((role) => role.id === currentMember.value?.roleId));
+const canPromoteMembers = computed(
+	() =>
+		!!currentMember.value && (currentUserId.value === gang.value?.leaderId || currentRole.value?.canPromote === true),
+);
+const canInviteMembers = computed(
+	() =>
+		!!currentMember.value && (currentUserId.value === gang.value?.leaderId || currentRole.value?.canInvite === true),
+);
+const canTransferGang = computed(
+	() => currentUserId.value === gang.value?.leaderId && (gang.value?.members.length ?? 0) > 1,
+);
+const canLeaveGang = computed(
+	() => !!currentMember.value && (currentUserId.value !== gang.value?.leaderId || gang.value?.members.length === 1),
+);
 const rolesByPermissionCount = computed(() =>
 	[...(gang.value?.roles ?? [])]
 		.filter((role) => role.id !== gang.value?.members.find((member) => member.userId === gang.value?.leaderId)?.roleId)
 		.sort((a, b) => getRolePermissionCount(b) - getRolePermissionCount(a)),
+);
+const changeRoleOptions = computed(() =>
+	[...(gang.value?.roles ?? [])]
+		.filter((role) => role.id !== gang.value?.members.find((member) => member.userId === gang.value?.leaderId)?.roleId)
+		.sort((a, b) => a.id - b.id)
+		.map((role) => ({ value: String(role.id), label: role.name })),
+);
+const transferOptions = computed(() =>
+	(gang.value?.members ?? [])
+		.filter((member) => member.userId !== currentUserId.value)
+		.map((member) => ({ value: member.userId, label: member.nickname })),
 );
 const expRatio = computed(() => {
 	if (!gang.value || gang.value.level >= 10) return 1;
@@ -76,6 +124,39 @@ const editingRole = ref<GangRoleInfo | null>(null);
 const roleDraft = ref(emptyRoleDraft());
 const { mutate: createGangRole, loading: creatingRole } = useMutation(CreateGangRoleDocument);
 const { mutate: updateGangRole, loading: updatingRole } = useMutation(UpdateGangRoleDocument);
+const { mutate: updateGangMemberRole, loading: changingMemberRole } = useMutation(UpdateGangMemberRoleDocument);
+const { mutate: depositGang, loading: depositing } = useMutation(DepositGangDocument);
+const { mutate: leaveGang, loading: leavingGang } = useMutation(LeaveGangDocument);
+const { mutate: transferGang, loading: transferringGang } = useMutation(TransferGangDocument);
+const { mutate: inviteGangMember, loading: invitingMember } = useMutation(InviteGangMemberDocument);
+const isMemberRoleModalOpen = ref(false);
+const memberRoleTargetId = ref("");
+const memberRoleDraft = ref("");
+const isDepositModalOpen = ref(false);
+const depositAmount = ref("");
+const isLeaveGangModalOpen = ref(false);
+const isTransferModalOpen = ref(false);
+const transferTargetId = ref("");
+const isInviteModalOpen = ref(false);
+const inviteSearch = ref("");
+const inviteTargetId = ref("");
+const { result: inviteSearchResult, loading: searchingInviteTargets } = useQuery(
+	SearchUsersDocument,
+	() => ({
+		search: inviteSearch.value.trim() || undefined,
+		limit: 10,
+		offset: 0,
+	}),
+	() => ({ enabled: isInviteModalOpen.value && inviteSearch.value.trim().length > 0, debounce: 300 }),
+);
+const inviteCandidates = computed<SearchUsersQuery["users"]["users"]>(() =>
+	(inviteSearchResult.value?.users.users ?? []).filter(
+		(user) => user.id !== currentUserId.value && !gang.value?.members.some((member) => member.userId === user.id),
+	),
+);
+const inviteTargetOptions = computed(() =>
+	inviteCandidates.value.map((user) => ({ value: user.id, label: `${user.nickname} (${user.id})` })),
+);
 const { mutate: startGangImport, loading: startingImport } = useMutation(StartGangImportDocument);
 const { mutate: cancelGangImport, loading: cancellingImport } = useMutation(CancelGangImportDocument);
 const isImportCancelConfirmationOpen = ref(false);
@@ -172,6 +253,125 @@ async function saveRole() {
 			text: caughtError instanceof Error ? caughtError.message : "Erro inesperado.",
 			variant: "error",
 		});
+	}
+}
+
+function openMemberRoleModal(member: { userId: string; roleId: number }) {
+	memberRoleTargetId.value = member.userId;
+	memberRoleDraft.value = String(member.roleId);
+	isMemberRoleModalOpen.value = true;
+}
+
+function openInviteModal() {
+	inviteSearch.value = "";
+	inviteTargetId.value = "";
+	isInviteModalOpen.value = true;
+}
+
+function updateInviteSearch(value: string | number) {
+	inviteSearch.value = String(value);
+	inviteTargetId.value = "";
+}
+
+async function saveMemberRole() {
+	if (!memberRoleTargetId.value || !memberRoleDraft.value) return;
+	try {
+		const result = (
+			await updateGangMemberRole({
+				gangId: gangId.value,
+				targetUserId: memberRoleTargetId.value,
+				roleId: Number(memberRoleDraft.value),
+			})
+		)?.data?.updateGangMemberRole;
+		showToast({
+			text: result?.message ?? "Falha ao alterar o cargo do membro.",
+			variant: result?.success ? "success" : "error",
+		});
+		if (result?.success) {
+			isMemberRoleModalOpen.value = false;
+			await refetch();
+		}
+	} catch (caughtError: unknown) {
+		showToast({ text: caughtError instanceof Error ? caughtError.message : "Erro inesperado.", variant: "error" });
+	}
+}
+
+async function submitGangDeposit() {
+	const amount = Number(depositAmount.value);
+	if (!Number.isSafeInteger(amount) || amount <= 0) {
+		showToast({ text: "Informe um valor inteiro maior que zero.", variant: "error" });
+		return;
+	}
+	try {
+		const result = (await depositGang({ gangId: gangId.value, amount }))?.data?.depositGang;
+		showToast({
+			text: result?.message ?? "Falha ao depositar.",
+			variant: result?.success ? "success" : "error",
+		});
+		if (result?.success) {
+			isDepositModalOpen.value = false;
+			depositAmount.value = "";
+			await refetch();
+		}
+	} catch (caughtError: unknown) {
+		showToast({ text: caughtError instanceof Error ? caughtError.message : "Erro inesperado.", variant: "error" });
+	}
+}
+
+async function confirmLeaveGang() {
+	try {
+		const result = (await leaveGang({ gangId: gangId.value }))?.data?.leaveGang;
+		showToast({
+			text: result?.message ?? "Falha ao sair da gangue.",
+			variant: result?.success ? "success" : "error",
+		});
+		if (result?.success) {
+			isLeaveGangModalOpen.value = false;
+			if (currentUserId.value === gang.value?.leaderId) {
+				await router.push("/gangs");
+			} else {
+				await refetch();
+			}
+		}
+	} catch (caughtError: unknown) {
+		showToast({ text: caughtError instanceof Error ? caughtError.message : "Erro inesperado.", variant: "error" });
+	}
+}
+
+async function confirmGangTransfer() {
+	if (!transferTargetId.value) return;
+	try {
+		const result = (await transferGang({ gangId: gangId.value, targetUserId: transferTargetId.value }))?.data
+			?.transferGang;
+		showToast({
+			text: result?.message ?? "Falha ao transferir a liderança.",
+			variant: result?.success ? "success" : "error",
+		});
+		if (result?.success) {
+			isTransferModalOpen.value = false;
+			await refetch();
+		}
+	} catch (caughtError: unknown) {
+		showToast({ text: caughtError instanceof Error ? caughtError.message : "Erro inesperado.", variant: "error" });
+	}
+}
+
+async function sendGangInvite() {
+	if (!inviteTargetId.value) return;
+	try {
+		const result = (await inviteGangMember({ gangId: gangId.value, targetUserId: inviteTargetId.value }))?.data
+			?.inviteGangMember;
+		showToast({
+			text: result?.message ?? "Falha ao enviar o convite.",
+			variant: result?.success ? "success" : "error",
+		});
+		if (result?.success) {
+			isInviteModalOpen.value = false;
+			inviteSearch.value = "";
+			inviteTargetId.value = "";
+		}
+	} catch (caughtError: unknown) {
+		showToast({ text: caughtError instanceof Error ? caughtError.message : "Erro inesperado.", variant: "error" });
 	}
 }
 
@@ -352,6 +552,55 @@ async function updateGang() {
 					>
 						MAX
 					</span>
+					<div
+						v-if="currentMember"
+						class="gang-actions"
+					>
+						<BaseButton
+							variant="secondary"
+							@click="isDepositModalOpen = true"
+						>
+							<Wallet
+								:size="16"
+								aria-hidden="true"
+							/>
+							Depositar
+						</BaseButton>
+						<BaseButton
+							v-if="canTransferGang"
+							variant="secondary"
+							@click="isTransferModalOpen = true"
+						>
+							<Crown
+								:size="16"
+								aria-hidden="true"
+							/>
+							Transferir liderança
+						</BaseButton>
+						<BaseButton
+							v-if="canInviteMembers"
+							variant="secondary"
+							@click="openInviteModal()"
+						>
+							<UserPlus
+								:size="16"
+								aria-hidden="true"
+							/>
+							Convidar membro
+						</BaseButton>
+						<BaseButton
+							v-if="canLeaveGang"
+							variant="ghost"
+							class="gang-actions-leave"
+							@click="isLeaveGangModalOpen = true"
+						>
+							<LogOut
+								:size="16"
+								aria-hidden="true"
+							/>
+							Sair da gangue
+						</BaseButton>
+					</div>
 				</div>
 			</BaseCard>
 
@@ -373,6 +622,12 @@ async function updateGang() {
 									<tr>
 										<th scope="col">Membro</th>
 										<th scope="col">Cargo</th>
+										<th
+											v-if="canPromoteMembers"
+											scope="col"
+										>
+											<span class="visually-hidden">Ações</span>
+										</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -403,6 +658,26 @@ async function updateGang() {
 											>
 												{{ member.roleName }}
 											</span>
+										</td>
+										<td
+											v-if="canPromoteMembers"
+											class="member-actions-cell"
+										>
+											<BaseButton
+												v-if="member.userId !== gang.leaderId"
+												variant="secondary"
+												size="sm"
+												:aria-label="`Alterar cargo de ${member.nickname}`"
+												:data-popover-text="`Alterar cargo de ${member.nickname}`"
+												data-popover-position="top"
+												@click.stop="openMemberRoleModal(member)"
+												@keydown.enter.stop
+											>
+												<UserRoundCog
+													:size="15"
+													aria-hidden="true"
+												/>
+											</BaseButton>
 										</td>
 									</tr>
 								</tbody>
@@ -764,6 +1039,199 @@ async function updateGang() {
 					</template>
 				</BaseModal>
 
+				<BaseModal
+					:open="isMemberRoleModalOpen"
+					title="Alterar cargo do membro"
+					description="Selecione o novo cargo para este membro."
+					@update:open="isMemberRoleModalOpen = $event"
+				>
+					<BaseSelector
+						id="gang-member-role"
+						label="Cargo"
+						placeholder="Selecione um cargo"
+						:options="changeRoleOptions"
+						:model-value="memberRoleDraft"
+						@update:model-value="memberRoleDraft = String($event)"
+					/>
+					<template #footer>
+						<BaseButton
+							variant="secondary"
+							:disabled="changingMemberRole"
+							@click="isMemberRoleModalOpen = false"
+						>
+							Cancelar
+						</BaseButton>
+						<BaseButton
+							:disabled="changingMemberRole || !memberRoleDraft"
+							@click="saveMemberRole()"
+						>
+							{{ changingMemberRole ? "Salvando..." : "Alterar cargo" }}
+						</BaseButton>
+					</template>
+				</BaseModal>
+
+				<BaseModal
+					:open="isDepositModalOpen"
+					title="Depositar na gangue"
+					description="Informe quanto deseja depositar no caixa da gangue."
+					@update:open="isDepositModalOpen = $event"
+				>
+					<form
+						id="gang-deposit-form"
+						@submit.prevent="submitGangDeposit()"
+					>
+						<BaseInput
+							id="gang-deposit-amount"
+							label="Valor"
+							type="number"
+							step="1"
+							required
+							:model-value="depositAmount"
+							@update:model-value="depositAmount = String($event)"
+						/>
+						<p class="gang-deposit-limits">Valor máximo: {{ formatMoney(maxDepositAmount) }}</p>
+						<BaseButton
+							variant="secondary"
+							:disabled="maxDepositAmount < 1"
+							@click="depositAmount = String(maxDepositAmount)"
+						>
+							Inserir máximo
+						</BaseButton>
+					</form>
+					<template #footer>
+						<BaseButton
+							variant="secondary"
+							:disabled="depositing"
+							@click="isDepositModalOpen = false"
+						>
+							Cancelar
+						</BaseButton>
+						<BaseButton
+							type="submit"
+							form="gang-deposit-form"
+							:disabled="depositing"
+						>
+							{{ depositing ? "Depositando..." : "Depositar" }}
+						</BaseButton>
+					</template>
+				</BaseModal>
+
+				<BaseModal
+					:open="isLeaveGangModalOpen"
+					title="Sair da gangue"
+					@update:open="isLeaveGangModalOpen = $event"
+				>
+					<p>
+						{{
+							currentUserId === gang.leaderId
+								? `Você é o único membro. Sair também encerrará a gangue ${gang.name}.`
+								: `Deseja sair da gangue ${gang.name}?`
+						}}
+					</p>
+					<template #footer>
+						<BaseButton
+							variant="secondary"
+							:disabled="leavingGang"
+							@click="isLeaveGangModalOpen = false"
+						>
+							Cancelar
+						</BaseButton>
+						<BaseButton
+							variant="danger"
+							:disabled="leavingGang"
+							@click="confirmLeaveGang()"
+						>
+							{{ leavingGang ? "Saindo..." : "Confirmar saída" }}
+						</BaseButton>
+					</template>
+				</BaseModal>
+
+				<BaseModal
+					:open="isTransferModalOpen"
+					title="Transferir liderança"
+					description="A liderança será transferida para outro membro da gangue."
+					@update:open="isTransferModalOpen = $event"
+				>
+					<BaseSelector
+						id="gang-transfer-target"
+						label="Novo líder"
+						placeholder="Selecione um membro"
+						:options="transferOptions"
+						:model-value="transferTargetId"
+						@update:model-value="transferTargetId = String($event)"
+					/>
+					<template #footer>
+						<BaseButton
+							variant="secondary"
+							:disabled="transferringGang"
+							@click="isTransferModalOpen = false"
+						>
+							Cancelar
+						</BaseButton>
+						<BaseButton
+							:disabled="transferringGang || !transferTargetId"
+							@click="confirmGangTransfer()"
+						>
+							{{ transferringGang ? "Transferindo..." : "Transferir liderança" }}
+						</BaseButton>
+					</template>
+				</BaseModal>
+
+				<BaseModal
+					:open="isInviteModalOpen"
+					title="Convidar membro"
+					description="O convite será enviado por mensagem privada no Discord."
+					@update:open="isInviteModalOpen = $event"
+				>
+					<div class="gang-invite-form">
+						<BaseInput
+							id="gang-invite-search"
+							label="Buscar jogador"
+							aria-label="Buscar jogador por nickname ou ID"
+							type="search"
+							placeholder="Nickname ou ID do Discord"
+							:model-value="inviteSearch"
+							@update:model-value="updateInviteSearch"
+						/>
+						<span
+							v-if="searchingInviteTargets"
+							class="gang-invite-form__status"
+						>
+							Buscando jogadores...
+						</span>
+						<BaseSelector
+							v-else-if="inviteTargetOptions.length"
+							id="gang-invite-target"
+							label="Jogador"
+							placeholder="Selecione um jogador"
+							:options="inviteTargetOptions"
+							:model-value="inviteTargetId"
+							@update:model-value="inviteTargetId = String($event)"
+						/>
+						<span
+							v-else-if="inviteSearch.trim()"
+							class="gang-invite-form__status"
+						>
+							Nenhum jogador elegível encontrado.
+						</span>
+					</div>
+					<template #footer>
+						<BaseButton
+							variant="secondary"
+							:disabled="invitingMember"
+							@click="isInviteModalOpen = false"
+						>
+							Cancelar
+						</BaseButton>
+						<BaseButton
+							:disabled="invitingMember || !inviteTargetId"
+							@click="sendGangInvite()"
+						>
+							{{ invitingMember ? "Enviando..." : "Enviar convite" }}
+						</BaseButton>
+					</template>
+				</BaseModal>
+
 				<!-- Metadata -->
 				<div class="gang-detail__meta">
 					Criada em
@@ -1025,8 +1493,6 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 
 	@media (max-width: $bp-mobile) {
 		flex-direction: column;
-		align-items: center;
-		text-align: center;
 		gap: $spacing-md;
 	}
 
@@ -1038,7 +1504,7 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 
 		@media (max-width: $bp-mobile) {
 			flex-direction: column;
-			align-items: center;
+			align-items: flex-start;
 		}
 	}
 
@@ -1068,6 +1534,7 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 	&__description {
 		color: $text-secondary;
 		font-style: italic;
+		font-size: 0.9rem;
 		margin: 0 0 $spacing-sm;
 	}
 
@@ -1114,6 +1581,42 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 		color: $color-special;
 		margin-top: $spacing-xs;
 	}
+}
+
+.gang-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: $spacing-sm;
+	margin-top: $spacing-md;
+
+	@media (max-width: $bp-mobile) {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	&-leave {
+		margin-left: auto;
+		@media (max-width: $bp-mobile) {
+			margin-left: unset;
+		}
+	}
+}
+
+.gang-invite-form {
+	display: flex;
+	flex-direction: column;
+	gap: $spacing-md;
+
+	&__status {
+		color: $text-muted;
+		font-size: 0.8125rem;
+	}
+}
+
+.gang-deposit-limits {
+	margin: 0.5rem 0;
+	color: $text-secondary;
+	font-size: 0.8125rem;
 }
 
 .gang-base-info {
@@ -1217,6 +1720,11 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 	height: 2rem;
 	flex-shrink: 0;
 	border-width: 2px;
+}
+
+.member-actions-cell {
+	width: 1%;
+	white-space: nowrap;
 }
 
 .gang-leader {

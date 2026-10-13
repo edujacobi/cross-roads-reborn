@@ -254,6 +254,7 @@ export const typeDefs = /* GraphQL */ `
         acronym: String!
         description: String!
         money: Float!
+        maxDepositAmount: Float!
         level: Int!
         experience: Int!
         xpForNextLevel: Int!
@@ -700,5 +701,10 @@ export const typeDefs = /* GraphQL */ `
         cancelGangImport(gangId: ID!): GangMutationResult!
         createGangRole(gangId: ID!, name: String!, canInvite: Boolean!, canKick: Boolean!, canPromote: Boolean!, canEditGang: Boolean!, canImport: Boolean!): GangMutationResult!
         updateGangRole(gangId: ID!, roleId: Int!, name: String!, canInvite: Boolean!, canKick: Boolean!, canPromote: Boolean!, canEditGang: Boolean!, canImport: Boolean!): GangMutationResult!
+        updateGangMemberRole(gangId: ID!, targetUserId: ID!, roleId: Int!): GangMutationResult!
+        depositGang(gangId: ID!, amount: Float!): GangMutationResult!
+        leaveGang(gangId: ID!): GangMutationResult!
+        transferGang(gangId: ID!, targetUserId: ID!): GangMutationResult!
+        inviteGangMember(gangId: ID!, targetUserId: ID!): GangMutationResult!
     }
 `;

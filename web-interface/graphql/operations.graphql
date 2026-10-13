@@ -367,6 +367,7 @@ query GetGangDetail($id: ID!) {
 		acronym
 		description
 		money
+		maxDepositAmount
 		level
 		experience
 		xpForNextLevel
@@ -471,6 +472,41 @@ mutation UpdateGangRole(
 		canEditGang: $canEditGang
 		canImport: $canImport
 	) {
+		success
+		message
+	}
+}
+
+mutation UpdateGangMemberRole($gangId: ID!, $targetUserId: ID!, $roleId: Int!) {
+	updateGangMemberRole(gangId: $gangId, targetUserId: $targetUserId, roleId: $roleId) {
+		success
+		message
+	}
+}
+
+mutation DepositGang($gangId: ID!, $amount: Float!) {
+	depositGang(gangId: $gangId, amount: $amount) {
+		success
+		message
+	}
+}
+
+mutation LeaveGang($gangId: ID!) {
+	leaveGang(gangId: $gangId) {
+		success
+		message
+	}
+}
+
+mutation TransferGang($gangId: ID!, $targetUserId: ID!) {
+	transferGang(gangId: $gangId, targetUserId: $targetUserId) {
+		success
+		message
+	}
+}
+
+mutation InviteGangMember($gangId: ID!, $targetUserId: ID!) {
+	inviteGangMember(gangId: $gangId, targetUserId: $targetUserId) {
 		success
 		message
 	}
