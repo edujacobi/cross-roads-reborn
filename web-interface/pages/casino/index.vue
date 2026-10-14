@@ -2,8 +2,7 @@
 	setup
 	lang="ts"
 >
-import { Coins } from "lucide-vue-next";
-import BaseCard from "~/components/ui/BaseCard.vue";
+import CasinoIcon from "~/components/icons/CasinoIcon.vue";
 import PageTitle from "~/components/ui/PageTitle.vue";
 import { casinoGames } from "~/constants/casinoGames";
 
@@ -28,23 +27,30 @@ const games = Object.entries(casinoGames).map(([slug, game]) => ({
 			subtitle="Antro da perdição! Aposte, ganhe, perca, quebre a banca!"
 		/>
 
-		<p class="casino-page__intro">Conheça os jogos do cassino e teste sua sorte.</p>
+		<div class="casino-page__banner">
+			<div class="casino-page__banner-icon">
+				<CasinoIcon
+					:size="120"
+					variant="solid"
+				/>
+			</div>
+			<div class="casino-page__banner-content">
+				<span class="casino-page__eyebrow">Cassino Cross Roads</span>
+				<p class="casino-page__intro">Aposte com estratégia. Vença com sorte.</p>
+			</div>
+		</div>
 
 		<section
 			class="casino-page__games"
 			aria-label="Jogos do cassino"
 		>
-			<BaseCard
+			<div
 				v-for="game in games"
 				:key="game.slug"
-				:title="game.title"
-				:subtitle="game.summary"
 				class="casino-page__game"
+				:class="{ 'casino-page__game--unavailable': 'availableOnWeb' in game && !game.availableOnWeb }"
 			>
-				<template
-					v-if="'availableOnWeb' in game && !game.availableOnWeb"
-					#header
-				>
+				<template v-if="'availableOnWeb' in game && !game.availableOnWeb">
 					<span class="casino-page__badge">Em breve</span>
 				</template>
 				<NuxtImg
@@ -55,19 +61,25 @@ const games = Object.entries(casinoGames).map(([slug, game]) => ({
 					height="320"
 					sizes="sm:100vw md:50vw lg:33vw"
 				/>
-				<template #actions>
+				<div class="casino-page__game-body">
+					<h2 class="casino-page__game-title">
+						{{ game.title }}
+					</h2>
+					<p class="casino-page__game-summary">
+						{{ game.summary }}
+					</p>
 					<NuxtLink
 						:to="`/casino/${game.slug}`"
-						class="casino-page__link"
+						class="casino-page__game-link"
 					>
-						{{ "availableOnWeb" in game ? "Ver detalhes" : "Jogar" }}
-						<Coins
-							:size="16"
-							aria-hidden="true"
+						<CasinoIcon
+							:size="18"
+							variant="solid"
 						/>
+						{{ "availableOnWeb" in game ? "Ver detalhes" : "Jogar" }}
 					</NuxtLink>
-				</template>
-			</BaseCard>
+				</div>
+			</div>
 		</section>
 	</main>
 </template>
@@ -84,8 +96,69 @@ const games = Object.entries(casinoGames).map(([slug, game]) => ({
 	gap: $spacing-lg;
 
 	&__intro {
-		color: $text-secondary;
-		line-height: 1.6;
+		color: $text-primary;
+		font-size: clamp(1.2rem, 3vw, 1.8rem);
+		font-weight: 700;
+		letter-spacing: -0.03em;
+		line-height: 1.25;
+	}
+
+	&__banner {
+		display: flex;
+		align-items: center;
+		gap: $spacing-lg;
+		position: relative;
+		overflow: hidden;
+		padding: clamp($spacing-lg, 5vw, 3.5rem);
+		border: 1px solid rgba($color-gold, 0.22);
+		border-radius: $radius-lg;
+		background:
+			linear-gradient(
+				110deg,
+				rgba($color-gold, 0.2),
+				rgba($color-casino, 0.22),
+				rgba($color-brand, 0.18),
+				rgba($color-gold, 0.2)
+			),
+			#10131c;
+		background-size: 250% 100%;
+		animation: casino-banner-gradient 12s ease infinite;
+
+		@media (max-width: $bp-tablet) {
+			padding: clamp($spacing-lg, 5vw, 2rem);
+		}
+
+		@media (max-width: $bp-mobile) {
+			gap: $spacing-md;
+		}
+
+		&::after {
+			position: absolute;
+			inset: 0;
+			border: 1px solid rgba($color-gold, 0.08);
+			border-radius: inherit;
+			content: "";
+			pointer-events: none;
+		}
+	}
+
+	&__banner-icon {
+		display: grid;
+		flex: 0 0 auto;
+		place-items: center;
+		color: $color-gold;
+		filter: drop-shadow(0 0 18px rgba($color-gold, 0.3));
+		animation: casino-icon-pulse 3s ease-in-out infinite;
+	}
+
+	&__eyebrow {
+		display: block;
+		margin-bottom: $spacing-sm;
+		color: $color-gold;
+		font-size: 0.75rem;
+		font-weight: 800;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
 	}
 
 	&__games {
@@ -95,40 +168,112 @@ const games = Object.entries(casinoGames).map(([slug, game]) => ({
 	}
 
 	&__game {
+		position: relative;
 		min-width: 0;
-	}
+		border: 1px solid rgba($color-gold, 0.16);
+		background: linear-gradient(155deg, rgba(#19392c, 0.65), $bg-card 55%);
+		transition: transform $transition-normal ease, border-color $transition-normal ease, box-shadow $transition-normal ease;
+		border-radius: $radius-lg;
+		display: flex;
+		overflow: hidden;
 
-	&__image {
-		width: 100%;
-		height: 12rem;
-		object-fit: contain;
-		padding: $spacing-md;
-		background: $bg-card-header;
-	}
+		&:hover {
+			transform: translateY(-3px);
+			border-color: rgba($color-gold, 0.5);
+			box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35), 0 0 22px rgba($color-gold, 0.2);
+		}
 
-	&__link {
-		display: inline-flex;
-		align-items: center;
-		gap: $spacing-xs;
-		color: $color-brand;
-		font-size: 0.875rem;
-		font-weight: 600;
-		white-space: nowrap;
+		&-body {
+			padding: $spacing-md;
+			display: flex;
+			flex-direction: column;
+			gap: $spacing-md;
+		}
 
-		&:focus-visible {
-			outline: 2px solid $color-brand;
-			outline-offset: 3px;
-			border-radius: 2px;
+		&-title {
+			color: #fff3d3;
+			font-size: 1rem;
+		}
+
+		&-summary {
+			line-height: 1.5;
+			font-size: 0.9rem;
+		}
+
+		&-link {
+			width: 100%;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			gap: $spacing-xs;
+			padding: $spacing-sm $spacing-md;
+			border: 1px solid rgba($color-gold, 0.35);
+			border-radius: $radius-sm;
+			background: rgba($color-gold, 0.09);
+			color: #ffe6a1;
+			transition: background $transition-fast ease, border-color $transition-fast ease;
+			margin-top: auto;
+
+			&:hover {
+				border-color: $color-gold;
+				background: rgba($color-gold, 0.17);
+			}
+		}
+
+		&--unavailable {
+			opacity: 0.5;
 		}
 	}
 
+	&__image {
+		max-width: 30%;
+		height: 100%;
+		object-fit: scale-down;
+		padding: $spacing-lg $spacing-xs;
+		border-right: 1px solid rgba($color-gold, 0.16);
+		background:
+			radial-gradient(ellipse at center, rgba($color-gold, 0.09), transparent 80%),
+			linear-gradient(180deg, rgba(#071b13, 0.45), rgba($bg-input, 0.8));
+	}
+
 	&__badge {
+		position: absolute;
+		top: $spacing-sm;
+		left: $spacing-sm;
 		padding: $spacing-xs $spacing-sm;
-		color: $text-muted;
-		border: 1px solid $border-subtle;
+		color: #ffe6a1;
+		border: 1px solid rgba($color-gold, 0.45);
 		border-radius: $radius-full;
+		background: rgba($color-gold, 0.1);
 		font-size: 0.75rem;
 		font-weight: 600;
+	}
+}
+
+@keyframes casino-banner-gradient {
+	0%,
+	100% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+}
+
+@keyframes casino-icon-pulse {
+	0%,
+	100% {
+		transform: scale(1) rotate(-3deg);
+	}
+	50% {
+		transform: scale(1.08) rotate(3deg);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.casino-page__banner,
+	.casino-page__banner-icon {
+		animation: none;
 	}
 }
 </style>

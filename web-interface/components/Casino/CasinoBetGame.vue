@@ -50,6 +50,7 @@ async function play() {
 
 <template>
 	<BaseCard
+		class="casino-game__card"
 		title="Fazer aposta"
 		subtitle="Acerte o lado da moeda e ganhe 1,5x sua aposta."
 	>
@@ -132,10 +133,30 @@ async function play() {
 @use "~/assets/scss/variables" as *;
 
 .casino-game {
+	&__card {
+		border: 1px solid rgba($color-gold, 0.2);
+		background: linear-gradient(145deg, rgba(#153426, 0.44), $bg-card 54%);
+		box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+
+		:deep(.card-title) {
+			color: #fff0cb;
+		}
+	}
+
 	&__balance,
 	&__result {
-		color: $text-secondary;
+		color: #d7d1bf;
 		margin-bottom: $spacing-md;
+	}
+
+	&__balance {
+		display: inline-flex;
+		padding: $spacing-xs $spacing-md;
+		border: 1px solid rgba($color-gold, 0.25);
+		border-radius: $radius-full;
+		background: rgba($color-gold, 0.08);
+		color: #ffe6a1;
+		font-weight: 700;
 	}
 
 	&__result--win {
@@ -169,6 +190,22 @@ async function play() {
 			display: inline-flex;
 			align-items: center;
 			gap: $spacing-xs;
+			padding: $spacing-sm $spacing-md;
+			border: 1px solid $border-card;
+			border-radius: $radius-md;
+			background: rgba($bg-input, 0.65);
+			cursor: pointer;
+			transition: border-color $transition-fast ease, background $transition-fast ease;
+
+			&:has(input:checked) {
+				border-color: $color-gold;
+				background: rgba($color-gold, 0.1);
+			}
+
+			&:has(input:focus-visible) {
+				outline: 2px solid $color-brand;
+				outline-offset: 2px;
+			}
 
 			img {
 				width: 3rem;
@@ -181,6 +218,7 @@ async function play() {
 	&__amount {
 		display: grid;
 		gap: $spacing-xs;
+		color: #e7e0ce;
 		font-size: 0.875rem;
 		font-weight: 600;
 
@@ -191,6 +229,12 @@ async function play() {
 			background: $bg-card;
 			border: 1px solid $border-subtle;
 			border-radius: $radius-sm;
+
+			&:focus-visible {
+				border-color: $color-gold;
+				outline: 2px solid rgba($color-gold, 0.35);
+				outline-offset: 1px;
+			}
 		}
 	}
 }

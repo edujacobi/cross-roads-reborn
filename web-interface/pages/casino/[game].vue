@@ -46,18 +46,17 @@ useHead({
 			:subtitle="game.summary"
 		/>
 
-		<BaseCard :title="game.title">
-			<div class="casino-game-page__images">
-				<NuxtImg
-					v-for="image in game.images"
-					:key="image.src"
-					:src="image.src"
-					:alt="image.alt"
-					width="640"
-					height="320"
-					sizes="sm:100vw md:50vw"
-				/>
-			</div>
+		<BaseCard class="casino-game-page__info">
+			<!--			<div class="casino-game-page__images">-->
+			<!--				<NuxtImg-->
+			<!--					v-for="image in game.images"-->
+			<!--					:key="image.src"-->
+			<!--					:src="image.src"-->
+			<!--					:alt="image.alt"-->
+			<!--					width="100"-->
+			<!--					height="100"-->
+			<!--				/>-->
+			<!--			</div>-->
 			<div class="casino-game-page__sections">
 				<section
 					v-for="section in game.sections"
@@ -105,16 +104,35 @@ useHead({
 	flex-direction: column;
 	gap: $spacing-lg;
 
+	&__info {
+		border: 1px solid rgba($color-gold, 0.2);
+		background:
+			linear-gradient(145deg, rgba(#173528, 0.44), transparent 55%),
+			$bg-card;
+		box-shadow: 0 14px 36px rgba(0, 0, 0, 0.18);
+
+		:deep(.card-title) {
+			color: #fff0cb;
+		}
+	}
+
 	&__back {
 		display: inline-flex;
 		align-items: center;
 		align-self: flex-start;
 		gap: $spacing-xs;
-		color: $text-secondary;
+		padding: $spacing-sm $spacing-md;
+		border: 1px solid $border-card;
+		border-radius: $radius-full;
+		background: rgba($bg-card, 0.8);
+		color: #d7d1bf;
 		font-size: 0.875rem;
+		transition: color $transition-fast ease, border-color $transition-fast ease, transform $transition-fast ease;
 
 		&:hover {
-			color: $text-primary;
+			transform: translateX(-2px);
+			border-color: rgba($color-gold, 0.5);
+			color: $color-gold;
 		}
 
 		&:focus-visible {
@@ -129,6 +147,7 @@ useHead({
 		gap: $spacing-lg;
 
 		h2 {
+			color: $color-gold;
 			margin-bottom: $spacing-xs;
 			font-size: 1rem;
 			font-weight: 600;
@@ -149,9 +168,14 @@ useHead({
 		margin-bottom: $spacing-lg;
 
 		img {
-			width: min(100%, 18rem);
-			height: 12rem;
+			height: 10rem;
 			object-fit: contain;
+			padding: $spacing-md;
+			border: 1px solid rgba($color-gold, 0.15);
+			border-radius: $radius-md;
+			background:
+				radial-gradient(ellipse at center, rgba($color-casino, 0.16), transparent 64%),
+				rgba($bg-input, 0.55);
 		}
 	}
 

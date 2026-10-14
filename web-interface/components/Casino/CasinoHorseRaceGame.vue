@@ -63,6 +63,7 @@ function formatDate(date: string | null | undefined) {
 
 <template>
 	<BaseCard
+		class="casino-game__card"
 		title="Aposte na próxima corrida"
 		subtitle="Escolha seu cavalo e aposte antes do fechamento."
 	>
@@ -156,10 +157,20 @@ function formatDate(date: string | null | undefined) {
 @use "~/assets/scss/variables" as *;
 
 .casino-game {
+	&__card {
+		border: 1px solid rgba($color-gold, 0.2);
+		background: linear-gradient(145deg, rgba(#153426, 0.44), $bg-card 54%);
+		box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+
+		:deep(.card-title) {
+			color: #fff0cb;
+		}
+	}
+
 	&__balance,
 	&__description,
 	&__hint {
-		color: $text-secondary;
+		color: #d7d1bf;
 		margin: $spacing-sm 0;
 	}
 
@@ -215,11 +226,25 @@ function formatDate(date: string | null | undefined) {
 			padding: $spacing-sm;
 			border: 1px solid $border-subtle;
 			border-radius: $radius-sm;
+			background: rgba($bg-input, 0.58);
 			cursor: pointer;
 			text-align: center;
+			transition: transform $transition-fast ease, border-color $transition-fast ease, background $transition-fast ease;
+
+			&:hover {
+				transform: translateY(-2px);
+				border-color: rgba($color-gold, 0.55);
+			}
 
 			&:has(input:checked) {
 				border-color: $color-brand;
+				background: rgba($color-brand, 0.08);
+				box-shadow: 0 0 18px rgba($color-brand, 0.08);
+			}
+
+			&:has(input:focus-visible) {
+				outline: 2px solid $color-brand;
+				outline-offset: 2px;
 			}
 
 			img {
@@ -230,6 +255,7 @@ function formatDate(date: string | null | undefined) {
 
 			input {
 				width: auto;
+				accent-color: $color-brand;
 			}
 		}
 	}

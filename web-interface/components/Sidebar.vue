@@ -18,6 +18,7 @@ import {
 	Users,
 	X,
 } from "lucide-vue-next";
+import CasinoIcon from "~/components/icons/CasinoIcon.vue";
 import GangIcon from "~/components/icons/GangIcon.vue";
 import HospitalIcon from "~/components/icons/HospitalIcon.vue";
 import JobsIcon from "~/components/icons/JobsIcon.vue";
@@ -84,7 +85,8 @@ const navigationGroups = computed(() => [
 			{
 				label: "Cassino",
 				to: { name: "casino" },
-				icon: Coins,
+				icon: CasinoIcon,
+				size: 20,
 				activeRouteNames: ["casino", "casino-game"],
 			},
 			{

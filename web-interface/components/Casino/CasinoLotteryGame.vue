@@ -43,9 +43,26 @@ function formatDate(date: string | null | undefined) {
 
 <template>
 	<BaseCard
+		class="casino-game__card"
 		title="Seu bilhete"
 		subtitle="Compre um bilhete para concorrer ao prêmio acumulado."
 	>
+		<template #actions>
+			<p
+				v-if="status.hasTicket"
+				class="casino-game__success"
+				role="status"
+			>
+				Você já tem o bilhete #{{ status.ticketId }}. Boa sorte!
+			</p>
+			<BaseButton
+				v-else
+				:disabled="buying || status.money < (status.ticketCost ?? 0)"
+				@click="purchaseTicket"
+			>
+				{{ buying ? "Comprando..." : "Comprar bilhete" }}
+			</BaseButton>
+		</template>
 		<BaseSkeleton
 			v-if="statusLoading && !status"
 			height="7rem"
@@ -71,20 +88,6 @@ function formatDate(date: string | null | undefined) {
 				<p v-if="status.previousWinnerName">
 					Último vencedor: {{ status.previousWinnerName }} — {{ formatMoney(status.previousPrize ?? 0) }}
 				</p>
-				<p
-					v-if="status.hasTicket"
-					class="casino-game__success"
-					role="status"
-				>
-					Você já tem o bilhete #{{ status.ticketId }}. Boa sorte!
-				</p>
-				<BaseButton
-					v-else
-					:disabled="buying || status.money < (status.ticketCost ?? 0)"
-					@click="purchaseTicket"
-				>
-					{{ buying ? "Comprando..." : "Comprar bilhete" }}
-				</BaseButton>
 			</div>
 			<p v-else>Não há sorteio ativo no momento.</p>
 		</template>
@@ -98,15 +101,41 @@ function formatDate(date: string | null | undefined) {
 @use "~/assets/scss/variables" as *;
 
 .casino-game {
+	&__card {
+		border: 1px solid rgba($color-gold, 0.2);
+		background: linear-gradient(145deg, rgba(#153426, 0.44), $bg-card 54%);
+		box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+
+		:deep(.card-title) {
+			color: #fff0cb;
+		}
+	}
+
 	&__balance {
+		display: inline-flex;
 		margin-bottom: $spacing-md;
-		color: $text-secondary;
+		padding: $spacing-xs $spacing-md;
+		border: 1px solid rgba($color-gold, 0.25);
+		border-radius: $radius-full;
+		background: rgba($color-gold, 0.08);
+		color: #ffe6a1;
+		font-weight: 700;
 	}
 
 	&__details {
 		display: grid;
 		gap: $spacing-sm;
-		color: $text-secondary;
+		color: #d7d1bf;
+
+		strong {
+			color: $color-gold;
+			font-size: 1.1rem;
+		}
+
+		p:not(:first-child) {
+			padding-bottom: $spacing-xs;
+			border-bottom: 1px solid rgba($border-subtle, 0.7);
+		}
 	}
 
 	&__error {
