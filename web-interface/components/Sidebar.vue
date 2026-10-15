@@ -519,6 +519,7 @@ const user = computed(() => {
 		overflow-y: auto;
 		overflow-x: hidden;
 		overscroll-behavior: contain;
+		@include scrollbar-custom;
 
 		.nav-group {
 			display: flex;
