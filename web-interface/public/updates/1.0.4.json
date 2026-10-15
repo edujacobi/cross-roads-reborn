@@ -1,0 +1,27 @@
+{
+	"version": "1.0.4",
+	"title": "Cassino!",
+	"comment": "AEEEEE KASSINÃÃÃÃÃAOOOO!!!",
+	"date": "15/10/2026",
+	"sections": [
+		{
+			"title": "Can't get over",
+			"description": "Aposte no Bilhete Premiado, Cara ou Coroa (bet) e Corrida de Cavalos! A Roleta Russa ficará para outro update.",
+			"imageUrl": "/images/situations/casino.png"
+		},
+		{
+			"title": "Gangue",
+			"description": "Agora dá pra editar/criar cargos e gerenciar melhor sua gangue. Os carregamentos também estão aqui!",
+			"imageUrl": "/images/situations/gang-action.png"
+		},
+		{
+			"title": "Situações melhoradas no usuário",
+			"description": "A situação atual agora trás dados mais completos e organizados. Algumas situações permitem você clicar (como ir no perfil do alvo).",
+			"imageUrl": "/images/situations/idling.png"
+		},
+		{
+			"title": "Lançamento para usuários VIP",
+			"description": "Closed Beta Testers! Vou precisar começar a usar essa página melhor."
+		}
+	]
+}
