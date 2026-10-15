@@ -8,6 +8,7 @@ import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
 import { useMoneyFormat } from "~/composables/useMoneyFormat";
 import { useToast } from "~/composables/useToast";
+import { imagePaths } from "~/constants/imagePaths";
 import { BuyLotteryTicketDocument, GetMyLotteryStatusDocument } from "~/graphql/generated";
 
 const { formatMoney } = useMoneyFormat();
@@ -47,7 +48,10 @@ function formatDate(date: string | null | undefined) {
 		title="Seu bilhete"
 		subtitle="Compre um bilhete para concorrer ao prêmio acumulado."
 	>
-		<template #actions>
+		<template
+			#actions
+			v-if="status"
+		>
 			<p
 				v-if="status.hasTicket"
 				class="casino-game__success"
@@ -75,20 +79,43 @@ function formatDate(date: string | null | undefined) {
 			Não foi possível carregar os dados do sorteio. Tente novamente mais tarde.
 		</p>
 		<template v-else-if="status">
-			<p class="casino-game__balance">Saldo: {{ formatMoney(status.money) }}</p>
-			<div
+			<p class="casino-game__balance">Sua grana: {{ formatMoney(status.money) }}</p>
+			<section
 				v-if="status.hasActiveDraw"
 				class="casino-game__details"
+				aria-label="Detalhes do sorteio"
 			>
-				<p><strong>{{ status.isMegaDraw ? "Mega da Virada" : "Próximo sorteio" }}</strong></p>
-				<p>Data: {{ formatDate(status.drawTime) }}</p>
-				<p>Bilhete: {{ formatMoney(status.ticketCost ?? 0) }}</p>
-				<p>Prêmio acumulado: {{ formatMoney(status.prizePool) }}</p>
-				<p>Bilhetes vendidos: {{ status.totalTickets }}</p>
-				<p v-if="status.previousWinnerName">
-					Último vencedor: {{ status.previousWinnerName }} — {{ formatMoney(status.previousPrize ?? 0) }}
+				<h3 :class="{ 'casino-game__mega-draw': status.isMegaDraw }">
+					{{ status.isMegaDraw ? "Mega da Virada" : "Próximo sorteio" }}
+				</h3>
+				<dl class="casino-game__draw-stats">
+					<div>
+						<dt>Data</dt>
+						<dd>{{ formatDate(status.drawTime) }}</dd>
+					</div>
+					<div>
+						<dt>Preço do Bilhete</dt>
+						<dd>{{ formatMoney(status.ticketCost ?? 0) }}</dd>
+					</div>
+					<div>
+						<dt>Prêmio acumulado</dt>
+						<dd>{{ formatMoney(status.prizePool) }} ({{ status.totalTickets }} bilhetes)</dd>
+					</div>
+				</dl>
+				<p
+					v-if="status.previousWinnerName"
+					class="casino-game__last-winner"
+					role="status"
+				>
+					<NuxtImg
+						:src="imagePaths.badges.topCasinoWR"
+						alt=""
+						width="20"
+					/>
+					Último vencedor: {{ status.previousWinnerName }} ganhou
+					{{ formatMoney(status.previousPrize ?? 0) }}
 				</p>
-			</div>
+			</section>
 			<p v-else>Não há sorteio ativo no momento.</p>
 		</template>
 	</BaseCard>
@@ -124,18 +151,47 @@ function formatDate(date: string | null | undefined) {
 
 	&__details {
 		display: grid;
-		gap: $spacing-sm;
+		gap: $spacing-md;
 		color: #d7d1bf;
 
-		strong {
+		h3 {
 			color: $color-gold;
 			font-size: 1.1rem;
+			line-height: 2;
+		}
+	}
+
+	&__draw-stats {
+		display: grid;
+		gap: $spacing-sm;
+
+		> div {
+			display: flex;
+			justify-content: space-between;
+			gap: $spacing-md;
 		}
 
-		p:not(:first-child) {
-			padding-bottom: $spacing-xs;
-			border-bottom: 1px solid rgba($border-subtle, 0.7);
+		dt {
+			color: $text-secondary;
 		}
+
+		dd {
+			text-align: right;
+		}
+	}
+
+	&__last-winner {
+		font-size: 0.875rem;
+		color: $text-secondary;
+		margin-top: 1rem;
+		display: flex;
+		align-items: center;
+		gap: $spacing-sm;
+	}
+
+	&__mega-draw {
+		color: color-mix(in lab, $color-casino 100%, $text-primary 60%);
+		font-size: 1.5rem;
 	}
 
 	&__error {
