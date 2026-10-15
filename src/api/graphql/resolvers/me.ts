@@ -27,6 +27,7 @@ import { Lottery } from "#core/models/Lottery";
 import { BetFailureReason, HorseRacing } from "#core/models/HorseRacing";
 import { HorseList } from "#core/types/Horses";
 import { getCasinoClassModifier } from "#core/types/Classes";
+import { Alms } from "#core/models/Alms";
 
 export const meResolvers: {
 	Query: Record<string, ResolverFn>;
@@ -59,6 +60,23 @@ export const meResolvers: {
 			}
 			const hospital = new Hospital(player);
 			return hospital.PrivatePrice;
+		},
+
+		almsStatus: async (_: unknown, args: { receiverId: string }, context: GraphQLContext) => {
+			const authUser = assertAuthenticated(context);
+			const giver = new User(authUser.userId, Language.Portuguese);
+			const receiver = new User(args.receiverId);
+			const [giverFound, receiverFound] = await Promise.all([
+				giver.GetInfo(),
+				receiver.GetInfo(),
+			]);
+
+			if (!giverFound || !receiverFound) {
+				return { canGive: false, value: 0 };
+			}
+
+			const alms = new Alms(giver, receiver);
+			return { canGive: alms.CanGiveAlms().canGive, value: alms.Value };
 		},
 
 		myPrisonStatus: async (_: unknown, __: unknown, context: GraphQLContext) => {
@@ -318,6 +336,33 @@ export const meResolvers: {
 	},
 
 	Mutation: {
+		giveAlms: async (_: unknown, args: { receiverId: string }, context: GraphQLContext) => {
+			const authUser = assertAuthenticated(context);
+			const giver = new User(authUser.userId, Language.Portuguese);
+			const receiver = new User(args.receiverId);
+			const [giverFound, receiverFound] = await Promise.all([
+				giver.GetInfo(),
+				receiver.GetInfo(),
+			]);
+
+			if (!giverFound || !receiverFound) {
+				return { success: false, message: "Jogador não encontrado.", user: null };
+			}
+
+			const alms = new Alms(giver, receiver);
+			const { canGive, message } = alms.CanGiveAlms();
+			if (!canGive) {
+				return { success: false, message, user: null };
+			}
+
+			await alms.GiveAlms();
+			return {
+				success: true,
+				message: `Você doou ${formatMoney(alms.Value, Language.Portuguese)} para ${receiver.Nickname}.`,
+				user: null,
+			};
+		},
+
 		claimDailyReward: async (_: unknown, __: unknown, context: GraphQLContext) => {
 			const authUser = assertAuthenticated(context);
 			const player = new User(authUser.userId);

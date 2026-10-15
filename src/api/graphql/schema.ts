@@ -738,12 +738,18 @@ export const typeDefs = /* GraphQL */ `
         myLotteryStatus: LotteryStatus!
         myHorseRaceStatus: HorseRaceStatus!
         myCasinoStatus: CasinoStatus!
+        almsStatus(receiverId: ID!): AlmsStatus!
     }
 
     type ShopBuyResult {
         success: Boolean!
         message: String!
         money: Float!
+    }
+
+    type AlmsStatus {
+        canGive: Boolean!
+        value: Float!
     }
 
     type Mutation {
@@ -760,6 +766,7 @@ export const typeDefs = /* GraphQL */ `
         changeOwnNickname(nickname: String!): MutationResult!
         changeOwnClass(classId: Int!): MutationResult!
         setOwnAutomaticGrenade(enabled: Boolean!): MutationResult!
+        giveAlms(receiverId: ID!): MutationResult!
         setVip(userId: ID!, days: Int!, eternal: Boolean!): MutationResult!
         killUser(userId: ID!, days: Int!): MutationResult!
         addBadge(userId: ID!, badgeId: Int!): MutationResult!

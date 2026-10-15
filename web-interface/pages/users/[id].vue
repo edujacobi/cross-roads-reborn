@@ -4,7 +4,7 @@
 >
 import { useApolloClient } from "@vue/apollo-composable";
 import { ArrowLeft } from "lucide-vue-next";
-import { ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import UserActivityStatsCard from "~/components/UserDetail/UserActivityStatsCard.vue";
 import UserAdminActions from "~/components/UserDetail/UserAdminActions.vue";
 import UserGangCard from "~/components/UserDetail/UserGangCard.vue";
@@ -12,6 +12,7 @@ import UserHistoryCard from "~/components/UserDetail/UserHistoryCard.vue";
 import UserInventoryCard from "~/components/UserDetail/UserInventoryCard.vue";
 import UserInvestmentCard from "~/components/UserDetail/UserInvestmentCard.vue";
 import UserMetadataCard from "~/components/UserDetail/UserMetadataCard.vue";
+import UserProfileFloatingActions from "~/components/UserDetail/UserProfileFloatingActions.vue";
 import UserProfileHeader from "~/components/UserDetail/UserProfileHeader.vue";
 import UserSelfActionsCard from "~/components/UserDetail/UserSelfActionsCard.vue";
 import UserStatusSummary from "~/components/UserDetail/UserStatusSummary.vue";
@@ -140,6 +141,13 @@ async function refreshUserDetails() {
 				<UserMetadataCard :user-id="userId" />
 			</template>
 		</div>
+
+		<UserProfileFloatingActions
+			v-if="!isOwnUser && profileState === 'ready'"
+			:user-id="userId"
+			@feedback="showFeedback"
+			@refresh="refreshUserDetails"
+		/>
 	</main>
 </template>
 

@@ -246,6 +246,7 @@ async function handleAutomaticGrenadeChange() {
 				:size="24"
 				aria-hidden="true"
 			/>
+			<span class="user-self-actions__floating-label">Ações</span>
 		</button>
 	</template>
 
@@ -405,6 +406,28 @@ async function handleAutomaticGrenadeChange() {
 
 		&:hover {
 			transform: scale(1.05);
+		}
+
+		@media (min-width: 426px) {
+			left: 50%;
+			width: auto;
+			padding: 0 1.25rem;
+			border-radius: $radius-full;
+			gap: $spacing-sm;
+			transform: translateX(-50%);
+
+			&:hover {
+				transform: translateX(-50%) scale(1.05);
+			}
+		}
+	}
+
+	&__floating-label {
+		display: none;
+
+		@media (min-width: 426px) {
+			display: inline;
+			font-weight: 600;
 		}
 	}
 

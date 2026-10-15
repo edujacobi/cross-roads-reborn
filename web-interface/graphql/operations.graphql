@@ -321,6 +321,13 @@ query GetUserProfile($id: ID!) {
 	}
 }
 
+query GetAlmsStatus($receiverId: ID!) {
+	almsStatus(receiverId: $receiverId) {
+		canGive
+		value
+	}
+}
+
 query GetUserInventory($id: ID!) {
 	user(id: $id) {
 		items {
@@ -742,6 +749,13 @@ mutation ChangeOwnClass($classId: Int!) {
 
 mutation SetOwnAutomaticGrenade($enabled: Boolean!) {
 	setOwnAutomaticGrenade(enabled: $enabled) {
+		success
+		message
+	}
+}
+
+mutation GiveAlms($receiverId: ID!) {
+	giveAlms(receiverId: $receiverId) {
 		success
 		message
 	}
