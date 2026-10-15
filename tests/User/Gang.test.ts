@@ -1,5 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { Gang } from "#core/models/Gang";
+import { GangMemberRepository } from "#core/repositories/GangMemberRepository";
+import { User } from "#core/models/User";
 
 // Mock the database models used by Gang
 vi.mock("#core/database/GangMembers", () => ({
@@ -95,5 +97,72 @@ describe("Gang Model - Member Sorting", () => {
 		// The third should be MidPermUser (2 permissions)
 		expect(gang.Members[2].UserId).toBe("user_mid_permission");
 		expect(gang.Members[2].PermissionCount).toBe(2);
+	});
+});
+
+describe("Gang Model - Leadership Transfer", () => {
+	const createGang = () => {
+		const gang = new Gang();
+		gang.Id = 1;
+		gang.LeaderId = "old-leader";
+		gang.Roles = [
+			{ Id: 1, Name: "Leader", Permissions: [] },
+			{ Id: 2, Name: "Member", Permissions: [] },
+		];
+		gang.Members = ["old-leader", "new-leader"].map((UserId, index) => ({
+			UserId,
+			Nickname: UserId,
+			PermissionCount: index === 0 ? 5 : 0,
+			RoleId: index === 0 ? 1 : 2,
+			RoleName: index === 0 ? "Leader" : "Member",
+			Deposit: { Time: new Date(), Amount: 0 },
+		}));
+		return gang;
+	};
+
+	it("assigns the default Member role to the old leader before promoting the target", async () => {
+		const gang = createGang();
+		const updateRole = vi.spyOn(GangMemberRepository, "UpdateRole")
+			.mockResolvedValueOnce(1)
+			.mockResolvedValueOnce(1);
+		vi.spyOn(gang, "Update").mockResolvedValue(true);
+		vi.spyOn(gang, "LoadMembers").mockResolvedValue();
+		vi.spyOn(gang, "ComunicateMember").mockResolvedValue(undefined);
+
+		try {
+			const result = await gang.TransferLeadership(
+				new User("old-leader"),
+				new User("new-leader"),
+			);
+
+			expect(result).toBe(true);
+			expect(updateRole).toHaveBeenNthCalledWith(1, "old-leader", 1, 2);
+			expect(updateRole).toHaveBeenNthCalledWith(2, "new-leader", 1, 1);
+			expect(gang.LeaderId).toBe("new-leader");
+		}
+		finally {
+			vi.restoreAllMocks();
+		}
+	});
+
+	it("does not promote the target when the old leader's membership was not updated", async () => {
+		const gang = createGang();
+
+		const updateRole = vi.spyOn(GangMemberRepository, "UpdateRole")
+			.mockResolvedValueOnce(0);
+
+		try {
+			const result = await gang.TransferLeadership(
+				new User("old-leader"),
+				new User("new-leader"),
+			);
+
+			expect(result).toBe(false);
+			expect(gang.LeaderId).toBe("old-leader");
+			expect(updateRole).toHaveBeenCalledExactlyOnceWith("old-leader", 1, 2);
+		}
+		finally {
+			updateRole.mockRestore();
+		}
 	});
 });

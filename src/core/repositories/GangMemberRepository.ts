@@ -43,11 +43,12 @@ export class GangMemberRepository {
 	/**
 	 * Updates a gang member record's role.
 	 */
-	static async UpdateRole(userId: string, gangId: number, roleId: number): Promise<void> {
-		await GangMembers.update(
+	static async UpdateRole(userId: string, gangId: number, roleId: number): Promise<number> {
+		const [updatedCount] = await GangMembers.update(
 			{ roleId },
 			{ where: { userId, gangId } }
 		);
+		return updatedCount;
 	}
 
 	/**

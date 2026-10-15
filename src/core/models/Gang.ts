@@ -1586,10 +1586,18 @@ export class Gang {
 			}
 
 			// Change old leader to member
-			await GangMemberRepository.UpdateRole(currentUser.Id, this.Id, memberRole.Id);
+			const demotedCount = await GangMemberRepository.UpdateRole(currentUser.Id, this.Id, memberRole.Id);
+			if (demotedCount !== 1) {
+				Log.Warning(`Failed to demote old leader ${currentUser.Id} in gang ${this.Name} (Id: ${this.Id}): no membership was updated`);
+				return false;
+			}
 
 			// Change new leader to leader role
-			await GangMemberRepository.UpdateRole(targetUser.Id, this.Id, leaderRole.Id);
+			const promotedCount = await GangMemberRepository.UpdateRole(targetUser.Id, this.Id, leaderRole.Id);
+			if (promotedCount !== 1) {
+				Log.Warning(`Failed to promote new leader ${targetUser.Id} in gang ${this.Name} (Id: ${this.Id}): no membership was updated`);
+				return false;
+			}
 
 			// Update Gang's leaderId
 			this.LeaderId = targetUser.Id;
