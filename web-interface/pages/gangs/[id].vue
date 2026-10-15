@@ -107,6 +107,10 @@ function getRolePermissionCount(role: GangRoleInfo) {
 	return [role.canInvite, role.canKick, role.canPromote, role.canEditGang, role.canImport].filter(Boolean).length;
 }
 
+function isEditableRole(role: GangRoleInfo) {
+	return !["member", "membro", "miembro"].includes(role.name.toLowerCase());
+}
+
 const roleDraftPermissionCount = computed(
 	() =>
 		[
@@ -935,6 +939,7 @@ async function updateGang() {
 										class="role-actions-cell"
 									>
 										<BaseButton
+											v-if="isEditableRole(role)"
 											variant="secondary"
 											size="sm"
 											:aria-label="`Editar cargo ${role.name}`"
