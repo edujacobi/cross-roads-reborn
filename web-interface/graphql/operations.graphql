@@ -308,6 +308,9 @@ query GetUserProfile($id: ID!) {
 		avatarDecoration
 		backgroundDecoration
 		specialCoin
+		isVip
+		vipEternal
+		vipTime
 		class
 		className
 		attack
@@ -318,6 +321,50 @@ query GetUserProfile($id: ID!) {
 			name
 			description
 		}
+	}
+}
+
+query GetSpecialShop {
+	specialShop {
+		vipPricePerDay
+		vipMinimumDays
+		skinBundles {
+			id
+			name
+			price
+			owned
+			skins {
+				itemId
+				name
+				imagePath
+			}
+		}
+		avatarDecorations {
+			id
+			name
+			price
+			owned
+		}
+		backgroundDecorations {
+			id
+			name
+			price
+			owned
+		}
+	}
+}
+
+mutation BuySpecialShopVip($days: Int!) {
+	buySpecialShopVip(days: $days) {
+		success
+		message
+	}
+}
+
+mutation BuySpecialShopItem($type: SpecialShopItemType!, $itemId: Int!) {
+	buySpecialShopItem(type: $type, itemId: $itemId) {
+		success
+		message
 	}
 }
 

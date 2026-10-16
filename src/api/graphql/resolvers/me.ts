@@ -1,10 +1,16 @@
+import { GraphQLError } from "graphql";
 import { User } from "#core/models/User";
+import { UserAvatarDecoration } from "#core/models/UserAvatarDecoration";
+import { UserBackgroundDecoration } from "#core/models/UserBackgroundDecoration";
+import { UserBundle } from "#core/models/UserBundle";
 import { UserRepository } from "#core/repositories/UserRepository";
 import { Language } from "#core/models/Language";
 import { ItemList, type Items } from "#core/types/Items";
 import { ItemType } from "#core/types/Items";
-import { BundleId, ItemId } from "#core/types/Ids";
-import { BundleList } from "#core/types/Skins";
+import { BundleId, ItemId, type AvatarDecorationId, type BackgroundDecorationId } from "#core/types/Ids";
+import { getAvatarDecorationList } from "#core/types/AvatarDecorations";
+import { getBackgroundDecorationList } from "#core/types/BackgroundDecorations";
+import { BundleList, getSkinBundleList } from "#core/types/Skins";
 import { getJobList, JobList } from "#core/types/Jobs";
 import type { JobId } from "#core/types/Jobs";
 import { ScavengeFailureReason, ScavengeList } from "#core/types/Scavenge";
@@ -39,6 +45,59 @@ export const meResolvers: {
 		},
 
 		blackMarketOpen: () => isBlackMarketOpen(),
+
+		specialShop: async (_: unknown, __: unknown, context: GraphQLContext) => {
+			const authUser = assertAuthenticated(context);
+			const player = new User(authUser.userId);
+			if (!await player.GetInfo()) {
+				throw new GraphQLError("Jogador não encontrado.");
+			}
+
+			const [userBundles, userAvatarDecorations, userBackgroundDecorations] = await Promise.all([
+				UserBundle.GetList(player.Id, Language.Portuguese),
+				UserAvatarDecoration.GetList(player, Language.Portuguese),
+				UserBackgroundDecoration.GetList(player, Language.Portuguese),
+			]);
+			const ownedBundleIds = new Set(userBundles.map(bundle => bundle.BundleId));
+			const ownedAvatarDecorationIds = new Set(userAvatarDecorations.map(decoration => decoration.AvatarDecorationId));
+			const ownedBackgroundDecorationIds = new Set(userBackgroundDecorations.map(decoration => decoration.BackgroundDecorationId));
+
+			return {
+				vipPricePerDay: User.VIP_PRICE_PER_DAY,
+				vipMinimumDays: User.VIP_MIN_DAYS,
+				skinBundles: getSkinBundleList()
+					.filter(bundle => bundle.Shop)
+					.map(bundle => ({
+						id: bundle.Id,
+						name: bundle.Description[Language.Portuguese],
+						price: bundle.Price,
+						owned: ownedBundleIds.has(bundle.Id),
+						skins: bundle.Items.map(itemId => ({
+							itemId,
+							name: ItemList[itemId].Description[Language.Portuguese],
+							imagePath: `/images/items/${itemId}_${ItemId[itemId]}_${BundleId[bundle.Id]}.png`,
+						})),
+					})),
+				avatarDecorations: getAvatarDecorationList()
+					.filter(decoration => decoration.Shop)
+					.sort((a, b) => a.Price - b.Price)
+					.map(decoration => ({
+						id: decoration.Id,
+						name: decoration.Description[Language.Portuguese],
+						price: decoration.Price,
+						owned: ownedAvatarDecorationIds.has(decoration.Id),
+					})),
+				backgroundDecorations: getBackgroundDecorationList()
+					.filter(decoration => decoration.Shop)
+					.sort((a, b) => a.Price - b.Price)
+					.map(decoration => ({
+						id: decoration.Id,
+						name: decoration.Description[Language.Portuguese],
+						price: decoration.Price,
+						owned: ownedBackgroundDecorationIds.has(decoration.Id),
+					})),
+			};
+		},
 
 		bribeCost: async (_: unknown, __: unknown, context: GraphQLContext) => {
 			const authUser = assertAuthenticated(context);
@@ -677,6 +736,108 @@ export const meResolvers: {
 				success: purchasedUnits > 0,
 				message: successMessage,
 				money: player.Money,
+			};
+		},
+
+		buySpecialShopVip: async (
+			_: unknown,
+			args: { days: number },
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			const player = new User(authUser.userId);
+			if (!await player.GetInfo()) {
+				return { success: false, message: "Jogador não encontrado.", user: null };
+			}
+			if (!Number.isSafeInteger(args.days) || args.days < User.VIP_MIN_DAYS) {
+				return { success: false, message: `O VIP deve ser comprado por pelo menos ${User.VIP_MIN_DAYS} dias.`, user: null };
+			}
+
+			const price = args.days * User.VIP_PRICE_PER_DAY;
+			if (!Number.isSafeInteger(price)) {
+				return { success: false, message: "Quantidade de dias inválida.", user: null };
+			}
+			if (player.SpecialCoin < price) {
+				return { success: false, message: "Saldo insuficiente de Moedas Especiais.", user: null };
+			}
+			if (!await player.BuyVipForDays(args.days)) {
+				return { success: false, message: "Não foi possível concluir a compra de VIP.", user: null };
+			}
+
+			return {
+				success: true,
+				message: `Você comprou ${args.days} dias de VIP!`,
+				user: null,
+			};
+		},
+
+		buySpecialShopItem: async (
+			_: unknown,
+			args: {
+				type: "SKIN_BUNDLE" | "AVATAR_DECORATION" | "BACKGROUND_DECORATION";
+				itemId: number;
+			},
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			const player = new User(authUser.userId);
+			if (!await player.GetInfo()) {
+				return { success: false, message: "Jogador não encontrado.", user: null };
+			}
+
+			let price: number;
+			let ownsItem: () => Promise<boolean | undefined>;
+			let purchase: () => Promise<boolean>;
+			let itemName: string;
+
+			if (args.type === "SKIN_BUNDLE") {
+				const bundle = BundleList[args.itemId];
+				if (!bundle?.Shop) {
+					return { success: false, message: "Pacote de skins não encontrado.", user: null };
+				}
+				price = bundle.Price;
+				itemName = bundle.Description[Language.Portuguese];
+				ownsItem = () => UserBundle.HasBundle(player.Id, bundle.Id);
+				purchase = () => player.BuySkinBundle(bundle.Id);
+			}
+			else if (args.type === "AVATAR_DECORATION") {
+				const decoration = getAvatarDecorationList().find(item => item.Id === args.itemId);
+				if (!decoration?.Shop) {
+					return { success: false, message: "Decoração de avatar não encontrada.", user: null };
+				}
+				price = decoration.Price;
+				itemName = decoration.Description[Language.Portuguese];
+				ownsItem = () => UserAvatarDecoration.HasAvatarDecoration(player.Id, decoration.Id);
+				purchase = () => player.BuyAvatarDecoration(decoration.Id as AvatarDecorationId);
+			}
+			else if (args.type === "BACKGROUND_DECORATION") {
+				const decoration = getBackgroundDecorationList().find(item => item.Id === args.itemId);
+				if (!decoration?.Shop) {
+					return { success: false, message: "Decoração de fundo não encontrada.", user: null };
+				}
+				price = decoration.Price;
+				itemName = decoration.Description[Language.Portuguese];
+				ownsItem = () => UserBackgroundDecoration.HasBackgroundDecoration(player.Id, decoration.Id);
+				purchase = () => player.BuyBackgroundDecoration(decoration.Id as BackgroundDecorationId);
+			}
+			else {
+				return { success: false, message: "Item especial inválido.", user: null };
+			}
+
+			if (await ownsItem()) {
+				return { success: false, message: "Você já possui este item.", user: null };
+			}
+			if (player.SpecialCoin < price) {
+				return { success: false, message: "Saldo insuficiente de Moedas Especiais.", user: null };
+			}
+			if (!await purchase()) {
+				return { success: false, message: `Não foi possível comprar ${itemName}.`, user: null };
+			}
+
+			return {
+				success: true,
+				message: `Você comprou ${itemName}!`,
+				user: null,
 			};
 		},
 

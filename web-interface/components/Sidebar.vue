@@ -14,6 +14,7 @@ import {
 	Package,
 	Scroll,
 	ScrollText,
+	Sparkles,
 	Users,
 	X,
 } from "lucide-vue-next";
@@ -81,6 +82,12 @@ const navigationGroups = computed(() => [
 				size: 20,
 				activeRouteNames: ["shop"],
 				blackMarketBadge: true,
+			},
+			{
+				label: "Loja especial",
+				to: { name: "specialshop" },
+				icon: Sparkles,
+				activeRouteNames: ["specialshop"],
 			},
 			{
 				label: "Cassino",

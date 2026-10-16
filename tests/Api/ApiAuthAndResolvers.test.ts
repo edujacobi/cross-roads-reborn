@@ -6,10 +6,13 @@ import { AdminAuditLog } from "#core/models/AdminAuditLog";
 import { Dashboard } from "#core/models/Dashboard";
 import { Event, EventType } from "#core/models/Event";
 import { SituationId, User } from "#core/models/User";
+import { UserAvatarDecoration } from "#core/models/UserAvatarDecoration";
+import { UserBackgroundDecoration } from "#core/models/UserBackgroundDecoration";
+import { UserBundle } from "#core/models/UserBundle";
 import { Vault } from "#core/models/Vault";
 import { UserRepository } from "#core/repositories/UserRepository";
 import { UserItemRepository } from "#core/repositories/UserItemRepository";
-import { ItemId } from "#core/types/Ids";
+import { AvatarDecorationId, BundleId, ItemId } from "#core/types/Ids";
 
 describe("API Auth and Resolvers", () => {
 	const devUser: AuthUser = {
@@ -248,6 +251,127 @@ describe("API Auth and Resolvers", () => {
 			}
 
 			expect(getInfo).not.toHaveBeenCalled();
+		});
+
+		it("requires authentication to access the special shop", async () => {
+			await expect(resolvers.Query.specialShop(null, {}, { user: null })).rejects.toThrow(
+				"Autenticação necessária para realizar esta ação.",
+			);
+			await expect(
+				resolvers.Mutation.buySpecialShopVip(null, { days: 7 }, { user: null }),
+			).rejects.toThrow("Autenticação necessária para realizar esta ação.");
+		});
+
+		it("returns products from the canonical shop catalogs", async () => {
+			vi.spyOn(User.prototype, "GetInfo").mockImplementation(async function(this: User) {
+				return this;
+			});
+			vi.spyOn(UserBundle, "GetList").mockResolvedValue([]);
+			vi.spyOn(UserAvatarDecoration, "GetList").mockResolvedValue([]);
+			vi.spyOn(UserBackgroundDecoration, "GetList").mockResolvedValue([]);
+
+			const catalog = await resolvers.Query.specialShop(null, {}, { user: playerUser });
+
+			expect(catalog.vipPricePerDay).toBe(170);
+			expect(catalog.vipMinimumDays).toBe(7);
+			expect(catalog.skinBundles).toContainEqual(expect.objectContaining({
+				id: BundleId.Brazilian,
+				name: "Brasileiro",
+				price: 2_000,
+				owned: false,
+				skins: expect.arrayContaining([
+					expect.objectContaining({
+						itemId: ItemId.Pistol,
+						imagePath: "/images/items/1_Pistol_Brazilian.png",
+					}),
+				]),
+			}));
+			expect(catalog.avatarDecorations).toContainEqual(expect.objectContaining({
+				id: AvatarDecorationId.Purple,
+				name: "Púrpura",
+				price: 1_000,
+			}));
+		});
+
+		it("does not buy VIP when the player cannot afford the selected duration", async () => {
+			vi.spyOn(User.prototype, "GetInfo").mockImplementation(async function(this: User) {
+				this.SpecialCoin = 1_189;
+				return this;
+			});
+			const buyVip = vi.spyOn(User.prototype, "BuyVipForDays").mockResolvedValue(true);
+
+			await expect(
+				resolvers.Mutation.buySpecialShopVip(null, { days: 7 }, { user: playerUser }),
+			).resolves.toMatchObject({
+				success: false,
+				message: "Saldo insuficiente de Moedas Especiais.",
+			});
+			expect(buyVip).not.toHaveBeenCalled();
+		});
+
+		it("requires at least seven whole days when buying VIP", async () => {
+			vi.spyOn(User.prototype, "GetInfo").mockImplementation(async function(this: User) {
+				this.SpecialCoin = 10_000;
+				return this;
+			});
+			const buyVip = vi.spyOn(User.prototype, "BuyVipForDays").mockResolvedValue(true);
+
+			await expect(
+				resolvers.Mutation.buySpecialShopVip(null, { days: 6 }, { user: playerUser }),
+			).resolves.toMatchObject({
+				success: false,
+				message: "O VIP deve ser comprado por pelo menos 7 dias.",
+			});
+			expect(buyVip).not.toHaveBeenCalled();
+		});
+
+		it("charges 170 special coins per VIP day", async () => {
+			vi.spyOn(User.prototype, "GetInfo").mockImplementation(async function(this: User) {
+				this.SpecialCoin = 1_190;
+				return this;
+			});
+			const buyVip = vi.spyOn(User.prototype, "BuyVipForDays").mockResolvedValue(true);
+
+			await expect(
+				resolvers.Mutation.buySpecialShopVip(null, { days: 7 }, { user: playerUser }),
+			).resolves.toMatchObject({
+				success: true,
+				message: "Você comprou 7 dias de VIP!",
+			});
+			expect(buyVip).toHaveBeenCalledWith(7);
+		});
+
+		it("deducts the day-based VIP price and adds the selected time", async () => {
+			const player = new User(playerUser.userId);
+			player.SpecialCoin = 1_190;
+			const update = vi.spyOn(User.prototype, "Update").mockResolvedValue();
+			const addVip = vi.spyOn(User.prototype, "AddVip").mockResolvedValue();
+
+			await expect(player.BuyVipForDays(7)).resolves.toBe(true);
+
+			expect(player.SpecialCoin).toBe(0);
+			expect(update).toHaveBeenCalledWith({ specialCoin: 0 });
+			expect(addVip).toHaveBeenCalledWith(7);
+		});
+
+		it("buys an available avatar decoration and charges through the user model", async () => {
+			vi.spyOn(User.prototype, "GetInfo").mockImplementation(async function(this: User) {
+				this.SpecialCoin = 1_000;
+				return this;
+			});
+			vi.spyOn(UserAvatarDecoration, "HasAvatarDecoration").mockResolvedValue(false);
+			const buyAvatarDecoration = vi.spyOn(User.prototype, "BuyAvatarDecoration").mockResolvedValue(true);
+
+			await expect(
+				resolvers.Mutation.buySpecialShopItem(null, {
+					type: "AVATAR_DECORATION",
+					itemId: AvatarDecorationId.Purple,
+				}, { user: playerUser }),
+			).resolves.toMatchObject({
+				success: true,
+				message: "Você comprou Púrpura!",
+			});
+			expect(buyAvatarDecoration).toHaveBeenCalledWith(AvatarDecorationId.Purple);
 		});
 	});
 

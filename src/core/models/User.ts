@@ -63,6 +63,8 @@ export type AvailabilityResult =
 
 export class User {
 	static VIP_BASE_PRICE = 5_000; // special coins
+	static VIP_PRICE_PER_DAY = 170;
+	static VIP_MIN_DAYS = 7;
 
 	Id: string;
 	CreatedAt = new Date();
@@ -659,6 +661,26 @@ export class User {
 
 		await this.AddVip(months * 30);
 		Log.Success(`User ${this.Nickname} (Id: ${this.Id}) bought VIP for ${months} months.`);
+	}
+
+	async BuyVipForDays(days: number) {
+		if (!Number.isSafeInteger(days) || days < User.VIP_MIN_DAYS) {
+			return false;
+		}
+
+		const price = days * User.VIP_PRICE_PER_DAY;
+		if (!Number.isSafeInteger(price) || this.SpecialCoin < price) {
+			return false;
+		}
+
+		this.SpecialCoin -= price;
+		await this.Update({
+			specialCoin: this.SpecialCoin,
+		});
+
+		await this.AddVip(days);
+		Log.Success(`User ${this.Nickname} (Id: ${this.Id}) bought VIP for ${days} days.`);
+		return true;
 	}
 
 	/**

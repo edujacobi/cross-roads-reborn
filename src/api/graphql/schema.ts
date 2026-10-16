@@ -769,6 +769,7 @@ export const typeDefs = /* GraphQL */ `
         myHorseRaceStatus: HorseRaceStatus!
         myCasinoStatus: CasinoStatus!
         myInvestmentPage: MyInvestmentPage!
+        specialShop: SpecialShopCatalog!
         almsStatus(receiverId: ID!): AlmsStatus!
     }
 
@@ -776,6 +777,48 @@ export const typeDefs = /* GraphQL */ `
         success: Boolean!
         message: String!
         money: Float!
+    }
+
+    enum SpecialShopItemType {
+        SKIN_BUNDLE
+        AVATAR_DECORATION
+        BACKGROUND_DECORATION
+    }
+
+    type SpecialShopSkin {
+        itemId: Int!
+        name: String!
+        imagePath: String!
+    }
+
+    type SpecialShopSkinBundle {
+        id: Int!
+        name: String!
+        price: Float!
+        skins: [SpecialShopSkin!]!
+        owned: Boolean!
+    }
+
+    type SpecialShopAvatarDecoration {
+        id: Int!
+        name: String!
+        price: Float!
+        owned: Boolean!
+    }
+
+    type SpecialShopBackgroundDecoration {
+        id: Int!
+        name: String!
+        price: Float!
+        owned: Boolean!
+    }
+
+    type SpecialShopCatalog {
+        vipPricePerDay: Float!
+        vipMinimumDays: Int!
+        skinBundles: [SpecialShopSkinBundle!]!
+        avatarDecorations: [SpecialShopAvatarDecoration!]!
+        backgroundDecorations: [SpecialShopBackgroundDecoration!]!
     }
 
     type AlmsStatus {
@@ -810,6 +853,8 @@ export const typeDefs = /* GraphQL */ `
         setMainHeistAllowed(allowed: Boolean!): SeasonMutationResult!
         endSeason(isPreSeason: Boolean!): SeasonMutationResult!
         buyItem(itemId: Int!, units: Int): ShopBuyResult!
+        buySpecialShopVip(days: Int!): MutationResult!
+        buySpecialShopItem(type: SpecialShopItemType!, itemId: Int!): MutationResult!
         startJob(jobId: Int!): JobMutationResult!
         cancelJob: JobMutationResult!
         payPrivateHospital: HospitalResult!

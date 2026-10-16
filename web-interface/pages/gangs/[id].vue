@@ -6,7 +6,6 @@ import { useMutation, useQuery } from "@vue/apollo-composable";
 import {
 	ArrowLeft,
 	Crown,
-	DollarSign,
 	LogOut,
 	MessageSquareText,
 	Pencil,

@@ -451,6 +451,8 @@ export type Mutation = {
   buyInvestment: MutationResult;
   buyItem: ShopBuyResult;
   buyLotteryTicket: LotteryPurchaseResult;
+  buySpecialShopItem: MutationResult;
+  buySpecialShopVip: MutationResult;
   cancelGangImport: GangMutationResult;
   cancelJob: JobMutationResult;
   changeOwnClass: MutationResult;
@@ -520,6 +522,17 @@ export type MutationBuyInvestmentArgs = {
 export type MutationBuyItemArgs = {
   itemId: Scalars['Int']['input'];
   units?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type MutationBuySpecialShopItemArgs = {
+  itemId: Scalars['Int']['input'];
+  type: SpecialShopItemType;
+};
+
+
+export type MutationBuySpecialShopVipArgs = {
+  days: Scalars['Int']['input'];
 };
 
 
@@ -862,6 +875,7 @@ export type Query = {
   scavengeLocations: Array<ScavengeLocation>;
   seasonEndPreview: SeasonEndPreview;
   seasonInfo: SeasonInfo;
+  specialShop: SpecialShopCatalog;
   topGangs: GangRankingResult;
   topUsers: UserRankingResult;
   user?: Maybe<UserDetail>;
@@ -1065,6 +1079,53 @@ export type ShopBuyResult = {
   message: Scalars['String']['output'];
   money: Scalars['Float']['output'];
   success: Scalars['Boolean']['output'];
+};
+
+export type SpecialShopAvatarDecoration = {
+  __typename?: 'SpecialShopAvatarDecoration';
+  id: Scalars['Int']['output'];
+  name: Scalars['String']['output'];
+  owned: Scalars['Boolean']['output'];
+  price: Scalars['Float']['output'];
+};
+
+export type SpecialShopBackgroundDecoration = {
+  __typename?: 'SpecialShopBackgroundDecoration';
+  id: Scalars['Int']['output'];
+  name: Scalars['String']['output'];
+  owned: Scalars['Boolean']['output'];
+  price: Scalars['Float']['output'];
+};
+
+export type SpecialShopCatalog = {
+  __typename?: 'SpecialShopCatalog';
+  avatarDecorations: Array<SpecialShopAvatarDecoration>;
+  backgroundDecorations: Array<SpecialShopBackgroundDecoration>;
+  skinBundles: Array<SpecialShopSkinBundle>;
+  vipMinimumDays: Scalars['Int']['output'];
+  vipPricePerDay: Scalars['Float']['output'];
+};
+
+export enum SpecialShopItemType {
+  AvatarDecoration = 'AVATAR_DECORATION',
+  BackgroundDecoration = 'BACKGROUND_DECORATION',
+  SkinBundle = 'SKIN_BUNDLE'
+}
+
+export type SpecialShopSkin = {
+  __typename?: 'SpecialShopSkin';
+  imagePath: Scalars['String']['output'];
+  itemId: Scalars['Int']['output'];
+  name: Scalars['String']['output'];
+};
+
+export type SpecialShopSkinBundle = {
+  __typename?: 'SpecialShopSkinBundle';
+  id: Scalars['Int']['output'];
+  name: Scalars['String']['output'];
+  owned: Scalars['Boolean']['output'];
+  price: Scalars['Float']['output'];
+  skins: Array<SpecialShopSkin>;
 };
 
 export type UserActivityStats = {
@@ -1280,6 +1341,11 @@ export type SetMoneyMode =
   | 'ADD'
   | 'SET';
 
+export type SpecialShopItemType =
+  | 'AVATAR_DECORATION'
+  | 'BACKGROUND_DECORATION'
+  | 'SKIN_BUNDLE';
+
 export type UserRanking =
   | 'BEATERS'
   | 'BRIBERS'
@@ -1408,7 +1474,27 @@ export type GetUserProfileQueryVariables = Exact<{
 }>;
 
 
-export type GetUserProfileQuery = { user: { id: string, nickname: string, online: boolean, money: number, avatarUrl: string | null, avatarDecoration: string, backgroundDecoration: string, specialCoin: number | null, class: number, className: string, attack: number, defense: number, situationId: number, badges: Array<{ id: number, name: string, description: string }> } | null };
+export type GetUserProfileQuery = { user: { id: string, nickname: string, online: boolean, money: number, avatarUrl: string | null, avatarDecoration: string, backgroundDecoration: string, specialCoin: number | null, isVip: boolean, vipEternal: boolean, vipTime: string | null, class: number, className: string, attack: number, defense: number, situationId: number, badges: Array<{ id: number, name: string, description: string }> } | null };
+
+export type GetSpecialShopQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetSpecialShopQuery = { specialShop: { vipPricePerDay: number, vipMinimumDays: number, skinBundles: Array<{ id: number, name: string, price: number, owned: boolean, skins: Array<{ itemId: number, name: string, imagePath: string }> }>, avatarDecorations: Array<{ id: number, name: string, price: number, owned: boolean }>, backgroundDecorations: Array<{ id: number, name: string, price: number, owned: boolean }> } };
+
+export type BuySpecialShopVipMutationVariables = Exact<{
+  days: number;
+}>;
+
+
+export type BuySpecialShopVipMutation = { buySpecialShopVip: { success: boolean, message: string } };
+
+export type BuySpecialShopItemMutationVariables = Exact<{
+  type: SpecialShopItemType;
+  itemId: number;
+}>;
+
+
+export type BuySpecialShopItemMutation = { buySpecialShopItem: { success: boolean, message: string } };
 
 export type GetAlmsStatusQueryVariables = Exact<{
   receiverId: string | number;
@@ -1968,7 +2054,10 @@ export const DeleteEventDocument = {"kind":"Document","definitions":[{"kind":"Op
 export const SearchUsersDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SearchUsers"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"search"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"limit"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"offset"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"vipOnly"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"sortBy"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"sortOrder"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"users"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"search"},"value":{"kind":"Variable","name":{"kind":"Name","value":"search"}}},{"kind":"Argument","name":{"kind":"Name","value":"limit"},"value":{"kind":"Variable","name":{"kind":"Name","value":"limit"}}},{"kind":"Argument","name":{"kind":"Name","value":"offset"},"value":{"kind":"Variable","name":{"kind":"Name","value":"offset"}}},{"kind":"Argument","name":{"kind":"Name","value":"vipOnly"},"value":{"kind":"Variable","name":{"kind":"Name","value":"vipOnly"}}},{"kind":"Argument","name":{"kind":"Name","value":"sortBy"},"value":{"kind":"Variable","name":{"kind":"Name","value":"sortBy"}}},{"kind":"Argument","name":{"kind":"Name","value":"sortOrder"},"value":{"kind":"Variable","name":{"kind":"Name","value":"sortOrder"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"total"}},{"kind":"Field","name":{"kind":"Name","value":"users"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"nickname"}},{"kind":"Field","name":{"kind":"Name","value":"avatarUrl"}},{"kind":"Field","name":{"kind":"Name","value":"avatarDecoration"}},{"kind":"Field","name":{"kind":"Name","value":"backgroundDecoration"}},{"kind":"Field","name":{"kind":"Name","value":"class"}},{"kind":"Field","name":{"kind":"Name","value":"isVip"}},{"kind":"Field","name":{"kind":"Name","value":"vipEternal"}},{"kind":"Field","name":{"kind":"Name","value":"vipTime"}},{"kind":"Field","name":{"kind":"Name","value":"situationId"}},{"kind":"Field","name":{"kind":"Name","value":"isDeveloper"}},{"kind":"Field","name":{"kind":"Name","value":"isModerator"}},{"kind":"Field","name":{"kind":"Name","value":"isHelper"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}}]}}]}}]}}]} as unknown as DocumentNode<SearchUsersQuery, SearchUsersQueryVariables>;
 export const GetTopUsersDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetTopUsers"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"ranking"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UserRanking"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"limit"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"offset"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"topUsers"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"ranking"},"value":{"kind":"Variable","name":{"kind":"Name","value":"ranking"}}},{"kind":"Argument","name":{"kind":"Name","value":"limit"},"value":{"kind":"Variable","name":{"kind":"Name","value":"limit"}}},{"kind":"Argument","name":{"kind":"Name","value":"offset"},"value":{"kind":"Variable","name":{"kind":"Name","value":"offset"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"total"}},{"kind":"Field","name":{"kind":"Name","value":"entries"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"nickname"}},{"kind":"Field","name":{"kind":"Name","value":"avatarUrl"}},{"kind":"Field","name":{"kind":"Name","value":"avatarDecoration"}},{"kind":"Field","name":{"kind":"Name","value":"backgroundDecoration"}},{"kind":"Field","name":{"kind":"Name","value":"gangName"}},{"kind":"Field","name":{"kind":"Name","value":"gangAcronym"}},{"kind":"Field","name":{"kind":"Name","value":"gangColor"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"count"}}]}}]}}]}}]} as unknown as DocumentNode<GetTopUsersQuery, GetTopUsersQueryVariables>;
 export const GetTopGangsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetTopGangs"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"limit"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"offset"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"topGangs"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"limit"},"value":{"kind":"Variable","name":{"kind":"Name","value":"limit"}}},{"kind":"Argument","name":{"kind":"Name","value":"offset"},"value":{"kind":"Variable","name":{"kind":"Name","value":"offset"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"total"}},{"kind":"Field","name":{"kind":"Name","value":"currentUserGangId"}},{"kind":"Field","name":{"kind":"Name","value":"currentUserGangName"}},{"kind":"Field","name":{"kind":"Name","value":"currentUserGangColor"}},{"kind":"Field","name":{"kind":"Name","value":"entries"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"acronym"}},{"kind":"Field","name":{"kind":"Name","value":"imageUrl"}},{"kind":"Field","name":{"kind":"Name","value":"level"}},{"kind":"Field","name":{"kind":"Name","value":"experience"}},{"kind":"Field","name":{"kind":"Name","value":"memberRole"}},{"kind":"Field","name":{"kind":"Name","value":"color"}}]}}]}}]}}]} as unknown as DocumentNode<GetTopGangsQuery, GetTopGangsQueryVariables>;
-export const GetUserProfileDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetUserProfile"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"nickname"}},{"kind":"Field","name":{"kind":"Name","value":"online"}},{"kind":"Field","name":{"kind":"Name","value":"money"}},{"kind":"Field","name":{"kind":"Name","value":"avatarUrl"}},{"kind":"Field","name":{"kind":"Name","value":"avatarDecoration"}},{"kind":"Field","name":{"kind":"Name","value":"backgroundDecoration"}},{"kind":"Field","name":{"kind":"Name","value":"specialCoin"}},{"kind":"Field","name":{"kind":"Name","value":"class"}},{"kind":"Field","name":{"kind":"Name","value":"className"}},{"kind":"Field","name":{"kind":"Name","value":"attack"}},{"kind":"Field","name":{"kind":"Name","value":"defense"}},{"kind":"Field","name":{"kind":"Name","value":"situationId"}},{"kind":"Field","name":{"kind":"Name","value":"badges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}}]}}]}}]}}]} as unknown as DocumentNode<GetUserProfileQuery, GetUserProfileQueryVariables>;
+export const GetUserProfileDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetUserProfile"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"nickname"}},{"kind":"Field","name":{"kind":"Name","value":"online"}},{"kind":"Field","name":{"kind":"Name","value":"money"}},{"kind":"Field","name":{"kind":"Name","value":"avatarUrl"}},{"kind":"Field","name":{"kind":"Name","value":"avatarDecoration"}},{"kind":"Field","name":{"kind":"Name","value":"backgroundDecoration"}},{"kind":"Field","name":{"kind":"Name","value":"specialCoin"}},{"kind":"Field","name":{"kind":"Name","value":"isVip"}},{"kind":"Field","name":{"kind":"Name","value":"vipEternal"}},{"kind":"Field","name":{"kind":"Name","value":"vipTime"}},{"kind":"Field","name":{"kind":"Name","value":"class"}},{"kind":"Field","name":{"kind":"Name","value":"className"}},{"kind":"Field","name":{"kind":"Name","value":"attack"}},{"kind":"Field","name":{"kind":"Name","value":"defense"}},{"kind":"Field","name":{"kind":"Name","value":"situationId"}},{"kind":"Field","name":{"kind":"Name","value":"badges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}}]}}]}}]}}]} as unknown as DocumentNode<GetUserProfileQuery, GetUserProfileQueryVariables>;
+export const GetSpecialShopDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetSpecialShop"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"specialShop"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"vipPricePerDay"}},{"kind":"Field","name":{"kind":"Name","value":"vipMinimumDays"}},{"kind":"Field","name":{"kind":"Name","value":"skinBundles"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"price"}},{"kind":"Field","name":{"kind":"Name","value":"owned"}},{"kind":"Field","name":{"kind":"Name","value":"skins"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"itemId"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"imagePath"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"avatarDecorations"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"price"}},{"kind":"Field","name":{"kind":"Name","value":"owned"}}]}},{"kind":"Field","name":{"kind":"Name","value":"backgroundDecorations"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"price"}},{"kind":"Field","name":{"kind":"Name","value":"owned"}}]}}]}}]}}]} as unknown as DocumentNode<GetSpecialShopQuery, GetSpecialShopQueryVariables>;
+export const BuySpecialShopVipDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"BuySpecialShopVip"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"days"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"buySpecialShopVip"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"days"},"value":{"kind":"Variable","name":{"kind":"Name","value":"days"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<BuySpecialShopVipMutation, BuySpecialShopVipMutationVariables>;
+export const BuySpecialShopItemDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"BuySpecialShopItem"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"type"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"SpecialShopItemType"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"itemId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"buySpecialShopItem"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"type"},"value":{"kind":"Variable","name":{"kind":"Name","value":"type"}}},{"kind":"Argument","name":{"kind":"Name","value":"itemId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"itemId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<BuySpecialShopItemMutation, BuySpecialShopItemMutationVariables>;
 export const GetAlmsStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetAlmsStatus"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"receiverId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"almsStatus"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"receiverId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"receiverId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"canGive"}},{"kind":"Field","name":{"kind":"Name","value":"value"}}]}}]}}]} as unknown as DocumentNode<GetAlmsStatusQuery, GetAlmsStatusQueryVariables>;
 export const GetUserInventoryDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetUserInventory"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"items"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"quantity"}},{"kind":"Field","name":{"kind":"Name","value":"skin"}},{"kind":"Field","name":{"kind":"Name","value":"remainingTime"}}]}}]}}]}}]} as unknown as DocumentNode<GetUserInventoryQuery, GetUserInventoryQueryVariables>;
 export const GetUserInvestmentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetUserInvestment"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"investment"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"expiresAt"}},{"kind":"Field","name":{"kind":"Name","value":"defense"}},{"kind":"Field","name":{"kind":"Name","value":"nextPaymentValue"}},{"kind":"Field","name":{"kind":"Name","value":"henchmanEndsAt"}}]}}]}}]}}]} as unknown as DocumentNode<GetUserInvestmentQuery, GetUserInvestmentQueryVariables>;
