@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { Collection } from "discord.js";
+import { signAuthToken } from "#api/auth/jwt";
 import { createApiServer } from "#api/server";
+import { setClient } from "#bot/client";
 
 describe("API server proxy handling", () => {
 	it("uses the forwarded client IP when the request comes from a loopback proxy", async () => {
@@ -35,6 +38,60 @@ describe("SSE status routes", () => {
 		}
 		finally {
 			await app.close();
+		}
+	});
+});
+
+describe("Web presence heartbeat", () => {
+	it("records activity for the authenticated user", async () => {
+		const client = setClient();
+		client.userLastCommand = new Collection();
+		const app = await createApiServer();
+
+		try {
+			const token = signAuthToken({
+				userId: "123456",
+				username: "Player",
+				avatar: null,
+				role: "PLAYER",
+				situationId: 0,
+			});
+			const response = await app.inject({
+				method: "POST",
+				url: "/presence/heartbeat",
+				headers: { authorization: `Bearer ${token}` },
+			});
+
+			expect(response.statusCode).toBe(204);
+			expect(client.userLastCommand.get("123456")).toBeTypeOf("number");
+		}
+		finally {
+			await app.close();
+			client.destroy();
+		}
+	});
+
+	it("rejects requests without a valid token and does not record activity", async () => {
+		const client = setClient();
+		client.userLastCommand = new Collection();
+		const app = await createApiServer();
+
+		try {
+			for (const authorization of [undefined, "Bearer invalid.token"]) {
+				const response = await app.inject({
+					method: "POST",
+					url: "/presence/heartbeat",
+					headers: authorization ? { authorization } : {},
+				});
+
+				expect(response.statusCode).toBe(401);
+			}
+
+			expect(client.userLastCommand.size).toBe(0);
+		}
+		finally {
+			await app.close();
+			client.destroy();
 		}
 	});
 });

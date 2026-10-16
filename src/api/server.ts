@@ -11,6 +11,7 @@ import { User } from "#core/models/User";
 import { Language } from "#core/models/Language";
 import { registerEscapeStatusRoute } from "#api/sse/escapeStatus";
 import { registerScavengeStatusRoute } from "#api/sse/scavengeStatus";
+import { getClient } from "#bot/client";
 
 let server: FastifyInstance | null = null;
 
@@ -139,6 +140,21 @@ export async function createApiServer(): Promise<FastifyInstance> {
 				isVip: userModel?.IsVip() ?? false,
 			},
 		});
+	});
+
+	app.post("/presence/heartbeat", async (req, reply) => {
+		const authHeader = req.headers.authorization;
+		if (!authHeader || !authHeader.startsWith("Bearer ")) {
+			return reply.status(401).send({ error: "Missing or invalid authorization header." });
+		}
+
+		const user = verifyAuthToken(authHeader.substring(7));
+		if (!user) {
+			return reply.status(401).send({ error: "Invalid or expired token." });
+		}
+
+		getClient().userLastCommand.set(user.userId, Date.now());
+		return reply.status(204).send();
 	});
 
 	registerEscapeStatusRoute(app);
