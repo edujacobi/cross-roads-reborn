@@ -1137,3 +1137,58 @@ query GetMyCasinoStatus {
 		money
 	}
 }
+
+query GetMyInvestmentPage {
+	myInvestmentPage {
+		money
+		isIdling
+		nextPaymentAt
+		investments {
+			id
+			name
+			description
+			price
+			hourlyYield
+			defense
+			henchmanFee
+		}
+		investment {
+			id
+			accumulatedYield
+			expiresAt
+			defense
+			henchmanEndsAt
+			henchmanHospitalized
+			hasHenchman
+			notifyYield
+		}
+	}
+}
+
+mutation BuyInvestment($investmentId: Int!) {
+	buyInvestment(investmentId: $investmentId) {
+		success
+		message
+	}
+}
+
+mutation AbandonInvestment {
+	abandonInvestment {
+		success
+		message
+	}
+}
+
+mutation HireInvestmentHenchman {
+	hireInvestmentHenchman {
+		success
+		message
+	}
+}
+
+mutation ToggleInvestmentYieldNotifications {
+	toggleInvestmentYieldNotifications {
+		success
+		message
+	}
+}

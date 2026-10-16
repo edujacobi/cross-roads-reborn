@@ -208,6 +208,35 @@ export const typeDefs = /* GraphQL */ `
         henchmanEndsAt: String
     }
 
+    type InvestmentOption {
+        id: Int!
+        name: String!
+        description: String!
+        price: Float!
+        hourlyYield: Float!
+        defense: Int!
+        henchmanFee: Int!
+    }
+
+    type ActiveInvestment {
+        id: Int!
+        accumulatedYield: Float!
+        expiresAt: String!
+        defense: Int!
+        henchmanEndsAt: String
+        henchmanHospitalized: Boolean!
+        hasHenchman: Boolean!
+        notifyYield: Boolean!
+    }
+
+    type MyInvestmentPage {
+        money: Float!
+        isIdling: Boolean!
+        nextPaymentAt: String!
+        investments: [InvestmentOption!]!
+        investment: ActiveInvestment
+    }
+
     type GangInfo {
         id: Int!
         name: String!
@@ -738,6 +767,7 @@ export const typeDefs = /* GraphQL */ `
         myLotteryStatus: LotteryStatus!
         myHorseRaceStatus: HorseRaceStatus!
         myCasinoStatus: CasinoStatus!
+        myInvestmentPage: MyInvestmentPage!
         almsStatus(receiverId: ID!): AlmsStatus!
     }
 
@@ -786,6 +816,10 @@ export const typeDefs = /* GraphQL */ `
         payBribePrison: PrisonBribeResult!
         startScavenge(placeId: Int!): ScavengeStartResult!
         playCoinFlip(side: String!, amount: Float!): CasinoPlayResult!
+        buyInvestment(investmentId: Int!): MutationResult!
+        abandonInvestment: MutationResult!
+        hireInvestmentHenchman: MutationResult!
+        toggleInvestmentYieldNotifications: MutationResult!
         buyLotteryTicket: LotteryPurchaseResult!
         placeHorseRaceBet(raceId: Int!, horseId: Int!, amount: Int!): HorseRaceBetResult!
         createGang(name: String!, acronym: String!, description: String!, color: String!, imageUrl: String): GangMutationResult!

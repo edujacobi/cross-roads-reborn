@@ -16,6 +16,18 @@ export type Scalars = {
   Float: { input: number; output: number; }
 };
 
+export type ActiveInvestment = {
+  __typename?: 'ActiveInvestment';
+  accumulatedYield: Scalars['Float']['output'];
+  defense: Scalars['Int']['output'];
+  expiresAt: Scalars['String']['output'];
+  hasHenchman: Scalars['Boolean']['output'];
+  henchmanEndsAt?: Maybe<Scalars['String']['output']>;
+  henchmanHospitalized: Scalars['Boolean']['output'];
+  id: Scalars['Int']['output'];
+  notifyYield: Scalars['Boolean']['output'];
+};
+
 export type AdminAuditEntry = {
   __typename?: 'AdminAuditEntry';
   actionId: Scalars['Int']['output'];
@@ -327,6 +339,17 @@ export type InvestmentInfo = {
   nextPaymentValue?: Maybe<Scalars['String']['output']>;
 };
 
+export type InvestmentOption = {
+  __typename?: 'InvestmentOption';
+  defense: Scalars['Int']['output'];
+  description: Scalars['String']['output'];
+  henchmanFee: Scalars['Int']['output'];
+  hourlyYield: Scalars['Float']['output'];
+  id: Scalars['Int']['output'];
+  name: Scalars['String']['output'];
+  price: Scalars['Float']['output'];
+};
+
 export type ItemDetails = {
   __typename?: 'ItemDetails';
   attack: Scalars['Int']['output'];
@@ -420,9 +443,11 @@ export type LotteryStatus = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  abandonInvestment: MutationResult;
   addBadge: MutationResult;
   addSpecialCoins: MutationResult;
   attemptPrisonEscape: PrisonEscapeStartResult;
+  buyInvestment: MutationResult;
   buyItem: ShopBuyResult;
   buyLotteryTicket: LotteryPurchaseResult;
   cancelGangImport: GangMutationResult;
@@ -440,6 +465,7 @@ export type Mutation = {
   endSeason: SeasonMutationResult;
   freeUser: MutationResult;
   giveAlms: MutationResult;
+  hireInvestmentHenchman: MutationResult;
   inviteGangMember: GangMutationResult;
   killUser: MutationResult;
   leaveGang: GangMutationResult;
@@ -461,6 +487,7 @@ export type Mutation = {
   startJob: JobMutationResult;
   startScavenge: ScavengeStartResult;
   swapUsers: MutationResult;
+  toggleInvestmentYieldNotifications: MutationResult;
   transferGang: GangMutationResult;
   updateEvent: EventMutationResult;
   updateGang: GangMutationResult;
@@ -478,6 +505,11 @@ export type MutationAddBadgeArgs = {
 export type MutationAddSpecialCoinsArgs = {
   amount: Scalars['Float']['input'];
   userId: Scalars['ID']['input'];
+};
+
+
+export type MutationBuyInvestmentArgs = {
+  investmentId: Scalars['Int']['input'];
 };
 
 
@@ -728,6 +760,15 @@ export type MutationResult = {
   user?: Maybe<UserDetail>;
 };
 
+export type MyInvestmentPage = {
+  __typename?: 'MyInvestmentPage';
+  investment?: Maybe<ActiveInvestment>;
+  investments: Array<InvestmentOption>;
+  isIdling: Scalars['Boolean']['output'];
+  money: Scalars['Float']['output'];
+  nextPaymentAt: Scalars['String']['output'];
+};
+
 export type MyPrisonStatus = {
   __typename?: 'MyPrisonStatus';
   escapeHasTried: Scalars['Boolean']['output'];
@@ -789,6 +830,7 @@ export type Query = {
   me?: Maybe<AuthUser>;
   myCasinoStatus: CasinoStatus;
   myHorseRaceStatus: HorseRaceStatus;
+  myInvestmentPage: MyInvestmentPage;
   myLotteryStatus: LotteryStatus;
   myPrisonStatus: MyPrisonStatus;
   myScavengeStatus: ScavengeStatus;
@@ -1835,6 +1877,33 @@ export type GetMyCasinoStatusQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type GetMyCasinoStatusQuery = { myCasinoStatus: { money: number } };
 
+export type GetMyInvestmentPageQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetMyInvestmentPageQuery = { myInvestmentPage: { money: number, isIdling: boolean, nextPaymentAt: string, investments: Array<{ id: number, name: string, description: string, price: number, hourlyYield: number, defense: number, henchmanFee: number }>, investment: { id: number, accumulatedYield: number, expiresAt: string, defense: number, henchmanEndsAt: string | null, henchmanHospitalized: boolean, hasHenchman: boolean, notifyYield: boolean } | null } };
+
+export type BuyInvestmentMutationVariables = Exact<{
+  investmentId: number;
+}>;
+
+
+export type BuyInvestmentMutation = { buyInvestment: { success: boolean, message: string } };
+
+export type AbandonInvestmentMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type AbandonInvestmentMutation = { abandonInvestment: { success: boolean, message: string } };
+
+export type HireInvestmentHenchmanMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type HireInvestmentHenchmanMutation = { hireInvestmentHenchman: { success: boolean, message: string } };
+
+export type ToggleInvestmentYieldNotificationsMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type ToggleInvestmentYieldNotificationsMutation = { toggleInvestmentYieldNotifications: { success: boolean, message: string } };
+
 
 export const GetDashboardStatsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetDashboardStats"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"dashboardStats"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"totalPlayers"}},{"kind":"Field","name":{"kind":"Name","value":"allUsers"}},{"kind":"Field","name":{"kind":"Name","value":"classCounts"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"classId"}},{"kind":"Field","name":{"kind":"Name","value":"count"}}]}},{"kind":"Field","name":{"kind":"Name","value":"bankVaultValue"}},{"kind":"Field","name":{"kind":"Name","value":"casinoVaultValue"}},{"kind":"Field","name":{"kind":"Name","value":"totalGangs"}},{"kind":"Field","name":{"kind":"Name","value":"prisonCount"}},{"kind":"Field","name":{"kind":"Name","value":"hospitalCount"}},{"kind":"Field","name":{"kind":"Name","value":"jobCount"}},{"kind":"Field","name":{"kind":"Name","value":"scavengeCount"}},{"kind":"Field","name":{"kind":"Name","value":"casinoCount"}},{"kind":"Field","name":{"kind":"Name","value":"robberyCount"}},{"kind":"Field","name":{"kind":"Name","value":"beatUpCount"}},{"kind":"Field","name":{"kind":"Name","value":"idleCount"}},{"kind":"Field","name":{"kind":"Name","value":"englishCount"}},{"kind":"Field","name":{"kind":"Name","value":"portugueseCount"}},{"kind":"Field","name":{"kind":"Name","value":"spanishCount"}}]}}]}}]} as unknown as DocumentNode<GetDashboardStatsQuery, GetDashboardStatsQueryVariables>;
 export const GetDashboardHistoryDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetDashboardHistory"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"dashboardHistory"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"totalPlayers"}},{"kind":"Field","name":{"kind":"Name","value":"allUsers"}},{"kind":"Field","name":{"kind":"Name","value":"classCounts"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"classId"}},{"kind":"Field","name":{"kind":"Name","value":"count"}}]}},{"kind":"Field","name":{"kind":"Name","value":"totalGangs"}},{"kind":"Field","name":{"kind":"Name","value":"prisonCount"}},{"kind":"Field","name":{"kind":"Name","value":"hospitalCount"}},{"kind":"Field","name":{"kind":"Name","value":"jobCount"}},{"kind":"Field","name":{"kind":"Name","value":"scavengeCount"}},{"kind":"Field","name":{"kind":"Name","value":"casinoCount"}},{"kind":"Field","name":{"kind":"Name","value":"robberyCount"}},{"kind":"Field","name":{"kind":"Name","value":"beatUpCount"}},{"kind":"Field","name":{"kind":"Name","value":"idleCount"}},{"kind":"Field","name":{"kind":"Name","value":"englishCount"}},{"kind":"Field","name":{"kind":"Name","value":"portugueseCount"}},{"kind":"Field","name":{"kind":"Name","value":"spanishCount"}}]}}]}}]} as unknown as DocumentNode<GetDashboardHistoryQuery, GetDashboardHistoryQueryVariables>;
@@ -1919,3 +1988,8 @@ export const GetMyHorseRaceStatusDocument = {"kind":"Document","definitions":[{"
 export const PlaceHorseRaceBetDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"PlaceHorseRaceBet"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"raceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"horseId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"amount"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"placeHorseRaceBet"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"raceId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"raceId"}}},{"kind":"Argument","name":{"kind":"Name","value":"horseId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"horseId"}}},{"kind":"Argument","name":{"kind":"Name","value":"amount"},"value":{"kind":"Variable","name":{"kind":"Name","value":"amount"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"money"}},{"kind":"Field","name":{"kind":"Name","value":"horseId"}},{"kind":"Field","name":{"kind":"Name","value":"horseName"}},{"kind":"Field","name":{"kind":"Name","value":"multiplier"}},{"kind":"Field","name":{"kind":"Name","value":"amount"}},{"kind":"Field","name":{"kind":"Name","value":"raceTime"}}]}}]}}]} as unknown as DocumentNode<PlaceHorseRaceBetMutation, PlaceHorseRaceBetMutationVariables>;
 export const PlayCoinFlipDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"PlayCoinFlip"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"side"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"amount"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Float"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"playCoinFlip"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"side"},"value":{"kind":"Variable","name":{"kind":"Name","value":"side"}}},{"kind":"Argument","name":{"kind":"Name","value":"amount"},"value":{"kind":"Variable","name":{"kind":"Name","value":"amount"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"money"}},{"kind":"Field","name":{"kind":"Name","value":"won"}},{"kind":"Field","name":{"kind":"Name","value":"resultSide"}},{"kind":"Field","name":{"kind":"Name","value":"selectedSide"}},{"kind":"Field","name":{"kind":"Name","value":"amount"}},{"kind":"Field","name":{"kind":"Name","value":"prize"}}]}}]}}]} as unknown as DocumentNode<PlayCoinFlipMutation, PlayCoinFlipMutationVariables>;
 export const GetMyCasinoStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetMyCasinoStatus"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"myCasinoStatus"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"money"}}]}}]}}]} as unknown as DocumentNode<GetMyCasinoStatusQuery, GetMyCasinoStatusQueryVariables>;
+export const GetMyInvestmentPageDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetMyInvestmentPage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"myInvestmentPage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"money"}},{"kind":"Field","name":{"kind":"Name","value":"isIdling"}},{"kind":"Field","name":{"kind":"Name","value":"nextPaymentAt"}},{"kind":"Field","name":{"kind":"Name","value":"investments"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"price"}},{"kind":"Field","name":{"kind":"Name","value":"hourlyYield"}},{"kind":"Field","name":{"kind":"Name","value":"defense"}},{"kind":"Field","name":{"kind":"Name","value":"henchmanFee"}}]}},{"kind":"Field","name":{"kind":"Name","value":"investment"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"accumulatedYield"}},{"kind":"Field","name":{"kind":"Name","value":"expiresAt"}},{"kind":"Field","name":{"kind":"Name","value":"defense"}},{"kind":"Field","name":{"kind":"Name","value":"henchmanEndsAt"}},{"kind":"Field","name":{"kind":"Name","value":"henchmanHospitalized"}},{"kind":"Field","name":{"kind":"Name","value":"hasHenchman"}},{"kind":"Field","name":{"kind":"Name","value":"notifyYield"}}]}}]}}]}}]} as unknown as DocumentNode<GetMyInvestmentPageQuery, GetMyInvestmentPageQueryVariables>;
+export const BuyInvestmentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"BuyInvestment"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"investmentId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"buyInvestment"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"investmentId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"investmentId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<BuyInvestmentMutation, BuyInvestmentMutationVariables>;
+export const AbandonInvestmentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"AbandonInvestment"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"abandonInvestment"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<AbandonInvestmentMutation, AbandonInvestmentMutationVariables>;
+export const HireInvestmentHenchmanDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"HireInvestmentHenchman"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hireInvestmentHenchman"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<HireInvestmentHenchmanMutation, HireInvestmentHenchmanMutationVariables>;
+export const ToggleInvestmentYieldNotificationsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ToggleInvestmentYieldNotifications"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"toggleInvestmentYieldNotifications"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<ToggleInvestmentYieldNotificationsMutation, ToggleInvestmentYieldNotificationsMutationVariables>;

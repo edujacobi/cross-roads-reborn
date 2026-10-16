@@ -7,7 +7,6 @@ import {
 	CalendarDays,
 	CalendarSync,
 	ChevronLeft,
-	Coins,
 	Crown,
 	LayoutDashboard,
 	LogOut,
@@ -21,6 +20,7 @@ import {
 import CasinoIcon from "~/components/icons/CasinoIcon.vue";
 import GangIcon from "~/components/icons/GangIcon.vue";
 import HospitalIcon from "~/components/icons/HospitalIcon.vue";
+import InvestmentIcon from "~/components/icons/InvestmentIcon.vue";
 import JobsIcon from "~/components/icons/JobsIcon.vue";
 import PrisonIcon from "~/components/icons/PrisonIcon.vue";
 import ScavengeIcon from "~/components/icons/ScavengeIcon.vue";
@@ -95,6 +95,13 @@ const navigationGroups = computed(() => [
 				icon: JobsIcon,
 				size: 20,
 				activeRouteNames: ["jobs"],
+			},
+			{
+				label: "Investimentos",
+				to: { name: "investments" },
+				icon: InvestmentIcon,
+				size: 20,
+				activeRouteNames: ["investments"],
 			},
 			{
 				label: "Vasculhar",

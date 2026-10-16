@@ -9,9 +9,7 @@ import { getJobList, JobList } from "#core/types/Jobs";
 import type { JobId } from "#core/types/Jobs";
 import { ScavengeFailureReason, ScavengeList } from "#core/types/Scavenge";
 import { Scavenge } from "#core/models/Scavenge";
-import { getScavengeDurationClassModifier } from "#core/types/Classes";
-import { ClassId, ClassList } from "#core/types/Classes";
-import { getJobClassModifier } from "#core/types/Classes";
+import { ClassId, ClassList, getInvestmentYieldClassModifier, getJobClassModifier, getScavengeDurationClassModifier } from "#core/types/Classes";
 import { Event, EventType } from "#core/models/Event";
 import { Shop } from "#core/models/Shop";
 import { UserItemRepository } from "#core/repositories/UserItemRepository";
@@ -28,6 +26,8 @@ import { BetFailureReason, HorseRacing } from "#core/models/HorseRacing";
 import { HorseList } from "#core/types/Horses";
 import { getCasinoClassModifier } from "#core/types/Classes";
 import { Alms } from "#core/models/Alms";
+import { Investment as InvestmentModel } from "#core/models/Investment";
+import { type InvestmentActionReason, type InvestmentId, InvestmentList } from "#core/types/Investments";
 
 export const meResolvers: {
 	Query: Record<string, ResolverFn>;
@@ -270,6 +270,47 @@ export const meResolvers: {
 			return { money: player.Money };
 		},
 
+		myInvestmentPage: async (_: unknown, __: unknown, context: GraphQLContext) => {
+			const authUser = assertAuthenticated(context);
+			const player = new User(authUser.userId, Language.Portuguese);
+			if (!await player.GetInfo()) {
+				throw new Error("Jogador não encontrado.");
+			}
+
+			const yieldModifier = getInvestmentYieldClassModifier(player.Class);
+			const hasHenchman = InvestmentModel.HasContractHenchman(player);
+			const hasActiveHenchman = InvestmentModel.HasActiveHenchman(player);
+
+			return {
+				money: player.Money,
+				isIdling: player.IsIdling(),
+				nextPaymentAt: InvestmentModel.GetNextPaymentTime().toISOString(),
+				investments: Object.values(InvestmentList)
+					.sort((a, b) => a.Price - b.Price)
+					.map(investment => ({
+						id: investment.Id,
+						name: investment.Name[Language.Portuguese],
+						description: investment.Description[Language.Portuguese],
+						price: investment.Price,
+						hourlyYield: Math.round(investment.HourlyYield * yieldModifier),
+						defense: investment.BaseDefense,
+						henchmanFee: investment.HenchmanFee,
+					})),
+				investment: player.Investment.Id == null
+					? null
+					: {
+						id: player.Investment.Id,
+						accumulatedYield: player.Investment.AccumulatedYield,
+						expiresAt: player.Investment.ExpiresAt!.toISOString(),
+						defense: InvestmentList[player.Investment.Id].BaseDefense + (hasActiveHenchman ? 10 : 0),
+						henchmanEndsAt: player.Investment.HenchmanEndsAt?.toISOString() ?? null,
+						henchmanHospitalized: player.Investment.HenchmanHospitalized,
+						hasHenchman,
+						notifyYield: player.Investment.NotifyYield,
+					},
+			};
+		},
+
 		items: async (_: unknown, __: unknown, context: GraphQLContext) => {
 			assertAuthenticated(context);
 			const itemTypeNames: Record<ItemType, string> = {
@@ -336,6 +377,107 @@ export const meResolvers: {
 	},
 
 	Mutation: {
+		buyInvestment: async (
+			_: unknown,
+			args: { investmentId: number },
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			const player = new User(authUser.userId, Language.Portuguese);
+			if (!await player.GetInfo()) {
+				return { success: false, message: "Jogador não encontrado.", user: null };
+			}
+
+			const investment = InvestmentList[args.investmentId];
+			if (!investment) {
+				return { success: false, message: "Investimento não encontrado.", user: null };
+			}
+			if (!player.IsIdling()) {
+				return { success: false, message: "Você precisa estar vadiando para comprar um investimento.", user: null };
+			}
+
+			const result = await InvestmentModel.Buy(player, args.investmentId as InvestmentId);
+			if (!result.success) {
+				const messages: Record<InvestmentActionReason, string> = {
+					insufficient_funds: "Você não tem dinheiro suficiente.",
+					already_has_investment: "Você já possui um investimento. Abandone-o antes de comprar um novo.",
+					no_investment: "Você não possui um investimento.",
+					already_has_henchman: "Você já possui um contrato de capanga ativo.",
+					unknown: "Erro ao comprar investimento.",
+				};
+				return { success: false, message: messages[result.reason ?? "unknown"], user: null };
+			}
+
+			return {
+				success: true,
+				message: `Você comprou ${investment.Name[Language.Portuguese]} com sucesso.`,
+				user: null,
+			};
+		},
+
+		abandonInvestment: async (_: unknown, __: unknown, context: GraphQLContext) => {
+			const authUser = assertAuthenticated(context);
+			const player = new User(authUser.userId, Language.Portuguese);
+			if (!await player.GetInfo()) {
+				return { success: false, message: "Jogador não encontrado.", user: null };
+			}
+			if (player.Investment.Id == null) {
+				return { success: false, message: "Você não possui um investimento.", user: null };
+			}
+			if (!player.IsIdling()) {
+				return { success: false, message: "Você precisa estar vadiando para abandonar seu investimento.", user: null };
+			}
+
+			const result = await InvestmentModel.Abandon(player);
+			return {
+				success: result.success,
+				message: result.success
+					? "Você abandonou seu investimento."
+					: "Você não possui um investimento.",
+				user: null,
+			};
+		},
+
+		hireInvestmentHenchman: async (_: unknown, __: unknown, context: GraphQLContext) => {
+			const authUser = assertAuthenticated(context);
+			const player = new User(authUser.userId, Language.Portuguese);
+			if (!await player.GetInfo()) {
+				return { success: false, message: "Jogador não encontrado.", user: null };
+			}
+
+			const result = await InvestmentModel.HireHenchman(player);
+			const messages: Record<InvestmentActionReason, string> = {
+				insufficient_funds: "Você não tem dinheiro suficiente.",
+				already_has_investment: "Você já possui um investimento.",
+				no_investment: "Você não possui um investimento.",
+				already_has_henchman: "Você já possui um contrato de capanga ativo.",
+				unknown: "Erro ao contratar o capanga.",
+			};
+			return {
+				success: result.success,
+				message: result.success ? "Capanga contratado por 12 horas." : messages[result.reason ?? "unknown"],
+				user: null,
+			};
+		},
+
+		toggleInvestmentYieldNotifications: async (_: unknown, __: unknown, context: GraphQLContext) => {
+			const authUser = assertAuthenticated(context);
+			const player = new User(authUser.userId, Language.Portuguese);
+			if (!await player.GetInfo()) {
+				return { success: false, message: "Jogador não encontrado.", user: null };
+			}
+			if (player.Investment.Id == null) {
+				return { success: false, message: "Você não possui um investimento.", user: null };
+			}
+
+			const enabled = await InvestmentModel.ToggleNotifyYield(player);
+			return {
+				success: true,
+				message: enabled ? "Notificações de lucro ativadas." : "Notificações de lucro desativadas.",
+				user: null,
+			};
+		},
+
 		giveAlms: async (_: unknown, args: { receiverId: string }, context: GraphQLContext) => {
 			const authUser = assertAuthenticated(context);
 			const giver = new User(authUser.userId, Language.Portuguese);
