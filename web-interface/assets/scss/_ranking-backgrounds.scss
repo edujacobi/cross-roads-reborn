@@ -111,6 +111,7 @@ $palettes: (
   @include rankingBackground($bg, $border);
 }
 
+.profile-background--frutiger_aero,
 .profile-background--frutigerAero {
   background-position: center;
   background-repeat: no-repeat;
@@ -123,4 +124,8 @@ $palettes: (
   linear-gradient(205deg, #edb753, #EDDD53, #57C785, #15a7e0, #15a7e0);
   --profile-border-gradient: #{$border};
   @include rankingBackground($bg, $border);
+
+  &:after {
+    border-radius: $radius-md;
+  }
 }

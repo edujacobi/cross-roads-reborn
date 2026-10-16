@@ -3,8 +3,8 @@
 	lang="ts"
 >
 import { useMutation, useQuery } from "@vue/apollo-composable";
-import { Sparkles } from "lucide-vue-next";
 import { computed, nextTick, ref } from "vue";
+import SpecialShopIcon from "~/components/icons/SpecialShopIcon.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
 import PageTitle from "~/components/ui/PageTitle.vue";
@@ -17,7 +17,7 @@ import {
 	BuySpecialShopVipDocument,
 	GetSpecialShopDocument,
 	GetUserProfileDocument,
-	type SpecialShopItemType,
+	SpecialShopItemType,
 } from "~/graphql/generated";
 import { AvatarDecorationId, BackgroundDecorationId } from "../../src/core/types/Ids";
 
@@ -39,7 +39,7 @@ const shopTabs: { id: ShopTabId; label: string }[] = [
 	{ id: "vip", label: "VIP" },
 	{ id: "skinBundles", label: "Pacotes de skins" },
 	{ id: "avatarDecorations", label: "Decorações de avatar" },
-	{ id: "backgroundDecorations", label: "Fundos de ranking" },
+	{ id: "backgroundDecorations", label: "Decorações de fundo" },
 ];
 
 const auth = useAuth();
@@ -125,16 +125,12 @@ const canBuyVip = computed(
 		!buying.value,
 );
 const vipStatus = computed(() => {
-	if (profile.value?.vipEternal) return "Você possui VIP permanente.";
+	if (profile.value?.vipEternal) return "Você possui VIP Eterno!";
 	if (profile.value?.isVip && profile.value.vipTime) {
 		return `Seu VIP está ativo até ${new Date(profile.value.vipTime).toLocaleDateString("pt-BR")}.`;
 	}
-	return "Você ainda não possui VIP ativo.";
+	return "Você ainda não possui VIP";
 });
-
-function formatSpecialCoins(amount: number) {
-	return `${formatPlain(amount)} Moedas Especiais`;
-}
 
 function requestPurchase(type: SpecialShopItemType, itemId: number, name: string, price: number) {
 	pendingPurchase.value = { kind: "ITEM", type, itemId, name, price };
@@ -255,17 +251,15 @@ async function confirmPurchase() {
 			<div>
 				<p class="special-shop__balance-label">Seu saldo</p>
 				<p class="special-shop__balance-value">
-					<NuxtImg
-						src="/images/ui_elements/SpecialCoin.webp"
-						width="28"
-						height="28"
-						alt=""
-						aria-hidden="true"
+					<SpecialShopIcon
+						:size="20"
+						variant="normal"
 					/>
-					<span>{{ formatSpecialCoins(specialCoinBalance) }}</span>
+					<span>{{ formatPlain(specialCoinBalance) }} Moedas Especiais</span>
 				</p>
 			</div>
 			<p class="special-shop__permanent">As decorações e pacotes de skins são permanentes.</p>
+			<!--			Todo: Adicionar botão para comprar moedas especiais-->
 		</section>
 
 		<div
@@ -319,7 +313,7 @@ async function confirmPurchase() {
 							<h2>VIP</h2>
 							<p>
 								Escolha quantos dias deseja adicionar ao seu VIP. Cada dia custa
-								{{ formatSpecialCoins(vipPricePerDay) }}.
+								{{ formatPlain(vipPricePerDay) }}.
 							</p>
 						</div>
 						<p
@@ -334,8 +328,11 @@ async function confirmPurchase() {
 					<div class="special-shop__vip-layout">
 						<article class="special-shop__card special-shop__card--vip">
 							<div class="special-shop__plan-icon">
-								<Sparkles
-									:size="24"
+								<NuxtImg
+									src="/images/badges/vip.png"
+									width="24"
+									height="24"
+									alt=""
 									aria-hidden="true"
 								/>
 							</div>
@@ -364,10 +361,17 @@ async function confirmPurchase() {
 								aria-live="polite"
 							>
 								<span>Total</span>
-								<strong class="special-shop__price">{{ formatSpecialCoins(vipPrice) }}</strong>
+								<strong class="special-shop__price">
+									<SpecialShopIcon
+										:size="16"
+										variant="normal"
+									/>
+									{{ formatPlain(vipPrice) }}
+								</strong>
 							</div>
 							<BaseButton
 								variant="secondary"
+								size="lg"
 								:disabled="!canBuyVip"
 								@click="requestVipPurchase"
 							>
@@ -411,7 +415,13 @@ async function confirmPurchase() {
 									<h3>{{ bundle.name }}</h3>
 									<p>{{ bundle.skins.length }} {{ bundle.skins.length === 1 ? "item" : "itens" }}</p>
 								</div>
-								<p class="special-shop__price">{{ formatSpecialCoins(bundle.price) }}</p>
+								<p class="special-shop__price">
+									<SpecialShopIcon
+										:size="16"
+										variant="normal"
+									/>
+									{{ formatPlain(bundle.price) }}
+								</p>
 							</div>
 							<ul
 								class="special-shop__skin-list"
@@ -442,7 +452,7 @@ async function confirmPurchase() {
 								v-else
 								variant="secondary"
 								:disabled="bundle.price > specialCoinBalance || buying"
-								@click="requestPurchase('SKIN_BUNDLE', bundle.id, bundle.name, bundle.price)"
+								@click="requestPurchase(SpecialShopItemType.SkinBundle, bundle.id, bundle.name, bundle.price)"
 							>
 								Comprar pacote
 							</BaseButton>
@@ -462,7 +472,7 @@ async function confirmPurchase() {
 						<article
 							v-for="decoration in specialShop.avatarDecorations"
 							:key="decoration.id"
-							class="special-shop__card special-shop__card--decoration"
+							class="special-shop__card special-shop__card--avatar-decoration"
 						>
 							<NuxtImg
 								:class="['special-shop__avatar-preview', 'user-avatar', getAvatarDecorationClass(decoration.id)]"
@@ -473,7 +483,13 @@ async function confirmPurchase() {
 								loading="lazy"
 							/>
 							<h3>{{ decoration.name }}</h3>
-							<p class="special-shop__price">{{ formatSpecialCoins(decoration.price) }}</p>
+							<p class="special-shop__price">
+								<SpecialShopIcon
+									:size="16"
+									variant="normal"
+								/>
+								{{ formatPlain(decoration.price) }}
+							</p>
 							<p
 								v-if="decoration.owned"
 								class="special-shop__owned"
@@ -485,7 +501,7 @@ async function confirmPurchase() {
 								v-else
 								variant="secondary"
 								:disabled="decoration.price > specialCoinBalance || buying"
-								@click="requestPurchase('AVATAR_DECORATION', decoration.id, decoration.name, decoration.price)"
+								@click="requestPurchase(SpecialShopItemType.AvatarDecoration, decoration.id, decoration.name, decoration.price)"
 							>
 								Comprar decoração
 							</BaseButton>
@@ -496,8 +512,10 @@ async function confirmPurchase() {
 				<template v-else>
 					<header class="special-shop__section-heading">
 						<div>
-							<h2>Fundos de ranking</h2>
-							<p>Fundos personalizados para o seu cartão de ranking. Pré-visualize o estilo antes de comprar.</p>
+							<h2>Decorações de fundo</h2>
+							<p>
+								Fundos personalizados para o seu perfil e cartão de ranking. Pré-visualize o estilo antes de comprar.
+							</p>
 						</div>
 					</header>
 
@@ -505,16 +523,24 @@ async function confirmPurchase() {
 						<article
 							v-for="decoration in specialShop.backgroundDecorations"
 							:key="decoration.id"
-							class="special-shop__card special-shop__card--decoration"
+							class="special-shop__card special-shop__card--background-decoration"
+							:class="['profile-background', getBackgroundDecorationClass(decoration.id)]"
 						>
-							<div
-								:class="['special-shop__background-preview', 'profile-background', getBackgroundDecorationClass(decoration.id)]"
-								aria-hidden="true"
-							>
-								<span>CR</span>
-							</div>
+							<NuxtImg
+								class="user-avatar special-shop__avatar-preview"
+								:src="avatarUrl"
+								width="88"
+								height="88"
+								loading="lazy"
+							/>
 							<h3>{{ decoration.name }}</h3>
-							<p class="special-shop__price">{{ formatSpecialCoins(decoration.price) }}</p>
+							<p class="special-shop__price">
+								<SpecialShopIcon
+									:size="16"
+									variant="normal"
+								/>
+								{{ formatPlain(decoration.price) }}
+							</p>
 							<p
 								v-if="decoration.owned"
 								class="special-shop__owned"
@@ -526,7 +552,7 @@ async function confirmPurchase() {
 								v-else
 								variant="secondary"
 								:disabled="decoration.price > specialCoinBalance || buying"
-								@click="requestPurchase('BACKGROUND_DECORATION', decoration.id, decoration.name, decoration.price)"
+								@click="requestPurchase(SpecialShopItemType.BackgroundDecoration, decoration.id, decoration.name, decoration.price)"
 							>
 								Comprar fundo
 							</BaseButton>
@@ -542,8 +568,10 @@ async function confirmPurchase() {
 			:description="pendingPurchase?.name"
 			@update:open="closePurchaseDialog"
 		>
-			<p v-if="pendingPurchase">Comprar por <strong>{{ formatSpecialCoins(pendingPurchase.price) }}</strong>?</p>
-			<p class="special-shop__dialog-balance">Seu saldo: {{ formatSpecialCoins(specialCoinBalance) }}</p>
+			<p v-if="pendingPurchase">
+				Comprar por <strong>{{ formatPlain(pendingPurchase.price) }} Moedas Especiais</strong>?
+			</p>
+			<p class="special-shop__dialog-balance">Seu saldo: {{ formatPlain(specialCoinBalance) }} Moedas Especiais</p>
 			<template #footer>
 				<BaseButton
 					variant="secondary"
@@ -581,9 +609,9 @@ async function confirmPurchase() {
 		justify-content: space-between;
 		gap: $spacing-md;
 		padding: $spacing-md $spacing-lg;
-		border: 1px solid color-mix(in srgb, $color-special 45%, $border-card);
+		border: 1px solid color-mix(in lab, $color-special 45%, $border-card);
 		border-radius: $radius-md;
-		background: color-mix(in srgb, $color-special 9%, $bg-card);
+		background: color-mix(in lab, $color-special 9%, $bg-card);
 	}
 
 	&__balance-label {
@@ -642,8 +670,8 @@ async function confirmPurchase() {
 			}
 
 			&[aria-selected="true"] {
-				border-color: color-mix(in srgb, $color-special 45%, $border-card);
-				background: color-mix(in srgb, $color-special 12%, $bg-card);
+				border-color: color-mix(in lab, $color-special 45%, $border-card);
+				background: color-mix(in lab, $color-special 12%, $bg-card);
 				color: $color-special;
 			}
 
@@ -702,18 +730,23 @@ async function confirmPurchase() {
 		flex-direction: column;
 		gap: $spacing-md;
 		padding: $spacing-md;
-		border: 1px solid $border-card;
 		border-radius: $radius-md;
-		background: $bg-card;
 
 		&--vip {
 			align-items: flex-start;
-			border-top: 2px solid $color-special;
+			border: 1px solid color-mix(in lab, $color-vip 50%, $bg-card);
+			background: color-mix(in lab, $color-vip 7%, $bg-card);
 		}
 
-		&--decoration {
+		&--background-decoration,
+		&--avatar-decoration {
 			align-items: center;
 			text-align: center;
+		}
+
+		&:not(:is(&--vip, &--background-decoration)) {
+			border: 1px solid $border-card;
+			background: $bg-card;
 		}
 
 		h3 {
@@ -733,8 +766,8 @@ async function confirmPurchase() {
 		height: 3rem;
 		place-items: center;
 		border-radius: $radius-full;
-		background: color-mix(in srgb, $color-special 18%, $bg-card);
-		color: $color-special;
+		background: color-mix(in lab, $color-vip 18%, $bg-card);
+		color: $color-vip;
 	}
 
 	&__days-input {
@@ -764,7 +797,7 @@ async function confirmPurchase() {
 		justify-content: space-between;
 		gap: $spacing-sm;
 		padding-top: $spacing-sm;
-		border-top: 1px solid $border-card;
+		border-top: 1px solid color-mix(in lab, $color-vip 50%, $bg-card);
 	}
 
 	&__benefits {
@@ -801,6 +834,9 @@ async function confirmPurchase() {
 	}
 
 	&__price {
+		display: flex;
+		align-items: center;
+		gap: $spacing-xs;
 		color: $color-special;
 		font-weight: 700;
 	}
@@ -852,7 +888,7 @@ async function confirmPurchase() {
 	}
 
 	&__owned {
-		color: $color-success;
+		color: color-mix(in lab, $color-special 50%, $text-primary);
 		font-size: 0.875rem;
 		font-weight: 600;
 	}

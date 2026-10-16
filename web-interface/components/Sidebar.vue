@@ -26,6 +26,7 @@ import JobsIcon from "~/components/icons/JobsIcon.vue";
 import PrisonIcon from "~/components/icons/PrisonIcon.vue";
 import ScavengeIcon from "~/components/icons/ScavengeIcon.vue";
 import ShopIcon from "~/components/icons/ShopIcon.vue";
+import SpecialShopIcon from "~/components/icons/SpecialShopIcon.vue";
 import TrophyIcon from "~/components/icons/TrophyIcon.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
@@ -86,7 +87,8 @@ const navigationGroups = computed(() => [
 			{
 				label: "Loja especial",
 				to: { name: "specialshop" },
-				icon: Sparkles,
+				icon: SpecialShopIcon,
+				size: 20,
 				activeRouteNames: ["specialshop"],
 			},
 			{
