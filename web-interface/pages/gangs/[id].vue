@@ -7,11 +7,13 @@ import {
 	ArrowLeft,
 	Crown,
 	LogOut,
+	MessageSquareText,
 	Pencil,
 	Plus,
 	Shield,
 	ShieldAlert,
 	ShieldCheck,
+	UserMinus,
 	UserPlus,
 	UserRoundCog,
 	Wallet,
@@ -21,17 +23,19 @@ import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseErrorState from "~/components/ui/BaseErrorState.vue";
 import BaseInput from "~/components/ui/BaseInput.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
-import BaseSelector from "~/components/ui/BaseSelector.vue";
+import BaseSelector, { type SelectorOption } from "~/components/ui/BaseSelector.vue";
 import BaseTable from "~/components/ui/BaseTable.vue";
 import BaseTableSkeleton from "~/components/ui/BaseTableSkeleton.vue";
 import { imagePaths } from "~/constants/imagePaths";
 import {
 	CancelGangImportDocument,
+	CommunicateGangDocument,
 	CreateGangRoleDocument,
 	DepositGangDocument,
 	type GangRoleInfo,
 	GetGangDetailDocument,
 	InviteGangMemberDocument,
+	KickGangMemberDocument,
 	LeaveGangDocument,
 	SearchUsersDocument,
 	type SearchUsersQuery,
@@ -70,6 +74,37 @@ const currentRole = computed(() => gang.value?.roles.find((role) => role.id === 
 const canPromoteMembers = computed(
 	() =>
 		!!currentMember.value && (currentUserId.value === gang.value?.leaderId || currentRole.value?.canPromote === true),
+);
+const canKickMembers = computed(() => !!currentMember.value && currentRole.value?.canKick === true);
+const canManageMembers = computed(() => canPromoteMembers.value || canKickMembers.value);
+const canCommunicate = computed(
+	() =>
+		!!currentMember.value && (currentUserId.value === gang.value?.leaderId || currentRole.value?.canEditGang === true),
+);
+const memberSortOptions: SelectorOption[] = [
+	{ value: "role", label: "Cargo" },
+	{ value: "name", label: "Nome" },
+	{ value: "depositDate", label: "Data do último depósito" },
+	{ value: "depositAmount", label: "Total depositado" },
+];
+const memberSort = ref("role");
+const sortedMembers = computed(() =>
+	[...(gang.value?.members ?? [])].sort((first, second) => {
+		const nameOrder = first.nickname.localeCompare(second.nickname, "pt-BR");
+		switch (memberSort.value) {
+			case "name":
+				return nameOrder;
+			case "depositDate":
+				return (
+					(second.lastDepositAt ? new Date(second.lastDepositAt).getTime() : 0) -
+						(first.lastDepositAt ? new Date(first.lastDepositAt).getTime() : 0) || nameOrder
+				);
+			case "depositAmount":
+				return second.depositAmount - first.depositAmount || nameOrder;
+			default:
+				return second.permissionCount - first.permissionCount || nameOrder;
+		}
+	}),
 );
 const canInviteMembers = computed(
 	() =>
@@ -129,13 +164,21 @@ const roleDraft = ref(emptyRoleDraft());
 const { mutate: createGangRole, loading: creatingRole } = useMutation(CreateGangRoleDocument);
 const { mutate: updateGangRole, loading: updatingRole } = useMutation(UpdateGangRoleDocument);
 const { mutate: updateGangMemberRole, loading: changingMemberRole } = useMutation(UpdateGangMemberRoleDocument);
+const { mutate: kickGangMember, loading: kickingMember } = useMutation(KickGangMemberDocument);
+const { mutate: communicateGang, loading: communicating } = useMutation(CommunicateGangDocument);
 const { mutate: depositGang, loading: depositing } = useMutation(DepositGangDocument);
 const { mutate: leaveGang, loading: leavingGang } = useMutation(LeaveGangDocument);
 const { mutate: transferGang, loading: transferringGang } = useMutation(TransferGangDocument);
 const { mutate: inviteGangMember, loading: invitingMember } = useMutation(InviteGangMemberDocument);
 const isMemberRoleModalOpen = ref(false);
 const memberRoleTargetId = ref("");
+const memberRoleTarget = computed(() =>
+	gang.value?.members.find((member) => member.userId === memberRoleTargetId.value),
+);
 const memberRoleDraft = ref("");
+const isMemberKickConfirmationOpen = ref(false);
+const isCommunicationModalOpen = ref(false);
+const communicationMessage = ref("");
 const isDepositModalOpen = ref(false);
 const depositAmount = ref("");
 const isLeaveGangModalOpen = ref(false);
@@ -294,6 +337,61 @@ async function saveMemberRole() {
 		if (result?.success) {
 			isMemberRoleModalOpen.value = false;
 			await refetch();
+		}
+	} catch (caughtError: unknown) {
+		showToast({ text: caughtError instanceof Error ? caughtError.message : "Erro inesperado.", variant: "error" });
+	}
+}
+
+function beginMemberKick() {
+	isMemberRoleModalOpen.value = false;
+	isMemberKickConfirmationOpen.value = true;
+}
+
+function cancelMemberKick() {
+	isMemberKickConfirmationOpen.value = false;
+	isMemberRoleModalOpen.value = true;
+}
+
+async function confirmMemberKick() {
+	if (!memberRoleTargetId.value) return;
+	try {
+		const result = (await kickGangMember({ gangId: gangId.value, targetUserId: memberRoleTargetId.value }))?.data
+			?.kickGangMember;
+		showToast({
+			text: result?.message ?? "Falha ao expulsar o membro.",
+			variant: result?.success ? "success" : "error",
+		});
+		if (result?.success) {
+			isMemberKickConfirmationOpen.value = false;
+			memberRoleTargetId.value = "";
+			await refetch();
+		}
+	} catch (caughtError: unknown) {
+		showToast({ text: caughtError instanceof Error ? caughtError.message : "Erro inesperado.", variant: "error" });
+	}
+}
+
+function openCommunicationModal() {
+	communicationMessage.value = "";
+	isCommunicationModalOpen.value = true;
+}
+
+async function sendGangCommunication() {
+	const message = communicationMessage.value.trim();
+	if (!message) {
+		showToast({ text: "Escreva uma mensagem para enviar.", variant: "error" });
+		return;
+	}
+	try {
+		const result = (await communicateGang({ gangId: gangId.value, message }))?.data?.communicateGang;
+		showToast({
+			text: result?.message ?? "Falha ao enviar o comunicado.",
+			variant: result?.success ? "success" : "error",
+		});
+		if (result?.success) {
+			isCommunicationModalOpen.value = false;
+			communicationMessage.value = "";
 		}
 	} catch (caughtError: unknown) {
 		showToast({ text: caughtError instanceof Error ? caughtError.message : "Erro inesperado.", variant: "error" });
@@ -593,6 +691,17 @@ async function updateGang() {
 							Convidar membro
 						</BaseButton>
 						<BaseButton
+							v-if="canCommunicate"
+							variant="secondary"
+							@click="openCommunicationModal()"
+						>
+							<MessageSquareText
+								:size="16"
+								aria-hidden="true"
+							/>
+							Comunicar membros
+						</BaseButton>
+						<BaseButton
 							v-if="canLeaveGang"
 							variant="ghost"
 							class="gang-actions-leave"
@@ -617,6 +726,16 @@ async function updateGang() {
 						no-padding-x
 						no-padding-y
 					>
+						<template #actions>
+							<BaseSelector
+								id="gang-members-sort"
+								class="gang-members-sort"
+								label="Ordenar por"
+								:options="memberSortOptions"
+								:model-value="memberSort"
+								@update:model-value="memberSort = $event"
+							/>
+						</template>
 						<BaseTable class="table-container">
 							<table class="gang-members-table">
 								<caption class="visually-hidden">
@@ -626,8 +745,10 @@ async function updateGang() {
 									<tr>
 										<th scope="col">Membro</th>
 										<th scope="col">Cargo</th>
+										<th scope="col">Último depósito</th>
+										<th scope="col">Total depositado</th>
 										<th
-											v-if="canPromoteMembers"
+											v-if="canManageMembers"
 											scope="col"
 										>
 											<span class="visually-hidden">Ações</span>
@@ -636,7 +757,7 @@ async function updateGang() {
 								</thead>
 								<tbody>
 									<tr
-										v-for="member in gang.members"
+										v-for="member in sortedMembers"
 										:key="member.userId"
 										class="clickable-row"
 										tabindex="0"
@@ -663,16 +784,26 @@ async function updateGang() {
 												{{ member.roleName }}
 											</span>
 										</td>
+										<td>
+											<time
+												v-if="member.lastDepositAt"
+												:datetime="member.lastDepositAt"
+											>
+												{{ relative(member.lastDepositAt, true) }}
+											</time>
+											<span v-else>{{ member.depositAmount > 0 ? "—" : "Nunca" }}</span>
+										</td>
+										<td>{{ formatMoney(member.depositAmount) }}</td>
 										<td
-											v-if="canPromoteMembers"
+											v-if="canManageMembers"
 											class="member-actions-cell"
 										>
 											<BaseButton
-												v-if="member.userId !== gang.leaderId"
+												v-if="member.userId !== gang.leaderId && (canPromoteMembers || canKickMembers)"
 												variant="secondary"
 												size="sm"
-												:aria-label="`Alterar cargo de ${member.nickname}`"
-												:data-popover-text="`Alterar cargo de ${member.nickname}`"
+												:aria-label="`Gerenciar membro ${member.nickname}`"
+												:data-popover-text="`Gerenciar membro ${member.nickname}`"
 												data-popover-position="top"
 												@click.stop="openMemberRoleModal(member)"
 												@keydown.enter.stop
@@ -1046,11 +1177,12 @@ async function updateGang() {
 
 				<BaseModal
 					:open="isMemberRoleModalOpen"
-					title="Alterar cargo do membro"
-					description="Selecione o novo cargo para este membro."
+					title="Gerenciar membro"
+					:description="canPromoteMembers ? 'Altere o cargo ou expulse este membro da gangue.' : 'Você pode expulsar este membro da gangue.'"
 					@update:open="isMemberRoleModalOpen = $event"
 				>
 					<BaseSelector
+						v-if="canPromoteMembers"
 						id="gang-member-role"
 						label="Cargo"
 						placeholder="Selecione um cargo"
@@ -1067,10 +1199,46 @@ async function updateGang() {
 							Cancelar
 						</BaseButton>
 						<BaseButton
+							v-if="canKickMembers && memberRoleTargetId !== gang.leaderId && memberRoleTargetId !== currentUserId"
+							variant="danger"
+							@click="beginMemberKick()"
+						>
+							<UserMinus
+								:size="16"
+								aria-hidden="true"
+							/>
+							Expulsar membro
+						</BaseButton>
+						<BaseButton
+							v-if="canPromoteMembers"
 							:disabled="changingMemberRole || !memberRoleDraft"
 							@click="saveMemberRole()"
 						>
-							{{ changingMemberRole ? "Salvando..." : "Alterar cargo" }}
+							{{ changingMemberRole ? "Salvando..." : "Salvar" }}
+						</BaseButton>
+					</template>
+				</BaseModal>
+
+				<BaseModal
+					:open="isMemberKickConfirmationOpen"
+					title="Expulsar membro"
+					@update:open="isMemberKickConfirmationOpen = $event"
+				>
+					<p>Deseja realmente expulsar {{ memberRoleTarget?.nickname ?? "este membro" }} da gangue?</p>
+					<template #footer>
+						<BaseButton
+							variant="secondary"
+							:disabled="kickingMember"
+							@click="cancelMemberKick()"
+						>
+							Cancelar
+						</BaseButton>
+						<BaseButton
+							variant="danger"
+							:disabled="kickingMember"
+							@click="confirmMemberKick()"
+						>
+							{{ kickingMember ? "Expulsando..." : "Confirmar expulsão" }}
 						</BaseButton>
 					</template>
 				</BaseModal>
@@ -1233,6 +1401,51 @@ async function updateGang() {
 							@click="sendGangInvite()"
 						>
 							{{ invitingMember ? "Enviando..." : "Enviar convite" }}
+						</BaseButton>
+					</template>
+				</BaseModal>
+
+				<BaseModal
+					:open="isCommunicationModalOpen"
+					title="Comunicado oficial"
+					description="A mensagem será enviada para todos os membros da gangue."
+					@update:open="isCommunicationModalOpen = $event"
+				>
+					<form
+						id="gang-communication-form"
+						class="gang-communication-form"
+						@submit.prevent="sendGangCommunication()"
+					>
+						<label for="gang-communication-message">Mensagem</label>
+						<textarea
+							id="gang-communication-message"
+							v-model="communicationMessage"
+							aria-describedby="gang-communication-hint"
+							maxlength="4000"
+							required
+							rows="5"
+						/>
+						<p
+							id="gang-communication-hint"
+							class="gang-communication-form__hint"
+						>
+							{{ communicationMessage.length.toLocaleString("pt-BR") }}/4.000 caracteres
+						</p>
+					</form>
+					<template #footer>
+						<BaseButton
+							variant="secondary"
+							:disabled="communicating"
+							@click="isCommunicationModalOpen = false"
+						>
+							Cancelar
+						</BaseButton>
+						<BaseButton
+							type="submit"
+							form="gang-communication-form"
+							:disabled="communicating || !communicationMessage.trim()"
+						>
+							{{ communicating ? "Enviando..." : "Enviar comunicado" }}
 						</BaseButton>
 					</template>
 				</BaseModal>
@@ -1622,6 +1835,39 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 	margin: 0.5rem 0;
 	color: $text-secondary;
 	font-size: 0.8125rem;
+}
+
+.gang-communication-form {
+	display: flex;
+	flex-direction: column;
+	gap: $spacing-sm;
+
+	label {
+		color: $text-secondary;
+		font-size: 0.875rem;
+		font-weight: 500;
+	}
+
+	textarea {
+		width: 100%;
+		min-height: 8rem;
+		padding: 0.75rem;
+		border: 1px solid $border-subtle;
+		border-radius: $radius-sm;
+		background-color: $bg-input-field;
+		color: $text-primary;
+		resize: vertical;
+
+		&:focus-visible {
+			@include focus-outline;
+		}
+	}
+
+	&__hint {
+		color: $text-muted;
+		font-size: 0.8125rem;
+		text-align: right;
+	}
 }
 
 .gang-base-info {

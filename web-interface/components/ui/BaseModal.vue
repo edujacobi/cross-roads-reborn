@@ -35,16 +35,10 @@ const emit = defineEmits<(e: "update:open", value: boolean) => void>();
 
 		<DialogPortal>
 			<DialogOverlay class="dialog-overlay" />
-			<DialogContent
-				class="dialog-content"
-				aria-describedby="dialog-title"
-			>
+			<DialogContent class="dialog-content">
 				<div class="dialog-header">
 					<div>
-						<DialogTitle
-							class="dialog-title"
-							id="dialog-title"
-						>
+						<DialogTitle class="dialog-title">
 							{{ title }}
 						</DialogTitle>
 						<DialogDescription

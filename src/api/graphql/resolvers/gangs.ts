@@ -147,6 +147,9 @@ export const gangResolvers: {
 						permissionCount: permCount,
 						depositAmount: member.depositAmount,
 						depositTime: member.depositTime?.toISOString() ?? null,
+						lastDepositAt: member.depositAmount > 0 && member.depositTime
+							? new Date(member.depositTime.getTime() - Gang.TIME_BETWEEN_DEPOSITS * 60 * 60 * 1_000).toISOString()
+							: null,
 					};
 				}),
 			);
@@ -475,6 +478,78 @@ export const gangResolvers: {
 			return success
 				? { success: true, message: "Cargo do membro alterado com sucesso." }
 				: { success: false, message: "Você não tem permissão para alterar este cargo." };
+		},
+
+		kickGangMember: async (
+			_: unknown,
+			args: { gangId: string; targetUserId: string },
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			const gangId = Number(args.gangId);
+			if (!Number.isSafeInteger(gangId)) {
+				return { success: false, message: "Gangue não encontrada." };
+			}
+
+			const gang = await Gang.GetById(gangId);
+			if (!gang) {
+				return { success: false, message: "Gangue não encontrada." };
+			}
+			if (!gang.CanKick(authUser.userId)) {
+				return { success: false, message: "Você não tem permissão para expulsar membros." };
+			}
+			if (args.targetUserId === authUser.userId || args.targetUserId === gang.LeaderId) {
+				return { success: false, message: "Não é possível expulsar este membro." };
+			}
+			if (!gang.Members.some(member => member.UserId === args.targetUserId)) {
+				return { success: false, message: "Membro não encontrado nesta gangue." };
+			}
+
+			const [kicker, target] = await Promise.all([
+				new User(authUser.userId).GetInfo(),
+				new User(args.targetUserId).GetInfo(),
+			]);
+			if (!kicker || !target) {
+				return { success: false, message: "Membro ou usuário não encontrado." };
+			}
+
+			const success = await gang.KickMember(kicker, target);
+			return success
+				? { success: true, message: "Membro expulso da gangue." }
+				: { success: false, message: "Não foi possível expulsar este membro." };
+		},
+
+		communicateGang: async (
+			_: unknown,
+			args: { gangId: string; message: string },
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			const gangId = Number(args.gangId);
+			if (!Number.isSafeInteger(gangId)) {
+				return { success: false, message: "Gangue não encontrada." };
+			}
+
+			const gang = await Gang.GetById(gangId);
+			if (!gang) {
+				return { success: false, message: "Gangue não encontrada." };
+			}
+			if (!gang.CanCommunicate(authUser.userId)) {
+				return { success: false, message: "Você não tem permissão para comunicar os membros." };
+			}
+
+			const message = args.message.trim();
+			if (!message || message.length > 4_000) {
+				return { success: false, message: "A mensagem deve ter entre 1 e 4.000 caracteres." };
+			}
+
+			const sender = await new User(authUser.userId).GetInfo();
+			if (!sender) {
+				return { success: false, message: "Usuário não encontrado." };
+			}
+
+			await gang.OfficialCommunication(sender, message);
+			return { success: true, message: "Comunicado enviado aos membros." };
 		},
 
 		depositGang: async (

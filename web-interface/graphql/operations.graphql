@@ -408,6 +408,7 @@ query GetGangDetail($id: ID!) {
 			permissionCount
 			depositAmount
 			depositTime
+			lastDepositAt
 		}
 		roles {
 			id
@@ -486,6 +487,20 @@ mutation UpdateGangRole(
 
 mutation UpdateGangMemberRole($gangId: ID!, $targetUserId: ID!, $roleId: Int!) {
 	updateGangMemberRole(gangId: $gangId, targetUserId: $targetUserId, roleId: $roleId) {
+		success
+		message
+	}
+}
+
+mutation KickGangMember($gangId: ID!, $targetUserId: ID!) {
+	kickGangMember(gangId: $gangId, targetUserId: $targetUserId) {
+		success
+		message
+	}
+}
+
+mutation CommunicateGang($gangId: ID!, $message: String!) {
+	communicateGang(gangId: $gangId, message: $message) {
 		success
 		message
 	}
