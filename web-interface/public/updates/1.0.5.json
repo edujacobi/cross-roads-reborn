@@ -1,0 +1,21 @@
+{
+	"version": "1.0.5",
+	"title": "Investimentos, Esmola e correções",
+	"date": "16/10/2026",
+	"sections": [
+		{
+			"title": "Investimentos",
+			"description": "Compre e gerencie seu investimento na nova página.",
+			"imageUrl": "/images/situations/defending-investment.png"
+		},
+		{
+			"title": "Esmola",
+			"description": "Entregue esmolas ao acessar o perfil de outros usuários.",
+			"imageUrl": "/images/ui_elements/Alms.png"
+		},
+		{
+			"title": "Correções",
+			"description": "Corrigidas as situações que não estavam aparecendo corretamente no perfil de outros usuários."
+		}
+	]
+}
