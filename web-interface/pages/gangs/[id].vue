@@ -6,6 +6,7 @@ import { useMutation, useQuery } from "@vue/apollo-composable";
 import {
 	ArrowLeft,
 	Crown,
+	DollarSign,
 	LogOut,
 	MessageSquareText,
 	Pencil,
@@ -39,6 +40,8 @@ import {
 	LeaveGangDocument,
 	SearchUsersDocument,
 	type SearchUsersQuery,
+	SetGangMoneyDocument,
+	SetMoneyMode,
 	StartGangImportDocument,
 	TransferGangDocument,
 	UpdateGangDocument,
@@ -60,6 +63,7 @@ const { formatMoney } = useMoneyFormat();
 const { relative } = useDateFormat();
 const { getGangBaseImageUrl, getGangBaseShipmentImageUrl } = useGangBase();
 const auth = useAuth();
+const canWrite = auth.canWrite;
 const { showToast } = useToast();
 
 const gangId = computed(() => String(route.params.id));
@@ -501,6 +505,9 @@ const canEdit = computed(() => {
 });
 
 const isEditModalOpen = ref(false);
+const isGangMoneyModalOpen = ref(false);
+const gangMoneyAmount = ref("0");
+const gangMoneyMode = ref<SetMoneyMode.Add | SetMoneyMode.Set>(SetMoneyMode.Add);
 const editDraft = ref({
 	name: "",
 	acronym: "",
@@ -510,6 +517,7 @@ const editDraft = ref({
 });
 
 const { mutate: updateGangMutation, loading: updating } = useMutation(UpdateGangDocument);
+const { mutate: setGangMoney, loading: settingGangMoney } = useMutation(SetGangMoneyDocument);
 
 function openEditModal() {
 	if (!gang.value) return;
@@ -555,6 +563,34 @@ async function updateGang() {
 	} else {
 		const message = res?.data?.updateGang?.message ?? "Falha ao atualizar gangue.";
 		showToast({ text: message, variant: "error" });
+	}
+}
+
+async function updateGangMoney() {
+	const amount = Number(gangMoneyAmount.value);
+	if (!Number.isSafeInteger(amount)) {
+		showToast({ text: "Informe uma quantia inteira válida.", variant: "error" });
+		return;
+	}
+
+	try {
+		const result = (
+			await setGangMoney({
+				gangId: gangId.value,
+				amount,
+				mode: gangMoneyMode.value,
+			})
+		)?.data?.setGangMoney;
+		showToast({
+			text: result?.message ?? "Falha ao atualizar o dinheiro da gangue.",
+			variant: result?.success ? "success" : "error",
+		});
+		if (result?.success) {
+			isGangMoneyModalOpen.value = false;
+			await refetch();
+		}
+	} catch (caughtError: unknown) {
+		showToast({ text: caughtError instanceof Error ? caughtError.message : "Erro inesperado.", variant: "error" });
 	}
 }
 </script>
@@ -628,6 +664,19 @@ async function updateGang() {
 						<p class="gang-header__description">{{ gang.description || "—" }}</p>
 						<p class="gang-header__stats">
 							{{ formatMoney(gang.money) }}
+							<BaseButton
+								v-if="canWrite"
+								variant="ghost"
+								size="sm"
+								data-popover-text="Alterar dinheiro"
+								data-popover-direction="left"
+								@click="isGangMoneyModalOpen = true"
+							>
+								<Pencil
+									:size="16"
+									aria-hidden="true"
+								/>
+							</BaseButton>
 						</p>
 					</div>
 				</div>
@@ -729,7 +778,6 @@ async function updateGang() {
 						<template #actions>
 							<BaseSelector
 								id="gang-members-sort"
-								class="gang-members-sort"
 								label="Ordenar por"
 								:options="memberSortOptions"
 								:model-value="memberSort"
@@ -1572,6 +1620,63 @@ async function updateGang() {
 					</BaseButton>
 				</template>
 			</BaseModal>
+			<BaseModal
+				:open="isGangMoneyModalOpen"
+				title="Alterar dinheiro da gangue"
+				description="Adicione um valor ao saldo atual ou defina um novo saldo."
+				@update:open="isGangMoneyModalOpen = $event"
+			>
+				<form
+					id="gang-money-form"
+					class="gang-money-form"
+					@submit.prevent="updateGangMoney()"
+				>
+					<fieldset>
+						<legend>Modo de operação</legend>
+						<label>
+							<input
+								v-model="gangMoneyMode"
+								type="radio"
+								:value="SetMoneyMode.Add"
+							>
+							Adicionar ao saldo atual
+						</label>
+						<label>
+							<input
+								v-model="gangMoneyMode"
+								type="radio"
+								:value="SetMoneyMode.Set"
+							>
+							Definir valor exato
+						</label>
+					</fieldset>
+					<BaseInput
+						id="gang-money-amount"
+						label="Quantidade (Cr$)"
+						type="number"
+						step="1"
+						required
+						:model-value="gangMoneyAmount"
+						@update:model-value="gangMoneyAmount = String($event)"
+					/>
+				</form>
+				<template #footer>
+					<BaseButton
+						variant="secondary"
+						:disabled="settingGangMoney"
+						@click="isGangMoneyModalOpen = false"
+					>
+						Cancelar
+					</BaseButton>
+					<BaseButton
+						type="submit"
+						form="gang-money-form"
+						:disabled="settingGangMoney"
+					>
+						{{ settingGangMoney ? "Atualizando..." : "Confirmar alteração" }}
+					</BaseButton>
+				</template>
+			</BaseModal>
 		</template>
 	</main>
 </template>
@@ -1835,6 +1940,32 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 	margin: 0.5rem 0;
 	color: $text-secondary;
 	font-size: 0.8125rem;
+}
+
+.gang-money-form {
+	display: flex;
+	flex-direction: column;
+	gap: $spacing-md;
+
+	fieldset {
+		display: flex;
+		flex-direction: column;
+		gap: $spacing-sm;
+		border: 0;
+	}
+
+	legend {
+		margin-bottom: $spacing-sm;
+		color: $text-secondary;
+		font-size: 0.875rem;
+		font-weight: 500;
+	}
+
+	label {
+		display: flex;
+		align-items: center;
+		gap: $spacing-sm;
+	}
 }
 
 .gang-communication-form {

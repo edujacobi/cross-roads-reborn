@@ -12,7 +12,7 @@ import { GangColor, GangColorId } from "#core/types/GangColors";
 import type { GraphQLContext } from "#api/types";
 import { convertHexNumberToString, formatMoney } from "#bot/utils/ui";
 import { getClient } from "#bot/client";
-import { assertAuthenticated } from "./helpers";
+import { assertAuthenticated, assertCanWrite } from "./helpers";
 import type { ResolverFn } from "./helpers";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Collection, ComponentType, type Message } from "discord.js";
 import { logger } from "#shared/log";
@@ -328,6 +328,37 @@ export const gangResolvers: {
 				return { success: true, message: "Gangue atualizada com sucesso." };
 			}
 			return { success: false, message: "Falha ao atualizar gangue." };
+		},
+
+		setGangMoney: async (
+			_: unknown,
+			args: { gangId: string; amount: number; mode: "ADD" | "SET" },
+			context: GraphQLContext,
+		) => {
+			assertCanWrite(context);
+			const gangId = Number(args.gangId);
+			if (!Number.isSafeInteger(gangId)) {
+				return { success: false, message: "Gangue não encontrada." };
+			}
+			if (!Number.isSafeInteger(args.amount)) {
+				return { success: false, message: "O valor do dinheiro deve ser um número inteiro válido." };
+			}
+
+			const gang = await Gang.GetById(gangId);
+			if (!gang) {
+				return { success: false, message: "Gangue não encontrada." };
+			}
+
+			const money = args.mode === "ADD" ? gang.Money + args.amount : args.amount;
+			if (!Number.isSafeInteger(money)) {
+				return { success: false, message: "O dinheiro atualizado deve ser um número inteiro válido." };
+			}
+
+			gang.Money = money;
+			const success = await gang.Update();
+			return success
+				? { success: true, message: `Dinheiro da gangue atualizado para ${formatMoney(money, Language.Portuguese)}.` }
+				: { success: false, message: "Falha ao atualizar o dinheiro da gangue." };
 		},
 
 		startGangImport: async (

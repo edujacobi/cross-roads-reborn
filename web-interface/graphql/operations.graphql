@@ -437,6 +437,13 @@ mutation CancelGangImport($gangId: ID!) {
 	}
 }
 
+mutation SetGangMoney($gangId: ID!, $amount: Float!, $mode: SetMoneyMode!) {
+	setGangMoney(gangId: $gangId, amount: $amount, mode: $mode) {
+		success
+		message
+	}
+}
+
 mutation CreateGangRole(
 	$gangId: ID!
 	$name: String!

@@ -827,6 +827,7 @@ export const typeDefs = /* GraphQL */ `
         updateGang(id: ID!, name: String, acronym: String, description: String, color: String, imageUrl: String): GangMutationResult!
         startGangImport(gangId: ID!): GangMutationResult!
         cancelGangImport(gangId: ID!): GangMutationResult!
+        setGangMoney(gangId: ID!, amount: Float!, mode: SetMoneyMode!): GangMutationResult!
         createGangRole(gangId: ID!, name: String!, canInvite: Boolean!, canKick: Boolean!, canPromote: Boolean!, canEditGang: Boolean!, canImport: Boolean!): GangMutationResult!
         updateGangRole(gangId: ID!, roleId: Int!, name: String!, canInvite: Boolean!, canKick: Boolean!, canPromote: Boolean!, canEditGang: Boolean!, canImport: Boolean!): GangMutationResult!
         updateGangMemberRole(gangId: ID!, targetUserId: ID!, roleId: Int!): GangMutationResult!
