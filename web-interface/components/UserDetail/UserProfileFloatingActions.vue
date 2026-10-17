@@ -287,12 +287,12 @@ async function handleGiveAlms() {
 		}
 
 		&__balance {
-			font-size: 0.85rem;
+			font-size: $font-size-14;
 			color: $text-secondary;
 		}
 
 		&__vip-notice {
-			font-size: 0.85rem;
+			font-size: $font-size-14;
 			color: $color-vip;
 		}
 	}
