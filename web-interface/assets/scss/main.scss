@@ -117,14 +117,14 @@ body {
 }
 
 .page-title {
-  font-size: 1.5rem;
-  font-weight: 800;
+  font-size: $font-size-24;
+  font-weight: $font-weight-extrabold;
   color: $text-primary;
 }
 
 .page-subtitle {
   margin-top: 0.25rem;
-  font-size: 0.875rem;
+  font-size: $font-size-14;
 }
 
 .text-secondary {
@@ -132,8 +132,8 @@ body {
 }
 
 .text-muted {
-  font-size: 0.8125rem;
-  font-weight: 500;
+  font-size: $font-size-12;
+  font-weight: $font-weight-medium;
   color: $text-muted;
 }
 
@@ -164,8 +164,8 @@ body {
   color: $text-primary;
   border: 1px solid $border-card;
   border-radius: $radius-sm;
-  font-size: 0.6875rem;
-  font-weight: 600;
+  font-size: $font-size-12;
+  font-weight: $font-weight-semibold;
   white-space: nowrap;
   pointer-events: none;
   box-shadow: $shadow-sm;

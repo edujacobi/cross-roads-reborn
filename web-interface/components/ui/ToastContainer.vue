@@ -159,7 +159,7 @@ onBeforeUnmount(() => {
 	&__text {
 		flex: 1;
 		margin: 0;
-		font-size: 0.875rem;
+		font-size: $font-size-14;
 		overflow-wrap: anywhere;
 	}
 

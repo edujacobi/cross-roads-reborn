@@ -160,7 +160,7 @@ await loadUpdates();
 
 	&__update-date {
 		font-size: 0.85rem;
-		font-weight: 500;
+		font-weight: $font-weight-medium;
 		color: $text-secondary;
 	}
 
@@ -187,14 +187,14 @@ await loadUpdates();
 
 	&__section-title {
 		margin: 0;
-		font-size: 0.9375rem;
-		font-weight: 600;
+		font-size: $font-size-14;
+		font-weight: $font-weight-semibold;
 		color: $text-primary;
 	}
 
 	&__section-description {
 		margin: 0;
-		font-size: 0.875rem;
+		font-size: $font-size-14;
 		color: $text-secondary;
 		line-height: 1.7;
 	}

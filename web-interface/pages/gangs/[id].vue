@@ -1706,8 +1706,8 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 	}
 
 	&__input-label {
-		font-size: 0.8125rem;
-		font-weight: 500;
+		font-size: $font-size-12;
+		font-weight: $font-weight-medium;
 		color: $text-secondary;
 	}
 
@@ -1722,7 +1722,7 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 		resize: vertical;
 		min-height: 80px;
 		font-family: inherit;
-		font-size: 0.875rem;
+		font-size: $font-size-14;
 		transition: border-color $transition-fast ease-in-out;
 
 		&::placeholder {
@@ -1742,11 +1742,11 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 	border: 0;
 	padding: 0;
 	color: $text-secondary;
-	font-size: 0.875rem;
+	font-size: $font-size-14;
 
 	legend {
 		margin-bottom: $spacing-xs;
-		font-weight: 600;
+		font-weight: $font-weight-semibold;
 		color: $text-primary;
 	}
 
@@ -1798,7 +1798,7 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 
 	&__meta {
 		color: $text-muted;
-		font-size: 0.75rem;
+		font-size: $font-size-12;
 		text-align: center;
 	}
 
@@ -1847,8 +1847,8 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 	}
 
 	&__title {
-		font-size: 1.5rem;
-		font-weight: 700;
+		font-size: $font-size-24;
+		font-weight: $font-weight-bold;
 		color: $text-primary;
 		margin: 0 0 $spacing-xs;
 	}
@@ -1864,7 +1864,7 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 		border-radius: $radius-full;
 		color: $text-primary;
 		font-size: 1.2rem;
-		font-weight: 600;
+		font-weight: $font-weight-semibold;
 		margin-top: $spacing-sm;
 		text-align: right;
 	}
@@ -1876,7 +1876,7 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 	&__label {
 		display: flex;
 		justify-content: space-between;
-		font-size: 0.8125rem;
+		font-size: $font-size-12;
 		color: $text-secondary;
 		margin-bottom: $spacing-xs;
 	}
@@ -1898,8 +1898,8 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 	&__max {
 		display: block;
 		text-align: right;
-		font-size: 0.75rem;
-		font-weight: 700;
+		font-size: $font-size-12;
+		font-weight: $font-weight-bold;
 		color: $color-special;
 		margin-top: $spacing-xs;
 	}
@@ -1931,14 +1931,14 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 
 	&__status {
 		color: $text-muted;
-		font-size: 0.8125rem;
+		font-size: $font-size-12;
 	}
 }
 
 .gang-deposit-limits {
 	margin: 0.5rem 0;
 	color: $text-secondary;
-	font-size: 0.8125rem;
+	font-size: $font-size-12;
 }
 
 .gang-money-form {
@@ -1956,8 +1956,8 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 	legend {
 		margin-bottom: $spacing-sm;
 		color: $text-secondary;
-		font-size: 0.875rem;
-		font-weight: 500;
+		font-size: $font-size-14;
+		font-weight: $font-weight-medium;
 	}
 
 	label {
@@ -1974,8 +1974,8 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 
 	label {
 		color: $text-secondary;
-		font-size: 0.875rem;
-		font-weight: 500;
+		font-size: $font-size-14;
+		font-weight: $font-weight-medium;
 	}
 
 	textarea {
@@ -1995,7 +1995,7 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 
 	&__hint {
 		color: $text-muted;
-		font-size: 0.8125rem;
+		font-size: $font-size-12;
 		text-align: right;
 	}
 }
@@ -2023,7 +2023,7 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 	gap: 4px;
 
 	&__name {
-		font-weight: 600;
+		font-weight: $font-weight-semibold;
 		color: $text-primary;
 		margin: 0;
 	}
@@ -2031,7 +2031,7 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 	&__modifier {
 		display: flex;
 		align-items: center;
-		font-size: 0.8125rem;
+		font-size: $font-size-12;
 		color: $color-attribute;
 		margin: 0;
 	}
@@ -2051,14 +2051,14 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 		flex-direction: column;
 		gap: 2px;
 		color: $text-secondary;
-		font-size: 0.8125rem;
+		font-size: $font-size-12;
 	}
 
 	&__description p {
 		margin: 0;
 		color: $text-primary;
-		font-size: 0.875rem;
-		font-weight: 600;
+		font-size: $font-size-14;
+		font-weight: $font-weight-semibold;
 	}
 
 	&__progress {
@@ -2114,12 +2114,12 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 	gap: $spacing-xs;
 
 	&__name {
-		font-weight: 600;
+		font-weight: $font-weight-semibold;
 		color: $text-primary;
 	}
 
 	&__id {
-		font-size: 0.8125rem;
+		font-size: $font-size-12;
 		color: $text-muted;
 	}
 }
@@ -2139,8 +2139,8 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 	border-radius: $radius-full;
 	background-color: $background-color;
 	color: $highlight-color;
-	font-size: 0.75rem;
-	font-weight: 600;
+	font-size: $font-size-12;
+	font-weight: $font-weight-semibold;
 
 	&::before {
 		content: "";
@@ -2203,7 +2203,7 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 
 .permission-count {
 	color: $text-muted;
-	font-size: 0.8125rem;
+	font-size: $font-size-12;
 }
 
 .perm-icon {

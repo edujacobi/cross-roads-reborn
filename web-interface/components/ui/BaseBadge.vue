@@ -30,8 +30,8 @@ withDefaults(defineProps<Props>(), {
   align-items: center;
   gap: $spacing-xs;
   padding: 0.125rem $spacing-sm;
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: $font-size-12;
+  font-weight: $font-weight-semibold;
   border-radius: $radius-full;
   text-transform: uppercase;
   letter-spacing: 0.04em;

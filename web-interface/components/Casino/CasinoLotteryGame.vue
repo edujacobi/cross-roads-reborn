@@ -146,7 +146,7 @@ function formatDate(date: string | null | undefined) {
 		border-radius: $radius-full;
 		background: rgba($color-gold, 0.08);
 		color: #ffe6a1;
-		font-weight: 700;
+		font-weight: $font-weight-bold;
 	}
 
 	&__details {
@@ -181,7 +181,7 @@ function formatDate(date: string | null | undefined) {
 	}
 
 	&__last-winner {
-		font-size: 0.875rem;
+		font-size: $font-size-14;
 		color: $text-secondary;
 		margin-top: 1rem;
 		display: flex;
@@ -191,7 +191,7 @@ function formatDate(date: string | null | undefined) {
 
 	&__mega-draw {
 		color: color-mix(in lab, $color-casino 100%, $text-primary 60%);
-		font-size: 1.5rem;
+		font-size: $font-size-24;
 	}
 
 	&__error {

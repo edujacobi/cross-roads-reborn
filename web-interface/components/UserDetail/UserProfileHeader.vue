@@ -387,13 +387,13 @@ function getBadgeImage(badgeId: BadgeId): string {
 	}
 
 	&__name {
-		font-size: 1.5rem;
-		font-weight: 800;
+		font-size: $font-size-24;
+		font-weight: $font-weight-extrabold;
 		color: $text-primary;
 	}
 
 	&__id {
-		font-size: 0.8125rem;
+		font-size: $font-size-12;
 		color: $text-muted;
 		margin-top: 0.125rem;
 
@@ -417,11 +417,11 @@ function getBadgeImage(badgeId: BadgeId): string {
 
 	&__money {
 		font-size: 2rem;
-		font-weight: 700;
+		font-weight: $font-weight-bold;
 		text-align: end;
 
 		@media (max-width: 640px) {
-			font-size: 1.5rem;
+			font-size: $font-size-24;
 		}
 	}
 
@@ -430,7 +430,7 @@ function getBadgeImage(badgeId: BadgeId): string {
 		align-items: center;
 		gap: $spacing-xs;
 		font-size: 0.8rem;
-		font-weight: 600;
+		font-weight: $font-weight-semibold;
 		@include text-special;
 	}
 
@@ -462,7 +462,7 @@ function getBadgeImage(badgeId: BadgeId): string {
 		flex-wrap: wrap;
 		align-items: center;
 		font-size: 1.2rem;
-		font-weight: 600;
+		font-weight: $font-weight-semibold;
 		gap: 6px;
 		margin: $spacing-sm 0;
 	}
@@ -473,8 +473,8 @@ function getBadgeImage(badgeId: BadgeId): string {
 
 	&__situation-timer {
 		color: $text-secondary;
-		font-size: 0.875rem;
-		font-weight: 400;
+		font-size: $font-size-14;
+		font-weight: $font-weight-normal;
 	}
 
 	&__info {
@@ -486,7 +486,7 @@ function getBadgeImage(badgeId: BadgeId): string {
 
 	&__class {
 		display: flex;
-		font-weight: 600;
+		font-weight: $font-weight-semibold;
 		color: $text-primary;
 		align-items: center;
 	}
@@ -517,8 +517,8 @@ function getBadgeImage(badgeId: BadgeId): string {
 	&__attribute {
 		display: flex;
 		align-items: center;
-		font-size: 0.9375rem;
-		font-weight: 600;
+		font-size: $font-size-14;
+		font-weight: $font-weight-semibold;
 		color: $color-attribute;
 	}
 }

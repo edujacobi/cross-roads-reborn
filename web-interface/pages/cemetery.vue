@@ -197,14 +197,14 @@ function nextPage() {
 
 	&__warning {
 		h3 {
-			font-size: 1rem;
-			font-weight: 600;
+			font-size: $font-size-16;
+			font-weight: $font-weight-semibold;
 			color: $text-primary;
 			margin-bottom: $spacing-xs;
 		}
 
 		p {
-			font-size: 0.8125rem;
+			font-size: $font-size-12;
 			color: $text-secondary;
 			line-height: 1.5;
 		}
@@ -246,7 +246,7 @@ function nextPage() {
 		gap: $spacing-sm;
 
 		.nickname {
-			font-weight: 600;
+			font-weight: $font-weight-semibold;
 			color: $text-primary;
 		}
 
@@ -264,7 +264,7 @@ function nextPage() {
 	.player-cell {
 		color: $text-secondary;
 		font-size: inherit;
-		font-weight: 400;
+		font-weight: $font-weight-normal;
 		text-transform: none;
 	}
 }

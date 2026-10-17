@@ -190,7 +190,7 @@ const rows = computed<StatRow[]>(() => {
 	&__state {
 		padding: $spacing-md;
 		color: $text-muted;
-		font-size: 0.875rem;
+		font-size: $font-size-14;
 	}
 
 	&__skeleton {
@@ -227,13 +227,13 @@ const rows = computed<StatRow[]>(() => {
 
 		dt {
 			color: $text-secondary;
-			font-size: 0.75rem;
+			font-size: $font-size-12;
 		}
 
 		dd {
 			color: $text-primary;
-			font-size: 0.9375rem;
-			font-weight: 600;
+			font-size: $font-size-14;
+			font-weight: $font-weight-semibold;
 			margin: 0;
 		}
 	}

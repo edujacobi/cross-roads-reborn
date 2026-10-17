@@ -108,8 +108,8 @@ defineProps<Props>();
 		}
 
 		.card-title {
-			font-size: 1rem;
-			font-weight: 600;
+			font-size: $font-size-16;
+			font-weight: $font-weight-semibold;
 			color: $text-primary;
 			display: flex;
 			align-items: center;
@@ -117,7 +117,7 @@ defineProps<Props>();
 		}
 
 		.card-subtitle {
-			font-size: 0.8125rem;
+			font-size: $font-size-12;
 			color: $text-secondary;
 			margin-top: 0.125rem;
 		}

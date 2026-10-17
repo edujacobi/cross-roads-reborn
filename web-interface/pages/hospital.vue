@@ -448,7 +448,7 @@ async function handlePayPrivate() {
 
 		p {
 			font-size: 0.8rem;
-			font-weight: 600;
+			font-weight: $font-weight-semibold;
 			color: $text-primary;
 		}
 	}
@@ -461,14 +461,14 @@ async function handlePayPrivate() {
 
 	&__section {
 		h3 {
-			font-size: 0.9375rem;
-			font-weight: 600;
+			font-size: $font-size-14;
+			font-weight: $font-weight-semibold;
 			color: $text-primary;
 			margin-bottom: $spacing-xs;
 		}
 
 		p {
-			font-size: 0.875rem;
+			font-size: $font-size-14;
 			color: $text-secondary;
 			line-height: 1.5;
 		}
@@ -531,7 +531,7 @@ async function handlePayPrivate() {
 		gap: $spacing-sm;
 
 		.nickname {
-			font-weight: 600;
+			font-weight: $font-weight-semibold;
 			color: $text-primary;
 		}
 
@@ -549,7 +549,7 @@ async function handlePayPrivate() {
 	.player-cell {
 		color: $text-secondary;
 		font-size: inherit;
-		font-weight: 400;
+		font-weight: $font-weight-normal;
 		text-transform: none;
 	}
 }

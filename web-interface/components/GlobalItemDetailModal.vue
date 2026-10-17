@@ -269,8 +269,8 @@ const { formatMoney } = useMoneyFormat();
 			gap: $spacing-sm;
 
 			h2 {
-				font-size: 1.25rem;
-				font-weight: 700;
+				font-size: $font-size-20;
+				font-weight: $font-weight-bold;
 				color: $text-primary;
 				margin: 0;
 			}
@@ -288,8 +288,8 @@ const { formatMoney } = useMoneyFormat();
 
 			.item {
 				display: flex;
-				font-size: 0.8125rem;
-				font-weight: 600;
+				font-size: $font-size-12;
+				font-weight: $font-weight-semibold;
 				align-items: center;
 				gap: $spacing-xs;
 				padding: 0;
@@ -299,8 +299,8 @@ const { formatMoney } = useMoneyFormat();
 
 	&__type-badge {
 		align-self: flex-start;
-		font-size: 0.75rem;
-		font-weight: 600;
+		font-size: $font-size-12;
+		font-weight: $font-weight-semibold;
 		padding: 2px 8px;
 		background-color: color-mix(in lab, $bg-card 100%, var(--select-item-color) 15%);
 		color: var(--select-item-color);
@@ -315,7 +315,7 @@ const { formatMoney } = useMoneyFormat();
 
 		&-title {
 			font-size: 0.85rem;
-			font-weight: 600;
+			font-weight: $font-weight-semibold;
 			text-transform: uppercase;
 			letter-spacing: 0.05em;
 			color: $text-secondary;
@@ -342,15 +342,15 @@ const { formatMoney } = useMoneyFormat();
 		border-radius: $radius-xs;
 
 		.label {
-			font-size: 0.75rem;
+			font-size: $font-size-12;
 			color: $text-muted;
 		}
 
 		.value {
 			display: flex;
 			align-items: flex-end;
-			font-size: 0.9375rem;
-			font-weight: 600;
+			font-size: $font-size-14;
+			font-weight: $font-weight-semibold;
 
 			&--attr {
 				color: $color-attribute;
@@ -373,8 +373,8 @@ const { formatMoney } = useMoneyFormat();
 
 .item-tag {
 	padding: $spacing-xs $spacing-sm;
-	font-size: 0.8125rem;
-	font-weight: 600;
+	font-size: $font-size-12;
+	font-weight: $font-weight-semibold;
 	border-radius: $radius-xs;
 	background-color: $bg-input;
 	color: $text-primary;
@@ -400,8 +400,8 @@ const { formatMoney } = useMoneyFormat();
 	}
 
 	&__name {
-		font-size: 0.75rem;
-		font-weight: 600;
+		font-size: $font-size-12;
+		font-weight: $font-weight-semibold;
 		color: $text-primary;
 		text-align: center;
 	}

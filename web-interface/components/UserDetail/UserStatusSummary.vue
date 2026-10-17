@@ -370,7 +370,7 @@ const user = computed(() => result.value?.user);
 	&__row {
 		@include flex-between;
 		padding: 0.75rem 0;
-		font-size: 0.875rem;
+		font-size: $font-size-14;
 
 		&:not(:last-child) {
 			border-bottom: 1px solid $border-card;

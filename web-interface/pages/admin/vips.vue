@@ -145,7 +145,7 @@ function remainingVipTime(vipTime: string | null): string {
 	.player-cell {
 		color: $text-secondary;
 		font-size: inherit;
-		font-weight: 400;
+		font-weight: $font-weight-normal;
 		text-transform: none;
 	}
 
@@ -158,7 +158,7 @@ function remainingVipTime(vipTime: string | null): string {
 		align-items: center;
 		gap: $spacing-sm;
 		color: $text-primary;
-		font-weight: 600;
+		font-weight: $font-weight-semibold;
 	}
 
 		.profile-img {
@@ -170,7 +170,7 @@ function remainingVipTime(vipTime: string | null): string {
 
 	.id-cell {
 		font-family: monospace;
-		font-size: 0.8125rem;
+		font-size: $font-size-12;
 		color: $text-muted;
 	}
 }
@@ -180,7 +180,7 @@ function remainingVipTime(vipTime: string | null): string {
 	gap: $spacing-sm;
 	padding: 3rem 1.25rem;
 	color: $text-muted;
-	font-size: 0.875rem;
+	font-size: $font-size-14;
 }
 
 .error-state {

@@ -99,8 +99,8 @@ const style = computed(() => {
 	.status-box-header {
 		@include flex-center;
 		gap: $spacing-sm;
-		font-size: 0.8125rem;
-		font-weight: 600;
+		font-size: $font-size-12;
+		font-weight: $font-weight-semibold;
 
 		p {
 			margin: 0;
@@ -110,7 +110,7 @@ const style = computed(() => {
 
 	.status-box-count {
 		font-size: 1.375rem;
-		font-weight: 800;
+		font-weight: $font-weight-extrabold;
 		color: $text-primary;
 	}
 

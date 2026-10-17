@@ -110,13 +110,13 @@ const emit = defineEmits<(e: "update:open", value: boolean) => void>();
     border-bottom: 1px solid $border-subtle;
 
     .dialog-title {
-      font-size: 1.125rem;
-      font-weight: 700;
+      font-size: $font-size-18;
+      font-weight: $font-weight-bold;
       color: $text-primary;
     }
 
     .dialog-description {
-      font-size: 0.875rem;
+      font-size: $font-size-14;
       color: $text-secondary;
       margin-top: $spacing-xs;
     }

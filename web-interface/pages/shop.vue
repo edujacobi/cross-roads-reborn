@@ -741,8 +741,8 @@ onUnmounted(() => {
 			display: flex;
 			align-items: center;
 			gap: $spacing-sm;
-			font-size: 1rem;
-			font-weight: 600;
+			font-size: $font-size-16;
+			font-weight: $font-weight-semibold;
 			color: $text-primary;
 
 			h2 {
@@ -766,7 +766,7 @@ onUnmounted(() => {
 			color: $text-primary;
 			border-radius: $radius-full;
 			font-size: 0.7rem;
-			font-weight: 700;
+			font-weight: $font-weight-bold;
 			font-variant: tabular-nums;
 		}
 
@@ -799,7 +799,7 @@ onUnmounted(() => {
 		&-empty {
 			text-align: center;
 			color: $text-secondary;
-			font-size: 0.875rem;
+			font-size: $font-size-14;
 			padding: $spacing-lg 0;
 		}
 
@@ -829,14 +829,14 @@ onUnmounted(() => {
 		&-item-name {
 			display: flex;
 			gap: $spacing-xs;
-			font-size: 0.875rem;
-			font-weight: 600;
+			font-size: $font-size-14;
+			font-weight: $font-weight-semibold;
 			color: $text-primary;
 		}
 
 		&-item-price {
-			font-size: 0.8125rem;
-			font-weight: 600;
+			font-size: $font-size-12;
+			font-weight: $font-weight-semibold;
 			color: $color-brand;
 		}
 
@@ -878,8 +878,8 @@ onUnmounted(() => {
 		&-qty-value {
 			min-width: 1.5rem;
 			text-align: center;
-			font-size: 0.875rem;
-			font-weight: 600;
+			font-size: $font-size-14;
+			font-weight: $font-weight-semibold;
 			color: $text-primary;
 		}
 
@@ -909,8 +909,8 @@ onUnmounted(() => {
 			display: flex;
 			justify-content: space-between;
 			align-items: center;
-			font-size: 1rem;
-			font-weight: 700;
+			font-size: $font-size-16;
+			font-weight: $font-weight-bold;
 		}
 
 		&-total-label {
@@ -918,7 +918,7 @@ onUnmounted(() => {
 		}
 
 		&-total-value {
-			font-size: 1.125rem;
+			font-size: $font-size-18;
 			color: $color-brand;
 
 			&.insufficient {
@@ -930,7 +930,7 @@ onUnmounted(() => {
 			display: flex;
 			justify-content: space-between;
 			align-items: center;
-			font-size: 0.8125rem;
+			font-size: $font-size-12;
 		}
 
 		&-money-label {
@@ -939,7 +939,7 @@ onUnmounted(() => {
 
 		&-money-value {
 			color: $text-primary;
-			font-weight: 600;
+			font-weight: $font-weight-semibold;
 		}
 
 		&-clear {
@@ -947,7 +947,7 @@ onUnmounted(() => {
 			border: none;
 			color: $text-secondary;
 			cursor: pointer;
-			font-size: 0.8125rem;
+			font-size: $font-size-12;
 			text-align: center;
 			padding: $spacing-xs;
 			transition: color 0.2s ease;
@@ -1003,8 +1003,8 @@ onUnmounted(() => {
 			background-color: #f04d48;
 			color: white;
 			border-radius: 999px;
-			font-size: 0.75rem;
-			font-weight: 700;
+			font-size: $font-size-12;
+			font-weight: $font-weight-bold;
 		}
 	}
 }

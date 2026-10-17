@@ -310,8 +310,8 @@ const bases = [
 	}
 
 	&__input-label {
-		font-size: 0.8125rem;
-		font-weight: 500;
+		font-size: $font-size-12;
+		font-weight: $font-weight-medium;
 		color: $text-secondary;
 	}
 
@@ -326,7 +326,7 @@ const bases = [
 		resize: vertical;
 		min-height: 80px;
 		font-family: inherit;
-		font-size: 0.875rem;
+		font-size: $font-size-14;
 		transition: border-color $transition-fast ease-in-out;
 
 		&::placeholder {
@@ -344,7 +344,7 @@ const bases = [
 		gap: $spacing-md;
 
 		&-description {
-			font-size: 0.875rem;
+			font-size: $font-size-14;
 			color: $text-secondary;
 			margin-bottom: $spacing-sm;
 		}
@@ -370,7 +370,7 @@ const bases = [
 		}
 
 		&-name {
-			font-size: 1rem;
+			font-size: $font-size-16;
 		}
 
 		&-description {
@@ -381,10 +381,10 @@ const bases = [
 		&-modifier {
 			display: inline-flex;
 			align-items:center;
-			font-size: 0.75rem;
+			font-size: $font-size-12;
 			color: $text-primary;
 			gap: $spacing-sm;
-			font-weight: 500;
+			font-weight: $font-weight-medium;
 		}
 
 		&-image-modifier {

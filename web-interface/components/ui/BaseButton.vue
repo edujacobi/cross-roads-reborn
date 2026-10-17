@@ -52,7 +52,7 @@ withDefaults(defineProps<Props>(), {
   align-items: center;
   justify-content: center;
   gap: $spacing-sm;
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
   border-radius: $radius-sm;
   border: 1px solid transparent;
   cursor: pointer;
@@ -67,17 +67,17 @@ withDefaults(defineProps<Props>(), {
   // Sizes
   &.size-sm {
     padding: 0.375rem 0.75rem;
-    font-size: 0.8125rem;
+    font-size: $font-size-12;
   }
 
   &.size-md {
     padding: $spacing-sm $spacing-md;
-    font-size: 0.875rem;
+    font-size: $font-size-14;
   }
 
   &.size-lg {
     padding: 0.75rem 1.5rem;
-    font-size: 1rem;
+    font-size: $font-size-16;
   }
 
   // Variants

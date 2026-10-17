@@ -54,7 +54,7 @@ const auth = useAuth();
 		display: flex;
 		align-items: center;
 		gap: $spacing-sm;
-		font-size: 0.8125rem;
+		font-size: $font-size-12;
 		color: $color-success;
 
 		.pulse-icon {
@@ -64,10 +64,10 @@ const auth = useAuth();
 
 	.role-hint--dev,
 	.role-hint--mod {
-		font-size: 0.75rem;
+		font-size: $font-size-12;
 		padding: $spacing-xs $spacing-sm;
 		border-radius: $radius-full;
-		font-weight: 500;
+		font-weight: $font-weight-medium;
 	}
 
 	.role-hint--dev {

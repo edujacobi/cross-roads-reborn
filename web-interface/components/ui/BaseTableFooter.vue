@@ -91,7 +91,7 @@ const lastItem = computed(() => Math.min(props.offset + props.index, props.total
 
 .base-pagination__info,
 .base-pagination__indicator {
-	font-size: 0.8125rem;
+	font-size: $font-size-12;
 	color: $text-secondary;
 
 	strong {

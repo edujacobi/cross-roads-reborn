@@ -139,7 +139,7 @@ async function copyErrorMessage() {
 
 	&__code {
 		color: $text-muted;
-		font-weight: 600;
+		font-weight: $font-weight-semibold;
 		font-size: 0.85rem;
 	}
 

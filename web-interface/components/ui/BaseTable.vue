@@ -91,7 +91,7 @@ function getSortIcon(column: SortColumn) {
 	table {
 		width: 100%;
 		border-collapse: collapse;
-		font-size: 0.875rem;
+		font-size: $font-size-14;
 
 		th,
 		td {
@@ -103,8 +103,8 @@ function getSortIcon(column: SortColumn) {
 
 		th {
 			color: $text-muted;
-			font-size: 0.75rem;
-			font-weight: 600;
+			font-size: $font-size-12;
+			font-weight: $font-weight-semibold;
 			text-transform: uppercase;
 		}
 
@@ -130,8 +130,8 @@ function getSortIcon(column: SortColumn) {
 		border: none;
 		cursor: pointer;
 		color: $text-muted;
-		font-size: 0.75rem;
-		font-weight: 600;
+		font-size: $font-size-12;
+		font-weight: $font-weight-semibold;
 		text-transform: uppercase;
 		text-align: left;
 		white-space: nowrap;

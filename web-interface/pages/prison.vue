@@ -738,7 +738,7 @@ function formatBribeCost() {
 
 		p {
 			font-size: 0.8rem;
-			font-weight: 600;
+			font-weight: $font-weight-semibold;
 			color: $text-primary;
 		}
 	}
@@ -755,14 +755,14 @@ function formatBribeCost() {
 
 	&__section {
 		h3 {
-			font-size: 0.9375rem;
-			font-weight: 600;
+			font-size: $font-size-14;
+			font-weight: $font-weight-semibold;
 			color: $text-primary;
 			margin-bottom: $spacing-xs;
 		}
 
 		p {
-			font-size: 0.875rem;
+			font-size: $font-size-14;
 			color: $text-secondary;
 			line-height: 1.5;
 			display: flex;
@@ -777,8 +777,8 @@ function formatBribeCost() {
 			background-color: $bg-input;
 			padding: 0.2rem 0.75rem;
 			border-radius: $radius-xs;
-			font-size: 0.8125rem;
-			font-weight: 500;
+			font-size: $font-size-12;
+			font-weight: $font-weight-medium;
 			color: $text-primary;
 			cursor: pointer;
 			border: 1px solid transparent;
@@ -846,7 +846,7 @@ function formatBribeCost() {
 		gap: $spacing-sm;
 
 		.nickname {
-			font-weight: 600;
+			font-weight: $font-weight-semibold;
 			color: $text-primary;
 		}
 
@@ -864,7 +864,7 @@ function formatBribeCost() {
 	.player-cell {
 		color: $text-secondary;
 		font-size: inherit;
-		font-weight: 400;
+		font-weight: $font-weight-normal;
 		text-transform: none;
 	}
 }
@@ -886,8 +886,8 @@ function formatBribeCost() {
 	}
 
 	&__text {
-		font-size: 1rem;
-		font-weight: 600;
+		font-size: $font-size-16;
+		font-weight: $font-weight-semibold;
 		color: $text-primary;
 		text-align: center;
 	}

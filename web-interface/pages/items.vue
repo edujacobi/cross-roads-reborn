@@ -278,8 +278,8 @@ const itemChunks = computed(() => {
 	container-type: inline-size;
 
 	&__title {
-		font-size: 1.25rem;
-		font-weight: 700;
+		font-size: $font-size-20;
+		font-weight: $font-weight-bold;
 		color: $text-primary;
 		padding-bottom: $spacing-xs;
 		margin: 0;
@@ -347,8 +347,8 @@ const itemChunks = computed(() => {
 	}
 
 	&__name {
-		font-size: 0.9375rem;
-		font-weight: 600;
+		font-size: $font-size-14;
+		font-weight: $font-weight-semibold;
 		color: $text-primary;
 		line-break: anywhere;
 	}
@@ -356,8 +356,8 @@ const itemChunks = computed(() => {
 	&__stats {
 		display: flex;
 		gap: $spacing-sm;
-		font-size: 0.75rem;
-		font-weight: 600;
+		font-size: $font-size-12;
+		font-weight: $font-weight-semibold;
 	}
 
 	&__stat {

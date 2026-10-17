@@ -135,7 +135,7 @@ const sortOptions: SelectorOption[] = [
 }
 
 .user-count {
-	font-weight: 700;
+	font-weight: $font-weight-bold;
 	color: $text-primary;
 }
 

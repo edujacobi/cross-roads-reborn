@@ -93,7 +93,7 @@ defineProps<Props>();
 		gap: $spacing-sm;
 		padding: $spacing-lg;
 		color: $text-muted;
-		font-size: 0.875rem;
+		font-size: $font-size-14;
 	}
 
 	.table-container {
@@ -101,7 +101,7 @@ defineProps<Props>();
 		overflow-y: auto;
 
 		.history-table {
-			font-size: 0.8125rem;
+			font-size: $font-size-12;
 
 			th,
 			td {
@@ -109,7 +109,7 @@ defineProps<Props>();
 			}
 
 			.font-bold {
-				font-weight: 700;
+				font-weight: $font-weight-bold;
 				color: $text-primary;
 			}
 

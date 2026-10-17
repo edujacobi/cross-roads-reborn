@@ -553,8 +553,8 @@ const user = computed(() => {
 		.nav-group-title {
 			padding: 0.25rem 0.875rem 0.5rem;
 			color: $text-muted;
-			font-size: 0.6875rem;
-			font-weight: 700;
+			font-size: $font-size-12;
+			font-weight: $font-weight-bold;
 			letter-spacing: 0.08em;
 			text-transform: uppercase;
 			white-space: nowrap;
@@ -568,8 +568,8 @@ const user = computed(() => {
 			gap: 12px;
 			padding: 0.625rem 0.875rem;
 			border-radius: $radius-sm;
-			font-size: 0.875rem;
-			font-weight: 500;
+			font-size: $font-size-14;
+			font-weight: $font-weight-medium;
 			color: $text-secondary;
 			transition: background-color $transition-fast ease-in-out, color $transition-fast ease-in-out, grid-template-columns $transition-slow ease, gap $transition-slow ease, padding $transition-slow ease;
 
@@ -581,7 +581,7 @@ const user = computed(() => {
 			&.active {
 				background-color: rgba($color-brand, 0.12);
 				color: $color-brand;
-				font-weight: 600;
+				font-weight: $font-weight-semibold;
 			}
 
 			&:has(.nav-item-badge) {
@@ -601,7 +601,7 @@ const user = computed(() => {
 			padding: $spacing-xs $spacing-sm;
 			margin-left: auto;
 			font-size: 0.625rem;
-			font-weight: 700;
+			font-weight: $font-weight-bold;
 			letter-spacing: 0.05em;
 			color: $text-primary;
 			border-radius: $radius-full;
@@ -672,8 +672,8 @@ const user = computed(() => {
 
 			.user-name {
 				display: block;
-				font-size: 0.8125rem;
-				font-weight: 600;
+				font-size: $font-size-12;
+				font-weight: $font-weight-semibold;
 				color: $text-primary;
 				white-space: nowrap;
 				overflow: hidden;

@@ -92,15 +92,15 @@ onMounted(async () => {
 	}
 
 	h1 {
-		font-size: 1.125rem;
-		font-weight: 700;
+		font-size: $font-size-18;
+		font-weight: $font-weight-bold;
 		color: $text-primary;
 		margin-bottom: $spacing-sm;
 		margin-top: 0;
 	}
 
 	p {
-		font-size: 0.875rem;
+		font-size: $font-size-14;
 		color: $text-secondary;
 	}
 
@@ -111,7 +111,7 @@ onMounted(async () => {
 
 		p:last-child {
 			display: block;
-			font-size: 0.75rem;
+			font-size: $font-size-12;
 			color: $text-muted;
 			margin-top: $spacing-md;
 		}

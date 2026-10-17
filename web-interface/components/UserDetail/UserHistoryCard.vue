@@ -349,7 +349,7 @@ function nextPage() {
 		gap: $spacing-sm;
 		padding: $spacing-xl;
 		color: $text-muted;
-		font-size: 0.875rem;
+		font-size: $font-size-14;
 	}
 
 	&__table-wrapper {
@@ -366,7 +366,7 @@ function nextPage() {
 	}
 
 	.font-bold {
-		font-weight: 700;
+		font-weight: $font-weight-bold;
 	}
 
 	.text-muted {
@@ -381,13 +381,13 @@ function nextPage() {
 
 	&__date {
 		color: $text-secondary;
-		font-weight: 500;
+		font-weight: $font-weight-medium;
 		white-space: nowrap;
 	}
 
 	&__relative {
 		color: $text-muted;
-		font-size: 0.75rem;
+		font-size: $font-size-12;
 		white-space: nowrap;
 	}
 }
@@ -403,7 +403,7 @@ function nextPage() {
 		gap: 0.375rem;
 		color: $text-primary;
 		text-decoration: none;
-		font-weight: 500;
+		font-weight: $font-weight-medium;
 		@include transition-color;
 		padding: $spacing-xs $spacing-md $spacing-xs $spacing-xs;
 		border-radius: $radius-full;
@@ -459,7 +459,7 @@ function nextPage() {
 
 	&__name {
 		color: $text-primary;
-		font-weight: 500;
+		font-weight: $font-weight-medium;
 		white-space: nowrap;
 	}
 
@@ -471,6 +471,6 @@ function nextPage() {
 
 .history-money {
 	white-space: nowrap;
-	font-size: 1rem;
+	font-size: $font-size-16;
 }
 </style>

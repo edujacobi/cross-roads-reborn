@@ -474,8 +474,8 @@ async function removeEvent() {
 
 	&__input-label {
 		margin-bottom: -$spacing-sm;
-		font-size: 0.8125rem;
-		font-weight: 500;
+		font-size: $font-size-12;
+		font-weight: $font-weight-medium;
 		color: $text-secondary;
 	}
 

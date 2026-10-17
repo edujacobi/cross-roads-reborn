@@ -126,7 +126,7 @@ useHead({
 		border-radius: $radius-full;
 		background: rgba($bg-card, 0.8);
 		color: #d7d1bf;
-		font-size: 0.875rem;
+		font-size: $font-size-14;
 		transition: color $transition-fast ease, border-color $transition-fast ease, transform $transition-fast ease;
 
 		&:hover {
@@ -149,8 +149,8 @@ useHead({
 		h2 {
 			color: $color-gold;
 			margin-bottom: $spacing-xs;
-			font-size: 1rem;
-			font-weight: 600;
+			font-size: $font-size-16;
+			font-weight: $font-weight-semibold;
 		}
 
 		p {

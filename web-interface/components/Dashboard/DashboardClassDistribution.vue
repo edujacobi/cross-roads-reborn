@@ -211,17 +211,17 @@ onBeforeUnmount(() => chart?.destroy());
 	min-width: 0;
 	gap: 0.125rem;
 	color: $text-secondary;
-	font-size: 0.8125rem;
+	font-size: $font-size-12;
 
 	strong {
 		color: $text-primary;
-		font-size: 1rem;
+		font-size: $font-size-16;
 	}
 }
 
 .class-percentage {
 	color: $text-muted;
-	font-size: 0.75rem;
+	font-size: $font-size-12;
 }
 
 .chart-container {

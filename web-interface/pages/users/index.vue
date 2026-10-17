@@ -454,7 +454,7 @@ function nextPage() {
 		gap: $spacing-sm;
 
 		.nickname {
-			font-weight: 600;
+			font-weight: $font-weight-semibold;
 			color: $text-primary;
 		}
 
@@ -472,13 +472,13 @@ function nextPage() {
 	.player-cell {
 		color: $text-secondary;
 		font-size: inherit;
-		font-weight: 400;
+		font-weight: $font-weight-normal;
 		text-transform: none;
 	}
 
 	.id-cell {
 		font-family: monospace;
-		font-size: 0.8125rem;
+		font-size: $font-size-12;
 		color: $text-muted;
 	}
 

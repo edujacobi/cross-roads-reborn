@@ -195,7 +195,7 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 		gap: $spacing-sm;
 		padding: $spacing-lg;
 		color: $text-muted;
-		font-size: 0.875rem;
+		font-size: $font-size-14;
 	}
 
 	&__skeleton {
@@ -287,15 +287,15 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 	}
 
 	&__item-name {
-		font-size: 0.875rem;
-		font-weight: 600;
+		font-size: $font-size-14;
+		font-weight: $font-weight-semibold;
 		color: $text-primary;
 		margin: 0;
 	}
 
 	&__item-quantity {
-		font-size: 0.75rem;
-		font-weight: 600;
+		font-size: $font-size-12;
+		font-weight: $font-weight-semibold;
 		color: $text-secondary;
 		display: flex;
 		gap: $spacing-xs;

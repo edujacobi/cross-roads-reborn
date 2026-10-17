@@ -617,8 +617,8 @@ onUnmounted(() => window.removeEventListener("keydown", handleKeyDown));
 
 			h2 {
 				margin: 0;
-				font-size: 1rem;
-				font-weight: 600;
+				font-size: $font-size-16;
+				font-weight: $font-weight-semibold;
 			}
 		}
 
@@ -671,7 +671,7 @@ onUnmounted(() => window.removeEventListener("keydown", handleKeyDown));
 
 		dt {
 			color: $text-secondary;
-			font-size: 0.75rem;
+			font-size: $font-size-12;
 		}
 
 		dd {
@@ -680,8 +680,8 @@ onUnmounted(() => window.removeEventListener("keydown", handleKeyDown));
 			gap: $spacing-xs;
 			margin: 0;
 			color: $text-primary;
-			font-size: 0.875rem;
-			font-weight: 600;
+			font-size: $font-size-14;
+			font-weight: $font-weight-semibold;
 			text-align: right;
 
 			&.attribute {
@@ -714,13 +714,13 @@ onUnmounted(() => window.removeEventListener("keydown", handleKeyDown));
 
 		h3 {
 			color: $text-primary;
-			font-size: 0.9375rem;
+			font-size: $font-size-14;
 		}
 
 		p {
 			margin-top: $spacing-xs;
 			color: $text-secondary;
-			font-size: 0.8125rem;
+			font-size: $font-size-12;
 		}
 	}
 
@@ -728,7 +728,7 @@ onUnmounted(() => window.removeEventListener("keydown", handleKeyDown));
 	&__notice {
 		margin: 0;
 		color: $text-secondary;
-		font-size: 0.8125rem;
+		font-size: $font-size-12;
 	}
 
 	&__actions {
@@ -780,8 +780,8 @@ onUnmounted(() => window.removeEventListener("keydown", handleKeyDown));
 			background-color: $color-investment;
 			color: #000;
 			border-radius: 999px;
-			font-size: 0.75rem;
-			font-weight: 700;
+			font-size: $font-size-12;
+			font-weight: $font-weight-bold;
 		}
 	}
 
@@ -831,14 +831,14 @@ onUnmounted(() => window.removeEventListener("keydown", handleKeyDown));
 		&__name {
 			margin: 0;
 			color: $text-primary;
-			font-size: 1rem;
-			font-weight: 600;
+			font-size: $font-size-16;
+			font-weight: $font-weight-semibold;
 		}
 
 		&__description {
 			margin: $spacing-xs 0 0;
 			color: $text-secondary;
-			font-size: 0.8125rem;
+			font-size: $font-size-12;
 		}
 
 		&__stats {
@@ -853,14 +853,14 @@ onUnmounted(() => window.removeEventListener("keydown", handleKeyDown));
 
 				dt {
 					color: $text-muted;
-					font-size: 0.6875rem;
+					font-size: $font-size-12;
 				}
 
 				dd {
 				margin: 0.125rem 0 0;
 				color: $text-primary;
-				font-size: 0.8125rem;
-				font-weight: 600;
+				font-size: $font-size-12;
+				font-weight: $font-weight-semibold;
 				overflow-wrap: anywhere;
 				}
 		}
@@ -886,7 +886,7 @@ onUnmounted(() => window.removeEventListener("keydown", handleKeyDown));
 		&__price {
 			margin: 0;
 			color: $text-primary;
-			font-weight: 700;
+			font-weight: $font-weight-bold;
 		}
 
 		&__skeleton-details {

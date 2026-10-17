@@ -305,8 +305,8 @@ function handleUpdateUnits(itemId: number, delta: number) {
 	}
 
 	&__name {
-		font-size: 0.9375rem;
-		font-weight: 600;
+		font-size: $font-size-14;
+		font-weight: $font-weight-semibold;
 		color: $text-primary;
 		text-overflow: ellipsis;
 		white-space: nowrap;
@@ -318,8 +318,8 @@ function handleUpdateUnits(itemId: number, delta: number) {
 		display: flex;
 		flex-wrap: wrap;
 		gap: $spacing-xs;
-		font-size: 0.75rem;
-		font-weight: 600;
+		font-size: $font-size-12;
+		font-weight: $font-weight-semibold;
 	}
 
 	&__stat {
@@ -332,22 +332,22 @@ function handleUpdateUnits(itemId: number, delta: number) {
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
-		font-size: 0.75rem;
+		font-size: $font-size-12;
 		gap: $spacing-xs;
 	}
 
 	&__price {
-		font-weight: 700;
+		font-weight: $font-weight-bold;
 		color: $color-brand;
 
 		&--value {
-			font-size: 1rem;
+			font-size: $font-size-16;
 		}
 	}
 
 	&__ownership {
 		color: $text-secondary;
-		font-size: 0.6875rem;
+		font-size: $font-size-12;
 	}
 
 	&__actions {
@@ -389,8 +389,8 @@ function handleUpdateUnits(itemId: number, delta: number) {
 	&__qty-value {
 		min-width: 1.25rem;
 		text-align: center;
-		font-size: 0.8125rem;
-		font-weight: 600;
+		font-size: $font-size-12;
+		font-weight: $font-weight-semibold;
 		color: $text-primary;
 	}
 }

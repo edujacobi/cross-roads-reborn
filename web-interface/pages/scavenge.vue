@@ -808,8 +808,8 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 		display: flex;
 		align-items: center;
 		gap: $spacing-sm;
-		font-size: 1rem;
-		font-weight: 600;
+		font-size: $font-size-16;
+		font-weight: $font-weight-semibold;
 		color: $text-primary;
 
 		h2 {
@@ -866,13 +866,13 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 
 	dt {
 		color: $text-secondary;
-		font-size: 0.75rem;
+		font-size: $font-size-12;
 	}
 
 	dd {
 		color: $text-primary;
-		font-size: 0.9375rem;
-		font-weight: 600;
+		font-size: $font-size-14;
+		font-weight: $font-weight-semibold;
 		margin: 0;
 	}
 }
@@ -887,21 +887,21 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 	border-radius: $radius-sm;
 
 	&-label {
-		font-size: 0.8125rem;
-		font-weight: 600;
+		font-size: $font-size-12;
+		font-weight: $font-weight-semibold;
 		color: $text-secondary;
 		margin: 0;
 	}
 
 	&-name {
-		font-size: 1rem;
-		font-weight: 700;
+		font-size: $font-size-16;
+		font-weight: $font-weight-bold;
 		color: $text-primary;
 		margin: 0;
 	}
 
 	&-status {
-		font-size: 0.8125rem;
+		font-size: $font-size-12;
 		color: $text-secondary;
 		margin: 0;
 		font-style: italic;
@@ -918,15 +918,15 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 	border-radius: $radius-sm;
 
 	&-label {
-		font-size: 0.8125rem;
-		font-weight: 600;
+		font-size: $font-size-12;
+		font-weight: $font-weight-semibold;
 		color: $text-secondary;
 		margin: 0;
 	}
 
 	time {
-		font-size: 1rem;
-		font-weight: 700;
+		font-size: $font-size-16;
+		font-weight: $font-weight-bold;
 		color: $text-primary;
 		margin: 0;
 	}
@@ -935,7 +935,7 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 .scavenge-page__idle {
 	text-align: center;
 	color: $text-secondary;
-	font-size: 0.875rem;
+	font-size: $font-size-14;
 	padding: $spacing-lg 0;
 	margin: 0;
 }
@@ -1011,8 +1011,8 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 	}
 
 	&__name {
-		font-size: 1rem;
-		font-weight: 600;
+		font-size: $font-size-16;
+		font-weight: $font-weight-semibold;
 		color: $text-primary;
 		margin: 0;
 		display: flex;
@@ -1022,15 +1022,15 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 	}
 
 	&__atk-badge {
-		font-size: 0.75rem;
-		font-weight: 600;
+		font-size: $font-size-12;
+		font-weight: $font-weight-semibold;
 		display: flex;
 		align-items: center;
 		color: $color-attribute;
 	}
 
 	&__subtitle {
-		font-size: 0.8125rem;
+		font-size: $font-size-12;
 		color: $text-secondary;
 		margin: 0;
 		font-style: italic;
@@ -1132,8 +1132,8 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 	}
 
 	&__detail-label {
-		font-size: 0.8125rem;
-		font-weight: 500;
+		font-size: $font-size-12;
+		font-weight: $font-weight-medium;
 		color: $text-secondary;
 		display: flex;
 		align-items: center;
@@ -1141,8 +1141,8 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 	}
 
 	&__detail-value {
-		font-size: 0.8125rem;
-		font-weight: 600;
+		font-size: $font-size-12;
+		font-weight: $font-weight-semibold;
 		color: $text-primary;
 	}
 
@@ -1160,8 +1160,8 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 		background-color: $bg-input;
 		padding: 0.2rem 0.5rem;
 		border-radius: $radius-xs;
-		font-size: 0.8125rem;
-		font-weight: 500;
+		font-size: $font-size-12;
+		font-weight: $font-weight-medium;
 		color: $text-primary;
 		cursor: pointer;
 		border: 1px solid transparent;
@@ -1178,15 +1178,15 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 		background-color: $bg-input;
 		padding: 0.2rem 0.5rem;
 		border-radius: $radius-xs;
-		font-size: 0.8125rem;
-		font-weight: 500;
+		font-size: $font-size-12;
+		font-weight: $font-weight-medium;
 		color: $text-primary;
 		cursor: pointer;
 		border: 1px solid transparent;
 	}
 
 	&__item-duration {
-		font-size: 0.75rem;
+		font-size: $font-size-12;
 		color: $text-muted;
 	}
 }
@@ -1223,7 +1223,7 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 	&__text {
 		text-align: center;
 		color: $text-secondary;
-		font-size: 1rem;
+		font-size: $font-size-16;
 		margin: 0;
 	}
 }

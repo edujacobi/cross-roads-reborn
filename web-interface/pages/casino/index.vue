@@ -98,7 +98,7 @@ const games = Object.entries(casinoGames).map(([slug, game]) => ({
 	&__intro {
 		color: $text-primary;
 		font-size: clamp(1.2rem, 3vw, 1.8rem);
-		font-weight: 700;
+		font-weight: $font-weight-bold;
 		letter-spacing: -0.03em;
 		line-height: 1.25;
 	}
@@ -155,8 +155,8 @@ const games = Object.entries(casinoGames).map(([slug, game]) => ({
 		display: block;
 		margin-bottom: $spacing-sm;
 		color: $color-gold;
-		font-size: 0.75rem;
-		font-weight: 800;
+		font-size: $font-size-12;
+		font-weight: $font-weight-extrabold;
 		letter-spacing: 0.16em;
 		text-transform: uppercase;
 	}
@@ -192,7 +192,7 @@ const games = Object.entries(casinoGames).map(([slug, game]) => ({
 
 		&-title {
 			color: #fff3d3;
-			font-size: 1rem;
+			font-size: $font-size-16;
 		}
 
 		&-summary {
@@ -245,8 +245,8 @@ const games = Object.entries(casinoGames).map(([slug, game]) => ({
 		border: 1px solid rgba($color-gold, 0.45);
 		border-radius: $radius-full;
 		background: rgba($color-gold, 0.1);
-		font-size: 0.75rem;
-		font-weight: 600;
+		font-size: $font-size-12;
+		font-weight: $font-weight-semibold;
 	}
 }
 

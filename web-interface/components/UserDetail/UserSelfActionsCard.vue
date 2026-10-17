@@ -427,7 +427,7 @@ async function handleAutomaticGrenadeChange() {
 
 		@media (min-width: 426px) {
 			display: inline;
-			font-weight: 600;
+			font-weight: $font-weight-semibold;
 		}
 	}
 
@@ -463,8 +463,8 @@ async function handleAutomaticGrenadeChange() {
 		gap: $spacing-xs;
 
 		.user-self-actions__class-label {
-			font-size: 0.8125rem;
-			font-weight: 500;
+			font-size: $font-size-12;
+			font-weight: $font-weight-medium;
 			color: $text-secondary;
 		}
 
@@ -517,7 +517,7 @@ async function handleAutomaticGrenadeChange() {
 	&__class-description {
 		margin: $spacing-sm 0 0;
 		color: $text-secondary;
-		font-size: 0.875rem;
+		font-size: $font-size-14;
 	}
 
 	&__class-modifiers {
@@ -527,7 +527,7 @@ async function handleAutomaticGrenadeChange() {
 		margin: $spacing-sm 0 0;
 		padding-left: 0.5rem;
 		color: color.adjust($color-success, $lightness: 10%);
-		font-size: 0.875rem;
+		font-size: $font-size-14;
 		list-style: none;
 
 		li:before {

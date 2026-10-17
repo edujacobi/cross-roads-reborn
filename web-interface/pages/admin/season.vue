@@ -485,11 +485,11 @@ async function endCurrentSeason() {
 		align-items: center;
 		gap: $spacing-xs;
 		color: $text-secondary;
-		font-size: 0.8125rem;
+		font-size: $font-size-12;
 	}
 
 	strong {
-		font-size: 1.25rem;
+		font-size: $font-size-20;
 	}
 }
 
@@ -512,7 +512,7 @@ async function endCurrentSeason() {
 
 	span span {
 		color: $text-secondary;
-		font-size: 0.8125rem;
+		font-size: $font-size-12;
 	}
 }
 
@@ -524,7 +524,7 @@ async function endCurrentSeason() {
 	color: $text-primary;
 
 	h3 {
-		font-size: 1rem;
+		font-size: $font-size-16;
 	}
 }
 
@@ -539,7 +539,7 @@ async function endCurrentSeason() {
 		display: flex;
 		align-items: center;
 		gap: $spacing-xs;
-		font-size: 0.875rem;
+		font-size: $font-size-14;
 		color: $color-brand;
 	}
 
@@ -584,7 +584,7 @@ async function endCurrentSeason() {
 
 .empty-ranking {
 	color: $text-muted;
-	font-size: 0.8125rem;
+	font-size: $font-size-12;
 }
 
 .wipe-stats {
@@ -604,13 +604,13 @@ async function endCurrentSeason() {
 
 	span {
 		color: $text-secondary;
-		font-size: 0.8125rem;
+		font-size: $font-size-12;
 	}
 }
 
 .wipe-warning {
 	color: $color-danger;
-	font-size: 0.8125rem;
+	font-size: $font-size-12;
 }
 
 .season-complete {
@@ -635,7 +635,7 @@ async function endCurrentSeason() {
 		p {
 			margin-top: 0.25rem;
 			color: $text-secondary;
-			font-size: 0.8125rem;
+			font-size: $font-size-12;
 		}
 	}
 }
@@ -680,7 +680,7 @@ async function endCurrentSeason() {
 .permission-note {
 	margin-top: $spacing-md;
 	color: $text-muted;
-	font-size: 0.8125rem;
+	font-size: $font-size-12;
 }
 
 .state-message {

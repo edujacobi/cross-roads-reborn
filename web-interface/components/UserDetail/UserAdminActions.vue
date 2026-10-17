@@ -1190,7 +1190,7 @@ async function handleDeleteUser() {
 	}
 
 	&__read-only {
-		font-size: 0.75rem;
+		font-size: $font-size-12;
 		color: $color-warning;
 	}
 
@@ -1214,14 +1214,14 @@ async function handleDeleteUser() {
 	}
 
 	&__label {
-		font-size: 0.8125rem;
-		font-weight: 500;
+		font-size: $font-size-12;
+		font-weight: $font-weight-medium;
 		color: $text-secondary;
 	}
 
 	&__muted {
-		font-size: 0.8125rem;
-		font-weight: 500;
+		font-size: $font-size-12;
+		font-weight: $font-weight-medium;
 		color: $text-secondary;
 	}
 
@@ -1235,7 +1235,7 @@ async function handleDeleteUser() {
 		display: flex;
 		align-items: center;
 		gap: $spacing-sm;
-		font-size: 0.875rem;
+		font-size: $font-size-14;
 		color: $text-primary;
 		cursor: pointer;
 	}
@@ -1261,7 +1261,7 @@ async function handleDeleteUser() {
 	gap: $spacing-sm;
 	color: $text-primary;
 	margin-top: $spacing-md;
-	font-size: 0.875rem;
+	font-size: $font-size-14;
 	cursor: pointer;
 }
 </style>

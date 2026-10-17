@@ -457,7 +457,7 @@ function nextPage() {
 
 	&__player-name {
 		color: $text-primary;
-		font-weight: 600;
+		font-weight: $font-weight-semibold;
 	}
 
 	&__current-user-label {
@@ -465,8 +465,8 @@ function nextPage() {
 		border-radius: $radius-xs;
 		background-color: rgba($color-brand, 0.15);
 		color: $color-brand;
-		font-size: 0.6875rem;
-		font-weight: 600;
+		font-size: $font-size-12;
+		font-weight: $font-weight-semibold;
 		text-transform: uppercase;
 	}
 
@@ -477,11 +477,11 @@ function nextPage() {
 		color: var(--gang-color);
 		border: 1px solid color-mix(in srgb, var(--gang-color) 15%, transparent);
 		font-size: 0.6rem;
-		font-weight: 700;
+		font-weight: $font-weight-bold;
 	}
 
 	&__value-cell {
-		font-weight: 600;
+		font-weight: $font-weight-semibold;
 		font-size: 1.1rem;
 		color: $text-primary;
 		font-variant-numeric: tabular-nums;

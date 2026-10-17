@@ -154,7 +154,7 @@ const { getInvestmentImageUrl } = useInvestment();
 		display: flex;
 		gap: $spacing-md;
 		align-items: center;
-		font-weight: 600;
+		font-weight: $font-weight-semibold;
 
 		// ponytail: stack image and text on narrow mobile
 		@media (max-width: 480px) {
@@ -173,8 +173,8 @@ const { getInvestmentImageUrl } = useInvestment();
 	}
 
 	&__expiry {
-		font-size: 0.8125rem;
-		font-weight: 500;
+		font-size: $font-size-12;
+		font-weight: $font-weight-medium;
 		color: $text-secondary;
 	}
 
@@ -197,8 +197,8 @@ const { getInvestmentImageUrl } = useInvestment();
 		display: flex;
 		align-items: center;
 		color: $color-attribute;
-		font-weight: 600;
-		font-size: 0.9375rem;
+		font-weight: $font-weight-semibold;
+		font-size: $font-size-14;
 	}
 
 	&__defense-image {

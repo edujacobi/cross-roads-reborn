@@ -118,15 +118,15 @@ const language = computed(() => {
 	}
 
 	&__label {
-		font-size: 0.75rem;
+		font-size: $font-size-12;
 		color: $text-muted;
 		text-transform: uppercase;
 		letter-spacing: 0.04em;
 	}
 
 	&__value {
-		font-size: 0.9375rem;
-		font-weight: 600;
+		font-size: $font-size-14;
+		font-weight: $font-weight-semibold;
 		color: $text-primary;
 		display: flex;
 		align-items: center;

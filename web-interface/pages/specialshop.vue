@@ -639,7 +639,7 @@ async function confirmPurchase() {
 		margin-top: $spacing-xs;
 		color: $text-primary;
 		font-size: 1.15rem;
-		font-weight: 700;
+		font-weight: $font-weight-bold;
 	}
 
 	&__permanent {
@@ -674,7 +674,7 @@ async function confirmPurchase() {
 			border-radius: $radius-sm;
 			background: transparent;
 			color: $text-secondary;
-			font-weight: 600;
+			font-weight: $font-weight-semibold;
 			cursor: pointer;
 
 			&:hover {
@@ -707,14 +707,14 @@ async function confirmPurchase() {
 		margin-bottom: $spacing-md;
 
 		h2 {
-			font-size: 1.25rem;
-			font-weight: 700;
+			font-size: $font-size-20;
+			font-weight: $font-weight-bold;
 		}
 
 		p {
 			margin-top: $spacing-xs;
 			color: $text-secondary;
-			font-size: 0.875rem;
+			font-size: $font-size-14;
 		}
 	}
 
@@ -763,8 +763,8 @@ async function confirmPurchase() {
 		}
 
 		h3 {
-			font-size: 1rem;
-			font-weight: 700;
+			font-size: $font-size-16;
+			font-weight: $font-weight-bold;
 		}
 
 		> .base-button {
@@ -821,8 +821,8 @@ async function confirmPurchase() {
 
 		h3 {
 			margin-bottom: $spacing-sm;
-			font-size: 1rem;
-			font-weight: 700;
+			font-size: $font-size-16;
+			font-weight: $font-weight-bold;
 		}
 
 		ul {
@@ -851,7 +851,7 @@ async function confirmPurchase() {
 		align-items: center;
 		gap: $spacing-xs;
 		color: $color-special;
-		font-weight: 700;
+		font-weight: $font-weight-bold;
 	}
 
 	&__skin-list {
@@ -895,21 +895,21 @@ async function confirmPurchase() {
 		border-radius: $radius-sm;
 		background-color: $bg-main;
 		color: $text-primary;
-		font-size: 1.5rem;
-		font-weight: 800;
+		font-size: $font-size-24;
+		font-weight: $font-weight-extrabold;
 		letter-spacing: 0.12em;
 	}
 
 	&__owned {
 		color: color-mix(in lab, $color-special 50%, $text-primary);
-		font-size: 0.875rem;
-		font-weight: 600;
+		font-size: $font-size-14;
+		font-weight: $font-weight-semibold;
 	}
 
 	&__dialog-balance {
 		margin-top: $spacing-sm;
 		color: $text-secondary;
-		font-size: 0.875rem;
+		font-size: $font-size-14;
 	}
 }
 

@@ -227,7 +227,7 @@ function formatDate(date: string | null | undefined) {
 		border-radius: $radius-full;
 		background: rgba($color-gold, 0.08);
 		color: #ffe6a1;
-		font-weight: 700;
+		font-weight: $font-weight-bold;
 	}
 
 	&__error {
@@ -247,8 +247,8 @@ function formatDate(date: string | null | undefined) {
 		label {
 			display: grid;
 			gap: $spacing-xs;
-			font-size: 0.875rem;
-			font-weight: 600;
+			font-size: $font-size-14;
+			font-weight: $font-weight-semibold;
 		}
 
 		input[type="radio"] {
@@ -265,7 +265,7 @@ function formatDate(date: string | null | undefined) {
 
 		legend {
 			margin-bottom: $spacing-sm;
-			font-weight: 600;
+			font-weight: $font-weight-semibold;
 		}
 
 		label {
@@ -291,7 +291,7 @@ function formatDate(date: string | null | undefined) {
 				box-shadow: 0 0 18px rgba($color-gold, 0.08);
 
 				.casino-game__horse-info span:first-child {
-					font-weight: 600;
+					font-weight: $font-weight-semibold;
 					color: $color-gold;
 				}
 			}
@@ -317,14 +317,14 @@ function formatDate(date: string | null | undefined) {
 		min-width: 0;
 
 		span:last-child {
-			font-size: 0.875rem;
+			font-size: $font-size-14;
 			color: $text-secondary;
 			text-align: start;
 		}
 	}
 
 	&__possible-gain {
-		font-size: 0.875rem;
+		font-size: $font-size-14;
 		margin-left: auto;
 	}
 

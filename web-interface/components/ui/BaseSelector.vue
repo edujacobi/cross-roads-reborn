@@ -244,8 +244,8 @@ watch(isOpen, (open) => {
 	}
 
 	.selector-label {
-		font-size: 0.8125rem;
-		font-weight: 500;
+		font-size: $font-size-12;
+		font-weight: $font-weight-medium;
 		color: $text-secondary;
 		text-align: right;
 
@@ -276,8 +276,8 @@ watch(isOpen, (open) => {
 		border: 1px solid $border-subtle;
 		border-radius: $radius-sm;
 		color: $text-primary;
-		font-size: 0.875rem;
-		font-weight: 500;
+		font-size: $font-size-14;
+		font-weight: $font-weight-medium;
 		cursor: pointer;
 		outline: none;
 		@include transition-all;
@@ -363,7 +363,7 @@ watch(isOpen, (open) => {
 
 		&.is-selected {
 			color: $text-primary;
-			font-weight: 600;
+			font-weight: $font-weight-semibold;
 		}
 
 		&:focus-visible {

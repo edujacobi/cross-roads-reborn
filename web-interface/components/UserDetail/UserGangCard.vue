@@ -103,7 +103,7 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 		display: flex;
 		gap: $spacing-md;
 		align-items: center;
-		font-weight: 600;
+		font-weight: $font-weight-semibold;
 
 		// ponytail: wrap content on narrow mobile
 		@media (max-width: 480px) {

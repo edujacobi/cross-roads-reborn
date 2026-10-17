@@ -338,7 +338,7 @@ async function handleGiveAlms() {
 
 		@media (min-width: 426px) {
 			display: inline;
-			font-weight: 600;
+			font-weight: $font-weight-semibold;
 		}
 	}
 

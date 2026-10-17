@@ -123,13 +123,13 @@ withDefaults(defineProps<Props>(), {
 				display: flex;
 				align-items: center;
 				gap: $spacing-sm;
-				font-size: 0.875rem;
+				font-size: $font-size-14;
 				color: $text-primary;
 			}
 
 			.count-value {
-				font-size: 0.9375rem;
-				font-weight: 700;
+				font-size: $font-size-14;
+				font-weight: $font-weight-bold;
 				color: $color-brand;
 			}
 		}

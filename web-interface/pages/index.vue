@@ -212,8 +212,8 @@ useSeoMeta({
 	&__eyebrow {
 		margin-bottom: $spacing-sm;
 		color: $color-brand;
-		font-size: 0.8125rem;
-		font-weight: 700;
+		font-size: $font-size-12;
+		font-weight: $font-weight-bold;
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
 	}
@@ -221,7 +221,7 @@ useSeoMeta({
 	h1 {
 		max-width: 42rem;
 		font-size: clamp(2.5rem, 7vw, 4.5rem);
-		font-weight: 800;
+		font-weight: $font-weight-extrabold;
 		line-height: 1.05;
 	}
 
@@ -245,8 +245,8 @@ useSeoMeta({
 
 	&__features-description {
 		margin: $spacing-xl 0 $spacing-lg;
-		font-size: 1rem;
-		font-weight: 600;
+		font-size: $font-size-16;
+		font-weight: $font-weight-semibold;
 		color: $text-secondary;
 	}
 }
@@ -264,13 +264,13 @@ useSeoMeta({
 
 	h2 {
 		margin-bottom: $spacing-sm;
-		font-size: 1rem;
-		font-weight: 700;
+		font-size: $font-size-16;
+		font-weight: $font-weight-bold;
 	}
 
 	p {
 		color: $text-secondary;
-		font-size: 0.875rem;
+		font-size: $font-size-14;
 		line-height: 1.6;
 	}
 }

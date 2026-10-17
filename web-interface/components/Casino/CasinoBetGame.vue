@@ -288,7 +288,7 @@ function sideName(value: string) {
 		gap: $spacing-md;
 		padding: $spacing-xl 0;
 		color: $color-gold;
-		font-weight: 700;
+		font-weight: $font-weight-bold;
 		perspective: 32rem;
 	}
 
@@ -330,7 +330,7 @@ function sideName(value: string) {
 		display: grid;
 		gap: $spacing-md;
 		color: $text-secondary;
-		font-weight: 400;
+		font-weight: $font-weight-normal;
 
 		&--win .casino-game__outcome-title {
 			color: $color-success;
@@ -347,12 +347,12 @@ function sideName(value: string) {
 		gap: $spacing-xs;
 		color: $text-primary;
 		font-size: 1.05rem;
-		font-weight: 700;
+		font-weight: $font-weight-bold;
 	}
 
 	&__session-balance {
 		padding-top: $spacing-md;
-		font-size: 0.875rem;
+		font-size: $font-size-14;
 	}
 
 	&__sides {
@@ -371,7 +371,7 @@ function sideName(value: string) {
 		legend {
 			grid-column: 1 / -1;
 			margin-bottom: $spacing-sm;
-			font-weight: 600;
+			font-weight: $font-weight-semibold;
 		}
 
 		label {
@@ -385,7 +385,7 @@ function sideName(value: string) {
 			background: rgba($bg-input, 0.65);
 			cursor: pointer;
 			transition: border-color $transition-fast ease, background $transition-fast ease;
-			font-weight: 600;
+			font-weight: $font-weight-semibold;
 			color: $text-secondary;
 
 			input {
@@ -436,8 +436,8 @@ function sideName(value: string) {
 		display: grid;
 		gap: $spacing-xs;
 		color: #e7e0ce;
-		font-size: 0.875rem;
-		font-weight: 600;
+		font-size: $font-size-14;
+		font-weight: $font-weight-semibold;
 	}
 
 	&__quick-actions {

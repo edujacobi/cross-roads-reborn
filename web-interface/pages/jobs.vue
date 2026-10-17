@@ -555,8 +555,8 @@ onUnmounted(() => {
 		display: flex;
 		align-items: center;
 		gap: $spacing-sm;
-		font-size: 1rem;
-		font-weight: 600;
+		font-size: $font-size-16;
+		font-weight: $font-weight-semibold;
 		color: $text-primary;
 
 		h2 {
@@ -613,13 +613,13 @@ onUnmounted(() => {
 
 	dt {
 		color: $text-secondary;
-		font-size: 0.75rem;
+		font-size: $font-size-12;
 	}
 
 	dd {
 		color: $text-primary;
-		font-size: 0.9375rem;
-		font-weight: 600;
+		font-size: $font-size-14;
+		font-weight: $font-weight-semibold;
 		margin: 0;
 	}
 }
@@ -640,15 +640,15 @@ onUnmounted(() => {
 	}
 
 	&-label {
-		font-size: 0.8125rem;
-		font-weight: 600;
+		font-size: $font-size-12;
+		font-weight: $font-weight-semibold;
 		color: $text-secondary;
 		margin: 0;
 	}
 
 	&-name {
-		font-size: 1rem;
-		font-weight: 700;
+		font-size: $font-size-16;
+		font-weight: $font-weight-bold;
 		color: $text-primary;
 		margin: 0;
 	}
@@ -663,7 +663,7 @@ onUnmounted(() => {
 		display: flex;
 		align-items: center;
 		gap: $spacing-xs;
-		font-size: 0.8125rem;
+		font-size: $font-size-12;
 		color: $text-secondary;
 	}
 }
@@ -679,7 +679,7 @@ onUnmounted(() => {
 .jobs-page__idle {
 	text-align: center;
 	color: $text-secondary;
-	font-size: 0.875rem;
+	font-size: $font-size-14;
 	padding: $spacing-lg 0;
 	margin: 0;
 }
@@ -722,8 +722,8 @@ onUnmounted(() => {
 		background-color: $color-working;
 		color: #000;
 		border-radius: 999px;
-		font-size: 0.75rem;
-		font-weight: 700;
+		font-size: $font-size-12;
+		font-weight: $font-weight-bold;
 	}
 }
 
@@ -789,8 +789,8 @@ onUnmounted(() => {
 	}
 
 	&__name {
-		font-size: 1rem;
-		font-weight: 600;
+		font-size: $font-size-16;
+		font-weight: $font-weight-semibold;
 		color: $text-primary;
 		margin: 0;
 		display: flex;
@@ -813,8 +813,8 @@ onUnmounted(() => {
 	&__stats {
 		display: flex;
 		gap: $spacing-sm;
-		font-size: 0.8125rem;
-		font-weight: 500;
+		font-size: $font-size-12;
+		font-weight: $font-weight-medium;
 	}
 
 	&__stat {
@@ -886,15 +886,15 @@ onUnmounted(() => {
 	}
 
 	&__detail-label {
-		font-size: 0.8125rem;
-		font-weight: 500;
+		font-size: $font-size-12;
+		font-weight: $font-weight-medium;
 		color: $text-secondary;
 		flex-shrink: 0;
 	}
 
 	&__detail-value {
-		font-size: 0.8125rem;
-		font-weight: 600;
+		font-size: $font-size-12;
+		font-weight: $font-weight-semibold;
 		color: $text-primary;
 		text-align: right;
 	}
@@ -912,8 +912,8 @@ onUnmounted(() => {
 		background-color: $bg-input;
 		padding: 0.2rem 0.75rem;
 		border-radius: $radius-xs;
-		font-size: 0.8125rem;
-		font-weight: 500;
+		font-size: $font-size-12;
+		font-weight: $font-weight-medium;
 		color: $text-primary;
 		cursor: pointer;
 		border: 1px solid transparent;

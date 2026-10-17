@@ -309,7 +309,7 @@ function setModalOpen(isOpen: boolean) {
 	align-items: center;
 	gap: 0.5rem;
 	color: $text-secondary;
-	font-size: 0.8125rem;
+	font-size: $font-size-12;
 
 	select {
 		padding: 0.5rem 0.75rem;
@@ -342,7 +342,7 @@ function setModalOpen(isOpen: boolean) {
 	display: block;
 	margin-top: 0.2rem;
 	color: $text-muted;
-	font-size: 0.75rem;
+	font-size: $font-size-12;
 	font-family: monospace;
 }
 
@@ -372,7 +372,7 @@ function setModalOpen(isOpen: boolean) {
 
 	dt {
 		color: $text-muted;
-		font-size: 0.8125rem;
+		font-size: $font-size-12;
 	}
 
 	dd {

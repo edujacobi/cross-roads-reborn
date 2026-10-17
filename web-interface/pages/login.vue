@@ -140,7 +140,7 @@ onMounted(async () => {
 	}
 
 	.subtitle {
-		font-size: 0.875rem;
+		font-size: $font-size-14;
 		color: $text-secondary;
 		margin-top: 0.375rem;
 		margin-bottom: 1.5rem;
@@ -155,7 +155,7 @@ onMounted(async () => {
 		@include accent-surface($color-danger);
 		border-radius: $radius-sm;
 		color: color.adjust($color-danger, $lightness: 15%);
-		font-size: 0.8125rem;
+		font-size: $font-size-12;
 		text-align: left;
 		margin-bottom: 1.25rem;
 	}
@@ -166,7 +166,7 @@ onMounted(async () => {
 		background-color: $bg-input-field;
 		border: 1px solid $border-subtle;
 		border-radius: $radius-sm;
-		font-size: 0.8125rem;
+		font-size: $font-size-12;
 		color: $text-muted;
 		margin-bottom: $spacing-lg;
 		line-height: 1.5;
