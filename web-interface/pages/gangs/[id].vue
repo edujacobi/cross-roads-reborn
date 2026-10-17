@@ -813,10 +813,10 @@ async function updateGangMoney() {
 									>
 										<th scope="row">
 											<div class="member-cell">
-												<NuxtImg
-													:class="['member-avatar', 'user-avatar', member.avatarDecoration ? `user-avatar--${member.avatarDecoration}` : '']"
-													:src="member.avatarUrl || useFallbackUserImage(member.userId)"
-													alt=""
+												<UserPicture
+													:image-url="member.avatarUrl || useFallbackUserImage(member.userId)"
+													:decoration="member.avatarDecoration"
+													image-class="member-avatar"
 													width="32"
 													height="32"
 												/>

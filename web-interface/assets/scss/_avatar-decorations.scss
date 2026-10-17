@@ -90,3 +90,106 @@
     @include avatarDecoration($avatar-ring, $avatar-glow);
   }
 }
+
+$weapon-avatar-images: (
+        "pistol": "1_Pistol.png",
+        "machine_pistol": "2_MachinePistol.png",
+        "hunt_rifle": "3_HuntRifle.png",
+        "shotgun": "4_Shotgun.png",
+        "smg": "5_SMG.png",
+        "assault_rifle": "6_AssaultRifle.png",
+        "carbine": "7_Carbine.png",
+        "sniper": "8_Sniper.png",
+        "katana": "9_Katana.png",
+        "rpg": "10_RPG.png",
+        "minigun": "11_Minigun.png",
+        "bazooka": "12_Bazooka.png",
+);
+// Match Canvas placement: 180px weapons at (center ± 90px, y + 140px) on a 512px avatar.
+.user-avatar-frame {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+  line-height: 0;
+
+  &::before,
+  &::after {
+    position: absolute;
+    z-index: 1;
+    width: 40%;
+    aspect-ratio: 1;
+    background-image: var(--avatar-weapon-image);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    pointer-events: none;
+  }
+}
+
+.user-avatar-frame {
+  &::before {
+    left: 30%;
+    transform: translateX(-50%) scaleX(-1);
+  }
+
+  &::after {
+    left: 70%;
+    transform: translateX(-50%);
+  }
+}
+
+.user-avatar-frame > .sidebar-user-avatar {
+  width: 2.375rem;
+  height: 2.375rem;
+  border-width: 2px;
+}
+
+.user-avatar-frame > .profile-img,
+.user-avatar-frame > .member-avatar {
+  width: 2rem;
+  height: 2rem;
+  border-width: 2px;
+  border-radius: $radius-full;
+}
+
+.user-avatar-frame > .rankings-page__player-avatar {
+  width: 3rem;
+  height: 3rem;
+  border-width: 3px;
+  border-radius: $radius-full;
+  background-color: $bg-subtle;
+
+  @media (max-width: $bp-tablet) {
+    width: 2rem;
+    height: 2rem;
+    border-width: 2px;
+  }
+}
+
+.user-avatar-frame:has(> .rankings-page__player-avatar) {
+  margin-right: $spacing-xs;
+}
+
+.user-avatar-frame > .special-shop__avatar-preview {
+  width: 5.5rem;
+  height: 5.5rem;
+}
+
+.user-avatar-frame:has(> .special-shop__avatar-preview) {
+  &::before,
+  &::after {
+    top: 70%;
+  }
+}
+
+@each $decoration, $image in $weapon-avatar-images {
+  .user-avatar-frame:has(> .user-avatar--#{$decoration}) {
+    --avatar-weapon-image: url("/images/items/#{$image}");
+
+    &::before,
+    &::after {
+      content: "";
+      top: 65%;
+    }
+  }
+}

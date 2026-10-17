@@ -172,12 +172,13 @@ function getBadgeImage(badgeId: BadgeId): string {
 		<template v-else-if="user">
 			<div class="user-profile__main-info">
 				<div class="user-profile__avatar-wrapper">
-					<LazyNuxtImg
-						:class="['user-avatar', `user-avatar--${user.avatarDecoration}`]"
-						:src="user.avatarUrl || useFallbackUserImage(user.id)"
+					<UserPicture
+						:image-url="user.avatarUrl || useFallbackUserImage(user.id)"
+						:decoration="user.avatarDecoration"
 						:alt="user.nickname ? `Avatar de ${user.nickname}` : 'Avatar do jogador'"
 						width="100"
 						height="100"
+						lazy
 					/>
 					<span
 						:class="`user-profile__presence user-profile__presence--${user.online ? 'online' : 'offline'}`"

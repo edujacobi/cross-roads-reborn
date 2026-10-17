@@ -137,9 +137,10 @@ function nextPage() {
 								class="player-cell"
 							>
 								<div class="player-cell-content">
-									<NuxtImg
-										:class="['profile-img', 'user-avatar', `user-avatar--${entry.avatarDecoration || 'default'}`]"
-										:src="entry.avatarUrl || useFallbackUserImage(entry.id)"
+									<UserPicture
+										:image-url="entry.avatarUrl || useFallbackUserImage(entry.id)"
+										:decoration="entry.avatarDecoration || 'default'"
+										image-class="profile-img"
 										:alt="entry.nickname ? `Avatar de ${entry.nickname}` : 'Avatar do jogador'"
 										width="32"
 										height="32"

@@ -345,10 +345,11 @@ function nextPage() {
 							>
 								<div class="rankings-page__player-content">
 									<span class="rankings-page__rank-cell">{{ offset + index + 1 }}</span>
-									<LazyNuxtImg
-										:class="['rankings-page__player-avatar', 'user-avatar', `user-avatar--${entry.avatarDecoration}`]"
-										:src="entry.avatarUrl || useFallbackUserImage(entry.id)"
-										alt=""
+									<UserPicture
+										:image-url="entry.avatarUrl || useFallbackUserImage(entry.id)"
+										:decoration="entry.avatarDecoration"
+										image-class="rankings-page__player-avatar"
+										lazy
 									/>
 									<span class="rankings-page__player-name">{{ entry.nickname }}</span>
 									<span

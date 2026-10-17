@@ -365,10 +365,11 @@ const user = computed(() => {
 				class="user-info"
 				:aria-label="user?.username ? `Perfil de ${user.username}` : 'Perfil do usuário'"
 			>
-				<LazyNuxtImg
-					:src="user?.avatarUrl"
-					:class="['user-avatar', `user-avatar--${user?.avatarDecoration}`]"
-					alt=""
+				<UserPicture
+					:image-url="user?.avatarUrl"
+					:decoration="user?.avatarDecoration"
+					image-class="sidebar-user-avatar"
+					lazy
 				/>
 				<div class="user-details">
 					<span class="user-name">{{ user?.username }}</span>

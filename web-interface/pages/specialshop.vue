@@ -99,6 +99,18 @@ const supportedAvatarPreviewClasses = new Set([
 	"silver",
 	"rainbow",
 	"botanical_garden",
+	"pistol",
+	"machine_pistol",
+	"hunt_rifle",
+	"shotgun",
+	"smg",
+	"assault_rifle",
+	"carbine",
+	"sniper",
+	"katana",
+	"rpg",
+	"minigun",
+	"bazooka",
 ]);
 
 const vipBenefits = [
@@ -169,11 +181,11 @@ function handleTabKeydown(event: KeyboardEvent) {
 	});
 }
 
-function getAvatarDecorationClass(decorationId: number) {
+function getAvatarDecoration(decorationId: number) {
 	const name = AvatarDecorationId[decorationId as AvatarDecorationId] ?? "Default";
 	const key = name === "FrutigerAero" ? "frutiger_aero" : name.replace(/([a-z])([A-Z])/g, "$1_$2").toLowerCase();
 
-	return `user-avatar--${supportedAvatarPreviewClasses.has(key) ? key : "default"}`;
+	return supportedAvatarPreviewClasses.has(key) ? key : "default";
 }
 
 function getBackgroundDecorationClass(decorationId: number) {
@@ -474,13 +486,14 @@ async function confirmPurchase() {
 							:key="decoration.id"
 							class="special-shop__card special-shop__card--avatar-decoration"
 						>
-							<NuxtImg
-								:class="['special-shop__avatar-preview', 'user-avatar', getAvatarDecorationClass(decoration.id)]"
-								:src="avatarUrl"
+							<UserPicture
+								:image-url="avatarUrl"
+								:decoration="getAvatarDecoration(decoration.id)"
+								image-class="special-shop__avatar-preview"
 								:alt="`Prévia do avatar com a decoração ${decoration.name}`"
 								width="88"
 								height="88"
-								loading="lazy"
+								lazy
 							/>
 							<h3>{{ decoration.name }}</h3>
 							<p class="special-shop__price">
