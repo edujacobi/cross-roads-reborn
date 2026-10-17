@@ -4,6 +4,7 @@
 >
 import { useQuery } from "@vue/apollo-composable";
 import { computed, watch } from "vue";
+import SpecialShopIcon from "~/components/icons/SpecialShopIcon.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
 import RefreshButton from "~/components/ui/RefreshButton.vue";
@@ -198,11 +199,9 @@ function getBadgeImage(badgeId: BadgeId): string {
 						v-if="showSpecialCoins && user.specialCoin !== null"
 						class="user-profile__coins"
 					>
-						<NuxtImg
-							:src="imagePaths.uiElements.specialCoin"
-							width="14"
-							height="14"
-							alt=""
+						<SpecialShopIcon
+							variant="normal"
+							:size="18"
 						/>
 						{{ formatPlain(user.specialCoin) }} Moedas especiais
 					</p>
