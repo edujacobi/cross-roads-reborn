@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-8 -8 112 79">
+    <defs>
+        <filter id="neon-glow" filterUnits="userSpaceOnUse" x="-10" y="-10" width="116" height="83">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="innerGlow"/>
+            <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="outerGlow"/>
+            <feMerge>
+                <feMergeNode in="outerGlow"/>
+                <feMergeNode in="innerGlow"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+    </defs>
+    <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 62A12 12 0 0 1 16 38A16 16 0 0 1 42 22A20 20 0 0 1 78 26A16.1 16.1 0 0 1 95.5 42" stroke="#FBAFD6"
+              stroke-width="3" filter="url(#neon-glow)"/>
+        <path d="M14 62A12 12 0 0 1 16 38A16 16 0 0 1 42 22A20 20 0 0 1 78 26A16.1 16.1 0 0 1 95.5 42" stroke="white"
+              stroke-width="1" opacity=".8"/>
+        <path d="M48 50Q52 54 56 50" stroke="#FBAFD6" stroke-width="2" filter="url(#neon-glow)"/>
+    </g>
+    <g fill="#FBAFD6">
+        <circle cx="44" cy="44" r="2.2" filter="url(#neon-glow)"/>
+        <circle cx="60" cy="44" r="2.2" filter="url(#neon-glow)"/>
+        <ellipse cx="38" cy="50" rx="3.5" ry="2" filter="url(#neon-glow)"/>
+        <ellipse cx="66" cy="50" rx="3.5" ry="2" filter="url(#neon-glow)"/>
+    </g>
+</svg>

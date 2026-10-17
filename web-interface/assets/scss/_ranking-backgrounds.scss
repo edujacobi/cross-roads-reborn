@@ -98,6 +98,24 @@ $palettes: (
   }
 }
 
+$cloud-decoration: url("/images/backgrounds/cloud.svg");
+
+.ranking-background--cloud,
+.profile-background--cloud {
+  background-position: right bottom, center;
+  background-repeat: no-repeat;
+}
+
+.ranking-background--cloud {
+  background-image: $cloud-decoration, linear-gradient(90deg, apply-alpha(#94BBE9, "40"), apply-alpha(#EEAECA, "40"));
+  background-size: 100% 80%, cover;
+}
+
+.profile-background--cloud {
+  background-image: $cloud-decoration, linear-gradient(90deg, apply-alpha(#94BBE9, '20'), apply-alpha(#EEAECA, "20"));
+  background-size: 80% 80%, cover;
+}
+
 $frutiger-aero-background: radial-gradient(
         ellipse 90% 105% at 18% 125%,
         apply-alpha(#eddd53, "30") 0 46%,
