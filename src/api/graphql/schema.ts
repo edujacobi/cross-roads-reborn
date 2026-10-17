@@ -841,6 +841,7 @@ export const typeDefs = /* GraphQL */ `
         changeOwnClass(classId: Int!): MutationResult!
         setOwnAutomaticGrenade(enabled: Boolean!): MutationResult!
         giveAlms(receiverId: ID!): MutationResult!
+        giftVip(receiverId: ID!, days: Int!): MutationResult!
         setVip(userId: ID!, days: Int!, eternal: Boolean!): MutationResult!
         killUser(userId: ID!, days: Int!): MutationResult!
         addBadge(userId: ID!, badgeId: Int!): MutationResult!

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { resolvers } from "#api/graphql/resolvers";
 import type { AuthUser } from "#api/types";
+import { Notification } from "#core/models/Notification";
 import { SituationId, User } from "#core/models/User";
 import { UserRepository } from "#core/repositories/UserRepository";
 import { ClassId } from "#core/types/Classes";
@@ -97,6 +98,74 @@ describe("Player self-service actions", () => {
 	it("rejects self-service mutations when unauthenticated", async () => {
 		await expect(
 			resolvers.Mutation.changeOwnClass(null, { classId: ClassId.Thief }, { user: null }),
+		).rejects.toThrow("Autenticação necessária para realizar esta ação.");
+	});
+
+	it("gifts VIP using only the authenticated player's special coins", async () => {
+		vi.spyOn(User.prototype, "GetInfo").mockImplementation(async function(this: User) {
+			this.SpecialCoin = this.Id === player.userId ? 1_190 : 0;
+			this.Nickname = "Recipient";
+			return this;
+		});
+		const gift = vi.spyOn(UserRepository, "GiftVipForDays").mockResolvedValue(true);
+		const notifyRecipient = vi.spyOn(Notification, "VipGift").mockResolvedValue();
+
+		await expect(
+			resolvers.Mutation.giftVip(null, { receiverId: "recipient", days: 7 }, { user: player }),
+		).resolves.toMatchObject({ success: true, message: "Você presenteou Recipient com 7 dias de VIP!" });
+		expect(gift).toHaveBeenCalledWith(player.userId, "recipient", 7, 1_190);
+		expect(notifyRecipient).toHaveBeenCalledWith(
+			expect.objectContaining({ Id: "recipient" }),
+			expect.objectContaining({ Id: player.userId }),
+			7,
+		);
+	});
+
+	it.each([6, 0, -7, 7.5, Number.MAX_SAFE_INTEGER])("rejects invalid VIP gift duration %s", async (days) => {
+		const gift = vi.spyOn(UserRepository, "GiftVipForDays");
+		await expect(
+			resolvers.Mutation.giftVip(null, { receiverId: "recipient", days }, { user: player }),
+		).resolves.toMatchObject({ success: false });
+		expect(gift).not.toHaveBeenCalled();
+	});
+
+	it("does not gift VIP when only the recipient has enough coins", async () => {
+		vi.spyOn(User.prototype, "GetInfo").mockImplementation(async function(this: User) {
+			this.SpecialCoin = this.Id === player.userId ? 1_189 : 10_000;
+			return this;
+		});
+		const gift = vi.spyOn(UserRepository, "GiftVipForDays");
+		await expect(
+			resolvers.Mutation.giftVip(null, { receiverId: "recipient", days: 7 }, { user: player }),
+		).resolves.toMatchObject({ success: false, message: "Saldo insuficiente de Moedas Especiais." });
+		expect(gift).not.toHaveBeenCalled();
+	});
+
+	it("rejects VIP gifts to yourself, missing players, or eternal VIPs", async () => {
+		const gift = vi.spyOn(UserRepository, "GiftVipForDays");
+		await expect(
+			resolvers.Mutation.giftVip(null, { receiverId: player.userId, days: 7 }, { user: player }),
+		).resolves.toMatchObject({ success: false });
+
+		vi.spyOn(User.prototype, "GetInfo").mockResolvedValue(null);
+		await expect(
+			resolvers.Mutation.giftVip(null, { receiverId: "recipient", days: 7 }, { user: player }),
+		).resolves.toMatchObject({ success: false, message: "Jogador não encontrado." });
+
+		vi.spyOn(User.prototype, "GetInfo").mockImplementation(async function(this: User) {
+			this.SpecialCoin = 1_190;
+			this.VipEternal = this.Id === "recipient";
+			return this;
+		});
+		await expect(
+			resolvers.Mutation.giftVip(null, { receiverId: "recipient", days: 7 }, { user: player }),
+		).resolves.toMatchObject({ success: false, message: "Este jogador já possui VIP Eterno." });
+		expect(gift).not.toHaveBeenCalled();
+	});
+
+	it("requires authentication to gift VIP", async () => {
+		await expect(
+			resolvers.Mutation.giftVip(null, { receiverId: "recipient", days: 7 }, { user: null }),
 		).rejects.toThrow("Autenticação necessária para realizar esta ação.");
 	});
 });

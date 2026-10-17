@@ -14,11 +14,13 @@ import UserBundles from "#core/database/UserBundles";
 import { UserInvestments } from "#core/database/UserInvestments";
 import { UserItems } from "#core/database/UserItems";
 import { Users } from "#core/database/Users";
-import { Op, QueryTypes, type InferAttributes, type InferCreationAttributes, type Optional, type WhereOptions } from "sequelize";
+import { literal, Op, QueryTypes, type InferAttributes, type InferCreationAttributes, type Optional, type WhereOptions } from "sequelize";
+import { addDays } from "date-fns";
 import { type NullishPropertiesOf } from "sequelize/lib/utils";
 
 import type { Language } from "#core/models/Language";
 import { ClassId } from "#core/types/Classes";
+import { AvatarDecorationId } from "#core/types/Ids";
 
 export type UserUpdateParam = Partial<InferAttributes<Users>>;
 export type TopUserRankingField =
@@ -78,6 +80,32 @@ export class UserRepository {
 	): Promise<[number]> {
 		return await Users.update(values, {
 			where: { id },
+		});
+	}
+
+	static async GiftVipForDays(giverId: string, receiverId: string, days: number, price: number): Promise<boolean> {
+		return await sequelize.transaction(async (transaction) => {
+			const receiver = await Users.findByPk(receiverId, { transaction });
+			if (!receiver || receiver.vipEternal) {
+				return false;
+			}
+
+			const [charged] = await Users.update(
+				{ specialCoin: literal(`specialCoin - ${price}`) },
+				{ where: { id: giverId, specialCoin: { [Op.gte]: price } }, transaction },
+			);
+			if (!charged) {
+				return false;
+			}
+
+			const now = new Date();
+			await receiver.update({
+				vipTime: addDays(receiver.vipTime && receiver.vipTime > now ? receiver.vipTime : now, days),
+				avatarDecoration: receiver.avatarDecoration === AvatarDecorationId.Default
+					? AvatarDecorationId.VIP
+					: receiver.avatarDecoration,
+			}, { transaction });
+			return true;
 		});
 	}
 

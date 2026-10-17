@@ -15,6 +15,9 @@ import {
 	Unlock,
 	UserRound,
 } from "lucide-vue-next";
+import HospitalIcon from "~/components/icons/HospitalIcon.vue";
+import PrisonIcon from "~/components/icons/PrisonIcon.vue";
+import SpecialShopIcon from "~/components/icons/SpecialShopIcon.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseInput from "~/components/ui/BaseInput.vue";
@@ -473,11 +476,9 @@ async function handleDeleteUser() {
 					:disabled="!canWrite || !isInHospital || cureLoading"
 					@click="handleCure()"
 				>
-					<NuxtImg
-						:src="imagePaths.situations.hospital"
-						width="18"
-						height="18"
-						alt=""
+					<HospitalIcon
+						:size="18"
+						variant="solid"
 					/>
 					Curar do Hospital
 				</BaseButton>
@@ -486,11 +487,9 @@ async function handleDeleteUser() {
 					:disabled="!canWrite || !isInPrison || freeLoading"
 					@click="handleFree()"
 				>
-					<NuxtImg
-						:src="imagePaths.situations.prison"
-						width="18"
-						height="18"
-						alt=""
+					<PrisonIcon
+						:size="18"
+						variant="solid"
 					/>
 					Soltar da Prisão
 				</BaseButton>
@@ -503,7 +502,7 @@ async function handleDeleteUser() {
 						:size="16"
 						aria-hidden="true"
 					/>
-					Alterar Dinheiro
+					Alterar Grana
 				</BaseButton>
 				<BaseButton
 					variant="secondary"
@@ -543,11 +542,9 @@ async function handleDeleteUser() {
 					:disabled="!canWrite || specialCoinsLoading"
 					@click="isSpecialCoinsModalOpen = true"
 				>
-					<NuxtImg
-						:src="imagePaths.uiElements.specialCoin"
-						width="18"
-						height="18"
-						alt=""
+					<SpecialShopIcon
+						:size="16"
+						variant="solid"
 					/>
 					Adicionar Moedas Especiais
 				</BaseButton>

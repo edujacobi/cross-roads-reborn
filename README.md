@@ -14,7 +14,7 @@ Players can earn money, fight other users, work jobs, manage inventory, and much
 - **Class System**: Choose different character classes with unique abilities
 - **Locations**: Visit different locations like the hospital, prison, and shop
 - **Leaderboards**: Compete with other players to reach the top of various leaderboards
-- **VIP System**: Get exclusive benefits by becoming a VIP
+- **VIP System**: Get exclusive benefits by becoming a VIP. In the web interface, use another player's profile actions to gift at least 7 whole days at 170 Special Coins per day, paid from your own balance.
 - **Multi-language Support**: Available in English, Portuguese, and Spanish
 - **Gang System**: Create or join gangs, manage members, and compete with other gangs
 - **Cosmetics**: Customize your profile with avatar decorations and item skins

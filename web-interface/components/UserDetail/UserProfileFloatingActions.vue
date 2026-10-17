@@ -3,11 +3,21 @@
 	lang="ts"
 >
 import { useMutation, useQuery } from "@vue/apollo-composable";
-import { CircleUserRound, X } from "lucide-vue-next";
+import { CircleUserRound, Gift, X } from "lucide-vue-next";
 import { computed, ref, watch } from "vue";
+import SpecialShopIcon from "~/components/icons/SpecialShopIcon.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
+import BaseInput from "~/components/ui/BaseInput.vue";
+import BaseModal from "~/components/ui/BaseModal.vue";
+import { useAuth } from "~/composables/useAuth";
 import { useMoneyFormat } from "~/composables/useMoneyFormat";
-import { GetAlmsStatusDocument, GiveAlmsDocument } from "~/graphql/generated";
+import { imagePaths } from "~/constants/imagePaths";
+import {
+	GetAlmsStatusDocument,
+	GetVipGiftOptionsDocument,
+	GiftVipDocument,
+	GiveAlmsDocument,
+} from "~/graphql/generated";
 
 const props = defineProps<{ userId: string }>();
 
@@ -17,7 +27,40 @@ const emit = defineEmits<{
 }>();
 
 const isMenuOpen = ref(false);
-const { formatMoney } = useMoneyFormat();
+const giftDialogOpen = ref(false);
+const vipDays = ref(7);
+const auth = useAuth();
+const { formatMoney, formatPlain } = useMoneyFormat();
+const isOtherUser = computed(() => !!auth.user.value && auth.user.value.userId !== props.userId);
+const {
+	result: giftOptionsResult,
+	loading: giftOptionsLoading,
+	error: giftOptionsError,
+	refetch: refetchGiftOptions,
+} = useQuery(GetVipGiftOptionsDocument, () => ({ giverId: auth.user.value?.userId ?? "", receiverId: props.userId }), {
+	enabled: isOtherUser,
+	fetchPolicy: "cache-and-network",
+});
+const giftOptions = computed(() => giftOptionsResult.value);
+const minimumDays = computed(() => giftOptions.value?.specialShop.vipMinimumDays ?? 7);
+const giftPrice = computed(() => vipDays.value * (giftOptions.value?.specialShop.vipPricePerDay ?? 0));
+const specialCoins = computed(() => giftOptions.value?.giver?.specialCoin ?? 0);
+const { mutate: giftVip, loading: giftVipLoading } = useMutation(GiftVipDocument);
+const canGiftVip = computed(
+	() =>
+		isOtherUser.value &&
+		!!giftOptions.value?.giver &&
+		!!giftOptions.value?.receiver &&
+		!giftOptions.value.receiver.vipEternal &&
+		!giftOptionsLoading.value &&
+		!giftOptionsError.value &&
+		!giftVipLoading.value &&
+		Number.isSafeInteger(vipDays.value) &&
+		vipDays.value >= minimumDays.value &&
+		Number.isSafeInteger(giftPrice.value) &&
+		giftPrice.value > 0 &&
+		giftPrice.value <= specialCoins.value,
+);
 const { result: almsStatusResult, loading: almsStatusLoading } = useQuery(
 	GetAlmsStatusDocument,
 	() => ({ receiverId: props.userId }),
@@ -30,8 +73,38 @@ watch(
 	() => props.userId,
 	() => {
 		isMenuOpen.value = false;
+		giftDialogOpen.value = false;
+		vipDays.value = minimumDays.value;
 	},
 );
+
+async function handleGiftVip() {
+	if (!canGiftVip.value) {
+		emit("feedback", "error", "Verifique a quantidade de dias e seu saldo de Moedas Especiais.");
+		return;
+	}
+	try {
+		const result = await giftVip({ receiverId: props.userId, days: vipDays.value });
+		const response = result?.data?.giftVip;
+		if (!response) {
+			emit("feedback", "error", "Não foi possível presentear VIP.");
+			return;
+		}
+		emit("feedback", response.success ? "success" : "error", response.message);
+		if (response.success) {
+			giftDialogOpen.value = false;
+			emit("refresh");
+		}
+	} catch (error: unknown) {
+		emit("feedback", "error", error instanceof Error ? error.message : "Erro inesperado.");
+		return;
+	}
+	try {
+		await refetchGiftOptions();
+	} catch (error: unknown) {
+		emit("feedback", "error", error instanceof Error ? error.message : "Não foi possível atualizar o saldo.");
+	}
+}
 
 async function handleGiveAlms() {
 	try {
@@ -54,7 +127,7 @@ async function handleGiveAlms() {
 </script>
 
 <template>
-	<template v-if="almsStatus">
+	<template v-if="almsStatus || isOtherUser">
 		<section
 			v-show="isMenuOpen"
 			id="user-profile-floating-menu"
@@ -62,6 +135,7 @@ async function handleGiveAlms() {
 			aria-label="Ações para este jogador"
 		>
 			<BaseButton
+				v-if="almsStatus"
 				variant="secondary"
 				:disabled="almsStatusLoading || giveAlmsLoading || !almsStatus.canGive"
 				@click="isMenuOpen = false; handleGiveAlms()"
@@ -74,7 +148,102 @@ async function handleGiveAlms() {
 				/>
 				Doar {{ formatMoney(almsStatus.value) }}
 			</BaseButton>
+			<BaseButton
+				v-if="isOtherUser"
+				variant="secondary"
+				:disabled="giftVipLoading"
+				@click="isMenuOpen = false; giftDialogOpen = true"
+			>
+				<NuxtImg
+					:src="imagePaths.badges.vip"
+					width="18"
+					height="18"
+				/>
+				Presentear VIP
+			</BaseButton>
 		</section>
+
+		<BaseModal
+			v-model:open="giftDialogOpen"
+			title="Presentear VIP"
+			:description="`Mínimo de ${minimumDays} dias. O custo será descontado das suas Moedas Especiais.`"
+		>
+			<form
+				id="gift-vip-form"
+				class="user-profile-floating-actions__gift"
+				@submit.prevent="handleGiftVip"
+			>
+				<label for="gift-vip-days">Dias de VIP</label>
+				<BaseInput
+					id="gift-vip-days"
+					v-model.number="vipDays"
+					type="number"
+					:min="minimumDays"
+					step="1"
+					required
+					:disabled="giftVipLoading"
+				/>
+				<p v-if="giftOptionsLoading">Carregando saldo e preço...</p>
+				<p
+					v-else-if="giftOptionsError"
+					role="alert"
+				>
+					Não foi possível carregar o saldo e o preço. Tente novamente.
+				</p>
+				<template v-else-if="giftOptions">
+					<p class="user-profile-floating-actions__gift__balance">
+						Você possui
+						<SpecialShopIcon
+							:size="14"
+							variant="solid"
+						/>
+						{{ formatPlain(specialCoins) }} Moedas Especiais
+					</p>
+					<p>
+						Total:
+						<SpecialShopIcon
+							:size="14"
+							variant="solid"
+						/>
+						{{ formatPlain(giftPrice) }} Moedas Especiais
+					</p>
+					<p
+						v-if="giftOptions.receiver?.vipEternal"
+						class="user-profile-floating-actions__gift__vip-notice"
+					>
+						Este jogador já possui
+						<NuxtImg
+							:src="imagePaths.badges.vip"
+							width="20"
+							height="20"
+						/>
+						VIP Eterno.
+					</p>
+					<p
+						v-else-if="giftPrice > specialCoins"
+						role="alert"
+					>
+						Saldo insuficiente de Moedas Especiais.
+					</p>
+				</template>
+			</form>
+			<template #footer>
+				<BaseButton
+					variant="secondary"
+					:disabled="giftVipLoading"
+					@click="giftDialogOpen = false"
+				>
+					Cancelar
+				</BaseButton>
+				<BaseButton
+					type="submit"
+					form="gift-vip-form"
+					:disabled="!canGiftVip"
+				>
+					{{ giftVipLoading ? "Enviando..." : "Presentear" }}
+				</BaseButton>
+			</template>
+		</BaseModal>
 
 		<button
 			type="button"
@@ -106,6 +275,28 @@ async function handleGiveAlms() {
 @use "~/assets/scss/variables" as *;
 
 .user-profile-floating-actions {
+	&__gift {
+		display: flex;
+		flex-direction: column;
+		gap: $spacing-sm;
+
+		p {
+			display: flex;
+			align-items: center;
+			gap: $spacing-xs;
+		}
+
+		&__balance {
+			font-size: 0.85rem;
+			color: $text-secondary;
+		}
+
+		&__vip-notice {
+			font-size: 0.85rem;
+			color: $color-vip;
+		}
+	}
+
 	&__toggle {
 		position: fixed;
 		left: calc(50% - 2rem);

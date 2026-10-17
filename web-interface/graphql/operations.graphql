@@ -830,6 +830,28 @@ mutation GiveAlms($receiverId: ID!) {
 	}
 }
 
+mutation GiftVip($receiverId: ID!, $days: Int!) {
+	giftVip(receiverId: $receiverId, days: $days) {
+		success
+		message
+	}
+}
+
+query GetVipGiftOptions($giverId: ID!, $receiverId: ID!) {
+	giver: user(id: $giverId) {
+		id
+		specialCoin
+	}
+	receiver: user(id: $receiverId) {
+		id
+		vipEternal
+	}
+	specialShop {
+		vipPricePerDay
+		vipMinimumDays
+	}
+}
+
 mutation SetVip($userId: ID!, $days: Int!, $eternal: Boolean!) {
 	setVip(userId: $userId, days: $days, eternal: $eternal) {
 		success

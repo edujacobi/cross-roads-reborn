@@ -9,6 +9,7 @@ import { formatMoney } from "#bot/utils/ui";
 import { sendPrivateMessage } from "#bot/utils/discordInteractions";
 import { CrColors } from "#bot/utils/colors";
 import { getJobClassModifier } from "#core/types/Classes";
+import { Colors } from "discord.js";
 
 export enum NotificationType {
 	Daily = 1,
@@ -199,6 +200,11 @@ export class Notification {
 		await sendPrivateMessage(user.Id, text, CrColors.Investment, formatMoney(user.Money, user.Language));
 	}
 
+	static async VipGift(receiver: User, giver: User, days: number) {
+		const s = Strings[receiver.Language];
+		await sendPrivateMessage(receiver.Id, s.vipGift(giver.Nickname, days), Colors.Gold);
+	}
+
 	static async HasNotificationsToSend(time: Date) {
 		const count = await NotificationRepository.CountUnsentBefore(time);
 		return count > 0;
@@ -380,6 +386,7 @@ const Strings = {
 		investmentYield: (name: string, amount: string) => `You received **${amount}** from your investment **${name}**! ${EmoteString.InvestmentActive}`,
 		investmentExpired: (name: string, amount: string) => `Your investment **${name}** has expired! You received **${amount}** as a final profit. ${EmoteString.InvestmentInactive}`,
 		henchmanFeeInfo: (amount: string, percent: number) => `Henchman took **${amount}** (${percent}%) as payment`,
+		vipGift: (giver: string, days: number) => `You received **${days} days of VIP** from **${giver}**! ${EmoteString.VIP}`,
 		vote: `You can vote again on Top.gg! Claim your coins now ${EmoteString.SpecialCoinShop}`,
 	},
 	[Language.Portuguese]: {
@@ -397,6 +404,7 @@ const Strings = {
 		investmentYield: (name: string, amount: string) => `Você recebeu **${amount}** do seu investimento **${name}**! ${EmoteString.InvestmentActive}`,
 		investmentExpired: (name: string, amount: string) => `Seu investimento **${name}** expirou! Você recebeu **${amount}** como lucro final. ${EmoteString.InvestmentInactive}`,
 		henchmanFeeInfo: (amount: string, percent: number) => `O capanga cobrou **${amount}** (${percent}%) como pagamento`,
+		vipGift: (giver: string, days: number) => `Você recebeu **${days} dias de VIP** de **${giver}**! ${EmoteString.VIP}`,
 		vote: `Você pode votar novamente no Top.gg! Reivindique suas moedas agora ${EmoteString.SpecialCoinShop}`,
 	},
 	[Language.Spanish]: {
@@ -414,6 +422,7 @@ const Strings = {
 		investmentYield: (name: string, amount: string) => `¡Recibiste **${amount}** de tu inversión **${name}**! ${EmoteString.InvestmentActive}`,
 		investmentExpired: (name: string, amount: string) => `¡Tu inversión **${name}** ha expirado! Recibiste **${amount}** como lucro final. ${EmoteString.InvestmentInactive}`,
 		henchmanFeeInfo: (amount: string, percent: number) => `El secuaz cobró **${amount}** (${percent}%) como pago`,
+		vipGift: (giver: string, days: number) => `¡Recibiste **${days} días de VIP** de **${giver}**! ${EmoteString.VIP}`,
 		vote: `¡Puedes votar de nuevo en Top.gg! Reclama tus monedas ahora ${EmoteString.SpecialCoinShop}`,
 	},
 } as const satisfies Localization;

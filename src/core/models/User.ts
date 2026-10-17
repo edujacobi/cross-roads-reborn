@@ -683,6 +683,24 @@ export class User {
 		return true;
 	}
 
+	async GiftVipForDays(receiver: User, days: number) {
+		const price = days * User.VIP_PRICE_PER_DAY;
+		if (
+			this.Id === receiver.Id || receiver.VipEternal ||
+			!Number.isSafeInteger(days) || days < User.VIP_MIN_DAYS ||
+			!Number.isSafeInteger(price) || this.SpecialCoin < price
+		) {
+			return false;
+		}
+
+		const gifted = await UserRepository.GiftVipForDays(this.Id, receiver.Id, days, price);
+		if (gifted) {
+			Log.Success(`User ${this.Id} gifted ${days} days of VIP to user ${receiver.Id} for ${price} special coins.`);
+			await Notification.VipGift(receiver, this, days);
+		}
+		return gifted;
+	}
+
 	/**
 	 * Adds VIP time to the user.
 	 * @param days Number of days to add.

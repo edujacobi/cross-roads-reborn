@@ -537,6 +537,41 @@ export const meResolvers: {
 			};
 		},
 
+		giftVip: async (_: unknown, args: { receiverId: string; days: number }, context: GraphQLContext) => {
+			const authUser = assertAuthenticated(context);
+			if (!Number.isSafeInteger(args.days) || args.days < User.VIP_MIN_DAYS) {
+				return { success: false, message: `Presenteie pelo menos ${User.VIP_MIN_DAYS} dias inteiros de VIP.`, user: null };
+			}
+			const price = args.days * User.VIP_PRICE_PER_DAY;
+			if (!Number.isSafeInteger(price)) {
+				return { success: false, message: "Quantidade de dias inválida.", user: null };
+			}
+			if (args.receiverId === authUser.userId) {
+				return { success: false, message: "Use a loja especial para comprar seu próprio VIP.", user: null };
+			}
+
+			const giver = new User(authUser.userId, Language.Portuguese);
+			const receiver = new User(args.receiverId);
+			const [giverFound, receiverFound] = await Promise.all([giver.GetInfo(), receiver.GetInfo()]);
+			if (!giverFound || !receiverFound) {
+				return { success: false, message: "Jogador não encontrado.", user: null };
+			}
+			if (receiver.VipEternal) {
+				return { success: false, message: "Este jogador já possui VIP Eterno.", user: null };
+			}
+			if (giver.SpecialCoin < price) {
+				return { success: false, message: "Saldo insuficiente de Moedas Especiais.", user: null };
+			}
+			if (!await giver.GiftVipForDays(receiver, args.days)) {
+				return { success: false, message: "Não foi possível presentear VIP. Atualize o saldo e tente novamente.", user: null };
+			}
+			return {
+				success: true,
+				message: `Você presenteou ${receiver.Nickname} com ${args.days} dias de VIP!`,
+				user: null,
+			};
+		},
+
 		giveAlms: async (_: unknown, args: { receiverId: string }, context: GraphQLContext) => {
 			const authUser = assertAuthenticated(context);
 			const giver = new User(authUser.userId, Language.Portuguese);
