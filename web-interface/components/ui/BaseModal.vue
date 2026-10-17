@@ -85,7 +85,10 @@ const emit = defineEmits<(e: "update:open", value: boolean) => void>();
   background-color: $bg-overlay;
   backdrop-filter: blur(6px);
   z-index: 100;
-  animation: fadeIn 0.2s ease-out;
+  animation: overlay-in 0.2s ease-out;
+  &[data-state="closed"] {
+    animation: overlay-out 0.15s ease-in forwards;
+  }
 }
 
 .dialog-content {
@@ -101,7 +104,10 @@ const emit = defineEmits<(e: "update:open", value: boolean) => void>();
   background-color: $bg-card;
   z-index: 101;
   padding: 0;
-  animation: slideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: dialog-in 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+  &[data-state="closed"] {
+    animation: dialog-out 0.16s ease-in forwards;
+  }
   @include scrollbar-custom;
 
   .dialog-header {
@@ -160,5 +166,23 @@ const emit = defineEmits<(e: "update:open", value: boolean) => void>();
       }
     }
   }
+}
+
+@keyframes overlay-in {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
+@keyframes overlay-out {
+	to { opacity: 0; }
+}
+
+@keyframes dialog-in {
+	from { opacity: 0; transform: translate(-50%, -47%) scale(0.97); }
+	to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes dialog-out {
+	to { opacity: 0; transform: translate(-50%, -48%) scale(0.98); }
 }
 </style>

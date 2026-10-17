@@ -84,6 +84,7 @@ defineProps<Props>();
 	overflow: hidden;
 	display: flex;
 	flex-direction: column;
+	transition: border-color $transition-normal ease, box-shadow $transition-normal ease;
 
 	&:has(.base-selector.is-open) {
 		overflow: visible;

@@ -34,6 +34,10 @@ onMounted(async () => {
 
 <template>
 	<main class="login-container">
+		<div
+			class="login-ambient ambient-motion"
+			aria-hidden="true"
+		/>
 		<article class="login-card">
 			<div class="brand-logo">
 				<NuxtImg
@@ -107,13 +111,28 @@ onMounted(async () => {
 @use "sass:color";
 
 .login-container {
+	position: relative;
+	isolation: isolate;
 	@include flex-center;
 	min-height: 100vh;
 	background: radial-gradient(circle at center, #171b26 0%, $bg-main 70%);
 	padding: 1.5rem;
 }
 
+.login-ambient {
+	position: absolute;
+	z-index: -1;
+	width: min(80vw, 44rem);
+	aspect-ratio: 1;
+	border-radius: 50%;
+	background: radial-gradient(circle, rgba($color-brand, 0.12), rgba($color-special, 0.04) 42%, transparent 70%);
+	filter: blur(14px);
+	pointer-events: none;
+	animation: login-aura 14s ease-in-out infinite alternate;
+}
+
 .login-card {
+	position: relative;
 	width: 100%;
 	max-width: 27.5rem;
 	@include card-surface;
@@ -124,6 +143,7 @@ onMounted(async () => {
 	align-items: center;
 	text-align: center;
 	box-shadow: $shadow-lg;
+	animation: reveal-up 0.55s $motion-ease-out both;
 
 	// ponytail: compact padding on mobile devices
 	@media (max-width: 480px) {
@@ -194,5 +214,10 @@ onMounted(async () => {
 			fill: currentColor;
 		}
 	}
+}
+
+@keyframes login-aura {
+	from { transform: translate3d(-8%, -4%, 0) scale(0.96); }
+	to { transform: translate3d(8%, 4%, 0) scale(1.04); }
 }
 </style>

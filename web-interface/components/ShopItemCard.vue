@@ -97,10 +97,7 @@ function handleUpdateUnits(itemId: number, delta: number) {
 <template>
 	<div
 		class="shop-item-card"
-		:class="{
-			'shop-item-card--black-market': isBlackMarket,
-			'shop-item-card--disabled': isDisabled
-		}"
+		:class="[isBlackMarket && 'shop-item-card--black-market', isDisabled && 'shop-item-card--disabled']"
 	>
 		<span
 			:data-popover-text="`Mais informações de ${item.name}`"
@@ -252,6 +249,7 @@ function handleUpdateUnits(itemId: number, delta: number) {
 	gap: $spacing-md;
 	position: relative;
 	overflow: hidden;
+	transition: box-shadow $transition-normal ease;
 
 	&--black-market {
 		$color-black-market: #5136b3;
@@ -265,6 +263,7 @@ function handleUpdateUnits(itemId: number, delta: number) {
 
 	&--disabled {
 		opacity: 0.5;
+		transition: none;
 
 		.shop-item-card__image {
 			filter: grayscale(0.5);

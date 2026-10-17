@@ -179,6 +179,16 @@ async function refreshUserDetails() {
 		display: flex;
 		flex-direction: column;
 		gap: $spacing-md;
+
+		> * {
+			animation: reveal-up 0.45s $motion-ease-out both;
+		}
+
+		@for $index from 1 through 6 {
+			> *:nth-child(#{$index}) {
+				animation-delay: #{$index * 35}ms;
+			}
+		}
 	}
 
 	&__columns {

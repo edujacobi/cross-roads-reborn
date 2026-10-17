@@ -27,7 +27,7 @@ const games = Object.entries(casinoGames).map(([slug, game]) => ({
 			subtitle="Antro da perdição! Aposte, ganhe, perca, quebre a banca!"
 		/>
 
-		<div class="casino-page__banner">
+		<div class="casino-page__banner ambient-motion">
 			<div class="casino-page__banner-icon">
 				<CasinoIcon
 					:size="120"
@@ -39,16 +39,16 @@ const games = Object.entries(casinoGames).map(([slug, game]) => ({
 				<p class="casino-page__intro">Aposte com estratégia. Vença com sorte.</p>
 			</div>
 		</div>
-
 		<section
 			class="casino-page__games"
 			aria-label="Jogos do cassino"
 		>
 			<div
-				v-for="game in games"
+				v-for="(game, index) in games"
 				:key="game.slug"
 				class="casino-page__game"
 				:class="{ 'casino-page__game--unavailable': 'availableOnWeb' in game && !game.availableOnWeb }"
+				:style="{ '--game-index': Math.min(index, 4) }"
 			>
 				<template v-if="'availableOnWeb' in game && !game.availableOnWeb">
 					<span class="casino-page__badge">Em breve</span>
@@ -151,6 +151,10 @@ const games = Object.entries(casinoGames).map(([slug, game]) => ({
 		animation: casino-icon-pulse 3s ease-in-out infinite;
 	}
 
+	&__banner.ambient-motion &__banner-icon {
+		animation-play-state: running;
+	}
+
 	&__eyebrow {
 		display: block;
 		margin-bottom: $spacing-sm;
@@ -176,11 +180,15 @@ const games = Object.entries(casinoGames).map(([slug, game]) => ({
 		border-radius: $radius-lg;
 		display: flex;
 		overflow: hidden;
+		animation: reveal-up 0.45s $motion-ease-out both;
+		animation-delay: calc(var(--game-index) * 40ms);
 
-		&:hover {
-			transform: translateY(-3px);
-			border-color: rgba($color-gold, 0.5);
-			box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35), 0 0 22px rgba($color-gold, 0.2);
+		@media (hover: hover) and (pointer: fine) {
+			&:not(.casino-page__game--unavailable):hover {
+				transform: translateY(-3px);
+				border-color: rgba($color-gold, 0.5);
+				box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35), 0 0 22px rgba($color-gold, 0.2);
+			}
 		}
 
 		&-body {
@@ -273,6 +281,10 @@ const games = Object.entries(casinoGames).map(([slug, game]) => ({
 @media (prefers-reduced-motion: reduce) {
 	.casino-page__banner,
 	.casino-page__banner-icon {
+		animation: none;
+	}
+
+	.casino-page__game {
 		animation: none;
 	}
 }

@@ -180,6 +180,16 @@ function refreshData() {
 	display: flex;
 	flex-direction: column;
 	gap: $spacing-lg;
+
+	> * {
+		animation: reveal-up 0.45s $motion-ease-out both;
+	}
+
+	@for $index from 1 through 6 {
+		> *:nth-child(#{$index}) {
+			animation-delay: #{$index * 35}ms;
+		}
+	}
 }
 
 .status-grid {

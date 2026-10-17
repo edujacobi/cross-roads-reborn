@@ -593,6 +593,16 @@ onUnmounted(() => {
 @use "~/assets/scss/variables" as *;
 @use "~/assets/scss/mixins" as *;
 
+.shop-page__grid > .shop-item-card:not(.shop-item-card--skeleton) {
+	animation: reveal-up 0.4s $motion-ease-out both;
+
+	@for $index from 1 through 20 {
+		&:nth-child(#{$index}) {
+			animation-delay: #{$index * 35}ms;
+		}
+	}
+}
+
 .shop-page {
 	display: flex;
 	flex-direction: column;

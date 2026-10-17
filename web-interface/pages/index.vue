@@ -3,7 +3,7 @@
 	lang="ts"
 >
 import { Coins, LogIn, Swords, UsersRound } from "lucide-vue-next";
-import { onMounted, onUnmounted, ref } from "vue";
+import { onMounted, onUnmounted, ref, watch } from "vue";
 import GangIcon from "~/components/icons/GangIcon.vue";
 import HospitalIcon from "~/components/icons/HospitalIcon.vue";
 import JobsIcon from "~/components/icons/JobsIcon.vue";
@@ -19,18 +19,39 @@ definePageMeta({
 
 const glowX = ref(0);
 const glowY = ref(0);
+const glowElement = ref<HTMLDivElement | null>(null);
+const { motionEnabled } = useMotionPreferences();
+let pointerFrame = 0;
 
 const handleMouseMove = (e: MouseEvent) => {
 	glowX.value = e.clientX;
 	glowY.value = e.clientY;
+	if (!pointerFrame) {
+		pointerFrame = requestAnimationFrame(() => {
+			if (glowElement.value) {
+				glowElement.value.style.transform = `translate3d(${glowX.value}px, ${glowY.value}px, 0)`;
+			}
+			pointerFrame = 0;
+		});
+	}
 };
 
-onMounted(() => {
-	window.addEventListener("mousemove", handleMouseMove);
-});
+function syncPointerGlow(enabled: boolean) {
+	const supportsPointerGlow = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+	if (enabled && supportsPointerGlow) {
+		window.addEventListener("mousemove", handleMouseMove, { passive: true });
+		return;
+	}
+	window.removeEventListener("mousemove", handleMouseMove);
+	if (pointerFrame) cancelAnimationFrame(pointerFrame);
+	pointerFrame = 0;
+}
 
+watch(motionEnabled, syncPointerGlow);
+onMounted(() => syncPointerGlow(motionEnabled.value));
 onUnmounted(() => {
 	window.removeEventListener("mousemove", handleMouseMove);
+	if (pointerFrame) cancelAnimationFrame(pointerFrame);
 });
 
 useSeoMeta({
@@ -50,12 +71,17 @@ useSeoMeta({
 </script>
 
 <template>
-	<div
-		class="mouse-glow"
-		:style="{ left: `${glowX}px`, top: `${glowY}px` }"
-	/>
 	<main class="game-home">
-		<header class="game-home__header">
+		<div
+			class="game-home__ambience ambient-motion"
+			aria-hidden="true"
+		/>
+		<div
+			ref="glowElement"
+			class="mouse-glow ambient-motion"
+			aria-hidden="true"
+		/>
+		<header class="game-home__header motion-reveal">
 			<NuxtImg
 				:src="imagePaths.brand.logo"
 				alt="Cross Roads Reborn"
@@ -71,7 +97,7 @@ useSeoMeta({
 			</BaseButton>
 		</header>
 
-		<section class="game-home__hero">
+		<section class="game-home__hero motion-reveal">
 			<p class="game-home__eyebrow">RPG multiplayer</p>
 			<h1>Uma cidade. Mil maneiras de chegar ao topo.</h1>
 			<p class="game-home__intro">
@@ -81,7 +107,7 @@ useSeoMeta({
 		</section>
 
 		<section
-			class="game-home__features"
+			class="game-home__features motion-reveal"
 			aria-label="Sobre o jogo"
 		>
 			<article class="game-feature">
@@ -115,7 +141,7 @@ useSeoMeta({
 		<p class="game-home__features-description">Saiba o que é possível em Cross Roads Reborn:</p>
 
 		<section
-			class="game-home__features"
+			class="game-home__features motion-reveal"
 			aria-label="Características do jogo"
 		>
 			<article class="game-feature">
@@ -188,9 +214,30 @@ useSeoMeta({
 @use "~/assets/scss/variables" as *;
 
 .game-home {
+	position: relative;
+	isolation: isolate;
 	width: min(68rem, 100%);
 	margin: 0 auto;
 	padding: clamp(1.25rem, 4vw, 3rem);
+
+	&__ambience {
+		position: absolute;
+		z-index: -1;
+		top: -10rem;
+		right: -12rem;
+		width: min(70vw, 48rem);
+		aspect-ratio: 1;
+		border-radius: 50%;
+		background: radial-gradient(circle, rgba($color-brand, 0.11), rgba($color-special, 0.035) 42%, transparent 70%);
+		filter: blur(12px);
+		pointer-events: none;
+		animation: landing-drift 16s ease-in-out infinite alternate;
+	}
+
+	> :not(.game-home__ambience, .mouse-glow) {
+		position: relative;
+		z-index: 1;
+	}
 
 	&__header {
 		display: flex;
@@ -256,6 +303,14 @@ useSeoMeta({
 	background: $bg-card;
 	border: 1px solid $border-card;
 	border-radius: $radius-md;
+	transition: transform $transition-normal $motion-ease-out, border-color $transition-normal ease, box-shadow $transition-normal ease;
+
+	@media (hover: hover) and (pointer: fine) {
+		&:hover {
+			border-color: rgba($color-brand, 0.42);
+			box-shadow: 0 0 20px rgba($color-brand, 0.08);
+		}
+	}
 
 	svg {
 		margin-bottom: $spacing-md;
@@ -284,8 +339,27 @@ useSeoMeta({
 	margin-left: -200px;
 	margin-top: -200px;
 	pointer-events: none;
-	background: radial-gradient(circle, rgba(34, 197, 94, 0.12) 0%, transparent 70%);
+	background: radial-gradient(circle, rgba(34, 197, 94, 0.1) 0%, transparent 70%);
 	z-index: 0;
-	transition: left 0.05s ease-out, top 0.05s ease-out;
+	will-change: transform;
+}
+
+.motion-reveal {
+	animation: reveal-up 0.5s $motion-ease-out both;
+}
+
+.game-home__features .game-feature {
+	animation: reveal-up 0.5s $motion-ease-out both;
+
+	@for $index from 1 through 6 {
+		&:nth-child(#{$index}) {
+			animation-delay: #{$index * 35}ms;
+		}
+	}
+}
+
+@keyframes landing-drift {
+	from { transform: translate3d(-2%, -1%, 0) scale(0.96); }
+	to { transform: translate3d(2%, 2%, 0) scale(1.04); }
 }
 </style>

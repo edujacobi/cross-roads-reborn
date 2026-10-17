@@ -16,6 +16,7 @@ interface Props {
 
 const props = defineProps<Props>();
 const canvas = ref<HTMLCanvasElement | null>(null);
+const { motionEnabled } = useMotionPreferences();
 let chart: ChartInstance<"line"> | undefined;
 
 function updateChart() {
@@ -83,6 +84,7 @@ function updateChart() {
 			type: "line",
 			data: { labels, datasets },
 			options: {
+				animation: { duration: motionEnabled.value ? 650 : 0 },
 				responsive: true,
 				maintainAspectRatio: false,
 				interaction: { mode: "index", intersect: false },
@@ -113,6 +115,11 @@ function updateChart() {
 }
 
 watch(() => [props.history, props.currentStats, props.historyLoading], updateChart, { deep: true, flush: "post" });
+watch(motionEnabled, (enabled) => {
+	if (!chart) return;
+	chart.options.animation = { duration: enabled ? 650 : 0 };
+	chart.update("none");
+});
 onMounted(updateChart);
 onBeforeUnmount(() => chart?.destroy());
 </script>

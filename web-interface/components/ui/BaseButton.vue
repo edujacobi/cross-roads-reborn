@@ -58,10 +58,24 @@ withDefaults(defineProps<Props>(), {
   cursor: pointer;
   @include transition-all;
   outline: none;
+  transition:
+  	transform $transition-fast $motion-ease-out,
+  	box-shadow $transition-fast ease,
+  	background-color $transition-fast ease,
+  	border-color $transition-fast ease,
+  	color $transition-fast ease;
 
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+
+  &:focus-visible {
+  	@include focus-outline($color-brand, 3px);
+  }
+
+  &:active:not(:disabled) {
+  	transform: translateY(1px) scale(0.985);
   }
 
   // Sizes
@@ -83,7 +97,12 @@ withDefaults(defineProps<Props>(), {
   // Variants
   &.variant-primary {
     background-color: $color-brand;
+  	border: none;
     color: #000;
+  	box-shadow: inset 0 1px 0 #ffffff59,
+  				inset 0 -2px 0 #0003,
+	  			0 1px 2px #0006,
+	  			0 8px 24px -6px color-mix(in lab, $color-brand 20%, #000);
 
     &:hover:not(:disabled) {
       background-color: color.adjust($color-brand, $lightness: 8%);

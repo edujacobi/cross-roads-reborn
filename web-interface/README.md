@@ -143,3 +143,13 @@ node admin/.output/server/index.mjs
 - **Radix Vue** — accessible headless UI primitives (used in `BaseModal`)
 - **SCSS** — custom design tokens and component styles (no Tailwind)
 - **Lucide Vue Next** — icon set
+
+## Motion and accessibility
+
+- Shared motion uses SCSS and native Vue/Nuxt transitions; no animation library is required.
+- The operating system's reduced-motion preference overrides the pause control and disables the control while active.
+  Essential status text and controls remain available without animation.
+- Decorative ambient effects pause while the tab is hidden. Pointer-following effects are limited to fine-pointer
+  devices.
+- Keep future animations short, transform/opacity based, and opt-in for decorative surfaces. Avoid animating layout or
+  applying staggered entrances to frequently updated data.
