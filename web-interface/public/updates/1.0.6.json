@@ -1,0 +1,23 @@
+{
+	"version": "1.0.6",
+	"title": "Mais ações de gangue, Loja especial e VIP",
+	"date": "16/10/2026",
+	"comment": "Alguns ajustes finos antes de trazer as funcionalidades difíceis.",
+	"sections": [
+		{
+			"title": "Ações de Gangue",
+			"description": "A página da Gangue agora permite Expulsar um membro, mandar Comunicados e ordenar os membros, além de mostrar infos dos depósitos.",
+			"imageUrl": "/images/situations/gang-action.png"
+		},
+		{
+			"title": "Loja Especial",
+			"description": "A loja especial chegou, e com ela você pode comprar itens especiais com Moedas Especiais. VIP agora pode ser adquirido por dia (mínimo de 7 dias).",
+			"imageUrl": "/images/ui_elements/SpecialCoin.webp"
+		},
+		{
+			"title": "VIP",
+			"description": "Você agora pode presentar VIP para outros jogadores!",
+			"imageUrl": "/images/badges/vip.png"
+		}
+	]
+}
