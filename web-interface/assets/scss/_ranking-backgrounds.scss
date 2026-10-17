@@ -98,16 +98,60 @@ $palettes: (
   }
 }
 
-.ranking-background--frutigerAero {
+$frutiger-aero-background: radial-gradient(
+        ellipse 90% 105% at 18% 125%,
+        apply-alpha(#eddd53, "30") 0 46%,
+        transparent 47%
+),
+radial-gradient(
+        ellipse 100% 90% at 78% -20%,
+        apply-alpha(#15a7e0, "30") 0 49%,
+        apply-alpha(#15d9e0, "40") 0 55%,
+        transparent 100%
+),
+linear-gradient(
+        165deg,
+        transparent 43%,
+        apply-alpha(#c7ed53, "20") 44%,
+        apply-alpha(#c7ed53, "10") 45%,
+        apply-alpha(#c7ed53, "20") 46%,
+        apply-alpha(#c7ed53, "10") 47%,
+        apply-alpha(#c7ed53, "20") 48%,
+        hsl(none 0% 100% / 0.04) 66%,
+        transparent 100%
+),
+linear-gradient(
+        205deg,
+        apply-alpha(#15a7e0, "30"),
+        apply-alpha(#15a7e0, "30"),
+        apply-alpha(#57c785, "30"),
+        apply-alpha(#c7ed53, "30"),
+        apply-alpha(#eddd53, "30"),
+),
+linear-gradient(
+        45deg,
+        transparent 50%,
+        apply-alpha(#ffffff, "30") 60%,
+        hsl(none 0% 100% / 0.04) 75%,
+        transparent 80%
+);
+
+.ranking-background--frutigerAero,
+.ranking-background--frutiger_aero {
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
   position: relative;
 
-  $bg: radial-gradient(rgba(255, 255, 255, 0.4) 63%, rgba(255, 255, 255, 0) 69%),
-  linear-gradient(205deg, #edb75340, #EDDD5340, #57C78540, #15a7e040, #15a7e040);
-  $border: radial-gradient(rgba(255, 255, 255, 0.4) 63%, rgba(255, 255, 255, 0) 69%),
-  linear-gradient(205deg, #edb75380, #EDDD5380, #57C78580, #15a7e080, #15a7e080);
+  $bg: $frutiger-aero-background;
+  $border: linear-gradient(
+          205deg,
+          apply-alpha(#15a7e0, "80"),
+          apply-alpha(#15a7e0, "80"),
+          apply-alpha(#57c785, "80"),
+          apply-alpha(#eddd53, "80"),
+          apply-alpha(#edb753, "80"),
+  );
   @include rankingBackground($bg, $border);
 }
 
@@ -118,10 +162,15 @@ $palettes: (
   background-size: cover;
   position: relative;
 
-  $bg: radial-gradient(rgba(255, 255, 255, 0.4) 63%, rgba(255, 255, 255, 0) 69%),
-  linear-gradient(205deg, #edb75320, #EDDD5320, #57C78520, #15a7e020, #15a7e020);
-  $border: radial-gradient(rgba(255, 255, 255, 0.4) 63%, rgba(255, 255, 255, 0) 69%),
-  linear-gradient(205deg, #edb753, #EDDD53, #57C785, #15a7e0, #15a7e0);
+  $bg: $frutiger-aero-background;
+  $border: linear-gradient(
+          205deg,
+          apply-alpha(#15a7e0, "80"),
+          apply-alpha(#15a7e0, "80"),
+          apply-alpha(#57c785, "80"),
+          apply-alpha(#eddd53, "80"),
+          apply-alpha(#edb753, "80"),
+  );;
   --profile-border-gradient: #{$border};
   @include rankingBackground($bg, $border);
 
