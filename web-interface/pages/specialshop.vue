@@ -17,6 +17,7 @@ import {
 	BuySpecialShopVipDocument,
 	GetSpecialShopDocument,
 	GetUserProfileDocument,
+	SetOwnBundleSkinDocument,
 	SetOwnDecorationDocument,
 	SpecialShopItemType,
 	UserDecorationType,
@@ -52,6 +53,7 @@ const activeTab = ref<ShopTabId>("vip");
 const tabList = ref<HTMLElement | null>(null);
 const purchaseDialogOpen = ref(false);
 const pendingPurchase = ref<PendingPurchase | null>(null);
+const pendingBundleActivation = ref<{ id: number; name: string } | null>(null);
 const vipDays = ref(7);
 
 const {
@@ -87,6 +89,7 @@ const vipPrice = computed(() => vipDays.value * vipPricePerDay.value);
 const { mutate: buySpecialShopItem, loading: buyingItem } = useMutation(BuySpecialShopItemDocument);
 const { mutate: buySpecialShopVip, loading: buyingVip } = useMutation(BuySpecialShopVipDocument);
 const { mutate: setOwnDecoration, loading: settingDecoration } = useMutation(SetOwnDecorationDocument);
+const { mutate: setOwnBundleSkin, loading: applyingBundleSkin } = useMutation(SetOwnBundleSkinDocument);
 const buying = computed(() => buyingItem.value || buyingVip.value);
 
 const supportedAvatarPreviewClasses = new Set([
@@ -167,6 +170,14 @@ function closePurchaseDialog(open: boolean) {
 	if (!open) pendingPurchase.value = null;
 }
 
+function requestBundleActivation(bundle: { id: number; name: string }) {
+	pendingBundleActivation.value = bundle;
+}
+
+function closeBundleActivation(open: boolean) {
+	if (!open) pendingBundleActivation.value = null;
+}
+
 function handleTabKeydown(event: KeyboardEvent) {
 	const currentIndex = shopTabs.findIndex((tab) => tab.id === activeTab.value);
 	let nextIndex: number;
@@ -230,6 +241,25 @@ async function setActiveDecoration(type: UserDecorationType, decorationId: numbe
 				text: `Decoração aplicada, mas não foi possível atualizar o perfil: ${getErrorMessage(caughtError)}`,
 			});
 		}
+	} catch (caughtError: unknown) {
+		showToast({ variant: "error", text: getErrorMessage(caughtError) });
+	}
+}
+
+async function confirmBundleActivation() {
+	const bundle = pendingBundleActivation.value;
+	if (!bundle) return;
+
+	try {
+		const response = await setOwnBundleSkin({ bundleId: bundle.id });
+		const result = response?.data?.setOwnBundleSkin;
+		if (!result?.success) {
+			showToast({ variant: "error", text: result?.message ?? "Não foi possível aplicar o pacote de skins." });
+			return;
+		}
+
+		closeBundleActivation(false);
+		showToast({ variant: "success", text: result.message });
 	} catch (caughtError: unknown) {
 		showToast({ variant: "error", text: getErrorMessage(caughtError) });
 	}
@@ -487,13 +517,14 @@ async function confirmPurchase() {
 									<span>{{ skin.name }}</span>
 								</li>
 							</ul>
-							<p
+							<BaseButton
 								v-if="bundle.owned"
-								class="special-shop__owned"
-								role="status"
+								variant="success"
+								:disabled="applyingBundleSkin"
+								@click="requestBundleActivation(bundle)"
 							>
-								Adquirido
-							</p>
+								Ativar pacote
+							</BaseButton>
 							<BaseButton
 								v-else
 								variant="secondary"
@@ -635,6 +666,33 @@ async function confirmPurchase() {
 					@click="confirmPurchase"
 				>
 					{{ buying ? "Comprando..." : "Confirmar compra" }}
+				</BaseButton>
+			</template>
+		</BaseModal>
+
+		<BaseModal
+			:open="pendingBundleActivation !== null"
+			title="Confirmar ativação do pacote"
+			:description="pendingBundleActivation?.name"
+			@update:open="closeBundleActivation"
+		>
+			<p v-if="pendingBundleActivation">
+				Aplicar as skins do pacote {{ pendingBundleActivation.name }} a todos os itens correspondentes?
+			</p>
+			<template #footer>
+				<BaseButton
+					variant="secondary"
+					:disabled="applyingBundleSkin"
+					@click="closeBundleActivation(false)"
+				>
+					Cancelar
+				</BaseButton>
+				<BaseButton
+					variant="success"
+					:disabled="!pendingBundleActivation || applyingBundleSkin"
+					@click="confirmBundleActivation"
+				>
+					{{ applyingBundleSkin ? "Aplicando..." : "Ativar pacote" }}
 				</BaseButton>
 			</template>
 		</BaseModal>
