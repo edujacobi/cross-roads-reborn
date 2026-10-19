@@ -25,6 +25,7 @@ import {
 	GetBribeCostDocument,
 	GetMyPrisonStatusDocument,
 	GetPrisonersDocument,
+	GetUserProfileDocument,
 	PayBribePrisonDocument,
 } from "~/graphql/generated";
 
@@ -37,6 +38,7 @@ useHead({
 });
 
 const auth = useAuth();
+const currentUserId = computed(() => auth.user?.value?.userId ?? "");
 const { distance } = useDateFormat();
 const { getClassImageUrl, getClassName } = useClasses();
 const { getSituationImageUrl, getSituationName } = useSituation();
@@ -79,6 +81,16 @@ const { result: bribeCostResult, refetch: refetchBribeCost } = useQuery(
 );
 
 const bribeCost = computed(() => bribeCostResult.value?.bribeCost || 0);
+
+const { result: userProfileResult, refetch: refetchUserProfile } = useQuery(
+	GetUserProfileDocument,
+	() => ({ id: currentUserId.value }),
+	{
+		enabled: !!currentUserId.value,
+		fetchPolicy: "cache-and-network",
+	},
+);
+const userMoney = computed(() => userProfileResult.value?.user?.money ?? 0);
 
 const { result: userStatusResult, refetch: refetchPrisonStatus } = useQuery(
 	GetMyPrisonStatusDocument,
@@ -267,7 +279,13 @@ async function handleBribe() {
 	}
 
 	showBribeModal.value = false;
-	await Promise.all([auth.fetchUser(), refetchPrisoners(), refetchPrisonStatus(), refetchBribeCost()]);
+	await Promise.all([
+		auth.fetchUser(),
+		refetchPrisoners(),
+		refetchPrisonStatus(),
+		refetchBribeCost(),
+		refetchUserProfile(),
+	]);
 }
 
 const { formatMoney } = useMoneyFormat();
@@ -664,6 +682,7 @@ function formatBribeCost() {
 			title="Subornar os guardas"
 			@update:open="showBribeModal = $event"
 		>
+			<p>Sua grana: {{ formatMoney(userMoney) }}</p>
 			<p>
 				<em>
 					Sabemos que você tem um certo dinheiro escondido aí... Nos dê <strong>{{ formatBribeCost() }}</strong> e

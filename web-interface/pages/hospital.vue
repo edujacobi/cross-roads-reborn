@@ -23,6 +23,7 @@ import { imagePaths } from "~/constants/imagePaths";
 import {
 	GetHospitalizedUsersDocument,
 	GetPrivateHospitalCostDocument,
+	GetUserProfileDocument,
 	PayPrivateHospitalDocument,
 } from "~/graphql/generated";
 
@@ -35,6 +36,7 @@ useHead({
 });
 
 const auth = useAuth();
+const currentUserId = computed(() => auth.user?.value?.userId ?? "");
 const { distance } = useDateFormat();
 const { getClassImageUrl, getClassName } = useClasses();
 const { showToast } = useToast();
@@ -73,6 +75,16 @@ const { result: privateCostResult, refetch: refetchPrivateCost } = useQuery(
 );
 
 const privateHospitalCost = computed(() => privateCostResult.value?.privateHospitalCost || 0);
+
+const { result: userProfileResult, refetch: refetchUserProfile } = useQuery(
+	GetUserProfileDocument,
+	() => ({ id: currentUserId.value }),
+	{
+		enabled: !!currentUserId.value,
+		fetchPolicy: "cache-and-network",
+	},
+);
+const userMoney = computed(() => userProfileResult.value?.user?.money ?? 0);
 
 const entries = computed(() => result.value?.hospitalizedUsers?.entries || []);
 const total = computed(() => result.value?.hospitalizedUsers?.total || 0);
@@ -125,7 +137,7 @@ async function handlePayPrivate() {
 	if (res?.data?.payPrivateHospital?.success) {
 		showToast({ text: res?.data?.payPrivateHospital.message, variant: "success" });
 		showPrivateModal.value = false;
-		await Promise.all([auth.fetchUser(), refetchHospitalized(), refetchPrivateCost()]);
+		await Promise.all([auth.fetchUser(), refetchHospitalized(), refetchPrivateCost(), refetchUserProfile()]);
 	} else {
 		showToast({ text: res?.data?.payPrivateHospital?.message || "Erro desconhecido.", variant: "error" });
 	}
@@ -381,6 +393,7 @@ async function handlePayPrivate() {
 			title="Pagar tratamento particular"
 			@update:open="showPrivateModal = $event"
 		>
+			<p>Sua grana: {{ formatMoney(userMoney) }}</p>
 			<p>
 				<em> Seu tratamento custará <strong>{{ formatPrivateCost() }}</strong> e será somente uma injeçãozinha.</em>
 			</p>
