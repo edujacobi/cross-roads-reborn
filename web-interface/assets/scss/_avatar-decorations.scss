@@ -89,6 +89,12 @@
     $avatar-glow: #8BD448;
     @include avatarDecoration($avatar-ring, $avatar-glow);
   }
+
+  &--master_of_arms {
+    $avatar-ring: linear-gradient(180deg, #5C6444, #3C4814);
+    $avatar-glow: #5C6444;
+    @include avatarDecoration($avatar-ring, $avatar-glow);
+  }
 }
 
 $weapon-avatar-images: (
@@ -191,5 +197,40 @@ $weapon-avatar-images: (
       content: "";
       top: 65%;
     }
+  }
+}
+
+.user-avatar-frame:has(> .user-avatar--master_of_arms) {
+  &::before,
+  &::after {
+    content: "";
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    aspect-ratio: auto;
+    background-size: 16.5% 16.5%;
+  }
+
+  &::before {
+    transform: scaleX(-1);
+    background-image: url("/images/items/11_Minigun.png"),
+    url("/images/items/6_AssaultRifle.png"),
+    url("/images/items/8_Sniper.png");
+    background-position: right 36% top 76%,
+    right 30% top 65%,
+    right 26% top 55%;
+  }
+
+  &::after {
+    transform: scaleX(1);
+    background-image: url("/images/items/18_Grenade.png"),
+    url("/images/items/4_Shotgun.png"),
+    url("/images/items/7_Carbine.png"),
+    url("/images/items/5_SMG.png");
+    background-position: left 52% top 77%,
+    left 66% top 73%,
+    left 71% top 63%,
+    left 75% top 55%;
   }
 }
