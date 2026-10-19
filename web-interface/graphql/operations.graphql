@@ -316,6 +316,33 @@ query GetUserProfile($id: ID!) {
 		attack
 		defense
 		situationId
+		isInHospital
+		hospitalTime
+		isInPrison
+		prisonTime
+		isWorking
+		currentJobId
+		jobEndsIn
+		isScavenging
+		scavengingId
+		isWanted
+		wantedTime
+		isRobbing
+		isBeingRobbed
+		robberUserId
+		robbedByUserId
+		robberyLocationId
+		robberyLocationName
+		isBeating
+		isBeingBeated
+		beaterUserId
+		beatenByUserId
+		activityTargetNickname
+		isInCasino
+		isDefendingInvestment
+		isInGangAction
+		isDead
+		deadUntil
 		badges {
 			id
 			name

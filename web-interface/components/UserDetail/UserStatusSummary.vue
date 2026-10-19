@@ -2,21 +2,24 @@
 	setup
 	lang="ts"
 >
-import { useQuery } from "@vue/apollo-composable";
 import { computed } from "vue";
 import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
 import RefreshButton from "~/components/ui/RefreshButton.vue";
 import { imagePaths } from "~/constants/imagePaths";
-import { GetUserStatusDocument } from "~/graphql/generated";
+import type { GetUserProfileQuery } from "~/graphql/generated";
 
-const props = defineProps<{ userId: string }>();
+const props = defineProps<{
+	status: GetUserProfileQuery["user"];
+	loading: boolean;
+	error: boolean;
+}>();
+const emit = defineEmits<{ refresh: [] }>();
 
-const { result, loading, error, refetch } = useQuery(GetUserStatusDocument, () => ({ id: props.userId }), {
-	fetchPolicy: "cache-and-network",
-});
-const user = computed(() => result.value?.user);
+const user = computed(() => props.status);
+const loading = computed(() => props.loading);
+const error = computed(() => props.error);
 </script>
 
 <template>
@@ -27,7 +30,7 @@ const user = computed(() => result.value?.user);
 	>
 		<template #actions>
 			<RefreshButton
-				@refresh="() => refetch()"
+				@refresh="emit('refresh')"
 				:loading="loading"
 				aria-label="Atualizar situação e estados"
 			/>

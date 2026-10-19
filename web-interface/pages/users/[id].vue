@@ -2,7 +2,7 @@
 	setup
 	lang="ts"
 >
-import { useApolloClient } from "@vue/apollo-composable";
+import { useApolloClient, useQuery } from "@vue/apollo-composable";
 import { ArrowLeft } from "lucide-vue-next";
 import { computed, ref, watch } from "vue";
 import UserActivityStatsCard from "~/components/UserDetail/UserActivityStatsCard.vue";
@@ -17,6 +17,7 @@ import UserProfileHeader from "~/components/UserDetail/UserProfileHeader.vue";
 import UserSelfActionsCard from "~/components/UserDetail/UserSelfActionsCard.vue";
 import UserStatusSummary from "~/components/UserDetail/UserStatusSummary.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
+import { GetUserProfileDocument, type GetUserProfileQuery } from "~/graphql/generated";
 
 definePageMeta({
 	middleware: "auth",
@@ -32,6 +33,13 @@ const isOwnUser = computed(() => auth.user.value?.userId === userId.value);
 const canViewPrivateDetails = computed(() => isOwnUser.value || auth.hasAdminAccess.value);
 const canViewPrivateInvestmentInfo = computed(() => isOwnUser.value || auth.isDeveloper.value);
 const profileState = ref<"loading" | "ready" | "not-found" | "error">("loading");
+const {
+	result: profileResult,
+	loading: profileLoading,
+	error: profileError,
+	refetch: refetchProfile,
+} = useQuery(GetUserProfileDocument, () => ({ id: userId.value }), { fetchPolicy: "cache-and-network" });
+const profile = computed<GetUserProfileQuery["user"]>(() => profileResult.value?.user ?? null);
 
 watch(userId, () => {
 	profileState.value = "loading";
@@ -55,7 +63,6 @@ async function refreshUserDetails() {
 				"GetUserInvestment",
 				"GetUserGang",
 				"GetUserActivityStats",
-				"GetUserStatus",
 				"GetUserMetadata",
 				"GetUserSelfActions",
 				"GetUserAdminActions",
@@ -85,9 +92,12 @@ async function refreshUserDetails() {
 		</nav>
 
 		<UserProfileHeader
-			:user-id="userId"
 			:show-special-coins="canViewPrivateDetails"
+			:user="profile"
+			:loading="profileLoading"
+			:error="!!profileError"
 			@state="setProfileState"
+			@refresh="refetchProfile()"
 		/>
 
 		<div
@@ -127,7 +137,12 @@ async function refreshUserDetails() {
 
 			<template v-if="auth.hasAdminAccess.value">
 				<div class="user-detail__columns">
-					<UserStatusSummary :user-id="userId" />
+					<UserStatusSummary
+						:status="profile"
+						:loading="profileLoading"
+						:error="!!profileError"
+						@refresh="refetchProfile()"
+					/>
 					<UserAdminActions
 						:user-id="userId"
 						:is-developer="auth.isDeveloper.value"

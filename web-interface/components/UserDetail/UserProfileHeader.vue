@@ -12,30 +12,26 @@ import { useDateFormat } from "~/composables/useDateFormat";
 import { useFallbackUserImage } from "~/composables/useFallbackImage";
 import { useMoneyFormat } from "~/composables/useMoneyFormat";
 import { imagePaths } from "~/constants/imagePaths";
-import {
-	GetJobsDocument,
-	GetScavengeLocationsDocument,
-	GetUserProfileDocument,
-	GetUserStatusDocument,
-} from "~/graphql/generated";
+import { GetJobsDocument, GetScavengeLocationsDocument, type GetUserProfileQuery } from "~/graphql/generated";
 import { BadgeId } from "../../../src/core/types/Ids";
 
-const props = defineProps<{ userId: string; showSpecialCoins: boolean }>();
+const props = defineProps<{
+	showSpecialCoins: boolean;
+	user: GetUserProfileQuery["user"];
+	loading: boolean;
+	error: boolean;
+}>();
 const emit = defineEmits<{
 	state: [state: "ready" | "not-found" | "error"];
+	refresh: [];
 }>();
 
-const { result, loading, error, refetch } = useQuery(GetUserProfileDocument, () => ({ id: props.userId }), {
-	fetchPolicy: "cache-and-network",
-});
-const user = computed(() => result.value?.user);
-
-const {
-	result: statusResult,
-	loading: statusLoading,
-	error: statusError,
-} = useQuery(GetUserStatusDocument, () => ({ id: props.userId }), { fetchPolicy: "cache-and-network" });
-const status = computed(() => statusResult.value?.user);
+const user = computed(() => props.user);
+const loading = computed(() => props.loading);
+const error = computed(() => props.error);
+const status = computed(() => props.user);
+const statusLoading = computed(() => props.loading);
+const statusError = computed(() => props.error);
 const { result: jobsResult } = useQuery(
 	GetJobsDocument,
 	{},
@@ -114,7 +110,7 @@ watch(
 		if (isLoading) return;
 		if (queryError) {
 			emit("state", loadedUser ? "ready" : "error");
-		} else if (result.value !== undefined) {
+		} else {
 			emit("state", loadedUser ? "ready" : "not-found");
 		}
 	},
@@ -142,7 +138,7 @@ function getBadgeImage(badgeId: BadgeId): string {
 	>
 		<template #actions>
 			<RefreshButton
-				@refresh="() => refetch()"
+				@refresh="emit('refresh')"
 				:loading="loading"
 				aria-label="Atualizar perfil"
 			/>
@@ -196,7 +192,7 @@ function getBadgeImage(badgeId: BadgeId): string {
 				<div class="user-profile__economy">
 					<p class="user-profile__money">{{ formatMoney(user.money) }}</p>
 					<p
-						v-if="showSpecialCoins && user.specialCoin !== null"
+						v-if="props.showSpecialCoins && user.specialCoin !== null"
 						class="user-profile__coins"
 					>
 						<SpecialShopIcon
