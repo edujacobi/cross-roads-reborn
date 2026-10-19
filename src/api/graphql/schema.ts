@@ -755,6 +755,7 @@ export const typeDefs = /* GraphQL */ `
         user(id: ID!): UserDetail
         userHistory(userId: ID!, limit: Int, offset: Int): UserHistoryResult!
         items: [ItemDetails!]!
+        item(id: Int!): ItemDetails
         blackMarketOpen: Boolean!
         jobs: [JobInfo!]!
         hospitalizedUsers(search: String, limit: Int, offset: Int, sortBy: String, sortOrder: String): HospitalizedUserPage!

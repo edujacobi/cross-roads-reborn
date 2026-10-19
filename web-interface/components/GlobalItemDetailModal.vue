@@ -4,38 +4,33 @@
 >
 import { useQuery } from "@vue/apollo-composable";
 import { Moon, Sun } from "lucide-vue-next";
-import { watch } from "vue";
+import { computed } from "vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
+import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
 import { useItemDetailModal } from "~/composables/useItemDetailModal";
 import { useMoneyFormat } from "~/composables/useMoneyFormat";
 import { imagePaths } from "~/constants/imagePaths";
-import { GetItemsDocument, type GetItemsQuery } from "~/graphql/generated";
+import { GetItemDocument } from "~/graphql/generated";
 import { ItemType } from "../../src/core/types/ItemType";
 
-type Item = GetItemsQuery["items"][number];
-
 const route = useRoute();
-const { selectedItem, isModalOpen, handleOpenUpdate, closeItemModal } = useItemDetailModal();
+const { handleOpenUpdate, closeItemModal } = useItemDetailModal();
 
-const { result } = useQuery(GetItemsDocument);
+const itemId = computed(() => {
+	const queryId = route.query.detailsItemId;
+	return queryId === undefined || queryId === "" ? null : Number(queryId);
+});
+const isModalOpen = computed(() => itemId.value !== null && Number.isInteger(itemId.value));
 
-// Resolve the selected item from the query parameter using fetched items
-watch(
-	[result, () => route.query.detailsItemId],
-	([newResult, queryId]) => {
-		if (!newResult || newResult.items.length === 0) return;
-
-		if (queryId !== undefined && queryId !== null && queryId !== "") {
-			const itemIdNum = Number(queryId);
-			const found = newResult.items.find((item: Item) => item.id === itemIdNum);
-			if (found) {
-				selectedItem.value = found;
-				isModalOpen.value = true;
-			}
-		}
-	},
-	{ immediate: true },
+const { result, loading } = useQuery(
+	GetItemDocument,
+	() => ({ id: itemId.value }),
+	() => ({
+		enabled: isModalOpen.value,
+		fetchPolicy: "cache-and-network",
+	}),
 );
+const selectedItem = computed(() => (isModalOpen.value ? (result.value?.item ?? null) : null));
 
 const typeData: Record<
 	number,
@@ -71,12 +66,55 @@ const { formatMoney } = useMoneyFormat();
 
 <template>
 	<BaseModal
-		:open="isModalOpen && !!selectedItem"
+		:open="isModalOpen"
 		title="Detalhes do Item"
 		@update:open="handleOpenUpdate"
 		@close="closeItemModal"
 	>
-		<template v-if="selectedItem">
+		<div
+			v-if="loading && !selectedItem"
+			class="item-modal"
+			aria-busy="true"
+		>
+			<header class="item-modal__header">
+				<BaseSkeleton
+					width="6rem"
+					height="6rem"
+				/>
+				<div class="item-modal__header-meta">
+					<BaseSkeleton
+						width="12rem"
+						height="1.5rem"
+					/>
+					<BaseSkeleton
+						width="6rem"
+						height="1.25rem"
+					/>
+					<BaseSkeleton width="10rem" />
+				</div>
+			</header>
+			<section
+				v-for="section in 3"
+				:key="section"
+				class="item-modal__section"
+			>
+				<BaseSkeleton
+					width="8rem"
+					height="0.85rem"
+				/>
+				<div class="item-modal__grid">
+					<BaseSkeleton height="3.25rem" />
+					<BaseSkeleton height="3.25rem" />
+				</div>
+			</section>
+		</div>
+		<p
+			v-else-if="!selectedItem"
+			class="item-tag"
+		>
+			Item não encontrado
+		</p>
+		<template v-else>
 			<div class="item-modal">
 				<header
 					class="item-modal__header"

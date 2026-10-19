@@ -931,6 +931,38 @@ query GetItems {
 	}
 }
 
+query GetItem($id: Int!) {
+	item(id: $id) {
+		id
+		type
+		typeName
+		name
+		price
+		shop
+		blackMarket
+		attack
+		defense
+		moneyAttack
+		moneyDefense
+		moreAttack
+		moreDefense
+		moreMoneyATK
+		moreMoneyDEF
+		extra
+		special {
+			day
+			night
+		}
+		skins {
+			bundleId
+			bundleName
+			imagePath
+		}
+		userCount
+		defaultImagePath
+	}
+}
+
 query GetBlackMarketOpen {
 	blackMarketOpen
 }

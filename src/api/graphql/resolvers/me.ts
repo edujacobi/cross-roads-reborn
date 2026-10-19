@@ -35,6 +35,63 @@ import { Alms } from "#core/models/Alms";
 import { Investment as InvestmentModel } from "#core/models/Investment";
 import { type InvestmentActionReason, type InvestmentId, InvestmentList } from "#core/types/Investments";
 
+const itemTypeNames: Record<ItemType, string> = {
+	[ItemType.Weapon]: "Arma",
+	[ItemType.Wearable]: "Vestível",
+	[ItemType.Accessory]: "Acessório",
+	[ItemType.Consumable]: "Consumível",
+	[ItemType.BeatUp]: "Espancamento",
+};
+
+async function mapItemDetails(item: Items) {
+	const userCount = await UserItemRepository.CountUsersWithItem(item.Id);
+	const skins = Object.entries(item.Skin).map(([bundleIdStr, skin]) => {
+		const bId = Number(bundleIdStr) as BundleId;
+		const bundle = BundleList[bId];
+		const bundleName = bundle?.Description[Language.Portuguese] ?? "Desconhecido";
+		let filename = `${item.Id}_${ItemId[item.Id]}.png`;
+		if (bId !== BundleId.Default) {
+			filename = `${item.Id}_${ItemId[item.Id]}_${BundleId[bId]}.png`;
+		}
+		return {
+			bundleId: bId,
+			bundleName,
+			emoteId: skin.Id,
+			emoteString: skin.String,
+			imagePath: `/images/items/${filename}`,
+		};
+	});
+
+	return {
+		id: item.Id,
+		type: item.Type,
+		typeName: itemTypeNames[item.Type] ?? "Outro",
+		name: item.Description[Language.Portuguese],
+		namePt: item.Description[Language.Portuguese],
+		nameEn: item.Description[Language.English],
+		nameEs: item.Description[Language.Spanish],
+		price: item.Price,
+		shop: item.Shop,
+		blackMarket: item.BlackMarket,
+		attack: item.Attack,
+		defense: item.Defense,
+		moneyAttack: item.MoneyAttack,
+		moneyDefense: item.MoneyDefense,
+		moreAttack: item.MoreAttack,
+		moreDefense: item.MoreDefense,
+		moreMoneyATK: item.MoreMoneyATK,
+		moreMoneyDEF: item.MoreMoneyDEF,
+		extra: item.Extra ? item.Extra[Language.Portuguese] : undefined,
+		special: {
+			day: item.Special.Day,
+			night: item.Special.Night,
+		},
+		skins,
+		userCount,
+		defaultImagePath: `/images/items/${item.Id}_${ItemId[item.Id]}.png`,
+	};
+}
+
 export const meResolvers: {
 	Query: Record<string, ResolverFn>;
 	Mutation: Record<string, ResolverFn>;
@@ -370,68 +427,15 @@ export const meResolvers: {
 			};
 		},
 
+		item: async (_: unknown, args: { id: number }, context: GraphQLContext) => {
+			assertAuthenticated(context);
+			const item = ItemList[args.id as ItemId];
+			return item ? await mapItemDetails(item) : null;
+		},
+
 		items: async (_: unknown, __: unknown, context: GraphQLContext) => {
 			assertAuthenticated(context);
-			const itemTypeNames: Record<ItemType, string> = {
-				[ItemType.Weapon]: "Arma",
-				[ItemType.Wearable]: "Vestível",
-				[ItemType.Accessory]: "Acessório",
-				[ItemType.Consumable]: "Consumível",
-				[ItemType.BeatUp]: "Espancamento",
-			};
-
-			return await Promise.all(
-				Object.values(ItemList).map(async (item: Items) => {
-					const userCount = await UserItemRepository.CountUsersWithItem(item.Id);
-					const skins = Object.entries(item.Skin).map(([bundleIdStr, skin]) => {
-						const bId = Number(bundleIdStr) as BundleId;
-						const bundle = BundleList[bId];
-						const bundleName = bundle?.Description[Language.Portuguese] ?? "Desconhecido";
-						let filename = `${item.Id}_${ItemId[item.Id]}.png`;
-						if (bId !== BundleId.Default) {
-							filename = `${item.Id}_${ItemId[item.Id]}_${BundleId[bId]}.png`;
-						}
-						return {
-							bundleId: bId,
-							bundleName,
-							emoteId: skin.Id,
-							emoteString: skin.String,
-							imagePath: `/images/items/${filename}`,
-						};
-					});
-
-					const defaultFilename = `${item.Id}_${ItemId[item.Id]}.png`;
-
-					return {
-						id: item.Id,
-						type: item.Type,
-						typeName: itemTypeNames[item.Type] ?? "Outro",
-						name: item.Description[Language.Portuguese],
-						namePt: item.Description[Language.Portuguese],
-						nameEn: item.Description[Language.English],
-						nameEs: item.Description[Language.Spanish],
-						price: item.Price,
-						shop: item.Shop,
-						blackMarket: item.BlackMarket,
-						attack: item.Attack,
-						defense: item.Defense,
-						moneyAttack: item.MoneyAttack,
-						moneyDefense: item.MoneyDefense,
-						moreAttack: item.MoreAttack,
-						moreDefense: item.MoreDefense,
-						moreMoneyATK: item.MoreMoneyATK,
-						moreMoneyDEF: item.MoreMoneyDEF,
-						extra: item.Extra ? item.Extra[Language.Portuguese] : undefined,
-						special: {
-							day: item.Special.Day,
-							night: item.Special.Night,
-						},
-						skins,
-						userCount,
-						defaultImagePath: `/images/items/${defaultFilename}`,
-					};
-				}),
-			);
+			return await Promise.all(Object.values(ItemList).map(mapItemDetails));
 		},
 	},
 
