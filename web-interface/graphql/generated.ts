@@ -489,6 +489,7 @@ export type Mutation = {
   setMoney: MutationResult;
   setNickname: MutationResult;
   setOwnAutomaticGrenade: MutationResult;
+  setOwnDecoration: MutationResult;
   setVip: MutationResult;
   startGangImport: GangMutationResult;
   startJob: JobMutationResult;
@@ -726,6 +727,12 @@ export type MutationSetOwnAutomaticGrenadeArgs = {
 };
 
 
+export type MutationSetOwnDecorationArgs = {
+  decorationId: Scalars['Int']['input'];
+  type: UserDecorationType;
+};
+
+
 export type MutationSetVipArgs = {
   days: Scalars['Int']['input'];
   eternal: Scalars['Boolean']['input'];
@@ -803,6 +810,12 @@ export type MutationResult = {
   user?: Maybe<UserDetail>;
 };
 
+export type MyDecorations = {
+  __typename?: 'MyDecorations';
+  avatarDecorations: Array<UserDecorationOption>;
+  backgroundDecorations: Array<UserDecorationOption>;
+};
+
 export type MyInvestmentPage = {
   __typename?: 'MyInvestmentPage';
   investment?: Maybe<ActiveInvestment>;
@@ -873,6 +886,7 @@ export type Query = {
   jobs: Array<JobInfo>;
   me?: Maybe<AuthUser>;
   myCasinoStatus: CasinoStatus;
+  myDecorations: MyDecorations;
   myHorseRaceStatus: HorseRaceStatus;
   myInvestmentPage: MyInvestmentPage;
   myLotteryStatus: LotteryStatus;
@@ -1186,6 +1200,18 @@ export type UserBadgeInfo = {
   name: Scalars['String']['output'];
 };
 
+export type UserDecorationOption = {
+  __typename?: 'UserDecorationOption';
+  className: Scalars['String']['output'];
+  id: Scalars['Int']['output'];
+  name: Scalars['String']['output'];
+};
+
+export enum UserDecorationType {
+  Avatar = 'AVATAR',
+  Background = 'BACKGROUND'
+}
+
 export type UserDetail = {
   __typename?: 'UserDetail';
   activityStats: UserActivityStats;
@@ -1359,6 +1385,10 @@ export type SpecialShopItemType =
   | 'BACKGROUND_DECORATION'
   | 'SKIN_BUNDLE';
 
+export type UserDecorationType =
+  | 'AVATAR'
+  | 'BACKGROUND';
+
 export type UserRanking =
   | 'BEATERS'
   | 'BRIBERS'
@@ -1494,6 +1524,11 @@ export type GetSpecialShopQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type GetSpecialShopQuery = { specialShop: { vipPricePerDay: number, vipMinimumDays: number, skinBundles: Array<{ id: number, name: string, price: number, owned: boolean, skins: Array<{ itemId: number, name: string, imagePath: string }> }>, avatarDecorations: Array<{ id: number, name: string, price: number, owned: boolean }>, backgroundDecorations: Array<{ id: number, name: string, price: number, owned: boolean }> } };
 
+export type GetMyDecorationsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetMyDecorationsQuery = { myDecorations: { avatarDecorations: Array<{ id: number, name: string, className: string }>, backgroundDecorations: Array<{ id: number, name: string, className: string }> } };
+
 export type BuySpecialShopVipMutationVariables = Exact<{
   days: number;
 }>;
@@ -1508,6 +1543,14 @@ export type BuySpecialShopItemMutationVariables = Exact<{
 
 
 export type BuySpecialShopItemMutation = { buySpecialShopItem: { success: boolean, message: string } };
+
+export type SetOwnDecorationMutationVariables = Exact<{
+  type: UserDecorationType;
+  decorationId: number;
+}>;
+
+
+export type SetOwnDecorationMutation = { setOwnDecoration: { success: boolean, message: string } };
 
 export type GetAlmsStatusQueryVariables = Exact<{
   receiverId: string | number;
@@ -2092,8 +2135,10 @@ export const GetTopUsersDocument = {"kind":"Document","definitions":[{"kind":"Op
 export const GetTopGangsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetTopGangs"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"limit"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"offset"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"topGangs"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"limit"},"value":{"kind":"Variable","name":{"kind":"Name","value":"limit"}}},{"kind":"Argument","name":{"kind":"Name","value":"offset"},"value":{"kind":"Variable","name":{"kind":"Name","value":"offset"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"total"}},{"kind":"Field","name":{"kind":"Name","value":"currentUserGangId"}},{"kind":"Field","name":{"kind":"Name","value":"currentUserGangName"}},{"kind":"Field","name":{"kind":"Name","value":"currentUserGangColor"}},{"kind":"Field","name":{"kind":"Name","value":"entries"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"acronym"}},{"kind":"Field","name":{"kind":"Name","value":"imageUrl"}},{"kind":"Field","name":{"kind":"Name","value":"level"}},{"kind":"Field","name":{"kind":"Name","value":"experience"}},{"kind":"Field","name":{"kind":"Name","value":"memberRole"}},{"kind":"Field","name":{"kind":"Name","value":"color"}}]}}]}}]}}]} as unknown as DocumentNode<GetTopGangsQuery, GetTopGangsQueryVariables>;
 export const GetUserProfileDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetUserProfile"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"nickname"}},{"kind":"Field","name":{"kind":"Name","value":"online"}},{"kind":"Field","name":{"kind":"Name","value":"money"}},{"kind":"Field","name":{"kind":"Name","value":"avatarUrl"}},{"kind":"Field","name":{"kind":"Name","value":"avatarDecoration"}},{"kind":"Field","name":{"kind":"Name","value":"backgroundDecoration"}},{"kind":"Field","name":{"kind":"Name","value":"specialCoin"}},{"kind":"Field","name":{"kind":"Name","value":"isVip"}},{"kind":"Field","name":{"kind":"Name","value":"vipEternal"}},{"kind":"Field","name":{"kind":"Name","value":"vipTime"}},{"kind":"Field","name":{"kind":"Name","value":"class"}},{"kind":"Field","name":{"kind":"Name","value":"className"}},{"kind":"Field","name":{"kind":"Name","value":"attack"}},{"kind":"Field","name":{"kind":"Name","value":"defense"}},{"kind":"Field","name":{"kind":"Name","value":"situationId"}},{"kind":"Field","name":{"kind":"Name","value":"isInHospital"}},{"kind":"Field","name":{"kind":"Name","value":"hospitalTime"}},{"kind":"Field","name":{"kind":"Name","value":"isInPrison"}},{"kind":"Field","name":{"kind":"Name","value":"prisonTime"}},{"kind":"Field","name":{"kind":"Name","value":"isWorking"}},{"kind":"Field","name":{"kind":"Name","value":"currentJobId"}},{"kind":"Field","name":{"kind":"Name","value":"jobEndsIn"}},{"kind":"Field","name":{"kind":"Name","value":"isScavenging"}},{"kind":"Field","name":{"kind":"Name","value":"scavengingId"}},{"kind":"Field","name":{"kind":"Name","value":"isWanted"}},{"kind":"Field","name":{"kind":"Name","value":"wantedTime"}},{"kind":"Field","name":{"kind":"Name","value":"isRobbing"}},{"kind":"Field","name":{"kind":"Name","value":"isBeingRobbed"}},{"kind":"Field","name":{"kind":"Name","value":"robberUserId"}},{"kind":"Field","name":{"kind":"Name","value":"robbedByUserId"}},{"kind":"Field","name":{"kind":"Name","value":"robberyLocationId"}},{"kind":"Field","name":{"kind":"Name","value":"robberyLocationName"}},{"kind":"Field","name":{"kind":"Name","value":"isBeating"}},{"kind":"Field","name":{"kind":"Name","value":"isBeingBeated"}},{"kind":"Field","name":{"kind":"Name","value":"beaterUserId"}},{"kind":"Field","name":{"kind":"Name","value":"beatenByUserId"}},{"kind":"Field","name":{"kind":"Name","value":"activityTargetNickname"}},{"kind":"Field","name":{"kind":"Name","value":"isInCasino"}},{"kind":"Field","name":{"kind":"Name","value":"isDefendingInvestment"}},{"kind":"Field","name":{"kind":"Name","value":"isInGangAction"}},{"kind":"Field","name":{"kind":"Name","value":"isDead"}},{"kind":"Field","name":{"kind":"Name","value":"deadUntil"}},{"kind":"Field","name":{"kind":"Name","value":"badges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}}]}}]}}]}}]} as unknown as DocumentNode<GetUserProfileQuery, GetUserProfileQueryVariables>;
 export const GetSpecialShopDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetSpecialShop"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"specialShop"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"vipPricePerDay"}},{"kind":"Field","name":{"kind":"Name","value":"vipMinimumDays"}},{"kind":"Field","name":{"kind":"Name","value":"skinBundles"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"price"}},{"kind":"Field","name":{"kind":"Name","value":"owned"}},{"kind":"Field","name":{"kind":"Name","value":"skins"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"itemId"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"imagePath"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"avatarDecorations"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"price"}},{"kind":"Field","name":{"kind":"Name","value":"owned"}}]}},{"kind":"Field","name":{"kind":"Name","value":"backgroundDecorations"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"price"}},{"kind":"Field","name":{"kind":"Name","value":"owned"}}]}}]}}]}}]} as unknown as DocumentNode<GetSpecialShopQuery, GetSpecialShopQueryVariables>;
+export const GetMyDecorationsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetMyDecorations"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"myDecorations"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"avatarDecorations"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"className"}}]}},{"kind":"Field","name":{"kind":"Name","value":"backgroundDecorations"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"className"}}]}}]}}]}}]} as unknown as DocumentNode<GetMyDecorationsQuery, GetMyDecorationsQueryVariables>;
 export const BuySpecialShopVipDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"BuySpecialShopVip"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"days"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"buySpecialShopVip"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"days"},"value":{"kind":"Variable","name":{"kind":"Name","value":"days"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<BuySpecialShopVipMutation, BuySpecialShopVipMutationVariables>;
 export const BuySpecialShopItemDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"BuySpecialShopItem"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"type"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"SpecialShopItemType"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"itemId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"buySpecialShopItem"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"type"},"value":{"kind":"Variable","name":{"kind":"Name","value":"type"}}},{"kind":"Argument","name":{"kind":"Name","value":"itemId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"itemId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<BuySpecialShopItemMutation, BuySpecialShopItemMutationVariables>;
+export const SetOwnDecorationDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SetOwnDecoration"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"type"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UserDecorationType"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"decorationId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"setOwnDecoration"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"type"},"value":{"kind":"Variable","name":{"kind":"Name","value":"type"}}},{"kind":"Argument","name":{"kind":"Name","value":"decorationId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"decorationId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<SetOwnDecorationMutation, SetOwnDecorationMutationVariables>;
 export const GetAlmsStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetAlmsStatus"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"receiverId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"almsStatus"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"receiverId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"receiverId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"canGive"}},{"kind":"Field","name":{"kind":"Name","value":"value"}}]}}]}}]} as unknown as DocumentNode<GetAlmsStatusQuery, GetAlmsStatusQueryVariables>;
 export const GetUserInventoryDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetUserInventory"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"items"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"quantity"}},{"kind":"Field","name":{"kind":"Name","value":"skin"}},{"kind":"Field","name":{"kind":"Name","value":"remainingTime"}}]}}]}}]}}]} as unknown as DocumentNode<GetUserInventoryQuery, GetUserInventoryQueryVariables>;
 export const GetUserInvestmentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetUserInvestment"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"investment"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"expiresAt"}},{"kind":"Field","name":{"kind":"Name","value":"defense"}},{"kind":"Field","name":{"kind":"Name","value":"nextPaymentValue"}},{"kind":"Field","name":{"kind":"Name","value":"henchmanEndsAt"}}]}}]}}]}}]} as unknown as DocumentNode<GetUserInvestmentQuery, GetUserInvestmentQueryVariables>;

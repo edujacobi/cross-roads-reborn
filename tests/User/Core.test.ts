@@ -39,7 +39,7 @@ describe("User Model Core Actions (Regression)", () => {
 	});
 
 	it("keeps the default avatar decoration when adding timed VIP after eternal VIP", async () => {
-		vi.spyOn(user, "Update").mockResolvedValue();
+		vi.spyOn(user, "Update").mockResolvedValue(true);
 		user.VipEternal = true;
 
 		await user.SetEternalVip(false);

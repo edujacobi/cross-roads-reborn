@@ -17,7 +17,9 @@ import {
 	BuySpecialShopVipDocument,
 	GetSpecialShopDocument,
 	GetUserProfileDocument,
+	SetOwnDecorationDocument,
 	SpecialShopItemType,
+	UserDecorationType,
 } from "~/graphql/generated";
 import { AvatarDecorationId, BackgroundDecorationId } from "../../src/core/types/Ids";
 
@@ -84,6 +86,7 @@ const vipPrice = computed(() => vipDays.value * vipPricePerDay.value);
 
 const { mutate: buySpecialShopItem, loading: buyingItem } = useMutation(BuySpecialShopItemDocument);
 const { mutate: buySpecialShopVip, loading: buyingVip } = useMutation(BuySpecialShopVipDocument);
+const { mutate: setOwnDecoration, loading: settingDecoration } = useMutation(SetOwnDecorationDocument);
 const buying = computed(() => buyingItem.value || buyingVip.value);
 
 const supportedAvatarPreviewClasses = new Set([
@@ -190,15 +193,46 @@ function getAvatarDecoration(decorationId: number) {
 
 function getBackgroundDecorationClass(decorationId: number) {
 	const name = BackgroundDecorationId[decorationId as BackgroundDecorationId] ?? "Default";
-	const key = name === "FrutigerAero" ? "frutigerAero" : name.replace(/([a-z])([A-Z])/g, "$1_$2").toLowerCase();
+	const key = name.replace(/([a-z])([A-Z])/g, "$1_$2").toLowerCase();
 
 	return `profile-background--${key}`;
+}
+
+function isAvatarDecorationActive(decorationId: number) {
+	return getAvatarDecoration(decorationId) === profile.value?.avatarDecoration;
+}
+
+function isBackgroundDecorationActive(decorationId: number) {
+	return getBackgroundDecorationClass(decorationId) === `profile-background--${profile.value?.backgroundDecoration}`;
 }
 
 function getErrorMessage(caughtError: unknown) {
 	return caughtError && typeof caughtError === "object" && "message" in caughtError
 		? String(caughtError.message)
 		: "Ocorreu um erro inesperado.";
+}
+
+async function setActiveDecoration(type: UserDecorationType, decorationId: number) {
+	try {
+		const response = await setOwnDecoration({ type, decorationId });
+		const result = response?.data?.setOwnDecoration;
+		if (!result?.success) {
+			showToast({ variant: "error", text: result?.message ?? "Não foi possível atualizar a decoração." });
+			return;
+		}
+
+		showToast({ variant: "success", text: result.message });
+		try {
+			await Promise.all([auth.fetchUser(), refetchProfile()]);
+		} catch (caughtError: unknown) {
+			showToast({
+				variant: "warning",
+				text: `Decoração aplicada, mas não foi possível atualizar o perfil: ${getErrorMessage(caughtError)}`,
+			});
+		}
+	} catch (caughtError: unknown) {
+		showToast({ variant: "error", text: getErrorMessage(caughtError) });
+	}
 }
 
 async function confirmPurchase() {
@@ -503,13 +537,14 @@ async function confirmPurchase() {
 								/>
 								{{ formatPlain(decoration.price) }}
 							</p>
-							<p
+							<BaseButton
 								v-if="decoration.owned"
-								class="special-shop__owned"
-								role="status"
+								variant="success"
+								:disabled="settingDecoration || isAvatarDecorationActive(decoration.id)"
+								@click="setActiveDecoration(UserDecorationType.Avatar, decoration.id)"
 							>
-								Adquirida
-							</p>
+								{{ isAvatarDecorationActive(decoration.id) ? "Em uso" : "Usar decoração" }}
+							</BaseButton>
 							<BaseButton
 								v-else
 								variant="secondary"
@@ -554,13 +589,14 @@ async function confirmPurchase() {
 								/>
 								{{ formatPlain(decoration.price) }}
 							</p>
-							<p
+							<BaseButton
 								v-if="decoration.owned"
-								class="special-shop__owned"
-								role="status"
+								variant="success"
+								:disabled="settingDecoration || isBackgroundDecorationActive(decoration.id)"
+								@click="setActiveDecoration(UserDecorationType.Background, decoration.id)"
 							>
-								Adquirido
-							</p>
+								{{ isBackgroundDecorationActive(decoration.id) ? "Em uso" : "Usar fundo" }}
+							</BaseButton>
 							<BaseButton
 								v-else
 								variant="secondary"

@@ -381,6 +381,21 @@ query GetSpecialShop {
 	}
 }
 
+query GetMyDecorations {
+	myDecorations {
+		avatarDecorations {
+			id
+			name
+			className
+		}
+		backgroundDecorations {
+			id
+			name
+			className
+		}
+	}
+}
+
 mutation BuySpecialShopVip($days: Int!) {
 	buySpecialShopVip(days: $days) {
 		success
@@ -390,6 +405,13 @@ mutation BuySpecialShopVip($days: Int!) {
 
 mutation BuySpecialShopItem($type: SpecialShopItemType!, $itemId: Int!) {
 	buySpecialShopItem(type: $type, itemId: $itemId) {
+		success
+		message
+	}
+}
+
+mutation SetOwnDecoration($type: UserDecorationType!, $decorationId: Int!) {
+	setOwnDecoration(type: $type, decorationId: $decorationId) {
 		success
 		message
 	}

@@ -771,6 +771,7 @@ export const typeDefs = /* GraphQL */ `
         myCasinoStatus: CasinoStatus!
         myInvestmentPage: MyInvestmentPage!
         specialShop: SpecialShopCatalog!
+        myDecorations: MyDecorations!
         almsStatus(receiverId: ID!): AlmsStatus!
     }
 
@@ -784,6 +785,22 @@ export const typeDefs = /* GraphQL */ `
         SKIN_BUNDLE
         AVATAR_DECORATION
         BACKGROUND_DECORATION
+    }
+
+    enum UserDecorationType {
+        AVATAR
+        BACKGROUND
+    }
+
+    type UserDecorationOption {
+        id: Int!
+        name: String!
+        className: String!
+    }
+
+    type MyDecorations {
+        avatarDecorations: [UserDecorationOption!]!
+        backgroundDecorations: [UserDecorationOption!]!
     }
 
     type SpecialShopSkin {
@@ -857,6 +874,7 @@ export const typeDefs = /* GraphQL */ `
         buyItem(itemId: Int!, units: Int): ShopBuyResult!
         buySpecialShopVip(days: Int!): MutationResult!
         buySpecialShopItem(type: SpecialShopItemType!, itemId: Int!): MutationResult!
+        setOwnDecoration(type: UserDecorationType!, decorationId: Int!): MutationResult!
         startJob(jobId: Int!): JobMutationResult!
         cancelJob: JobMutationResult!
         payPrivateHospital: HospitalResult!

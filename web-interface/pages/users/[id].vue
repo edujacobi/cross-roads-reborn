@@ -2,7 +2,7 @@
 	setup
 	lang="ts"
 >
-import { useApolloClient, useQuery } from "@vue/apollo-composable";
+import { useApolloClient, useMutation, useQuery } from "@vue/apollo-composable";
 import { ArrowLeft } from "lucide-vue-next";
 import { computed, ref, watch } from "vue";
 import UserActivityStatsCard from "~/components/UserDetail/UserActivityStatsCard.vue";
@@ -16,8 +16,17 @@ import UserProfileFloatingActions from "~/components/UserDetail/UserProfileFloat
 import UserProfileHeader from "~/components/UserDetail/UserProfileHeader.vue";
 import UserSelfActionsCard from "~/components/UserDetail/UserSelfActionsCard.vue";
 import UserStatusSummary from "~/components/UserDetail/UserStatusSummary.vue";
+import UserPicture from "~/components/UserPicture.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
-import { GetUserProfileDocument, type GetUserProfileQuery } from "~/graphql/generated";
+import BaseModal from "~/components/ui/BaseModal.vue";
+import { useFallbackUserImage } from "~/composables/useFallbackImage";
+import {
+	GetMyDecorationsDocument,
+	GetUserProfileDocument,
+	type GetUserProfileQuery,
+	SetOwnDecorationDocument,
+	UserDecorationType,
+} from "~/graphql/generated";
 
 definePageMeta({
 	middleware: "auth",
@@ -40,6 +49,23 @@ const {
 	refetch: refetchProfile,
 } = useQuery(GetUserProfileDocument, () => ({ id: userId.value }), { fetchPolicy: "cache-and-network" });
 const profile = computed<GetUserProfileQuery["user"]>(() => profileResult.value?.user ?? null);
+const avatarUrl = computed(() => profile.value?.avatarUrl || useFallbackUserImage(userId.value));
+const decorationDialogOpen = ref(false);
+const activeDecorationTab = ref<"avatar" | "background">("avatar");
+const {
+	result: decorationsResult,
+	loading: decorationsLoading,
+	error: decorationsError,
+} = useQuery(
+	GetMyDecorationsDocument,
+	{},
+	{
+		enabled: computed(() => decorationDialogOpen.value),
+		fetchPolicy: "cache-and-network",
+	},
+);
+const decorations = computed(() => decorationsResult.value?.myDecorations);
+const { mutate: setOwnDecoration, loading: savingDecoration } = useMutation(SetOwnDecorationDocument);
 
 watch(userId, () => {
 	profileState.value = "loading";
@@ -51,6 +77,38 @@ function setProfileState(state: typeof profileState.value) {
 
 function showFeedback(type: "success" | "error", message: string) {
 	showToast({ variant: type, text: message });
+}
+
+function openDecorationDialog() {
+	activeDecorationTab.value = "avatar";
+	decorationDialogOpen.value = true;
+}
+
+function getErrorMessage(caughtError: unknown) {
+	return caughtError instanceof Error ? caughtError.message : String(caughtError);
+}
+
+async function equipDecoration(type: UserDecorationType, decorationId: number) {
+	try {
+		const response = await setOwnDecoration({ type, decorationId });
+		const result = response?.data?.setOwnDecoration;
+		if (!result?.success) {
+			showFeedback("error", result?.message ?? "Não foi possível atualizar a decoração.");
+			return;
+		}
+
+		showFeedback("success", result.message);
+		try {
+			await refreshUserDetails();
+		} catch (caughtError: unknown) {
+			showFeedback(
+				"error",
+				`Decoração aplicada, mas não foi possível atualizar o perfil: ${getErrorMessage(caughtError)}`,
+			);
+		}
+	} catch (caughtError: unknown) {
+		showFeedback("error", getErrorMessage(caughtError));
+	}
 }
 
 async function refreshUserDetails() {
@@ -93,12 +151,106 @@ async function refreshUserDetails() {
 
 		<UserProfileHeader
 			:show-special-coins="canViewPrivateDetails"
+			:can-edit-decorations="isOwnUser"
 			:user="profile"
 			:loading="profileLoading"
 			:error="!!profileError"
 			@state="setProfileState"
 			@refresh="refetchProfile()"
+			@edit-decorations="openDecorationDialog"
 		/>
+
+		<BaseModal
+			v-model:open="decorationDialogOpen"
+			title="Personalizar perfil"
+			description="Escolha uma decoração que você possui. A prévia mostra como ficará no perfil."
+		>
+			<div class="user-detail__decoration-tabs">
+				<button
+					type="button"
+					:aria-pressed="activeDecorationTab === 'avatar'"
+					@click="activeDecorationTab = 'avatar'"
+				>
+					Avatar
+				</button>
+				<button
+					type="button"
+					:aria-pressed="activeDecorationTab === 'background'"
+					@click="activeDecorationTab = 'background'"
+				>
+					Fundo
+				</button>
+			</div>
+			<p
+				v-if="decorationsLoading"
+				class="user-detail__decoration-state"
+				role="status"
+			>
+				Carregando decorações...
+			</p>
+			<p
+				v-else-if="decorationsError"
+				class="user-detail__decoration-state"
+				role="alert"
+			>
+				Não foi possível carregar suas decorações: {{ decorationsError.message }}
+			</p>
+			<template v-else-if="activeDecorationTab === 'avatar'">
+				<div class="user-detail__decoration-grid">
+					<article
+						v-for="decoration in decorations?.avatarDecorations ?? []"
+						:key="decoration.id"
+						class="user-detail__decoration-card"
+					>
+						<UserPicture
+							:image-url="avatarUrl"
+							:decoration="decoration.className"
+							image-class="user-detail__decoration-preview"
+							:alt="`Prévia do avatar com ${decoration.name}`"
+							width="88"
+							height="88"
+						/>
+						<h3>{{ decoration.name }}</h3>
+						<BaseButton
+							variant="secondary"
+							size="sm"
+							:disabled="savingDecoration || decoration.className === profile?.avatarDecoration"
+							@click="equipDecoration(UserDecorationType.Avatar, decoration.id)"
+						>
+							{{ decoration.className === profile?.avatarDecoration ? "Em uso" : "Usar decoração" }}
+						</BaseButton>
+					</article>
+				</div>
+			</template>
+			<template v-else>
+				<div class="user-detail__decoration-grid">
+					<article
+						v-for="decoration in decorations?.backgroundDecorations ?? []"
+						:key="decoration.id"
+						class="user-detail__decoration-card user-detail__decoration-card--background profile-background"
+						:class="`profile-background--${decoration.className}`"
+					>
+						<UserPicture
+							:image-url="avatarUrl"
+							:decoration="profile?.avatarDecoration"
+							image-class="user-detail__decoration-preview"
+							:alt="`Prévia do perfil com o fundo ${decoration.name}`"
+							width="88"
+							height="88"
+						/>
+						<h3>{{ decoration.name }}</h3>
+						<BaseButton
+							variant="secondary"
+							size="sm"
+							:disabled="savingDecoration || decoration.className === profile?.backgroundDecoration"
+							@click="equipDecoration(UserDecorationType.Background, decoration.id)"
+						>
+							{{ decoration.className === profile?.backgroundDecoration ? "Em uso" : "Usar decoração" }}
+						</BaseButton>
+					</article>
+				</div>
+			</template>
+		</BaseModal>
 
 		<div
 			v-if="profileState === 'not-found'"
@@ -213,6 +365,75 @@ async function refreshUserDetails() {
 
 		@media (max-width: 850px) {
 			grid-template-columns: 1fr;
+		}
+	}
+
+	&__decoration-tabs {
+		display: flex;
+		gap: $spacing-sm;
+		margin-bottom: $spacing-md;
+
+		button {
+			flex: 1;
+			padding: $spacing-sm $spacing-md;
+			border: 1px solid $border-card;
+			border-radius: $radius-sm;
+			background: $bg-card;
+			color: $text-secondary;
+			cursor: pointer;
+
+			&[aria-pressed="true"] {
+				border-color: $color-brand;
+				color: $text-primary;
+			}
+
+			&:focus-visible {
+				outline: 2px solid $color-brand;
+				outline-offset: 2px;
+			}
+		}
+	}
+
+	&__decoration-state {
+		padding: $spacing-md;
+		color: $text-secondary;
+		text-align: center;
+	}
+
+	&__decoration-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+		gap: $spacing-md;
+	}
+
+	&__decoration-card {
+		display: flex;
+		min-width: 0;
+		flex-direction: column;
+		align-items: center;
+		gap: $spacing-sm;
+		padding: $spacing-md;
+		border: 1px solid $border-card;
+		border-radius: $radius-md;
+		text-align: center;
+
+		h3 {
+			font-size: $font-size-14;
+			font-weight: $font-weight-semibold;
+		}
+
+		:deep(.user-detail__decoration-preview) {
+			width: 5.5rem;
+			height: 5.5rem;
+		}
+
+		> .base-button {
+			width: 100%;
+			margin-top: auto;
+		}
+
+		&--background {
+			border: none;
 		}
 	}
 }

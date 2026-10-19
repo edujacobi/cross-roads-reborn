@@ -1131,13 +1131,15 @@ export class User {
 	 * Sets the avatar decoration for the user.
 	 * @param decoration The avatar decoration.
 	 */
-	async SetAvatarDecoration(decoration: AvatarDecorations) {
+	async SetAvatarDecoration(decoration: AvatarDecorations): Promise<boolean> {
 		this.AvatarDecoration = decoration;
-		await this.Update({
+		const updated = await this.Update({
 			avatarDecoration: this.AvatarDecoration.Id,
 		});
 
+		if (!updated) return false;
 		Log.Success(`User ${this.Nickname} (Id: ${this.Id}) has set avatar decoration ${decoration.Description[Language.English]} (Id: ${decoration.Id}).`);
+		return true;
 	}
 
 	/**
@@ -1695,23 +1697,27 @@ export class User {
 	 * Sets the user's background decoration.
 	 * @param decoration The background decoration.
 	 */
-	async SetBackgroundDecoration(decoration: BackgroundDecorations) {
+	async SetBackgroundDecoration(decoration: BackgroundDecorations): Promise<boolean> {
 		this.BackgroundDecoration = decoration;
-		await this.Update({
+		const updated = await this.Update({
 			backgroundDecoration: decoration.Id,
 		});
+		if (!updated) return false;
 		Log.Success(`User ${this.Nickname} (Id: ${this.Id}) changed background decoration to ${decoration.Description[Language.English]}.`);
+		return true;
 	}
 
 	/**
 	 * Updates the user in the database.
 	 */
-	async Update(values: UserUpdateParam) {
+	async Update(values: UserUpdateParam): Promise<boolean> {
 		try {
 			await UserRepository.Update(this.Id, values);
+			return true;
 		}
 		catch (err) {
 			Log.Warning(`Something went wrong with updating user Id: ${this.Id}.`);
+			return false;
 		}
 	}
 

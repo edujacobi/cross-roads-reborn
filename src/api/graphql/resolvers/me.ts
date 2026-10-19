@@ -8,8 +8,8 @@ import { Language } from "#core/models/Language";
 import { ItemList, type Items } from "#core/types/Items";
 import { ItemType } from "#core/types/Items";
 import { BundleId, ItemId, type AvatarDecorationId, type BackgroundDecorationId } from "#core/types/Ids";
-import { getAvatarDecorationList } from "#core/types/AvatarDecorations";
-import { getBackgroundDecorationList } from "#core/types/BackgroundDecorations";
+import { AvatarDecorationList, getAvatarDecorationList } from "#core/types/AvatarDecorations";
+import { BackgroundDecorationList, getBackgroundDecorationList } from "#core/types/BackgroundDecorations";
 import { BundleList, getSkinBundleList } from "#core/types/Skins";
 import { getJobList, JobList } from "#core/types/Jobs";
 import type { JobId } from "#core/types/Jobs";
@@ -153,6 +153,38 @@ export const meResolvers: {
 						price: decoration.Price,
 						owned: ownedBackgroundDecorationIds.has(decoration.Id),
 					})),
+			};
+		},
+
+		myDecorations: async (_: unknown, __: unknown, context: GraphQLContext) => {
+			const authUser = assertAuthenticated(context);
+			const player = new User(authUser.userId);
+			if (!await player.GetInfo()) {
+				throw new GraphQLError("Jogador não encontrado.");
+			}
+
+			const [avatarDecorations, backgroundDecorations] = await Promise.all([
+				UserAvatarDecoration.GetList(player, Language.Portuguese),
+				UserBackgroundDecoration.GetList(player, Language.Portuguese),
+			]);
+
+			return {
+				avatarDecorations: avatarDecorations.map(({ AvatarDecorationId: id }) => {
+					const decoration = AvatarDecorationList[id];
+					return {
+						id,
+						name: decoration.Description[Language.Portuguese],
+						className: decoration.Description[Language.English].toLowerCase().replaceAll(" ", "_"),
+					};
+				}),
+				backgroundDecorations: backgroundDecorations.map(({ BackgroundDecorationId: id }) => {
+					const decoration = BackgroundDecorationList[id];
+					return {
+						id,
+						name: decoration.Description[Language.Portuguese],
+						className: decoration.Description[Language.English].toLowerCase().replaceAll(" ", "_"),
+					};
+				}),
 			};
 		},
 
@@ -878,6 +910,43 @@ export const meResolvers: {
 				message: `Você comprou ${itemName}!`,
 				user: null,
 			};
+		},
+
+		setOwnDecoration: async (
+			_: unknown,
+			args: { type: "AVATAR" | "BACKGROUND"; decorationId: number },
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			const player = new User(authUser.userId);
+			if (!await player.GetInfo()) {
+				return { success: false, message: "Jogador não encontrado.", user: null };
+			}
+			if (!Number.isSafeInteger(args.decorationId)) {
+				return { success: false, message: "Decoração inválida.", user: null };
+			}
+
+			if (args.type === "AVATAR") {
+				const decoration = getAvatarDecorationList().find(item => item.Id === args.decorationId);
+				const ownedDecorations = await UserAvatarDecoration.GetList(player);
+				if (!decoration || !ownedDecorations.some(item => item.AvatarDecorationId === args.decorationId)) {
+					return { success: false, message: "Você não possui esta decoração de avatar.", user: null };
+				}
+				if (!await player.SetAvatarDecoration(decoration)) {
+					return { success: false, message: "Não foi possível atualizar a decoração de avatar.", user: null };
+				}
+				return { success: true, message: "Decoração de avatar atualizada.", user: null };
+			}
+
+			const decoration = getBackgroundDecorationList().find(item => item.Id === args.decorationId);
+			const ownedDecorations = await UserBackgroundDecoration.GetList(player);
+			if (!decoration || !ownedDecorations.some(item => item.BackgroundDecorationId === args.decorationId)) {
+				return { success: false, message: "Você não possui esta decoração de fundo.", user: null };
+			}
+			if (!await player.SetBackgroundDecoration(decoration)) {
+				return { success: false, message: "Não foi possível atualizar a decoração de fundo.", user: null };
+			}
+			return { success: true, message: "Decoração de fundo atualizada.", user: null };
 		},
 
 		startJob: async (

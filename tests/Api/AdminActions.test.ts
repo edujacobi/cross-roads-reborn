@@ -45,7 +45,7 @@ describe("Admin action mutations", () => {
 	afterEach(() => vi.restoreAllMocks());
 
 	it("records the admin and the previous and new money values", async () => {
-		vi.spyOn(User.prototype, "Update").mockResolvedValue();
+		vi.spyOn(User.prototype, "Update").mockResolvedValue(true);
 
 		await expect(
 			resolvers.Mutation.setMoney(null, {

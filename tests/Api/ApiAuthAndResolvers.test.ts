@@ -12,7 +12,7 @@ import { UserBundle } from "#core/models/UserBundle";
 import { Vault } from "#core/models/Vault";
 import { UserRepository } from "#core/repositories/UserRepository";
 import { UserItemRepository } from "#core/repositories/UserItemRepository";
-import { AvatarDecorationId, BundleId, ItemId } from "#core/types/Ids";
+import { AvatarDecorationId, BackgroundDecorationId, BundleId, ItemId } from "#core/types/Ids";
 
 describe("API Auth and Resolvers", () => {
 	const devUser: AuthUser = {
@@ -253,13 +253,41 @@ describe("API Auth and Resolvers", () => {
 			expect(getInfo).not.toHaveBeenCalled();
 		});
 
-		it("requires authentication to access the special shop", async () => {
+		it("requires authentication to access the special shop and update decorations", async () => {
 			await expect(resolvers.Query.specialShop(null, {}, { user: null })).rejects.toThrow(
 				"Autenticação necessária para realizar esta ação.",
 			);
 			await expect(
 				resolvers.Mutation.buySpecialShopVip(null, { days: 7 }, { user: null }),
 			).rejects.toThrow("Autenticação necessária para realizar esta ação.");
+			await expect(
+				resolvers.Mutation.setOwnDecoration(null, {
+					type: "AVATAR",
+					decorationId: AvatarDecorationId.Purple,
+				}, { user: null }),
+			).rejects.toThrow("Autenticação necessária para realizar esta ação.");
+			await expect(
+				resolvers.Query.myDecorations(null, {}, { user: null }),
+			).rejects.toThrow("Autenticação necessária para realizar esta ação.");
+		});
+
+		it("lists owned decorations with their profile preview classes", async () => {
+			vi.spyOn(User.prototype, "GetInfo").mockImplementation(async function(this: User) {
+				return this;
+			});
+			const avatar = new UserAvatarDecoration();
+			avatar.AvatarDecorationId = AvatarDecorationId.Purple;
+			const background = new UserBackgroundDecoration();
+			background.BackgroundDecorationId = BackgroundDecorationId.Sunset;
+			vi.spyOn(UserAvatarDecoration, "GetList").mockResolvedValue([avatar]);
+			vi.spyOn(UserBackgroundDecoration, "GetList").mockResolvedValue([background]);
+
+			await expect(
+				resolvers.Query.myDecorations(null, {}, { user: playerUser }),
+			).resolves.toEqual({
+				avatarDecorations: [{ id: AvatarDecorationId.Purple, name: "Púrpura", className: "purple" }],
+				backgroundDecorations: [{ id: BackgroundDecorationId.Sunset, name: "Pôr do sol", className: "sunset" }],
+			});
 		});
 
 		it("returns products from the canonical shop catalogs", async () => {
@@ -344,7 +372,7 @@ describe("API Auth and Resolvers", () => {
 		it("deducts the day-based VIP price and adds the selected time", async () => {
 			const player = new User(playerUser.userId);
 			player.SpecialCoin = 1_190;
-			const update = vi.spyOn(User.prototype, "Update").mockResolvedValue();
+			const update = vi.spyOn(User.prototype, "Update").mockResolvedValue(true);
 			const addVip = vi.spyOn(User.prototype, "AddVip").mockResolvedValue();
 
 			await expect(player.BuyVipForDays(7)).resolves.toBe(true);
@@ -372,6 +400,61 @@ describe("API Auth and Resolvers", () => {
 				message: "Você comprou Púrpura!",
 			});
 			expect(buyAvatarDecoration).toHaveBeenCalledWith(AvatarDecorationId.Purple);
+		});
+
+		it("only equips decorations that the current user owns", async () => {
+			vi.spyOn(User.prototype, "GetInfo").mockImplementation(async function(this: User) {
+				return this;
+			});
+			const ownedDecoration = new UserAvatarDecoration();
+			ownedDecoration.AvatarDecorationId = AvatarDecorationId.Purple;
+			vi.spyOn(UserAvatarDecoration, "GetList").mockResolvedValue([ownedDecoration]);
+			const setAvatarDecoration = vi.spyOn(User.prototype, "SetAvatarDecoration").mockResolvedValue(true);
+
+			await expect(
+				resolvers.Mutation.setOwnDecoration(null, {
+					type: "AVATAR",
+					decorationId: AvatarDecorationId.Purple,
+				}, { user: playerUser }),
+			).resolves.toMatchObject({
+				success: true,
+				message: "Decoração de avatar atualizada.",
+			});
+			await expect(
+				resolvers.Mutation.setOwnDecoration(null, {
+					type: "AVATAR",
+					decorationId: AvatarDecorationId.Sunset,
+				}, { user: playerUser }),
+			).resolves.toMatchObject({
+				success: false,
+				message: "Você não possui esta decoração de avatar.",
+			});
+			expect(setAvatarDecoration).toHaveBeenCalledTimes(1);
+
+			const ownedBackground = new UserBackgroundDecoration();
+			ownedBackground.BackgroundDecorationId = BackgroundDecorationId.Sunset;
+			vi.spyOn(UserBackgroundDecoration, "GetList").mockResolvedValue([ownedBackground]);
+			const setBackgroundDecoration = vi.spyOn(User.prototype, "SetBackgroundDecoration").mockResolvedValue(true);
+
+			await expect(
+				resolvers.Mutation.setOwnDecoration(null, {
+					type: "BACKGROUND",
+					decorationId: BackgroundDecorationId.Sunset,
+				}, { user: playerUser }),
+			).resolves.toMatchObject({
+				success: true,
+				message: "Decoração de fundo atualizada.",
+			});
+			await expect(
+				resolvers.Mutation.setOwnDecoration(null, {
+					type: "BACKGROUND",
+					decorationId: BackgroundDecorationId.Purple,
+				}, { user: playerUser }),
+			).resolves.toMatchObject({
+				success: false,
+				message: "Você não possui esta decoração de fundo.",
+			});
+			expect(setBackgroundDecoration).toHaveBeenCalledTimes(1);
 		});
 	});
 

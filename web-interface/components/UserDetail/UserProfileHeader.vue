@@ -3,6 +3,7 @@
 	lang="ts"
 >
 import { useQuery } from "@vue/apollo-composable";
+import { Pencil } from "lucide-vue-next";
 import { computed, watch } from "vue";
 import SpecialShopIcon from "~/components/icons/SpecialShopIcon.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
@@ -17,6 +18,7 @@ import { BadgeId } from "../../../src/core/types/Ids";
 
 const props = defineProps<{
 	showSpecialCoins: boolean;
+	canEditDecorations: boolean;
 	user: GetUserProfileQuery["user"];
 	loading: boolean;
 	error: boolean;
@@ -24,6 +26,7 @@ const props = defineProps<{
 const emit = defineEmits<{
 	state: [state: "ready" | "not-found" | "error"];
 	refresh: [];
+	editDecorations: [];
 }>();
 
 const user = computed(() => props.user);
@@ -177,6 +180,19 @@ function getBadgeImage(badgeId: BadgeId): string {
 						height="100"
 						lazy
 					/>
+					<button
+						v-if="props.canEditDecorations"
+						type="button"
+						class="user-profile__edit-decorations"
+						aria-label="Alterar decoração do avatar e do fundo"
+						data-popover-text="Alterar decorações"
+						@click.stop="emit('editDecorations')"
+					>
+						<Pencil
+							:size="20"
+							aria-hidden="true"
+						/>
+					</button>
 					<span
 						:class="`user-profile__presence user-profile__presence--${user.online ? 'online' : 'offline'}`"
 						role="img"
@@ -356,9 +372,43 @@ function getBadgeImage(badgeId: BadgeId): string {
 
 	&__avatar-wrapper {
 		position: relative;
+
+		&:hover .user-profile__edit-decorations,
+		&:focus-within .user-profile__edit-decorations {
+			opacity: 1;
+		}
+	}
+
+	&__edit-decorations {
+		position: absolute;
+		z-index: 1;
+		inset: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border: 0;
+		border-radius: $radius-full;
+		background: rgba(0, 0, 0, 0.5);
+		color: white;
+		cursor: pointer;
+		opacity: 0;
+		aspect-ratio: 1;
+		transition: opacity $transition-fast ease;
+
+		&:focus-visible {
+			opacity: 1;
+			outline: 2px solid $color-brand;
+			outline-offset: 2px;
+		}
+
+		@media (hover: none) {
+			opacity: 1;
+			background: rgba(0, 0, 0, 0.35);
+		}
 	}
 
 	&__presence {
+		z-index: 2;
 		width: 1.5rem;
 		aspect-ratio: 1;
 		border-radius: $radius-full;
