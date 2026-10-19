@@ -22,6 +22,7 @@ import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseInput from "~/components/ui/BaseInput.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
+import BaseSelector, { type SelectorOption } from "~/components/ui/BaseSelector.vue";
 import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
 import RefreshButton from "~/components/ui/RefreshButton.vue";
 import { imagePaths } from "~/constants/imagePaths";
@@ -31,6 +32,7 @@ import {
 	CureUserDocument,
 	DeleteUserDocument,
 	FreeUserDocument,
+	GetItemsDocument,
 	GetUserAdminActionsDocument,
 	KillUserDocument,
 	RemoveActionDocument,
@@ -86,7 +88,7 @@ const isMoneyModalOpen = ref(false);
 const moneyAmount = ref(10000);
 const moneyMode = ref<SetMoneyMode.Add | SetMoneyMode.Set>(SetMoneyMode.Add);
 const isItemModalOpen = ref(false);
-const selectedItem = ref(ItemId.Knife);
+const selectedItem = ref(String(ItemId.Knife));
 const itemAmount = ref(1);
 const itemMode = ref<SetMoneyMode.Add | SetMoneyMode.Set>(SetMoneyMode.Add);
 const isSpecialCoinsModalOpen = ref(false);
@@ -112,7 +114,17 @@ const isActionModalOpen = ref(false);
 const selectedAction = ref<"job" | "scavenge" | "robbery" | "beatup" | "casino" | "gangaction">("job");
 const secondSwapUserId = ref("");
 
-const itemOptions = Object.entries(ItemId).flatMap(([name, id]) => (typeof id === "number" ? [{ id, name }] : []));
+const { result: itemsResult } = useQuery(GetItemsDocument);
+const validItemIds = new Set(Object.values(ItemId).filter((id): id is number => typeof id === "number"));
+const itemOptions = computed<SelectorOption[]>(() =>
+	(itemsResult.value?.items ?? [])
+		.filter(({ id }) => validItemIds.has(id))
+		.map(({ id, namePt, defaultImagePath }) => ({
+			label: namePt,
+			value: String(id),
+			imagePath: defaultImagePath,
+		})),
+);
 const classNames: Record<number, string> = {
 	[ClassId.None]: "Sem classe",
 	[ClassId.Thief]: "Ladrão",
@@ -202,7 +214,7 @@ async function handleSetItem() {
 	try {
 		const res = await mutateSetItem({
 			userId: props.userId,
-			itemId: selectedItem.value,
+			itemId: Number(selectedItem.value),
 			mode: itemMode.value,
 			hoursOrQuantity: amount,
 		});
@@ -705,25 +717,12 @@ async function handleDeleteUser() {
 		>
 			<div class="user-admin-actions__modal-form">
 				<div class="user-admin-actions__form-group">
-					<label
-						class="user-admin-actions__label"
-						for="select-item"
-					>
-						Item
-					</label>
-					<select
+					<BaseSelector
 						id="select-item"
-						v-model.number="selectedItem"
-						class="user-admin-actions__select"
-					>
-						<option
-							v-for="item in itemOptions"
-							:key="item.id"
-							:value="item.id"
-						>
-							{{ item.name }}
-						</option>
-					</select>
+						v-model="selectedItem"
+						label="Item"
+						:options="itemOptions"
+					/>
 				</div>
 				<fieldset class="user-admin-actions__form-group user-admin-actions__mode">
 					<legend class="user-admin-actions__muted">Modo de Operação</legend>
