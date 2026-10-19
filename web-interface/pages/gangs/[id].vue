@@ -846,7 +846,7 @@ async function updateGangMoney() {
 											class="member-actions-cell"
 										>
 											<BaseButton
-												v-if="member.userId !== gang.leaderId && (canPromoteMembers || canKickMembers)"
+												v-if="member.userId !== gang.leaderId && member.userId !== currentUserId && (canPromoteMembers || canKickMembers)"
 												variant="secondary"
 												size="sm"
 												:aria-label="`Gerenciar membro ${member.nickname}`"

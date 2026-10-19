@@ -703,6 +703,11 @@ export class Gang {
 	 * @returns True if the role was changed successfully, false otherwise.
 	 */
 	async ChangeRole(changerId: string, targetUserId: string, newRoleId: number): Promise<boolean> {
+		const target = this.Members.find(m => m.UserId === targetUserId);
+		if (!target || changerId === targetUserId || targetUserId === this.LeaderId) {
+			return false;
+		}
+
 		// Check if changer has permission
 		const changer = this.Members.find(m => m.UserId === changerId);
 		if (!changer) return false;
@@ -718,8 +723,9 @@ export class Gang {
 			return false;
 		}
 
-		// Cannot change the leader's role
-		if (targetUserId === this.LeaderId) {
+		// Only leadership transfer can assign the leader's role.
+		const leaderRoleId = this.Members.find(m => m.UserId === this.LeaderId)?.RoleId;
+		if (newRoleId === leaderRoleId) {
 			return false;
 		}
 

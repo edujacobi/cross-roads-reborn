@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { Gang } from "#core/models/Gang";
+import { Gang, GangPermission } from "#core/models/Gang";
 import { GangMemberRepository } from "#core/repositories/GangMemberRepository";
 import { User } from "#core/models/User";
 
@@ -160,6 +160,60 @@ describe("Gang Model - Leadership Transfer", () => {
 			expect(result).toBe(false);
 			expect(gang.LeaderId).toBe("old-leader");
 			expect(updateRole).toHaveBeenCalledExactlyOnceWith("old-leader", 1, 2);
+		}
+		finally {
+			updateRole.mockRestore();
+		}
+	});
+});
+
+describe("Gang Model - Role Changes", () => {
+	const createGang = () => {
+		const gang = new Gang();
+		gang.Id = 1;
+		gang.LeaderId = "leader";
+		gang.Roles = [
+			{ Id: 1, Name: "Leader", Permissions: [] },
+			{ Id: 2, Name: "Promoter", Permissions: [GangPermission.Promote] },
+			{ Id: 3, Name: "Member", Permissions: [] },
+		];
+		gang.Members = [
+			{
+				UserId: "leader", Nickname: "Leader", PermissionCount: 0, RoleId: 1, RoleName: "Leader",
+				Deposit: { Time: new Date(), Amount: 0 },
+			},
+			{
+				UserId: "promoter", Nickname: "Promoter", PermissionCount: 1, RoleId: 2, RoleName: "Promoter",
+				Deposit: { Time: new Date(), Amount: 0 },
+			},
+			{
+				UserId: "target", Nickname: "Target", PermissionCount: 0, RoleId: 3, RoleName: "Member",
+				Deposit: { Time: new Date(), Amount: 0 },
+			},
+		];
+		return gang;
+	};
+
+	it("does not allow a promoter to change their own role", async () => {
+		const gang = createGang();
+		const updateRole = vi.spyOn(GangMemberRepository, "UpdateRole");
+
+		try {
+			await expect(gang.ChangeRole("promoter", "promoter", 3)).resolves.toBe(false);
+			expect(updateRole).not.toHaveBeenCalled();
+		}
+		finally {
+			updateRole.mockRestore();
+		}
+	});
+
+	it("does not allow a promoter to assign the leader role", async () => {
+		const gang = createGang();
+		const updateRole = vi.spyOn(GangMemberRepository, "UpdateRole");
+
+		try {
+			await expect(gang.ChangeRole("promoter", "target", 1)).resolves.toBe(false);
+			expect(updateRole).not.toHaveBeenCalled();
 		}
 		finally {
 			updateRole.mockRestore();
