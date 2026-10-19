@@ -396,6 +396,18 @@ query GetMyDecorations {
 	}
 }
 
+query GetMySkinBundles {
+	mySkinBundles {
+		id
+		name
+		skins {
+			itemId
+			name
+			imagePath
+		}
+	}
+}
+
 mutation BuySpecialShopVip($days: Int!) {
 	buySpecialShopVip(days: $days) {
 		success
@@ -412,6 +424,13 @@ mutation BuySpecialShopItem($type: SpecialShopItemType!, $itemId: Int!) {
 
 mutation SetOwnDecoration($type: UserDecorationType!, $decorationId: Int!) {
 	setOwnDecoration(type: $type, decorationId: $decorationId) {
+		success
+		message
+	}
+}
+
+mutation SetOwnBundleSkin($bundleId: Int!) {
+	setOwnBundleSkin(bundleId: $bundleId) {
 		success
 		message
 	}

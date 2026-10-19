@@ -188,6 +188,26 @@ export const meResolvers: {
 			};
 		},
 
+		mySkinBundles: async (_: unknown, __: unknown, context: GraphQLContext) => {
+			const authUser = assertAuthenticated(context);
+			const bundles = await UserBundle.GetList(authUser.userId, Language.Portuguese);
+			return bundles.map(({ BundleId: id, Description: name }) => ({
+				id,
+				name,
+				skins: BundleList[id].Items.map(itemId => {
+					const item = ItemList[itemId];
+					const filename = id === BundleId.Default
+						? `${item.Id}_${ItemId[item.Id]}.png`
+						: `${item.Id}_${ItemId[item.Id]}_${BundleId[id]}.png`;
+					return {
+						itemId: item.Id,
+						name: item.Description[Language.Portuguese],
+						imagePath: `/images/items/${filename}`,
+					};
+				}),
+			}));
+		},
+
 		bribeCost: async (_: unknown, __: unknown, context: GraphQLContext) => {
 			const authUser = assertAuthenticated(context);
 			const player = new User(authUser.userId);
@@ -947,6 +967,34 @@ export const meResolvers: {
 				return { success: false, message: "Não foi possível atualizar a decoração de fundo.", user: null };
 			}
 			return { success: true, message: "Decoração de fundo atualizada.", user: null };
+		},
+
+		setOwnBundleSkin: async (
+			_: unknown,
+			args: { bundleId: number },
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			const player = new User(authUser.userId);
+			if (!await player.GetInfo()) {
+				return { success: false, message: "Jogador não encontrado.", user: null };
+			}
+			if (!Number.isSafeInteger(args.bundleId)) {
+				return { success: false, message: "Pacote de skins inválido.", user: null };
+			}
+
+			const bundle = BundleList[args.bundleId as BundleId];
+			if (!bundle) {
+				return { success: false, message: "Pacote de skins não encontrado.", user: null };
+			}
+
+			const ownedBundles = await UserBundle.GetList(player.Id);
+			if (!ownedBundles.some(ownedBundle => ownedBundle.BundleId === bundle.Id)) {
+				return { success: false, message: "Você não possui este pacote de skins.", user: null };
+			}
+
+			await player.SetBundleSkin(bundle);
+			return { success: true, message: "Pacote de skins aplicado a todos os itens.", user: null };
 		},
 
 		startJob: async (

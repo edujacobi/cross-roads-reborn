@@ -253,7 +253,7 @@ describe("API Auth and Resolvers", () => {
 			expect(getInfo).not.toHaveBeenCalled();
 		});
 
-		it("requires authentication to access the special shop and update decorations", async () => {
+		it("requires authentication for the special shop, decorations, and skins", async () => {
 			await expect(resolvers.Query.specialShop(null, {}, { user: null })).rejects.toThrow(
 				"Autenticação necessária para realizar esta ação.",
 			);
@@ -269,6 +269,37 @@ describe("API Auth and Resolvers", () => {
 			await expect(
 				resolvers.Query.myDecorations(null, {}, { user: null }),
 			).rejects.toThrow("Autenticação necessária para realizar esta ação.");
+			await expect(
+				resolvers.Query.mySkinBundles(null, {}, { user: null }),
+			).rejects.toThrow("Autenticação necessária para realizar esta ação.");
+			await expect(
+				resolvers.Mutation.setOwnBundleSkin(null, {
+					bundleId: BundleId.Brazilian,
+				}, { user: null }),
+			).rejects.toThrow("Autenticação necessária para realizar esta ação.");
+		});
+
+		it("lists owned skin bundles with the special shop previews", async () => {
+			const defaultBundle = new UserBundle();
+			defaultBundle.Description = "Padrão";
+			const ownedBundle = new UserBundle();
+			ownedBundle.BundleId = BundleId.Brazilian;
+			ownedBundle.Description = "Brasileiro";
+			vi.spyOn(UserBundle, "GetList").mockResolvedValue([defaultBundle, ownedBundle]);
+
+			const bundles = await resolvers.Query.mySkinBundles(null, {}, { user: playerUser });
+
+			expect(bundles).toHaveLength(2);
+			expect(bundles).toContainEqual(expect.objectContaining({
+				id: BundleId.Brazilian,
+				name: "Brasileiro",
+				skins: expect.arrayContaining([
+					expect.objectContaining({
+						itemId: ItemId.Pistol,
+						imagePath: "/images/items/1_Pistol_Brazilian.png",
+					}),
+				]),
+			}));
 		});
 
 		it("lists owned decorations with their profile preview classes", async () => {
@@ -455,6 +486,34 @@ describe("API Auth and Resolvers", () => {
 				message: "Você não possui esta decoração de fundo.",
 			});
 			expect(setBackgroundDecoration).toHaveBeenCalledTimes(1);
+		});
+
+		it("applies all skins in a bundle only when the user owns that bundle", async () => {
+			vi.spyOn(User.prototype, "GetInfo").mockImplementation(async function(this: User) {
+				return this;
+			});
+			const ownedBundle = new UserBundle();
+			ownedBundle.BundleId = BundleId.Brazilian;
+			vi.spyOn(UserBundle, "GetList").mockResolvedValue([ownedBundle]);
+			const setBundleSkin = vi.spyOn(User.prototype, "SetBundleSkin").mockResolvedValue();
+
+			await expect(
+				resolvers.Mutation.setOwnBundleSkin(null, {
+					bundleId: BundleId.Brazilian,
+				}, { user: playerUser }),
+			).resolves.toMatchObject({
+				success: true,
+				message: "Pacote de skins aplicado a todos os itens.",
+			});
+			await expect(
+				resolvers.Mutation.setOwnBundleSkin(null, {
+					bundleId: BundleId.Oxidated,
+				}, { user: playerUser }),
+			).resolves.toMatchObject({
+				success: false,
+				message: "Você não possui este pacote de skins.",
+			});
+			expect(setBundleSkin).toHaveBeenCalledTimes(1);
 		});
 	});
 

@@ -2,28 +2,57 @@
 	setup
 	lang="ts"
 >
-import { useQuery } from "@vue/apollo-composable";
+import { useApolloClient, useMutation, useQuery } from "@vue/apollo-composable";
 import { differenceInHours, formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Maximize, Minimize, Package } from "lucide-vue-next";
-import { computed, onMounted, ref } from "vue";
+import { Maximize, Minimize, Package, Paintbrush } from "lucide-vue-next";
+import { computed, onMounted, ref, watch } from "vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
+import BaseModal from "~/components/ui/BaseModal.vue";
 import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
 import RefreshButton from "~/components/ui/RefreshButton.vue";
 import { useItemDetailModal } from "~/composables/useItemDetailModal";
+import { useToast } from "~/composables/useToast";
 import { imagePaths } from "~/constants/imagePaths";
 import { localStorageKeys } from "~/constants/localStorageKeys";
-import { GetUserInventoryDocument, type GetUserInventoryQuery } from "~/graphql/generated";
+import {
+	GetMySkinBundlesDocument,
+	type GetMySkinBundlesQuery,
+	GetUserInventoryDocument,
+	type GetUserInventoryQuery,
+	SetOwnBundleSkinDocument,
+} from "~/graphql/generated";
 import { BundleId, ItemId } from "../../../src/core/types/Ids";
 import { ItemType } from "../../../src/core/types/ItemType";
 
 const props = defineProps<{ userId: string }>();
+const auth = useAuth();
+const canChangeSkins = computed(() => auth.user.value?.userId === props.userId);
+const { openItemModal } = useItemDetailModal();
+const { client } = useApolloClient();
+const { showToast } = useToast();
+const skinBundleDialogOpen = ref(false);
+const pendingBundle = ref<GetMySkinBundlesQuery["mySkinBundles"][number] | null>(null);
 
 const { result, loading, error, refetch } = useQuery(GetUserInventoryDocument, () => ({ id: props.userId }), {
 	fetchPolicy: "cache-and-network",
 });
 const items = computed(() => result.value?.user?.items ?? []);
+const {
+	result: skinBundlesResult,
+	loading: skinBundlesLoading,
+	error: skinBundlesError,
+} = useQuery(
+	GetMySkinBundlesDocument,
+	{},
+	{
+		enabled: skinBundleDialogOpen,
+		fetchPolicy: "cache-and-network",
+	},
+);
+const skinBundles = computed(() => skinBundlesResult.value?.mySkinBundles ?? []);
+const { mutate: setOwnBundleSkin, loading: applyingBundle } = useMutation(SetOwnBundleSkinDocument);
 
 const isCompactInventory = ref(false);
 const inventoryStorage = useLocalStorage(localStorageKeys.compactInventory);
@@ -37,7 +66,61 @@ function toggleCompactInventory() {
 	inventoryStorage.set(String(isCompactInventory.value));
 }
 
-const { openItemModal } = useItemDetailModal();
+function openSkinBundleDialog() {
+	pendingBundle.value = null;
+	skinBundleDialogOpen.value = true;
+}
+
+watch(canChangeSkins, (canChange) => {
+	if (!canChange) handleSkinBundleDialogOpen(false);
+});
+
+function requestBundleActivation(bundle: GetMySkinBundlesQuery["mySkinBundles"][number]) {
+	pendingBundle.value = bundle;
+	skinBundleDialogOpen.value = false;
+}
+
+function handleSkinBundleDialogOpen(open: boolean) {
+	skinBundleDialogOpen.value = open;
+}
+
+function handleConfirmationOpen(open: boolean) {
+	if (!open) pendingBundle.value = null;
+}
+
+function getErrorMessage(caughtError: unknown) {
+	return caughtError && typeof caughtError === "object" && "message" in caughtError
+		? String(caughtError.message)
+		: "Ocorreu um erro inesperado.";
+}
+
+async function confirmBundleActivation() {
+	const bundle = pendingBundle.value;
+	if (!bundle) return;
+
+	try {
+		const response = await setOwnBundleSkin({ bundleId: bundle.id });
+		const bundleResult = response?.data?.setOwnBundleSkin;
+		if (!bundleResult?.success) {
+			showToast({ variant: "error", text: bundleResult?.message ?? "Não foi possível aplicar o pacote de skins." });
+			return;
+		}
+
+		pendingBundle.value = null;
+		skinBundleDialogOpen.value = false;
+		showToast({ variant: "success", text: bundleResult.message });
+		try {
+			await client.refetchQueries({ include: ["GetUserInventory"] });
+		} catch (caughtError: unknown) {
+			showToast({
+				variant: "warning",
+				text: `Pacote aplicado, mas o inventário não foi atualizado: ${getErrorMessage(caughtError)}`,
+			});
+		}
+	} catch (caughtError: unknown) {
+		showToast({ variant: "error", text: getErrorMessage(caughtError) });
+	}
+}
 
 function getItemStatusClasses(item: NonNullable<GetUserInventoryQuery["user"]>["items"][number]) {
 	const classes: string[] = [];
@@ -69,6 +152,18 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 	>
 		<template #actions>
 			<BaseButton
+				v-if="canChangeSkins"
+				variant="ghost"
+				size="sm"
+				@click="openSkinBundleDialog"
+			>
+				<Paintbrush
+					:size="16"
+					aria-hidden="true"
+				/>
+				Alterar skins
+			</BaseButton>
+			<BaseButton
 				variant="ghost"
 				size="sm"
 				:aria-pressed="isCompactInventory"
@@ -92,6 +187,98 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 				aria-label="Atualizar inventário"
 			/>
 		</template>
+
+		<BaseModal
+			:open="skinBundleDialogOpen"
+			title="Alterar skins por pacote"
+			description="Escolha um pacote adquirido para aplicar suas skins a todos os itens correspondentes."
+			@update:open="handleSkinBundleDialogOpen"
+		>
+			<p
+				v-if="skinBundlesLoading"
+				class="user-inventory__skin-state"
+				role="status"
+			>
+				Carregando seus pacotes de skins...
+			</p>
+			<p
+				v-else-if="skinBundlesError"
+				class="user-inventory__skin-state"
+				role="alert"
+			>
+				Não foi possível carregar seus pacotes: {{ skinBundlesError.message }}
+			</p>
+			<p
+				v-else-if="skinBundles.length === 0"
+				class="user-inventory__skin-state"
+			>
+				Você ainda não possui pacotes de skins.
+			</p>
+			<div
+				v-else
+				class="user-inventory__skin-bundles"
+			>
+				<article
+					v-for="bundle in skinBundles"
+					:key="bundle.id"
+					class="user-inventory__skin-bundle"
+				>
+					<header>
+						<h3>{{ bundle.name }}</h3>
+						<p>{{ bundle.skins.length }} {{ bundle.skins.length === 1 ? "item" : "itens" }}</p>
+					</header>
+					<ul
+						class="user-inventory__skin-preview-list"
+						:aria-label="`Skins incluídas no pacote ${bundle.name}`"
+					>
+						<li
+							v-for="skin in bundle.skins"
+							:key="skin.itemId"
+						>
+							<NuxtImg
+								:src="skin.imagePath"
+								:alt="skin.name"
+								width="52"
+								height="52"
+								loading="lazy"
+							/>
+							<span>{{ skin.name }}</span>
+						</li>
+					</ul>
+					<BaseButton
+						variant="secondary"
+						:disabled="applyingBundle"
+						@click="requestBundleActivation(bundle)"
+					>
+						Aplicar pacote
+					</BaseButton>
+				</article>
+			</div>
+		</BaseModal>
+
+		<BaseModal
+			:open="pendingBundle !== null"
+			title="Confirmar troca de skin"
+			description="As skins deste pacote serão ativadas para todos os itens correspondentes."
+			@update:open="handleConfirmationOpen"
+		>
+			<p v-if="pendingBundle">Aplicar o pacote {{ pendingBundle.name }}?</p>
+			<template #footer>
+				<BaseButton
+					variant="ghost"
+					:disabled="applyingBundle"
+					@click="pendingBundle = null; skinBundleDialogOpen = true"
+				>
+					Cancelar
+				</BaseButton>
+				<BaseButton
+					:disabled="applyingBundle"
+					@click="confirmBundleActivation"
+				>
+					{{ applyingBundle ? "Aplicando..." : "Confirmar" }}
+				</BaseButton>
+			</template>
+		</BaseModal>
 
 		<div
 			v-if="error && items.length === 0"
@@ -291,6 +478,75 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 		font-weight: $font-weight-semibold;
 		color: $text-primary;
 		margin: 0;
+	}
+
+	&__skin-state {
+		padding: $spacing-md;
+		color: $text-secondary;
+		text-align: center;
+	}
+
+	&__skin-bundles {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+		gap: $spacing-md;
+	}
+
+	&__skin-bundle {
+		display: flex;
+		min-width: 0;
+		flex-direction: column;
+		gap: $spacing-md;
+		padding: $spacing-md;
+		border: 1px solid $border-card;
+		border-radius: $radius-md;
+		background: $bg-card;
+
+		header {
+			display: flex;
+			align-items: flex-start;
+			justify-content: space-between;
+			gap: $spacing-sm;
+
+			h3 {
+				font-size: $font-size-16;
+				font-weight: $font-weight-bold;
+			}
+
+			p {
+				color: $text-secondary;
+				font-size: $font-size-12;
+			}
+		}
+
+		> .base-button {
+			width: 100%;
+			margin-top: auto;
+		}
+	}
+
+	&__skin-preview-list {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(4.25rem, 1fr));
+		gap: $spacing-sm;
+		list-style: none;
+		margin: 0;
+		padding: 0;
+
+		li {
+			display: flex;
+			min-width: 0;
+			flex-direction: column;
+			align-items: center;
+			gap: $spacing-xs;
+			color: $text-secondary;
+			font-size: $font-size-12;
+			text-align: center;
+
+			img {
+				object-fit: contain;
+			}
+		}
 	}
 
 	&__item-quantity {
