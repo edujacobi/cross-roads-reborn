@@ -327,7 +327,7 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 					type="button"
 					class="user-inventory__item"
 					:class="{ 'user-inventory__item--compact': isCompactInventory }"
-					@click="openItemModal(item)"
+					@click="openItemModal(item, props.userId)"
 				>
 					<LazyNuxtImg
 						class="user-inventory__item-image"

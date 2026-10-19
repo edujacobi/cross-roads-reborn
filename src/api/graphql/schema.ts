@@ -883,6 +883,7 @@ export const typeDefs = /* GraphQL */ `
         buySpecialShopItem(type: SpecialShopItemType!, itemId: Int!): MutationResult!
         setOwnDecoration(type: UserDecorationType!, decorationId: Int!): MutationResult!
         setOwnBundleSkin(bundleId: Int!): MutationResult!
+        setOwnItemSkin(itemId: Int!, bundleId: Int!): MutationResult!
         startJob(jobId: Int!): JobMutationResult!
         cancelJob: JobMutationResult!
         payPrivateHospital: HospitalResult!

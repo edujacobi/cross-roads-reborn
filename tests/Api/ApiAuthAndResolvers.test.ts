@@ -277,6 +277,12 @@ describe("API Auth and Resolvers", () => {
 					bundleId: BundleId.Brazilian,
 				}, { user: null }),
 			).rejects.toThrow("Autenticação necessária para realizar esta ação.");
+			await expect(
+				resolvers.Mutation.setOwnItemSkin(null, {
+					itemId: ItemId.Pistol,
+					bundleId: BundleId.Brazilian,
+				}, { user: null }),
+			).rejects.toThrow("Autenticação necessária para realizar esta ação.");
 		});
 
 		it("lists owned skin bundles with the special shop previews", async () => {
@@ -514,6 +520,50 @@ describe("API Auth and Resolvers", () => {
 				message: "Você não possui este pacote de skins.",
 			});
 			expect(setBundleSkin).toHaveBeenCalledTimes(1);
+		});
+
+		it("activates a skin only when the current user owns the item and bundle", async () => {
+			vi.spyOn(User.prototype, "GetInfo").mockImplementation(async function(this: User) {
+				return this;
+			});
+			const itemRecord = { userId: playerUser.userId, itemId: ItemId.Pistol };
+			const findUserItem = vi.spyOn(UserItemRepository, "FindByUserAndItem").mockResolvedValue(itemRecord as never);
+			const ownedBundle = new UserBundle();
+			ownedBundle.BundleId = BundleId.Brazilian;
+			vi.spyOn(UserBundle, "GetList").mockResolvedValue([ownedBundle]);
+			const setItemSkin = vi.spyOn(User.prototype, "SetItemSkin").mockResolvedValue();
+
+			await expect(
+				resolvers.Mutation.setOwnItemSkin(null, {
+					itemId: ItemId.Pistol,
+					bundleId: BundleId.Brazilian,
+				}, { user: playerUser }),
+			).resolves.toMatchObject({
+				success: true,
+				message: "Skin ativada para este item.",
+			});
+			await expect(
+				resolvers.Mutation.setOwnItemSkin(null, {
+					itemId: ItemId.Pistol,
+					bundleId: BundleId.Oxidated,
+				}, { user: playerUser }),
+			).resolves.toMatchObject({
+				success: false,
+				message: "Você não possui esta skin.",
+			});
+			expect(setItemSkin).toHaveBeenCalledTimes(1);
+
+			findUserItem.mockResolvedValue(null);
+			await expect(
+				resolvers.Mutation.setOwnItemSkin(null, {
+					itemId: ItemId.Knife,
+					bundleId: BundleId.Brazilian,
+				}, { user: playerUser }),
+			).resolves.toMatchObject({
+				success: false,
+				message: "Você não possui este item.",
+			});
+			expect(setItemSkin).toHaveBeenCalledTimes(1);
 		});
 	});
 

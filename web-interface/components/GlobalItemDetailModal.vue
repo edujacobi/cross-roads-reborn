@@ -2,25 +2,31 @@
 	setup
 	lang="ts"
 >
-import { useQuery } from "@vue/apollo-composable";
+import { useApolloClient, useMutation, useQuery } from "@vue/apollo-composable";
 import { Moon, Sun } from "lucide-vue-next";
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
+import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
 import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
 import { useItemDetailModal } from "~/composables/useItemDetailModal";
 import { useMoneyFormat } from "~/composables/useMoneyFormat";
+import { useToast } from "~/composables/useToast";
 import { imagePaths } from "~/constants/imagePaths";
-import { GetItemDocument } from "~/graphql/generated";
+import { GetItemDocument, GetMySkinBundleIdsDocument, SetOwnItemSkinDocument } from "~/graphql/generated";
 import { ItemType } from "../../src/core/types/ItemType";
 
 const route = useRoute();
-const { handleOpenUpdate, closeItemModal } = useItemDetailModal();
+const auth = useAuth();
+const { handleOpenUpdate, closeItemModal, openItemModal } = useItemDetailModal();
+const { client } = useApolloClient();
+const { showToast } = useToast();
 
 const itemId = computed(() => {
 	const queryId = route.query.detailsItemId;
 	return queryId === undefined || queryId === "" ? null : Number(queryId);
 });
 const isModalOpen = computed(() => itemId.value !== null && Number.isInteger(itemId.value));
+const isOwnInventoryModal = computed(() => auth.user.value?.userId === String(route.query.detailsItemOwnerId ?? ""));
 
 const { result, loading } = useQuery(
 	GetItemDocument,
@@ -31,6 +37,107 @@ const { result, loading } = useQuery(
 	}),
 );
 const selectedItem = computed(() => (isModalOpen.value ? (result.value?.item ?? null) : null));
+const {
+	result: ownedSkinBundlesResult,
+	loading: ownedSkinBundlesLoading,
+	error: ownedSkinBundlesError,
+} = useQuery(GetMySkinBundleIdsDocument, {}, () => ({
+	enabled: isModalOpen.value && isOwnInventoryModal.value,
+	fetchPolicy: "cache-and-network",
+}));
+const ownedSkinBundleIds = computed(
+	() => new Set(ownedSkinBundlesResult.value?.mySkinBundles.map((bundle) => bundle.id) ?? []),
+);
+const { mutate: setOwnItemSkin, loading: settingSkin } = useMutation(SetOwnItemSkinDocument);
+const pendingSkin = ref<{
+	bundleId: number;
+	bundleName: string;
+	imagePath: string;
+	itemId: number;
+	itemName: string;
+	ownerUserId: string;
+} | null>(null);
+
+watch(itemId, () => {
+	pendingSkin.value = null;
+});
+
+function canActivateSkin(bundleId: number) {
+	return (
+		isOwnInventoryModal.value &&
+		!ownedSkinBundlesLoading.value &&
+		!ownedSkinBundlesError.value &&
+		ownedSkinBundleIds.value.has(bundleId)
+	);
+}
+
+async function requestSkinActivation(skin: { bundleId: number; bundleName: string; imagePath: string }) {
+	const item = selectedItem.value;
+	if (!item) return;
+
+	const pendingSelection = {
+		...skin,
+		itemId: item.id,
+		itemName: item.name,
+		ownerUserId: String(route.query.detailsItemOwnerId),
+	};
+
+	try {
+		await closeItemModal();
+		pendingSkin.value = pendingSelection;
+	} catch (caughtError: unknown) {
+		showToast({ variant: "error", text: getErrorMessage(caughtError) });
+	}
+}
+
+async function cancelSkinConfirmation() {
+	const skin = pendingSkin.value;
+	pendingSkin.value = null;
+	if (!skin) return;
+
+	try {
+		await openItemModal({ id: skin.itemId }, skin.ownerUserId);
+	} catch (caughtError: unknown) {
+		showToast({ variant: "error", text: getErrorMessage(caughtError) });
+	}
+}
+
+async function handleSkinConfirmationOpen(open: boolean) {
+	if (!open) await cancelSkinConfirmation();
+}
+
+function getErrorMessage(caughtError: unknown) {
+	return caughtError && typeof caughtError === "object" && "message" in caughtError
+		? String(caughtError.message)
+		: "Ocorreu um erro inesperado.";
+}
+
+async function confirmSkinActivation() {
+	const skin = pendingSkin.value;
+	if (!skin) return;
+
+	try {
+		const response = await setOwnItemSkin({ itemId: skin.itemId, bundleId: skin.bundleId });
+		const skinResult = response?.data?.setOwnItemSkin;
+		if (!skinResult?.success) {
+			showToast({ variant: "error", text: skinResult?.message ?? "Não foi possível ativar a skin." });
+			return;
+		}
+
+		pendingSkin.value = null;
+		showToast({ variant: "success", text: skinResult.message });
+		try {
+			await client.refetchQueries({ include: ["GetUserInventory"] });
+		} catch (caughtError: unknown) {
+			showToast({
+				variant: "warning",
+				text: `Skin ativada, mas o inventário não foi atualizado: ${getErrorMessage(caughtError)}`,
+			});
+		}
+	} catch (caughtError: unknown) {
+		showToast({ variant: "error", text: getErrorMessage(caughtError) });
+	}
+}
 
 const typeData: Record<
 	number,
@@ -257,10 +364,35 @@ const { formatMoney } = useMoneyFormat();
 				>
 					<h3 class="item-modal__section-title">Skins Disponíveis</h3>
 					<div class="item-modal__skins">
-						<div
+						<p
+							v-if="isOwnInventoryModal && ownedSkinBundlesLoading"
+							class="item-modal__skin-help"
+							role="status"
+						>
+							Carregando suas skins...
+						</p>
+						<p
+							v-else-if="isOwnInventoryModal && ownedSkinBundlesError"
+							class="item-modal__skin-help"
+							role="alert"
+						>
+							Não foi possível carregar suas skins: {{ ownedSkinBundlesError.message }}
+						</p>
+						<p
+							v-else-if="isOwnInventoryModal"
+							class="item-modal__skin-help"
+						>
+							Clique em uma skin adquirida para ativá-la neste item.
+						</p>
+						<button
+							type="button"
 							v-for="skin in selectedItem.skins"
 							:key="skin.bundleId"
 							class="skin-card"
+							:class="{ 'skin-card--owned': canActivateSkin(skin.bundleId) }"
+							:disabled="!canActivateSkin(skin.bundleId) || settingSkin"
+							:aria-label="`Ativar skin ${skin.bundleName} para ${selectedItem.name}`"
+							@click="requestSkinActivation(skin)"
 						>
 							<LazyNuxtImg
 								class="skin-card__image"
@@ -269,10 +401,45 @@ const { formatMoney } = useMoneyFormat();
 								width="48"
 							/>
 							<span class="skin-card__name">{{ skin.bundleName }}</span>
-						</div>
+						</button>
 					</div>
 				</section>
 			</div>
+		</template>
+	</BaseModal>
+
+	<BaseModal
+		:open="pendingSkin !== null"
+		title="Confirmar ativação da skin"
+		description="A skin será aplicada somente a este item."
+		@update:open="handleSkinConfirmationOpen"
+	>
+		<div
+			v-if="pendingSkin"
+			class="item-modal__skin-confirmation"
+		>
+			<NuxtImg
+				:src="pendingSkin.imagePath"
+				:alt="pendingSkin.bundleName"
+				width="72"
+				height="72"
+			/>
+			<p>Ativar {{ pendingSkin.bundleName }} para {{ pendingSkin.itemName }}?</p>
+		</div>
+		<template #footer>
+			<BaseButton
+				variant="ghost"
+				:disabled="settingSkin"
+				@click="cancelSkinConfirmation"
+			>
+				Cancelar
+			</BaseButton>
+			<BaseButton
+				:disabled="settingSkin"
+				@click="confirmSkinActivation"
+			>
+				{{ settingSkin ? "Ativando..." : "Ativar skin" }}
+			</BaseButton>
 		</template>
 	</BaseModal>
 </template>
@@ -280,6 +447,7 @@ const { formatMoney } = useMoneyFormat();
 <style lang="scss">
 @use "~/assets/scss/variables" as *;
 @use "~/assets/scss/mixins" as *;
+@use "sass:color";
 
 /* Modal Styles */
 .item-modal {
@@ -407,6 +575,19 @@ const { formatMoney } = useMoneyFormat();
 		grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
 		gap: $spacing-sm;
 	}
+
+	&__skin-help {
+		grid-column: 1 / -1;
+		color: $text-secondary;
+		font-size: $font-size-12;
+	}
+
+	&__skin-confirmation {
+		display: flex;
+		align-items: center;
+		gap: $spacing-md;
+		color: $text-primary;
+	}
 }
 
 .item-tag {
@@ -427,9 +608,34 @@ const { formatMoney } = useMoneyFormat();
 	align-items: center;
 	gap: $spacing-xs;
 	padding: $spacing-sm;
+	width: 100%;
 	background-color: $bg-input;
 	border: 1px solid $border-subtle;
 	border-radius: $radius-xs;
+	color: inherit;
+	font: inherit;
+	text-align: inherit;
+	cursor: default;
+
+	&:disabled {
+		opacity: 1;
+	}
+
+	&:focus-visible {
+		outline: 2px solid $color-success;
+		outline-offset: 2px;
+	}
+
+	&--owned {
+		@include accent-surface($color-success);
+		color: color.adjust($color-success, $lightness: 15%);
+		cursor: pointer;
+
+		&:hover:not(:disabled) {
+			background-color: rgba($color-success, 0.3);
+			border-color: $color-success;
+		}
+	}
 
 	&__image {
 		width: 3rem;

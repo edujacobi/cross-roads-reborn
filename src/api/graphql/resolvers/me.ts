@@ -997,6 +997,41 @@ export const meResolvers: {
 			return { success: true, message: "Pacote de skins aplicado a todos os itens.", user: null };
 		},
 
+		setOwnItemSkin: async (
+			_: unknown,
+			args: { itemId: number; bundleId: number },
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			const player = new User(authUser.userId);
+			if (!await player.GetInfo()) {
+				return { success: false, message: "Jogador não encontrado.", user: null };
+			}
+			if (!Number.isSafeInteger(args.itemId) || !Number.isSafeInteger(args.bundleId)) {
+				return { success: false, message: "Item ou skin inválidos.", user: null };
+			}
+
+			const item = ItemList[args.itemId as ItemId];
+			const bundle = BundleList[args.bundleId as BundleId];
+			if (!item || !bundle || !item.Skin[bundle.Id]) {
+				return { success: false, message: "Esta skin não está disponível para este item.", user: null };
+			}
+
+			const [userItem, ownedBundles] = await Promise.all([
+				UserItemRepository.FindByUserAndItem(player.Id, item.Id),
+				UserBundle.GetList(player.Id),
+			]);
+			if (!userItem) {
+				return { success: false, message: "Você não possui este item.", user: null };
+			}
+			if (!ownedBundles.some(ownedBundle => ownedBundle.BundleId === bundle.Id)) {
+				return { success: false, message: "Você não possui esta skin.", user: null };
+			}
+
+			await player.SetItemSkin(item, bundle);
+			return { success: true, message: "Skin ativada para este item.", user: null };
+		},
+
 		startJob: async (
 			_: unknown,
 			args: { jobId: number },
