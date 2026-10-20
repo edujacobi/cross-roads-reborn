@@ -5,6 +5,8 @@
 import { useMutation, useQuery } from "@vue/apollo-composable";
 import { ChevronDown } from "lucide-vue-next";
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import AttackIcon from "~/components/icons/AttackIcon.vue";
+import DefenseIcon from "~/components/icons/DefenseIcon.vue";
 import PrisonIcon from "~/components/icons/PrisonIcon.vue";
 import RobberyIcon from "~/components/icons/RobberyIcon.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
@@ -122,6 +124,13 @@ const isBusy = computed(() => {
 		userStatus.isInGangAction ||
 		userStatus.isDead
 	);
+});
+const actionUnavailableMessage = computed(() => {
+	const userStatus = status.value;
+	if (userStatus?.isScavenging) return "Você não pode roubar enquanto vasculha!";
+	if (userStatus?.isWorking) return "Você não pode roubar enquanto trabalha!";
+	if (userStatus?.isRobbing || userStatus?.isBeingRobbed) return "Você não pode roubar enquanto já está em um roubo!";
+	return "";
 });
 const isLoading = computed(
 	() => locationsLoading.value || profileLoading.value || statusLoading.value || activityLoading.value,
@@ -269,12 +278,25 @@ onBeforeUnmount(() => sseAbortController?.abort());
 		/>
 		<div class="rob-page__rules">
 			<p>
-				Quanto maior seu ATK, maiores suas chances de roubo à outros jogadores e mais locais ficam disponíveis. Quanto
-				maior sua DEF, mais protegido você estará.
+				Quanto maior seu
+				<AttackIcon
+					:size="16"
+					variant="solid"
+				/>
+				ATK, maiores suas chances de roubo à outros jogadores e mais locais ficam disponíveis. Quanto maior sua
+				<DefenseIcon
+					:size="14"
+					variant="solid"
+				/>
+				DEF, mais protegido você estará.
 			</p>
 			<p>
-				Se falhar, você será preso por um tempo definido pelo seu ATK. Se conseguir, será procurado pela polícia e
-				deverá esperar 1 hora para roubar novamente.
+				Se falhar, você será <NuxtLink to="/prison"><strong>preso</strong></NuxtLink> por um tempo definido pelo seu
+				<AttackIcon
+					:size="16"
+					variant="solid"
+				/>
+				ATK. Se conseguir, será procurado pela polícia e deverá esperar 1 hora para roubar novamente.
 			</p>
 			<p>Há uma pequena chance do alvo ser também espancado!</p>
 		</div>
@@ -459,7 +481,7 @@ onBeforeUnmount(() => sseAbortController?.abort());
 						v-else
 						class="rob-page__idle"
 					>
-						Pronto para roubar!
+						{{ actionUnavailableMessage ?? "Pronto para roubar!" }}
 					</p>
 				</div>
 			</aside>
@@ -582,9 +604,10 @@ onBeforeUnmount(() => sseAbortController?.abort());
 	background: $bg-card;
 	border: 1px solid $border-card;
 	border-radius: $radius-sm;
+	font-size: $font-size-14;
 
 	p {
-		margin-bottom: $spacing-sm;
+		line-height: 2;
 	}
 }
 
@@ -792,6 +815,15 @@ onBeforeUnmount(() => sseAbortController?.abort());
 		border: 1px solid $border-card;
 		border-radius: $radius-sm;
 	}
+}
+
+.rob-page__action-message {
+	margin: 0;
+	padding: $spacing-md;
+	background: $bg-card;
+	border: 1px solid $border-card;
+	border-radius: $radius-sm;
+	color: $text-primary;
 }
 
 .rob-page__status,

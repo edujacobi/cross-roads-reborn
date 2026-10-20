@@ -141,6 +141,13 @@ const isUserBusy = computed(() => {
 	);
 });
 
+const actionUnavailableMessage = computed(() => {
+	const s = statusUser.value;
+	if (s?.isWorking) return "Você não pode vasculhar enquanto trabalha!";
+	if (s?.isRobbing || s?.isBeingRobbed) return "Você não pode vasculhar enquanto está em um roubo!";
+	return "";
+});
+
 const cooldownRemaining = computed(() => {
 	if (!scavengeTime.value) return null;
 	const end = new Date(scavengeTime.value);
@@ -578,7 +585,7 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 						v-else
 						class="scavenge-page__idle"
 					>
-						Pronto para vasculhar!
+						{{ actionUnavailableMessage ?? "Pronto para vasculhar!" }}
 					</p>
 				</div>
 			</aside>

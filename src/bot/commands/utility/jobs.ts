@@ -74,6 +74,13 @@ module.exports = {
 
 			const userClassModifier = getJobClassModifier(user.Class);
 
+			if (user.IsScavenging()) {
+				container.addTexts([s.userScavenging]);
+			}
+			else if (user.IsInRobbery()) {
+				container.addTexts([s.userRobbing]);
+			}
+
 			for (let i = 0; i < currentPageJobs.length; i++) {
 				const job = currentPageJobs[i];
 				const weaponsNeeded = getItemList().filter(item => job.NeedItem?.includes(item.Id));
@@ -327,6 +334,8 @@ const Strings = {
 		userParticipating: `You're participating in a gang action! ${EmoteString.Gang}`,
 		title: "Jobs",
 		description: "You cannot bet, steal or search while working!",
+		userScavenging: `You can't start working while scavenging! ${EmoteString.Scavenge}`,
+		userRobbing: `You can't start working while robbing! ${EmoteString.Robbery}`,
 		userPrison: (timerPrison: Date) => `You are in prison! ${EmoteString.Prison}\n-# You will be released ${time(timerPrison, TimestampStyles.RelativeTime)}`,
 		userHospital: (timerHospital: Date) => `You are hospitalized ${EmoteString.Hospital}\n-# You will be attended ${time(timerHospital, TimestampStyles.RelativeTime)}`,
 		userCasino: `You are playing in casino! ${EmoteString.Casino}`,
@@ -357,6 +366,8 @@ const Strings = {
 		userParticipating: `Você está participando de uma ação de gangue! ${EmoteString.Gang}`,
 		title: "Trabalhos",
 		description: `Você não pode apostar, roubar nem vasculhar enquanto trabalha!`,
+		userScavenging: `Você não pode começar a trabalhar enquanto vasculha! ${EmoteString.Scavenge}`,
+		userRobbing: `Você não pode começar a trabalhar enquanto está em um roubo! ${EmoteString.Robbery}`,
 		userPrison: (timerPrison: Date) => `Você está preso! ${EmoteString.Prison}\n-# Será solto ${time(timerPrison, TimestampStyles.RelativeTime)}`,
 		userHospital: (timerHospital: Date) => `Você está hospitalizado ${EmoteString.Hospital}\n-# Será atendido ${time(timerHospital, TimestampStyles.RelativeTime)}`,
 		userCasino: `Você está jogando no cassino! ${EmoteString.Casino}`,
@@ -387,6 +398,8 @@ const Strings = {
 		userParticipating: `¡Estás participando en una acción de cuadrilla! ${EmoteString.Gang}`,
 		title: "Trabajos",
 		description: "Tu no puedes apostar, robar o buscar mientras trabajas!",
+		userScavenging: `¡No puedes empezar a trabajar mientras buscas! ${EmoteString.Scavenge}`,
+		userRobbing: `¡No puedes empezar a trabajar mientras estás en un robo! ${EmoteString.Robbery}`,
 		userPrison: (timerPrison: Date) => `¡Estás preso! ${EmoteString.Prison}\n-# ¡Serás liberado ${time(timerPrison, TimestampStyles.RelativeTime)}`,
 		userHospital: (timerHospital: Date) => `¡Estás hospitalizado ${EmoteString.Hospital}\n-# Serás atendido ${time(timerHospital, TimestampStyles.RelativeTime)}`,
 		userCasino: `¡Estás jugando en el casino! ${EmoteString.Casino}`,

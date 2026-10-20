@@ -113,6 +113,13 @@ const isUserBusy = computed(() => {
 	);
 });
 
+const actionUnavailableMessage = computed(() => {
+	const s = userStatus.value;
+	if (s?.isScavenging) return "Você não pode começar a trabalhar enquanto vasculha!";
+	if (s?.isRobbing || s?.isBeingRobbed) return "Você não pode começar a trabalhar enquanto está em um roubo!";
+	return "";
+});
+
 function hasRequiredItems(job: Job): boolean {
 	if (job.needItems.length === 0) return true;
 	return job.needItems.every((needed) => userItems.value.some((ui) => ui.id === needed.id));
@@ -399,7 +406,6 @@ onUnmounted(() => {
 						<div class="jobs-page__stop-btn">
 							<BaseButton
 								variant="danger"
-								size="sm"
 								@click="showCancelModal = true"
 							>
 								<X :size="14" />
@@ -412,7 +418,7 @@ onUnmounted(() => {
 						v-else
 						class="jobs-page__idle"
 					>
-						Você não está trabalhando.
+						{{ actionUnavailableMessage ?? "Pronto para trabalhar!" }}
 					</p>
 				</div>
 			</aside>
@@ -601,6 +607,15 @@ onUnmounted(() => {
 	display: flex;
 	flex-direction: column;
 	gap: $spacing-sm;
+}
+
+.jobs-page__action-message {
+	margin: 0;
+	padding: $spacing-md;
+	background: $bg-card;
+	border: 1px solid $border-card;
+	border-radius: $radius-sm;
+	color: $text-primary;
 }
 
 .jobs-page__stat {

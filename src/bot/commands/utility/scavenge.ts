@@ -75,25 +75,28 @@ module.exports = {
 			if (user.Scavenge.Time > new Date()) {
 				text = `${s.userScavengeTime} ${time(user.Scavenge.Time, TimestampStyles.RelativeTime)} ${EmoteString.Scavenge}`;
 			}
-			if (user.IsScavenging()) {
+			else if (user.IsScavenging()) {
 				text = s.userScavenging(user.Scavenge.IsScavengingId!);
 			}
-			if (user.IsWorking()) {
+			else if (user.IsWorking()) {
 				text = s.userWorking;
 			}
-			if (user.IsInPrison()) {
+			else if (user.IsInRobbery()) {
+				text = s.userRobbing;
+			}
+			else if (user.IsInPrison()) {
 				text = s.userPrison(user.Prison.Time);
 			}
-			if (user.IsInHospital()) {
+			else if (user.IsInHospital()) {
 				text = s.userHospital(user.Hospital.Time);
 			}
-			if (user.IsInCasinoGame()) {
+			else if (user.IsInCasinoGame()) {
 				text = s.casino;
 			}
-			if (user.IsDefendingInvestment()) {
+			else if (user.IsDefendingInvestment()) {
 				text = s.userDefendingInvestment;
 			}
-			if (user.IsParticipatingInGangAction()) {
+			else if (user.IsParticipatingInGangAction()) {
 				text = s.userParticipatingInGangAction;
 			}
 
@@ -345,6 +348,7 @@ const Strings = {
 		userFree: "You can scavenge!",
 		userScavengeTime: "You will be able to scavenge again",
 		userWorking: `You cannot scavenge while working! ${EmoteString.Jobs}`,
+		userRobbing: `You cannot scavenge while in a robbery! ${EmoteString.Robbery}`,
 		userPrison: (timerPrison: Date) => `You cannot scavenge while in prison! You will be released ${time(timerPrison, TimestampStyles.RelativeTime)} ${EmoteString.Prison}`,
 		userHospital: (timerHospital: Date) => `You cannot scavenge while hospitalized! You will be healed ${time(timerHospital, TimestampStyles.RelativeTime)} ${EmoteString.Hospital}`,
 		description: "I'm looking for brave people who aren't afraid to enter dirty and dangerous places. Many good things can be found!\n-# You can scavenge once every hour.",
@@ -382,6 +386,7 @@ const Strings = {
 		userFree: "Você pode vasculhar!",
 		userScavengeTime: "Você poderá vasculhar novamente",
 		userWorking: `Você não pode vasculhar enquanto trabalha! ${EmoteString.Jobs}`,
+		userRobbing: `Você não pode vasculhar enquanto está em um roubo! ${EmoteString.Robbery}`,
 		userPrison: (timerPrison: Date) => `Você não pode vasculhar enquanto está preso! Será solto ${time(timerPrison, TimestampStyles.RelativeTime)} ${EmoteString.Prison}`,
 		userHospital: (timerHospital: Date) => `Você não pode vasculhar enquanto está hospitalizado! Será curado ${time(timerHospital, TimestampStyles.RelativeTime)} ${EmoteString.Hospital}`,
 		description: "Procuro pessoas corajosas e sem nojo de entrar em locais sujos e perigosos. Muitas coisas boas podem ser encontradas!\n-# Você pode vasculhar uma vez a cada hora.",
@@ -419,6 +424,7 @@ const Strings = {
 		userFree: "¡Puedes buscar!",
 		userScavengeTime: "Podrás buscar de nuevo",
 		userWorking: `¡No puedes navegar mientras trabajas! ${EmoteString.Jobs}`,
+		userRobbing: `¡No puedes buscar mientras estás en un robo! ${EmoteString.Robbery}`,
 		userPrison: (timerPrison: Date) => `¡No puedes buscar mientras estés en prisión! Serás liberado ${time(timerPrison, TimestampStyles.RelativeTime)} ${EmoteString.Prison}`,
 		userHospital: (timerHospital: Date) => `¡No puedes buscar mientras estás en el hospital! Serás curado ${time(timerHospital, TimestampStyles.RelativeTime)} ${EmoteString.Hospital}`,
 		description: "Busco personas valientes que no tengan miedo de entrar en lugares sucios y peligrosos. ¡Muchas cosas buenas pueden encontrarse!\n-# Puedes buscar una vez cada hora.",

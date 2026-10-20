@@ -47,20 +47,23 @@ module.exports = {
 		if (user.IsScavenging()) {
 			text = s.userScavenging;
 		}
-		if (user.IsWorking()) {
+		else if (user.IsWorking()) {
 			text = s.userWorking;
 		}
-		if (user.IsWanted()) {
-			text = s.userEscaping(user.Wanted.Time);
-		}
-		if (user.IsInPrison()) {
+		else if (user.IsInPrison()) {
 			text = s.userPrison(user.Prison.Time);
 		}
-		if (user.IsInHospital()) {
+		else if (user.IsWanted()) {
+			text = s.userEscaping(user.Wanted.Time);
+		}
+		else if (user.IsInHospital()) {
 			text = s.userHospital(user.Hospital.Time);
 		}
-		if (user.IsInCasinoGame()) {
+		else if (user.IsInCasinoGame()) {
 			text = s.userCasino;
+		}
+		else if (user.IsInRobbery()) {
+			text = s.userRobbing;
 		}
 
 		function generateDefaultHeader() {
@@ -318,6 +321,7 @@ const Strings = {
 		userFree: "You can rob!",
 		userScavenging: `You can't rob while scavenging! ${EmoteString.Scavenge}`,
 		userWorking: `You can't rob while working! ${EmoteString.Jobs}`,
+		userRobbing: `You can't rob while already in a robbery! ${EmoteString.Robbery}`,
 		userEscaping: (timerEscape: Date) => `You can't rob while being wanted by the police! You can rob again ${time(timerEscape, TimestampStyles.RelativeTime)} ${EmoteString.Police}`,
 		userPrison: (timerPrison: Date) => `You can't rob while in prison! You will be released ${time(timerPrison, TimestampStyles.RelativeTime)} ${EmoteString.Prison}`,
 		userHospital: (timerHospital: Date) => `You can't rob while in hospital! You will be healed ${time(timerHospital, TimestampStyles.RelativeTime)} ${EmoteString.Hospital}`,
@@ -341,6 +345,7 @@ There is a small chance the target will also be beaten up!`,
 		userFree: "Você pode roubar!",
 		userScavenging: `Você não pode roubar enquanto vasculha! ${EmoteString.Scavenge}`,
 		userWorking: `Você não pode roubar enquanto trabalha! ${EmoteString.Jobs}`,
+		userRobbing: `Você não pode roubar enquanto já está em um roubo! ${EmoteString.Robbery}`,
 		userEscaping: (timerEscape: Date) => `Você não pode roubar enquanto estiver sendo procurado pela polícia! Poderá roubar novamente ${time(timerEscape, TimestampStyles.RelativeTime)} ${EmoteString.Police}`,
 		userPrison: (timerPrison: Date) => `Você não pode roubar enquanto está preso! Será solto ${time(timerPrison, TimestampStyles.RelativeTime)} ${EmoteString.Prison}`,
 		userHospital: (timerHospital: Date) => `Você não pode roubar enquanto está hospitalizado! Será curado ${time(timerHospital, TimestampStyles.RelativeTime)} ${EmoteString.Hospital}`,
@@ -364,6 +369,7 @@ Há uma pequena chance do alvo ser também espancado!`,
 		userFree: "¡Puedes robar!",
 		userScavenging: `¡No puedes robar mientras buscas! ${EmoteString.Scavenge}`,
 		userWorking: `¡No puedes robar mientras trabajas! ${EmoteString.Jobs}`,
+		userRobbing: `¡No puedes robar mientras ya estás en un robo! ${EmoteString.Robbery}`,
 		userEscaping: (timerEscape: Date) => `¡No puedes robar mientras eres perseguido por la policía! ¡Puedes robar de nuevo ${time(timerEscape, TimestampStyles.RelativeTime)} ${EmoteString.Police}`,
 		userPrison: (timerPrison: Date) => `¡No puedes robar mientras estás en prisión! ¡Serás liberado ${time(timerPrison, TimestampStyles.RelativeTime)} ${EmoteString.Prison}`,
 		userHospital: (timerHospital: Date) => `¡No puedes robar mientras estás en el hospital! ¡Serás curado ${time(timerHospital, TimestampStyles.RelativeTime)} ${EmoteString.Hospital}`,

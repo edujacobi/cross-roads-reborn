@@ -6,6 +6,7 @@ import { useMutation, useQuery } from "@vue/apollo-composable";
 import { ArrowDown, ArrowUp, ArrowUpDown, Search } from "lucide-vue-next";
 import { computed, onMounted, ref, watch } from "vue";
 import { ClassId } from "~/../src/core/types/Ids";
+import AttackIcon from "~/components/icons/AttackIcon.vue";
 import PrisonIcon from "~/components/icons/PrisonIcon.vue";
 import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
@@ -353,8 +354,12 @@ function formatBribeCost() {
 				<div class="info-card__section">
 					<h3>Subornar</h3>
 					<p>
-						Os guardas são gananciosos, e quanto maior o seu ATK, mais eles pedirão! Eles também podem recusar seu
-						suborno, mas ficarão com seu dinheiro.
+						Os guardas são gananciosos, e quanto maior o seu
+						<AttackIcon
+							:size="16"
+							variant="solid"
+						/>
+						ATK, mais eles pedirão! Eles também podem recusar seu suborno, mas ficarão com seu dinheiro.
 					</p>
 				</div>
 			</div>
@@ -784,8 +789,6 @@ function formatBribeCost() {
 			font-size: $font-size-14;
 			color: $text-secondary;
 			line-height: 1.5;
-			display: flex;
-			align-items: center;
 		}
 
 		span {
