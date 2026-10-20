@@ -4,6 +4,8 @@ import { Language } from "#core/models/Language";
 import { ClassId } from "#core/types/Classes";
 import { Prison, PrisonFailureReason } from "#core/models/Prison";
 import { UserRepository } from "#core/repositories/UserRepository";
+import { Event } from "#core/models/Event";
+import { Notification } from "#core/models/Notification";
 
 // --- Global Mocks ---
 
@@ -96,6 +98,31 @@ describe("Prison", () => {
 
 			await expect(prison.StartEscape()).resolves.toBe(false);
 			expect(user.Escape.HasTried).toBe(false);
+		});
+	});
+
+	describe("When ending an escape", () => {
+		it("Should apply the prison penalty after the escape timer expires", async () => {
+			const prisonTime = new Date(Date.now() + 3_600_000);
+			user.Prison.Time = prisonTime;
+			user.Escape.HasTried = true;
+			user.Escape.Time = new Date(Date.now() - 1_000);
+
+			vi.spyOn(Event, "GetActiveFromType").mockResolvedValue(1);
+			vi.spyOn(Notification, "Dismiss").mockResolvedValue(undefined);
+			vi.spyOn(Notification, "Free").mockResolvedValue(undefined);
+			const update = vi.spyOn(user, "Update").mockResolvedValue(true);
+			vi.spyOn(Math, "random").mockReturnValue(0.99);
+
+			const result = await new Prison(user).EndEscape();
+
+			expect(result.success).toBe(false);
+			expect(user.Prison.Time.getTime()).toBe(prisonTime.getTime() + 15 * 60_000);
+			expect(user.Escape.Time.getTime()).toBe(0);
+			expect(update).toHaveBeenCalledWith(expect.objectContaining({
+				escapeTime: new Date(0),
+				prisonTime: user.Prison.Time,
+			}));
 		});
 	});
 });

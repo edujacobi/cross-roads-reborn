@@ -159,7 +159,7 @@ export class Prison {
 			try {
 				const user = new User(userId);
 				const found = await user.GetInfo();
-				if (found && user.IsEscaping()) {
+				if (found && user.Escape.HasTried && user.Escape.Time <= new Date()) {
 					const prison = new Prison(user);
 					await prison.CalculateEscapeChance();
 					await prison.EndEscape();
@@ -175,13 +175,15 @@ export class Prison {
 	}
 
 	async EndEscape(): Promise<{ success: boolean; totalTime: number; message: string }> {
-		if (!this.User.IsEscaping()) {
+		const escapeTime = this.User.Escape.Time.getTime();
+		if (!this.User.Escape.HasTried || escapeTime <= 0 || escapeTime > Date.now()) {
 			return { success: false, totalTime: 0, message: "Você não está tentando fugir." };
 		}
 
 		await Notification.Dismiss(this.User.Id, NotificationType.Free);
 
 		const totalTime = this.calculateTotalTime();
+		this.User.Escape.Time = new Date(0);
 
 		const chance = Math.floor(Math.random() * 101);
 		const userClassModifier = getPrisonEscapeClassModifier(this.User.Class);
@@ -208,6 +210,7 @@ export class Prison {
 
 		await this.User.Update({
 			escapeCount: this.User.Escape.Count,
+			escapeTime: this.User.Escape.Time,
 			prisonTime: this.User.Prison.Time,
 			wantedTime: this.User.Wanted.Time,
 		});
