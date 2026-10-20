@@ -28,12 +28,13 @@ export class LocationRobberyStrategy implements IRobberyStrategy {
 
 	RewardMin: number;
 	RewardMax: number;
-	AttackerTimeInPrison = 0;
+	AttackerTimeInPrison: number;
 
 	constructor(attacker: User, locationId: LocationId) {
 		this.Attacker = attacker;
 		this.LocationId = locationId;
 		this.Date = new Date();
+		this.AttackerTimeInPrison = 20 * (locationId + 1);
 
 		const userClassModifier = getRobberyClassModifier(this.Attacker.Class);
 		const location = LocationList[this.LocationId];
@@ -115,7 +116,6 @@ export class LocationRobberyStrategy implements IRobberyStrategy {
 
 	async LockStates(useGrenade?: boolean): Promise<RobberyInitData> {
 		void useGrenade;
-		this.AttackerTimeInPrison = 20 * (this.LocationId + 1);
 
 		this.Attacker.Robbery.IsRobbingLocationId = this.LocationId;
 

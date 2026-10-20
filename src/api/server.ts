@@ -11,6 +11,7 @@ import { User } from "#core/models/User";
 import { Language } from "#core/models/Language";
 import { registerEscapeStatusRoute } from "#api/sse/escapeStatus";
 import { registerScavengeStatusRoute } from "#api/sse/scavengeStatus";
+import { registerRobStatusRoute } from "#api/sse/robStatus";
 import { getClient } from "#bot/client";
 
 let server: FastifyInstance | null = null;
@@ -159,6 +160,7 @@ export async function createApiServer(): Promise<FastifyInstance> {
 
 	registerEscapeStatusRoute(app);
 	registerScavengeStatusRoute(app);
+	registerRobStatusRoute(app);
 
 	// Health Check
 	app.get("/health", async () => {

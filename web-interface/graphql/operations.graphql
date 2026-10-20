@@ -1268,8 +1268,27 @@ query GetMyScavengeStatus {
 	}
 }
 
+query GetRobLocations {
+	robLocations {
+		id
+		name
+		description
+		needAttack
+		successChance
+		rewardMin
+		rewardMax
+	}
+}
+
 mutation StartScavenge($placeId: Int!) {
 	startScavenge(placeId: $placeId) {
+		success
+		message
+	}
+}
+
+mutation StartRobLocation($locationId: Int!) {
+	startRobLocation(locationId: $locationId) {
 		success
 		message
 	}

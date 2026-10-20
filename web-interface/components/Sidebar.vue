@@ -14,7 +14,6 @@ import {
 	Package,
 	Scroll,
 	ScrollText,
-	Sparkles,
 	Users,
 	X,
 } from "lucide-vue-next";
@@ -24,6 +23,7 @@ import HospitalIcon from "~/components/icons/HospitalIcon.vue";
 import InvestmentIcon from "~/components/icons/InvestmentIcon.vue";
 import JobsIcon from "~/components/icons/JobsIcon.vue";
 import PrisonIcon from "~/components/icons/PrisonIcon.vue";
+import RobberyIcon from "~/components/icons/RobberyIcon.vue";
 import ScavengeIcon from "~/components/icons/ScavengeIcon.vue";
 import ShopIcon from "~/components/icons/ShopIcon.vue";
 import SpecialShopIcon from "~/components/icons/SpecialShopIcon.vue";
@@ -118,6 +118,13 @@ const navigationGroups = computed(() => [
 				icon: ScavengeIcon,
 				size: 20,
 				activeRouteNames: ["scavenge"],
+			},
+			{
+				label: "Roubar",
+				to: { name: "rob" },
+				icon: RobberyIcon,
+				size: 20,
+				activeRouteNames: ["rob"],
 			},
 			{
 				label: "Hospital",

@@ -284,6 +284,11 @@ describe("Robbery", () => {
 			user.Items = [ItemList[ItemId.Knife] as UserItem];
 		});
 
+		it("Should initialize prison time from location before LockStates", () => {
+			const robberyLoc = new LocationRobberyStrategy(user, LocationId.SmallBank);
+			expect(robberyLoc.AttackerTimeInPrison).toBe(20 * (LocationId.SmallBank + 1));
+		});
+
 		it("Should fail if low ATK", async () => {
 			const robberyLoc = new LocationRobberyStrategy(user, LocationId.SmallBank);
 			const result = await robberyLoc.CanRob();

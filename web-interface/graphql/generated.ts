@@ -495,6 +495,7 @@ export type Mutation = {
   setVip: MutationResult;
   startGangImport: GangMutationResult;
   startJob: JobMutationResult;
+  startRobLocation: RobLocationStartResult;
   startScavenge: ScavengeStartResult;
   swapUsers: MutationResult;
   toggleInvestmentYieldNotifications: MutationResult;
@@ -763,6 +764,11 @@ export type MutationStartJobArgs = {
 };
 
 
+export type MutationStartRobLocationArgs = {
+  locationId: Scalars['Int']['input'];
+};
+
+
 export type MutationStartScavengeArgs = {
   placeId: Scalars['Int']['input'];
 };
@@ -908,6 +914,7 @@ export type Query = {
   mySkinBundles: Array<UserSkinBundle>;
   prisoners: PrisonerUserPage;
   privateHospitalCost?: Maybe<Scalars['Float']['output']>;
+  robLocations: Array<RobLocation>;
   scavengeLocations: Array<ScavengeLocation>;
   seasonEndPreview: SeasonEndPreview;
   seasonInfo: SeasonInfo;
@@ -992,6 +999,23 @@ export type QueryUsersArgs = {
   sortBy?: InputMaybe<Scalars['String']['input']>;
   sortOrder?: InputMaybe<Scalars['String']['input']>;
   vipOnly?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+export type RobLocation = {
+  __typename?: 'RobLocation';
+  description: Scalars['String']['output'];
+  id: Scalars['Int']['output'];
+  name: Scalars['String']['output'];
+  needAttack: Scalars['Int']['output'];
+  rewardMax: Scalars['Float']['output'];
+  rewardMin: Scalars['Float']['output'];
+  successChance: Scalars['Float']['output'];
+};
+
+export type RobLocationStartResult = {
+  __typename?: 'RobLocationStartResult';
+  message: Scalars['String']['output'];
+  success: Scalars['Boolean']['output'];
 };
 
 export enum Role {
@@ -2092,12 +2116,24 @@ export type GetMyScavengeStatusQueryVariables = Exact<{ [key: string]: never; }>
 
 export type GetMyScavengeStatusQuery = { myScavengeStatus: { isScavenging: boolean, scavengingId: number | null, scavengeTime: string | null } };
 
+export type GetRobLocationsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetRobLocationsQuery = { robLocations: Array<{ id: number, name: string, description: string, needAttack: number, successChance: number, rewardMin: number, rewardMax: number }> };
+
 export type StartScavengeMutationVariables = Exact<{
   placeId: number;
 }>;
 
 
 export type StartScavengeMutation = { startScavenge: { success: boolean, message: string } };
+
+export type StartRobLocationMutationVariables = Exact<{
+  locationId: number;
+}>;
+
+
+export type StartRobLocationMutation = { startRobLocation: { success: boolean, message: string } };
 
 export type GetMyLotteryStatusQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -2255,7 +2291,9 @@ export const CreateGangDocument = {"kind":"Document","definitions":[{"kind":"Ope
 export const UpdateGangDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateGang"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"name"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"acronym"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"description"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"color"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"imageUrl"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateGang"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"name"},"value":{"kind":"Variable","name":{"kind":"Name","value":"name"}}},{"kind":"Argument","name":{"kind":"Name","value":"acronym"},"value":{"kind":"Variable","name":{"kind":"Name","value":"acronym"}}},{"kind":"Argument","name":{"kind":"Name","value":"description"},"value":{"kind":"Variable","name":{"kind":"Name","value":"description"}}},{"kind":"Argument","name":{"kind":"Name","value":"color"},"value":{"kind":"Variable","name":{"kind":"Name","value":"color"}}},{"kind":"Argument","name":{"kind":"Name","value":"imageUrl"},"value":{"kind":"Variable","name":{"kind":"Name","value":"imageUrl"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<UpdateGangMutation, UpdateGangMutationVariables>;
 export const GetScavengeLocationsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetScavengeLocations"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"scavengeLocations"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"subtitle"}},{"kind":"Field","name":{"kind":"Name","value":"emoteString"}},{"kind":"Field","name":{"kind":"Name","value":"needAttack"}},{"kind":"Field","name":{"kind":"Name","value":"successChance"}},{"kind":"Field","name":{"kind":"Name","value":"prisonChance"}},{"kind":"Field","name":{"kind":"Name","value":"hospitalChance"}},{"kind":"Field","name":{"kind":"Name","value":"rewardMoneyMin"}},{"kind":"Field","name":{"kind":"Name","value":"rewardMoneyMax"}},{"kind":"Field","name":{"kind":"Name","value":"rewardItems"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"itemId"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"itemType"}},{"kind":"Field","name":{"kind":"Name","value":"durationMin"}},{"kind":"Field","name":{"kind":"Name","value":"durationMax"}},{"kind":"Field","name":{"kind":"Name","value":"defaultImagePath"}}]}},{"kind":"Field","name":{"kind":"Name","value":"prisonText"}},{"kind":"Field","name":{"kind":"Name","value":"hospitalText"}}]}}]}}]} as unknown as DocumentNode<GetScavengeLocationsQuery, GetScavengeLocationsQueryVariables>;
 export const GetMyScavengeStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetMyScavengeStatus"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"myScavengeStatus"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"isScavenging"}},{"kind":"Field","name":{"kind":"Name","value":"scavengingId"}},{"kind":"Field","name":{"kind":"Name","value":"scavengeTime"}}]}}]}}]} as unknown as DocumentNode<GetMyScavengeStatusQuery, GetMyScavengeStatusQueryVariables>;
+export const GetRobLocationsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetRobLocations"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"robLocations"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"needAttack"}},{"kind":"Field","name":{"kind":"Name","value":"successChance"}},{"kind":"Field","name":{"kind":"Name","value":"rewardMin"}},{"kind":"Field","name":{"kind":"Name","value":"rewardMax"}}]}}]}}]} as unknown as DocumentNode<GetRobLocationsQuery, GetRobLocationsQueryVariables>;
 export const StartScavengeDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"StartScavenge"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"placeId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"startScavenge"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"placeId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"placeId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<StartScavengeMutation, StartScavengeMutationVariables>;
+export const StartRobLocationDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"StartRobLocation"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"locationId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"startRobLocation"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"locationId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"locationId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<StartRobLocationMutation, StartRobLocationMutationVariables>;
 export const GetMyLotteryStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetMyLotteryStatus"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"myLotteryStatus"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hasActiveDraw"}},{"kind":"Field","name":{"kind":"Name","value":"drawId"}},{"kind":"Field","name":{"kind":"Name","value":"drawTime"}},{"kind":"Field","name":{"kind":"Name","value":"ticketPrice"}},{"kind":"Field","name":{"kind":"Name","value":"ticketCost"}},{"kind":"Field","name":{"kind":"Name","value":"isMegaDraw"}},{"kind":"Field","name":{"kind":"Name","value":"totalTickets"}},{"kind":"Field","name":{"kind":"Name","value":"prizePool"}},{"kind":"Field","name":{"kind":"Name","value":"hasTicket"}},{"kind":"Field","name":{"kind":"Name","value":"ticketId"}},{"kind":"Field","name":{"kind":"Name","value":"previousWinnerName"}},{"kind":"Field","name":{"kind":"Name","value":"previousPrize"}},{"kind":"Field","name":{"kind":"Name","value":"money"}}]}}]}}]} as unknown as DocumentNode<GetMyLotteryStatusQuery, GetMyLotteryStatusQueryVariables>;
 export const BuyLotteryTicketDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"BuyLotteryTicket"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"buyLotteryTicket"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"money"}},{"kind":"Field","name":{"kind":"Name","value":"ticketId"}}]}}]}}]} as unknown as DocumentNode<BuyLotteryTicketMutation, BuyLotteryTicketMutationVariables>;
 export const GetMyHorseRaceStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetMyHorseRaceStatus"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"myHorseRaceStatus"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"raceId"}},{"kind":"Field","name":{"kind":"Name","value":"raceTime"}},{"kind":"Field","name":{"kind":"Name","value":"isBettingOpen"}},{"kind":"Field","name":{"kind":"Name","value":"totalBets"}},{"kind":"Field","name":{"kind":"Name","value":"hasBet"}},{"kind":"Field","name":{"kind":"Name","value":"betHorseId"}},{"kind":"Field","name":{"kind":"Name","value":"betAmount"}},{"kind":"Field","name":{"kind":"Name","value":"maxBet"}},{"kind":"Field","name":{"kind":"Name","value":"money"}},{"kind":"Field","name":{"kind":"Name","value":"horses"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"emote"}},{"kind":"Field","name":{"kind":"Name","value":"multiplier"}}]}}]}}]}}]} as unknown as DocumentNode<GetMyHorseRaceStatusQuery, GetMyHorseRaceStatusQueryVariables>;

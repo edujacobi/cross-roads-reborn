@@ -15,7 +15,7 @@ import { getJobList, JobList } from "#core/types/Jobs";
 import type { JobId } from "#core/types/Jobs";
 import { ScavengeFailureReason, ScavengeList } from "#core/types/Scavenge";
 import { Scavenge } from "#core/models/Scavenge";
-import { ClassId, ClassList, getInvestmentYieldClassModifier, getJobClassModifier, getScavengeDurationClassModifier } from "#core/types/Classes";
+import { ClassId, ClassList, getInvestmentYieldClassModifier, getJobClassModifier, getRobberyClassModifier, getScavengeDurationClassModifier } from "#core/types/Classes";
 import { Event, EventType } from "#core/models/Event";
 import { Shop } from "#core/models/Shop";
 import { UserItemRepository } from "#core/repositories/UserItemRepository";
@@ -34,6 +34,8 @@ import { getCasinoClassModifier } from "#core/types/Classes";
 import { Alms } from "#core/models/Alms";
 import { Investment as InvestmentModel } from "#core/models/Investment";
 import { type InvestmentActionReason, type InvestmentId, InvestmentList } from "#core/types/Investments";
+import { LocationList } from "#core/types/Locations";
+import { LocationRobberyStrategy } from "#core/models/strategies/robbery/LocationRobberyStrategy";
 
 const itemTypeNames: Record<ItemType, string> = {
 	[ItemType.Weapon]: "Arma",
@@ -346,6 +348,25 @@ export const meResolvers: {
 					hospitalText: place.Hospital.Text[Language.Portuguese],
 				};
 			});
+		},
+
+		robLocations: async (_: unknown, __: unknown, context: GraphQLContext) => {
+			const authUser = assertAuthenticated(context);
+			const player = new User(authUser.userId);
+			if (!await player.GetInfo()) {
+				throw new Error("Jogador não encontrado.");
+			}
+
+			const classModifier = getRobberyClassModifier(player.Class);
+			return Object.values(LocationList).map(location => ({
+				id: location.Id,
+				name: location.Name[Language.Portuguese],
+				description: location.Description[Language.Portuguese],
+				needAttack: location.NeedAttack,
+				successChance: location.SuccessChance,
+				rewardMin: Math.floor(location.Reward.Min * classModifier),
+				rewardMax: Math.floor(location.Reward.Max * classModifier),
+			}));
 		},
 
 		myScavengeStatus: async (_: unknown, __: unknown, context: GraphQLContext) => {
@@ -1327,6 +1348,37 @@ export const meResolvers: {
 				success: true,
 				message: "Vasculhando...",
 			};
+		},
+
+		startRobLocation: async (
+			_: unknown,
+			args: { locationId: number },
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			const player = new User(authUser.userId);
+			if (!await player.GetInfo()) {
+				return { success: false, message: "Jogador não encontrado." };
+			}
+
+			const location = LocationList[args.locationId];
+			if (!Number.isInteger(args.locationId) || !location) {
+				return { success: false, message: "Local não encontrado." };
+			}
+
+			const robbery = new LocationRobberyStrategy(player, location.Id);
+			const { canRob } = await robbery.CanRob();
+			if (!canRob) {
+				return {
+					success: false,
+					message: player.Attributes.Attack < location.NeedAttack
+						? `Ataque insuficiente. Você precisa de ${location.NeedAttack} ATK.`
+						: "Você não pode roubar este local no momento.",
+				};
+			}
+
+			await robbery.LockStates();
+			return { success: true, message: "Roubo em andamento..." };
 		},
 
 		playCoinFlip: async (

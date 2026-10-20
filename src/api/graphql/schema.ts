@@ -637,6 +637,16 @@ export const typeDefs = /* GraphQL */ `
         hospitalText: String!
     }
 
+    type RobLocation {
+        id: Int!
+        name: String!
+        description: String!
+        needAttack: Int!
+        successChance: Float!
+        rewardMin: Float!
+        rewardMax: Float!
+    }
+
     type ScavengeStatus {
         isScavenging: Boolean!
         scavengingId: Int
@@ -718,6 +728,11 @@ export const typeDefs = /* GraphQL */ `
         message: String!
     }
 
+    type RobLocationStartResult {
+        success: Boolean!
+        message: String!
+    }
+
     type PrisonBribeResult {
         success: Boolean!
         message: String!
@@ -765,6 +780,7 @@ export const typeDefs = /* GraphQL */ `
         privateHospitalCost: Float
         myPrisonStatus: MyPrisonStatus!
         scavengeLocations: [ScavengeLocation!]!
+        robLocations: [RobLocation!]!
         myScavengeStatus: ScavengeStatus!
         myLotteryStatus: LotteryStatus!
         myHorseRaceStatus: HorseRaceStatus!
@@ -890,6 +906,7 @@ export const typeDefs = /* GraphQL */ `
         attemptPrisonEscape: PrisonEscapeStartResult!
         payBribePrison: PrisonBribeResult!
         startScavenge(placeId: Int!): ScavengeStartResult!
+        startRobLocation(locationId: Int!): RobLocationStartResult!
         playCoinFlip(side: String!, amount: Float!): CasinoPlayResult!
         buyInvestment(investmentId: Int!): MutationResult!
         abandonInvestment: MutationResult!
