@@ -24,7 +24,6 @@ import {
 	GetUserStatusDocument,
 	StartRobLocationDocument,
 } from "~/graphql/generated";
-import Prison from "~/pages/prison.vue";
 
 definePageMeta({ middleware: "auth" });
 useHead({ title: "Roubar" });
@@ -268,15 +267,17 @@ onBeforeUnmount(() => sseAbortController?.abort());
 			title="Roubar"
 			subtitle="Encontre um alvo e roube tudo!"
 		/>
-		<p class="rob-page__rules">
-			Quanto maior seu ATK, maiores suas chances de roubo à outros jogadores e mais locais ficam disponíveis. Quanto
-			maior sua DEF, mais protegido você estará.
-		</p>
-
-		<p class="rob-page__rules">
-			Se falhar, você será preso por um tempo definido pelo seu ATK. Se conseguir, será procurado pela polícia e deverá
-			esperar 1 hora para roubar novamente. Há uma pequena chance do alvo ser também espancado!
-		</p>
+		<div class="rob-page__rules">
+			<p>
+				Quanto maior seu ATK, maiores suas chances de roubo à outros jogadores e mais locais ficam disponíveis. Quanto
+				maior sua DEF, mais protegido você estará.
+			</p>
+			<p>
+				Se falhar, você será preso por um tempo definido pelo seu ATK. Se conseguir, será procurado pela polícia e
+				deverá esperar 1 hora para roubar novamente.
+			</p>
+			<p>Há uma pequena chance do alvo ser também espancado!</p>
+		</div>
 
 		<div
 			v-if="isLoading"
@@ -357,6 +358,7 @@ onBeforeUnmount(() => sseAbortController?.abort());
 								<button
 									type="button"
 									class="rob-card__chevron"
+									:class="{ 'rob-card__chevron--expanded': expandedLocations.has(location.id) }"
 									:aria-expanded="expandedLocations.has(location.id)"
 									:aria-label="expandedLocations.has(location.id) ? 'Fechar detalhes' : 'Abrir detalhes'"
 									@click="toggleLocationDetails(location.id)"
@@ -367,7 +369,7 @@ onBeforeUnmount(() => sseAbortController?.abort());
 						</div>
 						<div class="rob-card__details-wrap">
 							<dl
-								v-if="expandedLocations.has(location.id)"
+								:class="{ 'rob-card__details--collapsed': !expandedLocations.has(location.id) }"
 								class="rob-card__details"
 							>
 								<div>
@@ -419,6 +421,14 @@ onBeforeUnmount(() => sseAbortController?.abort());
 						<div>
 							<dt>Total roubado</dt>
 							<dd>{{ formatMoney(activity?.robberySuccessRobbedSum ?? 0) }}</dd>
+						</div>
+						<div>
+							<dt>Vezes que outros usuários roubaram você</dt>
+							<dd>{{ activity?.robberyBeingRobbedCount ?? 0 }}</dd>
+						</div>
+						<div>
+							<dt>Total roubado de você</dt>
+							<dd>{{ formatMoney(activity?.robberyBeingRobbedSum ?? 0) }}</dd>
 						</div>
 					</dl>
 					<div
@@ -572,6 +582,10 @@ onBeforeUnmount(() => sseAbortController?.abort());
 	background: $bg-card;
 	border: 1px solid $border-card;
 	border-radius: $radius-sm;
+
+	p {
+		margin-bottom: $spacing-sm;
+	}
 }
 
 .rob-page__loading,
@@ -665,8 +679,30 @@ onBeforeUnmount(() => sseAbortController?.abort());
 	cursor: pointer;
 }
 
+.rob-card__chevron {
+	transition: color 0.15s ease, transform 0.2s ease;
+
+	&:hover {
+		color: $text-primary;
+	}
+
+	&--expanded {
+		transform: rotate(180deg);
+	}
+}
+
 .rob-card__details-wrap {
-	margin-top: $spacing-sm;
+	overflow: hidden;
+	max-height: 0;
+	opacity: 0;
+	margin-top: 0;
+	transition: max-height 0.25s ease, opacity 0.2s ease, margin-top 0.25s ease;
+
+	&:has(.rob-card__details:not(.rob-card__details--collapsed)) {
+		max-height: 500px;
+		opacity: 1;
+		margin-top: $spacing-md;
+	}
 }
 
 .rob-card__details {
@@ -690,6 +726,10 @@ onBeforeUnmount(() => sseAbortController?.abort());
 	color: $text-primary;
 	font-size: $font-size-14;
 	font-weight: $font-weight-semibold;
+}
+
+.rob-card__details--collapsed {
+	visibility: hidden;
 }
 
 .rob-page__aside {
@@ -906,6 +946,8 @@ onBeforeUnmount(() => sseAbortController?.abort());
 
 @media (prefers-reduced-motion: reduce) {
 	.rob-page__aside,
+	.rob-card__chevron,
+	.rob-card__details-wrap,
 	.rob-modal-loading__spinner {
 		transition: none !important;
 		animation: none !important;
