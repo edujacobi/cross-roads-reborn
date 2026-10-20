@@ -73,6 +73,7 @@ const activity = computed(() => activityResult.value?.user?.activityStats);
 const { mutate: startRobbery, loading: startingRobbery } = useMutation(StartRobLocationDocument);
 const expandedLocations = ref(new Set<number>());
 const asideOpen = ref(false);
+const showRulesModal = ref(false);
 const showConfirmModal = ref(false);
 const showLoadingModal = ref(false);
 const showResultModal = ref(false);
@@ -276,31 +277,6 @@ onBeforeUnmount(() => sseAbortController?.abort());
 			title="Roubar"
 			subtitle="Encontre um alvo e roube tudo!"
 		/>
-		<div class="rob-page__rules">
-			<p>
-				Quanto maior seu
-				<AttackIcon
-					:size="16"
-					variant="solid"
-				/>
-				ATK, maiores suas chances de roubo à outros jogadores e mais locais ficam disponíveis. Quanto maior sua
-				<DefenseIcon
-					:size="14"
-					variant="solid"
-				/>
-				DEF, mais protegido você estará.
-			</p>
-			<p>
-				Se falhar, você será <NuxtLink to="/prison"><strong>preso</strong></NuxtLink> por um tempo definido pelo seu
-				<AttackIcon
-					:size="16"
-					variant="solid"
-				/>
-				ATK. Se conseguir, será procurado pela polícia e deverá esperar 1 hora para roubar novamente.
-			</p>
-			<p>Há uma pequena chance do alvo ser também espancado!</p>
-		</div>
-
 		<div
 			v-if="isLoading"
 			class="rob-page__loading"
@@ -445,14 +421,20 @@ onBeforeUnmount(() => sseAbortController?.abort());
 							<dd>{{ formatMoney(activity?.robberySuccessRobbedSum ?? 0) }}</dd>
 						</div>
 						<div>
-							<dt>Vezes que outros usuários roubaram você</dt>
-							<dd>{{ activity?.robberyBeingRobbedCount ?? 0 }}</dd>
+							<dt>Roubaram você</dt>
+							<dd>{{ activity?.robberyBeingRobbedCount ?? 0 }} vezes</dd>
 						</div>
 						<div>
 							<dt>Total roubado de você</dt>
 							<dd>{{ formatMoney(activity?.robberyBeingRobbedSum ?? 0) }}</dd>
 						</div>
 					</dl>
+					<BaseButton
+						variant="secondary"
+						@click="showRulesModal = true"
+					>
+						Mais informações
+					</BaseButton>
 					<div
 						v-if="isRobbingLocation"
 						class="rob-page__status"
@@ -499,6 +481,36 @@ onBeforeUnmount(() => sseAbortController?.abort());
 				/>
 			</button>
 		</div>
+
+		<BaseModal
+			v-model:open="showRulesModal"
+			title="Mais informações"
+		>
+			<div class="rob-page__rules">
+				<p>
+					Quanto maior seu
+					<AttackIcon
+						:size="16"
+						variant="solid"
+					/>
+					ATK, maiores suas chances de roubo à outros jogadores e mais locais ficam disponíveis. Quanto maior sua
+					<DefenseIcon
+						:size="14"
+						variant="solid"
+					/>
+					DEF, mais protegido você estará.
+				</p>
+				<p>
+					Se falhar, você será <NuxtLink to="/prison"><strong>preso</strong></NuxtLink> por um tempo definido pelo seu
+					<AttackIcon
+						:size="16"
+						variant="solid"
+					/>
+					ATK. Se conseguir, será procurado pela polícia e deverá esperar 1 hora para roubar novamente.
+				</p>
+				<p>Há uma pequena chance do alvo ser também espancado!</p>
+			</div>
+		</BaseModal>
 
 		<BaseModal
 			v-model:open="showConfirmModal"
@@ -599,15 +611,11 @@ onBeforeUnmount(() => sseAbortController?.abort());
 
 .rob-page__rules {
 	margin: 0;
-	padding: $spacing-md;
 	color: $text-secondary;
-	background: $bg-card;
-	border: 1px solid $border-card;
-	border-radius: $radius-sm;
 	font-size: $font-size-14;
 
 	p {
-		line-height: 2;
+		margin-bottom: $spacing-md;
 	}
 }
 
