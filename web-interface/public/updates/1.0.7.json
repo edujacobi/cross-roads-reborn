@@ -1,0 +1,18 @@
+{
+	"version": "1.0.7",
+	"title": "Roubar e decorações/skins",
+	"date": "20/10/2026",
+	"comment": "Roubar LOCAIS está aqui. Decorações e skins agora podem ser ativados pela interface.",
+	"sections": [
+		{
+			"title": "Roubar",
+			"description": "Roube locais diretamente pela interface. Roubo à jogadores virá em breve.",
+			"imageUrl": "/images/situations/robbery.png"
+		},
+		{
+			"title": "Decorações e skins",
+			"description": "Ative-as diretamente pela Loja Especial ou pelo seu perfil.",
+			"imageUrl": "/images/ui_elements/SpecialCoin.webp"
+		}
+	]
+}
