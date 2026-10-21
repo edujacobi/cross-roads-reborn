@@ -2,18 +2,17 @@
 	setup
 	lang="ts"
 >
-import { useQuery } from "@vue/apollo-composable";
 import { Pencil } from "lucide-vue-next";
 import { computed, watch } from "vue";
 import SpecialShopIcon from "~/components/icons/SpecialShopIcon.vue";
+import UserSituationText from "~/components/UserDetail/UserSituationText.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
 import RefreshButton from "~/components/ui/RefreshButton.vue";
-import { useDateFormat } from "~/composables/useDateFormat";
 import { useFallbackUserImage } from "~/composables/useFallbackImage";
 import { useMoneyFormat } from "~/composables/useMoneyFormat";
 import { imagePaths } from "~/constants/imagePaths";
-import { GetJobsDocument, GetScavengeLocationsDocument, type GetUserProfileQuery } from "~/graphql/generated";
+import type { GetUserProfileQuery } from "~/graphql/generated";
 import { BadgeId } from "../../../src/core/types/Ids";
 
 const props = defineProps<{
@@ -35,77 +34,9 @@ const error = computed(() => props.error);
 const status = computed(() => props.user);
 const statusLoading = computed(() => props.loading);
 const statusError = computed(() => props.error);
-const { result: jobsResult } = useQuery(
-	GetJobsDocument,
-	{},
-	{ enabled: computed(() => status.value?.isWorking ?? false) },
-);
-const currentJob = computed(() => jobsResult.value?.jobs.find((job) => job.id === status.value?.currentJobId));
-const { result: scavengeLocationsResult } = useQuery(
-	GetScavengeLocationsDocument,
-	{},
-	{ enabled: computed(() => status.value?.isScavenging ?? false) },
-);
-const currentScavengeLocation = computed(() =>
-	scavengeLocationsResult.value?.scavengeLocations.find((location) => location.id === status.value?.scavengingId),
-);
-
-const activityTargetId = computed(() => {
-	if (status.value?.isBeingBeated) return status.value.beatenByUserId;
-	if (status.value?.isBeating) return status.value.beaterUserId;
-	if (status.value?.isBeingRobbed) return status.value.robbedByUserId;
-	if (status.value?.isRobbing) return status.value.robberUserId;
-	return null;
-});
-const targetNickname = computed(() => status.value?.activityTargetNickname);
 
 const { getClassImageUrl } = useClasses();
-const { getSituationImageUrl } = useSituation();
 const { formatMoney, formatPlain } = useMoneyFormat();
-const { relative } = useDateFormat();
-
-const situationAction = computed(() => {
-	const currentStatus = status.value;
-	if (!currentStatus) return "";
-	if (currentStatus.isDead) return "Morto";
-	if (currentStatus.isScavenging) return "Vasculhando";
-	if (currentStatus.isInPrison && currentStatus.isInHospital) return "Preso e hospitalizado";
-	if (currentStatus.isInHospital) return "Hospitalizado";
-	if (currentStatus.isInPrison) return "Preso";
-	if (currentStatus.isBeingBeated) return "Sendo espancado por";
-	if (currentStatus.isBeating) return "Espancando";
-	if (currentStatus.isDefendingInvestment) return "Defendendo investimento";
-	if (currentStatus.isInGangAction) return "Em ação de gangue";
-	if (currentStatus.isBeingRobbed) return "Sendo roubado por";
-	if (currentStatus.isRobbing) return "Roubando";
-	if (currentStatus.isWorking) return "Trabalhando como";
-	if (currentStatus.isInCasino) return "Apostando no cassino";
-	return "Vadiando";
-});
-
-const situationTimers = computed(() => {
-	const currentStatus = status.value;
-	if (!currentStatus) return [];
-
-	const timers: { label: string; endsAt: string }[] = [];
-	if (currentStatus.isDead && currentStatus.deadUntil) {
-		timers.push({ label: "Morte", endsAt: currentStatus.deadUntil });
-	} else {
-		if (currentStatus.isInPrison && currentStatus.prisonTime) {
-			timers.push({ label: "Prisão", endsAt: currentStatus.prisonTime });
-		}
-		if (currentStatus.isInHospital && currentStatus.hospitalTime) {
-			timers.push({ label: "Hospital", endsAt: currentStatus.hospitalTime });
-		}
-		if (currentStatus.isWorking && currentStatus.jobEndsIn) {
-			timers.push({ label: "Trabalho", endsAt: currentStatus.jobEndsIn });
-		}
-	}
-	if (currentStatus.isWanted && currentStatus.wantedTime) {
-		timers.push({ label: "Procurado", endsAt: currentStatus.wantedTime });
-	}
-	return timers;
-});
 
 watch(
 	[loading, user, error],
@@ -236,14 +167,7 @@ function getBadgeImage(badgeId: BadgeId): string {
 				</li>
 			</ul>
 
-			<p class="user-profile__situation">
-				<NuxtImg
-					:src="getSituationImageUrl(user.situationId)"
-					class="user-profile__situation-image"
-					alt=""
-					width="40"
-					height="40"
-				/>
+			<div class="user-profile__situation-state">
 				<template v-if="statusLoading && !status"> Carregando situação... </template>
 				<span
 					v-else-if="statusError && !status"
@@ -251,43 +175,11 @@ function getBadgeImage(badgeId: BadgeId): string {
 				>
 					Não foi possível carregar a situação.
 				</span>
-				<template v-else-if="status">
-					<NuxtLink
-						v-if="status.isDead"
-						to="/cemetery"
-					>
-						{{ situationAction }}
-					</NuxtLink>
-					<span v-else>{{ situationAction }}</span>
-					<NuxtLink
-						v-if="status.isWorking"
-						to="/jobs"
-					>
-						{{ currentJob?.name ?? "Trabalho" }}
-					</NuxtLink>
-					<span v-if="status.isScavenging && currentScavengeLocation">
-						{{ currentScavengeLocation.name }}
-					</span>
-					<span v-if="status.isRobbing && status.robberyLocationId !== null">
-						{{ status.robberyLocationName ?? "Local desconhecido" }}
-					</span>
-					<NuxtLink
-						v-if="activityTargetId"
-						:to="`/users/${activityTargetId}`"
-					>
-						{{ targetNickname ?? `Jogador ${activityTargetId}` }}
-					</NuxtLink>
-					<time
-						v-for="timer in situationTimers"
-						:key="timer.label"
-						:datetime="timer.endsAt"
-						class="user-profile__situation-timer"
-					>
-						{{ timer.label }}
-						termina {{ relative(timer.endsAt, true) }}
-					</time>
-				</template>
-			</p>
+				<UserSituationText
+					v-else-if="status"
+					:user="status"
+				/>
+			</div>
 
 			<div class="user-profile__info">
 				<div class="user-profile__class">
@@ -503,24 +395,10 @@ function getBadgeImage(badgeId: BadgeId): string {
 		object-fit: contain;
 	}
 
-	&__situation {
+	&__situation-state {
+		min-height: 3.5rem;
 		display: flex;
-		flex-wrap: wrap;
 		align-items: center;
-		font-size: 1.2rem;
-		font-weight: $font-weight-semibold;
-		gap: 6px;
-		margin: $spacing-sm 0;
-	}
-
-	&__situation-image {
-		width: 2.5rem;
-	}
-
-	&__situation-timer {
-		color: $text-secondary;
-		font-size: $font-size-14;
-		font-weight: $font-weight-normal;
 	}
 
 	&__info {

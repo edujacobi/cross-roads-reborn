@@ -10,10 +10,10 @@ export default defineNuxtRouteMiddleware(async (to) => {
 	}
 
 	if (!auth.hasAdminAccess.value) {
-		return navigateTo("/users", { replace: true });
+		return navigateTo("/me", { replace: true });
 	}
 
 	if (to.path === "/admin/audit-log" && !auth.canWrite.value) {
-		return navigateTo("/users", { replace: true });
+		return navigateTo("/me", { replace: true });
 	}
 });

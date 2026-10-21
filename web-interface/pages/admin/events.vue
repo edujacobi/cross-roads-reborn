@@ -15,7 +15,7 @@ import BaseTable from "~/components/ui/BaseTable.vue";
 import BaseTableFooter from "~/components/ui/BaseTableFooter.vue";
 import BaseTableSkeleton from "~/components/ui/BaseTableSkeleton.vue";
 import PageTitle from "~/components/ui/PageTitle.vue";
-import { imagePaths } from "~/constants/imagePaths";
+import { eventTypeNames, eventTypes, formatEventValue } from "~/constants/eventTypes";
 import {
 	CreateEventDocument,
 	DeleteEventDocument,
@@ -40,18 +40,6 @@ interface EventDraft {
 }
 
 type EventRecord = GetEventsQuery["events"][number];
-
-const eventTypes = [
-	{ id: 1, name: "Multiplicador de tempo de trabalho", image: imagePaths.situations.job },
-	{ id: 2, name: "Multiplicador de tempo para vasculhar", image: imagePaths.situations.scavenging },
-	{ id: 3, name: "Multiplicador de tempo procurado", image: imagePaths.situations.wanted },
-	{ id: 4, name: "Multiplicador de tempo hospitalizado", image: imagePaths.situations.hospital },
-	{ id: 5, name: "Multiplicador de tempo preso", image: imagePaths.situations.prison },
-	{ id: 6, name: "Chance bônus de vasculho", image: imagePaths.situations.scavenging },
-	{ id: 7, name: "Chance bônus de roubo à locais", image: imagePaths.situations.robbery },
-	{ id: 8, name: "Chance bônus de fugir da prisão", image: imagePaths.situations.prison },
-];
-const eventTypeNames = Object.fromEntries(eventTypes.map(({ id, name }) => [id, name]));
 
 const auth = useAuth();
 const { shortDateShortTime } = useDateFormat();
@@ -113,13 +101,6 @@ function formatDate(value: string): string {
 
 function getErrorMessage(caughtError: unknown): string {
 	return caughtError instanceof Error ? caughtError.message : "Erro inesperado.";
-}
-
-function getEventFormattedValue(event: EventRecord) {
-	const isMultiplier = eventTypeNames[event.type].includes("Multiplicador");
-	const prefix = isMultiplier ? "x" : "+";
-	const suffix = isMultiplier ? "" : "%";
-	return `${prefix}${event.value}${suffix}`;
 }
 
 function prevPage() {
@@ -278,7 +259,7 @@ async function removeEvent() {
 								{{ eventTypeNames[event.type] || "Desconhecido" }}
 							</td>
 							<td>
-								{{ getEventFormattedValue(event) }}
+								{{ formatEventValue(event.type, event.value) }}
 							</td>
 							<td>
 								<BaseBadge :variant="event.isActive ? 'success' : 'neutral'">

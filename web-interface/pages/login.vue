@@ -27,7 +27,7 @@ const errorMessage = computed(() => {
 onMounted(async () => {
 	await auth.initAuth();
 	if (auth.isAuthenticated.value) {
-		navigateTo(auth.hasAdminAccess.value ? "/admin/dashboard" : "/users");
+		navigateTo(auth.hasAdminAccess.value ? "/admin/dashboard" : "/me");
 	}
 });
 </script>

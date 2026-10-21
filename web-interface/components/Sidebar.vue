@@ -274,17 +274,23 @@ const user = computed(() => {
 		aria-label="Painel do usuário"
 	>
 		<div class="brand">
-			<div class="brand-icon">
-				<NuxtImg
-					:src="imagePaths.brand.logo"
-					class="img"
-					alt="CROSS ROADS"
-					width="112"
-					height="50"
-					loading="eager"
-					fetchpriority="high"
-				/>
-			</div>
+			<NuxtLink
+				to="/me"
+				class="brand-link"
+				aria-label="Início"
+			>
+				<div class="brand-icon">
+					<NuxtImg
+						:src="imagePaths.brand.logo"
+						class="img"
+						alt="CROSS ROADS"
+						width="112"
+						height="50"
+						loading="eager"
+						fetchpriority="high"
+					/>
+				</div>
+			</NuxtLink>
 			<button
 				type="button"
 				class="collapse-toggle"
@@ -471,6 +477,14 @@ const user = computed(() => {
 		@include flex-center;
 		padding: 1.5rem 1.25rem;
 		border-bottom: 1px solid $border-subtle;
+
+		.brand-link {
+			display: flex;
+			flex: 1;
+			min-width: 0;
+			justify-content: center;
+			text-decoration: none;
+		}
 
 		.brand-icon {
 			@include flex-center;

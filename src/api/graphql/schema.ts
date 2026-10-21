@@ -761,6 +761,7 @@ export const typeDefs = /* GraphQL */ `
         dashboardHistory: [DashboardSnapshot!]!
         dashboardItemPopularity: [DashboardItemPopularity!]!
         events: [Event!]!
+        activeEvents: [Event!]!
         seasonInfo: SeasonInfo!
         seasonEndPreview: SeasonEndPreview!
         users(search: String, limit: Int, offset: Int, vipOnly: Boolean, sortBy: String, sortOrder: String): UserSearchResult!

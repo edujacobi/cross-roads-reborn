@@ -2,26 +2,35 @@ import { Event, EventType } from "#core/models/Event";
 import type { Events } from "#core/database/Events";
 import { AdminAuditActionId, AdminAuditSettingId } from "#core/types/AdminAuditLog";
 import type { GraphQLContext } from "#api/types";
-import { assertAdmin, assertCanWrite, recordAdminAction } from "./helpers";
+import { assertAdmin, assertAuthenticated, assertCanWrite, recordAdminAction } from "./helpers";
 import type { ResolverFn } from "./helpers";
+
+function mapEvent(event: Events, isActive = Event.IsActive(event)) {
+	return {
+		id: event.id,
+		type: event.type,
+		value: event.value,
+		periodStart: event.periodStart.toISOString(),
+		periodEnd: event.periodEnd.toISOString(),
+		isActive,
+	};
+}
 
 export const eventResolvers: {
 	Query: Record<string, ResolverFn>;
 	Mutation: Record<string, ResolverFn>;
 } = {
 	Query: {
+		activeEvents: async (_: unknown, __: unknown, context: GraphQLContext) => {
+			assertAuthenticated(context);
+			const events = await Event.GetAll();
+			return events.filter(event => Event.IsActive(event)).map(event => mapEvent(event, true));
+		},
 		events: async (_: unknown, __: unknown, context: GraphQLContext) => {
 			assertAdmin(context);
 			const events = await Event.GetAll();
 
-			return events.map(event => ({
-				id: event.id,
-				type: event.type,
-				value: event.value,
-				periodStart: event.periodStart.toISOString(),
-				periodEnd: event.periodEnd.toISOString(),
-				isActive: Event.IsActive(event),
-			}));
+			return events.map(event => mapEvent(event));
 		},
 	},
 
@@ -148,4 +157,3 @@ export const eventResolvers: {
 		},
 	},
 };
-

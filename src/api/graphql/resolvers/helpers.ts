@@ -177,7 +177,7 @@ export async function mapUserDetail(user: User) {
 	const isInHospital = user.Hospital.Time > now;
 	const isInPrison = user.Prison.Time > now;
 	const isWorking = user.Job.EndsIn > now && user.Job.Id !== null;
-	const isScavenging = user.Scavenge.Time > now && user.Scavenge.IsScavengingId !== null;
+	const isScavenging = user.IsScavenging();
 	const isWanted = user.Wanted.Time > now;
 	const isDead = user.DeadUntil > now;
 

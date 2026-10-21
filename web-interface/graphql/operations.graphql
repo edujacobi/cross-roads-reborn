@@ -68,6 +68,49 @@ query GetEvents {
 	}
 }
 
+query GetMePage($id: ID!) {
+	user(id: $id) {
+		nickname
+		money
+		situationId
+		isInHospital
+		hospitalTime
+		isInPrison
+		prisonTime
+		isWorking
+		currentJobId
+		jobEndsIn
+		isScavenging
+		scavengingId
+		isWanted
+		wantedTime
+		isRobbing
+		isBeingRobbed
+		robberUserId
+		robbedByUserId
+		robberyLocationId
+		robberyLocationName
+		isBeating
+		isBeingBeated
+		beaterUserId
+		beatenByUserId
+		activityTargetNickname
+		isInCasino
+		isDefendingInvestment
+		isInGangAction
+		isDead
+		deadUntil
+	}
+	activeEvents {
+		id
+		type
+		value
+		periodStart
+		periodEnd
+		isActive
+	}
+}
+
 query GetAdminAuditLogs($limit: Int, $offset: Int, $actionId: Int) {
 	adminAuditLogs(limit: $limit, offset: $offset, actionId: $actionId) {
 		entries {
