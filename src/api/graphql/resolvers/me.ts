@@ -1,4 +1,5 @@
 import { GraphQLError } from "graphql";
+import { Season } from "#core/models/Season";
 import { User } from "#core/models/User";
 import { UserAvatarDecoration } from "#core/models/UserAvatarDecoration";
 import { UserBackgroundDecoration } from "#core/models/UserBackgroundDecoration";
@@ -117,6 +118,15 @@ export const meResolvers: {
 			return {
 				special: mapBadges(groups.special),
 				seasonal: mapBadges(groups.seasonal),
+			};
+		},
+
+		currentSeasonInfo: async (_: unknown, __: unknown, context: GraphQLContext) => {
+			assertAuthenticated(context);
+			const season = await Season.GetCurrent();
+			return {
+				startDate: season.StartDate.toISOString(),
+				season: season.Number,
 			};
 		},
 

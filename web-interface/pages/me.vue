@@ -44,6 +44,7 @@ const {
 const player = computed(() => result.value?.user);
 const activeEvents = computed(() => result.value?.activeEvents);
 const badgeCatalog = computed(() => badgeCatalogResult.value?.badgeCatalog);
+const currentSeasonInfo = computed(() => result.value?.currentSeasonInfo);
 const badgeGroups = computed(() =>
 	badgeCatalog.value
 		? [
@@ -57,7 +58,18 @@ const playerName = computed(() => player.value?.nickname ?? auth.user.value?.use
 const { formatMoney } = useMoneyFormat();
 const { shortDateShortTime } = useDateFormat();
 const now = ref(new Date());
-const clockFormatter = new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+const currentSeasonDay = computed(() => {
+	if (!currentSeasonInfo.value) return null;
+	const seasonStart = new Date(currentSeasonInfo.value.startDate);
+	const utcDay = (date: Date) => Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+	return Math.max(1, Math.floor((utcDay(now.value) - utcDay(seasonStart)) / 86_400_000) + 1);
+});
+const clockFormatter = new Intl.DateTimeFormat("pt-BR", {
+	hour: "2-digit",
+	minute: "2-digit",
+	second: "2-digit",
+	timeZone: "UTC",
+});
 let clockInterval: ReturnType<typeof setInterval> | undefined;
 
 function getBadgeImage(badgeId: BadgeId) {
@@ -97,13 +109,16 @@ onUnmounted(() => {
 			</div>
 			<section
 				class="me-page__clock"
-				aria-label="Horário atual"
+				aria-label="Horário atual (GMT+0)"
 			>
 				<Clock3
 					:size="20"
 					aria-hidden="true"
 				/>
 				<time :datetime="now.toISOString()">{{ currentTime }}</time>
+				<span v-if="currentSeasonDay !== null">
+					Dia {{ currentSeasonDay }} da temporada {{ currentSeasonInfo?.season }}
+				</span>
 			</section>
 		</header>
 

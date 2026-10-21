@@ -104,6 +104,10 @@ query GetMePage($id: ID!) {
 			id
 		}
 	}
+	currentSeasonInfo {
+		startDate
+		season
+	}
 	activeEvents {
 		id
 		type

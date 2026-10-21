@@ -173,6 +173,11 @@ export const typeDefs = /* GraphQL */ `
         seasonal: [BadgeCatalogEntry!]!
     }
 
+    type CurrentSeasonInfo {
+        startDate: String!
+        season: Int!
+    }
+
     type UserActivityStats {
         dailyMaxStreak: Int!
         dailyCurrentStreak: Int!
@@ -768,6 +773,7 @@ export const typeDefs = /* GraphQL */ `
     type Query {
         me: AuthUser
         badgeCatalog: BadgeCatalog!
+        currentSeasonInfo: CurrentSeasonInfo!
         adminAuditLogs(limit: Int, offset: Int, actionId: Int): AdminAuditLogPage!
         dashboardStats: DashboardStats!
         dashboardHistory: [DashboardSnapshot!]!
