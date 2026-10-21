@@ -2,12 +2,9 @@ import { Locale } from "discord.js";
 import { enUS, es, ptBR } from "date-fns/locale";
 import type { CreationOptional } from "sequelize";
 import { EmoteString } from "#bot/utils/emotes";
+import { Language } from "#core/types/Ids";
 
-export enum Language {
-	English,
-	Portuguese,
-	Spanish
-}
+export { Language } from "#core/types/Ids";
 
 type LocalizationReturn =
 	string |

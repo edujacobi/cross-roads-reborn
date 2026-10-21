@@ -118,6 +118,33 @@ query GetMePage($id: ID!) {
 	}
 }
 
+query GetBarStatus {
+	barStatus {
+		happyHour
+		canDrink
+		sessionDrinkCount
+		normalRecord
+		happyHourRecord
+		drunkCount
+	}
+}
+
+mutation DrinkAtBar {
+	drinkAtBar {
+		success
+		message
+		beverage
+		sensation
+		drinkCount
+		happyHour
+		hospitalized
+		hospitalTime
+		normalRecord
+		happyHourRecord
+		drunkCount
+	}
+}
+
 query GetBadgeCatalog {
 	badgeCatalog {
 		special {

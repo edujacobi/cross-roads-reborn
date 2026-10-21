@@ -47,6 +47,27 @@ const itemTypeNames: Record<ItemType, string> = {
 	[ItemType.BeatUp]: "Espancamento",
 };
 
+// ponytail: in-memory like the Discord collector; persist sessions if the API becomes multi-process.
+const barSessions = new Map<string, { count: number; happyHour: boolean; lastActivityAt: number }>();
+const barSessionIdleTime = 60_000;
+
+function getBarSession(userId: string, happyHour: boolean) {
+	const now = Date.now();
+	for (const [sessionUserId, session] of barSessions) {
+		if (now - session.lastActivityAt >= barSessionIdleTime) {
+			barSessions.delete(sessionUserId);
+		}
+	}
+
+	let session = barSessions.get(userId);
+	if (!session || session.happyHour !== happyHour) {
+		session = { count: 0, happyHour, lastActivityAt: now };
+		barSessions.set(userId, session);
+	}
+	session.lastActivityAt = now;
+	return session;
+}
+
 async function mapItemDetails(item: Items) {
 	const userCount = await UserItemRepository.CountUsersWithItem(item.Id);
 	const skins = Object.entries(item.Skin).map(([bundleIdStr, skin]) => {
@@ -127,6 +148,27 @@ export const meResolvers: {
 			return {
 				startDate: season.StartDate.toISOString(),
 				season: season.Number,
+			};
+		},
+
+		barStatus: async (_: unknown, __: unknown, context: GraphQLContext) => {
+			const authUser = assertAuthenticated(context);
+			const player = new User(authUser.userId, Language.Portuguese);
+			if (!await player.GetInfo()) {
+				throw new GraphQLError("Jogador não encontrado.", {
+					extensions: { code: "NOT_FOUND" },
+				});
+			}
+
+			const happyHour = User.IsHappyHour();
+			const session = getBarSession(authUser.userId, happyHour);
+			return {
+				happyHour,
+				canDrink: player.CanDrinkAtBar(),
+				sessionDrinkCount: session.count,
+				normalRecord: player.Drink.Normal,
+				happyHourRecord: player.Drink.HappyHour,
+				drunkCount: player.Drink.DrunkCount,
 			};
 		},
 
@@ -1178,6 +1220,43 @@ export const meResolvers: {
 				success: true,
 				message: "Trabalho cancelado.",
 				user: userDetail,
+			};
+		},
+
+		drinkAtBar: async (
+			_: unknown,
+			__: unknown,
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			const player = new User(authUser.userId, Language.Portuguese);
+			if (!await player.GetInfo()) {
+				return {
+					success: false,
+					message: "Jogador não encontrado.",
+					beverage: null,
+					sensation: null,
+					drinkCount: 0,
+					happyHour: User.IsHappyHour(),
+					hospitalized: false,
+					hospitalTime: null,
+					normalRecord: 0,
+					happyHourRecord: 0,
+					drunkCount: 0,
+				};
+			}
+
+			const happyHour = User.IsHappyHour();
+			const session = getBarSession(authUser.userId, happyHour);
+			const drinkCount = session.count + 1;
+			session.count = drinkCount;
+			const result = await player.DrinkAtBar(drinkCount, happyHour);
+			if (!result.success && session.count === drinkCount) {
+				session.count -= 1;
+			}
+			return {
+				...result,
+				hospitalTime: result.hospitalTime?.toISOString() ?? null,
 			};
 		},
 

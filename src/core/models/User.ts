@@ -17,7 +17,7 @@ import { type LocationId, LocationList } from "#core/types/Locations";
 import { type ScavengeId, ScavengeList } from "#core/types/Scavenge";
 import { BundleList, type SkinBundles } from "#core/types/Skins";
 import { Log } from "#shared/log";
-import { addDays, differenceInHours, formatDistanceToNow } from "date-fns";
+import { addDays, addMinutes, differenceInHours, formatDistanceToNow } from "date-fns";
 import { addHours } from "date-fns/addHours";
 import { Event, EventType } from "./Event";
 import type { Gang } from "./Gang";
@@ -31,6 +31,8 @@ import { Vault } from "./Vault";
 import { type InvestmentId } from "#core/types/Investments";
 import { time, TimestampStyles } from "discord.js";
 import { SituationId } from "#core/types/Ids";
+import { BarBeverages, DrinkSensations, isHappyHour } from "#core/types/Drinks";
+import { getRandomItemFromArray } from "#shared/utils";
 
 export { SituationId } from "#core/types/Ids";
 
@@ -1563,6 +1565,104 @@ export class User {
 	 */
 	IsInCasinoGame() {
 		return this.Casino.IsInGame;
+	}
+
+	static IsHappyHour(date = new Date()) {
+		return isHappyHour(date);
+	}
+
+	CanDrinkAtBar() {
+		return !this.IsInPrison() &&
+			!this.IsInHospital() &&
+			!this.IsWorking() &&
+			!this.IsInBeatUp() &&
+			!this.IsInRobbery() &&
+			!this.IsInCasinoGame() &&
+			!this.IsDefendingInvestment() &&
+			!this.IsParticipatingInGangAction();
+	}
+
+	async DrinkAtBar(drinkCount: number, happyHour = User.IsHappyHour()) {
+		const record = happyHour ? this.Drink.HappyHour : this.Drink.Normal;
+		const result = {
+			success: false,
+			message: "",
+			beverage: null as string | null,
+			sensation: null as string | null,
+			drinkCount,
+			happyHour,
+			hospitalized: false,
+			hospitalTime: null as Date | null,
+			normalRecord: this.Drink.Normal,
+			happyHourRecord: this.Drink.HappyHour,
+			drunkCount: this.Drink.DrunkCount,
+		};
+
+		if (!this.CanDrinkAtBar()) {
+			result.message = "Você não pode beber no momento.";
+			return result;
+		}
+
+		if (!Number.isInteger(drinkCount) || drinkCount < 1 || drinkCount > record + 1) {
+			result.message = "A contagem de bebidas é inválida.";
+			return result;
+		}
+
+		const beverage = getRandomItemFromArray(BarBeverages);
+		const sensation = getRandomItemFromArray(DrinkSensations);
+		const comaChance = happyHour ? 15 : 5;
+		const previousHospitalCount = this.Hospital.Count;
+		const previousHospitalTime = this.Hospital.Time;
+
+		this.Drink.Normal = happyHour ? this.Drink.Normal : Math.max(this.Drink.Normal, drinkCount);
+		this.Drink.HappyHour = happyHour ? Math.max(this.Drink.HappyHour, drinkCount) : this.Drink.HappyHour;
+
+		if (Math.random() * 100 < comaChance) {
+			this.Hospital.Count += 1;
+			this.Hospital.Time = addMinutes(new Date(), Math.floor(Math.random() * 5) + 1);
+			this.Drink.DrunkCount += 1;
+			result.hospitalized = true;
+			result.hospitalTime = this.Hospital.Time;
+		}
+
+		const updated = await this.Update({
+			hospitalCount: this.Hospital.Count,
+			hospitalTime: this.Hospital.Time,
+			drunkCount: this.Drink.DrunkCount,
+			drinkNormal: this.Drink.Normal,
+			drinkHappyHour: this.Drink.HappyHour,
+		});
+
+		if (!updated) {
+			this.Hospital.Count = previousHospitalCount;
+			this.Hospital.Time = previousHospitalTime;
+			this.Drink.Normal = result.normalRecord;
+			this.Drink.HappyHour = result.happyHourRecord;
+			this.Drink.DrunkCount = result.drunkCount;
+			result.hospitalized = false;
+			result.hospitalTime = null;
+			result.message = "Não foi possível registrar sua bebida.";
+			return result;
+		}
+
+		if (result.hospitalized) {
+			await Notification.Hospital(this);
+		}
+
+		Log.Info(`${this.Nickname} (${this.Id}) drank ${beverage} and felt ${sensation}.${result.hospitalized ? " They fell into an alcoholic coma." : ""}`);
+
+		return {
+			...result,
+			success: true,
+			message: result.hospitalized
+				? "Você bebeu demais e entrou em coma alcoólico."
+				: "Você bebeu e se sente bem.",
+			beverage,
+			sensation,
+			normalRecord: this.Drink.Normal,
+			happyHourRecord: this.Drink.HappyHour,
+			drunkCount: this.Drink.DrunkCount,
+		};
 	}
 
 	/**

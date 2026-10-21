@@ -178,6 +178,29 @@ export const typeDefs = /* GraphQL */ `
         season: Int!
     }
 
+    type BarStatus {
+        happyHour: Boolean!
+        canDrink: Boolean!
+        sessionDrinkCount: Int!
+        normalRecord: Int!
+        happyHourRecord: Int!
+        drunkCount: Int!
+    }
+
+    type DrinkAtBarResult {
+        success: Boolean!
+        message: String!
+        beverage: String
+        sensation: String
+        drinkCount: Int!
+        happyHour: Boolean!
+        hospitalized: Boolean!
+        hospitalTime: String
+        normalRecord: Int!
+        happyHourRecord: Int!
+        drunkCount: Int!
+    }
+
     type UserActivityStats {
         dailyMaxStreak: Int!
         dailyCurrentStreak: Int!
@@ -774,6 +797,7 @@ export const typeDefs = /* GraphQL */ `
         me: AuthUser
         badgeCatalog: BadgeCatalog!
         currentSeasonInfo: CurrentSeasonInfo!
+        barStatus: BarStatus!
         adminAuditLogs(limit: Int, offset: Int, actionId: Int): AdminAuditLogPage!
         dashboardStats: DashboardStats!
         dashboardHistory: [DashboardSnapshot!]!
@@ -921,6 +945,7 @@ export const typeDefs = /* GraphQL */ `
         setOwnItemSkin(itemId: Int!, bundleId: Int!): MutationResult!
         startJob(jobId: Int!): JobMutationResult!
         cancelJob: JobMutationResult!
+        drinkAtBar: DrinkAtBarResult!
         payPrivateHospital: HospitalResult!
         attemptPrisonEscape: PrisonEscapeStartResult!
         payBribePrison: PrisonBribeResult!

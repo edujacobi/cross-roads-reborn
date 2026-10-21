@@ -3,7 +3,7 @@
 	lang="ts"
 >
 import { useQuery } from "@vue/apollo-composable";
-import { BookOpen, Clock3, ExternalLink, HelpCircle, Info, Medal } from "lucide-vue-next";
+import { Beer, BookOpen, Clock3, ExternalLink, HelpCircle, Info, Medal } from "lucide-vue-next";
 import { onMounted, onUnmounted, ref } from "vue";
 import CasinoIcon from "~/components/icons/CasinoIcon.vue";
 import GangIcon from "~/components/icons/GangIcon.vue";
@@ -227,6 +227,17 @@ onUnmounted(() => {
 					aria-hidden="true"
 				/>
 				Minha gangue
+			</BaseButton>
+			<BaseButton
+				to="/bar"
+				variant="primary"
+				class="me-page__bar-button"
+			>
+				<Beer
+					:size="18"
+					aria-hidden="true"
+				/>
+				Beber no bar
 			</BaseButton>
 		</section>
 
@@ -472,12 +483,13 @@ onUnmounted(() => {
 	scoped
 >
 @use "~/assets/scss/variables" as *;
+@use "sass:color";
 
 .me-page {
 	display: flex;
 	flex-direction: column;
 	gap: $spacing-lg;
-	max-width: 70rem;
+	max-width: 80rem;
 	margin: 0 auto;
 	height: 100%;
 
@@ -490,6 +502,15 @@ onUnmounted(() => {
 
 		h1 {
 			font-size: clamp($font-size-24, 4vw, 2.5rem);
+		}
+	}
+
+	&__bar-button.variant-primary {
+		background-color: $color-bar;
+		color: $text-primary;
+
+		&:hover:not(:disabled) {
+			background-color: color.adjust($color-bar, $lightness: 8%);
 		}
 	}
 

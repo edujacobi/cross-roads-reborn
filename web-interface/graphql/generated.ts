@@ -83,6 +83,16 @@ export type BadgeCatalogEntry = {
   name: Scalars['String']['output'];
 };
 
+export type BarStatus = {
+  __typename?: 'BarStatus';
+  canDrink: Scalars['Boolean']['output'];
+  drunkCount: Scalars['Int']['output'];
+  happyHour: Scalars['Boolean']['output'];
+  happyHourRecord: Scalars['Int']['output'];
+  normalRecord: Scalars['Int']['output'];
+  sessionDrinkCount: Scalars['Int']['output'];
+};
+
 export type CasinoPlayResult = {
   __typename?: 'CasinoPlayResult';
   amount?: Maybe<Scalars['Float']['output']>;
@@ -170,6 +180,21 @@ export type DeadUser = {
   deadUntil: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   nickname: Scalars['String']['output'];
+};
+
+export type DrinkAtBarResult = {
+  __typename?: 'DrinkAtBarResult';
+  beverage?: Maybe<Scalars['String']['output']>;
+  drinkCount: Scalars['Int']['output'];
+  drunkCount: Scalars['Int']['output'];
+  happyHour: Scalars['Boolean']['output'];
+  happyHourRecord: Scalars['Int']['output'];
+  hospitalTime?: Maybe<Scalars['String']['output']>;
+  hospitalized: Scalars['Boolean']['output'];
+  message: Scalars['String']['output'];
+  normalRecord: Scalars['Int']['output'];
+  sensation?: Maybe<Scalars['String']['output']>;
+  success: Scalars['Boolean']['output'];
 };
 
 export type Event = {
@@ -485,6 +510,7 @@ export type Mutation = {
   deleteEvent: EventMutationResult;
   deleteUser: MutationResult;
   depositGang: GangMutationResult;
+  drinkAtBar: DrinkAtBarResult;
   endSeason: SeasonMutationResult;
   freeUser: MutationResult;
   giftVip: MutationResult;
@@ -912,6 +938,7 @@ export type Query = {
   adminAuditLogs: AdminAuditLogPage;
   almsStatus: AlmsStatus;
   badgeCatalog: BadgeCatalog;
+  barStatus: BarStatus;
   blackMarketOpen: Scalars['Boolean']['output'];
   bribeCost?: Maybe<Scalars['Float']['output']>;
   currentSeasonInfo: CurrentSeasonInfo;
@@ -1496,6 +1523,16 @@ export type GetMePageQueryVariables = Exact<{
 
 
 export type GetMePageQuery = { user: { nickname: string, money: number, situationId: number, isInHospital: boolean, hospitalTime: string | null, isInPrison: boolean, prisonTime: string | null, isWorking: boolean, currentJobId: number | null, jobEndsIn: string | null, isScavenging: boolean, scavengingId: number | null, isWanted: boolean, wantedTime: string | null, isRobbing: boolean, isBeingRobbed: boolean, robberUserId: string | null, robbedByUserId: string | null, robberyLocationId: number | null, robberyLocationName: string | null, isBeating: boolean, isBeingBeated: boolean, beaterUserId: string | null, beatenByUserId: string | null, activityTargetNickname: string | null, isInCasino: boolean, isDefendingInvestment: boolean, isInGangAction: boolean, isDead: boolean, deadUntil: string | null, badges: Array<{ id: number }> } | null, currentSeasonInfo: { startDate: string, season: number }, activeEvents: Array<{ id: number, type: number, value: number, periodStart: string, periodEnd: string, isActive: boolean }> };
+
+export type GetBarStatusQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetBarStatusQuery = { barStatus: { happyHour: boolean, canDrink: boolean, sessionDrinkCount: number, normalRecord: number, happyHourRecord: number, drunkCount: number } };
+
+export type DrinkAtBarMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type DrinkAtBarMutation = { drinkAtBar: { success: boolean, message: string, beverage: string | null, sensation: string | null, drinkCount: number, happyHour: boolean, hospitalized: boolean, hospitalTime: string | null, normalRecord: number, happyHourRecord: number, drunkCount: number } };
 
 export type GetBadgeCatalogQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -2239,6 +2276,8 @@ export const GetDashboardHistoryDocument = {"kind":"Document","definitions":[{"k
 export const GetDashboardItemPopularityDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetDashboardItemPopularity"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"dashboardItemPopularity"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"itemId"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"userCount"}}]}}]}}]} as unknown as DocumentNode<GetDashboardItemPopularityQuery, GetDashboardItemPopularityQueryVariables>;
 export const GetEventsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetEvents"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"events"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"periodStart"}},{"kind":"Field","name":{"kind":"Name","value":"periodEnd"}},{"kind":"Field","name":{"kind":"Name","value":"isActive"}}]}}]}}]} as unknown as DocumentNode<GetEventsQuery, GetEventsQueryVariables>;
 export const GetMePageDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetMePage"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nickname"}},{"kind":"Field","name":{"kind":"Name","value":"money"}},{"kind":"Field","name":{"kind":"Name","value":"situationId"}},{"kind":"Field","name":{"kind":"Name","value":"isInHospital"}},{"kind":"Field","name":{"kind":"Name","value":"hospitalTime"}},{"kind":"Field","name":{"kind":"Name","value":"isInPrison"}},{"kind":"Field","name":{"kind":"Name","value":"prisonTime"}},{"kind":"Field","name":{"kind":"Name","value":"isWorking"}},{"kind":"Field","name":{"kind":"Name","value":"currentJobId"}},{"kind":"Field","name":{"kind":"Name","value":"jobEndsIn"}},{"kind":"Field","name":{"kind":"Name","value":"isScavenging"}},{"kind":"Field","name":{"kind":"Name","value":"scavengingId"}},{"kind":"Field","name":{"kind":"Name","value":"isWanted"}},{"kind":"Field","name":{"kind":"Name","value":"wantedTime"}},{"kind":"Field","name":{"kind":"Name","value":"isRobbing"}},{"kind":"Field","name":{"kind":"Name","value":"isBeingRobbed"}},{"kind":"Field","name":{"kind":"Name","value":"robberUserId"}},{"kind":"Field","name":{"kind":"Name","value":"robbedByUserId"}},{"kind":"Field","name":{"kind":"Name","value":"robberyLocationId"}},{"kind":"Field","name":{"kind":"Name","value":"robberyLocationName"}},{"kind":"Field","name":{"kind":"Name","value":"isBeating"}},{"kind":"Field","name":{"kind":"Name","value":"isBeingBeated"}},{"kind":"Field","name":{"kind":"Name","value":"beaterUserId"}},{"kind":"Field","name":{"kind":"Name","value":"beatenByUserId"}},{"kind":"Field","name":{"kind":"Name","value":"activityTargetNickname"}},{"kind":"Field","name":{"kind":"Name","value":"isInCasino"}},{"kind":"Field","name":{"kind":"Name","value":"isDefendingInvestment"}},{"kind":"Field","name":{"kind":"Name","value":"isInGangAction"}},{"kind":"Field","name":{"kind":"Name","value":"isDead"}},{"kind":"Field","name":{"kind":"Name","value":"deadUntil"}},{"kind":"Field","name":{"kind":"Name","value":"badges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"currentSeasonInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"startDate"}},{"kind":"Field","name":{"kind":"Name","value":"season"}}]}},{"kind":"Field","name":{"kind":"Name","value":"activeEvents"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"periodStart"}},{"kind":"Field","name":{"kind":"Name","value":"periodEnd"}},{"kind":"Field","name":{"kind":"Name","value":"isActive"}}]}}]}}]} as unknown as DocumentNode<GetMePageQuery, GetMePageQueryVariables>;
+export const GetBarStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetBarStatus"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"barStatus"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"happyHour"}},{"kind":"Field","name":{"kind":"Name","value":"canDrink"}},{"kind":"Field","name":{"kind":"Name","value":"sessionDrinkCount"}},{"kind":"Field","name":{"kind":"Name","value":"normalRecord"}},{"kind":"Field","name":{"kind":"Name","value":"happyHourRecord"}},{"kind":"Field","name":{"kind":"Name","value":"drunkCount"}}]}}]}}]} as unknown as DocumentNode<GetBarStatusQuery, GetBarStatusQueryVariables>;
+export const DrinkAtBarDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"DrinkAtBar"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"drinkAtBar"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"beverage"}},{"kind":"Field","name":{"kind":"Name","value":"sensation"}},{"kind":"Field","name":{"kind":"Name","value":"drinkCount"}},{"kind":"Field","name":{"kind":"Name","value":"happyHour"}},{"kind":"Field","name":{"kind":"Name","value":"hospitalized"}},{"kind":"Field","name":{"kind":"Name","value":"hospitalTime"}},{"kind":"Field","name":{"kind":"Name","value":"normalRecord"}},{"kind":"Field","name":{"kind":"Name","value":"happyHourRecord"}},{"kind":"Field","name":{"kind":"Name","value":"drunkCount"}}]}}]}}]} as unknown as DocumentNode<DrinkAtBarMutation, DrinkAtBarMutationVariables>;
 export const GetBadgeCatalogDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetBadgeCatalog"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"badgeCatalog"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"special"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}}]}},{"kind":"Field","name":{"kind":"Name","value":"seasonal"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}}]}}]}}]}}]} as unknown as DocumentNode<GetBadgeCatalogQuery, GetBadgeCatalogQueryVariables>;
 export const GetAdminAuditLogsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetAdminAuditLogs"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"limit"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"offset"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"actionId"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"adminAuditLogs"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"limit"},"value":{"kind":"Variable","name":{"kind":"Name","value":"limit"}}},{"kind":"Argument","name":{"kind":"Name","value":"offset"},"value":{"kind":"Variable","name":{"kind":"Name","value":"offset"}}},{"kind":"Argument","name":{"kind":"Name","value":"actionId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"actionId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"entries"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"adminId"}},{"kind":"Field","name":{"kind":"Name","value":"adminName"}},{"kind":"Field","name":{"kind":"Name","value":"adminAvatarUrl"}},{"kind":"Field","name":{"kind":"Name","value":"adminIpAddress"}},{"kind":"Field","name":{"kind":"Name","value":"adminDeviceType"}},{"kind":"Field","name":{"kind":"Name","value":"adminOperatingSystem"}},{"kind":"Field","name":{"kind":"Name","value":"adminBrowser"}},{"kind":"Field","name":{"kind":"Name","value":"actionId"}},{"kind":"Field","name":{"kind":"Name","value":"targetUserId"}},{"kind":"Field","name":{"kind":"Name","value":"targetUserName"}},{"kind":"Field","name":{"kind":"Name","value":"targetUserAvatarUrl"}},{"kind":"Field","name":{"kind":"Name","value":"targetSettingId"}},{"kind":"Field","name":{"kind":"Name","value":"previousValue"}},{"kind":"Field","name":{"kind":"Name","value":"newValue"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"Field","name":{"kind":"Name","value":"total"}}]}}]}}]} as unknown as DocumentNode<GetAdminAuditLogsQuery, GetAdminAuditLogsQueryVariables>;
 export const GetSeasonInfoDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetSeasonInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"seasonInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"number"}},{"kind":"Field","name":{"kind":"Name","value":"startDate"}},{"kind":"Field","name":{"kind":"Name","value":"endDate"}},{"kind":"Field","name":{"kind":"Name","value":"daysRemaining"}},{"kind":"Field","name":{"kind":"Name","value":"mainHeistAllowed"}}]}}]}}]} as unknown as DocumentNode<GetSeasonInfoQuery, GetSeasonInfoQueryVariables>;

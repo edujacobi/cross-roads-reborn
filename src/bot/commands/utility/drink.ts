@@ -8,7 +8,12 @@ import { Notification } from "#core/models/Notification";
 import type { User } from "#core/models/User";
 import { Log } from "#shared/log";
 import { getRandomItemFromArray } from "#shared/utils";
-import { addHours, addMinutes } from "date-fns";
+import { addMinutes } from "date-fns";
+import type { DrinkCountMessageLanguage } from "#core/types/Drinks";
+import {
+	getDrinkCountMessages,
+	isHappyHour as isBarHappyHour,
+} from "#core/types/Drinks";
 import {
 	ButtonBuilder,
 	ButtonStyle,
@@ -19,6 +24,12 @@ import {
 	time,
 	TimestampStyles,
 } from "discord.js";
+
+const drinkCountMessageLanguages: Record<Language, DrinkCountMessageLanguage> = {
+	[Language.English]: "English",
+	[Language.Portuguese]: "Portuguese",
+	[Language.Spanish]: "Spanish",
+};
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -33,11 +44,7 @@ module.exports = {
 		await deferReply(interaction);
 		const s = Strings[language];
 
-		const now = addHours(new Date(), -3);
-		const day = now.getDay();
-		const hour = now.getHours();
-
-		const isHappyHour = hour >= 18 && hour <= 20 || day === 0 || day === 6;
+		const isHappyHour = isBarHappyHour();
 
 		const cantDrink = user.IsInPrison() || user.IsInHospital() || user.IsWorking() || user.IsInBeatUp() || user.IsInRobbery() || user.IsInCasinoGame();
 
@@ -213,21 +220,10 @@ module.exports = {
 				}
 
 				function getDrinkCountText(currentCount: number, lang: Language, adj: string): string {
-					let text = "";
-					const drinkCountStrings = Strings[lang].drinkCountMessages;
-
-					if (currentCount > 5) text += `\n\n-# "${drinkCountStrings.five}"\n`;
-					if (currentCount > 10) text += `-# "${drinkCountStrings.ten(adj)}"\n`;
-					if (currentCount > 15) text += `-# "${drinkCountStrings.fifteen}"\n`;
-					if (currentCount > 20) text += `-# "${drinkCountStrings.twenty}"\n`;
-					if (currentCount > 30) text += `-# "${drinkCountStrings.thirty}"\n`;
-					if (currentCount > 40) text += `-# "${drinkCountStrings.forty}"\n`;
-					if (currentCount > 50) text += `-# "${drinkCountStrings.fifty}"\n`;
-					if (currentCount > 60) text += `-# "${drinkCountStrings.sixty}"\n`;
-					if (currentCount > 70) text += `-# "${drinkCountStrings.seventy}"\n`;
-					if (currentCount > 80) text += `-# "${drinkCountStrings.eighty}"\n`;
-					if (currentCount > 100) text += `-# "${drinkCountStrings.hundred}"\n`;
-					return text;
+					const messages = getDrinkCountMessages(currentCount, adj, drinkCountMessageLanguages[lang]);
+					return messages.length
+						? `\n\n${messages.map((message) => `-# "${message}"`).join("\n")}\n`
+						: "";
 				}
 
 				const countText = getDrinkCountText(count, user.Language, anotherAdjective);
@@ -275,19 +271,6 @@ const Strings = {
 		youDrank: (beverage: string, sensation: string) => `You drank **${beverage}** and feel **${sensation}**!`,
 		drinkCount: "You drank",
 		drankToMuch: "You drank too much.",
-		drinkCountMessages: {
-			five: "Goes down smooth, huh?",
-			ten: (adj: string) => `Take it easy, ${adj}.`,
-			fifteen: "I think that's enough for today.",
-			twenty: "After today, I doubt you won't have cirrhosis.",
-			thirty: "Are you a god or something?",
-			forty: "You're the devil, that's what you are.",
-			fifty: "I'm declaring bankruptcy!",
-			sixty: "My wife said she's going to leave me...",
-			seventy: "Please, stop.",
-			eighty: "My stock is gone, I don't even know what you're drinking anymore.",
-			hundred: "ARE YOU JACOBI BY ANY CHANCE???!",
-		},
 	},
 
 	[Language.Portuguese]: {
@@ -303,19 +286,6 @@ const Strings = {
 		youDrank: (beverage: string, sensation: string) => `Você bebeu **${beverage}** e se sente **${sensation}**!`,
 		drinkCount: "Você bebeu",
 		drankToMuch: "Você já bebeu demais.",
-		drinkCountMessages: {
-			five: "Desce redondo, hein?",
-			ten: (adj: string) => `Vai com calma, ${adj}.`,
-			fifteen: "Acho que já deu por hoje.",
-			twenty: "Depois de hoje, duvido não ter cirrose.",
-			thirty: "Você é um deus ou algo do tipo?",
-			forty: "Você é o diabo, isso sim.",
-			fifty: "Estou declarando falência!",
-			sixty: "Minha mulher falou que vai me abandonar...",
-			seventy: "Por favor, pare.",
-			eighty: "Meu estoque acabou, eu nem sei mais o que você está bebendo.",
-			hundred: "POR ACASO VOCÊ É O JACOBI???!",
-		},
 	},
 
 	[Language.Spanish]: {
@@ -331,18 +301,5 @@ const Strings = {
 		youDrank: (beverage: string, sensation: string) => `¡Bebiste **${beverage}** y te sientes **${sensation}**!`,
 		drinkCount: "Has bebido",
 		drankToMuch: "Te emborrachaste.",
-		drinkCountMessages: {
-			five: "¿Baja suave, eh?",
-			ten: (adj: string) => `Con calma, ${adj}.`,
-			fifteen: "Creo que ya es suficiente por hoy.",
-			twenty: "Después de hoy, dudo que no tengas cirrosis.",
-			thirty: "¿Eres un dios o algo así?",
-			forty: "Eres el diablo, eso sí.",
-			fifty: "¡Estoy declarando la bancarrota!",
-			sixty: "Mi mujer dijo que me va a abandonar...",
-			seventy: "Por favor, para.",
-			eighty: "Mi stock se acabó, ya ni sé lo que estás bebiendo.",
-			hundred: "¿ACASO ERES JACOBI???!",
-		},
 	},
 } as const satisfies Localization;

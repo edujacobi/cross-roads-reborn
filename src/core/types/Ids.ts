@@ -269,3 +269,9 @@ export enum ScavengeId {
 	AlienShip,
 	MilitaryBase,
 }
+
+export enum Language {
+	English,
+	Portuguese,
+	Spanish
+}
