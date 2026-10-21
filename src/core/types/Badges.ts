@@ -1983,3 +1983,47 @@ export const BadgeList: BadgeListType = {
 export function getBadgeList(): IBadge[] {
 	return Object.values(BadgeList);
 }
+
+export function getCommandBadgeGroups() {
+	const specialBadgeIds: BadgeId[] = [
+		BadgeId.VIP,
+		BadgeId.Developer,
+		BadgeId.Moderator,
+		BadgeId.Helper,
+		BadgeId.BugCatcher,
+		BadgeId.Artist,
+		BadgeId.Billionaire,
+		BadgeId.ChristmasArt2020,
+		BadgeId.EasterGoldenEggs2021,
+		BadgeId.HalloweenArt2021,
+		BadgeId.ChristmasCookie2021,
+		BadgeId.DefeatedCoroamuru,
+		BadgeId.KeyishMandrake,
+	];
+	const seasonalBadgeIds: BadgeId[] = [
+		BadgeId.S_Top1Money,
+		BadgeId.S_Top2Money,
+		BadgeId.S_Top3Money,
+		BadgeId.S_Top1BeatUp,
+		BadgeId.S_Top1Scavenge,
+		BadgeId.S_Top1Escapes,
+		BadgeId.S_Top1CasinoWR,
+		BadgeId.S_Top1CasinoProfit,
+		BadgeId.S_Top1RobberyQuantity,
+		BadgeId.S_Top1RobberyProfit,
+		BadgeId.S_Top1Rooster,
+		BadgeId.S_Top1Alms,
+		BadgeId.S_Top1Investments,
+		BadgeId.S_Top1Jobs,
+		BadgeId.S_Top1Spender,
+		BadgeId.S_Top1Bribery,
+		BadgeId.S_Top1Hospital,
+		BadgeId.S_Top1Gang,
+	];
+	const badges = getBadgeList();
+
+	return {
+		special: badges.filter(({ Id }) => specialBadgeIds.includes(Id)),
+		seasonal: badges.filter(({ Id }) => seasonalBadgeIds.includes(Id)),
+	};
+}

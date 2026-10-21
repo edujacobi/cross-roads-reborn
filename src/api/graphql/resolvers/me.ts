@@ -5,6 +5,7 @@ import { UserBackgroundDecoration } from "#core/models/UserBackgroundDecoration"
 import { UserBundle } from "#core/models/UserBundle";
 import { UserRepository } from "#core/repositories/UserRepository";
 import { Language } from "#core/models/Language";
+import { getCommandBadgeGroups } from "#core/types/Badges";
 import { ItemList, type Items } from "#core/types/Items";
 import { ItemType } from "#core/types/Items";
 import { BundleId, ItemId, type AvatarDecorationId, type BackgroundDecorationId } from "#core/types/Ids";
@@ -101,6 +102,22 @@ export const meResolvers: {
 	Query: {
 		me: (_: unknown, __: unknown, context: GraphQLContext) => {
 			return context.user;
+		},
+
+		badgeCatalog: (_: unknown, __: unknown, context: GraphQLContext) => {
+			assertAuthenticated(context);
+			const groups = getCommandBadgeGroups();
+			const mapBadges = (badges: typeof groups.special) =>
+				badges.map(({ Id, Name, Description }) => ({
+					id: Id,
+					name: Name[Language.Portuguese],
+					description: Description[Language.Portuguese],
+				}));
+
+			return {
+				special: mapBadges(groups.special),
+				seasonal: mapBadges(groups.seasonal),
+			};
 		},
 
 		blackMarketOpen: () => isBlackMarketOpen(),

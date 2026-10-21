@@ -3,9 +3,10 @@
 	lang="ts"
 >
 import { useQuery } from "@vue/apollo-composable";
-import { BookOpen, Clock3, ExternalLink, HelpCircle, Info, UsersRound } from "lucide-vue-next";
+import { BookOpen, Clock3, ExternalLink, HelpCircle, Info, Medal } from "lucide-vue-next";
 import { onMounted, onUnmounted, ref } from "vue";
 import CasinoIcon from "~/components/icons/CasinoIcon.vue";
+import GangIcon from "~/components/icons/GangIcon.vue";
 import InvestmentIcon from "~/components/icons/InvestmentIcon.vue";
 import JobsIcon from "~/components/icons/JobsIcon.vue";
 import RobberyIcon from "~/components/icons/RobberyIcon.vue";
@@ -17,7 +18,9 @@ import BaseModal from "~/components/ui/BaseModal.vue";
 import { useDateFormat } from "~/composables/useDateFormat";
 import { useMoneyFormat } from "~/composables/useMoneyFormat";
 import { eventTypeNames, eventTypes, formatEventValue } from "~/constants/eventTypes";
-import { GetMePageDocument } from "~/graphql/generated";
+import { imagePaths } from "~/constants/imagePaths";
+import { GetBadgeCatalogDocument, GetMePageDocument } from "~/graphql/generated";
+import { BadgeId } from "../../src/core/types/Ids";
 
 definePageMeta({
 	middleware: "auth",
@@ -29,18 +32,40 @@ useHead({
 
 const auth = useAuth();
 const userId = computed(() => auth.user.value?.userId ?? "");
+const modal = ref<"badges" | "help" | "about" | null>(null);
 const { result, loading, error } = useQuery(GetMePageDocument, () => ({ id: userId.value }), {
 	enabled: computed(() => !!userId.value),
 });
+const {
+	result: badgeCatalogResult,
+	loading: badgeCatalogLoading,
+	error: badgeCatalogError,
+} = useQuery(GetBadgeCatalogDocument, {}, { enabled: computed(() => modal.value === "badges") });
 const player = computed(() => result.value?.user);
 const activeEvents = computed(() => result.value?.activeEvents);
+const badgeCatalog = computed(() => badgeCatalogResult.value?.badgeCatalog);
+const badgeGroups = computed(() =>
+	badgeCatalog.value
+		? [
+				{ title: "Insígnias especiais", badges: badgeCatalog.value.special },
+				{ title: "Insígnias da temporada", badges: badgeCatalog.value.seasonal },
+			]
+		: [],
+);
+const ownedBadgeIds = computed(() => new Set(player.value?.badges.map(({ id }) => id) ?? []));
 const playerName = computed(() => player.value?.nickname ?? auth.user.value?.username ?? "jogador");
 const { formatMoney } = useMoneyFormat();
 const { shortDateShortTime } = useDateFormat();
 const now = ref(new Date());
-const modal = ref<"help" | "about" | null>(null);
 const clockFormatter = new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 let clockInterval: ReturnType<typeof setInterval> | undefined;
+
+function getBadgeImage(badgeId: BadgeId) {
+	if (badgeId === BadgeId.VIP || badgeId === BadgeId.VIPEternal) {
+		return imagePaths.badges.vip;
+	}
+	return `/images/badges/${BadgeId[badgeId]}.png`;
+}
 
 const greeting = computed(() => {
 	const hour = now.value.getHours();
@@ -181,8 +206,9 @@ onUnmounted(() => {
 				:to="`/gangs/${auth.user.value.gangId}`"
 				variant="secondary"
 			>
-				<UsersRound
-					:size="18"
+				<GangIcon
+					:size="20"
+					variant="solid"
 					aria-hidden="true"
 				/>
 				Minha gangue
@@ -198,6 +224,16 @@ onUnmounted(() => {
 				no-body
 			>
 				<template #actions>
+					<BaseButton
+						variant="secondary"
+						@click="modal = 'badges'"
+					>
+						<Medal
+							:size="18"
+							aria-hidden="true"
+						/>
+						Insígnias
+					</BaseButton>
 					<BaseButton
 						variant="secondary"
 						@click="modal = 'help'"
@@ -224,9 +260,58 @@ onUnmounted(() => {
 
 		<BaseModal
 			:open="modal !== null"
-			:title="modal === 'help' ? 'Ajuda' : 'Sobre Cross Roads Reborn'"
+			:title="modal === 'badges' ? 'Insígnias' : modal === 'help' ? 'Ajuda' : 'Sobre Cross Roads Reborn'"
 			@update:open="modal = $event ? modal : null"
 		>
+			<div
+				v-if="modal === 'badges'"
+				class="me-page__modal-copy"
+			>
+				<p
+					v-if="badgeCatalogLoading"
+					role="status"
+				>
+					Carregando insígnias...
+				</p>
+				<p
+					v-else-if="badgeCatalogError"
+					role="alert"
+				>
+					Não foi possível carregar as insígnias: {{ badgeCatalogError.message }}
+				</p>
+				<div
+					v-else-if="badgeCatalog"
+					class="me-page__badge-groups"
+				>
+					<section
+						v-for="group in badgeGroups"
+						:key="group.title"
+					>
+						<h2>{{ group.title }}</h2>
+						<div class="me-page__badge-grid">
+							<article
+								v-for="badge in group.badges"
+								:key="badge.id"
+								class="me-page__badge-card"
+								:class="{'me-page__badge-card--owned': ownedBadgeIds.has(badge.id)}"
+							>
+								<NuxtImg
+									:src="getBadgeImage(badge.id as BadgeId)"
+									:alt="badge.name"
+									width="64"
+									height="64"
+								/>
+								<div>
+									<div class="me-page__badge-name">
+										<h3>{{ badge.name }}</h3>
+									</div>
+									<p>{{ badge.description }}</p>
+								</div>
+							</article>
+						</div>
+					</section>
+				</div>
+			</div>
 			<div
 				v-if="modal === 'help'"
 				class="me-page__modal-copy"
@@ -336,7 +421,25 @@ onUnmounted(() => {
 				<p>Jacobi, Miguel, Cesar e Kenny</p>
 				<p class="me-page__credits">Outros: Quantum, nadalao e CassadorEterno</p>
 			</div>
-			<template #footer>
+			<template
+				v-if="modal === 'badges'"
+				#footer
+			>
+				<div class="me-page__badges-footer">
+					<p class="me-page__modal-footer">Suas insígnias:</p>
+					<NuxtImg
+						v-for="badge in ownedBadgeIds"
+						:key="badge"
+						:src="getBadgeImage(badge as BadgeId)"
+						width="20"
+						height="20"
+					/>
+				</div>
+			</template>
+			<template
+				v-else
+				#footer
+			>
 				<p class="me-page__modal-footer">
 					<BookOpen
 						:size="16"
@@ -493,6 +596,68 @@ onUnmounted(() => {
 
 		svg {
 			vertical-align: middle;
+		}
+	}
+
+	&__badge-groups {
+		display: flex;
+		flex-direction: column;
+		gap: $spacing-lg;
+	}
+
+	&__badge-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+		gap: $spacing-sm;
+		margin-top: 1rem;
+	}
+
+	&__badge-card {
+		display: grid;
+		grid-template-columns: 4rem minmax(0, 1fr);
+		gap: $spacing-sm;
+		padding: $spacing-sm;
+		border: 1px solid $border-card;
+		border-radius: $radius-sm;
+		align-items: center;
+
+		> img {
+			width: 4rem;
+			height: 4rem;
+			padding: $spacing-sm;
+			object-fit: contain;
+		}
+
+		p {
+			margin-top: $spacing-xs;
+			font-size: $font-size-12;
+		}
+
+		&--owned {
+			border-color:  color-mix(in lab, $bg-card 100%, $color-success 75%);
+			background: color-mix(in lab, $bg-card 100%, $color-success 15%);
+		}
+	}
+
+	&__badge-name {
+		display: flex;
+		align-items: start;
+		justify-content: space-between;
+		gap: $spacing-xs;
+
+		h3 {
+			color: $text-primary;
+			font-size: $font-size-14;
+		}
+	}
+
+	&__badges-footer {
+		display: flex;
+		flex-wrap: wrap;
+		gap: $spacing-sm;
+
+		img {
+			object-fit: contain;
 		}
 	}
 

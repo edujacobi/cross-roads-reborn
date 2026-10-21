@@ -162,6 +162,17 @@ export const typeDefs = /* GraphQL */ `
         description: String!
     }
 
+    type BadgeCatalogEntry {
+        id: Int!
+        name: String!
+        description: String!
+    }
+
+    type BadgeCatalog {
+        special: [BadgeCatalogEntry!]!
+        seasonal: [BadgeCatalogEntry!]!
+    }
+
     type UserActivityStats {
         dailyMaxStreak: Int!
         dailyCurrentStreak: Int!
@@ -756,6 +767,7 @@ export const typeDefs = /* GraphQL */ `
 
     type Query {
         me: AuthUser
+        badgeCatalog: BadgeCatalog!
         adminAuditLogs(limit: Int, offset: Int, actionId: Int): AdminAuditLogPage!
         dashboardStats: DashboardStats!
         dashboardHistory: [DashboardSnapshot!]!
