@@ -393,10 +393,10 @@ async function handlePayPrivate() {
 			title="Pagar tratamento particular"
 			@update:open="showPrivateModal = $event"
 		>
-			<p>Sua grana: {{ formatMoney(userMoney) }}</p>
 			<p>
 				<em> Seu tratamento custará <strong>{{ formatPrivateCost() }}</strong> e será somente uma injeçãozinha.</em>
 			</p>
+			<p class="hospital-modal__your-money">Sua grana: {{ formatMoney(userMoney) }}</p>
 			<template #footer>
 				<BaseButton
 					variant="secondary"
@@ -450,6 +450,14 @@ async function handlePayPrivate() {
 		left: 12px;
 		color: $text-muted;
 		pointer-events: none;
+	}
+}
+
+.hospital-modal {
+	&__your-money {
+		margin-top: $spacing-md;
+		font-size: $font-size-14;
+		color: $text-secondary;
 	}
 }
 

@@ -687,13 +687,13 @@ function formatBribeCost() {
 			title="Subornar os guardas"
 			@update:open="showBribeModal = $event"
 		>
-			<p>Sua grana: {{ formatMoney(userMoney) }}</p>
 			<p>
 				<em>
 					Sabemos que você tem um certo dinheiro escondido aí... Nos dê <strong>{{ formatBribeCost() }}</strong> e
 					deixaremos você sair de fininho.
 				</em>
 			</p>
+			<p class="prison-modal__your-money">Sua grana: {{ formatMoney(userMoney) }}</p>
 			<template #footer>
 				<BaseButton
 					variant="secondary"
@@ -751,6 +751,14 @@ function formatBribeCost() {
 		left: 12px;
 		color: $text-muted;
 		pointer-events: none;
+	}
+}
+
+.prison-modal {
+	&__your-money {
+		margin-top: $spacing-md;
+		font-size: $font-size-14;
+		color: $text-secondary;
 	}
 }
 
