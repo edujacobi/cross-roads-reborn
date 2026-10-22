@@ -11,6 +11,7 @@ commands/**/*.js
 events/**/*.js
 *.js
 !web-interface/public/sw.js
+codebase_graph.*
 codebase_index.*
 
 # User-specific stuff
