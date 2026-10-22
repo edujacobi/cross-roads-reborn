@@ -1,5 +1,6 @@
 import type { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
 import { Language, type Localization } from "#core/models/Language";
+import { WebPush } from "#core/models/WebPush";
 import { Log, logger } from "#shared/log";
 import {
 	ButtonInteraction,
@@ -28,6 +29,8 @@ import { getClient } from "../client";
  * @param footer - Optional footer text for the embed.
  */
 export async function sendPrivateMessage(userId: string, message: string, color: ColorResolvable = Colors.DarkButNotBlack, footer: string = "") {
+	void WebPush.Send(userId, message).catch(err => Log.Warning(`Web push to user ${userId} failed. Error: ${err}`));
+
 	const client = getClient();
 
 	try {

@@ -208,6 +208,11 @@ The bot uses `@napi-rs/canvas` for high-performance image generation. Complex UI
 
    # (Optional) Channel ID for system logs in production
    LOG_CHANNEL_ID=your_log_channel_id
+
+   # (Optional) Web push notifications. Generate keys with: npx web-push generate-vapid-keys
+   VAPID_PUBLIC_KEY=your_vapid_public_key
+   VAPID_PRIVATE_KEY=your_vapid_private_key
+   VAPID_SUBJECT=mailto:you@example.com
    ```
 
 4. Build the project:

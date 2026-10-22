@@ -3,7 +3,7 @@
 	lang="ts"
 >
 import { useQuery } from "@vue/apollo-composable";
-import { Beer, BookOpen, Clock3, ExternalLink, HelpCircle, Info, Medal } from "lucide-vue-next";
+import { Beer, Bell, BellOff, BookOpen, Clock3, ExternalLink, HelpCircle, Info, Medal } from "lucide-vue-next";
 import { onMounted, onUnmounted, ref } from "vue";
 import CasinoIcon from "~/components/icons/CasinoIcon.vue";
 import GangIcon from "~/components/icons/GangIcon.vue";
@@ -87,8 +87,30 @@ const greeting = computed(() => {
 	return "Boa noite";
 });
 const currentTime = computed(() => clockFormatter.format(now.value));
+const pushNotifications = usePushNotifications();
+const { showToast } = useToast();
+const isTogglingPush = ref(false);
+
+async function togglePushNotifications() {
+	isTogglingPush.value = true;
+	try {
+		if (pushNotifications.isSubscribed.value) {
+			await pushNotifications.disable();
+			showToast({ variant: "neutral", text: "Notificações desativadas." });
+		} else if (await pushNotifications.enable()) {
+			showToast({ variant: "success", text: "Notificações ativadas!" });
+		} else {
+			showToast({ variant: "warning", text: "Permissão de notificação negada pelo navegador." });
+		}
+	} catch {
+		showToast({ variant: "error", text: "Não foi possível alterar as notificações." });
+	} finally {
+		isTogglingPush.value = false;
+	}
+}
 
 onMounted(() => {
+	void pushNotifications.refreshStatus();
 	clockInterval = setInterval(() => {
 		now.value = new Date();
 	}, 1_000);
@@ -238,6 +260,24 @@ onUnmounted(() => {
 					aria-hidden="true"
 				/>
 				Beber no bar
+			</BaseButton>
+			<BaseButton
+				v-if="pushNotifications.isSupported"
+				variant="secondary"
+				:disabled="isTogglingPush"
+				@click="togglePushNotifications"
+			>
+				<BellOff
+					v-if="pushNotifications.isSubscribed.value"
+					:size="18"
+					aria-hidden="true"
+				/>
+				<Bell
+					v-else
+					:size="18"
+					aria-hidden="true"
+				/>
+				{{ pushNotifications.isSubscribed.value ? "Desativar notificações" : "Ativar notificações" }}
 			</BaseButton>
 		</section>
 

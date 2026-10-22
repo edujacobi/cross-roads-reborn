@@ -10,7 +10,7 @@ config.json
 commands/**/*.js
 events/**/*.js
 *.js
-codebase_graph.*
+!web-interface/public/sw.js
 codebase_index.*
 
 # User-specific stuff

@@ -9,6 +9,7 @@ import type { GraphQLContext } from "#api/types";
 import { logger } from "#shared/log";
 import { User } from "#core/models/User";
 import { Language } from "#core/models/Language";
+import { WebPush } from "#core/models/WebPush";
 import { registerEscapeStatusRoute } from "#api/sse/escapeStatus";
 import { registerScavengeStatusRoute } from "#api/sse/scavengeStatus";
 import { registerRobStatusRoute } from "#api/sse/robStatus";
@@ -155,6 +156,34 @@ export async function createApiServer(): Promise<FastifyInstance> {
 		}
 
 		getClient().userLastCommand.set(user.userId, Date.now());
+		return reply.status(204).send();
+	});
+
+	app.get("/push/public-key", async () => ({ publicKey: WebPush.PublicKey }));
+
+	app.post("/push/subscribe", async (req, reply) => {
+		const user = verifyAuthToken(req.headers.authorization?.startsWith("Bearer ") ? req.headers.authorization.substring(7) : "");
+		if (!user) {
+			return reply.status(401).send({ error: "Invalid or expired token." });
+		}
+		if (!WebPush.IsValidSubscription(req.body)) {
+			return reply.status(400).send({ error: "Invalid push subscription." });
+		}
+
+		await WebPush.Subscribe(user.userId, req.body);
+		return reply.status(204).send();
+	});
+
+	app.post("/push/unsubscribe", async (req: FastifyRequest<{ Body: { endpoint?: unknown } }>, reply) => {
+		const user = verifyAuthToken(req.headers.authorization?.startsWith("Bearer ") ? req.headers.authorization.substring(7) : "");
+		if (!user) {
+			return reply.status(401).send({ error: "Invalid or expired token." });
+		}
+		if (typeof req.body?.endpoint !== "string") {
+			return reply.status(400).send({ error: "Missing endpoint." });
+		}
+
+		await WebPush.Unsubscribe(user.userId, req.body.endpoint);
 		return reply.status(204).send();
 	});
 
