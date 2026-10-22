@@ -1,0 +1,15 @@
+{
+	"version": "1.0.8",
+	"title": "Correções e melhorias",
+	"date": "22/10/2026",
+	"sections": [
+		{
+			"title": "Correções",
+			"description": "Corrigidas as race conditions que afetavam ações temporais (Roubar, Vasculhar, Fugir da prisão)."
+		},
+		{
+			"title": "Cara ou Coroa (bet)",
+			"description": "Agora, ao iniciar um Cara ou Coroa você é considerado como \"Em um jogo do Cassino\". Antes não era. Estar Em um jogo do Cassino significa que você não pode fazer outras ações enquanto isso (nem podem fazer outras ações com você). Isso significa que enquanto você estiver apostando, não poderá receber Lucros de Investimentos (acumulará para a próxima hora) nem ser Roubado. Para evitar abusos, você deverá esperar 10 segundos entre um bet e outro."
+		}
+	]
+}
