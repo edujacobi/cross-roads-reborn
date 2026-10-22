@@ -17,6 +17,19 @@ const side = ref<"HEADS" | "TAILS">("HEADS");
 const amount = ref(500);
 const isBetModalOpen = ref(false);
 const isPlaying = ref(false);
+const nextBetAt = useState("casino-bet-next-play-at", () => 0);
+const now = ref(Date.now());
+const cooldownSeconds = computed(() => Math.max(0, Math.ceil((nextBetAt.value - now.value) / 1_000)));
+let cooldownInterval: ReturnType<typeof setInterval> | undefined;
+
+onMounted(() => {
+	now.value = Date.now();
+	cooldownInterval = setInterval(() => {
+		now.value = Date.now();
+	}, 250);
+});
+onUnmounted(() => clearInterval(cooldownInterval));
+
 const startingBalance = ref<number | null>(null);
 const displayedBalance = ref<number | null>(null);
 const result = ref<{
@@ -52,6 +65,17 @@ const range = () => Math.floor(Math.random() * 1_001) + 2_000;
 const wait = () => new Promise((resolve) => setTimeout(resolve, range()));
 
 async function play(betAmount = amount.value, betSide = side.value) {
+	now.value = Date.now();
+	if (isPlaying.value || playing.value || cooldownSeconds.value > 0) return;
+	if (
+		statusLoading.value ||
+		statusError.value ||
+		!Number.isFinite(betAmount) ||
+		betAmount < 500 ||
+		betAmount > money.value
+	)
+		return;
+
 	isPlaying.value = true;
 	// Generate numbers between 2_000 and 3_000 (2s and 3s)
 
@@ -65,6 +89,8 @@ async function play(betAmount = amount.value, betSide = side.value) {
 		}
 
 		if (playResult.success) {
+			now.value = Date.now();
+			nextBetAt.value = now.value + 10_000;
 			displayedBalance.value = playResult.money;
 			result.value = {
 				won: playResult.won ?? false,
@@ -205,11 +231,19 @@ function sideName(value: string) {
 						</label>
 						<BaseButton
 							type="submit"
-							:disabled="statusLoading || isPlaying || playing || amount < 500 || amount > money"
+							:disabled="statusLoading || !!statusError || isPlaying || playing || cooldownSeconds > 0 || !Number.isFinite(amount) || amount < 500 || amount > money"
 						>
-							{{ isPlaying || playing ? "Jogando..." : "Apostar" }}
+							{{
+								isPlaying || playing ? "Jogando..." : cooldownSeconds > 0 ? `Aguarde ${cooldownSeconds}s` : "Apostar"
+							}}
 						</BaseButton>
 					</div>
+					<p
+						v-if="cooldownSeconds > 0"
+						role="status"
+					>
+						Aguarde {{ cooldownSeconds }}s para apostar novamente.
+					</p>
 					<div class="casino-game__quick-actions">
 						<BaseButton
 							type="button"

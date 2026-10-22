@@ -12,11 +12,22 @@ import {
 	ButtonStyle,
 	type ChatInputCommandInteraction,
 	Locale,
+	MessageFlags,
 	SlashCommandBuilder,
 	type SlashCommandIntegerOption,
 	type SlashCommandNumberOption,
 } from "discord.js";
 import { setTimeout as wait } from "timers/promises";
+
+const BET_COOLDOWN_MS = 10_000;
+// While cooling down the user is not "in casino game", so he can be robbed
+const lastBetFinishedAtByUserId = new Map<string, number>();
+
+function getCooldownRemainingSeconds(userId: string) {
+	const finishedAt = lastBetFinishedAtByUserId.get(userId);
+	if (finishedAt === undefined) return 0;
+	return Math.max(0, Math.ceil((finishedAt + BET_COOLDOWN_MS - Date.now()) / 1_000));
+}
 
 enum CoinSide {
 	Heads = 0,
@@ -93,6 +104,21 @@ module.exports = {
 		}
 
 		async function playBet(value: number) {
+			if (!await Casino.StartUserGame(user)) return;
+
+			try {
+				return await flipCoin(value);
+			}
+			finally {
+				if (user.Casino.IsInGame) {
+					user.Casino.IsInGame = false;
+					await user.Update({ casinoIsInGame: false });
+				}
+				lastBetFinishedAtByUserId.set(user.Id, Date.now());
+			}
+		}
+
+		async function flipCoin(value: number) {
 			container = addContainerHeader()
 				.addTexts([
 					`${s.flipping} ${EmoteString.Waiting}`,
@@ -194,9 +220,15 @@ module.exports = {
 			return true;
 		}
 
+		const initialCooldown = getCooldownRemainingSeconds(user.Id);
+		if (initialCooldown > 0) {
+			return replyWithContainer(interaction, addContainerHeader().addTexts([s.cooldown(initialCooldown)]));
+		}
+
 		if (!await checkIfCanPlay(value)) return;
 
 		const response = await playBet(value);
+		if (!response) return;
 
 		const collector = createButtonCollector(interaction, response);
 
@@ -204,28 +236,46 @@ module.exports = {
 			await disableButtons(interaction, container);
 		});
 
+		let isProcessingClick = false;
+
 		collector?.on("collect", async btn => {
 			await deferUpdate(btn);
-			await user.GetInfo();
 
-			if (btn.customId === "playsamevalue") {
-				isAllIn = false;
-				if (!await checkIfCanPlay(currentBet)) return;
-				await playBet(currentBet);
+			// Discord lag can deliver repeated clicks while a round is still running
+			if (isProcessingClick) return;
+			isProcessingClick = true;
+
+			try {
+				const remainingSeconds = getCooldownRemainingSeconds(user.Id);
+				if (remainingSeconds > 0) {
+					await btn.followUp({ content: s.cooldown(remainingSeconds), flags: MessageFlags.Ephemeral });
+					return;
+				}
+
+				await user.GetInfo();
+
+				if (btn.customId === "playsamevalue") {
+					isAllIn = false;
+					if (!await checkIfCanPlay(currentBet)) return;
+					await playBet(currentBet);
+				}
+
+				else if (btn.customId === "playdouble") {
+					currentBet *= 2;
+					isAllIn = false;
+					if (!await checkIfCanPlay(currentBet)) return;
+					await playBet(currentBet);
+				}
+
+				else if (btn.customId === "allin") {
+					currentBet = user.Money;
+					isAllIn = true;
+					if (!await checkIfCanPlay(currentBet)) return;
+					await playBet(currentBet);
+				}
 			}
-
-			else if (btn.customId === "playdouble") {
-				currentBet *= 2;
-				isAllIn = false;
-				if (!await checkIfCanPlay(currentBet)) return;
-				await playBet(currentBet);
-			}
-
-			else if (btn.customId === "allin") {
-				currentBet = user.Money;
-				isAllIn = true;
-				if (!await checkIfCanPlay(currentBet)) return;
-				await playBet(currentBet);
+			finally {
+				isProcessingClick = false;
 			}
 		});
 
@@ -251,6 +301,7 @@ const Strings = {
 		currentBalance: "Current balance",
 		totalBalance: "Total balance",
 		winStreak: (value: number) => `You won ${value} times in a row`,
+		cooldown: (seconds: number) => `Wait ${seconds}s before betting again.`,
 	},
 	[Language.Portuguese]: {
 		casino: "Cassino",
@@ -270,6 +321,7 @@ const Strings = {
 		currentBalance: "Balanço atual",
 		totalBalance: "Balanço total",
 		winStreak: (value: number) => `Você ganhou ${value} seguidas`,
+		cooldown: (seconds: number) => `Aguarde ${seconds}s para apostar novamente.`,
 	},
 	[Language.Spanish]: {
 		casino: "Casino",
@@ -289,5 +341,6 @@ const Strings = {
 		currentBalance: "Balanco actual",
 		totalBalance: "Balanco total",
 		winStreak: (value: number) => `Ganaste ${value} seguidas`,
+		cooldown: (seconds: number) => `Espera ${seconds}s para apostar de nuevo.`,
 	},
 } as const satisfies Localization;
