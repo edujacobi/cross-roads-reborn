@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatToastText } from "../web-interface/composables/useToast";
+import { formatToastText } from "../web-interface/utils/formatToastText";
 
 describe("formatToastText", () => {
 	it("removes Discord custom emojis and formats timestamps", () => {
