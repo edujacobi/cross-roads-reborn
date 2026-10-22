@@ -12,6 +12,7 @@ import { sequelize } from "#core/database/Database";
 import { migrateAdminAuditLogsV2 } from "#core/database/migrations/AdminAuditLogsV2";
 import { migrateAdminAuditLogsV3 } from "#core/database/migrations/AdminAuditLogsV3";
 import { migrateAdminAuditLogsV4 } from "#core/database/migrations/AdminAuditLogsV4";
+import { migrateAdminAuditLogsV5 } from "#core/database/migrations/AdminAuditLogsV5";
 import { Dashboard } from "#core/models/Dashboard";
 import { cleanupActiveEscapes, Prison } from "#core/models/Prison";
 import { TimedAction } from "#core/models/TimedAction";
@@ -149,6 +150,7 @@ async function startApplication() {
 	await migrateAdminAuditLogsV2();
 	await migrateAdminAuditLogsV3();
 	await migrateAdminAuditLogsV4();
+	await migrateAdminAuditLogsV5();
 	await Prison.Initialize();
 	await TimedAction.Initialize();
 	await Dashboard.Initialize();

@@ -15,6 +15,7 @@ import { randomBytes } from "node:crypto";
 import { logger } from "#shared/log";
 import type { GraphQLContext } from "#api/types";
 import { formatMoney } from "#bot/utils/ui";
+import { GangRepository } from "#core/repositories/GangRepository";
 import {
 	assertAuthenticated,
 	assertCanWrite,
@@ -48,12 +49,18 @@ export const adminResolvers: {
 			const page = await AdminAuditLog.GetPage(limit, offset, args.actionId ?? undefined);
 			const adminIds = [...new Set(page.entries.map(entry => entry.adminId))];
 			const targetUserIds = [...new Set(page.entries.flatMap(entry => entry.targetUserId ? [entry.targetUserId] : []))];
+			const targetGangIds = [...new Set(page.entries.flatMap(entry => entry.targetGangId !== null ? [entry.targetGangId] : []))];
 			const discordUserIds = [...new Set([...adminIds, ...targetUserIds])];
 			const gameUsers = await Promise.all(targetUserIds.map(async userId => [
 				userId,
 				await UserRepository.FindById(userId, ["id", "nickname"]),
 			] as const));
 			const gameUserById = new Map(gameUsers);
+			const gangs = await Promise.all(targetGangIds.map(async gangId => [
+				gangId,
+				await GangRepository.FindById(gangId, ["id", "name"]),
+			] as const));
+			const gangById = new Map(gangs);
 			const discordProfiles = await Promise.all(
 				discordUserIds.map(async userId => [userId, await getCurrentDiscordProfile(userId)] as const),
 			);
@@ -74,6 +81,7 @@ export const adminResolvers: {
 					targetUserAvatarUrl: entry.targetUserId
 						? discordProfileById.get(entry.targetUserId)?.avatarUrl ?? null
 						: null,
+					targetGangName: entry.targetGangId === null ? null : gangById.get(entry.targetGangId)?.name ?? null,
 					createdAt: entry.createdAt.toISOString(),
 				})),
 			};

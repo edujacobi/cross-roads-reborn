@@ -11,6 +11,7 @@ export class AdminAuditLogRepository {
 		actionId: AdminAuditActionId;
 		targetUserId: string | null;
 		targetSettingId: AdminAuditSettingId | null;
+		targetGangId: number | null;
 		previousValue: string;
 		newValue: string;
 		createdAt: Date;

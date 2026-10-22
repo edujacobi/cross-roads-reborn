@@ -31,10 +31,33 @@ describe("Admin audit log", () => {
 			actionId: AdminAuditActionId.SetMoney,
 			targetUserId: "456",
 			targetSettingId: null,
+			targetGangId: null,
 			previousValue: "{\"money\":10}",
 			newValue: "{\"money\":25}",
 			createdAt: expect.any(Date),
 		});
+	});
+
+	it("stores gang targets in the audit log", async () => {
+		const create = vi.spyOn(AdminAuditLogRepository, "Create").mockResolvedValue();
+
+		await AdminAuditLog.Record(
+			{ userId: "123" },
+			AdminAuditActionId.SetGangMoney,
+			{ gangId: 42 },
+			100,
+			250,
+			{ ipAddress: null, userAgent: null },
+		);
+
+		expect(create).toHaveBeenCalledWith(expect.objectContaining({
+			actionId: AdminAuditActionId.SetGangMoney,
+			targetUserId: null,
+			targetSettingId: null,
+			targetGangId: 42,
+			previousValue: "100",
+			newValue: "250",
+		}));
 	});
 
 	it("prefers Edge over Chrome in Chromium-based user agents", async () => {

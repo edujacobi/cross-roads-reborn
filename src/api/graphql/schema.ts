@@ -523,6 +523,8 @@ export const typeDefs = /* GraphQL */ `
         targetUserName: String
         targetUserAvatarUrl: String
         targetSettingId: Int
+        targetGangId: ID
+        targetGangName: String
         previousValue: String!
         newValue: String!
         createdAt: String!

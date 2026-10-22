@@ -12,10 +12,11 @@ import { GangColor, GangColorId } from "#core/types/GangColors";
 import type { GraphQLContext } from "#api/types";
 import { convertHexNumberToString, formatMoney } from "#bot/utils/ui";
 import { getClient } from "#bot/client";
-import { assertAuthenticated, assertCanWrite } from "./helpers";
+import { assertAuthenticated, assertCanWrite, recordAdminAction } from "./helpers";
 import type { ResolverFn } from "./helpers";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Collection, ComponentType, type Message } from "discord.js";
 import { logger } from "#shared/log";
+import { AdminAuditActionId } from "#core/types/AdminAuditLog";
 
 function getGangRolePermissions(args: {
 	canInvite: boolean;
@@ -335,7 +336,7 @@ export const gangResolvers: {
 			args: { gangId: string; amount: number; mode: "ADD" | "SET" },
 			context: GraphQLContext,
 		) => {
-			assertCanWrite(context);
+			const admin = assertCanWrite(context);
 			const gangId = Number(args.gangId);
 			if (!Number.isSafeInteger(gangId)) {
 				return { success: false, message: "Gangue não encontrada." };
@@ -354,8 +355,12 @@ export const gangResolvers: {
 				return { success: false, message: "O dinheiro atualizado deve ser um número inteiro válido." };
 			}
 
+			const previousMoney = gang.Money;
 			gang.Money = money;
 			const success = await gang.Update();
+			if (success) {
+				await recordAdminAction(admin, AdminAuditActionId.SetGangMoney, { gangId }, previousMoney, money);
+			}
 			return success
 				? { success: true, message: `Dinheiro da gangue atualizado para ${formatMoney(money, Language.Portuguese)}.` }
 				: { success: false, message: "Falha ao atualizar o dinheiro da gangue." };

@@ -19,6 +19,7 @@ export enum AdminAuditActionId {
 	RemoveBadge = 18,
 	SwapUsers = 19,
 	DeleteUser = 20,
+	SetGangMoney = 21,
 }
 
 export enum AdminAuditSettingId {

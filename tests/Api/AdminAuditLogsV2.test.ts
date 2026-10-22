@@ -3,6 +3,7 @@ import { DataTypes, QueryTypes, Sequelize } from "sequelize";
 import { migrateAdminAuditLogsV2 } from "#core/database/migrations/AdminAuditLogsV2";
 import { migrateAdminAuditLogsV3 } from "#core/database/migrations/AdminAuditLogsV3";
 import { migrateAdminAuditLogsV4 } from "#core/database/migrations/AdminAuditLogsV4";
+import { migrateAdminAuditLogsV5 } from "#core/database/migrations/AdminAuditLogsV5";
 
 describe("Admin audit log schema migration", () => {
 	let database: Sequelize | undefined;
@@ -121,5 +122,18 @@ describe("Admin audit log schema migration", () => {
 
 		const columns = await database.getQueryInterface().describeTable("admin_audit_logs");
 		expect(columns.adminBrowser.allowNull).toBe(true);
+	});
+
+	it("adds the gang target column idempotently", async () => {
+		database = new Sequelize({ dialect: "sqlite", storage: ":memory:", logging: false });
+		await database.getQueryInterface().createTable("admin_audit_logs", {
+			id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true, allowNull: false },
+		});
+
+		await migrateAdminAuditLogsV5(database);
+		await migrateAdminAuditLogsV5(database);
+
+		const columns = await database.getQueryInterface().describeTable("admin_audit_logs");
+		expect(columns.targetGangId.allowNull).toBe(true);
 	});
 });

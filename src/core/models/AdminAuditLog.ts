@@ -2,8 +2,9 @@ import { AdminAuditLogRepository } from "#core/repositories/AdminAuditLogReposit
 import type { AdminAuditActionId, AdminAuditRequestInfo, AdminAuditSettingId } from "#core/types/AdminAuditLog";
 
 export type AdminAuditTarget =
-	| { userId: string; settingId?: never }
-	| { userId?: never; settingId: AdminAuditSettingId };
+	| { userId: string; settingId?: never; gangId?: never }
+	| { userId?: never; settingId: AdminAuditSettingId; gangId?: never }
+	| { userId?: never; settingId?: never; gangId: number };
 
 export interface AdminAuditEntry {
 	id: number;
@@ -15,6 +16,7 @@ export interface AdminAuditEntry {
 	actionId: AdminAuditActionId;
 	targetUserId: string | null;
 	targetSettingId: AdminAuditSettingId | null;
+	targetGangId: number | null;
 	previousValue: string;
 	newValue: string;
 	createdAt: Date;
@@ -47,6 +49,7 @@ export class AdminAuditLog {
 			actionId,
 			targetUserId: target.userId ?? null,
 			targetSettingId: target.settingId ?? null,
+			targetGangId: target.gangId ?? null,
 			previousValue: this.serialize(previousValue),
 			newValue: this.serialize(newValue),
 			createdAt: new Date(),
@@ -116,6 +119,7 @@ export class AdminAuditLog {
 				actionId: log.actionId,
 				targetUserId: log.targetUserId,
 				targetSettingId: log.targetSettingId,
+				targetGangId: log.targetGangId,
 				previousValue: log.previousValue,
 				newValue: log.newValue,
 				createdAt: log.createdAt,

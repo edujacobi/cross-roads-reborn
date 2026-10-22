@@ -176,6 +176,8 @@ query GetAdminAuditLogs($limit: Int, $offset: Int, $actionId: Int) {
 			targetUserName
 			targetUserAvatarUrl
 			targetSettingId
+			targetGangId
+			targetGangName
 			previousValue
 			newValue
 			createdAt

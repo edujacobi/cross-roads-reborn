@@ -73,6 +73,7 @@ const actionNames: Record<number, string> = {
 	18: "Remover insígnia",
 	19: "Trocar contas",
 	20: "Excluir jogador",
+	21: "Alterar dinheiro da gangue",
 };
 
 const settingNames: Record<number, string> = {
@@ -211,6 +212,14 @@ function setModalOpen(isOpen: boolean) {
 											<strong class="audit-user-name">{{ entry.targetUserName || entry.targetUserId }}</strong>
 											<small class="audit-secondary">{{ entry.targetUserId }}</small>
 										</div>
+									</div>
+								</template>
+								<template v-else-if="entry.targetGangId">
+									<div>
+										<strong class="audit-user-name">{{
+											entry.targetGangName || `Gangue #${entry.targetGangId}`
+										}}</strong>
+										<small class="audit-secondary">ID {{ entry.targetGangId }}</small>
 									</div>
 								</template>
 								<template v-else>

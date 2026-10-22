@@ -15,6 +15,7 @@ export class AdminAuditLogs extends Model<
 	declare actionId: AdminAuditActionId;
 	declare targetUserId: string | null;
 	declare targetSettingId: AdminAuditSettingId | null;
+	declare targetGangId: number | null;
 	declare previousValue: string;
 	declare newValue: string;
 	declare createdAt: CreationOptional<Date>;
@@ -56,6 +57,10 @@ AdminAuditLogs.init(
 			allowNull: true,
 		},
 		targetSettingId: {
+			type: DataTypes.INTEGER,
+			allowNull: true,
+		},
+		targetGangId: {
 			type: DataTypes.INTEGER,
 			allowNull: true,
 		},

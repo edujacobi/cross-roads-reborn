@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { resolvers } from "#api/graphql/resolvers";
 import { AdminAuditLog } from "#core/models/AdminAuditLog";
+import { GangRepository } from "#core/repositories/GangRepository";
 import { UserRepository } from "#core/repositories/UserRepository";
 import { AdminAuditActionId, AdminAuditSettingId } from "#core/types/AdminAuditLog";
 import { SituationId } from "#core/types/Ids";
@@ -51,6 +52,7 @@ describe("Admin audit log resolver", () => {
 				actionId: AdminAuditActionId.SetMoney,
 				targetUserId: "222",
 				targetSettingId: null,
+				targetGangId: null,
 				previousValue: "1",
 				newValue: "2",
 				createdAt: new Date("2026-01-01T00:00:00.000Z"),
@@ -95,6 +97,7 @@ describe("Admin audit log resolver", () => {
 				actionId: AdminAuditActionId.SetMainHeistAllowed,
 				targetUserId: null,
 				targetSettingId: AdminAuditSettingId.MainHeist,
+				targetGangId: null,
 				previousValue: "true",
 				newValue: "false",
 				createdAt: new Date("2026-01-01T00:00:00.000Z"),
@@ -117,6 +120,44 @@ describe("Admin audit log resolver", () => {
 			targetSettingId: AdminAuditSettingId.MainHeist,
 		});
 		expect(findUser).not.toHaveBeenCalled();
+	});
+
+	it("resolves gang target names from their IDs", async () => {
+		vi.spyOn(AdminAuditLog, "GetPage").mockResolvedValue({
+			total: 1,
+			entries: [{
+				id: 4,
+				adminId: "111",
+				adminIpAddress: null,
+				adminDeviceType: null,
+				adminOperatingSystem: null,
+				adminBrowser: null,
+				actionId: AdminAuditActionId.SetGangMoney,
+				targetUserId: null,
+				targetSettingId: null,
+				targetGangId: 42,
+				previousValue: "100",
+				newValue: "250",
+				createdAt: new Date("2026-01-01T00:00:00.000Z"),
+			}],
+		});
+		const findGang = vi.spyOn(GangRepository, "FindById").mockResolvedValue({ id: 42, name: "Test gang" } as never);
+
+		const result = await resolvers.Query.adminAuditLogs(null, {}, {
+			user: {
+				userId: "111",
+				username: "Developer",
+				avatar: null,
+				role: "DEVELOPER",
+				situationId: SituationId.Idling,
+			},
+		});
+
+		expect(findGang).toHaveBeenCalledWith(42, ["id", "name"]);
+		expect(result.entries[0]).toMatchObject({
+			targetGangId: 42,
+			targetGangName: "Test gang",
+		});
 	});
 
 	it("passes the selected action ID to the paginated query", async () => {
@@ -148,6 +189,7 @@ describe("Admin audit log resolver", () => {
 				actionId: AdminAuditActionId.SetMoney,
 				targetUserId: null,
 				targetSettingId: null,
+				targetGangId: null,
 				previousValue: "1",
 				newValue: "2",
 				createdAt: new Date("2026-01-01T00:00:00.000Z"),
