@@ -4,7 +4,7 @@ import { Language, type Localization } from "#core/models/Language";
 import type { User } from "#core/models/User";
 import { UserBadge } from "#core/models/UserBadge";
 import { subMinutes } from "date-fns";
-import type { User as DiscordUser } from "discord.js";
+import { Colors, type User as DiscordUser } from "discord.js";
 import {
 	ActionRowBuilder,
 	AttachmentBuilder,
@@ -166,9 +166,10 @@ export class Inventory {
 			components: [...this.Medias, render.row,
 				new ActionRowBuilder<ButtonBuilder>()
 					.addComponents(new ButtonBuilder()
-						.setLabel("Seus itens sumiram?")
-						.setCustomId("new-season")
-						.setStyle(ButtonStyle.Secondary)),
+						.setLabel("Sorteio de VIP!")
+						.setCustomId("vip")
+						.setEmoji(EmoteId.VIP)
+						.setStyle(ButtonStyle.Primary)),
 			],
 			files: this.Attachments,
 			flags: MessageFlags.IsComponentsV2,
@@ -192,17 +193,13 @@ export class Inventory {
 			else if (btn.customId === "lessInfo") {
 				this.FullSize = false;
 			}
-			else if (btn.customId === "new-season") {
+			else if (btn.customId === "vip") {
 				return replyWithContainer(btn, defaultComponent({
-					color: CrColors.Default,
+					color: Colors.Gold,
 					thumbnail: this.Interaction.client.user.avatarURL() || undefined,
-					description: `### A pré-temporada de Cross Roads Reborn finalmente terminou!
- Todos os registros foram limpos (a maioria está guardado para a posterioridade) e você começará do zero novamente.
-### Temporadas
-Para saber mais sobre as temporadas, use o comando \`/temporada\`.
-No final de uma temporada, os melhores jogadores nos rankings ganharão insígnias permanentes!
-### Encontre outros jogadores
-Acesse o servidor oficial de Cross Roads com o comando \`/convite\`.`,
+					description: `# Sorteio de VIP!
+Acesse o servidor oficial de Cross Roads com o comando \`/convite\` e acesse o canal #eventos para saber mais!
+Serão 6 VIPs sorteados, que poderão testar a nova Interface Web do Cross Roads!`,
 				}));
 			}
 			else if (btn.customId === "adminHeal") {
