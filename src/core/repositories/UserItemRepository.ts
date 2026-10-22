@@ -2,6 +2,7 @@ import { UserItems } from "#core/database/UserItems";
 import type { ItemId } from "#core/types/Ids";
 import { type InferAttributes, type InferCreationAttributes, Op, type Optional } from "sequelize";
 import { type NullishPropertiesOf } from "sequelize/lib/utils";
+import { actionTransaction } from "./TimedActionRepository";
 
 export type UserItemUpdateParam = Partial<InferAttributes<UserItems>>;
 
@@ -19,6 +20,7 @@ export class UserItemRepository {
 	static async FindByUserAndItem(userId: string, itemId: ItemId): Promise<UserItems | null> {
 		return await UserItems.findOne({
 			where: { userId, itemId },
+			transaction: actionTransaction.getStore(),
 		});
 	}
 
@@ -28,6 +30,7 @@ export class UserItemRepository {
 	static async FindAllByUser(userId: string): Promise<UserItems[]> {
 		return await UserItems.findAll({
 			where: { userId },
+			transaction: actionTransaction.getStore(),
 		});
 	}
 
@@ -50,6 +53,7 @@ export class UserItemRepository {
 	 */
 	static async FindActiveByUser(userId: string): Promise<UserItems[]> {
 		return await UserItems.findAll({
+			transaction: actionTransaction.getStore(),
 			where: {
 				userId,
 				[Op.or]: {
@@ -147,6 +151,6 @@ export class UserItemRepository {
 	 * Upserts a user item record.
 	 */
 	static async Upsert(values: Optional<InferCreationAttributes<UserItems>, NullishPropertiesOf<InferCreationAttributes<UserItems>>>): Promise<void> {
-		await UserItems.upsert(values);
+		await UserItems.upsert(values, { transaction: actionTransaction.getStore() });
 	}
 }

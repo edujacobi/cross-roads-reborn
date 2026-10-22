@@ -1,6 +1,8 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { User } from "#core/models/User";
-import { getSseUser, openSseResponse } from "#api/sse/shared";
+import { getSseUser, isSseResponseOpen, openSseResponse, SSE_POLL_INTERVAL_MS } from "#api/sse/shared";
+import { Log } from "#shared/log";
+import { setTimeout as wait } from "node:timers/promises";
 
 const ESCAPE_SSE_TIMEOUT_MS = 90_000;
 
@@ -15,8 +17,9 @@ async function handleEscapeStatus(req: FastifyRequest, reply: FastifyReply): Pro
 	const sendEvent = openSseResponse(req, reply);
 	if (!userModel.IsEscaping()) {
 		sendEvent({
-			type: "not-escaping",
+			type: userModel.Escape.HasTried ? "escape-ended" : "not-escaping",
 			isInPrison: userModel.IsInPrison(),
+			isWanted: !userModel.IsInPrison(),
 			escapeHasTried: userModel.Escape.HasTried,
 		});
 		reply.raw.end();
@@ -28,37 +31,43 @@ async function handleEscapeStatus(req: FastifyRequest, reply: FastifyReply): Pro
 		escapeTime: userModel.Escape.Time.toISOString(),
 	});
 
-	const pollInterval = setInterval(async () => {
-		const freshUser = new User(userModel.Id);
-		const freshFound = await freshUser.GetInfo();
-		if (!freshFound) {
-			clearInterval(pollInterval);
-			sendEvent({ type: "closed" });
-			reply.raw.end();
-			return;
-		}
-
-		if (!freshUser.IsEscaping()) {
-			clearInterval(pollInterval);
-			const success = !freshUser.IsInPrison();
-			sendEvent({
-				type: "escape-ended",
-				isInPrison: freshUser.IsInPrison(),
-				isWanted: success,
-			});
-			reply.raw.end();
-		}
-	}, 500);
-
 	const timeout = setTimeout(() => {
-		clearInterval(pollInterval);
+		if (!isSseResponseOpen(reply)) return;
 		sendEvent({ type: "closed" });
 		reply.raw.end();
 	}, ESCAPE_SSE_TIMEOUT_MS);
 	timeout.unref();
 
-	req.raw.on("close", () => {
-		clearInterval(pollInterval);
+	try {
+		while (isSseResponseOpen(reply)) {
+			await wait(SSE_POLL_INTERVAL_MS);
+			if (!isSseResponseOpen(reply)) return;
+
+			const freshUser = new User(userModel.Id);
+			const freshFound = await freshUser.GetInfo();
+			if (!isSseResponseOpen(reply)) return;
+			if (!freshFound) {
+				sendEvent({ type: "closed" });
+				return;
+			}
+
+			if (!freshUser.IsEscaping()) {
+				const success = !freshUser.IsInPrison();
+				sendEvent({
+					type: "escape-ended",
+					isInPrison: freshUser.IsInPrison(),
+					isWanted: success,
+				});
+				return;
+			}
+		}
+	}
+	catch (err) {
+		Log.Error(`Failed to poll escape for user ${userModel.Id}: ${err}`);
+		if (isSseResponseOpen(reply)) sendEvent({ type: "closed" });
+	}
+	finally {
 		clearTimeout(timeout);
-	});
+		if (!reply.raw.writableEnded) reply.raw.end();
+	}
 }

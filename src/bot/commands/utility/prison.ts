@@ -14,6 +14,7 @@ import { ItemId } from "#core/types/Ids";
 import { ItemList } from "#core/types/Items";
 import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder, time, TimestampStyles } from "discord.js";
 import { setTimeout as wait } from "timers/promises";
+import { Log } from "#shared/log";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -242,6 +243,12 @@ module.exports = {
 							if (!user.IsEscaping()) break;
 						}
 
+						if (user.IsEscaping()) {
+							Log.Warning(`Timed out waiting for escape resolution for user ${user.Id}.`);
+							container.changeFooterText(s.escapePending);
+							return replyWithContainer(interaction, container);
+						}
+
 						// Re-create Prison instance with fresh user data to avoid stale state
 						const freshPrison = new Prison(user);
 						const success = !user.IsInPrison();
@@ -439,6 +446,7 @@ const Strings = {
 		escapeInHospital: (date: Date) => `You can't escape while you are hospitalized! ${EmoteString.Hospital}\n-# You will be healed ${time(date, TimestampStyles.RelativeTime)}!`,
 		bribeInHospital: (date: Date) => `You can't bribe while you are hospitalized! ${EmoteString.Hospital}\n-# You will be healed ${time(date, TimestampStyles.RelativeTime)}!`,
 		escapeInProgress: `Escape in progress ${EmoteString.Waiting}`,
+		escapePending: "The result is still being processed. Check the prison again shortly.",
 		escapeSuccess: "Successful escape!",
 		escapeFailure: "Failed escape!",
 		escapeWaitMinutes: (minutes: number) => `Wait ${minutes} minutes to steal again`,
@@ -478,6 +486,7 @@ const Strings = {
 		escapeInHospital: (date: Date) => `Você não pode fugir enquanto está hospitalizado! ${EmoteString.Hospital}\n-# Será curado ${time(date, TimestampStyles.RelativeTime)}!`,
 		bribeInHospital: (date: Date) => `Você não pode subornar enquanto está hospitalizado! ${EmoteString.Hospital}\n-# Será curado ${time(date, TimestampStyles.RelativeTime)}!`,
 		escapeInProgress: `Fuga em andamento ${EmoteString.Waiting}`,
+		escapePending: "O resultado ainda está sendo processado. Consulte a prisão novamente em instantes.",
 		escapeSuccess: "Fuga bem-sucedida!",
 		escapeFailure: "Fuga fracassada!",
 		escapeWaitMinutes: (minutes: number) => `Espere ${minutes} minutos para roubar novamente`,
@@ -517,6 +526,7 @@ const Strings = {
 		escapeInHospital: (date: Date) => `¡No puedes escapar mientras estás hospitalizado! ${EmoteString.Hospital}\n-# ¡Serás curado ${time(date, TimestampStyles.RelativeTime)}!`,
 		bribeInHospital: (date: Date) => `¡No puedes sobornar mientras estás hospitalizado! ${EmoteString.Hospital}\n-# ¡Serás curado ${time(date, TimestampStyles.RelativeTime)}!`,
 		escapeInProgress: `¡Fuga en progreso ${EmoteString.Waiting}`,
+		escapePending: "El resultado sigue en proceso. Consulta la prisión de nuevo en unos instantes.",
 		escapeSuccess: "Fuga exitosa!",
 		escapeFailure: "Fuga fallida!",
 		escapeWaitMinutes: (minutes: number) => `Espera ${minutes} minutos para robar de nuevo`,

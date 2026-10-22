@@ -17,6 +17,7 @@ import { Users } from "#core/database/Users";
 import { literal, Op, QueryTypes, type InferAttributes, type InferCreationAttributes, type Optional, type WhereOptions } from "sequelize";
 import { addDays } from "date-fns";
 import { type NullishPropertiesOf } from "sequelize/lib/utils";
+import { actionTransaction } from "./TimedActionRepository";
 
 import type { Language } from "#core/models/Language";
 import { ClassId } from "#core/types/Classes";
@@ -58,7 +59,7 @@ export class UserRepository {
 		id: string,
 		attributes?: (keyof Users)[],
 	): Promise<Users | null> {
-		return await Users.findByPk(id, attributes ? { attributes } : undefined);
+		return await Users.findByPk(id, { attributes, transaction: actionTransaction.getStore() });
 	}
 
 	/**
@@ -78,9 +79,16 @@ export class UserRepository {
 		id: string,
 		values: UserUpdateParam,
 	): Promise<[number]> {
-		return await Users.update(values, {
+		const result = await Users.update(values, {
 			where: { id },
+			transaction: actionTransaction.getStore(),
 		});
+		if (actionTransaction.getStore() && result[0] !== 1) throw new Error(`User ${id} was not updated.`);
+		return result;
+	}
+
+	static IsResolvingAction() {
+		return actionTransaction.getStore() !== undefined;
 	}
 
 	static async GiftVipForDays(giverId: string, receiverId: string, days: number, price: number): Promise<boolean> {
@@ -148,6 +156,28 @@ export class UserRepository {
 				},
 			},
 		);
+		return affected > 0;
+	}
+
+	static async FindOverdueEscapes(): Promise<Pick<Users, "id">[]> {
+		return await Users.findAll({
+			attributes: ["id"],
+			where: {
+				escapeHasTried: true,
+				escapeTime: { [Op.gt]: new Date(0), [Op.lte]: new Date() },
+			},
+		});
+	}
+
+	static async TryEndEscape(
+		id: string,
+		escapeTime: Date,
+		prisonTime: Date,
+		values: Pick<UserUpdateParam, "escapeTime" | "escapeCount" | "prisonTime" | "wantedTime">,
+	): Promise<boolean> {
+		const [affected] = await Users.update(values, {
+			where: { id, escapeHasTried: true, escapeTime, prisonTime },
+		});
 		return affected > 0;
 	}
 

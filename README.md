@@ -119,6 +119,27 @@ The admin web application is the first step in a gradual transition from Discord
 
 The Discord implementation remains an important supported interface during the transition; game rules and state should therefore live in shared backend services rather than being tied to either the Nuxt app or Discord commands.
 
+### Timed Gameplay Actions
+
+Scavenging and location robberies persist their deadlines and latest results in `timedActions`.
+The backend resolves due actions independently of SSE subscribers and retries pending work after failures or restarts.
+Rewards, penalties, item changes, and active-marker cleanup commit in one SQLite transaction; reconnecting clients read the committed result without replaying the action.
+Startup creates the table through the existing schema synchronization and adopts legacy active markers, whose original deadlines were not stored.
+
+### Server-Sent Events (SSE)
+
+SSE is a one-way HTTP connection: the browser keeps a request open so the API can send status messages.
+It does not execute gameplay. Mutations start actions, backend workers save their outcomes, and SSE reports the saved state.
+
+- `src/api/sse/shared.ts` authenticates requests, opens the stream, and waits for saved scavenge/robbery results.
+- Each `*Status.ts` route translates the saved state into messages for its page. Escape observes the user's saved escape state.
+- `web-interface/utils/readSseData.ts` joins network chunks into messages; pages only interpret the JSON and update their UI.
+
+The API sends `data: <JSON>` followed by a blank line. Network chunks are not necessarily complete messages.
+`escape-ended`, `scavenge-ended`, and `rob-ended` mean a result is available; `not-*` means no matching action is active.
+`closed` means monitoring was interrupted or timed out, **not** that the gameplay action failed.
+Closing the page or stream does not cancel the backend action.
+
 ### Localization
 
 All user-facing text must be localized. The bot supports:

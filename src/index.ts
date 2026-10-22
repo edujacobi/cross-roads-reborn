@@ -13,6 +13,8 @@ import { migrateAdminAuditLogsV2 } from "#core/database/migrations/AdminAuditLog
 import { migrateAdminAuditLogsV3 } from "#core/database/migrations/AdminAuditLogsV3";
 import { migrateAdminAuditLogsV4 } from "#core/database/migrations/AdminAuditLogsV4";
 import { Dashboard } from "#core/models/Dashboard";
+import { cleanupActiveEscapes, Prison } from "#core/models/Prison";
+import { TimedAction } from "#core/models/TimedAction";
 
 const client = setClient();
 
@@ -46,6 +48,8 @@ client.on(Events.ShardResume, (shardId, replayedEvents) => {
 
 const handleExit = (signal: string) => {
 	logger.info(`Received ${signal}. Shutting down gracefully...`);
+	cleanupActiveEscapes();
+	TimedAction.Stop();
 	stopApiServer().finally(() => {
 		client.destroy();
 		process.exit(0);
@@ -145,6 +149,8 @@ async function startApplication() {
 	await migrateAdminAuditLogsV2();
 	await migrateAdminAuditLogsV3();
 	await migrateAdminAuditLogsV4();
+	await Prison.Initialize();
+	await TimedAction.Initialize();
 	await Dashboard.Initialize();
 	await Promise.all([
 		startApiServer().catch((err) => {

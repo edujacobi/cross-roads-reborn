@@ -1512,10 +1512,10 @@ export class User {
 	}
 
 	/**
-	 * Checks if the user is escaping.
+	 * Checks if an escape is in progress or still awaiting a persisted result.
 	 */
 	IsEscaping() {
-		return this.Escape.Time > new Date();
+		return this.Escape.Time > new Date() || (this.Escape.HasTried && this.Escape.Time.getTime() > 0);
 	}
 
 	/**
@@ -1817,6 +1817,7 @@ export class User {
 		}
 		catch (err) {
 			Log.Warning(`Something went wrong with updating user Id: ${this.Id}.`);
+			if (UserRepository.IsResolvingAction()) throw err;
 			return false;
 		}
 	}

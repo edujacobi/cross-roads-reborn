@@ -4,7 +4,7 @@
 >
 import { useMutation, useQuery } from "@vue/apollo-composable";
 import { ChevronDown } from "lucide-vue-next";
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import HospitalIcon from "~/components/icons/HospitalIcon.vue";
 import PrisonIcon from "~/components/icons/PrisonIcon.vue";
 import ScavengeIcon from "~/components/icons/ScavengeIcon.vue";
@@ -26,6 +26,7 @@ import {
 	GetUserStatusDocument,
 	StartScavengeDocument,
 } from "~/graphql/generated";
+import { readSseData } from "~/utils/readSseData";
 
 definePageMeta({
 	middleware: "auth",
@@ -240,15 +241,11 @@ async function listenToScavengeSSE() {
 	if (sseInProgress) return;
 	sseInProgress = true;
 
-	const config = useRuntimeConfig();
-	const token = auth.token.value;
-
-	if (sseAbortController) {
-		sseAbortController.abort();
-	}
-	sseAbortController = new AbortController();
-
 	try {
+		const config = useRuntimeConfig();
+		const token = auth.token.value;
+		sseAbortController?.abort();
+		sseAbortController = new AbortController();
 		const apiUrl = config.public.apiBaseUrl;
 		const response = await fetch(`${apiUrl}/sse/scavenge-status`, {
 			headers: {
@@ -257,53 +254,36 @@ async function listenToScavengeSSE() {
 			signal: sseAbortController.signal,
 		});
 
-		if (!response.ok) {
-			showLoadingModal.value = false;
-			return;
-		}
-
-		const reader = response.body?.getReader();
-		const decoder = new TextDecoder();
-		let buffer = "";
-
-		while (reader) {
-			const { done, value } = await reader.read();
-			if (done) break;
-
-			buffer += decoder.decode(value, { stream: true });
-			const lines = buffer.split("\n\n");
-			buffer = lines.pop() || "";
-
-			for (const line of lines) {
-				if (!line.startsWith("data: ")) continue;
-				try {
-					const data = JSON.parse(line.slice(6));
-					if (data.type === "scavenge-ended") {
-						sseInProgress = false;
-						onScavengeResult(data);
-						return;
-					}
-					if (data.type === "closed") {
-						sseInProgress = false;
-						showLoadingModal.value = false;
-						return;
-					}
-					if (data.type === "not-scavenging") {
-						sseInProgress = false;
-						showLoadingModal.value = false;
-						void refetchStatus();
-						return;
-					}
-				} catch {
-					// Ignore parse errors for partial lines
-				}
+		for await (const message of readSseData(response)) {
+			let data: ReturnType<typeof JSON.parse>;
+			try {
+				data = JSON.parse(message);
+			} catch {
+				continue;
+			}
+			if (data.type === "scavenge-ended") {
+				onScavengeResult(data);
+				return;
+			}
+			if (data.type === "closed") {
+				showToast({ text: "O acompanhamento do vasculho foi interrompido.", variant: "error" });
+				void refetchStatus();
+				return;
+			}
+			if (data.type === "not-scavenging") {
+				void refetchStatus();
+				return;
 			}
 		}
+		throw new Error("SSE ended before a result");
 	} catch (err) {
 		if ((err as Error).name !== "AbortError") {
-			showLoadingModal.value = false;
+			showToast({ text: "O acompanhamento do vasculho foi interrompido.", variant: "error" });
+			void refetchStatus();
 		}
+	} finally {
 		sseInProgress = false;
+		showLoadingModal.value = false;
 	}
 }
 
@@ -334,6 +314,8 @@ onMounted(async () => {
 		listenToScavengeSSE();
 	}
 });
+
+onBeforeUnmount(() => sseAbortController?.abort());
 
 function toggleAside() {
 	asideOpen.value = !asideOpen.value;

@@ -2,12 +2,13 @@ import { Notifications } from "#core/database/Notifications";
 import type { InferCreationAttributes, Optional } from "sequelize";
 import { Op } from "sequelize";
 import type { NullishPropertiesOf } from "sequelize/lib/utils";
+import { actionTransaction } from "./TimedActionRepository";
 
 export class NotificationRepository {
 	static async Create(
 		values: Optional<InferCreationAttributes<Notifications>, NullishPropertiesOf<InferCreationAttributes<Notifications>>>
 	): Promise<Notifications> {
-		return await Notifications.create(values);
+		return await Notifications.create(values, { transaction: actionTransaction.getStore() });
 	}
 
 	static async CountUnsentBefore(time: Date): Promise<number> {
@@ -43,6 +44,7 @@ export class NotificationRepository {
 
 	static async DeleteUnsentByUserIdAndType(userId: string, type: number): Promise<number> {
 		return await Notifications.destroy({
+			transaction: actionTransaction.getStore(),
 			where: {
 				userId,
 				type,

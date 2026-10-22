@@ -26,8 +26,12 @@ export enum PrisonFailureReason {
 }
 
 const activeEscapes = new Map<string, { userId: string; timer: NodeJS.Timeout }>();
+let recoveryTimer: NodeJS.Timeout | undefined;
+let isRecovering = false;
 
 export function cleanupActiveEscapes() {
+	clearInterval(recoveryTimer);
+	recoveryTimer = undefined;
 	for (const [userId, data] of activeEscapes.entries()) {
 		clearTimeout(data.timer);
 		activeEscapes.delete(userId);
@@ -52,6 +56,39 @@ export class Prison {
 
 	static BribeTimeInMinutesWanted = 40;
 	static EscapeTimeInMinutesWanted = 40;
+
+	static async Initialize() {
+		if (recoveryTimer) return;
+		recoveryTimer = setInterval(() => Prison.RecoverPendingEscapes(), 5_000);
+		recoveryTimer.unref();
+		await Prison.RecoverPendingEscapes();
+	}
+
+	static async RecoverPendingEscapes() {
+		if (isRecovering) return;
+		isRecovering = true;
+		try {
+			const pending = await UserRepository.FindOverdueEscapes();
+			for (const { id } of pending) {
+				try {
+					const user = await new User(id).GetInfo();
+					if (!user) continue;
+					const prison = new Prison(user);
+					await prison.CalculateEscapeChance();
+					await prison.EndEscape();
+				}
+				catch (err) {
+					Log.Error(`Failed to recover escape for user ${id}: ${err}`);
+				}
+			}
+		}
+		catch (err) {
+			Log.Error(`Failed to find overdue escapes: ${err}`);
+		}
+		finally {
+			isRecovering = false;
+		}
+	}
 
 	static async Arrest(user: User, durationInMinutes: number, { isFromRobbery = true }: {
 		isFromRobbery?: boolean
@@ -162,8 +199,8 @@ export class Prison {
 				if (found && user.Escape.HasTried && user.Escape.Time <= new Date()) {
 					const prison = new Prison(user);
 					await prison.CalculateEscapeChance();
-					await prison.EndEscape();
-					Log.Info(`Auto-ended escape for user ${user.Nickname} (Id: ${userId})`);
+					const result = await prison.EndEscape();
+					if (result) Log.Info(`Auto-ended escape for user ${user.Nickname} (Id: ${userId})`);
 				}
 			}
 			catch (err) {
@@ -174,16 +211,16 @@ export class Prison {
 		return true;
 	}
 
-	async EndEscape(): Promise<{ success: boolean; totalTime: number; message: string }> {
+	async EndEscape(): Promise<{ success: boolean; totalTime: number; message: string } | null> {
 		const escapeTime = this.User.Escape.Time.getTime();
 		if (!this.User.Escape.HasTried || escapeTime <= 0 || escapeTime > Date.now()) {
-			return { success: false, totalTime: 0, message: "Você não está tentando fugir." };
+			return null;
 		}
 
-		await Notification.Dismiss(this.User.Id, NotificationType.Free);
-
-		const totalTime = this.calculateTotalTime();
-		this.User.Escape.Time = new Date(0);
+		let totalTime = this.calculateTotalTime();
+		let prisonTime: Date;
+		let wantedTime = this.User.Wanted.Time;
+		let escapeCount = this.User.Escape.Count;
 
 		const chance = Math.floor(Math.random() * 101);
 		const userClassModifier = getPrisonEscapeClassModifier(this.User.Class);
@@ -192,28 +229,39 @@ export class Prison {
 		const success = chance < ESCAPE_CHANCE;
 
 		if (success) {
-			this.User.Escape.Count += 1;
-			this.User.Prison.Time = new Date();
+			escapeCount += 1;
+			prisonTime = new Date();
 			const wantedTimeMultiplier = await Event.GetActiveFromType(EventType.WANTED_TIME_MULTIPLIER);
-			this.User.Wanted.Time = addMinutes(new Date(), Prison.EscapeTimeInMinutesWanted * wantedTimeMultiplier);
-
-			await Notification.RobAgain(this.User);
-			Log.Success(`User ${this.User.Nickname} (Id: ${this.User.Id}) successfully escaped from prison. Total escapes: ${this.User.Escape.Count}`);
+			wantedTime = addMinutes(new Date(), Prison.EscapeTimeInMinutesWanted * wantedTimeMultiplier);
 		}
 		else {
 			const prisonTimeMultiplier = await Event.GetActiveFromType(EventType.PRISON_TIME_MULTIPLIER);
-			this.User.Prison.Time = addMinutes(this.User.Prison.Time, totalTime * prisonTimeMultiplier);
-
-			await Notification.Free(this.User);
-			Log.Success(`User ${this.User.Nickname} (Id: ${this.User.Id}) failed in his attempt to escape from prison. Will be in prison until ${this.User.Prison.Time}`);
+			totalTime *= prisonTimeMultiplier;
+			prisonTime = addMinutes(new Date(Math.max(Date.now(), this.User.Prison.Time.getTime())), totalTime);
 		}
 
-		await this.User.Update({
-			escapeCount: this.User.Escape.Count,
-			escapeTime: this.User.Escape.Time,
-			prisonTime: this.User.Prison.Time,
-			wantedTime: this.User.Wanted.Time,
+		const saved = await UserRepository.TryEndEscape(this.User.Id, this.User.Escape.Time, this.User.Prison.Time, {
+			escapeCount,
+			escapeTime: new Date(0),
+			prisonTime,
+			wantedTime,
 		});
+		if (!saved) return null;
+
+		this.User.Escape.Count = escapeCount;
+		this.User.Escape.Time = new Date(0);
+		this.User.Prison.Time = prisonTime;
+		this.User.Wanted.Time = wantedTime;
+
+		if (success) {
+			await Notification.Dismiss(this.User.Id, NotificationType.Free);
+			await Notification.RobAgain(this.User);
+			Log.Success(`User ${this.User.Nickname} (Id: ${this.User.Id}) successfully escaped from prison. Total escapes: ${escapeCount}`);
+		}
+		else {
+			await Notification.Free(this.User);
+			Log.Success(`User ${this.User.Nickname} (Id: ${this.User.Id}) failed in his attempt to escape from prison. Will be in prison until ${prisonTime}`);
+		}
 
 		const message = this.generateEscapeMessage(success, totalTime, this.User.Language);
 

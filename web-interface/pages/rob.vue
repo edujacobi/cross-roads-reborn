@@ -26,6 +26,7 @@ import {
 	GetUserStatusDocument,
 	StartRobLocationDocument,
 } from "~/graphql/generated";
+import { readSseData } from "~/utils/readSseData";
 
 definePageMeta({ middleware: "auth" });
 useHead({ title: "Roubar" });
@@ -199,53 +200,43 @@ function onRobberyResult(data: {
 async function listenToRobberySSE() {
 	if (sseInProgress) return;
 	sseInProgress = true;
-	sseAbortController?.abort();
-	sseAbortController = new AbortController();
 
 	try {
+		sseAbortController?.abort();
+		sseAbortController = new AbortController();
 		const config = useRuntimeConfig();
 		const response = await fetch(`${config.public.apiBaseUrl}/sse/rob-status`, {
 			headers: { Authorization: `Bearer ${auth.token.value}` },
 			signal: sseAbortController.signal,
 		});
-		if (!response.ok || !response.body) {
-			throw new Error("Não foi possível acompanhar o roubo.");
-		}
-
-		const reader = response.body.getReader();
-		const decoder = new TextDecoder();
-		let buffer = "";
-		while (true) {
-			const { done, value } = await reader.read();
-			if (done) break;
-			buffer += decoder.decode(value, { stream: true });
-			const events = buffer.split("\n\n");
-			buffer = events.pop() ?? "";
-			for (const event of events) {
-				if (!event.startsWith("data: ")) continue;
-				const data = JSON.parse(event.slice(6));
-				if (data.type === "rob-ended") {
-					onRobberyResult(data);
-					return;
+		for await (const message of readSseData(response)) {
+			let data: ReturnType<typeof JSON.parse>;
+			try {
+				data = JSON.parse(message);
+			} catch {
+				continue;
+			}
+			if (data.type === "rob-ended") {
+				onRobberyResult(data);
+				return;
+			}
+			if (data.type === "closed" || data.type === "not-robbing") {
+				if (data.type === "closed") {
+					showToast({ text: "O acompanhamento do roubo foi interrompido.", variant: "error" });
 				}
-				if (data.type === "closed" || data.type === "not-robbing") {
-					showLoadingModal.value = false;
-					if (data.type === "closed") {
-						showToast({ text: "O acompanhamento do roubo foi interrompido.", variant: "error" });
-					}
-					void refetchStatus();
-					return;
-				}
+				void refetchStatus();
+				return;
 			}
 		}
+		throw new Error("SSE ended before a result");
 	} catch (error) {
 		if ((error as Error).name !== "AbortError") {
-			showLoadingModal.value = false;
-			showToast({ text: "Não foi possível acompanhar o resultado do roubo.", variant: "error" });
+			showToast({ text: "O acompanhamento do roubo foi interrompido.", variant: "error" });
 			void refetchStatus();
 		}
 	} finally {
 		sseInProgress = false;
+		showLoadingModal.value = false;
 	}
 }
 

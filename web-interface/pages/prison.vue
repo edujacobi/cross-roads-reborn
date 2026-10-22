@@ -29,6 +29,7 @@ import {
 	GetUserProfileDocument,
 	PayBribePrisonDocument,
 } from "~/graphql/generated";
+import { readSseData } from "~/utils/readSseData";
 
 definePageMeta({
 	middleware: "auth",
@@ -160,50 +161,40 @@ async function onEscapeResult(success: boolean, message: string) {
 async function listenToEscapeSSE() {
 	const config = useRuntimeConfig();
 	const token = useAuth().token.value;
-	if (!token) return;
 
 	try {
+		if (!token) throw new Error("Missing authentication token.");
 		const response = await fetch(`${config.public.apiBaseUrl}/sse/escape-status`, {
 			headers: {
 				Authorization: `Bearer ${token}`,
 			},
 		});
 
-		if (!response.ok) {
-			isEscaping.value = false;
-			return;
-		}
-
-		const reader = response.body?.getReader();
-		const decoder = new TextDecoder();
-		let buffer = "";
-
-		while (reader) {
-			const { done, value } = await reader.read();
-			if (done) break;
-
-			buffer += decoder.decode(value, { stream: true });
-			const lines = buffer.split("\n\n");
-			buffer = lines.pop() || "";
-
-			for (const line of lines) {
-				if (line.startsWith("data: ")) {
-					const data = JSON.parse(line.slice(6));
-					if (data.type === "escape-ended") {
-						await onEscapeResult(
-							data.isWanted,
-							data.message || (data.isWanted ? "Fuga bem-sucedida!" : "Fuga fracassada!"),
-						);
-						return;
-					}
-					if (data.type === "not-escaping") {
-						isEscaping.value = false;
-						return;
-					}
-				}
+		for await (const message of readSseData(response)) {
+			const data = JSON.parse(message);
+			if (data.type === "escape-ended") {
+				await onEscapeResult(
+					data.isWanted,
+					data.message || (data.isWanted ? "Fuga bem-sucedida!" : "Fuga fracassada!"),
+				);
+				return;
+			}
+			if (data.type === "not-escaping") {
+				await Promise.all([auth.fetchUser(), refetchPrisoners(), refetchPrisonStatus(), refetchBribeCost()]);
+				return;
+			}
+			if (data.type === "closed") {
+				throw new Error("Escape status stream closed before resolution.");
 			}
 		}
+		throw new Error("Escape status stream ended before resolution.");
 	} catch {
+		showToast({
+			text: "Não foi possível obter o resultado da fuga. Consulte a prisão novamente em instantes.",
+			variant: "error",
+		});
+	} finally {
+		showEscapeLoadingModal.value = false;
 		isEscaping.value = false;
 	}
 }
@@ -232,23 +223,12 @@ async function handleEscape() {
 }
 
 async function recoverInterruptedEscape() {
-	if (!escapeTime.value) return;
+	if (!escapeHasTried.value || !escapeTime.value || escapeTime.value.getTime() <= 0) return;
 
 	showEscapeLoadingModal.value = true;
 	isEscaping.value = true;
 
-	const now = new Date();
-	const timeDiff = escapeTime.value.getTime() - now.getTime();
-
-	if (timeDiff > 0) {
-		// Still escaping, listen to SSE
-		listenToEscapeSSE();
-	} else {
-		// Escape should have ended already, refresh status
-		isEscaping.value = false;
-		showEscapeLoadingModal.value = false;
-		await Promise.all([auth.fetchUser(), refetchPrisoners(), refetchPrisonStatus(), refetchBribeCost()]);
-	}
+	await listenToEscapeSSE();
 }
 
 onMounted(async () => {

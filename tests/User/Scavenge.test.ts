@@ -6,7 +6,7 @@ import { ClassId } from "#core/types/Classes";
 import { Scavenge } from "#core/models/Scavenge";
 import { ScavengeId, ScavengeFailureReason } from "#core/types/Scavenge";
 import { LocationId } from "#core/types/Locations";
-import { UserRepository } from "#core/repositories/UserRepository";
+import { TimedActionRepository } from "#core/repositories/TimedActionRepository";
 
 // --- Global Mocks ---
 
@@ -151,19 +151,20 @@ describe("Scavenge", () => {
 
 	describe("When scavenging", () => {
 		it("Should scavenge", async () => {
+			vi.spyOn(TimedActionRepository, "Start").mockResolvedValue("00000000-0000-0000-0000-000000000001");
 			const scavenge = new Scavenge(user, ScavengeId.Dump);
 			await scavenge.StartScavenge();
 			expect(user.Scavenge.IsScavengingId).toBe(ScavengeId.Dump);
 		});
 
-		it("Should report when another flow already ended the scavenge", async () => {
-			vi.spyOn(UserRepository, "ClearScavengingId").mockResolvedValue(false);
+		it("Should replay another flow's committed result without resolving twice", async () => {
+			const result = { completed: true, success: true, rewardDescription: "Cr$ 100" };
+			vi.spyOn(user, "GetInfo").mockResolvedValue(user);
+			const run = vi.spyOn(TimedActionRepository, "Run").mockResolvedValue(result);
 			const scavenge = new Scavenge(user, ScavengeId.Dump);
 
-			await expect(scavenge.EndScavenge()).resolves.toMatchObject({
-				completed: false,
-				success: false,
-			});
+			await expect(scavenge.EndScavenge()).resolves.toEqual(result);
+			expect(run).toHaveBeenCalledWith(user.Id, "scavenge", ScavengeId.Dump, expect.any(Function), undefined);
 		});
 	});
 });

@@ -19,6 +19,7 @@ import { UserItemRepository } from "#core/repositories/UserItemRepository";
 import { BundleId } from "#core/types/Ids";
 import { formatMoney } from "#bot/utils/ui";
 import { Prison } from "./Prison";
+import { TimedActionRepository } from "#core/repositories/TimedActionRepository";
 
 export class Scavenge {
 	User: User;
@@ -32,7 +33,7 @@ export class Scavenge {
 		Hospital: 0,
 	};
 
-	constructor(user: User, placeId: ScavengeId) {
+	constructor(user: User, placeId: ScavengeId, private attemptId?: string) {
 		this.User = user;
 		this.PlaceId = placeId;
 	}
@@ -90,12 +91,10 @@ export class Scavenge {
 	}
 
 	async StartScavenge() {
-		// Idempotent: only set IsScavengingId if not already set (allows SSE endpoint to call safely)
+		// Recovery must keep the original attempt and deadline.
 		if (this.User.Scavenge.IsScavengingId === null) {
+			this.attemptId = await TimedActionRepository.Start(this.User.Id, "scavenge", this.PlaceId, 10_000 + 2_000 * this.PlaceId);
 			this.User.Scavenge.IsScavengingId = this.PlaceId;
-			await this.User.Update({
-				scavengingId: this.User.Scavenge.IsScavengingId,
-			});
 		}
 
 		// Skip re-initializing if already done
@@ -130,15 +129,15 @@ export class Scavenge {
 	}
 
 	async EndScavenge() {
+		const result = await TimedActionRepository.Run(this.User.Id, "scavenge", this.PlaceId, () => this.ResolveScavenge(), this.attemptId);
+		if (!await this.User.GetInfo()) throw new Error(`Scavenging user ${this.User.Id} was not found.`);
+		return result;
+	}
+
+	private async ResolveScavenge() {
 		const place = ScavengeList[this.PlaceId];
 
-		// Atomic guard: clear scavengingId only if not already null, so only the first caller proceeds
-		const wonRace = await UserRepository.ClearScavengingId(this.User.Id);
-		if (!wonRace) {
-			return { completed: false, success: false, rewardDescription: "", hospitalized: false, inprisoned: false };
-		}
-
-		await this.User.GetInfo();
+		if (!await this.User.GetInfo()) throw new Error(`Scavenging user ${this.User.Id} was not found.`);
 
 		const success = Math.random() * 100 < this.SuccessChance;
 		const result: {

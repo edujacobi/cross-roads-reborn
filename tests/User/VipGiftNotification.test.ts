@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { Notification } from "#core/models/Notification";
 import { Language } from "#core/models/Language";
 import { User } from "#core/models/User";
-import { CrColors } from "#bot/utils/colors";
+import { Colors } from "discord.js";
 import { EmoteString } from "#bot/utils/emotes";
 
 const { sendPrivateMessage } = vi.hoisted(() => ({
@@ -28,7 +28,7 @@ describe("VIP gift notifications", () => {
 		expect(sendPrivateMessage).toHaveBeenCalledWith(
 			"receiver",
 			`${message} ${EmoteString.VIP}`,
-			CrColors.Default,
+			Colors.Gold,
 		);
 	});
 });

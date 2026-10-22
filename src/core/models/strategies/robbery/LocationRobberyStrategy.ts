@@ -16,6 +16,7 @@ import { addMinutes } from "date-fns";
 import { type IRobberyStrategy } from "./IRobberyStrategy";
 import { time, TimestampStyles } from "discord.js";
 import { Prison } from "#core/models/Prison";
+import { TimedActionRepository } from "#core/repositories/TimedActionRepository";
 
 export class LocationRobberyStrategy implements IRobberyStrategy {
 	Attacker: User;
@@ -30,7 +31,7 @@ export class LocationRobberyStrategy implements IRobberyStrategy {
 	RewardMax: number;
 	AttackerTimeInPrison: number;
 
-	constructor(attacker: User, locationId: LocationId) {
+	constructor(attacker: User, locationId: LocationId, private attemptId?: string) {
 		this.Attacker = attacker;
 		this.LocationId = locationId;
 		this.Date = new Date();
@@ -117,11 +118,8 @@ export class LocationRobberyStrategy implements IRobberyStrategy {
 	async LockStates(useGrenade?: boolean): Promise<RobberyInitData> {
 		void useGrenade;
 
+		this.attemptId = await TimedActionRepository.Start(this.Attacker.Id, "robbery", this.LocationId, 10_000 + 5_000 * this.LocationId);
 		this.Attacker.Robbery.IsRobbingLocationId = this.LocationId;
-
-		await this.Attacker.Update({
-			robbingLocationId: this.Attacker.Robbery.IsRobbingLocationId,
-		});
 
 		Log.Info(`User ${this.Attacker.Nickname} (Id: ${this.Attacker.Id}) locked states for robbing location ${LocationList[this.LocationId].Name[Language.English]} (Id: ${LocationList[this.LocationId].Id}).`);
 
@@ -141,8 +139,14 @@ export class LocationRobberyStrategy implements IRobberyStrategy {
 
 	async Resolve(defenderReaction?: string): Promise<RobberyLocationOutcomeData> {
 		void defenderReaction;
+		const result = await TimedActionRepository.Run(this.Attacker.Id, "robbery", this.LocationId, () => this.ResolveLocation(), this.attemptId);
+		if (!await this.Attacker.GetInfo()) throw new Error(`Robbing user ${this.Attacker.Id} was not found.`);
+		return result;
+	}
+
+	private async ResolveLocation(): Promise<RobberyLocationOutcomeData> {
 		try {
-			await this.Attacker.GetInfo();
+			if (!await this.Attacker.GetInfo()) throw new Error(`Robbing user ${this.Attacker.Id} was not found.`);
 
 			this.Chance = Math.random() * 100;
 			const robLocationChanceBonus = await Event.GetActiveBonusFromType(EventType.ROB_LOCATION_CHANCE_BONUS);
@@ -184,13 +188,11 @@ export class LocationRobberyStrategy implements IRobberyStrategy {
 			throw error;
 		}
 		finally {
-			this.Attacker.Robbery.IsRobbingLocationId = null;
 			await this.Attacker.Update({
 				money: this.Attacker.Money,
 				robberySuccessCount: this.Attacker.Robbery.SuccessCount,
 				robberySuccessRobbedSum: this.Attacker.Robbery.SuccessRobbedSum,
 				wantedTime: this.Attacker.Wanted.Time,
-				robbingLocationId: this.Attacker.Robbery.IsRobbingLocationId,
 			});
 
 			await RobHistoryRepository.CreateLocationHistory(this);
@@ -198,11 +200,8 @@ export class LocationRobberyStrategy implements IRobberyStrategy {
 	}
 
 	async ReleaseLocks(): Promise<void> {
-		this.Attacker.Robbery.IsRobbingLocationId = null;
-
-		await this.Attacker.Update({
-			robbingLocationId: null,
-		});
+		// Pending attempts belong to the recovery worker, even if the interaction fails.
+		await this.Attacker.GetInfo();
 	}
 }
 

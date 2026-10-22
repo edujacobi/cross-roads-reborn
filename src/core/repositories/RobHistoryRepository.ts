@@ -8,6 +8,7 @@ import { LocationList } from "#core/types/Locations";
 import { ClashType } from "#core/types/Robbery";
 import { Log } from "#shared/log";
 import { Op } from "sequelize";
+import { actionTransaction } from "./TimedActionRepository";
 
 export class RobHistoryRepository {
 	/**
@@ -66,12 +67,13 @@ export class RobHistoryRepository {
 				success: robbery.Success,
 				money: robbery.MoneyRobbed,
 				type: robbery.Type,
-			});
+			}, { transaction: actionTransaction.getStore() });
 
 			Log.Success(`Robbery History for ${robbery.Attacker.Nickname} (Id: ${robbery.Attacker.Id}) and ${LocationList[robbery.LocationId].Name[Language.English]} (Id: ${robbery.LocationId}) added successfully.`);
 		}
 		catch (err) {
 			Log.Warning(`Something went wrong with adding Robbery History for ${robbery.Attacker.Nickname} (Id: ${robbery.Attacker.Id}) and ${LocationList[robbery.LocationId].Name[Language.English]} (Id: ${robbery.LocationId}).`);
+			if (actionTransaction.getStore()) throw err;
 		}
 	}
 
