@@ -2,14 +2,17 @@
 	setup
 	lang="ts"
 >
+import { useQuery } from "@vue/apollo-composable";
 import { computed, onMounted, onUnmounted, ref } from "vue";
+import BeatUpDefenderModal from "~/components/Multiplayer/BeatUpDefenderModal.vue";
+import InvestmentRobberyDefenderModal from "~/components/Multiplayer/InvestmentRobberyDefenderModal.vue";
+import RobberyDefenderModal from "~/components/Multiplayer/RobberyDefenderModal.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
-import BaseModal from "~/components/ui/BaseModal.vue";
 import { useMultiplayerSessions } from "~/composables/useMultiplayerSessions";
+import { GetDefenderActionProfilesDocument, type MultiplayerSession } from "~/graphql/generated";
 
 const auth = useAuth();
 const { showToast } = useToast();
-const { formatMoney } = useMoneyFormat();
 const { sessions, respondToSession, refetch } = useMultiplayerSessions();
 const now = ref(Date.now());
 let countdownInterval: ReturnType<typeof setInterval> | undefined;
@@ -25,36 +28,110 @@ onUnmounted(() => {
 });
 
 const userId = computed(() => auth.user.value?.userId ?? "");
-const defenderSessions = computed(() =>
-	sessions.value.filter(
-		(session) =>
-			session.targetId === userId.value &&
-			["beatUp", "userRobbery", "investmentRobbery"].includes(session.kind) &&
-			["awaitingDefender", "resolving"].includes(session.phase),
+const incomingSession = computed(() =>
+	sessions.value.find(
+		(candidate) =>
+			candidate.targetId === userId.value &&
+			["beatUp", "userRobbery", "investmentRobbery"].includes(candidate.kind) &&
+			["awaitingDefender", "resolving"].includes(candidate.phase),
 	),
 );
+const previewKinds = ["userRobbery", "beatUp", "investmentRobbery"] as const;
+const previewKind = ref<(typeof previewKinds)[number] | null>(null);
+const previewSession = computed<MultiplayerSession | null>(() => {
+	if (!import.meta.dev || !previewKind.value) return null;
+	const isInvestment = previewKind.value === "investmentRobbery";
+	return {
+		id: "defender-visual-preview",
+		kind: previewKind.value,
+		phase: "awaitingDefender",
+		ownerId: "preview-attacker",
+		targetId: userId.value,
+		response: null,
+		participants: [
+			{ userId: "preview-attacker", nickname: "Atacante de exemplo", attack: 1_500, classId: 0 },
+			...(isInvestment
+				? [{ userId: "preview-accomplice", nickname: "Cúmplice de exemplo", attack: 1_200, classId: 0 }]
+				: []),
+		],
+		maxParticipants: isInvestment ? 5 : 1,
+		aliveUserIds: [],
+		allowedResponses: isInvestment
+			? ["defend"]
+			: previewKind.value === "beatUp"
+				? ["fight", "run", "nothing"]
+				: ["react", "police", "nothing"],
+		events: [],
+		hasHenchman: isInvestment,
+		gangName: isInvestment ? "Gangue de exemplo" : null,
+		investmentName: isInvestment ? "Investimento de exemplo" : null,
+		investmentYield: isInvestment ? 25_000 : null,
+		expiresAt: new Date(Date.now() + 60_000).toISOString(),
+		duelDetails: isInvestment
+			? null
+			: {
+					weaponName: "RPG",
+					weaponImageUrl: "/images/items/10_RPG.png",
+					hospitalMinutes: previewKind.value === "beatUp" ? 60 : 27.5,
+					hospitalMinutesDelta: previewKind.value === "beatUp" ? 20 : 0,
+					prisonMinutesDelta: previewKind.value === "userRobbery" ? 60 : 0,
+				},
+	};
+});
+const session = computed(() => incomingSession.value ?? previewSession.value);
+const { result: profiles, error: profileError } = useQuery(
+	GetDefenderActionProfilesDocument,
+	() => ({ attackerId: incomingSession.value?.ownerId ?? "", defenderId: userId.value }),
+	() => ({
+		enabled: Boolean(incomingSession.value && incomingSession.value.kind !== "investmentRobbery" && userId.value),
+		fetchPolicy: "network-only",
+	}),
+);
+const duelProps = computed(() => {
+	if (!session.value || session.value.kind === "investmentRobbery") return {};
+	const isPreview = !incomingSession.value;
+	const attacker = profiles.value?.attacker;
+	const defender = profiles.value?.defender;
+	return {
+		attackerImageUrl:
+			isPreview || attacker?.id === session.value.ownerId
+				? (attacker?.avatarUrl ?? useFallbackUserImage(attacker?.id || "0"))
+				: null,
+		money: isPreview ? 219_532 : defender?.id === userId.value ? defender.money : null,
+		profileError: !isPreview && Boolean(profileError.value || (profiles.value && (!attacker || !defender))),
+	};
+});
 const respondingSessionId = ref<string | null>(null);
 
 const actionTitles: Record<string, string> = {
-	beatUp: "Espancamento",
-	userRobbery: "Roubo",
-	investmentRobbery: "Roubo de investimento",
+	beatUp: "Espancamento em andamento",
+	userRobbery: "Roubo em andamento",
+	investmentRobbery: "Roubo em andamento",
 };
-const responseLabels: Record<string, string> = {
-	fight: "Lutar",
-	run: "Correr",
-	nothing: "Não fazer nada",
-	react: "Reagir",
-	police: "Chamar a polícia",
-	defend: "Defender investimento",
+const defenderModals = {
+	beatUp: BeatUpDefenderModal,
+	userRobbery: RobberyDefenderModal,
+	investmentRobbery: InvestmentRobberyDefenderModal,
 };
+const activeModal = computed(() => {
+	const kind = session.value?.kind;
+	return kind && Object.hasOwn(defenderModals, kind) ? defenderModals[kind as keyof typeof defenderModals] : null;
+});
 
 function formatCountdown(expiresAt: string) {
 	const totalSeconds = Math.max(0, Math.ceil((new Date(expiresAt).getTime() - now.value) / 1_000));
 	return `${totalSeconds} ${totalSeconds === 1 ? "segundo" : "segundos"}`;
 }
 
+function closePreview(open: boolean) {
+	if (!open) previewKind.value = null;
+}
+
 async function respond(sessionId: string, response: string) {
+	if (import.meta.dev && sessionId === previewSession.value?.id) {
+		showToast({ text: "Prévia visual: nenhuma ação foi enviada.", variant: "neutral" });
+		return;
+	}
 	respondingSessionId.value = sessionId;
 	try {
 		const result = (await respondToSession({ sessionId, response }))?.data?.respondMultiplayerSession;
@@ -77,84 +154,30 @@ async function respond(sessionId: string, response: string) {
 </script>
 
 <template>
-	<BaseModal
-		:open="defenderSessions.length > 0"
-		:dismissible="false"
-		title="Ação contra você"
-		:description="
-			defenderSessions.length === 1
-				? 'Escolha uma ação para responder. Esta janela ficará aberta até a ação terminar.'
-				: 'Responda às ações contra você. Esta janela ficará aberta até todas terminarem.'
-		"
+	<div
+		v-if="true"
+		class="defender-prompt__actions"
 	>
-		<section
-			v-for="session in defenderSessions"
-			:key="session.id"
-			class="defender-prompt"
-			:aria-labelledby="`defender-prompt-title-${session.id}`"
+		<BaseButton
+			v-for="kind in previewKinds"
+			:key="kind"
+			variant="secondary"
+			@click="previewKind = kind"
 		>
-			<h2 :id="`defender-prompt-title-${session.id}`">
-				{{ actionTitles[session.kind] ?? "Ação multiplayer" }}
-			</h2>
-
-			<div>
-				<h3
-					:id="`defender-attackers-${session.id}`"
-					class="defender-prompt__label"
-				>
-					{{ session.kind === "investmentRobbery" ? "Atacantes" : "Atacante" }}
-				</h3>
-				<ul
-					class="defender-prompt__attackers"
-					:aria-labelledby="`defender-attackers-${session.id}`"
-				>
-					<li
-						v-for="participant in session.participants"
-						:key="participant.userId"
-					>
-						<strong>{{ participant.nickname }}</strong>
-						<span>{{ participant.attack }} ATK</span>
-					</li>
-				</ul>
-			</div>
-
-			<p v-if="session.gangName">Gangue: <strong>{{ session.gangName }}</strong></p>
-			<p v-if="session.investmentName">
-				Investimento: <strong>{{ session.investmentName }}</strong>
-				<span v-if="session.investmentYield"> · Rendimento: {{ formatMoney(session.investmentYield) }} </span>
-			</p>
-			<p v-if="session.expiresAt">
-				Tempo para responder:
-				<time :datetime="session.expiresAt">
-					{{ formatCountdown(session.expiresAt) }}
-				</time>
-			</p>
-
-			<fieldset
-				v-if="session.phase === 'awaitingDefender' && session.response === null"
-				class="defender-prompt__actions"
-				:aria-label="`Ações para ${actionTitles[session.kind] ?? 'ação multiplayer'}`"
-				:aria-busy="respondingSessionId === session.id"
-			>
-				<BaseButton
-					v-for="response in session.allowedResponses"
-					:key="response"
-					variant="secondary"
-					:disabled="respondingSessionId !== null"
-					@click="respond(session.id, response)"
-				>
-					{{ responseLabels[response] ?? response }}
-				</BaseButton>
-			</fieldset>
-			<p
-				v-else
-				class="defender-prompt__status"
-				role="status"
-			>
-				{{ session.response ? "Sua resposta foi registrada. Aguarde o resultado." : "A ação está sendo resolvida." }}
-			</p>
-		</section>
-	</BaseModal>
+			Prévia: {{ actionTitles[kind] }}
+		</BaseButton>
+	</div>
+	<component
+		:is="activeModal"
+		v-if="session && activeModal"
+		:session="session"
+		:dismissible="!incomingSession"
+		:responding="respondingSessionId !== null"
+		:countdown="session.expiresAt ? formatCountdown(session.expiresAt) : ''"
+		v-bind="duelProps"
+		@update:open="closePreview"
+		@respond="respond(session.id, $event)"
+	/>
 </template>
 
 <style
@@ -164,54 +187,10 @@ async function respond(sessionId: string, response: string) {
 @use "~/assets/scss/variables" as *;
 
 .defender-prompt {
-	display: grid;
-	gap: $spacing-sm;
-
-	& + & {
-		margin-top: $spacing-md;
-		padding-top: $spacing-md;
-		border-top: 1px solid $border-subtle;
-	}
-
-	h2,
-	h3,
-	p {
-		margin: 0;
-	}
-
-	h2 {
-		font-size: $font-size-16;
-	}
-
-	&__label {
-		margin-bottom: $spacing-xs;
-		color: $text-secondary;
-		font-size: $font-size-12;
-		font-weight: $font-weight-semibold;
-	}
-
-	&__attackers {
-		display: grid;
-		gap: $spacing-xs;
-		margin: 0;
-		padding: 0;
-		list-style: none;
-
-		li {
-			display: flex;
-			justify-content: space-between;
-			gap: $spacing-sm;
-		}
-	}
-
 	&__actions {
 		display: flex;
 		flex-wrap: wrap;
 		gap: $spacing-sm;
-	}
-
-	&__status {
-		color: $text-secondary;
 	}
 }
 </style>

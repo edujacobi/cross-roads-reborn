@@ -51,6 +51,13 @@ export interface MultiplayerSessionView {
 	events: Array<{ type: string; userId: string | null; outcome: string | null }>;
 	aliveUserIds: string[];
 	result: string | null;
+	duelDetails: {
+		weaponName: string;
+		weaponImageUrl: string | null;
+		hospitalMinutes: number;
+		hospitalMinutesDelta: number;
+		prisonMinutesDelta: number;
+	} | null;
 }
 
 type RuntimeBase = {
@@ -292,6 +299,14 @@ export class MultiplayerSession {
 		);
 	}
 
+	private static HasActiveIncomingSession(userId: string): boolean {
+		return Array.from(this.sessions.values()).some(session =>
+			session.target?.Id === userId &&
+			session.phase !== "completed" &&
+			session.phase !== "aborted",
+		);
+	}
+
 	static async StartBeatUp(
 		attacker: User,
 		defender: User,
@@ -348,6 +363,7 @@ export class MultiplayerSession {
 		const reservation = [`user:${attacker.Id}`, `user:${defender.Id}`];
 		if (!this.TryReserve(reservation)) return { success: false, message: s.playersBusy };
 		try {
+			if (this.HasActiveIncomingSession(defender.Id)) return { success: false, message: s.playersBusy };
 			const validationMessage = await validate();
 			if (validationMessage !== null) return { success: false, message: validationMessage };
 
@@ -473,6 +489,9 @@ export class MultiplayerSession {
 			return { success: false, message: s.gangBusy };
 		}
 		try {
+			if (this.HasActiveIncomingSession(target.Id)) {
+				return { success: false, message: s.cannotStartInvestmentRobbery };
+			}
 			if (this.HasActiveGangSession(gang.Id)) {
 				return { success: false, message: s.gangActionActive };
 			}
@@ -507,6 +526,8 @@ export class MultiplayerSession {
 			await this.CreateRecord(session);
 
 			try {
+				await model.ApplyDefenderState();
+				session.lockedUserIds.add(target.Id);
 				await model.ApplyAttackerState(initializer);
 				session.lockedUserIds.add(initializer.Id);
 				session.allowedResponses = ["defend"];
@@ -743,7 +764,8 @@ export class MultiplayerSession {
 		s: (typeof Strings)[Language],
 	): Promise<{ success: boolean; message: string }> {
 		try {
-			if (!await session.target.GetInfo() || !session.target.IsIdling()) {
+			if (!await session.target.GetInfo() ||
+				!session.target.CheckAvailability(["defendingInvestment", "dead", "wanted", "escaping"]).available) {
 				session.response = null;
 				return { success: false, message: s.mustBeIdleToDefend };
 			}
@@ -752,22 +774,7 @@ export class MultiplayerSession {
 			session.response = null;
 			throw error;
 		}
-		try {
-			await session.model.ApplyDefenderState();
-		}
-		catch (error) {
-			session.response = null;
-			try {
-				await this.AbortRuntime(session, "defender-state-failed");
-			}
-			catch (cleanupError) {
-				throw new AggregateError([error, cleanupError], `Failed to clean up investment-robbery session ${session.id}.`);
-			}
-			throw error;
-		}
-		// An abort may have cleared the defender lock while it was being applied.
 		if (session.phase !== "awaitingDefender") {
-			await session.model.ClearTargetState();
 			return { success: false, message: s.alreadyResponded };
 		}
 		session.defenderJoined = true;
@@ -1142,6 +1149,9 @@ export class MultiplayerSession {
 	}
 
 	private static ToView(session: RuntimeSession): MultiplayerSessionView {
+		const isDuel = session.kind === "beatUp" || session.kind === "userRobbery";
+		const weapon = session.owner.BestGun;
+		const weaponSkin = weapon?.Skin[weapon.SelectedSkin];
 		return {
 			id: session.id,
 			kind: session.kind,
@@ -1171,6 +1181,15 @@ export class MultiplayerSession {
 			events: [...session.events],
 			aliveUserIds: [...session.aliveUserIds],
 			result: session.result === null ? null : JSON.stringify(session.result),
+			duelDetails: isDuel ? {
+				weaponName: weapon?.Description[Language.Portuguese] ?? session.initData.usedGunName,
+				weaponImageUrl: weaponSkin ? `https://cdn.discordapp.com/emojis/${weaponSkin.Id}.png` : null,
+				hospitalMinutes: session.kind === "beatUp"
+					? session.initData.timeInHospitalBase
+					: session.initData.defenderTimeInHospital,
+				hospitalMinutesDelta: session.kind === "beatUp" ? session.initData.timeInHospitalAditional : 0,
+				prisonMinutesDelta: session.kind === "userRobbery" ? session.initData.attackerAditionalTimeCallPolice : 0,
+			} : null,
 		};
 	}
 

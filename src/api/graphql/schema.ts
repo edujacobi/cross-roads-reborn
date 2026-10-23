@@ -800,7 +800,16 @@ export const typeDefs = /* GraphQL */ `
         outcome: String
     }
 
+    type MultiplayerDuelDetails {
+        weaponName: String!
+        weaponImageUrl: String
+        hospitalMinutes: Float!
+        hospitalMinutesDelta: Float!
+        prisonMinutesDelta: Float!
+    }
+
     type MultiplayerSession {
+        duelDetails: MultiplayerDuelDetails
         id: ID!
         kind: String!
         phase: String!

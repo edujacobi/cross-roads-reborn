@@ -92,7 +92,7 @@ export class InvestmentRobbery {
 		if (this.Target.Class === ClassId.None) {
 			return { success: false, reason: InvestmentRobberyReason.TargetWithoutClass };
 		}
-		if (this.Target.IsDefendingInvestment()) {
+		if (this.Target.IsDefendingInvestment() || this.Target.IsInRobbery() || this.Target.IsInBeatUp()) {
 			return { success: false, reason: InvestmentRobberyReason.TargetAlreadyUnderAttack };
 		}
 

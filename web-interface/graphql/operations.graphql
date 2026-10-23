@@ -1470,6 +1470,13 @@ query GetMyCasinoStatus {
 
 query GetMultiplayerSessions {
 	multiplayerSessions {
+		duelDetails {
+			weaponName
+			weaponImageUrl
+			hospitalMinutes
+			hospitalMinutesDelta
+			prisonMinutesDelta
+		}
 		id
 		kind
 		phase
@@ -1506,6 +1513,13 @@ query GetMultiplayerSessions {
 
 query GetMultiplayerSession($id: ID!) {
 	multiplayerSession(id: $id) {
+		duelDetails {
+			weaponName
+			weaponImageUrl
+			hospitalMinutes
+			hospitalMinutesDelta
+			prisonMinutesDelta
+		}
 		id
 		kind
 		phase
@@ -1537,6 +1551,17 @@ query GetMultiplayerSession($id: ID!) {
 		}
 		aliveUserIds
 		result
+	}
+}
+
+query GetDefenderActionProfiles($attackerId: ID!, $defenderId: ID!) {
+	attacker: user(id: $attackerId) {
+		id
+		avatarUrl
+	}
+	defender: user(id: $defenderId) {
+		id
+		money
 	}
 }
 

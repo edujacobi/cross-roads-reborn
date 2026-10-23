@@ -13,12 +13,14 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "radix-vue";
+import type { ImagePath } from "~/constants/imagePaths";
 
 interface Props {
 	open?: boolean;
 	title: string;
 	description?: string;
 	dismissible?: boolean;
+	icon?: ImagePath;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -46,6 +48,14 @@ function updateOpen(open: boolean) {
 				<div class="dialog-header">
 					<div>
 						<DialogTitle class="dialog-title">
+							<NuxtImg
+								v-if="icon"
+								class="dialog-icon"
+								:src="icon"
+								alt=""
+								width="30"
+								height="30"
+							/>
 							{{ title }}
 						</DialogTitle>
 						<DialogDescription
@@ -129,6 +139,9 @@ function updateOpen(open: boolean) {
       font-size: $font-size-18;
       font-weight: $font-weight-bold;
       color: $text-primary;
+		display: flex;
+		align-items: center;
+		gap: $spacing-sm;
     }
 
     .dialog-description {

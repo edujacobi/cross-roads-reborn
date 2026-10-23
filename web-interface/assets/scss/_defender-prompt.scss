@@ -1,0 +1,90 @@
+@use "variables" as *;
+@use "mixins" as *;
+
+.defender-prompt {
+  display: grid;
+  gap: $spacing-sm;
+
+  h2,
+  h3,
+  p {
+    margin: 0;
+  }
+
+  h2 {
+    font-size: $font-size-16;
+  }
+
+  &__label {
+    margin-bottom: $spacing-xs;
+    color: $text-secondary;
+    font-size: $font-size-12;
+    font-weight: $font-weight-semibold;
+  }
+
+  &__attackers {
+    display: grid;
+    gap: $spacing-xs;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-sm;
+
+    &-wrapper {
+      margin-top: $spacing-lg;
+
+      p {
+        margin-bottom: $spacing-md;
+        color: $text-secondary;
+        font-size: $font-size-12;
+      }
+    }
+  }
+
+  &__status {
+    color: $text-secondary;
+  }
+
+  &__avatar-frame {
+    width: 2rem;
+    vertical-align: middle;
+    margin-right: $spacing-xs;
+
+    :deep(.user-avatar) {
+      border-width: 3px;
+    }
+  }
+
+  &__weapon-image {
+    vertical-align: middle;
+    margin-right: $spacing-xs;
+  }
+
+  &__response {
+    @include card-surface();
+    display: grid;
+    flex-basis: 100%;
+    gap: $spacing-xs;
+    padding: $spacing-sm;
+
+    p {
+      margin: 0;
+      color: $text-secondary;
+      font-size: $font-size-14;
+    }
+  }
+
+  &__attack-badge {
+    margin-left: $spacing-md;
+  }
+
+  &__countdown {
+    color: $text-secondary;
+    font-size: $font-size-14;
+  }
+}

@@ -1,6 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { User } from "#core/models/User";
 import { MultiplayerSession } from "#core/models/MultiplayerSession";
+import { ItemList } from "#core/types/Items";
+import { BundleId, ItemId } from "#core/types/Ids";
+import { Language } from "#core/models/Language";
 
 const {
 	mockCanBeatUser,
@@ -86,20 +89,28 @@ vi.mock("#core/models/Gang", () => ({
 	Gang: { GetByUserId: mockGetGangByUserId },
 }));
 
-vi.mock("#core/models/InvestmentRobbery", () => ({
-	InvestmentRobbery: class {
-		Participants = new Map();
-		InvestmentBase = { Name: { 0: "Bar", 1: "Bar", 2: "Bar" }, ImageUrl: "" };
-		InvestmentData = { accumulatedYield: 1_000 };
-		Validate = () => ({ success: true });
-		ApplyAttackerState = vi.fn();
-		ApplyDefenderState = vi.fn();
-		ClearTargetState = vi.fn();
-		ClearAttackerStates = vi.fn();
-		Abort = vi.fn();
-		CalculateAndApplyOutcome = mockInvestmentOutcome;
-	},
-}));
+vi.mock("#core/models/InvestmentRobbery", async importOriginal => {
+	const actual = await importOriginal<typeof import("#core/models/InvestmentRobbery")>();
+	return {
+		InvestmentRobbery: class {
+			constructor(_gang: unknown, _leader: User, public Target: User) {}
+			Participants = new Map();
+			InvestmentBase = { Name: { 0: "Bar", 1: "Bar", 2: "Bar" }, ImageUrl: "" };
+			InvestmentData = { accumulatedYield: 1_000 };
+			Validate = () => ({ success: true });
+			ApplyAttackerState = vi.fn();
+			ApplyDefenderState = vi.fn(actual.InvestmentRobbery.prototype.ApplyDefenderState);
+			ClearTargetState = vi.fn(actual.InvestmentRobbery.prototype.ClearTargetState);
+			ClearAttackerStates = vi.fn(async () => {
+				await this.ClearTargetState();
+			});
+			Abort = vi.fn(async () => {
+				await this.ClearAttackerStates();
+			});
+			CalculateAndApplyOutcome = mockInvestmentOutcome;
+		},
+	};
+});
 
 vi.mock("#core/repositories/MultiplayerSessionRepository", () => ({
 	MultiplayerSessionRepository: mockRepository,
@@ -154,6 +165,35 @@ describe("Multiplayer sessions", () => {
 	afterEach(async () => {
 		await MultiplayerSession.Stop();
 		vi.useRealTimers();
+	});
+
+	it.each(["beatUp", "userRobbery"] as const)("includes weapon and response consequences in %s queries and updates", async kind => {
+		const attacker = makeUser("attacker");
+		const defender = makeUser("defender");
+		attacker.BestGun = {
+			...ItemList[ItemId.Pistol],
+			SelectedSkin: BundleId.Default,
+			RemainingTime: new Date(),
+			Quantity: 1,
+		};
+		const listener = vi.fn();
+		const unsubscribe = MultiplayerSession.Subscribe(defender.Id, null, listener);
+		const started = kind === "beatUp"
+			? await MultiplayerSession.StartBeatUp(attacker, defender, false)
+			: await MultiplayerSession.StartUserRobbery(attacker, defender, false);
+		expect(started.success).toBe(true);
+		if (!started.success) return;
+		const expected = {
+			weaponName: ItemList[ItemId.Pistol].Description[Language.Portuguese],
+			weaponImageUrl: `https://cdn.discordapp.com/emojis/${ItemList[ItemId.Pistol].Skin[BundleId.Default].Id}.png`,
+			hospitalMinutes: kind === "beatUp" ? 45 : 25,
+			hospitalMinutesDelta: kind === "beatUp" ? 5 : 0,
+			prisonMinutesDelta: kind === "userRobbery" ? 5 : 0,
+		};
+		expect(started.session.duelDetails).toEqual(expected);
+		expect(MultiplayerSession.GetVisibleSession(started.session.id, defender.Id, null)?.duelDetails).toEqual(expected);
+		expect(listener).toHaveBeenCalledWith(expect.objectContaining({ duelDetails: expected }));
+		unsubscribe();
 	});
 
 	it("accepts only one defender response from the target and resolves it once", async () => {
@@ -235,7 +275,6 @@ describe("Multiplayer sessions", () => {
 	it("waits for an in-flight investment defense before resolving on timeout", async () => {
 		const leader = makeUser("leader");
 		const defender = makeUser("defender");
-		vi.spyOn(defender, "IsIdling").mockReturnValue(true);
 		mockGetGangByUserId.mockResolvedValue({
 			Id: 1,
 			Name: "Gang",
@@ -247,6 +286,8 @@ describe("Multiplayer sessions", () => {
 		const started = await MultiplayerSession.StartInvestmentRobbery(leader, defender);
 		expect(started.success).toBe(true);
 		if (!started.success) return;
+		expect(defender.IsDefendingInvestment()).toBe(true);
+		expect(defender.IsIdling()).toBe(false);
 		await vi.advanceTimersByTimeAsync(60_000);
 
 		let finishDefenderLoad!: () => void;
@@ -262,6 +303,75 @@ describe("Multiplayer sessions", () => {
 		expect((await response).success).toBe(true);
 		expect((await completedPromise).phase).toBe("completed");
 		expect(mockInvestmentOutcome).toHaveBeenCalledWith(true);
+		expect(defender.IsDefendingInvestment()).toBe(false);
+	});
+
+	it("locks investment targets during the lobby and rejects overlapping incoming actions", async () => {
+		const defender = makeUser("defender");
+		mockGetGangByUserId.mockResolvedValue({
+			Id: 1,
+			Name: "Gang",
+			LastInvestmentRobbery: null,
+			GetMaxMembers: () => 5,
+			UpdateLastInvestmentRobbery: vi.fn(),
+		});
+		mockInvestmentOutcome.mockResolvedValue({ win: false });
+		const started = await MultiplayerSession.StartInvestmentRobbery(makeUser("leader"), defender);
+		expect(started.success).toBe(true);
+		if (!started.success) return;
+		expect(started.session.phase).toBe("lobby");
+		expect(defender.Update).toHaveBeenCalledWith({ robberyInvestmentDefending: true });
+		expect(defender.CheckAvailability()).toEqual({ available: false, reason: "defendingInvestment" });
+
+		mockGetGangByUserId.mockResolvedValue({
+			Id: 2,
+			Name: "Other gang",
+			LastInvestmentRobbery: null,
+			GetMaxMembers: () => 5,
+		});
+		const staleDefender = makeUser(defender.Id);
+		expect((await MultiplayerSession.StartInvestmentRobbery(makeUser("other-leader"), staleDefender)).success).toBe(false);
+		expect((await MultiplayerSession.StartBeatUp(makeUser("attacker"), staleDefender, false)).success).toBe(false);
+		expect((await MultiplayerSession.StartUserRobbery(makeUser("robber"), staleDefender, false)).success).toBe(false);
+
+		const completed = MultiplayerSession.WaitForCompletion(started.session.id);
+		await vi.advanceTimersByTimeAsync(120_000);
+		expect((await completed).phase).toBe("completed");
+		expect(mockInvestmentOutcome).toHaveBeenCalledWith(false);
+		expect(defender.IsDefendingInvestment()).toBe(false);
+	});
+
+	it("rejects an investment attack while another incoming action is active", async () => {
+		const defender = makeUser("defender");
+		await MultiplayerSession.StartBeatUp(makeUser("attacker"), defender, false);
+		mockGetGangByUserId.mockResolvedValue({
+			Id: 1,
+			Name: "Gang",
+			LastInvestmentRobbery: null,
+			GetMaxMembers: () => 5,
+		});
+		expect((await MultiplayerSession.StartInvestmentRobbery(makeUser("leader"), defender)).success).toBe(false);
+		expect(defender.IsDefendingInvestment()).toBe(false);
+	});
+
+	it("clears the defender lock when investment attack startup fails or the session stops", async () => {
+		const defender = makeUser("defender");
+		mockGetGangByUserId.mockResolvedValue({
+			Id: 1,
+			Name: "Gang",
+			LastInvestmentRobbery: null,
+			GetMaxMembers: () => 5,
+		});
+		const failure = new Error("Failed to persist defender lock");
+		vi.mocked(defender.Update).mockRejectedValueOnce(failure);
+		await expect(MultiplayerSession.StartInvestmentRobbery(makeUser("leader"), defender)).rejects.toThrow(failure);
+		expect(defender.IsDefendingInvestment()).toBe(false);
+		expect(mockRepository.Finish).toHaveBeenCalledWith(expect.any(String), "aborted", { reason: "start-failed" });
+
+		expect((await MultiplayerSession.StartInvestmentRobbery(makeUser("leader"), defender)).success).toBe(true);
+		expect(defender.IsDefendingInvestment()).toBe(true);
+		await MultiplayerSession.Stop();
+		expect(defender.IsDefendingInvestment()).toBe(false);
 	});
 
 	it("aborts persisted sessions and clears their locks during startup", async () => {

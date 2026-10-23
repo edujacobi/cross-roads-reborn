@@ -27,6 +27,7 @@ async function startLobby(language = Language.English) {
 		participants: [{ userId: host.Id, nickname: host.Nickname, attack: 10, classId: 0 }],
 		maxParticipants: 5, bet: 5_000, missionId: null, expiresAt: null,
 		response: null, allowedResponses: [], events: [], aliveUserIds: [], result: null,
+		duelDetails: null,
 	};
 	const handlers = new Map<string, (button: unknown) => Promise<void>>();
 	let listener: (view: MultiplayerSessionView) => void = vi.fn();
