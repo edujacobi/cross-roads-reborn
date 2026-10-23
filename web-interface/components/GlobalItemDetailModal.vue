@@ -30,7 +30,7 @@ const isOwnInventoryModal = computed(() => auth.user.value?.userId === String(ro
 
 const { result, loading } = useQuery(
 	GetItemDocument,
-	() => ({ id: itemId.value }),
+	() => ({ id: itemId.value ?? 0 }),
 	() => ({
 		enabled: isModalOpen.value,
 		fetchPolicy: "cache-and-network",

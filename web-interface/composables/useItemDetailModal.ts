@@ -1,3 +1,5 @@
+import type { LocationQueryRaw } from "vue-router";
+
 export function useItemDetailModal() {
 	const route = useRoute();
 	const router = useRouter();
@@ -10,7 +12,7 @@ export function useItemDetailModal() {
 			return;
 		}
 
-		const query = {
+		const query: LocationQueryRaw = {
 			...route.query,
 			detailsItemId: item.id,
 		};

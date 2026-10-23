@@ -370,48 +370,51 @@ const user = computed(() => {
 			</div>
 		</nav>
 
-		<div class="user-profile">
+		<div
+			class="user-profile"
+			v-if="user"
+		>
 			<NuxtLink
 				data-popover-text="Meu inventário"
 				data-popover-direction="top"
-				:to="`/users/${user?.id}`"
+				:to="`/users/${user.id}`"
 				class="user-info"
-				:aria-label="user?.username ? `Perfil de ${user.username}` : 'Perfil do usuário'"
+				:aria-label="user.username ? `Perfil de ${user.username}` : 'Perfil do usuário'"
 			>
 				<UserPicture
-					:image-url="user?.avatarUrl"
-					:decoration="user?.avatarDecoration"
+					:image-url="user.avatarUrl ?? useFallbackUserImage(user.id)"
+					:decoration="user.avatarDecoration"
 					image-class="sidebar-user-avatar"
 					lazy
 				/>
 				<div class="user-details">
-					<span class="user-name">{{ user?.username }}</span>
+					<span class="user-name">{{ user.username }}</span>
 					<NuxtLink
-						v-if="user?.isDead"
+						v-if="user.isDead"
 						to="/cemetery"
 						class="user-situation"
 					>
 						<NuxtImg
-							:src="user?.situationImageUrl"
+							:src="user.situationImageUrl"
 							class="img-situation"
 							width="16"
 							height="16"
 							alt=""
 						/>
-						{{ user?.situationText }}
+						{{ user.situationText }}
 					</NuxtLink>
 					<p
 						v-else
 						class="user-situation"
 					>
 						<NuxtImg
-							:src="user?.situationImageUrl"
+							:src="user.situationImageUrl"
 							class="img-situation"
 							width="16"
 							height="16"
 							alt=""
 						/>
-						{{ user?.situationText }}
+						{{ user.situationText }}
 					</p>
 				</div>
 			</NuxtLink>

@@ -4,7 +4,7 @@
 >
 withDefaults(
 	defineProps<{
-		imageUrl?: string | null;
+		imageUrl: string;
 		decoration?: string | null;
 		alt?: string;
 		width?: number | string;
