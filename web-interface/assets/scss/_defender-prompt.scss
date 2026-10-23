@@ -48,6 +48,11 @@
 
   &__status {
     color: $text-secondary;
+
+    :deep(img) {
+      margin-right: $spacing-xs;
+      vertical-align: middle;
+    }
   }
 
   &__avatar-frame {

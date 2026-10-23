@@ -20,8 +20,14 @@ const emit = defineEmits<{
 	"update:open": [open: boolean];
 }>();
 const { formatMoney } = useMoneyFormat();
-const responseLabels: Record<string, string> = {
-	defend: "Defender investimento",
+const responseLabels: Record<string, { text: string; image: string }> = {
+	defend: {
+		text: "Defender investimento",
+		image: imagePaths.attributes.defense,
+	},
+};
+const responseStatuses: Record<string, string> = {
+	defend: "Defendendo Investimento...",
 };
 </script>
 
@@ -87,12 +93,13 @@ const responseLabels: Record<string, string> = {
 					@click="emit('respond', response)"
 				>
 					<NuxtImg
-						:src="imagePaths.attributes.defense"
+						v-if="responseLabels[response]?.image"
+						:src="responseLabels[response].image"
 						alt=""
 						width="24"
 						height="24"
 					/>
-					{{ responseLabels[response] ?? response }}
+					{{ responseLabels[response]?.text ?? response }}
 				</BaseButton>
 				<p :id="`response-effect-${session.id}`">
 					+5 DEF, mas quem sair derrotado ficará 30 minutos hospitalizado.
@@ -103,8 +110,15 @@ const responseLabels: Record<string, string> = {
 				class="defender-prompt__status"
 				role="status"
 			>
+				<NuxtImg
+					v-if="session.response && responseLabels[session.response]?.image"
+					:src="responseLabels[session.response].image"
+					alt=""
+					width="20"
+					height="20"
+				/>
 				{{
-					session.response ? "Sua resposta foi registrada. Aguarde o resultado." : "A ação está sendo resolvida."
+					(session.response && responseStatuses[session.response]) || "A ação está sendo resolvida."
 				}}
 			</p>
 		</section>

@@ -8,6 +8,7 @@ import UserPicture from "~/components/UserPicture.vue";
 import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
+import { imagePaths } from "~/constants/imagePaths";
 import type { MultiplayerSession } from "~/graphql/generated";
 
 const props = defineProps<{
@@ -39,13 +40,21 @@ const emit = defineEmits<{
 const responseLabels: Record<string, { text: string; image?: string }> = {
 	fight: {
 		text: "Lutar",
+		image: imagePaths.attributes.attack,
 	},
 	run: {
 		text: "Correr",
+		image: imagePaths.uiElements.escape,
 	},
 	nothing: {
 		text: "Não fazer nada",
+		image: imagePaths.situations.idling,
 	},
+};
+const responseStatuses: Record<string, string> = {
+	fight: "Lutando...",
+	run: "Correndo...",
+	nothing: "Fazendo nada...",
 };
 </script>
 
@@ -157,8 +166,15 @@ const responseLabels: Record<string, { text: string; image?: string }> = {
 				class="defender-prompt__status"
 				role="status"
 			>
+				<NuxtImg
+					v-if="session.response && responseLabels[session.response]?.image"
+					:src="responseLabels[session.response].image"
+					alt=""
+					width="20"
+					height="20"
+				/>
 				{{
-					session.response ? "Sua resposta foi registrada. Aguarde o resultado." : "A ação está sendo resolvida."
+					(session.response && responseStatuses[session.response]) || "A ação está sendo resolvida."
 				}}
 			</p>
 		</section>

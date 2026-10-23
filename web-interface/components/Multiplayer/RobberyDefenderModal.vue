@@ -52,7 +52,13 @@ const responseLabels: Record<string, { text: string; image?: string }> = {
 	},
 	nothing: {
 		text: "Não fazer nada",
+		image: imagePaths.situations.idling,
 	},
+};
+const responseStatuses: Record<string, string> = {
+	react: "Reagindo...",
+	police: "Chamando a polícia...",
+	nothing: "Fazendo nada...",
 };
 </script>
 
@@ -162,8 +168,15 @@ const responseLabels: Record<string, { text: string; image?: string }> = {
 				class="defender-prompt__status"
 				role="status"
 			>
+				<NuxtImg
+					v-if="session.response && responseLabels[session.response]?.image"
+					:src="responseLabels[session.response].image"
+					alt=""
+					width="24"
+					height="24"
+				/>
 				{{
-					session.response ? "Sua resposta foi registrada. Aguarde o resultado." : "A ação está sendo resolvida."
+					(session.response && responseStatuses[session.response]) || "A ação está sendo resolvida."
 				}}
 			</p>
 		</section>
