@@ -2,7 +2,7 @@
 	setup
 	lang="ts"
 >
-import { computed, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
 import { useMultiplayerSessions } from "~/composables/useMultiplayerSessions";
@@ -11,6 +11,19 @@ const auth = useAuth();
 const { showToast } = useToast();
 const { formatMoney } = useMoneyFormat();
 const { sessions, respondToSession, refetch } = useMultiplayerSessions();
+const now = ref(Date.now());
+let countdownInterval: ReturnType<typeof setInterval> | undefined;
+
+onMounted(() => {
+	now.value = Date.now();
+	countdownInterval = setInterval(() => {
+		now.value = Date.now();
+	}, 1_000);
+});
+onUnmounted(() => {
+	if (countdownInterval) clearInterval(countdownInterval);
+});
+
 const userId = computed(() => auth.user.value?.userId ?? "");
 const defenderSessions = computed(() =>
 	sessions.value.filter(
@@ -35,6 +48,11 @@ const responseLabels: Record<string, string> = {
 	police: "Chamar a polícia",
 	defend: "Defender investimento",
 };
+
+function formatCountdown(expiresAt: string) {
+	const totalSeconds = Math.max(0, Math.ceil((new Date(expiresAt).getTime() - now.value) / 1_000));
+	return `${totalSeconds} ${totalSeconds === 1 ? "segundo" : "segundos"}`;
+}
 
 async function respond(sessionId: string, response: string) {
 	respondingSessionId.value = sessionId;
@@ -106,9 +124,9 @@ async function respond(sessionId: string, response: string) {
 				<span v-if="session.investmentYield"> · Rendimento: {{ formatMoney(session.investmentYield) }} </span>
 			</p>
 			<p v-if="session.expiresAt">
-				Prazo para responder:
+				Tempo para responder:
 				<time :datetime="session.expiresAt">
-					{{ new Date(session.expiresAt).toLocaleTimeString("pt-BR") }}
+					{{ formatCountdown(session.expiresAt) }}
 				</time>
 			</p>
 

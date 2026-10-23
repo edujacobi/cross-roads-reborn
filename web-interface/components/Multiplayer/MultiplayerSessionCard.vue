@@ -2,13 +2,25 @@
 	setup
 	lang="ts"
 >
-import { computed } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import { useMoneyFormat } from "~/composables/useMoneyFormat";
 import type { MultiplayerSession } from "~/graphql/generated";
 
 const { formatMoney } = useMoneyFormat();
+const now = ref(Date.now());
+let countdownInterval: ReturnType<typeof setInterval> | undefined;
+
+onMounted(() => {
+	now.value = Date.now();
+	countdownInterval = setInterval(() => {
+		now.value = Date.now();
+	}, 1_000);
+});
+onUnmounted(() => {
+	if (countdownInterval) clearInterval(countdownInterval);
+});
 
 const props = defineProps<{
 	session: MultiplayerSession;
@@ -132,6 +144,11 @@ function eventLabel(event: MultiplayerSession["events"][number]) {
 	if (event.type === "finished") return `${name} venceu.`;
 	return "";
 }
+
+function formatCountdown(expiresAt: string) {
+	const totalSeconds = Math.max(0, Math.ceil((new Date(expiresAt).getTime() - now.value) / 1_000));
+	return `${totalSeconds} ${totalSeconds === 1 ? "segundo" : "segundos"}`;
+}
 </script>
 
 <template>
@@ -151,36 +168,41 @@ function eventLabel(event: MultiplayerSession["events"][number]) {
 			<span v-if="session.investmentYield"> · Rendimento: {{ formatMoney(session.investmentYield) }}</span>
 		</p>
 
-		<p class="multiplayer-card__count">
-			Participantes: {{ session.participants.length }}/{{ session.maxParticipants }}
-		</p>
-		<p
-			v-if="resultSummary"
-			class="multiplayer-card__result"
-			role="status"
-		>
-			{{ resultSummary }}
-		</p>
-		<ul
-			class="multiplayer-card__participants"
-			aria-label="Participantes"
-		>
-			<li
-				v-for="participant in session.participants"
-				:key="participant.userId"
+		<div class="multiplayer-card__participant-wrapper">
+			<p class="multiplayer-card__count">
+				Participantes: {{ session.participants.length }}/{{ session.maxParticipants }}
+			</p>
+			<p
+				v-if="resultSummary"
+				class="multiplayer-card__result"
+				role="status"
 			>
-				{{ participant.nickname }}
-				<span v-if="session.aliveUserIds.length">
-					{{ session.aliveUserIds.includes(participant.userId) ? "· na partida" : "· hospitalizado" }}
-				</span>
-			</li>
-		</ul>
+				{{ resultSummary }}
+			</p>
+			<ul
+				class="multiplayer-card__participants"
+				aria-label="Participantes"
+			>
+				<li
+					v-for="participant in session.participants"
+					:key="participant.userId"
+				>
+					{{ participant.nickname }}
+					<span v-if="session.aliveUserIds.length">
+						{{ session.aliveUserIds.includes(participant.userId) ? "· na partida" : "· hospitalizado" }}
+					</span>
+				</li>
+			</ul>
+		</div>
 
-		<p v-if="session.expiresAt">
-			Prazo:
+		<p
+			v-if="session.expiresAt"
+			class="multiplayer-card__countdown"
+		>
 			<time :datetime="session.expiresAt">
-				{{ new Date(session.expiresAt).toLocaleTimeString("pt-BR") }}
+				{{ formatCountdown(session.expiresAt) }}
 			</time>
+			restantes
 		</p>
 		<ul
 			v-if="session.events.length"
@@ -232,32 +254,59 @@ function eventLabel(event: MultiplayerSession["events"][number]) {
 	scoped
 	lang="scss"
 >
+@use "~/assets/scss/variables" as *;
+@use "~/assets/scss/mixins" as *;
+
 .multiplayer-card {
 	display: grid;
 	gap: 0.75rem;
-}
 
-.multiplayer-card__header,
-.multiplayer-card__actions {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	flex-wrap: wrap;
-	gap: 0.65rem;
-}
+	&__header,
+	&__actions {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		flex-wrap: wrap;
+		gap: $spacing-md;
+	}
 
-.multiplayer-card__header h3 {
-	margin: 0;
-}
+	p[role="status"] {
+		color: $text-secondary;
+		font-size: $font-size-14;
+	}
 
-.multiplayer-card__header p,
-.multiplayer-card__count {
-	margin: 0.25rem 0 0;
-}
+	&__header h3 {
+		margin: 0;
+	}
 
-.multiplayer-card__participants,
-.multiplayer-card__events {
-	margin: 0;
-	padding-left: 1.25rem;
+	&__header p {
+		margin: $spacing-md 0 0;
+	}
+
+	&__participant-wrapper {
+		display: flex;
+		flex-direction: column;
+		gap: $spacing-sm;
+		margin-top: $spacing-md;
+		border: 1px solid $border-subtle;
+		padding: $spacing-md;
+		border-radius: $radius-md;
+	}
+
+	&__count {
+		font-size: $font-size-12;
+	}
+
+	&__participants,
+	&__events {
+		margin: 0;
+		padding-left: 1.25rem;
+	}
+
+	&__countdown {
+		margin-top: $spacing-lg;
+		color: $text-secondary;
+		font-size: $font-size-14;
+	}
 }
 </style>

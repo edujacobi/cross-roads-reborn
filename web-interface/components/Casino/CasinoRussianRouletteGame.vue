@@ -7,6 +7,7 @@ import MultiplayerSessionCard from "~/components/Multiplayer/MultiplayerSessionC
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseInput from "~/components/ui/BaseInput.vue";
+import BaseModal from "~/components/ui/BaseModal.vue";
 import { useMultiplayerSessions } from "~/composables/useMultiplayerSessions";
 
 const { showToast } = useToast();
@@ -21,7 +22,10 @@ const {
 	refetch,
 } = useMultiplayerSessions();
 const bet = ref(5000);
-const rouletteSessions = computed(() => sessions.value.filter((session) => session.kind === "russianRoulette"));
+const rouletteSessions = computed(() =>
+	sessions.value.filter((session) => session.kind === "russianRoulette" && session.phase === "lobby"),
+);
+const modalOpen = ref(false);
 
 async function createRoom() {
 	const amount = bet.value;
@@ -37,6 +41,7 @@ async function createRoom() {
 			variant: result?.success ? "success" : "error",
 		});
 		if (result?.success) await refetch();
+		modalOpen.value = false;
 	} catch (caughtError: unknown) {
 		showToast({ text: caughtError instanceof Error ? caughtError.message : "Erro inesperado.", variant: "error" });
 	}
@@ -58,35 +63,20 @@ async function joinRoom(sessionId: string) {
 
 <template>
 	<div class="roulette-game">
-		<BaseCard title="Criar uma sala">
-			<form
-				class="roulette-game__form"
-				@submit.prevent="createRoom()"
-			>
-				<BaseInput
-					id="roulette-bet"
-					v-model="bet"
-					type="number"
-					label="Aposta por jogador (mínimo Cr$ 5.000)"
-					input-mode="numeric"
-					placeholder="5000"
-					required
-				/>
-				<BaseButton
-					type="submit"
-					variant="primary"
-				>
-					Criar sala
-				</BaseButton>
-				<p class="roulette-game__hint">A sala começa automaticamente ao atingir cinco participantes.</p>
-			</form>
+		<BaseCard
+			title="Criar uma sala"
+			no-body
+		>
+			<template #actions>
+				<BaseButton variant="primary" @click="modalOpen = true"> Criar sala </BaseButton>
+			</template>
 		</BaseCard>
 
 		<section
 			class="roulette-game__sessions"
 			aria-labelledby="roulette-sessions-heading"
 		>
-			<h2 id="roulette-sessions-heading">Salas e partidas</h2>
+			<h2 id="roulette-sessions-heading">Salas abertas</h2>
 			<p
 				v-if="sessionsError"
 				class="roulette-game__hint"
@@ -106,14 +96,14 @@ async function joinRoom(sessionId: string) {
 				class="roulette-game__hint"
 				role="status"
 			>
-				Carregando salas e partidas...
+				Carregando salas abertas...
 			</p>
 			<BaseCard v-else-if="!rouletteSessions.length">
 				<p
 					class="roulette-game__hint"
 					role="status"
 				>
-					Nenhuma sala ou partida está ativa no momento.
+					Nenhuma sala aberta no momento.
 				</p>
 			</BaseCard>
 			<MultiplayerSessionCard
@@ -124,6 +114,42 @@ async function joinRoom(sessionId: string) {
 				@join="joinRoom"
 			/>
 		</section>
+
+		<BaseModal
+			:open="modalOpen"
+			title="Criar uma sala"
+			description="O jogo começa automaticamente ao atingir cinco participantes"
+			@update:open="modalOpen = $event"
+		>
+			<form
+				class="roulette-game__form"
+				@submit.prevent="createRoom()"
+			>
+				<BaseInput
+					id="roulette-bet"
+					v-model="bet"
+					type="number"
+					label="Aposta por jogador (mínimo Cr$ 5.000)"
+					input-mode="numeric"
+					placeholder="5000"
+					required
+				/>
+			</form>
+			<template #footer>
+				<BaseButton
+					variant="secondary"
+					@click="modalOpen = false"
+				>
+					Cancelar
+				</BaseButton>
+				<BaseButton
+					type="submit"
+					variant="primary"
+				>
+					Criar sala
+				</BaseButton>
+			</template>
+		</BaseModal>
 	</div>
 </template>
 
@@ -137,15 +163,5 @@ async function joinRoom(sessionId: string) {
 .roulette-game__sessions {
 	display: grid;
 	gap: $spacing-md;
-}
-
-.roulette-game__form {
-	display: grid;
-	gap: $spacing-sm;
-}
-
-.roulette-game__hint {
-	margin: 0;
-	color: $text-secondary;
 }
 </style>
