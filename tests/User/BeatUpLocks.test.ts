@@ -98,6 +98,7 @@ describe("BeatUp — LockStates & ReleaseLocks", () => {
 			expect(data).toHaveProperty("cannotRun");
 			expect(data).toHaveProperty("usedGunSkin");
 			expect(data).toHaveProperty("usedGunName");
+			expect(data).toHaveProperty("usedGrenade");
 			expect(data).toHaveProperty("timeInHospitalBase");
 			expect(data).toHaveProperty("timeInHospitalAditional");
 		});
@@ -139,18 +140,20 @@ describe("BeatUp — LockStates & ReleaseLocks", () => {
 		it("should consume a grenade and push ItemId.Grenade to UsedConsumables when useGrenade is true", async () => {
 			vi.spyOn(attacker, "ConsumeItem").mockResolvedValue(true);
 
-			await beatUp.LockStates(true);
+			const data = await beatUp.LockStates(true);
 
 			expect(attacker.ConsumeItem).toHaveBeenCalledWith(ItemId.Grenade);
 			expect(beatUp.UsedConsumables).toContain(ItemId.Grenade);
+			expect(data.usedGrenade).toBe(true);
 		});
 
 		it("should NOT add grenade to UsedConsumables if ConsumeItem returns false", async () => {
 			vi.spyOn(attacker, "ConsumeItem").mockResolvedValue(false);
 
-			await beatUp.LockStates(true);
+			const data = await beatUp.LockStates(true);
 
 			expect(beatUp.UsedConsumables).not.toContain(ItemId.Grenade);
+			expect(data.usedGrenade).toBe(false);
 		});
 	});
 

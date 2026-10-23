@@ -17,6 +17,7 @@ const props = defineProps<{
 	responding: boolean;
 	countdown: string;
 	attackerImageUrl?: string | null;
+	attackerAvatarDecoration?: string | null;
 	money?: number | null;
 	profileError?: boolean;
 }>();
@@ -61,7 +62,6 @@ const responseLabels: Record<string, { text: string; image?: string }> = {
 		:dismissible="dismissible"
 		title="Roubo em andamento"
 		@update:open="emit('update:open', $event)"
-		class="robbery-modal"
 		icon="/images/situations/robbery.png"
 	>
 		<section
@@ -79,6 +79,7 @@ const responseLabels: Record<string, { text: string; image?: string }> = {
 					<UserPicture
 						v-if="attackerImageUrl"
 						:image-url="attackerImageUrl"
+						:decoration="attackerAvatarDecoration"
 						:alt="`Avatar de ${participant.nickname}`"
 						width="32"
 						height="32"
@@ -98,6 +99,17 @@ const responseLabels: Record<string, { text: string; image?: string }> = {
 						/>
 						<strong>{{ session.duelDetails.weaponName }}</strong>
 					</template>
+					<span v-if="session.duelDetails?.usedGrenade">
+							e uma
+							<NuxtImg
+								src="images/items/18_Grenade.png"
+								alt=""
+								width="24"
+								height="24"
+								class="defender-prompt__weapon-image"
+							/>
+							<span>Granada</span>
+						</span>
 					<BaseBadge
 						variant="danger"
 						class="defender-prompt__attack-badge"
@@ -112,6 +124,7 @@ const responseLabels: Record<string, { text: string; image?: string }> = {
 				</li>
 			</ul>
 		</section>
+
 		<section class="defender-prompt__actions-wrapper">
 			<p>Decida o que fazer:</p>
 			<fieldset

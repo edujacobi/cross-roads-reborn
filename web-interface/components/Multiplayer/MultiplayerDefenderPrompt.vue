@@ -72,6 +72,7 @@ const previewSession = computed<MultiplayerSession | null>(() => {
 			: {
 					weaponName: "RPG",
 					weaponImageUrl: "/images/items/10_RPG.png",
+					usedGrenade: true,
 					hospitalMinutes: previewKind.value === "beatUp" ? 60 : 27.5,
 					hospitalMinutesDelta: previewKind.value === "beatUp" ? 20 : 0,
 					prisonMinutesDelta: previewKind.value === "userRobbery" ? 60 : 0,
@@ -96,6 +97,11 @@ const duelProps = computed(() => {
 		attackerImageUrl:
 			isPreview || attacker?.id === session.value.ownerId
 				? (attacker?.avatarUrl ?? useFallbackUserImage(attacker?.id || "0"))
+				: null,
+		attackerAvatarDecoration: isPreview
+			? "master_of_arms"
+			: attacker?.id === session.value.ownerId
+				? attacker.avatarDecoration
 				: null,
 		money: isPreview ? 219_532 : defender?.id === userId.value ? defender.money : null,
 		profileError: !isPreview && Boolean(profileError.value || (profiles.value && (!attacker || !defender))),

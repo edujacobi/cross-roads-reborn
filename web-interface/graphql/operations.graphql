@@ -1473,6 +1473,7 @@ query GetMultiplayerSessions {
 		duelDetails {
 			weaponName
 			weaponImageUrl
+			usedGrenade
 			hospitalMinutes
 			hospitalMinutesDelta
 			prisonMinutesDelta
@@ -1516,6 +1517,7 @@ query GetMultiplayerSession($id: ID!) {
 		duelDetails {
 			weaponName
 			weaponImageUrl
+			usedGrenade
 			hospitalMinutes
 			hospitalMinutesDelta
 			prisonMinutesDelta
@@ -1558,6 +1560,7 @@ query GetDefenderActionProfiles($attackerId: ID!, $defenderId: ID!) {
 	attacker: user(id: $attackerId) {
 		id
 		avatarUrl
+		avatarDecoration
 	}
 	defender: user(id: $defenderId) {
 		id

@@ -18,6 +18,7 @@ export interface BeatUpInitData {
 	cannotRun: boolean;
 	usedGunSkin: string;
 	usedGunName: string;
+	usedGrenade: boolean;
 	timeInHospitalBase: number;
 	timeInHospitalAditional: number;
 }
@@ -256,6 +257,7 @@ export class BeatUp {
 			cannotRun,
 			usedGunSkin,
 			usedGunName,
+			usedGrenade: this.UsedConsumables.includes(ItemId.Grenade),
 			timeInHospitalBase: this.TimeInHospital.Base,
 			timeInHospitalAditional: this.TimeInHospital.Aditional,
 		};

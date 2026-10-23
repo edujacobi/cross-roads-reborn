@@ -106,6 +106,7 @@ describe("Robbery — LockStates & ReleaseLocks", () => {
 			expect(data).toHaveProperty("cannotCallPolice");
 			expect(data).toHaveProperty("usedGunSkin");
 			expect(data).toHaveProperty("usedGunName");
+			expect(data).toHaveProperty("usedGrenade");
 		});
 
 		it("should set cannotReact when defender is working", async () => {
@@ -152,18 +153,20 @@ describe("Robbery — LockStates & ReleaseLocks", () => {
 			vi.spyOn(attacker, "ConsumeItem").mockResolvedValue(true);
 			vi.spyOn(attacker, "GetAttributes").mockResolvedValue(undefined as any);
 
-			await robbery.LockStates(true);
+			const data = await robbery.LockStates(true);
 
 			expect(attacker.ConsumeItem).toHaveBeenCalledWith(ItemId.Grenade);
 			expect(robbery.UsedConsumables).toContain(ItemId.Grenade);
+			expect(data.usedGrenade).toBe(true);
 		});
 
 		it("should NOT add grenade to UsedConsumables if ConsumeItem returns false", async () => {
 			vi.spyOn(attacker, "ConsumeItem").mockResolvedValue(false);
 
-			await robbery.LockStates(true);
+			const data = await robbery.LockStates(true);
 
 			expect(robbery.UsedConsumables).not.toContain(ItemId.Grenade);
+			expect(data.usedGrenade).toBe(false);
 		});
 	});
 

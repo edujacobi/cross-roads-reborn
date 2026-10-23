@@ -140,6 +140,7 @@ describe("Multiplayer sessions", () => {
 			cannotRun: false,
 			usedGunSkin: "",
 			usedGunName: "Pistol",
+			usedGrenade: false,
 			timeInHospitalBase: 45,
 			timeInHospitalAditional: 5,
 		});
@@ -151,6 +152,7 @@ describe("Multiplayer sessions", () => {
 			cannotCallPolice: false,
 			usedGunSkin: "",
 			usedGunName: "Pistol",
+			usedGrenade: false,
 			attackerTimeInPrison: 10,
 			attackerAditionalTimeCallPolice: 5,
 			defenderTimeInHospital: 25,
@@ -186,6 +188,7 @@ describe("Multiplayer sessions", () => {
 		const expected = {
 			weaponName: ItemList[ItemId.Pistol].Description[Language.Portuguese],
 			weaponImageUrl: `https://cdn.discordapp.com/emojis/${ItemList[ItemId.Pistol].Skin[BundleId.Default].Id}.png`,
+			usedGrenade: false,
 			hospitalMinutes: kind === "beatUp" ? 45 : 25,
 			hospitalMinutesDelta: kind === "beatUp" ? 5 : 0,
 			prisonMinutesDelta: kind === "userRobbery" ? 5 : 0,
@@ -194,6 +197,23 @@ describe("Multiplayer sessions", () => {
 		expect(MultiplayerSession.GetVisibleSession(started.session.id, defender.Id, null)?.duelDetails).toEqual(expected);
 		expect(listener).toHaveBeenCalledWith(expect.objectContaining({ duelDetails: expected }));
 		unsubscribe();
+	});
+
+	it("includes grenade use in defender-visible duel details", async () => {
+		mockBeatUpLock.mockResolvedValueOnce({
+			cannotRun: false,
+			usedGunSkin: "",
+			usedGunName: "Pistol",
+			usedGrenade: true,
+			timeInHospitalBase: 45,
+			timeInHospitalAditional: 5,
+		});
+
+		const started = await MultiplayerSession.StartBeatUp(makeUser("attacker"), makeUser("defender"), true);
+
+		expect(started.success).toBe(true);
+		if (!started.success) return;
+		expect(started.session.duelDetails?.usedGrenade).toBe(true);
 	});
 
 	it("accepts only one defender response from the target and resolves it once", async () => {

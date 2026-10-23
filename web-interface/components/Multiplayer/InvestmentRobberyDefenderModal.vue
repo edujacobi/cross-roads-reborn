@@ -5,6 +5,9 @@
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
 import type { MultiplayerSession } from "~/graphql/generated";
+import BaseBadge from "~/components/ui/BaseBadge.vue";
+import AttackIcon from "~/components/icons/AttackIcon.vue";
+import { imagePaths } from "~/constants/imagePaths";
 
 defineProps<{
 	session: MultiplayerSession;
@@ -27,46 +30,50 @@ const responseLabels: Record<string, string> = {
 		:open="true"
 		:dismissible="dismissible"
 		title="Roubo em andamento"
-		description="Escolha uma ação para responder. Esta janela ficará aberta até a ação terminar."
 		@update:open="emit('update:open', $event)"
+		icon="/images/situations/defending-investment.png"
 	>
 		<section
 			class="defender-prompt"
-			:aria-labelledby="`defender-prompt-title-${session.id}`"
+			:aria-labelledby="`defender-attackers-${session.id}`"
 		>
-			<h2 :id="`defender-prompt-title-${session.id}`">Roubo em andamento</h2>
-			<div>
-				<h3
-					:id="`defender-attackers-${session.id}`"
-					class="defender-prompt__label"
+			<h3
+				:id="`defender-attackers-${session.id}`"
+				class="defender-prompt__label"
+			>
+				<span>Membros da gangue <strong>{{ session.gangName ?? "" }}</strong></span> estão atacando o seu
+				investimento
+				<strong>{{ session.investmentName ?? "Investimento" }}</strong>.
+			</h3>
+			<ul
+				class="defender-prompt__attackers"
+				:aria-labelledby="`defender-attackers-${session.id}`"
+			>
+				<li
+					v-for="participant in session.participants"
+					:key="participant.userId"
 				>
-					Atacantes
-				</h3>
-				<ul
-					class="defender-prompt__attackers"
-					:aria-labelledby="`defender-attackers-${session.id}`"
-				>
-					<li
-						v-for="participant in session.participants"
-						:key="participant.userId"
+					<strong>{{ participant.nickname }}</strong>
+					<BaseBadge
+						variant="danger"
+						class="defender-prompt__attack-badge"
 					>
-						<strong>{{ participant.nickname }}</strong>
-						<span>{{ participant.attack }} ATK</span>
-					</li>
-				</ul>
-			</div>
-			<p v-if="session.gangName">Gangue: <strong>{{ session.gangName }}</strong></p>
-			<p v-if="session.investmentName">
-				Investimento: <strong>{{ session.investmentName }}</strong>
-				<span v-if="session.investmentYield"> · Rendimento: {{ formatMoney(session.investmentYield) }} </span>
-			</p>
-			<p v-if="session.expiresAt">
-				Tempo para responder:
-				<time :datetime="session.expiresAt">{{ countdown }}</time>
-			</p>
+						<AttackIcon
+							:size="14"
+							variant="solid"
+						/>
+						{{ participant.attack }}
+						ATK
+					</BaseBadge>
+				</li>
+			</ul>
+		</section>
+
+		<section class="defender-prompt__actions-wrapper">
+			<p>Decida o que fazer:</p>
 			<fieldset
 				v-if="session.phase === 'awaitingDefender' && session.response === null"
-				class="defender-prompt__actions"
+				class="defender-prompt__response"
 				aria-label="Ações para Roubo em andamento"
 				:aria-busy="responding"
 			>
@@ -74,20 +81,46 @@ const responseLabels: Record<string, string> = {
 					v-for="response in session.allowedResponses"
 					:key="response"
 					variant="secondary"
+					size="lg"
 					:disabled="responding"
+					:aria-describedby="`response-effect-${session.id}`"
 					@click="emit('respond', response)"
 				>
+					<NuxtImg
+						:src="imagePaths.attributes.defense"
+						alt=""
+						width="24"
+						height="24"
+					/>
 					{{ responseLabels[response] ?? response }}
 				</BaseButton>
+				<p :id="`response-effect-${session.id}`">
+					+5 DEF, mas quem sair derrotado ficará 30 minutos hospitalizado.
+				</p>
 			</fieldset>
 			<p
 				v-else
 				class="defender-prompt__status"
 				role="status"
 			>
-				{{ session.response ? "Sua resposta foi registrada. Aguarde o resultado." : "A ação está sendo resolvida." }}
+				{{
+					session.response ? "Sua resposta foi registrada. Aguarde o resultado." : "A ação está sendo resolvida."
+				}}
 			</p>
 		</section>
+
+		<template #footer>
+			<p
+				v-if="session.expiresAt"
+				class="defender-prompt__countdown"
+			>
+				<time :datetime="session.expiresAt">{{ countdown }}</time>
+				restantes
+			</p>
+			<span v-if="session.investmentYield">
+				Lucro acumulado: {{ formatMoney(session.investmentYield) }}
+			</span>
+		</template>
 	</BaseModal>
 </template>
 

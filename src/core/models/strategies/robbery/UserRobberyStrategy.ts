@@ -231,6 +231,7 @@ export class UserRobberyStrategy implements IRobberyStrategy {
 			cannotCallPolice,
 			usedGunSkin,
 			usedGunName,
+			usedGrenade: this.UsedConsumables.includes(ItemId.Grenade),
 		};
 	}
 

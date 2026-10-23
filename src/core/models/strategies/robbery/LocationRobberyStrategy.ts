@@ -134,6 +134,7 @@ export class LocationRobberyStrategy implements IRobberyStrategy {
 			cannotCallPolice: true,
 			usedGunSkin,
 			usedGunName,
+			usedGrenade: false,
 		};
 	}
 

@@ -13,6 +13,7 @@ export interface RobberyInitData {
 	cannotCallPolice: boolean;
 	usedGunSkin: string;
 	usedGunName: string;
+	usedGrenade: boolean;
 }
 
 export interface RobberyOutcomeData {

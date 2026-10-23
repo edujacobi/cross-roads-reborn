@@ -803,6 +803,7 @@ export const typeDefs = /* GraphQL */ `
     type MultiplayerDuelDetails {
         weaponName: String!
         weaponImageUrl: String
+        usedGrenade: Boolean!
         hospitalMinutes: Float!
         hospitalMinutesDelta: Float!
         prisonMinutesDelta: Float!
