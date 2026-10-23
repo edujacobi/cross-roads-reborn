@@ -88,25 +88,26 @@ module.exports = {
 		}
 
 		function getSessionContainer(session: MultiplayerSessionView) {
-			if (session.phase === "lobby") {
-				const isParticipant = session.participants.some(participant => participant.userId === user.Id);
+			if (session.phase === "aborting" || session.phase === "aborted") {
 				return getHeader()
-					.addSectionComponents(section => {
-						section.addTexts([
+					.addTexts([s.timeout])
+					.addFooter({ text: formatMoney(user.Money, language) });
+			}
+
+			if (session.phase === "lobby") {
+				return getHeader()
+					.addSectionComponents(section => section
+						.addTexts([
 							s.betPrize(formatMoney(session.bet ?? betValue, language), formatMoney(prize, language)),
 							s.participants(session.participants.length, session.maxParticipants),
 							session.participants.map(participant => `- ${participant.nickname}`).join("\n"),
-							...(isParticipant ? [] : [s.joinInstruction]),
-						]);
-						if (!isParticipant) {
-							section.setButtonAccessory(btn => btn
-								.setLabel(s.participateButton)
-								.setCustomId("participate")
-								.setStyle(ButtonStyle.Secondary),
-							);
-						}
-						return section;
-					})
+							s.joinInstruction,
+						])
+						.setButtonAccessory(btn => btn
+							.setLabel(s.participateButton)
+							.setCustomId("participate")
+							.setStyle(ButtonStyle.Secondary),
+						))
 					.addFooter({ text: formatMoney(user.Money, language) });
 			}
 
@@ -130,15 +131,14 @@ module.exports = {
 			const status = session.participants.map(participant =>
 				`-# ${session.events.at(-1)?.userId === participant.userId ? EmoteString.React : ""} ${participant.nickname} ${session.aliveUserIds.includes(participant.userId) ? EmoteString.Victory : EmoteString.Hospital}`,
 			);
-			const container = getHeader()
-				.addTexts(history)
-				.addLargeSeparator()
+			const container = getHeader();
+			if (history.length > 0) container.addTexts(history).addLargeSeparator();
+			container
 				.addTexts(status)
 				.addFooter({
 					text: `${formatMoney(user.Money, language)} • ${s.betPrize(formatMoney(session.bet ?? betValue, language), formatMoney(prize, language))}`,
 				});
 
-			if (session.phase === "aborted") container.changeFooterText(s.timeout);
 			return container;
 		}
 
