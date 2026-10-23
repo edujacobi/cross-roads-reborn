@@ -18,16 +18,23 @@ interface Props {
 	open?: boolean;
 	title: string;
 	description?: string;
+	dismissible?: boolean;
 }
 
-const _props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+	dismissible: true,
+});
 const emit = defineEmits<(e: "update:open", value: boolean) => void>();
+
+function updateOpen(open: boolean) {
+	if (props.dismissible) emit("update:open", open);
+}
 </script>
 
 <template>
 	<DialogRoot
 		:open="open"
-		@update:open="emit('update:open', $event)"
+		@update:open="updateOpen"
 	>
 		<DialogTrigger as-child>
 			<slot name="trigger" />
@@ -48,7 +55,10 @@ const emit = defineEmits<(e: "update:open", value: boolean) => void>();
 							{{ description }}
 						</DialogDescription>
 					</div>
-					<DialogClose class="dialog-close">
+					<DialogClose
+						v-if="dismissible"
+						class="dialog-close"
+					>
 						<X
 							:size="18"
 							aria-hidden="true"

@@ -3,7 +3,7 @@
 	lang="ts"
 >
 import { useMutation, useQuery } from "@vue/apollo-composable";
-import { CircleUserRound, Gift, X } from "lucide-vue-next";
+import { CircleUserRound, X } from "lucide-vue-next";
 import { computed, ref, watch } from "vue";
 import SpecialShopIcon from "~/components/icons/SpecialShopIcon.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
@@ -14,9 +14,12 @@ import { useMoneyFormat } from "~/composables/useMoneyFormat";
 import { imagePaths } from "~/constants/imagePaths";
 import {
 	GetAlmsStatusDocument,
+	GetUserSelfActionsDocument,
 	GetVipGiftOptionsDocument,
 	GiftVipDocument,
 	GiveAlmsDocument,
+	StartBeatUpDocument,
+	StartUserRobberyDocument,
 } from "~/graphql/generated";
 
 const props = defineProps<{ userId: string }>();
@@ -28,10 +31,21 @@ const emit = defineEmits<{
 
 const isMenuOpen = ref(false);
 const giftDialogOpen = ref(false);
+const duelAction = ref<"beatUp" | "userRobbery" | null>(null);
+const useGrenade = ref(false);
 const vipDays = ref(7);
 const auth = useAuth();
 const { formatMoney, formatPlain } = useMoneyFormat();
 const isOtherUser = computed(() => !!auth.user.value && auth.user.value.userId !== props.userId);
+const { result: selfActionsResult } = useQuery(
+	GetUserSelfActionsDocument,
+	() => ({ id: auth.user.value?.userId ?? "" }),
+	{ enabled: isOtherUser },
+);
+const automaticGrenade = computed(() => selfActionsResult.value?.user?.automaticGrenade ?? false);
+const { mutate: startBeatUp, loading: startingBeatUp } = useMutation(StartBeatUpDocument);
+const { mutate: startUserRobbery, loading: startingUserRobbery } = useMutation(StartUserRobberyDocument);
+const startingDuel = computed(() => startingBeatUp.value || startingUserRobbery.value);
 const {
 	result: giftOptionsResult,
 	loading: giftOptionsLoading,
@@ -74,9 +88,40 @@ watch(
 	() => {
 		isMenuOpen.value = false;
 		giftDialogOpen.value = false;
+		duelAction.value = null;
+		useGrenade.value = false;
 		vipDays.value = minimumDays.value;
 	},
 );
+
+function openDuelModal(action: "beatUp" | "userRobbery") {
+	isMenuOpen.value = false;
+	useGrenade.value = false;
+	duelAction.value = action;
+}
+
+async function launchDuel() {
+	const action = duelAction.value;
+	if (!action) return;
+
+	try {
+		const variables = {
+			targetUserId: props.userId,
+			useGrenade: useGrenade.value || automaticGrenade.value,
+		};
+		const result =
+			action === "beatUp"
+				? (await startBeatUp(variables))?.data?.startBeatUp
+				: (await startUserRobbery(variables))?.data?.startUserRobbery;
+		emit("feedback", result?.success ? "success" : "error", result?.message ?? "Não foi possível iniciar a ação.");
+		if (result?.success) {
+			duelAction.value = null;
+			useGrenade.value = false;
+		}
+	} catch (error: unknown) {
+		emit("feedback", "error", error instanceof Error ? error.message : "Erro inesperado.");
+	}
+}
 
 async function handleGiftVip() {
 	if (!canGiftVip.value) {
@@ -128,15 +173,32 @@ async function handleGiveAlms() {
 
 <template>
 	<template v-if="almsStatus || isOtherUser">
-		<section
+		<fieldset
 			v-show="isMenuOpen"
 			id="user-profile-floating-menu"
 			class="user-profile-floating-actions__menu"
 			aria-label="Ações para este jogador"
 		>
 			<BaseButton
+				v-if="isOtherUser"
+				variant="ghost"
+				:disabled="giftVipLoading"
+				@click="isMenuOpen = false; giftDialogOpen = true"
+			>
+				<NuxtImg
+					:src="imagePaths.badges.vip"
+					width="18"
+					height="18"
+					alt=""
+					aria-hidden="true"
+				/>
+				Presentear VIP
+			</BaseButton>
+
+			<BaseButton
 				v-if="almsStatus"
 				variant="secondary"
+				size="lg"
 				:disabled="almsStatusLoading || giveAlmsLoading || !almsStatus.canGive"
 				@click="isMenuOpen = false; handleGiveAlms()"
 			>
@@ -148,20 +210,91 @@ async function handleGiveAlms() {
 				/>
 				Doar {{ formatMoney(almsStatus.value) }}
 			</BaseButton>
+
 			<BaseButton
 				v-if="isOtherUser"
 				variant="secondary"
-				:disabled="giftVipLoading"
-				@click="isMenuOpen = false; giftDialogOpen = true"
+				size="lg"
+				@click="openDuelModal('beatUp')"
 			>
 				<NuxtImg
-					:src="imagePaths.badges.vip"
+					:src="imagePaths.situations.beatup"
 					width="18"
 					height="18"
+					alt=""
+					aria-hidden="true"
 				/>
-				Presentear VIP
+				Espancar
 			</BaseButton>
-		</section>
+			<BaseButton
+				v-if="isOtherUser"
+				variant="secondary"
+				size="lg"
+				@click="openDuelModal('userRobbery')"
+			>
+				<NuxtImg
+					:src="imagePaths.situations.robbery"
+					width="18"
+					height="18"
+					alt=""
+					aria-hidden="true"
+				/>
+				Roubar
+			</BaseButton>
+		</fieldset>
+
+		<BaseModal
+			:open="duelAction !== null"
+			:title="duelAction === 'beatUp' ? 'Espancar jogador' : 'Roubar jogador'"
+			description="O alvo poderá reagir durante a ação."
+			@update:open="duelAction = null"
+		>
+			<form
+				id="user-duel-form"
+				class="user-profile-floating-actions__duel"
+				@submit.prevent="launchDuel()"
+			>
+				<label v-if="!automaticGrenade">
+					<input
+						v-model="useGrenade"
+						type="checkbox"
+						:disabled="startingDuel"
+					>
+					<NuxtImg
+						src="/images/items/18_Grenade.png"
+						width="24"
+						height="24"
+						alt=""
+						aria-hidden="true"
+						style="vertical-align: middle; margin-left: 0.5rem"
+					/>
+					Usar granada
+				</label>
+				<p
+					v-else
+					role="status"
+				>
+					Uso automático de granadas ativado.
+				</p>
+			</form>
+			<template #footer>
+				<BaseButton
+					variant="secondary"
+					:disabled="startingDuel"
+					@click="duelAction = null"
+				>
+					Cancelar
+				</BaseButton>
+				<BaseButton
+					type="submit"
+					form="user-duel-form"
+					:disabled="startingDuel"
+					:class="duelAction === 'beatUp' ? 'btn-beatup' : 'btn-robbery'"
+				>
+					{{ startingDuel ? "Iniciando..." : duelAction === "beatUp" ? "Espancar" : "Roubar" }}
+				</BaseButton>
+			</template>
+		</BaseModal>
 
 		<BaseModal
 			v-model:open="giftDialogOpen"
@@ -273,6 +406,7 @@ async function handleGiveAlms() {
 	scoped
 >
 @use "~/assets/scss/variables" as *;
+@use "sass:color";
 
 .user-profile-floating-actions {
 	&__gift {
@@ -294,6 +428,16 @@ async function handleGiveAlms() {
 		&__vip-notice {
 			font-size: $font-size-14;
 			color: $color-vip;
+		}
+	}
+
+	&__duel {
+		display: flex;
+		align-items: center;
+		gap: $spacing-sm;
+
+		p {
+			margin: 0;
 		}
 	}
 
@@ -362,6 +506,23 @@ async function handleGiveAlms() {
 		.base-button {
 			width: 100%;
 		}
+	}
+}
+
+.base-button.btn-beatup {
+	background-color: $color-beatup;
+
+	&:hover:not(:disabled) {
+		background-color: color.adjust($color-beatup, $lightness: 10%);
+	}
+}
+
+.base-button.btn-robbery {
+	color: $text-primary;
+	background-color: $color-robbery;
+
+	&:hover:not(:disabled) {
+		background-color: color.adjust($color-robbery, $lightness: 10%);
 	}
 }
 </style>

@@ -671,7 +671,7 @@ module.exports = {
 					return replyWithContainer(interaction, container);
 				}
 
-				await runUserRobbery(interaction, robbery, user, target);
+				await runUserRobbery(interaction, user, target);
 
 			}
 
@@ -699,7 +699,7 @@ module.exports = {
 					return replyWithContainer(interaction, container);
 				}
 
-				await runUserBeatUp(interaction, beatUp, user, target);
+				await runUserBeatUp(interaction, user, target);
 
 			}
 

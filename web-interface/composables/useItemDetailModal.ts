@@ -10,7 +10,10 @@ export function useItemDetailModal() {
 			return;
 		}
 
-		const query = { ...route.query, detailsItemId: item.id };
+		const query = {
+			...route.query,
+			detailsItemId: item.id,
+		};
 		if (ownerUserId) query.detailsItemOwnerId = ownerUserId;
 		else delete query.detailsItemOwnerId;
 		await router.replace({ query });

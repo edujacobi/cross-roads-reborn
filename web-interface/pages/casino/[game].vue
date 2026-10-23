@@ -6,6 +6,7 @@ import { ArrowLeft } from "lucide-vue-next";
 import CasinoBetGame from "~/components/Casino/CasinoBetGame.vue";
 import CasinoHorseRaceGame from "~/components/Casino/CasinoHorseRaceGame.vue";
 import CasinoLotteryGame from "~/components/Casino/CasinoLotteryGame.vue";
+import CasinoRussianRouletteGame from "~/components/Casino/CasinoRussianRouletteGame.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import PageTitle from "~/components/ui/PageTitle.vue";
 import { casinoGames, isCasinoGameSlug } from "~/constants/casinoGames";
@@ -47,16 +48,6 @@ useHead({
 		/>
 
 		<BaseCard class="casino-game-page__info">
-			<!--			<div class="casino-game-page__images">-->
-			<!--				<NuxtImg-->
-			<!--					v-for="image in game.images"-->
-			<!--					:key="image.src"-->
-			<!--					:src="image.src"-->
-			<!--					:alt="image.alt"-->
-			<!--					width="100"-->
-			<!--					height="100"-->
-			<!--				/>-->
-			<!--			</div>-->
 			<div class="casino-game-page__sections">
 				<section
 					v-for="section in game.sections"
@@ -70,6 +61,7 @@ useHead({
 		<CasinoLotteryGame v-if="route.params.game === 'lottery'" />
 		<CasinoBetGame v-else-if="route.params.game === 'bet'" />
 		<CasinoHorseRaceGame v-else-if="route.params.game === 'horserace'" />
+		<CasinoRussianRouletteGame v-else-if="route.params.game === 'russianroulette'" />
 	</main>
 
 	<main

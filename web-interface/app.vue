@@ -1,4 +1,10 @@
 <script setup>
+import { defineAsyncComponent } from "vue";
+
+const MultiplayerDefenderPrompt = defineAsyncComponent(
+	() => import("~/components/Multiplayer/MultiplayerDefenderPrompt.vue"),
+);
+
 const { isPaused, prefersReducedMotion, isDocumentHidden } = useMotionPreferences(true);
 const shellClasses = computed(() => [
 	isPaused.value && "motion-paused",
@@ -20,6 +26,7 @@ useHead({
 		<NuxtLayout>
 			<NuxtPage />
 		</NuxtLayout>
+		<MultiplayerDefenderPrompt />
 		<UiToastContainer />
 	</div>
 </template>

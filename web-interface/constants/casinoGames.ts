@@ -75,7 +75,6 @@ export const casinoGames = {
 			alt: "Roleta Russa",
 		},
 		images: [{ src: "/images/casino/russian-roulette/RussianRoulette.png", alt: "Roleta Russa" }],
-		availableOnWeb: false,
 		sections: [
 			{
 				title: "Como funciona",
@@ -83,9 +82,9 @@ export const casinoGames = {
 					"Até cinco jogadores disputam uma aposta. O jogo segue em rodadas: um participante vence e os demais são hospitalizados.",
 			},
 			{
-				title: "Disponibilidade",
+				title: "Salas",
 				description:
-					"Esta modalidade ainda não está disponível no site. Esta página é apenas informativa; não é possível iniciar uma partida por aqui.",
+					"Crie uma sala ou entre em uma aberta. A partida começa automaticamente quando cinco jogadores participarem.",
 			},
 		],
 	},

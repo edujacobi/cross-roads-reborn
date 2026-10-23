@@ -38,6 +38,8 @@ import { Investment as InvestmentModel } from "#core/models/Investment";
 import { type InvestmentActionReason, type InvestmentId, InvestmentList } from "#core/types/Investments";
 import { LocationList } from "#core/types/Locations";
 import { LocationRobberyStrategy } from "#core/models/strategies/robbery/LocationRobberyStrategy";
+import { MultiplayerSession } from "#core/models/MultiplayerSession";
+import { HeistMissionId } from "#core/types/Heist";
 
 const itemTypeNames: Record<ItemType, string> = {
 	[ItemType.Weapon]: "Arma",
@@ -124,6 +126,20 @@ export const meResolvers: {
 	Query: {
 		me: (_: unknown, __: unknown, context: GraphQLContext) => {
 			return context.user;
+		},
+
+		multiplayerSessions: async (_: unknown, __: unknown, context: GraphQLContext) => {
+			const authUser = assertAuthenticated(context);
+			const player = new User(authUser.userId);
+			if (!await player.GetInfo()) return [];
+			return MultiplayerSession.GetVisibleSessions(player.Id, player.GangId);
+		},
+
+		multiplayerSession: async (_: unknown, args: { id: string }, context: GraphQLContext) => {
+			const authUser = assertAuthenticated(context);
+			const player = new User(authUser.userId);
+			if (!await player.GetInfo()) return null;
+			return MultiplayerSession.GetVisibleSession(args.id, player.Id, player.GangId);
 		},
 
 		badgeCatalog: (_: unknown, __: unknown, context: GraphQLContext) => {
@@ -1485,6 +1501,161 @@ export const meResolvers: {
 
 			await robbery.LockStates();
 			return { success: true, message: "Roubo em andamento..." };
+		},
+
+		startBeatUp: async (
+			_: unknown,
+			args: { targetUserId: string; useGrenade?: boolean | null },
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			const attacker = new User(authUser.userId);
+			const defender = new User(args.targetUserId);
+			if (!await attacker.GetInfo() || !await defender.GetInfo()) {
+				return { success: false, message: "Jogador não encontrado.", session: null };
+			}
+
+			const result = await MultiplayerSession.StartBeatUp(attacker, defender, args.useGrenade ?? false);
+			return {
+				success: result.success,
+				message: result.success ? "Espancamento iniciado." : "Você não pode iniciar este espancamento.",
+				session: result.success ? result.session : null,
+			};
+		},
+
+		startUserRobbery: async (
+			_: unknown,
+			args: { targetUserId: string; useGrenade?: boolean | null },
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			const attacker = new User(authUser.userId);
+			const defender = new User(args.targetUserId);
+			if (!await attacker.GetInfo() || !await defender.GetInfo()) {
+				return { success: false, message: "Jogador não encontrado.", session: null };
+			}
+
+			const result = await MultiplayerSession.StartUserRobbery(attacker, defender, args.useGrenade ?? false);
+			return {
+				success: result.success,
+				message: result.success ? "Roubo iniciado." : "Você não pode iniciar este roubo.",
+				session: result.success ? result.session : null,
+			};
+		},
+
+		startRussianRoulette: async (
+			_: unknown,
+			args: { bet: number },
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			const host = new User(authUser.userId);
+			if (!await host.GetInfo()) {
+				return { success: false, message: "Jogador não encontrado.", session: null };
+			}
+			const result = await MultiplayerSession.StartRussianRoulette(host, args.bet);
+			return {
+				success: result.success,
+				message: result.success
+					? "Sala criada."
+					: (!Number.isSafeInteger(args.bet) || args.bet < 5_000
+						? "A aposta deve ser um valor inteiro de pelo menos Cr$ 5.000."
+						: "Você não pode criar esta sala."),
+				session: result.success ? result.session : null,
+			};
+		},
+
+		startInvestmentRobbery: async (
+			_: unknown,
+			args: { targetUserId: string },
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			const initializer = new User(authUser.userId);
+			const target = new User(args.targetUserId);
+			if (!await initializer.GetInfo() || !await target.GetInfo()) {
+				return { success: false, message: "Jogador não encontrado.", session: null };
+			}
+			const result = await MultiplayerSession.StartInvestmentRobbery(initializer, target);
+			return {
+				success: result.success,
+				message: result.success ? "Sala de roubo criada." : result.message,
+				session: result.success ? result.session : null,
+			};
+		},
+
+		startGangHeist: async (
+			_: unknown,
+			args: { missionId: number },
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			const leader = new User(authUser.userId);
+			if (!await leader.GetInfo()) {
+				return { success: false, message: "Jogador não encontrado.", session: null };
+			}
+			if (!Object.values(HeistMissionId).includes(args.missionId)) {
+				return { success: false, message: "Missão inválida.", session: null };
+			}
+
+			const missionId = args.missionId as HeistMissionId;
+			if (missionId === HeistMissionId.GetawayCars) {
+				const purchased = await MultiplayerSession.BuyGangHeistGetawayCars(leader);
+				return {
+					success: purchased.success,
+					message: purchased.message,
+					session: null,
+				};
+			}
+
+			const result = await MultiplayerSession.StartGangHeist(leader, missionId);
+			return {
+				success: result.success,
+				message: result.success ? "Sala do golpe criada." : result.message,
+				session: result.success ? result.session : null,
+			};
+		},
+
+		joinMultiplayerSession: async (
+			_: unknown,
+			args: { sessionId: string },
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			const participant = new User(authUser.userId);
+			if (!await participant.GetInfo()) {
+				return { success: false, message: "Jogador não encontrado.", session: null };
+			}
+			const result = await MultiplayerSession.Join(args.sessionId, participant);
+			return {
+				success: result.success,
+				message: result.success ? result.message : "Você não pode entrar nesta sala.",
+				session: result.session ?? null,
+			};
+		},
+
+		respondMultiplayerSession: async (
+			_: unknown,
+			args: { sessionId: string; response: string },
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			return {
+				...await MultiplayerSession.Respond(args.sessionId, authUser.userId, args.response),
+				session: MultiplayerSession.GetVisibleSession(args.sessionId, authUser.userId, context.user?.gangId ?? null),
+			};
+		},
+
+		abortMultiplayerSession: async (
+			_: unknown,
+			args: { sessionId: string },
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			return {
+				...await MultiplayerSession.Abort(args.sessionId, authUser.userId),
+				session: MultiplayerSession.GetVisibleSession(args.sessionId, authUser.userId, context.user?.gangId ?? null),
+			};
 		},
 
 		playCoinFlip: async (

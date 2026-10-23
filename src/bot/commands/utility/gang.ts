@@ -8,11 +8,15 @@ import { EmoteId, EmoteString } from "#bot/utils/emotes";
 import { convertHexNumberToString, defaultComponent, formatMoney, hexToRGB } from "#bot/utils/ui";
 import { checkUser, searchUser } from "#bot/utils/userUtils";
 import { Gang, GangPermission, GangImportFailureReason, Strings as GangStrings } from "#core/models/Gang";
-import { InvestmentRobbery, InvestmentRobberyReason } from "#core/models/InvestmentRobbery";
-import { Language, type Localization } from "#core/models/Language";
+import { InvestmentRobberyReason } from "#core/models/InvestmentRobbery";
+import type { InvestmentRobberyResult } from "#core/models/InvestmentRobbery";
+import { MultiplayerSession, type MultiplayerSessionView, Strings as MultiplayerStrings } from "#core/models/MultiplayerSession";
+import { Log } from "#shared/log";
+import { getLanguageFromLocale, Language, type Localization } from "#core/models/Language";
 import { User } from "#core/models/User";
 import { GangBaseId, GangBases, type GangModifier, getGangBases } from "#core/types/GangBases";
 import { GangColor, type IGangColor } from "#core/types/GangColors";
+import { InvestmentList } from "#core/types/Investments";
 import { addHours, isFuture } from "date-fns";
 import {
 	ActionRowBuilder,
@@ -28,6 +32,7 @@ import {
 	Collection,
 	ComponentType,
 	type MessageComponentInteraction,
+	type Message,
 	time,
 	TimestampStyles,
 } from "discord.js";
@@ -809,403 +814,11 @@ module.exports = {
 
 		case CommandOption.RobInvestment: {
 			await deferReply(interaction);
-
 			const targetId = interaction.options.getString("user", true);
-
 			const targetUser = await searchUser(targetId, interaction, language);
-			if (!targetUser) {
-				return;
-			}
-
-			if (!user.IsInGang()) {
-				return warn(s.notInGang);
-			}
-
-			const gang = await Gang.GetByUserId(user.Id);
-			if (!gang) {
-				return warn(s.notInGang);
-			}
-
-			if (gang.LastInvestmentRobbery) {
-				const cooldownTime = addHours(gang.LastInvestmentRobbery, 6);
-				if (isFuture(cooldownTime)) {
-					return warn(s.robberyCooldown(cooldownTime));
-				}
-			}
-
-			const robbery = new InvestmentRobbery(gang, user, targetUser);
-
-			const validation = await robbery.Validate();
-			if (!validation.success) {
-				return warn(s.reason(validation.reason!));
-			}
-
-			robbery.Participants.set(user.Id, user);
-
-			await robbery.ApplyAttackerState(user);
-
-			try {
-				let defenderJoined = false;
-				let aborted = false;
-
-				const calculateTotalAtk = () => {
-					let total = 0;
-					for (const p of robbery.Participants.values()) {
-						total += p.Attributes.Attack;
-					}
-					return Math.round(total * 0.5);
-				};
-
-				const container = new CustomContainerBuilder()
-					.setUser(user)
-					.setAccentColor(GangColor[gang.Color].Color)
-					.addTexts([
-						`${EmoteString.InvestmentActive} ${s.robInvestment}`,
-					])
-					.addLargeSeparator()
-					.addSectionComponents(section => section
-						.setId(1)
-						.addTexts([
-							s.robberyInitiated(robbery.InvestmentBase!.Name[user.Language], targetUser.GetNameWithImage()),
-							`-# ${s.participants(robbery.Participants.size)} • ${EmoteString.Attack}${calculateTotalAtk()} ATK`,
-							Array.from(robbery.Participants.values()).map(p => `- ${p.GetNameWithImage()}`).join("\n"),
-						], 2)
-						.setThumbnailAccessory(thumb => thumb
-							.setURL(robbery.InvestmentBase!.ImageUrl),
-						),
-					)
-					.addSectionComponents(section => section
-						.addTexts([
-							`-# ${s.autoStartRobbery(60)}`,
-						])
-						.setButtonAccessory(
-							btn => btn
-								.setLabel(s.participate)
-								.setStyle(ButtonStyle.Primary)
-								.setCustomId("participate"),
-						),
-					)
-					.addLargeSeparator()
-					.addSectionComponents(section => section
-						.addTexts([
-							`-# ${EmoteString.Gang} ${gang.Name}`,
-						])
-						.setButtonAccessory(
-							btn => btn
-								.setLabel(s.abortRobbery)
-								.setStyle(ButtonStyle.Secondary)
-								.setCustomId("abort_robbery"),
-						),
-					);
-
-				const reply = await replyWithContainer(interaction, container);
-
-				const defenderLang = targetUser.Language;
-				const sDef = Strings[defenderLang];
-
-				// ── Phase 1: 60-second participant lobby ─────────────────────────────
-				await new Promise<void>(resolve => {
-					const collector = reply!.createMessageComponentCollector({ time: 60_000 });
-
-					collector.on("collect", async (btn) => {
-						if (btn.customId === "participate") {
-							const participantId = btn.user.id;
-							if (robbery.Participants.has(participantId)) {
-								return btn.reply({ content: s.alreadyIn, flags: MessageFlags.Ephemeral });
-							}
-
-							const participantUser = await checkUser(participantId, interaction);
-							if (!participantUser) return;
-
-							const validationJoin = robbery.ValidateJoin(participantUser);
-
-							if (!validationJoin.success) {
-								return btn.reply({
-									content: s.reason(validationJoin.reason!),
-									flags: MessageFlags.Ephemeral,
-								});
-							}
-
-							await robbery.ApplyAttackerState(participantUser);
-
-							container.changeTextFromSectionId(1, [
-								s.robberyInitiated(robbery.InvestmentBase!.Name[user.Language], targetUser.GetNameWithImage()),
-								`-# ${s.participants(robbery.Participants.size)} • ${EmoteString.Attack}${calculateTotalAtk()} ATK`,
-								Array.from(robbery.Participants.values()).map(p => `- ${p.GetNameWithImage()}`).join("\n"),
-							]);
-
-							await replyWithContainer(interaction, container);
-						}
-
-						else if (btn.customId === "abort_robbery") {
-							if (btn.user.id !== user.Id) {
-								return btn.reply({ content: s.onlyLeaderCanAbort, flags: MessageFlags.Ephemeral });
-							}
-							await deferUpdate(btn);
-							aborted = true;
-							collector.stop();
-						}
-					});
-
-					collector.on("end", async () => {
-						await disableButtons(interaction, container);
-						resolve();
-					});
-				});
-
-				if (aborted) {
-					const abortContainer = new CustomContainerBuilder()
-						.setUser(user)
-						.addTexts([
-							`${EmoteString.InvestmentActive} ${s.robInvestment}`,
-						])
-						.addLargeSeparator()
-						.setAccentColor(CrColors.Robbery)
-						.addTexts([
-							s.robberyAborted(user.GetNameWithImage()),
-						])
-						.addLargeSeparator()
-						.addTexts([
-							`-# ${EmoteString.Gang} ${gang.Name}`,
-						]);
-
-					await robbery.Abort();
-					await replyWithContainer(interaction, abortContainer);
-
-					return;
-				}
-
-				// ── Phase 2: Send DM to target, wait 60s for defence ─────────────────
-				const hasHenchman = !!(robbery.InvestmentData!.henchmanEndsAt && isFuture(new Date(robbery.InvestmentData!.henchmanEndsAt)));
-
-				const buildAttackingContainer = (defending: boolean) => {
-					const lines: string[] = [
-						s.robberyAttempting(robbery.InvestmentBase!.Name[user.Language], targetUser.GetNameWithImage()),
-						`-# ${s.participants(robbery.Participants.size)} • ${EmoteString.Attack}${calculateTotalAtk()} ATK`,
-						Array.from(robbery.Participants.values()).map(p => `- ${p.GetNameWithImage()}`).join("\n"),
-						defending ? `\n${s.targetIsDefending(targetUser.GetNameWithImage())}` : "",
-					];
-
-					if (hasHenchman) {
-						lines.push(`-# ${EmoteString.Henchman} ${s.targetHasHenchman}`);
-					}
-
-					return new CustomContainerBuilder()
-						.setUser(user)
-						.setAccentColor(GangColor[gang.Color].Color)
-						.addTexts([
-							`${EmoteString.InvestmentActive} ${s.robInvestment} ${s.inProgress}`,
-						])
-						.addLargeSeparator()
-						.addSectionComponents(section => section
-							.addTexts(lines)
-							.setThumbnailAccessory(thumb => thumb
-								.setURL(robbery.InvestmentBase!.ImageUrl),
-							),
-						)
-						.addLargeSeparator()
-						.addTexts([
-							`-# ${EmoteString.Gang}${gang.Name}`,
-						]);
-				};
-
-				await replyWithContainer(interaction, buildAttackingContainer(false));
-
-				const dmContainer = new CustomContainerBuilder()
-					.setUser(targetUser)
-					.setAccentColor(CrColors.Robbery)
-					.addTexts([
-						`${EmoteString.InvestmentActive} ${sDef.defendDMTitle}`,
-					])
-					.addLargeSeparator()
-					.addSectionComponents(section => section
-						.addTexts([
-							sDef.defendDMDescription(gang.Name, robbery.InvestmentBase!.Name[defenderLang]),
-							hasHenchman ? `-# ${EmoteString.Henchman} ${sDef.targetHasHenchman}` : "",
-						])
-						.setButtonAccessory(new ButtonBuilder()
-							.setLabel(sDef.defend)
-							.setEmoji(EmoteId.Defense)
-							.setStyle(ButtonStyle.Secondary)
-							.setCustomId("defend"),
-						),
-					)
-					.addFooter({
-						text: `${sDef.nextYield}: ${formatMoney(robbery.InvestmentData!.accumulatedYield, defenderLang)}`,
-					});
-
-				const defenderMessage = await sendComplexPrivateMessage(targetUser.Id, {
-					components: [dmContainer],
-					flags: MessageFlags.IsComponentsV2,
-				});
-
-				await new Promise<void>(resolve => {
-					const defendingCollector = defenderMessage?.createMessageComponentCollector({ time: 60_000 });
-
-					defendingCollector?.on("collect", async btn => {
-						if (btn.customId === "defend") {
-							await deferUpdate(btn);
-							await targetUser.GetInfo();
-
-							if (!targetUser.IsIdling()) {
-								return btn.followUp({ content: sDef.youMustBeIdling, flags: MessageFlags.Ephemeral });
-							}
-
-							defenderJoined = true;
-							await robbery.ApplyDefenderState();
-
-							// Update the public gang container to show the target is defending
-							await replyWithContainer(interaction, buildAttackingContainer(true));
-
-							const updatedDm = new CustomContainerBuilder()
-								.setUser(targetUser)
-								.setAccentColor(CrColors.Robbery)
-								.addTexts([
-									`${EmoteString.InvestmentActive} ${sDef.defendDMTitle}`,
-								])
-								.addLargeSeparator()
-								.addTexts([sDef.defendingSuccess])
-								.addFooter({
-									text: `${sDef.nextYield}: ${formatMoney(robbery.InvestmentData!.accumulatedYield, defenderLang)}`,
-								});
-
-							await replyWithContainer(btn, updatedDm);
-						}
-					});
-
-					defendingCollector?.on("end", () => resolve());
-
-					// If DM failed (DMs closed), don't hang forever
-					if (!defenderMessage) resolve();
-				});
-
-				const result = await robbery.CalculateAndApplyOutcome(defenderJoined);
-				await gang.UpdateLastInvestmentRobbery();
-
-				const resultContainer = new CustomContainerBuilder()
-					.setUser(user)
-					.addTexts([
-						`${EmoteString.InvestmentActive} ${s.robInvestment} ${s.finished}`,
-					])
-					.addLargeSeparator();
-
-				if (result.win) {
-					resultContainer
-						.setAccentColor(CrColors.Robbery)
-						.addSectionComponents(section => section
-							.addTexts([
-								`### ${EmoteString.Victory} ${s.successWin}!`,
-								`**${s.stolen}**: ${formatMoney(result.robbedAmount, user.Language)}`,
-								`-# ${EmoteString.Experience} +${result.expGain} EXP`,
-							])
-							.setThumbnailAccessory(thumb => thumb
-								.setURL(robbery.InvestmentBase!.ImageUrl),
-							),
-						);
-
-					if (result.henchmanHospitalized) {
-						resultContainer
-							.addLargeSeparator()
-							.addTexts([`${EmoteString.Hospital} ${s.henchmanHospitalized}`]);
-					}
-
-					if (result.defenderHospitalized && result.defenderHospitalTime) {
-						resultContainer
-							.addLargeSeparator()
-							.addTexts([`${EmoteString.Hospital} ${s.defenderHospitalized(targetUser.GetNameWithImage(), result.defenderHospitalTime)}`]);
-					}
-				}
-				else {
-					const mainTexts = [
-						`${EmoteString.Police} ${s.attackersImprisoned(result.prisonHours)}`,
-					];
-					if (result.attackersHospitalized) {
-						mainTexts.push(`-# ${EmoteString.Hospital} ${s.attackersHospitalized}`);
-					}
-
-					resultContainer
-						.addTexts([
-							`### ${EmoteString.Defeat} ${s.failureLose}.`,
-						])
-						.setAccentColor(CrColors.Robbery)
-						.addSectionComponents(section => section
-							.addTexts(mainTexts)
-							.setThumbnailAccessory(thumb => thumb
-								.setURL(robbery.InvestmentBase!.ImageUrl),
-							),
-						);
-				}
-
-				resultContainer
-					.addLargeSeparator()
-					.addTexts([
-						`-# ${EmoteString.Gang} ${gang.Name} • ${formatMoney(gang.Money, user.Language)}`,
-					]);
-
-				await replyWithContainer(interaction, resultContainer);
-
-				// Send outcome DM to target
-				const resultDm = new CustomContainerBuilder()
-					.setUser(targetUser)
-					.addTexts([
-						`${EmoteString.InvestmentActive} ${sDef.defendDMTitle}`,
-					])
-					.addLargeSeparator();
-
-				if (result.win) {
-					resultDm
-						.setAccentColor(CrColors.Robbery)
-						.addTexts([
-							`### ${EmoteString.Defeat} ${sDef.successWin}.`,
-							`${sDef.robberyResultLost(gang.Name)}`,
-							`**${sDef.stolen}**: ${formatMoney(result.robbedAmount, defenderLang)}`,
-							`**${sDef.nextYield}**: ${formatMoney(result.remainingYield, defenderLang)}`,
-						]);
-
-					if (result.henchmanHospitalized) {
-						resultDm.addTexts([`${EmoteString.Hospital} ${sDef.henchmanHospitalized}`]);
-					}
-
-					if (result.defenderHospitalized && result.defenderHospitalTime) {
-						resultDm.addTexts([`${EmoteString.Hospital} ${sDef.youWereHospitalized(result.defenderHospitalTime)}`]);
-					}
-				}
-				else {
-					const dmTexts = [
-						`### ${EmoteString.Victory} ${sDef.failureLose}!`,
-						`${sDef.robberyResultWon}`,
-						`${EmoteString.Police} ${sDef.attackersImprisoned(result.prisonHours)}`,
-					];
-					if (result.attackersHospitalized) {
-						dmTexts.push(`-# ${EmoteString.Hospital} ${sDef.attackersHospitalized}`);
-					}
-
-					resultDm
-						.setAccentColor(CrColors.Robbery)
-						.addTexts(dmTexts);
-
-					if (result.henchmanHospitalized === false && hasHenchman) {
-						resultDm
-							.addLargeSeparator()
-							.addTexts([`-# ${EmoteString.Henchman} ${sDef.henchmanStillActive}`]);
-					}
-				}
-
-				resultDm.addFooter({
-					text: `${sDef.nextYield}: ${formatMoney(result.remainingYield, defenderLang)}`,
-				});
-
-				await sendComplexPrivateMessage(targetUser.Id, {
-					components: [resultDm],
-					flags: MessageFlags.IsComponentsV2,
-				});
-			}
-			finally {
-				await robbery.ClearAttackerStates();
-			}
-			return;
+			if (!targetUser) return;
+			return runInvestmentRobberySession(interaction, user, targetUser);
 		}
-
 		case CommandOption.Import: {
 			await deferReply(interaction);
 
@@ -3392,3 +3005,280 @@ const Strings = {
 		importDescription: "¡Importa armas y equipos del extranjero. Con suerte, el cargamento llegará y todos los miembros recibirán objetos!",
 	},
 } as const satisfies Localization;
+
+async function runInvestmentRobberySession(
+	interaction: ChatInputCommandInteraction,
+	user: User,
+	requestedTarget: User,
+): Promise<void> {
+	const language = user.Language;
+	const s = Strings[language];
+	const gang = await Gang.GetByUserId(user.Id);
+	if (!gang) {
+		await replyWithContainer(interaction, defaultComponent({ user, color: CrColors.Robbery, description: s.notInGang }));
+		return;
+	}
+
+	const existing = MultiplayerSession.GetVisibleSessions(user.Id, gang.Id).find(session =>
+		session.kind === "investmentRobbery" && session.gangId === gang.Id &&
+		session.phase !== "completed" && session.phase !== "aborted",
+	);
+	let targetUser = requestedTarget;
+	let session: MultiplayerSessionView;
+	if (existing?.targetId) {
+		targetUser = new User(existing.targetId);
+		if (!await targetUser.GetInfo()) {
+			await replyWithContainer(interaction, defaultComponent({ user, color: CrColors.Robbery, description: MultiplayerStrings[user.Language].playerNotFound }));
+			return;
+		}
+		session = existing;
+	}
+	else {
+		const result = await MultiplayerSession.StartInvestmentRobbery(user, targetUser, "discord");
+		if (!result.success) {
+			await replyWithContainer(interaction, defaultComponent({ user, color: CrColors.Robbery, description: result.message }));
+			return;
+		}
+		session = result.session;
+	}
+
+	const getInvestmentName = (view: MultiplayerSessionView) =>
+		view.investmentName ??
+		(targetUser.Investment.Id === null ? s.robInvestment : InvestmentList[targetUser.Investment.Id].Name[language]);
+	const getInvestmentImage = (view: MultiplayerSessionView) =>
+		view.investmentImageUrl ??
+		(targetUser.Investment.Id === null ? "" : InvestmentList[targetUser.Investment.Id].ImageUrl);
+	const calculateTotalAttack = (view: MultiplayerSessionView) =>
+		Math.round(view.participants.reduce((total, participant) => total + participant.attack, 0) * 0.5);
+	const getStatusContainer = (view: MultiplayerSessionView) => {
+		const container = new CustomContainerBuilder()
+			.setUser(user)
+			.setAccentColor(GangColor[gang.Color].Color)
+			.addTexts([
+				`${EmoteString.InvestmentActive} ${s.robInvestment} ${view.phase === "completed" || view.phase === "aborted" ? s.finished : s.inProgress}`,
+			])
+			.addLargeSeparator();
+
+		if (view.phase === "lobby") {
+			container.addSectionComponents(section => section
+				.addTexts([
+					s.robberyInitiated(getInvestmentName(view), targetUser.GetNameWithImage()),
+					`-# ${s.participants(view.participants.length)} • ${EmoteString.Attack}${calculateTotalAttack(view)} ATK`,
+					view.participants.map(participant => `- ${participant.nickname}`).join("\n"),
+					`-# ${s.autoStartRobbery(60)}`,
+				])
+				.setThumbnailAccessory(thumb => thumb.setURL(getInvestmentImage(view))),
+			);
+			if (!view.participants.some(participant => participant.userId === user.Id)) {
+				container.addButtonRow(btn => btn
+					.setLabel(s.participate)
+					.setStyle(ButtonStyle.Primary)
+					.setCustomId("join_investment_robbery"));
+			}
+			if (view.ownerId === user.Id) {
+				container.addButtonRow(btn => btn
+					.setLabel(s.abortRobbery)
+					.setStyle(ButtonStyle.Secondary)
+					.setCustomId("abort_investment_robbery"));
+			}
+		}
+		else if (view.phase === "awaitingDefender" || view.phase === "resolving") {
+			container.addSectionComponents(section => section
+				.addTexts([
+					s.robberyAttempting(getInvestmentName(view), targetUser.GetNameWithImage()),
+					`-# ${s.participants(view.participants.length)} • ${EmoteString.Attack}${calculateTotalAttack(view)} ATK`,
+					view.participants.map(participant => `- ${participant.nickname}`).join("\n"),
+					view.response === "defend" ? `\n${s.targetIsDefending(targetUser.GetNameWithImage())}` : "",
+					view.hasHenchman ? `-# ${EmoteString.Henchman} ${s.targetHasHenchman}` : "",
+				])
+				.setThumbnailAccessory(thumb => thumb.setURL(getInvestmentImage(view))),
+			);
+		}
+		else if (view.phase === "completed" && view.result) {
+			const result = MultiplayerSession.DecodeResult<InvestmentRobberyResult>(view.result);
+			if (result.win) {
+				container
+					.setAccentColor(CrColors.Robbery)
+					.addSectionComponents(section => section
+						.addTexts([
+							`### ${EmoteString.Victory} ${s.successWin}!`,
+							`**${s.stolen}**: ${formatMoney(result.robbedAmount, language)}`,
+							`-# ${EmoteString.Experience} +${result.expGain} EXP`,
+						])
+						.setThumbnailAccessory(thumb => thumb.setURL(getInvestmentImage(view))),
+					);
+				if (result.henchmanHospitalized) container.addTexts([`${EmoteString.Hospital} ${s.henchmanHospitalized}`]);
+				if (result.defenderHospitalized && result.defenderHospitalTime) {
+					container.addTexts([`${EmoteString.Hospital} ${s.defenderHospitalized(targetUser.GetNameWithImage(), result.defenderHospitalTime)}`]);
+				}
+			}
+			else {
+				container
+					.setAccentColor(CrColors.Robbery)
+					.addSectionComponents(section => section
+						.addTexts([
+							`### ${EmoteString.Defeat} ${s.failureLose}.`,
+							`${EmoteString.Police} ${s.attackersImprisoned(result.prisonHours)}`,
+							...(result.attackersHospitalized ? [`-# ${EmoteString.Hospital} ${s.attackersHospitalized}`] : []),
+						])
+						.setThumbnailAccessory(thumb => thumb.setURL(getInvestmentImage(view))),
+					);
+			}
+			container.addTexts([`-# ${EmoteString.Gang} ${gang.Name} • ${formatMoney(gang.Money, language)}`]);
+		}
+		else {
+			container.addTexts([s.robberyAborted(user.GetNameWithImage())]);
+		}
+
+		return container.addFooter({ text: `${EmoteString.Gang} ${gang.Name}` });
+	};
+
+	let defenderMessage: Message | undefined;
+	let defenderPromptSent = false;
+	let defenderResponseShown = false;
+	let defenderResultSent = false;
+	const sendDefenderPrompt = async (view: MultiplayerSessionView) => {
+		if (defenderPromptSent || view.phase !== "awaitingDefender" || !view.targetId) return;
+		defenderPromptSent = true;
+		const defender = targetUser;
+		const defenderStrings = Strings[defender.Language];
+		const investmentName = getInvestmentName(view);
+		const container = new CustomContainerBuilder()
+			.setUser(defender)
+			.setAccentColor(CrColors.Robbery)
+			.addTexts([`${EmoteString.InvestmentActive} ${defenderStrings.defendDMTitle}`])
+			.addLargeSeparator()
+			.addSectionComponents(section => section
+				.addTexts([
+					defenderStrings.defendDMDescription(gang.Name, investmentName),
+					view.hasHenchman ? `-# ${EmoteString.Henchman} ${defenderStrings.targetHasHenchman}` : "",
+				])
+				.setButtonAccessory(new ButtonBuilder()
+					.setLabel(defenderStrings.defend)
+					.setEmoji(EmoteId.Defense)
+					.setStyle(ButtonStyle.Secondary)
+					.setCustomId("defend"),
+				),
+			)
+			.addFooter({
+				text: `${defenderStrings.nextYield}: ${formatMoney(view.investmentYield ?? defender.Investment.AccumulatedYield, defender.Language)}`,
+			});
+		defenderMessage = await sendComplexPrivateMessage(defender.Id, {
+			components: [container],
+			flags: MessageFlags.IsComponentsV2,
+		});
+		const collector = defenderMessage?.createMessageComponentCollector({
+			filter: (btn: MessageComponentInteraction) => btn.user.id === defender.Id,
+			componentType: ComponentType.Button,
+			time: 60_000,
+		});
+		collector?.on("collect", async btn => {
+			await deferUpdate(btn);
+			const response = await MultiplayerSession.Respond(view.id, defender.Id, "defend", defender.Language);
+			if (!response.success) {
+				await btn.followUp({ content: defenderStrings.youMustBeIdling, flags: MessageFlags.Ephemeral });
+			}
+		});
+	};
+
+	const sendDefenderResult = async (view: MultiplayerSessionView) => {
+		if (defenderResultSent || view.phase !== "completed" || !view.result) return;
+		defenderResultSent = true;
+		const result = MultiplayerSession.DecodeResult<InvestmentRobberyResult>(view.result);
+		const defenderStrings = Strings[targetUser.Language];
+		const container = new CustomContainerBuilder()
+			.setUser(targetUser)
+			.setAccentColor(CrColors.Robbery)
+			.addTexts([`${EmoteString.InvestmentActive} ${defenderStrings.defendDMTitle}`])
+			.addLargeSeparator();
+		if (result.win) {
+			container.addTexts([
+				`### ${EmoteString.Defeat} ${defenderStrings.successWin}.`,
+				defenderStrings.robberyResultLost(gang.Name),
+				`**${defenderStrings.stolen}**: ${formatMoney(result.robbedAmount, targetUser.Language)}`,
+				`**${defenderStrings.nextYield}**: ${formatMoney(result.remainingYield, targetUser.Language)}`,
+			]);
+			if (result.defenderHospitalized && result.defenderHospitalTime) {
+				container.addTexts([`${EmoteString.Hospital} ${defenderStrings.youWereHospitalized(result.defenderHospitalTime)}`]);
+			}
+		}
+		else {
+			container.addTexts([
+				`### ${EmoteString.Victory} ${defenderStrings.failureLose}!`,
+				defenderStrings.robberyResultWon,
+				`${EmoteString.Police} ${defenderStrings.attackersImprisoned(result.prisonHours)}`,
+				...(result.attackersHospitalized ? [`-# ${EmoteString.Hospital} ${defenderStrings.attackersHospitalized}`] : []),
+			]);
+		}
+		await sendComplexPrivateMessage(targetUser.Id, {
+			components: [container],
+			flags: MessageFlags.IsComponentsV2,
+		});
+	};
+
+	const update = async (view: MultiplayerSessionView) => {
+		if (view.id !== session.id) return;
+		await replyWithContainer(interaction, getStatusContainer(view));
+		await sendDefenderPrompt(view);
+		if (view.response === "defend" && defenderMessage && !defenderResponseShown) {
+			defenderResponseShown = true;
+			const defenderStrings = Strings[targetUser.Language];
+			const container = new CustomContainerBuilder()
+				.setUser(targetUser)
+				.setAccentColor(CrColors.Robbery)
+				.addTexts([`${EmoteString.InvestmentActive} ${defenderStrings.defendDMTitle}`])
+				.addLargeSeparator()
+				.addTexts([defenderStrings.defendingSuccess])
+				.addFooter({
+					text: `${defenderStrings.nextYield}: ${formatMoney(view.investmentYield ?? targetUser.Investment.AccumulatedYield, targetUser.Language)}`,
+				});
+			await defenderMessage.edit({ components: [container] });
+		}
+		await sendDefenderResult(view);
+	};
+
+	let updateQueue = Promise.resolve();
+	const queueUpdate = (view: MultiplayerSessionView): Promise<void> => {
+		updateQueue = updateQueue.then(() => update(view)).catch(error => {
+			Log.Error(`Failed to update investment robbery session ${view.id}: ${error}`);
+		});
+		return updateQueue;
+	};
+	const unsubscribe = MultiplayerSession.Subscribe(user.Id, gang.Id, view => {
+		queueUpdate(view);
+	});
+	const reply = await replyWithContainer(interaction, getStatusContainer(session));
+	const collector = reply?.createMessageComponentCollector({ time: 60_000 });
+	const latest = MultiplayerSession.GetVisibleSession(session.id, user.Id, gang.Id);
+	if (latest && (latest.phase !== session.phase || latest.participants.length !== session.participants.length)) {
+		await queueUpdate(latest);
+	}
+	collector?.on("collect", async btn => {
+		await deferUpdate(btn);
+		let result: { success: boolean; message: string };
+		if (btn.customId === "abort_investment_robbery") {
+			result = await MultiplayerSession.Abort(session.id, btn.user.id, getLanguageFromLocale(btn.locale));
+		}
+		else if (btn.customId === "join_investment_robbery") {
+			const participant = await checkUser(btn.user.id, interaction);
+			if (!participant) return;
+			result = await MultiplayerSession.Join(session.id, participant, participant.Language);
+		}
+		else {
+			return;
+		}
+		if (!result.success) {
+			await btn.followUp({ content: result.message, flags: MessageFlags.Ephemeral });
+		}
+	});
+	collector?.on("end", () => void disableButtons(interaction, getStatusContainer(session)));
+
+	try {
+		const completed = await MultiplayerSession.WaitForCompletion(session.id);
+		await updateQueue;
+		await update(completed);
+	}
+	finally {
+		unsubscribe();
+	}
+}

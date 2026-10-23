@@ -9,6 +9,7 @@ interface Props {
 	ariaLabel?: string;
 	placeholder?: string;
 	type?: string;
+	inputMode?: "none" | "text" | "tel" | "url" | "email" | "numeric" | "decimal" | "search";
 	disabled?: boolean;
 	required?: boolean;
 	step?: string | number;
@@ -35,6 +36,7 @@ defineEmits<(e: "update:modelValue", value: string | number) => void>();
 			:type="type || 'text'"
 			:value="modelValue"
 			:placeholder="placeholder"
+			:inputmode="inputMode"
 			:disabled="disabled"
 			:required="required"
 			:step="step"

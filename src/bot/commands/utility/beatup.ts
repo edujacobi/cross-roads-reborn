@@ -1,11 +1,9 @@
 import { type ChatInputCommandInteraction, Locale, SlashCommandBuilder, time, TimestampStyles } from "discord.js";
 import { deferReply, replyWithContainer } from "#bot/utils/discordInteractions";
-import { defaultComponent } from "#bot/utils/ui";
 import { EmoteString } from "#bot/utils/emotes";
 import { CrColors } from "#bot/utils/colors";
 import type { User } from "#core/models/User";
 import { Language, type Localization } from "#core/models/Language";
-import { BeatUp } from "#core/models/BeatUp";
 import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
 import { searchUser } from "#bot/utils/userUtils";
 import { runUserBeatUp } from "#bot/utils/beatupHelper";
@@ -88,21 +86,7 @@ module.exports = {
 			return;
 		}
 
-		const robbery = new BeatUp(user, target);
-
-		const { canBeat, message } = await robbery.CanBeatUser();
-
-		if (!canBeat) {
-			const container = defaultComponent({
-				user,
-				color: CrColors.BeatUp,
-				description: message,
-			});
-
-			return replyWithContainer(interaction, container);
-		}
-
-		await runUserBeatUp(interaction, robbery, user, target);
+		await runUserBeatUp(interaction, user, target);
 	},
 };
 

@@ -46,6 +46,6 @@ module.exports = {
 			return replyWithContainer(interaction, container);
 		}
 
-		await runUserBeatUp(interaction, beatUp, target, user);
+		await runUserBeatUp(interaction, target, user);
 	},
 };

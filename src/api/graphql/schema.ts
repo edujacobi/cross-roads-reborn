@@ -787,6 +787,50 @@ export const typeDefs = /* GraphQL */ `
         message: String!
     }
 
+    type MultiplayerSessionPlayer {
+        userId: ID!
+        nickname: String!
+        attack: Float!
+        classId: Int!
+    }
+
+    type MultiplayerSessionEvent {
+        type: String!
+        userId: ID
+        outcome: String
+    }
+
+    type MultiplayerSession {
+        id: ID!
+        kind: String!
+        phase: String!
+        ownerId: ID!
+        targetId: ID
+        targetNickname: String
+        gangId: Int
+        gangName: String
+        investmentName: String
+        investmentImageUrl: String
+        investmentYield: Float
+        hasHenchman: Boolean!
+        participants: [MultiplayerSessionPlayer!]!
+        maxParticipants: Int!
+        bet: Float
+        missionId: Int
+        expiresAt: String
+        response: String
+        allowedResponses: [String!]!
+        events: [MultiplayerSessionEvent!]!
+        aliveUserIds: [ID!]!
+        result: String
+    }
+
+    type MultiplayerActionResult {
+        success: Boolean!
+        message: String!
+        session: MultiplayerSession
+    }
+
     type MyPrisonStatus {
         isInPrison: Boolean!
         prisonTime: String
@@ -835,6 +879,8 @@ export const typeDefs = /* GraphQL */ `
         myDecorations: MyDecorations!
         mySkinBundles: [UserSkinBundle!]!
         almsStatus(receiverId: ID!): AlmsStatus!
+        multiplayerSessions: [MultiplayerSession!]!
+        multiplayerSession(id: ID!): MultiplayerSession
     }
 
     type ShopBuyResult {
@@ -953,6 +999,14 @@ export const typeDefs = /* GraphQL */ `
         payBribePrison: PrisonBribeResult!
         startScavenge(placeId: Int!): ScavengeStartResult!
         startRobLocation(locationId: Int!): RobLocationStartResult!
+        startBeatUp(targetUserId: ID!, useGrenade: Boolean): MultiplayerActionResult!
+        startUserRobbery(targetUserId: ID!, useGrenade: Boolean): MultiplayerActionResult!
+        startRussianRoulette(bet: Float!): MultiplayerActionResult!
+        startInvestmentRobbery(targetUserId: ID!): MultiplayerActionResult!
+        startGangHeist(missionId: Int!): MultiplayerActionResult!
+        joinMultiplayerSession(sessionId: ID!): MultiplayerActionResult!
+        respondMultiplayerSession(sessionId: ID!, response: String!): MultiplayerActionResult!
+        abortMultiplayerSession(sessionId: ID!): MultiplayerActionResult!
         playCoinFlip(side: String!, amount: Float!): CasinoPlayResult!
         buyInvestment(investmentId: Int!): MutationResult!
         abandonInvestment: MutationResult!

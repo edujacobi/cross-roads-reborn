@@ -6,8 +6,6 @@ import { ItemId } from "#core/types/Ids";
 import { ItemList, type UserItem } from "#core/types/Items";
 import { runUserBeatUp } from "#bot/utils/beatupHelper";
 import { runUserRobbery } from "#bot/utils/robberyHelper";
-import { BeatUp } from "#core/models/BeatUp";
-import { UserRobberyStrategy } from "#core/models/strategies/robbery/UserRobberyStrategy";
 
 // Mock timers/promises to bypass the long waits in runUserBeatUp/runUserRobbery
 vi.mock("timers/promises", () => ({
@@ -17,6 +15,32 @@ vi.mock("timers/promises", () => ({
 // Mock user repository
 const { mockUpdate } = vi.hoisted(() => ({
 	mockUpdate: vi.fn(),
+}));
+
+const {
+	mockStartBeatUp,
+	mockStartUserRobbery,
+	mockWaitForCompletion,
+	mockSubscribe,
+	mockGetVisibleSession,
+} = vi.hoisted(() => ({
+	mockStartBeatUp: vi.fn(),
+	mockStartUserRobbery: vi.fn(),
+	mockWaitForCompletion: vi.fn(),
+	mockSubscribe: vi.fn(),
+	mockGetVisibleSession: vi.fn(),
+}));
+
+vi.mock("#core/models/MultiplayerSession", () => ({
+	MultiplayerSession: {
+		StartBeatUp: mockStartBeatUp,
+		StartUserRobbery: mockStartUserRobbery,
+		WaitForCompletion: mockWaitForCompletion,
+		Subscribe: mockSubscribe,
+		GetVisibleSession: mockGetVisibleSession,
+		DecodeResult: (serialized: string) => JSON.parse(serialized, (key, value) =>
+			typeof value === "string" && key.endsWith("Time") ? new Date(value) : value),
+	},
 }));
 
 vi.mock("#core/database/Users", () => ({
@@ -87,6 +111,38 @@ describe("Automatic Grenade Feature", () => {
 		vi.spyOn(attacker, "GetItemSkin").mockReturnValue("💣");
 		vi.spyOn(attacker, "GetInfo").mockResolvedValue(attacker);
 		vi.spyOn(defender, "GetInfo").mockResolvedValue(defender);
+		mockStartBeatUp.mockResolvedValue({
+			success: true,
+			session: { id: "beatup-session" },
+			initData: {
+				cannotRun: false,
+				usedGunSkin: "🔫",
+				usedGunName: "Pistol",
+				timeInHospitalBase: 40,
+				timeInHospitalAditional: 10,
+			},
+		});
+		mockStartUserRobbery.mockResolvedValue({
+			success: true,
+			session: { id: "robbery-session" },
+			initData: {
+				cannotReact: false,
+				cannotCallPolice: false,
+				usedGunSkin: "🔫",
+				usedGunName: "Pistol",
+				attackerTimeInPrison: 30,
+				attackerAditionalTimeCallPolice: 5,
+				defenderTimeInHospital: 20,
+			},
+		});
+		mockWaitForCompletion.mockImplementation(async (id: string) => ({
+			phase: "completed",
+			result: id === "beatup-session"
+				? JSON.stringify({ success: true, attackerBeatUpTime: new Date(), defenderHospitalTime: new Date() })
+				: JSON.stringify({ success: true, attackerWantedTime: new Date(), moneyRobbed: 100, willBeBeatenUp: false }),
+		}));
+		mockSubscribe.mockReturnValue(vi.fn());
+		mockGetVisibleSession.mockReturnValue(null);
 	});
 
 	describe("User Model Toggle Settings", () => {
@@ -104,27 +160,15 @@ describe("Automatic Grenade Feature", () => {
 	describe("Integration in BeatUp", () => {
 		it("should bypass the confirmation container and set usedGrenade to true when automaticGrenade is enabled", async () => {
 			attacker.AutomaticGrenade = true;
-			const beatUp = new BeatUp(attacker, defender);
-			const mockLockStates = vi.spyOn(beatUp, "LockStates").mockResolvedValue({
-				cannotRun: false,
-				usedGunSkin: "🔫",
-				usedGunName: "Pistol",
-				timeInHospitalBase: 40,
-				timeInHospitalAditional: 10,
-			});
-			vi.spyOn(beatUp, "CanBeatUser").mockResolvedValue({ canBeat: true } as any);
-			vi.spyOn(beatUp, "Resolve").mockResolvedValue({ success: true, attackerBeatUpTime: new Date(), defenderHospitalTime: new Date() } as any);
-			vi.spyOn(beatUp, "ReleaseLocks").mockResolvedValue(undefined);
 
 			const mockInteraction: any = {
 				reply: vi.fn(),
 				editReply: vi.fn(),
 			};
 
-			await runUserBeatUp(mockInteraction, beatUp, attacker, defender);
+			await runUserBeatUp(mockInteraction, attacker, defender);
 
-			// LockStates should be called with true (usedGrenade = true)
-			expect(mockLockStates).toHaveBeenCalledWith(true);
+			expect(mockStartBeatUp).toHaveBeenCalledWith(attacker, defender, true, "discord");
 			// It should not reply with the grenade confirmation container
 			const hasGrenadeContainerSent = mockReplyWithContainer.mock.calls.some((call: any[]) => {
 				const builder = call[1];
@@ -136,9 +180,6 @@ describe("Automatic Grenade Feature", () => {
 
 		it("should display the confirmation container when automaticGrenade is disabled", async () => {
 			attacker.AutomaticGrenade = false;
-			const beatUp = new BeatUp(attacker, defender);
-			vi.spyOn(beatUp, "LockStates").mockResolvedValue({} as any);
-			vi.spyOn(beatUp, "CanBeatUser").mockResolvedValue({ canBeat: true } as any);
 
 			const mockInteraction: any = {
 				reply: vi.fn(),
@@ -148,7 +189,7 @@ describe("Automatic Grenade Feature", () => {
 			// Return null message to end execution early in helper
 			mockReplyWithContainer.mockResolvedValue(null);
 
-			await runUserBeatUp(mockInteraction, beatUp, attacker, defender);
+			await runUserBeatUp(mockInteraction, attacker, defender);
 
 			// It should show confirmation container
 			expect(mockReplyWithContainer).toHaveBeenCalled();
@@ -158,29 +199,15 @@ describe("Automatic Grenade Feature", () => {
 	describe("Integration in Robbery", () => {
 		it("should bypass the confirmation container and set usedGrenade to true when automaticGrenade is enabled", async () => {
 			attacker.AutomaticGrenade = true;
-			const robbery = new UserRobberyStrategy(attacker, defender);
-			const mockLockStates = vi.spyOn(robbery, "LockStates").mockResolvedValue({
-				cannotReact: false,
-				cannotCallPolice: false,
-				usedGunSkin: "🔫",
-				usedGunName: "Pistol",
-				attackerTimeInPrison: 30,
-				attackerAditionalTimeCallPolice: 5,
-				defenderTimeInHospital: 20,
-			} as any);
-			vi.spyOn(robbery, "CanRob").mockResolvedValue({ canRob: true } as any);
-			vi.spyOn(robbery, "Resolve").mockResolvedValue({ success: true, attackerWantedTime: new Date(), moneyRobbed: 100 } as any);
-			vi.spyOn(robbery, "ReleaseLocks").mockResolvedValue(undefined);
 
 			const mockInteraction: any = {
 				reply: vi.fn(),
 				editReply: vi.fn(),
 			};
 
-			await runUserRobbery(mockInteraction, robbery, attacker, defender);
+			await runUserRobbery(mockInteraction, attacker, defender);
 
-			// LockStates should be called with true (usedGrenade = true)
-			expect(mockLockStates).toHaveBeenCalledWith(true);
+			expect(mockStartUserRobbery).toHaveBeenCalledWith(attacker, defender, true, "discord");
 			// It should not reply with the grenade confirmation container
 			const hasGrenadeContainerSent = mockReplyWithContainer.mock.calls.some((call: any[]) => {
 				const builder = call[1];
@@ -192,9 +219,6 @@ describe("Automatic Grenade Feature", () => {
 
 		it("should display the confirmation container when automaticGrenade is disabled", async () => {
 			attacker.AutomaticGrenade = false;
-			const robbery = new UserRobberyStrategy(attacker, defender);
-			vi.spyOn(robbery, "LockStates").mockResolvedValue({} as any);
-			vi.spyOn(robbery, "CanRob").mockResolvedValue({ canRob: true } as any);
 
 			const mockInteraction: any = {
 				reply: vi.fn(),
@@ -204,7 +228,7 @@ describe("Automatic Grenade Feature", () => {
 			// Return null message to end execution early in helper
 			mockReplyWithContainer.mockResolvedValue(null);
 
-			await runUserRobbery(mockInteraction, robbery, attacker, defender);
+			await runUserRobbery(mockInteraction, attacker, defender);
 
 			// It should show confirmation container
 			expect(mockReplyWithContainer).toHaveBeenCalled();

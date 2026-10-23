@@ -9,7 +9,6 @@ import { searchUser } from "#bot/utils/userUtils";
 import { Language, type Localization } from "#core/models/Language";
 import { Pagination } from "#core/models/Pagination";
 import { LocationRobberyStrategy, Strings as RobberyLocationStrings } from "#core/models/strategies/robbery/LocationRobberyStrategy";
-import { UserRobberyStrategy } from "#core/models/strategies/robbery/UserRobberyStrategy";
 import type { User } from "#core/models/User";
 import { getRobberyClassModifier } from "#core/types/Classes";
 import { getLocationList, LocationList } from "#core/types/Locations";
@@ -297,22 +296,7 @@ module.exports = {
 			return;
 		}
 
-		const robbery = new UserRobberyStrategy(user, target);
-
-		const { canRob, message } = await robbery.CanRob();
-
-		if (!canRob) {
-			const container = defaultComponent({
-				user,
-				color: CrColors.Robbery,
-				description: message,
-				footer: formatMoney(user.Money, language),
-			});
-
-			return replyWithContainer(interaction, container);
-		}
-
-		await runUserRobbery(interaction, robbery, user, target);
+		await runUserRobbery(interaction, user, target);
 	},
 };
 

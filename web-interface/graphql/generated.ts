@@ -488,9 +488,58 @@ export type LotteryStatus = {
   totalTickets: Scalars['Int']['output'];
 };
 
+export type MultiplayerActionResult = {
+  __typename?: 'MultiplayerActionResult';
+  message: Scalars['String']['output'];
+  session?: Maybe<MultiplayerSession>;
+  success: Scalars['Boolean']['output'];
+};
+
+export type MultiplayerSession = {
+  __typename?: 'MultiplayerSession';
+  aliveUserIds: Array<Scalars['ID']['output']>;
+  allowedResponses: Array<Scalars['String']['output']>;
+  bet?: Maybe<Scalars['Float']['output']>;
+  events: Array<MultiplayerSessionEvent>;
+  expiresAt?: Maybe<Scalars['String']['output']>;
+  gangId?: Maybe<Scalars['Int']['output']>;
+  gangName?: Maybe<Scalars['String']['output']>;
+  hasHenchman: Scalars['Boolean']['output'];
+  id: Scalars['ID']['output'];
+  investmentImageUrl?: Maybe<Scalars['String']['output']>;
+  investmentName?: Maybe<Scalars['String']['output']>;
+  investmentYield?: Maybe<Scalars['Float']['output']>;
+  kind: Scalars['String']['output'];
+  maxParticipants: Scalars['Int']['output'];
+  missionId?: Maybe<Scalars['Int']['output']>;
+  ownerId: Scalars['ID']['output'];
+  participants: Array<MultiplayerSessionPlayer>;
+  phase: Scalars['String']['output'];
+  response?: Maybe<Scalars['String']['output']>;
+  result?: Maybe<Scalars['String']['output']>;
+  targetId?: Maybe<Scalars['ID']['output']>;
+  targetNickname?: Maybe<Scalars['String']['output']>;
+};
+
+export type MultiplayerSessionEvent = {
+  __typename?: 'MultiplayerSessionEvent';
+  outcome?: Maybe<Scalars['String']['output']>;
+  type: Scalars['String']['output'];
+  userId?: Maybe<Scalars['ID']['output']>;
+};
+
+export type MultiplayerSessionPlayer = {
+  __typename?: 'MultiplayerSessionPlayer';
+  attack: Scalars['Float']['output'];
+  classId: Scalars['Int']['output'];
+  nickname: Scalars['String']['output'];
+  userId: Scalars['ID']['output'];
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   abandonInvestment: MutationResult;
+  abortMultiplayerSession: MultiplayerActionResult;
   addBadge: MutationResult;
   addSpecialCoins: MutationResult;
   attemptPrisonEscape: PrisonEscapeStartResult;
@@ -519,6 +568,7 @@ export type Mutation = {
   giveAlms: MutationResult;
   hireInvestmentHenchman: MutationResult;
   inviteGangMember: GangMutationResult;
+  joinMultiplayerSession: MultiplayerActionResult;
   kickGangMember: GangMutationResult;
   killUser: MutationResult;
   leaveGang: GangMutationResult;
@@ -529,6 +579,7 @@ export type Mutation = {
   removeAction: MutationResult;
   removeBadge: MutationResult;
   resetCooldown: MutationResult;
+  respondMultiplayerSession: MultiplayerActionResult;
   setClass: MutationResult;
   setGangMoney: GangMutationResult;
   setItem: MutationResult;
@@ -540,10 +591,15 @@ export type Mutation = {
   setOwnDecoration: MutationResult;
   setOwnItemSkin: MutationResult;
   setVip: MutationResult;
+  startBeatUp: MultiplayerActionResult;
+  startGangHeist: MultiplayerActionResult;
   startGangImport: GangMutationResult;
+  startInvestmentRobbery: MultiplayerActionResult;
   startJob: JobMutationResult;
   startRobLocation: RobLocationStartResult;
+  startRussianRoulette: MultiplayerActionResult;
   startScavenge: ScavengeStartResult;
+  startUserRobbery: MultiplayerActionResult;
   swapUsers: MutationResult;
   toggleInvestmentYieldNotifications: MutationResult;
   transferGang: GangMutationResult;
@@ -551,6 +607,11 @@ export type Mutation = {
   updateGang: GangMutationResult;
   updateGangMemberRole: GangMutationResult;
   updateGangRole: GangMutationResult;
+};
+
+
+export type MutationAbortMultiplayerSessionArgs = {
+  sessionId: Scalars['ID']['input'];
 };
 
 
@@ -685,6 +746,11 @@ export type MutationInviteGangMemberArgs = {
 };
 
 
+export type MutationJoinMultiplayerSessionArgs = {
+  sessionId: Scalars['ID']['input'];
+};
+
+
 export type MutationKickGangMemberArgs = {
   gangId: Scalars['ID']['input'];
   targetUserId: Scalars['ID']['input'];
@@ -730,6 +796,12 @@ export type MutationRemoveBadgeArgs = {
 export type MutationResetCooldownArgs = {
   cooldown: Scalars['String']['input'];
   userId: Scalars['ID']['input'];
+};
+
+
+export type MutationRespondMultiplayerSessionArgs = {
+  response: Scalars['String']['input'];
+  sessionId: Scalars['ID']['input'];
 };
 
 
@@ -801,8 +873,24 @@ export type MutationSetVipArgs = {
 };
 
 
+export type MutationStartBeatUpArgs = {
+  targetUserId: Scalars['ID']['input'];
+  useGrenade?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+
+export type MutationStartGangHeistArgs = {
+  missionId: Scalars['Int']['input'];
+};
+
+
 export type MutationStartGangImportArgs = {
   gangId: Scalars['ID']['input'];
+};
+
+
+export type MutationStartInvestmentRobberyArgs = {
+  targetUserId: Scalars['ID']['input'];
 };
 
 
@@ -816,8 +904,19 @@ export type MutationStartRobLocationArgs = {
 };
 
 
+export type MutationStartRussianRouletteArgs = {
+  bet: Scalars['Float']['input'];
+};
+
+
 export type MutationStartScavengeArgs = {
   placeId: Scalars['Int']['input'];
+};
+
+
+export type MutationStartUserRobberyArgs = {
+  targetUserId: Scalars['ID']['input'];
+  useGrenade?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 
@@ -955,6 +1054,8 @@ export type Query = {
   items: Array<ItemDetails>;
   jobs: Array<JobInfo>;
   me?: Maybe<AuthUser>;
+  multiplayerSession?: Maybe<MultiplayerSession>;
+  multiplayerSessions: Array<MultiplayerSession>;
   myCasinoStatus: CasinoStatus;
   myDecorations: MyDecorations;
   myHorseRaceStatus: HorseRaceStatus;
@@ -1006,6 +1107,11 @@ export type QueryHospitalizedUsersArgs = {
 
 export type QueryItemArgs = {
   id: Scalars['Int']['input'];
+};
+
+
+export type QueryMultiplayerSessionArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -2245,6 +2351,82 @@ export type GetMyCasinoStatusQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type GetMyCasinoStatusQuery = { myCasinoStatus: { money: number } };
 
+export type GetMultiplayerSessionsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetMultiplayerSessionsQuery = { multiplayerSessions: Array<{ id: string, kind: string, phase: string, ownerId: string, targetId: string | null, targetNickname: string | null, gangId: number | null, gangName: string | null, investmentName: string | null, investmentImageUrl: string | null, investmentYield: number | null, hasHenchman: boolean, maxParticipants: number, bet: number | null, missionId: number | null, expiresAt: string | null, response: string | null, allowedResponses: Array<string>, aliveUserIds: Array<string>, result: string | null, participants: Array<{ userId: string, nickname: string, attack: number, classId: number }>, events: Array<{ type: string, userId: string | null, outcome: string | null }> }> };
+
+export type GetMultiplayerSessionQueryVariables = Exact<{
+  id: string | number;
+}>;
+
+
+export type GetMultiplayerSessionQuery = { multiplayerSession: { id: string, kind: string, phase: string, ownerId: string, targetId: string | null, targetNickname: string | null, gangId: number | null, gangName: string | null, investmentName: string | null, investmentImageUrl: string | null, investmentYield: number | null, hasHenchman: boolean, maxParticipants: number, bet: number | null, missionId: number | null, expiresAt: string | null, response: string | null, allowedResponses: Array<string>, aliveUserIds: Array<string>, result: string | null, participants: Array<{ userId: string, nickname: string, attack: number, classId: number }>, events: Array<{ type: string, userId: string | null, outcome: string | null }> } | null };
+
+export type StartBeatUpMutationVariables = Exact<{
+  targetUserId: string | number;
+  useGrenade?: boolean | null | undefined;
+}>;
+
+
+export type StartBeatUpMutation = { startBeatUp: { success: boolean, message: string, session: { id: string, kind: string, phase: string, ownerId: string, targetId: string | null, targetNickname: string | null, expiresAt: string | null, participants: Array<{ userId: string, nickname: string, attack: number, classId: number }> } | null } };
+
+export type StartUserRobberyMutationVariables = Exact<{
+  targetUserId: string | number;
+  useGrenade?: boolean | null | undefined;
+}>;
+
+
+export type StartUserRobberyMutation = { startUserRobbery: { success: boolean, message: string, session: { id: string, kind: string, phase: string, ownerId: string, targetId: string | null, targetNickname: string | null, expiresAt: string | null, participants: Array<{ userId: string, nickname: string, attack: number, classId: number }> } | null } };
+
+export type StartRussianRouletteMutationVariables = Exact<{
+  bet: number;
+}>;
+
+
+export type StartRussianRouletteMutation = { startRussianRoulette: { success: boolean, message: string, session: { id: string, kind: string, phase: string, ownerId: string, maxParticipants: number, bet: number | null, expiresAt: string | null, participants: Array<{ userId: string, nickname: string, attack: number, classId: number }> } | null } };
+
+export type StartInvestmentRobberyMutationVariables = Exact<{
+  targetUserId: string | number;
+}>;
+
+
+export type StartInvestmentRobberyMutation = { startInvestmentRobbery: { success: boolean, message: string, session: { id: string, kind: string, phase: string, ownerId: string, targetId: string | null, targetNickname: string | null, gangId: number | null, gangName: string | null, maxParticipants: number, expiresAt: string | null, participants: Array<{ userId: string, nickname: string, attack: number, classId: number }> } | null } };
+
+export type StartGangHeistMutationVariables = Exact<{
+  missionId: number;
+}>;
+
+
+export type StartGangHeistMutation = { startGangHeist: { success: boolean, message: string, session: { id: string, kind: string, phase: string, ownerId: string, gangId: number | null, gangName: string | null, maxParticipants: number, missionId: number | null, expiresAt: string | null, participants: Array<{ userId: string, nickname: string, attack: number, classId: number }> } | null } };
+
+export type BuyGangHeistGetawayCarsMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type BuyGangHeistGetawayCarsMutation = { startGangHeist: { success: boolean, message: string } };
+
+export type JoinMultiplayerSessionMutationVariables = Exact<{
+  sessionId: string | number;
+}>;
+
+
+export type JoinMultiplayerSessionMutation = { joinMultiplayerSession: { success: boolean, message: string, session: { id: string, kind: string, phase: string, aliveUserIds: Array<string>, expiresAt: string | null, participants: Array<{ userId: string, nickname: string }>, events: Array<{ type: string, userId: string | null, outcome: string | null }> } | null } };
+
+export type RespondMultiplayerSessionMutationVariables = Exact<{
+  sessionId: string | number;
+  response: string;
+}>;
+
+
+export type RespondMultiplayerSessionMutation = { respondMultiplayerSession: { success: boolean, message: string, session: { id: string, kind: string, phase: string, response: string | null, result: string | null } | null } };
+
+export type AbortMultiplayerSessionMutationVariables = Exact<{
+  sessionId: string | number;
+}>;
+
+
+export type AbortMultiplayerSessionMutation = { abortMultiplayerSession: { success: boolean, message: string, session: { id: string, phase: string, result: string | null } | null } };
+
 export type GetMyInvestmentPageQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -2377,6 +2559,17 @@ export const GetMyHorseRaceStatusDocument = {"kind":"Document","definitions":[{"
 export const PlaceHorseRaceBetDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"PlaceHorseRaceBet"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"raceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"horseId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"amount"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"placeHorseRaceBet"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"raceId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"raceId"}}},{"kind":"Argument","name":{"kind":"Name","value":"horseId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"horseId"}}},{"kind":"Argument","name":{"kind":"Name","value":"amount"},"value":{"kind":"Variable","name":{"kind":"Name","value":"amount"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"money"}},{"kind":"Field","name":{"kind":"Name","value":"horseId"}},{"kind":"Field","name":{"kind":"Name","value":"horseName"}},{"kind":"Field","name":{"kind":"Name","value":"multiplier"}},{"kind":"Field","name":{"kind":"Name","value":"amount"}},{"kind":"Field","name":{"kind":"Name","value":"raceTime"}}]}}]}}]} as unknown as DocumentNode<PlaceHorseRaceBetMutation, PlaceHorseRaceBetMutationVariables>;
 export const PlayCoinFlipDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"PlayCoinFlip"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"side"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"amount"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Float"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"playCoinFlip"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"side"},"value":{"kind":"Variable","name":{"kind":"Name","value":"side"}}},{"kind":"Argument","name":{"kind":"Name","value":"amount"},"value":{"kind":"Variable","name":{"kind":"Name","value":"amount"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"money"}},{"kind":"Field","name":{"kind":"Name","value":"won"}},{"kind":"Field","name":{"kind":"Name","value":"resultSide"}},{"kind":"Field","name":{"kind":"Name","value":"selectedSide"}},{"kind":"Field","name":{"kind":"Name","value":"amount"}},{"kind":"Field","name":{"kind":"Name","value":"prize"}}]}}]}}]} as unknown as DocumentNode<PlayCoinFlipMutation, PlayCoinFlipMutationVariables>;
 export const GetMyCasinoStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetMyCasinoStatus"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"myCasinoStatus"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"money"}}]}}]}}]} as unknown as DocumentNode<GetMyCasinoStatusQuery, GetMyCasinoStatusQueryVariables>;
+export const GetMultiplayerSessionsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetMultiplayerSessions"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"multiplayerSessions"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"phase"}},{"kind":"Field","name":{"kind":"Name","value":"ownerId"}},{"kind":"Field","name":{"kind":"Name","value":"targetId"}},{"kind":"Field","name":{"kind":"Name","value":"targetNickname"}},{"kind":"Field","name":{"kind":"Name","value":"gangId"}},{"kind":"Field","name":{"kind":"Name","value":"gangName"}},{"kind":"Field","name":{"kind":"Name","value":"investmentName"}},{"kind":"Field","name":{"kind":"Name","value":"investmentImageUrl"}},{"kind":"Field","name":{"kind":"Name","value":"investmentYield"}},{"kind":"Field","name":{"kind":"Name","value":"hasHenchman"}},{"kind":"Field","name":{"kind":"Name","value":"participants"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"nickname"}},{"kind":"Field","name":{"kind":"Name","value":"attack"}},{"kind":"Field","name":{"kind":"Name","value":"classId"}}]}},{"kind":"Field","name":{"kind":"Name","value":"maxParticipants"}},{"kind":"Field","name":{"kind":"Name","value":"bet"}},{"kind":"Field","name":{"kind":"Name","value":"missionId"}},{"kind":"Field","name":{"kind":"Name","value":"expiresAt"}},{"kind":"Field","name":{"kind":"Name","value":"response"}},{"kind":"Field","name":{"kind":"Name","value":"allowedResponses"}},{"kind":"Field","name":{"kind":"Name","value":"events"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"outcome"}}]}},{"kind":"Field","name":{"kind":"Name","value":"aliveUserIds"}},{"kind":"Field","name":{"kind":"Name","value":"result"}}]}}]}}]} as unknown as DocumentNode<GetMultiplayerSessionsQuery, GetMultiplayerSessionsQueryVariables>;
+export const GetMultiplayerSessionDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetMultiplayerSession"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"multiplayerSession"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"phase"}},{"kind":"Field","name":{"kind":"Name","value":"ownerId"}},{"kind":"Field","name":{"kind":"Name","value":"targetId"}},{"kind":"Field","name":{"kind":"Name","value":"targetNickname"}},{"kind":"Field","name":{"kind":"Name","value":"gangId"}},{"kind":"Field","name":{"kind":"Name","value":"gangName"}},{"kind":"Field","name":{"kind":"Name","value":"investmentName"}},{"kind":"Field","name":{"kind":"Name","value":"investmentImageUrl"}},{"kind":"Field","name":{"kind":"Name","value":"investmentYield"}},{"kind":"Field","name":{"kind":"Name","value":"hasHenchman"}},{"kind":"Field","name":{"kind":"Name","value":"participants"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"nickname"}},{"kind":"Field","name":{"kind":"Name","value":"attack"}},{"kind":"Field","name":{"kind":"Name","value":"classId"}}]}},{"kind":"Field","name":{"kind":"Name","value":"maxParticipants"}},{"kind":"Field","name":{"kind":"Name","value":"bet"}},{"kind":"Field","name":{"kind":"Name","value":"missionId"}},{"kind":"Field","name":{"kind":"Name","value":"expiresAt"}},{"kind":"Field","name":{"kind":"Name","value":"response"}},{"kind":"Field","name":{"kind":"Name","value":"allowedResponses"}},{"kind":"Field","name":{"kind":"Name","value":"events"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"outcome"}}]}},{"kind":"Field","name":{"kind":"Name","value":"aliveUserIds"}},{"kind":"Field","name":{"kind":"Name","value":"result"}}]}}]}}]} as unknown as DocumentNode<GetMultiplayerSessionQuery, GetMultiplayerSessionQueryVariables>;
+export const StartBeatUpDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"StartBeatUp"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"targetUserId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"useGrenade"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"startBeatUp"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"targetUserId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"targetUserId"}}},{"kind":"Argument","name":{"kind":"Name","value":"useGrenade"},"value":{"kind":"Variable","name":{"kind":"Name","value":"useGrenade"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"session"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"phase"}},{"kind":"Field","name":{"kind":"Name","value":"ownerId"}},{"kind":"Field","name":{"kind":"Name","value":"targetId"}},{"kind":"Field","name":{"kind":"Name","value":"targetNickname"}},{"kind":"Field","name":{"kind":"Name","value":"participants"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"nickname"}},{"kind":"Field","name":{"kind":"Name","value":"attack"}},{"kind":"Field","name":{"kind":"Name","value":"classId"}}]}},{"kind":"Field","name":{"kind":"Name","value":"expiresAt"}}]}}]}}]}}]} as unknown as DocumentNode<StartBeatUpMutation, StartBeatUpMutationVariables>;
+export const StartUserRobberyDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"StartUserRobbery"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"targetUserId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"useGrenade"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"startUserRobbery"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"targetUserId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"targetUserId"}}},{"kind":"Argument","name":{"kind":"Name","value":"useGrenade"},"value":{"kind":"Variable","name":{"kind":"Name","value":"useGrenade"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"session"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"phase"}},{"kind":"Field","name":{"kind":"Name","value":"ownerId"}},{"kind":"Field","name":{"kind":"Name","value":"targetId"}},{"kind":"Field","name":{"kind":"Name","value":"targetNickname"}},{"kind":"Field","name":{"kind":"Name","value":"participants"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"nickname"}},{"kind":"Field","name":{"kind":"Name","value":"attack"}},{"kind":"Field","name":{"kind":"Name","value":"classId"}}]}},{"kind":"Field","name":{"kind":"Name","value":"expiresAt"}}]}}]}}]}}]} as unknown as DocumentNode<StartUserRobberyMutation, StartUserRobberyMutationVariables>;
+export const StartRussianRouletteDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"StartRussianRoulette"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"bet"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Float"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"startRussianRoulette"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"bet"},"value":{"kind":"Variable","name":{"kind":"Name","value":"bet"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"session"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"phase"}},{"kind":"Field","name":{"kind":"Name","value":"ownerId"}},{"kind":"Field","name":{"kind":"Name","value":"participants"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"nickname"}},{"kind":"Field","name":{"kind":"Name","value":"attack"}},{"kind":"Field","name":{"kind":"Name","value":"classId"}}]}},{"kind":"Field","name":{"kind":"Name","value":"maxParticipants"}},{"kind":"Field","name":{"kind":"Name","value":"bet"}},{"kind":"Field","name":{"kind":"Name","value":"expiresAt"}}]}}]}}]}}]} as unknown as DocumentNode<StartRussianRouletteMutation, StartRussianRouletteMutationVariables>;
+export const StartInvestmentRobberyDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"StartInvestmentRobbery"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"targetUserId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"startInvestmentRobbery"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"targetUserId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"targetUserId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"session"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"phase"}},{"kind":"Field","name":{"kind":"Name","value":"ownerId"}},{"kind":"Field","name":{"kind":"Name","value":"targetId"}},{"kind":"Field","name":{"kind":"Name","value":"targetNickname"}},{"kind":"Field","name":{"kind":"Name","value":"gangId"}},{"kind":"Field","name":{"kind":"Name","value":"gangName"}},{"kind":"Field","name":{"kind":"Name","value":"participants"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"nickname"}},{"kind":"Field","name":{"kind":"Name","value":"attack"}},{"kind":"Field","name":{"kind":"Name","value":"classId"}}]}},{"kind":"Field","name":{"kind":"Name","value":"maxParticipants"}},{"kind":"Field","name":{"kind":"Name","value":"expiresAt"}}]}}]}}]}}]} as unknown as DocumentNode<StartInvestmentRobberyMutation, StartInvestmentRobberyMutationVariables>;
+export const StartGangHeistDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"StartGangHeist"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"missionId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"startGangHeist"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"missionId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"missionId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"session"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"phase"}},{"kind":"Field","name":{"kind":"Name","value":"ownerId"}},{"kind":"Field","name":{"kind":"Name","value":"gangId"}},{"kind":"Field","name":{"kind":"Name","value":"gangName"}},{"kind":"Field","name":{"kind":"Name","value":"participants"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"nickname"}},{"kind":"Field","name":{"kind":"Name","value":"attack"}},{"kind":"Field","name":{"kind":"Name","value":"classId"}}]}},{"kind":"Field","name":{"kind":"Name","value":"maxParticipants"}},{"kind":"Field","name":{"kind":"Name","value":"missionId"}},{"kind":"Field","name":{"kind":"Name","value":"expiresAt"}}]}}]}}]}}]} as unknown as DocumentNode<StartGangHeistMutation, StartGangHeistMutationVariables>;
+export const BuyGangHeistGetawayCarsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"BuyGangHeistGetawayCars"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"startGangHeist"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"missionId"},"value":{"kind":"IntValue","value":"2"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<BuyGangHeistGetawayCarsMutation, BuyGangHeistGetawayCarsMutationVariables>;
+export const JoinMultiplayerSessionDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"JoinMultiplayerSession"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"sessionId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"joinMultiplayerSession"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"sessionId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"sessionId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"session"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"phase"}},{"kind":"Field","name":{"kind":"Name","value":"participants"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"nickname"}}]}},{"kind":"Field","name":{"kind":"Name","value":"events"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"outcome"}}]}},{"kind":"Field","name":{"kind":"Name","value":"aliveUserIds"}},{"kind":"Field","name":{"kind":"Name","value":"expiresAt"}}]}}]}}]}}]} as unknown as DocumentNode<JoinMultiplayerSessionMutation, JoinMultiplayerSessionMutationVariables>;
+export const RespondMultiplayerSessionDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"RespondMultiplayerSession"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"sessionId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"response"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"respondMultiplayerSession"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"sessionId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"sessionId"}}},{"kind":"Argument","name":{"kind":"Name","value":"response"},"value":{"kind":"Variable","name":{"kind":"Name","value":"response"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"session"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"phase"}},{"kind":"Field","name":{"kind":"Name","value":"response"}},{"kind":"Field","name":{"kind":"Name","value":"result"}}]}}]}}]}}]} as unknown as DocumentNode<RespondMultiplayerSessionMutation, RespondMultiplayerSessionMutationVariables>;
+export const AbortMultiplayerSessionDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"AbortMultiplayerSession"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"sessionId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"abortMultiplayerSession"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"sessionId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"sessionId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"session"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"phase"}},{"kind":"Field","name":{"kind":"Name","value":"result"}}]}}]}}]}}]} as unknown as DocumentNode<AbortMultiplayerSessionMutation, AbortMultiplayerSessionMutationVariables>;
 export const GetMyInvestmentPageDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetMyInvestmentPage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"myInvestmentPage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"money"}},{"kind":"Field","name":{"kind":"Name","value":"isIdling"}},{"kind":"Field","name":{"kind":"Name","value":"nextPaymentAt"}},{"kind":"Field","name":{"kind":"Name","value":"investments"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"price"}},{"kind":"Field","name":{"kind":"Name","value":"hourlyYield"}},{"kind":"Field","name":{"kind":"Name","value":"defense"}},{"kind":"Field","name":{"kind":"Name","value":"henchmanFee"}}]}},{"kind":"Field","name":{"kind":"Name","value":"investment"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"accumulatedYield"}},{"kind":"Field","name":{"kind":"Name","value":"expiresAt"}},{"kind":"Field","name":{"kind":"Name","value":"defense"}},{"kind":"Field","name":{"kind":"Name","value":"henchmanEndsAt"}},{"kind":"Field","name":{"kind":"Name","value":"henchmanHospitalized"}},{"kind":"Field","name":{"kind":"Name","value":"hasHenchman"}},{"kind":"Field","name":{"kind":"Name","value":"notifyYield"}}]}}]}}]}}]} as unknown as DocumentNode<GetMyInvestmentPageQuery, GetMyInvestmentPageQueryVariables>;
 export const BuyInvestmentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"BuyInvestment"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"investmentId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"buyInvestment"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"investmentId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"investmentId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<BuyInvestmentMutation, BuyInvestmentMutationVariables>;
 export const AbandonInvestmentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"AbandonInvestment"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"abandonInvestment"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<AbandonInvestmentMutation, AbandonInvestmentMutationVariables>;

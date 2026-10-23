@@ -46,6 +46,6 @@ module.exports = {
 			return replyWithContainer(interaction, container);
 		}
 
-		await runUserRobbery(interaction, robbery, target, user);
+		await runUserRobbery(interaction, target, user);
 	},
 };

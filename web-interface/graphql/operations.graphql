@@ -1468,6 +1468,249 @@ query GetMyCasinoStatus {
 	}
 }
 
+query GetMultiplayerSessions {
+	multiplayerSessions {
+		id
+		kind
+		phase
+		ownerId
+		targetId
+		targetNickname
+		gangId
+		gangName
+		investmentName
+		investmentImageUrl
+		investmentYield
+		hasHenchman
+		participants {
+			userId
+			nickname
+			attack
+			classId
+		}
+		maxParticipants
+		bet
+		missionId
+		expiresAt
+		response
+		allowedResponses
+		events {
+			type
+			userId
+			outcome
+		}
+		aliveUserIds
+		result
+	}
+}
+
+query GetMultiplayerSession($id: ID!) {
+	multiplayerSession(id: $id) {
+		id
+		kind
+		phase
+		ownerId
+		targetId
+		targetNickname
+		gangId
+		gangName
+		investmentName
+		investmentImageUrl
+		investmentYield
+		hasHenchman
+		participants {
+			userId
+			nickname
+			attack
+			classId
+		}
+		maxParticipants
+		bet
+		missionId
+		expiresAt
+		response
+		allowedResponses
+		events {
+			type
+			userId
+			outcome
+		}
+		aliveUserIds
+		result
+	}
+}
+
+mutation StartBeatUp($targetUserId: ID!, $useGrenade: Boolean) {
+	startBeatUp(targetUserId: $targetUserId, useGrenade: $useGrenade) {
+		success
+		message
+		session {
+			id
+			kind
+			phase
+			ownerId
+			targetId
+			targetNickname
+			participants {
+				userId
+				nickname
+				attack
+				classId
+			}
+			expiresAt
+		}
+	}
+}
+
+mutation StartUserRobbery($targetUserId: ID!, $useGrenade: Boolean) {
+	startUserRobbery(targetUserId: $targetUserId, useGrenade: $useGrenade) {
+		success
+		message
+		session {
+			id
+			kind
+			phase
+			ownerId
+			targetId
+			targetNickname
+			participants {
+				userId
+				nickname
+				attack
+				classId
+			}
+			expiresAt
+		}
+	}
+}
+
+mutation StartRussianRoulette($bet: Float!) {
+	startRussianRoulette(bet: $bet) {
+		success
+		message
+		session {
+			id
+			kind
+			phase
+			ownerId
+			participants {
+				userId
+				nickname
+				attack
+				classId
+			}
+			maxParticipants
+			bet
+			expiresAt
+		}
+	}
+}
+
+mutation StartInvestmentRobbery($targetUserId: ID!) {
+	startInvestmentRobbery(targetUserId: $targetUserId) {
+		success
+		message
+		session {
+			id
+			kind
+			phase
+			ownerId
+			targetId
+			targetNickname
+			gangId
+			gangName
+			participants {
+				userId
+				nickname
+				attack
+				classId
+			}
+			maxParticipants
+			expiresAt
+		}
+	}
+}
+
+mutation StartGangHeist($missionId: Int!) {
+	startGangHeist(missionId: $missionId) {
+		success
+		message
+		session {
+			id
+			kind
+			phase
+			ownerId
+			gangId
+			gangName
+			participants {
+				userId
+				nickname
+				attack
+				classId
+			}
+			maxParticipants
+			missionId
+			expiresAt
+		}
+	}
+}
+
+mutation BuyGangHeistGetawayCars {
+	startGangHeist(missionId: 2) {
+		success
+		message
+	}
+}
+
+mutation JoinMultiplayerSession($sessionId: ID!) {
+	joinMultiplayerSession(sessionId: $sessionId) {
+		success
+		message
+		session {
+			id
+			kind
+			phase
+			participants {
+				userId
+				nickname
+			}
+			events {
+				type
+				userId
+				outcome
+			}
+			aliveUserIds
+			expiresAt
+		}
+	}
+}
+
+mutation RespondMultiplayerSession($sessionId: ID!, $response: String!) {
+	respondMultiplayerSession(sessionId: $sessionId, response: $response) {
+		success
+		message
+		session {
+			id
+			kind
+			phase
+			response
+			result
+		}
+	}
+}
+
+mutation AbortMultiplayerSession($sessionId: ID!) {
+	abortMultiplayerSession(sessionId: $sessionId) {
+		success
+		message
+		session {
+			id
+			phase
+			result
+		}
+	}
+}
+
 query GetMyInvestmentPage {
 	myInvestmentPage {
 		money

@@ -13,6 +13,7 @@ import { WebPush } from "#core/models/WebPush";
 import { registerEscapeStatusRoute } from "#api/sse/escapeStatus";
 import { registerScavengeStatusRoute } from "#api/sse/scavengeStatus";
 import { registerRobStatusRoute } from "#api/sse/robStatus";
+import { registerMultiplayerSessionsRoute } from "#api/sse/multiplayerSessions";
 import { getClient } from "#bot/client";
 
 let server: FastifyInstance | null = null;
@@ -190,6 +191,7 @@ export async function createApiServer(): Promise<FastifyInstance> {
 	registerEscapeStatusRoute(app);
 	registerScavengeStatusRoute(app);
 	registerRobStatusRoute(app);
+	registerMultiplayerSessionsRoute(app);
 
 	// Health Check
 	app.get("/health", async () => {

@@ -16,8 +16,11 @@ import { migrateAdminAuditLogsV5 } from "#core/database/migrations/AdminAuditLog
 import { Dashboard } from "#core/models/Dashboard";
 import { cleanupActiveEscapes, Prison } from "#core/models/Prison";
 import { TimedAction } from "#core/models/TimedAction";
+import { MultiplayerSession } from "#core/models/MultiplayerSession";
+import { initializeMultiplayerSessionDiscordBridge } from "#bot/utils/multiplayerSessionDiscordBridge";
 
 const client = setClient();
+const stopMultiplayerSessionDiscordBridge = initializeMultiplayerSessionDiscordBridge();
 
 process.on("unhandledRejection", (reason) => {
 	logger.error("Unhandled Rejection at Promise", reason);
@@ -47,18 +50,28 @@ client.on(Events.ShardResume, (shardId, replayedEvents) => {
 	logger.info(`Discord Shard ${shardId} Successfully Resumed. Replayed ${replayedEvents} events.`);
 });
 
-const handleExit = (signal: string) => {
+const handleExit = async (signal: string) => {
 	logger.info(`Received ${signal}. Shutting down gracefully...`);
 	cleanupActiveEscapes();
 	TimedAction.Stop();
-	stopApiServer().finally(() => {
+	stopMultiplayerSessionDiscordBridge();
+	try {
+		await MultiplayerSession.Stop();
+	}
+	catch (error) {
+		logger.error("Failed to abort multiplayer sessions during shutdown:", error);
+	}
+	try {
+		await stopApiServer();
+	}
+	finally {
 		client.destroy();
 		process.exit(0);
-	});
+	}
 };
 
-process.on("SIGINT", () => handleExit("SIGINT"));
-process.on("SIGTERM", () => handleExit("SIGTERM"));
+process.on("SIGINT", () => void handleExit("SIGINT"));
+process.on("SIGTERM", () => void handleExit("SIGTERM"));
 
 process.loadEnvFile();
 
@@ -152,6 +165,7 @@ async function startApplication() {
 	await migrateAdminAuditLogsV4();
 	await migrateAdminAuditLogsV5();
 	await Prison.Initialize();
+	await MultiplayerSession.Initialize();
 	await TimedAction.Initialize();
 	await Dashboard.Initialize();
 	await Promise.all([

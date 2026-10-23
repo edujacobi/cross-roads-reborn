@@ -18,6 +18,7 @@ import {
 	UserRoundCog,
 	Wallet,
 } from "lucide-vue-next";
+import MultiplayerSessionCard from "~/components/Multiplayer/MultiplayerSessionCard.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseErrorState from "~/components/ui/BaseErrorState.vue";
@@ -26,6 +27,7 @@ import BaseModal from "~/components/ui/BaseModal.vue";
 import BaseSelector, { type SelectorOption } from "~/components/ui/BaseSelector.vue";
 import BaseTable from "~/components/ui/BaseTable.vue";
 import BaseTableSkeleton from "~/components/ui/BaseTableSkeleton.vue";
+import { useMultiplayerSessions } from "~/composables/useMultiplayerSessions";
 import { imagePaths } from "~/constants/imagePaths";
 import {
 	CancelGangImportDocument,
@@ -64,12 +66,37 @@ const { getGangBaseImageUrl, getGangBaseShipmentImageUrl } = useGangBase();
 const auth = useAuth();
 const canWrite = auth.canWrite;
 const { showToast } = useToast();
+const {
+	sessions: multiplayerSessions,
+	refetch: refetchMultiplayerSessions,
+	startInvestmentRobbery,
+	startGangHeist,
+	buyGangHeistGetawayCars,
+	joinSession,
+	respondToSession,
+	abortSession,
+} = useMultiplayerSessions();
 
 const gangId = computed(() => String(route.params.id));
 
 const { result: gangData, loading, error, refetch } = useQuery(GetGangDetailDocument, () => ({ id: gangId.value }));
 
 const gang = computed(() => gangData.value?.gang);
+const gangMultiplayerSessions = computed(() =>
+	multiplayerSessions.value.filter(
+		(session) =>
+			session.gangId === Number(gangId.value) && (session.kind === "investmentRobbery" || session.kind === "gangHeist"),
+	),
+);
+const completedGangSessionIds = computed(() =>
+	gangMultiplayerSessions.value
+		.filter((session) => session.phase === "completed" || session.phase === "aborted")
+		.map((session) => `${session.id}:${session.phase}`)
+		.join("|"),
+);
+watch(completedGangSessionIds, (current, previous) => {
+	if (current && current !== previous) void refetch();
+});
 const maxDepositAmount = computed(() => gang.value?.maxDepositAmount ?? 0);
 const currentUserId = computed(() => auth.user.value?.userId);
 const currentMember = computed(() => gang.value?.members.find((member) => member.userId === currentUserId.value));
@@ -199,6 +226,31 @@ const { result: inviteSearchResult, loading: searchingInviteTargets } = useQuery
 	}),
 	() => ({ enabled: isInviteModalOpen.value && inviteSearch.value.trim().length > 0, debounce: 300 }),
 );
+const investmentTargetSearch = ref("");
+const investmentTargetId = ref("");
+const isInvestmentRobberyModalOpen = ref(false);
+const isGangHeistModalOpen = ref(false);
+const {
+	result: investmentTargetSearchResult,
+	loading: searchingInvestmentTargets,
+	error: investmentTargetSearchError,
+} = useQuery(
+	SearchUsersDocument,
+	() => ({ search: investmentTargetSearch.value.trim() || undefined, limit: 8, offset: 0 }),
+	() => ({
+		enabled:
+			isInvestmentRobberyModalOpen.value && !!currentMember.value && investmentTargetSearch.value.trim().length >= 3,
+		debounce: 250,
+	}),
+);
+const investmentTargets = computed<SearchUsersQuery["users"]["users"]>(() =>
+	investmentTargetSearch.value.trim().length < 3
+		? []
+		: (investmentTargetSearchResult.value?.users.users ?? []).filter(
+				(candidate) =>
+					candidate.id !== currentUserId.value && !gang.value?.members.some((member) => member.userId === candidate.id),
+			),
+);
 const inviteCandidates = computed<SearchUsersQuery["users"]["users"]>(() =>
 	(inviteSearchResult.value?.users.users ?? []).filter(
 		(user) => user.id !== currentUserId.value && !gang.value?.members.some((member) => member.userId === user.id),
@@ -233,6 +285,12 @@ const importProgress = computed(() => {
 	return Math.min(100, Math.max(0, ((importProgressTime.value - startedAtMs) / durationMs) * 100));
 });
 
+function openInvestmentRobberyModal() {
+	investmentTargetSearch.value = "";
+	investmentTargetId.value = "";
+	isInvestmentRobberyModalOpen.value = true;
+}
+
 async function startGangShipmentImport() {
 	try {
 		const result = (await startGangImport({ gangId: gangId.value }))?.data?.startGangImport;
@@ -257,6 +315,87 @@ async function cancelGangShipmentImport() {
 			isImportCancelConfirmationOpen.value = false;
 			await refetch();
 		}
+	} catch (caughtError: unknown) {
+		showToast({ text: caughtError instanceof Error ? caughtError.message : "Erro inesperado.", variant: "error" });
+	}
+}
+
+async function launchInvestmentRobbery() {
+	if (!investmentTargetId.value) {
+		showToast({ text: "Selecione um alvo.", variant: "warning" });
+		return;
+	}
+	try {
+		const result = (await startInvestmentRobbery({ targetUserId: investmentTargetId.value }))?.data
+			?.startInvestmentRobbery;
+		showToast({
+			text: result?.message ?? "Falha ao iniciar o roubo de investimento.",
+			variant: result?.success ? "success" : "error",
+		});
+		if (result?.success) {
+			isInvestmentRobberyModalOpen.value = false;
+			investmentTargetSearch.value = "";
+			investmentTargetId.value = "";
+			await refetchMultiplayerSessions();
+		}
+	} catch (caughtError: unknown) {
+		showToast({ text: caughtError instanceof Error ? caughtError.message : "Erro inesperado.", variant: "error" });
+	}
+}
+
+async function launchGangHeist(missionId: number) {
+	try {
+		const result =
+			missionId === 2
+				? (await buyGangHeistGetawayCars())?.data?.startGangHeist
+				: (await startGangHeist({ missionId }))?.data?.startGangHeist;
+		showToast({
+			text: result?.message ?? "Falha ao iniciar a missão.",
+			variant: result?.success ? "success" : "error",
+		});
+		if (result?.success) {
+			isGangHeistModalOpen.value = false;
+			await Promise.all([refetch(), refetchMultiplayerSessions()]);
+		}
+	} catch (caughtError: unknown) {
+		showToast({ text: caughtError instanceof Error ? caughtError.message : "Erro inesperado.", variant: "error" });
+	}
+}
+
+async function joinGangSession(sessionId: string) {
+	try {
+		const result = (await joinSession({ sessionId }))?.data?.joinMultiplayerSession;
+		showToast({
+			text: result?.message ?? "Falha ao entrar na sala.",
+			variant: result?.success ? "success" : "error",
+		});
+		if (result?.success) await refetchMultiplayerSessions();
+	} catch (caughtError: unknown) {
+		showToast({ text: caughtError instanceof Error ? caughtError.message : "Erro inesperado.", variant: "error" });
+	}
+}
+
+async function abortGangSession(sessionId: string) {
+	try {
+		const result = (await abortSession({ sessionId }))?.data?.abortMultiplayerSession;
+		showToast({
+			text: result?.message ?? "Falha ao cancelar a sala.",
+			variant: result?.success ? "success" : "error",
+		});
+		if (result?.success) await refetchMultiplayerSessions();
+	} catch (caughtError: unknown) {
+		showToast({ text: caughtError instanceof Error ? caughtError.message : "Erro inesperado.", variant: "error" });
+	}
+}
+
+async function respondToGangSession(payload: { sessionId: string; response: string }) {
+	try {
+		const result = (await respondToSession(payload))?.data?.respondMultiplayerSession;
+		showToast({
+			text: result?.message ?? "Falha ao registrar a resposta.",
+			variant: result?.success ? "success" : "error",
+		});
+		if (result?.success) await refetchMultiplayerSessions();
 	} catch (caughtError: unknown) {
 		showToast({ text: caughtError instanceof Error ? caughtError.message : "Erro inesperado.", variant: "error" });
 	}
@@ -702,9 +841,10 @@ async function updateGangMoney() {
 					>
 						MAX
 					</span>
-					<div
+					<fieldset
 						v-if="currentMember"
 						class="gang-actions"
+						aria-label="Ações da gangue"
 					>
 						<BaseButton
 							variant="secondary"
@@ -750,6 +890,20 @@ async function updateGangMoney() {
 							Comunicar membros
 						</BaseButton>
 						<BaseButton
+							v-if="canEdit"
+							variant="secondary"
+							@click="openInvestmentRobberyModal()"
+						>
+							Roubar investimento
+						</BaseButton>
+						<BaseButton
+							v-if="currentUserId === gang.leaderId"
+							variant="secondary"
+							@click="isGangHeistModalOpen = true"
+						>
+							Golpes
+						</BaseButton>
+						<BaseButton
 							v-if="canLeaveGang"
 							variant="ghost"
 							class="gang-actions-leave"
@@ -761,9 +915,26 @@ async function updateGangMoney() {
 							/>
 							Sair da gangue
 						</BaseButton>
-					</div>
+					</fieldset>
 				</div>
 			</BaseCard>
+
+			<!--			<section-->
+			<!--				v-if="currentMember && gangMultiplayerSessions.length"-->
+			<!--				class="gang-multiplayer__sessions"-->
+			<!--				aria-label="Ações multiplayer da gangue"-->
+			<!--			>-->
+			<!--				<h2>Salas e resultados recentes</h2>-->
+			<!--				<MultiplayerSessionCard-->
+			<!--					v-for="session in gangMultiplayerSessions"-->
+			<!--					:key="session.id"-->
+			<!--					:session="session"-->
+			<!--					:current-user-id="currentUserId ?? ''"-->
+			<!--					@join="joinGangSession"-->
+			<!--					@respond="respondToGangSession"-->
+			<!--					@abort="abortGangSession"-->
+			<!--				/>-->
+			<!--			</section>-->
 
 			<div class="gang-detail__content">
 				<!-- Base Card -->
@@ -1676,6 +1847,119 @@ async function updateGangMoney() {
 					</BaseButton>
 				</template>
 			</BaseModal>
+			<BaseModal
+				:open="isInvestmentRobberyModalOpen"
+				title="Roubar um investimento"
+				description="Os membros da gangue poderão entrar na sala; o alvo poderá defender o investimento."
+				@update:open="isInvestmentRobberyModalOpen = $event"
+			>
+				<form
+					id="investment-robbery-form"
+					class="gang-multiplayer__form"
+					@submit.prevent="launchInvestmentRobbery()"
+				>
+					<label
+						for="investment-robbery-target"
+						class="gang-multiplayer__label"
+					>
+						Buscar jogador fora da gangue
+					</label>
+					<BaseInput
+						id="investment-robbery-target"
+						placeholder="Nickname ou ID"
+						:model-value="investmentTargetSearch"
+						@update:model-value="investmentTargetSearch = String($event); investmentTargetId = ''"
+					/>
+					<p
+						v-if="searchingInvestmentTargets"
+						role="status"
+					>
+						Buscando jogadores...
+					</p>
+					<p
+						v-else-if="investmentTargetSearch.trim().length >= 3 && investmentTargetSearchError"
+						role="alert"
+					>
+						Não foi possível buscar jogadores. Tente novamente.
+					</p>
+					<ul
+						v-else-if="investmentTargets.length"
+						class="gang-multiplayer__targets"
+						aria-label="Resultados da busca"
+					>
+						<li
+							v-for="candidate in investmentTargets"
+							:key="candidate.id"
+						>
+							<button
+								type="button"
+								:aria-pressed="investmentTargetId === candidate.id"
+								@click="investmentTargetId = candidate.id"
+							>
+								{{ candidate.nickname }} · {{ candidate.id }}
+							</button>
+						</li>
+					</ul>
+					<p
+						v-else-if="investmentTargetSearch.trim().length >= 3"
+						role="status"
+					>
+						Nenhum jogador elegível encontrado.
+					</p>
+				</form>
+				<template #footer>
+					<BaseButton
+						variant="secondary"
+						@click="isInvestmentRobberyModalOpen = false"
+					>
+						Cancelar
+					</BaseButton>
+					<BaseButton
+						type="submit"
+						form="investment-robbery-form"
+						variant="danger"
+						:disabled="!investmentTargetId"
+					>
+						Criar sala de roubo
+					</BaseButton>
+				</template>
+			</BaseModal>
+			<BaseModal
+				:open="isGangHeistModalOpen"
+				title="Golpes"
+				description="Escolha uma preparação ou tente o golpe principal. Os membros da gangue poderão entrar na sala."
+				@update:open="isGangHeistModalOpen = $event"
+			>
+				<fieldset
+					class="gang-multiplayer__actions"
+					aria-label="Escolha uma missão de gangue"
+				>
+					<BaseButton
+						variant="secondary"
+						@click="launchGangHeist(1)"
+					>
+						Roubar planta
+					</BaseButton>
+					<BaseButton
+						variant="secondary"
+						@click="launchGangHeist(2)"
+					>
+						Comprar carros de fuga
+					</BaseButton>
+					<BaseButton
+						variant="secondary"
+						@click="launchGangHeist(3)"
+					>
+						Hackear câmeras
+					</BaseButton>
+					<BaseButton
+						variant="primary"
+						@click="launchGangHeist(4)"
+					>
+						Iniciar golpe principal
+					</BaseButton>
+				</fieldset>
+			</BaseModal>
 		</template>
 	</main>
 </template>
@@ -2216,4 +2500,56 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 		opacity: 0.5;
 	}
 }
+
+.gang-multiplayer__sessions {
+	display: grid;
+	gap: $spacing-md;
+}
+
+.gang-multiplayer__label {
+	display: block;
+	margin-bottom: $spacing-xs;
+	font-weight: $font-weight-semibold;
+}
+
+.gang-multiplayer__form {
+	display: grid;
+	gap: $spacing-md;
+}
+
+.gang-multiplayer__targets {
+	display: grid;
+	gap: $spacing-xs;
+	margin: $spacing-sm 0;
+	padding: 0;
+	list-style: none;
+
+	button {
+		width: 100%;
+		padding: $spacing-sm $spacing-md;
+		border: 1px solid $border-card;
+		border-radius: $radius-sm;
+		background: transparent;
+		color: inherit;
+		text-align: left;
+		cursor: pointer;
+		overflow-wrap: anywhere;
+
+		&:focus-visible {
+			@include focus-outline($color-brand, 2px);
+		}
+	}
+
+	button[aria-pressed="true"] {
+		border-color: $highlight-color;
+		background-color: $background-color;
+	}
+}
+
+.gang-multiplayer__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: $spacing-sm;
+}
+
 </style>

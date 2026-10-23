@@ -4,14 +4,15 @@ import { CrColors } from "#bot/utils/colors";
 import { deferUpdate, replyWithContainer } from "#bot/utils/discordInteractions";
 import { EmoteId, EmoteString } from "#bot/utils/emotes";
 import { defaultComponent, formatMoney } from "#bot/utils/ui";
-import { Strings as RobberyStrings, type UserRobberyStrategy } from "#core/models/strategies/robbery/UserRobberyStrategy";
+import { Strings as RobberyStrings } from "#core/models/strategies/robbery/UserRobberyStrategy";
+import type { RobberyOutcomeData } from "#core/types/Robbery";
 import type { User } from "#core/models/User";
+import { MultiplayerSession, Strings as MultiplayerStrings } from "#core/models/MultiplayerSession";
 import { ItemId } from "#core/types/Ids";
 import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, ComponentType, type Message, type MessageComponentInteraction, MessageFlags, time, TimestampStyles } from "discord.js";
-import { setTimeout as wait } from "timers/promises";
 import { Log } from "#shared/log";
 
-export async function runUserRobbery(interaction: ChatInputCommandInteraction, robbery: UserRobberyStrategy, attacker: User, defender: User) {
+export async function runUserRobbery(interaction: ChatInputCommandInteraction, attacker: User, defender: User) {
 	const sA = RobberyStrings[attacker.Language];
 	const sD = RobberyStrings[defender.Language];
 
@@ -83,23 +84,23 @@ export async function runUserRobbery(interaction: ChatInputCommandInteraction, r
 					defender.GetInfo(),
 				]);
 
-				const availability = await robbery.CanRob();
-
-				if (!availability.canRob) {
-					const container = defaultComponent({
-						user: attacker,
-						color: CrColors.Robbery,
-						description: availability.message,
-					});
-
-					await replyWithContainer(interaction, container);
-					return;
-				}
 			}
 		}
 	}
 
-	const initData = await robbery.LockStates(usedGrenade);
+	const started = await MultiplayerSession.StartUserRobbery(attacker, defender, usedGrenade, "discord");
+	if (!started.success) {
+		const container = defaultComponent({
+			user: attacker,
+			color: CrColors.Robbery,
+			description: started.message,
+		});
+		await replyWithContainer(interaction, container);
+		return;
+	}
+	const { session } = started;
+	const initData = started.initData!;
+	let unsubscribe: (() => void) | undefined;
 
 	try {
 		let defenderDiscordUser;
@@ -197,7 +198,50 @@ export async function runUserRobbery(interaction: ChatInputCommandInteraction, r
 
 		await replyWithContainer(interaction, channelContainer);
 
-		let defenderReaction: "react" | "police" | "nothing" = "nothing";
+		let stopCollector: (() => void) | undefined;
+		let handledResponse: string | null = null;
+		let responseUpdate = Promise.resolve();
+		const updateResponse = async (response: string) => {
+			if (handledResponse !== null) return;
+			handledResponse = response;
+			let descriptionPrivate = "";
+			let descriptionChannel = "";
+			if (response === "react") {
+				descriptionPrivate = `### ${EmoteString.React} ${sD.reacting} ${EmoteString.Waiting}`;
+				descriptionChannel = `### ${EmoteString.React} ${defender.GetNameWithImage()} ${sA.isReacting}!`;
+			}
+			else if (response === "police") {
+				descriptionPrivate = `### ${EmoteString.Police} ${sD.callingPolice} ${EmoteString.Waiting}`;
+				descriptionChannel = `### ${EmoteString.Police} ${defender.GetNameWithImage()} ${sA.isCallingPolice}!`;
+			}
+			else {
+				descriptionPrivate = `### 🏳️ ${sD.doingNothing} ${EmoteString.Waiting}`;
+				descriptionChannel = `### 🏳️ ${defender.GetNameWithImage()} ${sA.isDoingNothing}!`;
+			}
+
+			const updatedPrivateContainer = new CustomContainerBuilder()
+				.setAccentColor(CrColors.Robbery)
+				.addTexts([`${EmoteString.Robbery} ${sD.robberyInProgress}`])
+				.addLargeSeparator()
+				.addTexts([descriptionPrivate])
+				.addFooter({ text: `${formatMoney(defender.Money, defender.Language)} • ${sD.secondsToRespond}` });
+			channelContainer.changeTextFromSectionId(50, descriptionChannel);
+			stopCollector?.();
+			if (defenderMessage) {
+				await defenderMessage.edit({ components: [updatedPrivateContainer] });
+			}
+			await replyWithContainer(interaction, channelContainer);
+		};
+
+		unsubscribe = MultiplayerSession.Subscribe(attacker.Id, attacker.GangId, update => {
+			if (update.id === session.id && update.response) {
+				responseUpdate = updateResponse(update.response).catch(error => {
+					Log.Warning(`Failed to update robbery response for session ${session.id}: ${error}`);
+				});
+			}
+		});
+		const currentSession = MultiplayerSession.GetVisibleSession(session.id, attacker.Id, attacker.GangId);
+		if (currentSession?.response) await updateResponse(currentSession.response);
 
 		if (defenderMessage) {
 			const collectorPrivate = defenderMessage.createMessageComponentCollector({
@@ -206,53 +250,29 @@ export async function runUserRobbery(interaction: ChatInputCommandInteraction, r
 				componentType: ComponentType.Button,
 				time: 60_000,
 			});
-
+			stopCollector = () => collectorPrivate.stop();
 			collectorPrivate.on("collect", async btn => {
-				let descriptionPrivate = "";
-				let descriptionChannel = "";
-
-				collectorPrivate.stop();
-
-				if (btn.customId === "react") {
-					defenderReaction = "react";
-					descriptionPrivate = `### ${EmoteString.React} ${sD.reacting} ${EmoteString.Waiting}`;
-					descriptionChannel = `### ${EmoteString.React} ${defender.GetNameWithImage()} ${sA.isReacting}!`;
+				await deferUpdate(btn);
+				const response = await MultiplayerSession.Respond(session.id, defender.Id, btn.customId, defender.Language);
+				if (!response.success) {
+					await btn.followUp({ content: response.message, flags: MessageFlags.Ephemeral });
 				}
-				else if (btn.customId === "police") {
-					defenderReaction = "police";
-					descriptionPrivate = `### ${EmoteString.Police} ${sD.callingPolice} ${EmoteString.Waiting}`;
-					descriptionChannel = `### ${EmoteString.Police} ${defender.GetNameWithImage()} ${sA.isCallingPolice}!`;
-				}
-				else if (btn.customId === "nothing") {
-					defenderReaction = "nothing";
-					descriptionPrivate = `### 🏳️ ${sD.doingNothing} ${EmoteString.Waiting}`;
-					descriptionChannel = `### 🏳️ ${defender.GetNameWithImage()} ${sA.isDoingNothing}!`;
-				}
-
-				const updatedPrivateContainer = new CustomContainerBuilder()
-					.setAccentColor(CrColors.Robbery)
-					.addTexts([
-						`${EmoteString.Robbery} ${sD.robberyInProgress}`,
-					])
-					.addLargeSeparator()
-					.addTexts([
-						descriptionPrivate,
-					])
-					.addFooter({ text: `${formatMoney(defender.Money, defender.Language)} • ${sD.secondsToRespond}` });
-
-				channelContainer.changeTextFromSectionId(50, descriptionChannel);
-
-				await btn.update({
-					components: [updatedPrivateContainer],
-				});
-
-				await replyWithContainer(interaction, channelContainer);
 			});
 		}
 
-		await wait(60_000);
-
-		const outcome = await robbery.Resolve(defenderReaction);
+		const completed = await MultiplayerSession.WaitForCompletion(session.id);
+		await responseUpdate;
+		unsubscribe?.();
+		unsubscribe = undefined;
+		if (completed.phase !== "completed" || !completed.result) {
+			await replyWithContainer(interaction, defaultComponent({
+				user: attacker,
+				color: CrColors.Robbery,
+				description: MultiplayerStrings[attacker.Language].actionInterrupted,
+			}));
+			return;
+		}
+		const outcome = MultiplayerSession.DecodeResult<RobberyOutcomeData>(completed.result);
 
 		const finalPrivateContainer = new CustomContainerBuilder()
 			.setAccentColor(CrColors.Robbery)
@@ -312,6 +332,6 @@ export async function runUserRobbery(interaction: ChatInputCommandInteraction, r
 		}
 	}
 	finally {
-		await robbery.ReleaseLocks();
+		unsubscribe?.();
 	}
 }

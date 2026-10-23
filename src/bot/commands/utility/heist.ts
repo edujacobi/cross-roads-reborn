@@ -6,12 +6,14 @@ import { formatMoney } from "#bot/utils/ui";
 import { disableButtons } from "#bot/utils/collectors";
 import { checkUser } from "#bot/utils/userUtils";
 import { Heist } from "#core/models/Heist";
+import { MultiplayerSession, type MultiplayerSessionView } from "#core/models/MultiplayerSession";
 import { Vault } from "#core/models/Vault";
 import { getWeeklyTarget, HeistMissionId } from "#core/types/Heist";
 import { GangColor } from "#core/types/GangColors";
-import { Language, type Localization } from "#core/models/Language";
+import { getLanguageFromLocale, Language, type Localization } from "#core/models/Language";
 import type { User } from "#core/models/User";
 import { ClassId } from "#core/types/Classes";
+import { Log } from "#shared/log";
 import {
 	ButtonStyle,
 	type ChatInputCommandInteraction,
@@ -22,7 +24,6 @@ import {
 	time,
 	TimestampStyles,
 } from "discord.js";
-import { setTimeout as wait } from "timers/promises";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -48,6 +49,7 @@ module.exports = {
 				]);
 			return replyWithContainer(interaction, container);
 		}
+		const sessionGang = gang;
 
 		// Main Menu View Generator
 		const getMainMenuContainer = async () => {
@@ -127,6 +129,15 @@ module.exports = {
 					storyText,
 				])
 				.addLargeSeparator();
+			const openHeist = MultiplayerSession.GetVisibleSessions(user.Id, gang.Id)
+				.find(session => session.kind === "gangHeist" && session.phase === "lobby");
+			if (openHeist && !openHeist.participants.some(participant => participant.userId === user.Id)) {
+				container.addButtonRow(btn => btn
+					.setCustomId("join_active_heist")
+					.setLabel(s.participate)
+					.setStyle(ButtonStyle.Primary),
+				);
+			}
 
 			const m1Done = heistState.mission1Completed;
 			const m1Cooldown = !!(heistState.mission1CooldownUntil && heistState.mission1CooldownUntil > new Date());
@@ -263,6 +274,17 @@ module.exports = {
 					await replyWithContainer(interaction, currentContainer);
 					return;
 				}
+				if (customId === "join_active_heist") {
+					const activeSession = MultiplayerSession.GetVisibleSessions(user.Id, gang.Id)
+						.find(session => session.kind === "gangHeist" && session.phase === "lobby");
+					if (!activeSession || activeSession.missionId === null) {
+						return btnInteraction.reply({ content: s.cannotStart, flags: MessageFlags.Ephemeral });
+					}
+					await deferUpdate(btnInteraction);
+					collector.stop("starting_mission");
+					await showHeistLobby(activeSession.missionId as HeistMissionId, activeSession.id);
+					return;
+				}
 				let missionId: HeistMissionId = HeistMissionId.Blueprint;
 
 				if (customId === "m1_blueprint") missionId = HeistMissionId.Blueprint;
@@ -289,8 +311,8 @@ module.exports = {
 
 				// Mission 2 is instant buy
 				if (missionId === HeistMissionId.GetawayCars) {
-					const ok = await Heist.ResolveMission2(gang);
-					if (ok) {
+					const purchase = await MultiplayerSession.BuyGangHeistGetawayCars(user, user.Language);
+					if (purchase.success) {
 						currentContainer = new CustomContainerBuilder()
 							.setUser(user)
 							.setAccentColor(GangColor[gang.Color].Color)
@@ -311,230 +333,203 @@ module.exports = {
 						await replyWithContainer(interaction, currentContainer);
 						startMenuCollector();
 					}
+					else {
+						await btnInteraction.followUp({ content: purchase.message, flags: MessageFlags.Ephemeral });
+						startMenuCollector();
+					}
 					return;
 				}
 
-				// Spawns interactive lobby for Mission 1, 3, or Main Heist
-				const target = getWeeklyTarget();
-				const targetName = `${target.Emote.String} ${target.Name[language]}`;
-				const lobbyName = missionId === HeistMissionId.Blueprint ? s.blueprintLabel : (missionId === HeistMissionId.HackCameras ? s.hackLabel : s.heistLabel(targetName));
-				const isMain = missionId === HeistMissionId.MainHeist;
-				const lobbyTimeout = isMain ? 90_000 : 60_000;
-
-				const participants = new Map<string, User>();
-				participants.set(user.Id, user);
-
-				// Lock initiator
-				await Heist.LockStates([user]);
-
-				let lobbyAborted = false;
-
-				const calculateLobbyChance = async () => {
-					if (missionId === HeistMissionId.Blueprint) {
-						const baseChance = 10;
-						const chancePerMember = 2.0;
-						return Math.min(100, baseChance + participants.size * chancePerMember);
-					}
-					else if (missionId === HeistMissionId.HackCameras) {
-						const baseChance = 15;
-						const chancePerMember = 1.0;
-						return Math.min(100, baseChance + participants.size * chancePerMember);
-					}
-					else {
-						// Main heist chance
-						let totalAtk = 0;
-						for (const p of participants.values()) {
-							let playerAtk = p.Attributes.Attack;
-							if (p.Class === ClassId.Hobo) playerAtk *= 0.9;
-							else if (p.Class === ClassId.Assassin) playerAtk *= 1.1;
-							totalAtk += playerAtk;
-						}
-						const divisor = 50;
-						let chance = totalAtk / divisor;
-
-						const heistState = await Heist.GetHeistState(gang.Id);
-						if (heistState.mission1Completed) chance += 4;
-						if (heistState.mission2Completed) chance += 2;
-						if (heistState.mission3Completed) chance += 5;
-
-						return Math.min(100, Math.max(0, chance));
-					}
-				};
-
-				const getLobbyContainer = async () => {
-					const currentChance = await calculateLobbyChance();
-					const container = new CustomContainerBuilder()
-						.setUser(user)
-						.setAccentColor(GangColor[gang.Color].Color)
-						.addTexts([
-							`# ${s.lobbyTitle(lobbyName)}`,
-							s.lobbyDescription(currentChance.toFixed(2), participants.size, gang.GetMaxMembers()),
-							Array.from(participants.values()).map(p => `- ${p.GetNameWithImage()}`).join("\n"),
-						])
-						.addLargeSeparator();
-
-					container.addButtonRow(
-						btn => btn
-							.setCustomId("join_lobby")
-							.setLabel(s.participate)
-							.setStyle(ButtonStyle.Primary),
-						btn => btn
-							.setCustomId("abort_lobby")
-							.setLabel(s.abort)
-							.setStyle(ButtonStyle.Secondary),
-					);
-					return container;
-				};
-
-				currentContainer = await getLobbyContainer();
-				const lobbyReply = await replyWithContainer(interaction, currentContainer);
-
-				const lobbyCollector = lobbyReply!.createMessageComponentCollector({ time: lobbyTimeout });
-
-				lobbyCollector.on("collect", async (lobbyBtn) => {
-					const playerId = lobbyBtn.user.id;
-
-					if (lobbyBtn.customId === "abort_lobby") {
-						if (playerId !== user.Id) {
-							return lobbyBtn.reply({ content: s.onlyLeader, flags: MessageFlags.Ephemeral });
-						}
-						await deferUpdate(lobbyBtn);
-						lobbyAborted = true;
-						lobbyCollector.stop();
-						return;
-					}
-
-					if (lobbyBtn.customId === "join_lobby") {
-						if (participants.has(playerId)) {
-							return lobbyBtn.reply({ content: s.alreadyIn, flags: MessageFlags.Ephemeral });
-						}
-
-						const participantUser = await checkUser(playerId, interaction);
-						if (!participantUser) return;
-
-						// Validate join constraints
-						const checkJoin = await Heist.ValidateJoin(participantUser, gang);
-						if (!checkJoin.success) {
-							return lobbyBtn.reply({
-								content: s.cannotParticipate(checkJoin.reason || "unavailable"),
-								flags: MessageFlags.Ephemeral,
-							});
-						}
-
-						if (participants.size >= gang.GetMaxMembers()) {
-							return lobbyBtn.reply({
-								content: s.cannotParticipate("lobbyFull"),
-								flags: MessageFlags.Ephemeral,
-							});
-						}
-
-						await deferUpdate(lobbyBtn);
-
-						// Lock state immediately
-						participants.set(playerId, participantUser);
-						await Heist.LockStates([participantUser]);
-
-						// Refresh view
-						currentContainer = await getLobbyContainer();
-						await replyWithContainer(interaction, currentContainer);
-					}
-				});
-
-				lobbyCollector.on("end", async () => {
-					const playersList = Array.from(participants.values());
-
-					if (lobbyAborted) {
-						// Release all locks
-						await Heist.ReleaseLocks(playersList);
-
-						currentContainer = new CustomContainerBuilder()
-							.setUser(user)
-							.setAccentColor(CrColors.Cemetery)
-							.addTexts([
-								`# ${s.lobbyTitle(lobbyName)}`,
-								s.aborted,
-							])
-							.addLargeSeparator()
-							.addButtonRow(
-								btn => btn
-									.setCustomId("back_to_menu")
-									.setLabel(s.btnBack)
-									.setStyle(ButtonStyle.Secondary),
-							)
-							.addFooter({
-								text: `${s.gang} ${gang.Name}`,
-							});
-						await replyWithContainer(interaction, currentContainer);
-						startMenuCollector();
-						return;
-					}
-
-					// Resolve in progress
-					currentContainer = new CustomContainerBuilder()
-						.setUser(user)
-						.setAccentColor(GangColor[gang.Color].Color)
-						.addTexts([
-							`# ${s.lobbyTitle(lobbyName)}`,
-							`${EmoteString.Waiting} **${s.inProgress}**`,
-						])
-						.addLargeSeparator();
-
-					await replyWithContainer(interaction, currentContainer);
-
-					// Timeout to simulate heist actions (30s for setup, 45s for main)
-					const sleepTime = isMain ? 45_000 : 30_000;
-					await wait(sleepTime);
-
-					try {
-						let resultHTML = "";
-						let heistSuccess = false;
-
-						if (missionId === HeistMissionId.Blueprint) {
-							const res = await Heist.ResolveMission1(gang, playersList);
-							heistSuccess = res.success;
-							resultHTML = res.success ? s.mission1Success : s.mission1Fail;
-						}
-						else if (missionId === HeistMissionId.HackCameras) {
-							const res = await Heist.ResolveMission3(gang, playersList);
-							heistSuccess = res.success;
-							resultHTML = res.success ? s.mission3Success : s.mission3Fail;
-						}
-						else if (missionId === HeistMissionId.MainHeist) {
-							const res = await Heist.ResolveMainHeist(gang, playersList);
-							heistSuccess = res.success;
-							resultHTML = res.success
-								? s.mainSuccess(formatMoney(res.stolenAmount, language), formatMoney(res.shareAmount, language))
-								: s.mainFail(res.jailHours);
-						}
-
-						currentContainer = new CustomContainerBuilder()
-							.setUser(user)
-							.setAccentColor(heistSuccess ? CrColors.Default : CrColors.Hospital)
-							.addTexts([
-								`# ${heistSuccess ? s.successTitle : s.failTitle}`,
-								resultHTML,
-							])
-							.addLargeSeparator()
-							.addButtonRow(
-								btn => btn
-									.setCustomId("back_to_menu")
-									.setLabel(s.btnBack)
-									.setStyle(ButtonStyle.Secondary),
-							)
-							.addFooter({
-								text: `${s.gang} ${gang.Name}`,
-							});
-
-						await replyWithContainer(interaction, currentContainer);
-						startMenuCollector();
-					}
-					finally {
-						// GUARANTEE players are unlocked even if something crashes
-						await Heist.ReleaseLocks(playersList);
-					}
-				});
+				await showHeistLobby(missionId);
 			});
 		};
+
+		async function showHeistLobby(missionId: HeistMissionId, existingSessionId?: string) {
+			let session: MultiplayerSessionView | null;
+			if (existingSessionId) {
+				session = MultiplayerSession.GetVisibleSession(existingSessionId, user.Id, sessionGang.Id);
+			}
+			else {
+				const started = await MultiplayerSession.StartGangHeist(user, missionId, "discord");
+				if (!started.success) {
+					currentContainer = new CustomContainerBuilder()
+						.setUser(user)
+						.setAccentColor(Colors.Red)
+						.addTexts([started.message])
+						.addButtonRow(btn => btn
+							.setCustomId("back_to_menu")
+							.setLabel(s.btnBack)
+							.setStyle(ButtonStyle.Secondary),
+						);
+					await replyWithContainer(interaction, currentContainer);
+					startMenuCollector();
+					return;
+				}
+				session = started.session;
+			}
+			if (!session || session.missionId === null) {
+				currentContainer = await getMainMenuContainer();
+				await replyWithContainer(interaction, currentContainer);
+				startMenuCollector();
+				return;
+			}
+
+			const target = getWeeklyTarget();
+			const targetName = `${target.Emote.String} ${target.Name[language]}`;
+			const lobbyName = session.missionId === HeistMissionId.Blueprint
+				? s.blueprintLabel
+				: session.missionId === HeistMissionId.HackCameras
+					? s.hackLabel
+					: s.heistLabel(targetName);
+
+			const getLobbyContainer = async (view: MultiplayerSessionView) => {
+				let chance: number;
+				if (view.missionId === HeistMissionId.Blueprint) {
+					chance = Math.min(100, 10 + view.participants.length * 2);
+				}
+				else if (view.missionId === HeistMissionId.HackCameras) {
+					chance = Math.min(100, 15 + view.participants.length);
+				}
+				else {
+					let totalAttack = 0;
+					for (const participant of view.participants) {
+						let attack = participant.attack;
+						if (participant.classId === ClassId.Hobo) attack *= 0.9;
+						else if (participant.classId === ClassId.Assassin) attack *= 1.1;
+						totalAttack += attack;
+					}
+					chance = totalAttack / 50;
+					const heistState = await Heist.GetHeistState(sessionGang.Id);
+					if (heistState.mission1Completed) chance += 4;
+					if (heistState.mission2Completed) chance += 2;
+					if (heistState.mission3Completed) chance += 5;
+					chance = Math.min(100, Math.max(0, chance));
+				}
+
+				const container = new CustomContainerBuilder()
+					.setUser(user)
+					.setAccentColor(GangColor[sessionGang.Color].Color)
+					.addTexts([
+						`# ${s.lobbyTitle(lobbyName)}`,
+						view.phase === "lobby"
+							? s.lobbyDescription(chance.toFixed(2), view.participants.length, view.maxParticipants)
+							: `${EmoteString.Waiting} **${s.inProgress}**`,
+						view.participants.map(participant => `- ${participant.nickname}`).join("\n"),
+					])
+					.addLargeSeparator();
+
+				if (view.phase === "lobby") {
+					container.addButtonRow(btn => btn
+						.setCustomId("join_lobby")
+						.setLabel(s.participate)
+						.setStyle(ButtonStyle.Primary));
+					if (view.ownerId === user.Id) {
+						container.addButtonRow(btn => btn
+							.setCustomId("abort_lobby")
+							.setLabel(s.abort)
+							.setStyle(ButtonStyle.Secondary));
+					}
+				}
+				else if (view.phase === "completed" && view.result) {
+					const result = MultiplayerSession.DecodeResult<{
+						success: boolean;
+						stolenAmount?: number;
+						shareAmount?: number;
+						jailHours?: number;
+					}>(view.result);
+					let resultText: string;
+					if (view.missionId === HeistMissionId.Blueprint) {
+						resultText = result.success ? s.mission1Success : s.mission1Fail;
+					}
+					else if (view.missionId === HeistMissionId.HackCameras) {
+						resultText = result.success ? s.mission3Success : s.mission3Fail;
+					}
+					else {
+						resultText = result.success
+							? s.mainSuccess(formatMoney(result.stolenAmount ?? 0, language), formatMoney(result.shareAmount ?? 0, language))
+							: s.mainFail(result.jailHours ?? 0);
+					}
+					container
+						.setAccentColor(result.success ? CrColors.Default : CrColors.Hospital)
+						.addTexts([result.success ? s.successTitle : s.failTitle, resultText])
+						.addButtonRow(btn => btn
+							.setCustomId("back_to_menu")
+							.setLabel(s.btnBack)
+							.setStyle(ButtonStyle.Secondary));
+				}
+				else if (view.phase === "aborted") {
+					container
+						.addTexts([s.aborted])
+						.addButtonRow(btn => btn
+							.setCustomId("back_to_menu")
+							.setLabel(s.btnBack)
+							.setStyle(ButtonStyle.Secondary));
+				}
+
+				return container.addFooter({ text: `${s.gang} ${sessionGang.Name}` });
+			};
+
+			currentContainer = await getLobbyContainer(session);
+			const lobbyReply = await replyWithContainer(interaction, currentContainer);
+			const lobbyCollector = lobbyReply?.createMessageComponentCollector({
+				time: session.missionId === HeistMissionId.MainHeist ? 90_000 : 60_000,
+			});
+			const updateSession = async (view: MultiplayerSessionView) => {
+				if (view.id !== session!.id) return;
+				currentContainer = await getLobbyContainer(view);
+				await replyWithContainer(interaction, currentContainer);
+			};
+			let updateQueue = Promise.resolve();
+			const queueUpdate = (view: MultiplayerSessionView): Promise<void> => {
+				updateQueue = updateQueue.then(() => updateSession(view)).catch(error => {
+					Log.Error(`Failed to update heist session ${view.id}: ${error}`);
+				});
+				return updateQueue;
+			};
+			const unsubscribe = MultiplayerSession.Subscribe(user.Id, sessionGang.Id, view => {
+				if (view.id === session!.id) {
+					void queueUpdate(view);
+				}
+			});
+			const latest = MultiplayerSession.GetVisibleSession(session.id, user.Id, sessionGang.Id);
+			if (latest && (latest.phase !== session.phase || latest.participants.length !== session.participants.length)) {
+				await queueUpdate(latest);
+			}
+
+			lobbyCollector?.on("collect", async lobbyBtn => {
+				await deferUpdate(lobbyBtn);
+				if (lobbyBtn.customId === "abort_lobby") {
+					const result = await MultiplayerSession.Abort(session!.id, lobbyBtn.user.id, getLanguageFromLocale(lobbyBtn.locale));
+					if (!result.success) {
+						await lobbyBtn.followUp({ content: result.message, flags: MessageFlags.Ephemeral });
+					}
+					return;
+				}
+				if (lobbyBtn.customId !== "join_lobby") return;
+				const participant = await checkUser(lobbyBtn.user.id, interaction);
+				if (!participant) return;
+				const result = await MultiplayerSession.Join(session!.id, participant, participant.Language);
+				if (!result.success) {
+					await lobbyBtn.followUp({
+						content: result.message,
+						flags: MessageFlags.Ephemeral,
+					});
+				}
+			});
+			lobbyCollector?.on("end", () => {
+				void disableButtons(interaction, currentContainer);
+			});
+
+			try {
+				const completed = await MultiplayerSession.WaitForCompletion(session.id);
+				await updateQueue;
+				await updateSession(completed);
+				startMenuCollector();
+			}
+			finally {
+				unsubscribe();
+			}
+		}
 
 		startMenuCollector();
 	},

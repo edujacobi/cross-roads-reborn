@@ -2,16 +2,17 @@ import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder"
 import { deferUpdate, replyWithContainer } from "#bot/utils/discordInteractions";
 import { EmoteId, EmoteString } from "#bot/utils/emotes";
 import { defaultComponent, formatMoney } from "#bot/utils/ui";
-import { Strings as BeatUpStrings, type BeatUp } from "#core/models/BeatUp";
+import { Strings as BeatUpStrings } from "#core/models/BeatUp";
+import type { BeatUpOutcomeData } from "#core/models/BeatUp";
 import type { User } from "#core/models/User";
+import { MultiplayerSession, Strings as MultiplayerStrings } from "#core/models/MultiplayerSession";
 import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, ComponentType, type Message, type MessageComponentInteraction, MessageFlags, time, TimestampStyles } from "discord.js";
-import { setTimeout as wait } from "timers/promises";
 import { ItemId } from "#core/types/Ids";
 import { getClient } from "#bot/client";
 import { CrColors } from "#bot/utils/colors";
 import { Log } from "#shared/log";
 
-export async function runUserBeatUp(interaction: ChatInputCommandInteraction, beatUp: BeatUp, attacker: User, defender: User) {
+export async function runUserBeatUp(interaction: ChatInputCommandInteraction, attacker: User, defender: User) {
 	const sA = BeatUpStrings[attacker.Language];
 	const sD = BeatUpStrings[defender.Language];
 
@@ -81,23 +82,23 @@ export async function runUserBeatUp(interaction: ChatInputCommandInteraction, be
 					defender.GetInfo(),
 				]);
 
-				const availability = await beatUp.CanBeatUser();
-
-				if (!availability.canBeat) {
-					const container = defaultComponent({
-						user: attacker,
-						color: CrColors.BeatUp,
-						description: availability.message,
-					});
-
-					await replyWithContainer(interaction, container);
-					return;
-				}
 			}
 		}
 	}
 
-	const initData = await beatUp.LockStates(usedGrenade);
+	const started = await MultiplayerSession.StartBeatUp(attacker, defender, usedGrenade, "discord");
+	if (!started.success) {
+		const container = defaultComponent({
+			user: attacker,
+			color: CrColors.BeatUp,
+			description: started.message,
+		});
+		await replyWithContainer(interaction, container);
+		return;
+	}
+	const { session } = started;
+	const initData = started.initData!;
+	let unsubscribe: (() => void) | undefined;
 
 	try {
 		let defenderDiscordUser;
@@ -193,7 +194,51 @@ export async function runUserBeatUp(interaction: ChatInputCommandInteraction, be
 
 		await replyWithContainer(interaction, channelContainer);
 
-		let defenderReaction: "fight" | "run" | "nothing" = "nothing";
+		let stopCollector: (() => void) | undefined;
+		let handledResponse: string | null = null;
+		let responseUpdate = Promise.resolve();
+
+		const updateResponse = async (response: string) => {
+			if (handledResponse !== null) return;
+			handledResponse = response;
+			let descriptionPrivate = "";
+			let descriptionChannel = "";
+			if (response === "fight") {
+				descriptionPrivate = `### 💪 ${sD.fighting} ${EmoteString.Waiting}`;
+				descriptionChannel = `### 💪 ${defender.GetNameWithImage()} ${sA.isFighting}!`;
+			}
+			else if (response === "run") {
+				descriptionPrivate = `### 👟 ${sD.running} ${EmoteString.Waiting}`;
+				descriptionChannel = `### 👟 ${defender.GetNameWithImage()} ${sA.isRunning}!`;
+			}
+			else {
+				descriptionPrivate = `### 🏳️ ${sD.doingNothing} ${EmoteString.Waiting}`;
+				descriptionChannel = `### 🏳️ ${defender.GetNameWithImage()} ${sA.isDoingNothing}!`;
+			}
+
+			const updatedPrivateContainer = new CustomContainerBuilder()
+				.setAccentColor(CrColors.BeatUp)
+				.addTexts([`${EmoteString.Beat} ${sD.beatingInProgress}`])
+				.addLargeSeparator()
+				.addTexts([descriptionPrivate])
+				.addFooter({ text: sD.secondsToRespond });
+			channelContainer.changeTextFromSectionId(50, descriptionChannel);
+			stopCollector?.();
+			if (defenderMessage) {
+				await defenderMessage.edit({ components: [updatedPrivateContainer] });
+			}
+			await replyWithContainer(interaction, channelContainer);
+		};
+
+		unsubscribe = MultiplayerSession.Subscribe(attacker.Id, attacker.GangId, update => {
+			if (update.id === session.id && update.response) {
+				responseUpdate = updateResponse(update.response).catch(error => {
+					Log.Warning(`Failed to update beat-up response for session ${session.id}: ${error}`);
+				});
+			}
+		});
+		const currentSession = MultiplayerSession.GetVisibleSession(session.id, attacker.Id, attacker.GangId);
+		if (currentSession?.response) await updateResponse(currentSession.response);
 
 		if (defenderMessage) {
 			const collectorPrivate = defenderMessage.createMessageComponentCollector({
@@ -202,53 +247,29 @@ export async function runUserBeatUp(interaction: ChatInputCommandInteraction, be
 				componentType: ComponentType.Button,
 				time: 45_000,
 			});
-
+			stopCollector = () => collectorPrivate.stop();
 			collectorPrivate.on("collect", async btn => {
-				let descriptionPrivate = "";
-				let descriptionChannel = "";
-
-				collectorPrivate.stop();
-
-				if (btn.customId === "fight") {
-					defenderReaction = "fight";
-					descriptionPrivate = `### 💪 ${sD.fighting} ${EmoteString.Waiting}`;
-					descriptionChannel = `### 💪 ${defender.GetNameWithImage()} ${sA.isFighting}!`;
+				await deferUpdate(btn);
+				const response = await MultiplayerSession.Respond(session.id, defender.Id, btn.customId, defender.Language);
+				if (!response.success) {
+					await btn.followUp({ content: response.message, flags: MessageFlags.Ephemeral });
 				}
-				else if (btn.customId === "run") {
-					defenderReaction = "run";
-					descriptionPrivate = `### 👟 ${sD.running} ${EmoteString.Waiting}`;
-					descriptionChannel = `### 👟 ${defender.GetNameWithImage()} ${sA.isRunning}!`;
-				}
-				else if (btn.customId === "nothing") {
-					defenderReaction = "nothing";
-					descriptionPrivate = `### 🏳️ ${sD.doingNothing} ${EmoteString.Waiting}`;
-					descriptionChannel = `### 🏳️ ${defender.GetNameWithImage()} ${sA.isDoingNothing}!`;
-				}
-
-				const updatedPrivateContainer = new CustomContainerBuilder()
-					.setAccentColor(CrColors.BeatUp)
-					.addTexts([
-						`${EmoteString.Beat} ${sD.beatingInProgress}`,
-					])
-					.addLargeSeparator()
-					.addTexts([
-						descriptionPrivate,
-					])
-					.addFooter({ text: sD.secondsToRespond });
-
-				channelContainer.changeTextFromSectionId(50, descriptionChannel);
-
-				await btn.update({
-					components: [updatedPrivateContainer],
-				});
-
-				await replyWithContainer(interaction, channelContainer);
 			});
 		}
 
-		await wait(45_000);
-
-		const outcome = await beatUp.Resolve(defenderReaction);
+		const completed = await MultiplayerSession.WaitForCompletion(session.id);
+		await responseUpdate;
+		unsubscribe();
+		unsubscribe = undefined;
+		if (completed.phase !== "completed" || !completed.result) {
+			await replyWithContainer(interaction, defaultComponent({
+				user: attacker,
+				color: CrColors.BeatUp,
+				description: MultiplayerStrings[attacker.Language].actionInterrupted,
+			}));
+			return;
+		}
+		const outcome = MultiplayerSession.DecodeResult<BeatUpOutcomeData>(completed.result);
 
 		const finalPrivateContainer = new CustomContainerBuilder()
 			.setAccentColor(CrColors.BeatUp)
@@ -300,6 +321,6 @@ export async function runUserBeatUp(interaction: ChatInputCommandInteraction, be
 		}
 	}
 	finally {
-		await beatUp.ReleaseLocks();
+		unsubscribe?.();
 	}
 }

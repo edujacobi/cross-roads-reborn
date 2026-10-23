@@ -5,11 +5,10 @@ import { deferUpdate, replyWithContainer } from "#bot/utils/discordInteractions"
 import { EmoteString } from "#bot/utils/emotes";
 import { defaultComponent, formatMoney } from "#bot/utils/ui";
 import { checkUser } from "#bot/utils/userUtils";
-import { Casino } from "#core/models/Casino";
+import { MultiplayerSession, type MultiplayerSessionView } from "#core/models/MultiplayerSession";
 import { Language, type Localization } from "#core/models/Language";
 import type { User } from "#core/models/User";
 import { ClassId, ClassList } from "#core/types/Classes";
-import { addHours } from "date-fns/addHours";
 import {
 	type ButtonInteraction,
 	ButtonStyle,
@@ -17,9 +16,10 @@ import {
 	type CommandInteraction,
 	ComponentType,
 	Locale,
+	MessageFlags,
 	SlashCommandBuilder,
 } from "discord.js";
-import { setTimeout as wait } from "node:timers/promises";
+import { Log } from "#shared/log";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -43,273 +43,185 @@ module.exports = {
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 		const betValue = interaction.options.getNumber("bet", true);
 		const s = Strings[language];
-
-		const participants: User[] = [];
-		const MAX_PARTICIPANTS = 5;
-		const prize = (betValue * MAX_PARTICIPANTS) / (ClassList[ClassId.Attorney].Modifier?.Casino?.Positive || 1);
-		const attorneyPrize = betValue * MAX_PARTICIPANTS;
-		const thiefPrize = prize * (ClassList[ClassId.Thief].Modifier?.Casino?.Negative || 1);
+		const maxParticipants = 5;
+		const prize = (betValue * maxParticipants) / (ClassList[ClassId.Attorney].Modifier?.Casino?.Positive || 1);
+		const currentSessions = () => MultiplayerSession.GetVisibleSessions(user.Id, user.GangId)
+			.filter(session =>
+				session.kind === "russianRoulette" &&
+				session.phase === "lobby" &&
+				!session.participants.some(participant => participant.userId === user.Id),
+			);
 
 		function getHeader() {
 			return new CustomContainerBuilder()
 				.setUser(user)
 				.setAccentColor(CrColors.Casino)
 				.addSectionComponents(header => header
-					.addTexts([
-						`# ${s.headerTitle}`,
-						s.headerDescription(EmoteString.Hospital),
-					])
-					.setThumbnailAccessory(thumb => thumb
-						.setURL("https://media.discordapp.net/attachments/1233604589064818808/1464272049483681924/RussianRoulette.png"),
-					),
+					.addTexts([`# ${s.headerTitle}`, s.headerDescription(EmoteString.Hospital)])
+					.setThumbnailAccessory(thumb => thumb.setURL("https://media.discordapp.net/attachments/1233604589064818808/1464272049483681924/RussianRoulette.png")),
 				)
 				.addLargeSeparator();
 		}
 
-		async function updateLobby() {
-			container = getHeader()
-				.addSectionComponents(section => section
-					.addTexts([
-						// s.gameTitle(user.Nickname),
-						s.betPrize(formatMoney(betValue, language), formatMoney(prize, language)),
-						s.participants(participants.length, MAX_PARTICIPANTS),
-						participants.map(p => `- ${p.GetNameWithImage()}`).join("\n"),
+		function getInitialContainer() {
+			const openLobbies = currentSessions();
+			const initial = getHeader()
+				.addTexts([s.betDefined(formatMoney(betValue, language))])
+				.addButtonRow(btn => btn
+					.setLabel(s.startButton)
+					.setCustomId("start")
+					.setStyle(ButtonStyle.Primary),
+				);
 
-						s.joinInstruction,
-					])
-					.setButtonAccessory(btn => btn
-						.setLabel(s.participateButton)
-						.setCustomId("participate")
+			if (openLobbies.length > 0) {
+				initial.addLargeSeparator().addTexts([s.openLobbies]);
+				for (const lobby of openLobbies.slice(0, 5)) {
+					initial.addButtonRow(btn => btn
+						.setLabel(`${s.participateButton} • ${formatMoney(lobby.bet ?? betValue, language)}`)
+						.setCustomId(`join_${lobby.id}`)
 						.setStyle(ButtonStyle.Secondary),
-					),
-				)
+					);
+				}
+			}
+
+			return initial.addFooter({ text: formatMoney(user.Money, language) });
+		}
+
+		function getSessionContainer(session: MultiplayerSessionView) {
+			if (session.phase === "lobby") {
+				const isParticipant = session.participants.some(participant => participant.userId === user.Id);
+				return getHeader()
+					.addSectionComponents(section => {
+						section.addTexts([
+							s.betPrize(formatMoney(session.bet ?? betValue, language), formatMoney(prize, language)),
+							s.participants(session.participants.length, session.maxParticipants),
+							session.participants.map(participant => `- ${participant.nickname}`).join("\n"),
+							...(isParticipant ? [] : [s.joinInstruction]),
+						]);
+						if (!isParticipant) {
+							section.setButtonAccessory(btn => btn
+								.setLabel(s.participateButton)
+								.setCustomId("participate")
+								.setStyle(ButtonStyle.Secondary),
+							);
+						}
+						return section;
+					})
+					.addFooter({ text: formatMoney(user.Money, language) });
+			}
+
+			const getName = (id: string | null) => session.participants.find(participant => participant.userId === id)?.nickname ?? "";
+			const history = session.events.slice(-15).map(event => {
+				const nickname = getName(event.userId);
+				if (event.type === "started") return s.historyStart(user.Nickname, nickname);
+				if (event.type === "turn") {
+					return event.outcome === "eliminated"
+						? s.hitMessages[0](nickname, EmoteString.Hospital)
+						: s.missMessages[0](nickname);
+				}
+				if (event.type === "finished") {
+					const result = session.result
+						? MultiplayerSession.DecodeResult<{ prize?: number }>(session.result)
+						: null;
+					return `${s.winnerMessage(nickname)} ${formatMoney(result?.prize ?? 0, language)}!`;
+				}
+				return "";
+			});
+			const status = session.participants.map(participant =>
+				`-# ${session.events.at(-1)?.userId === participant.userId ? EmoteString.React : ""} ${participant.nickname} ${session.aliveUserIds.includes(participant.userId) ? EmoteString.Victory : EmoteString.Hospital}`,
+			);
+			const container = getHeader()
+				.addTexts(history)
+				.addLargeSeparator()
+				.addTexts(status)
 				.addFooter({
-					text: formatMoney(user.Money, language),
+					text: `${formatMoney(user.Money, language)} • ${s.betPrize(formatMoney(session.bet ?? betValue, language), formatMoney(prize, language))}`,
 				});
 
-			await replyWithContainer(interaction, container);
+			if (session.phase === "aborted") container.changeFooterText(s.timeout);
+			return container;
 		}
 
-		function warn(interaction: CommandInteraction | ButtonInteraction, message: string) {
-			const container = defaultComponent({
-				description: message,
-				color: CrColors.Casino,
-			});
-
-			return replyWithContainer(interaction, container, true);
+		function warn(target: CommandInteraction | ButtonInteraction, message: string) {
+			return replyWithContainer(target, defaultComponent({ description: message, color: CrColors.Casino }), true);
 		}
 
-		async function checkEligibility(targetUser: User, interaction: ButtonInteraction) {
-			const { canPlay, message } = await Casino.CanUserPlayGame(targetUser, betValue);
-
-			if (!canPlay) {
-				await warn(interaction, message);
-			}
-			return canPlay;
-		}
-
-		let container = getHeader()
-			.addTexts([
-				s.betDefined(formatMoney(betValue, language)),
-			])
-			.addButtonRow(btn => btn
-				.setLabel(s.startButton)
-				.setCustomId("start")
-				.setStyle(ButtonStyle.Primary),
-			)
-			.addFooter({
-				text: formatMoney(user.Money, language),
-			});
-
+		let activeSessionId: string | null = null;
+		let container = getInitialContainer();
 		const response = await replyWithContainer(interaction, container);
-
 		const collector = response?.createMessageComponentCollector({
 			componentType: ComponentType.Button,
 			idle: 60_000,
 		});
 
-		let battleStarted = false;
+		const updateSession = async (session: MultiplayerSessionView) => {
+			if (session.id !== activeSessionId) return;
+			container = getSessionContainer(session);
+			await replyWithContainer(interaction, container);
+		};
+		let updateQueue = Promise.resolve();
+		const queueUpdate = (session: MultiplayerSessionView): Promise<void> => {
+			updateQueue = updateQueue.then(() => updateSession(session)).catch(error => {
+				Log.Error(`Failed to update Russian Roulette session ${session.id}: ${error}`);
+			});
+			return updateQueue;
+		};
+		const unsubscribe = MultiplayerSession.Subscribe(user.Id, user.GangId, session => {
+			if (session.id === activeSessionId) {
+				void queueUpdate(session);
+			}
+			else if (!activeSessionId && session.kind === "russianRoulette") {
+				container = getInitialContainer();
+				void replyWithContainer(interaction, container).catch(error => Log.Error(`Failed to update Russian Roulette lobby list: ${error}`));
+			}
+		});
+
+		const watchSession = (sessionId: string) => {
+			activeSessionId = sessionId;
+			const current = MultiplayerSession.GetVisibleSession(sessionId, user.Id, user.GangId);
+			if (current) void queueUpdate(current);
+			void MultiplayerSession.WaitForCompletion(sessionId)
+				.then(queueUpdate)
+				.catch(error => Log.Error(`Failed waiting for Russian Roulette session ${sessionId}: ${error}`))
+				.finally(unsubscribe);
+		};
 
 		collector?.on("end", () => {
-			if (!battleStarted) {
+			if (!activeSessionId) {
 				container.changeFooterText(s.timeout);
-				disableButtons(interaction, container);
+				void disableButtons(interaction, container);
+				unsubscribe();
 			}
 		});
 
 		collector?.on("collect", async btn => {
-			if (battleStarted) return;
-
 			if (btn.customId === "start") {
-				if (btn.user.id !== interaction.user.id) {
-					return warn(btn, s.onlyHostCanStart);
-				}
-
+				if (btn.user.id !== user.Id) return warn(btn, s.onlyHostCanStart);
 				await deferUpdate(btn);
 				await user.GetInfo();
-
-				const { canPlay, message } = await Casino.CanUserPlayGame(user, betValue);
-
-				if (!canPlay) {
-					return warn(btn, message);
-				}
-
-				participants.push(user);
-				// DEBUG WITH 5 PLAYERS
-				// participants.push(await new User("761236646116982844").GetInfo() as User);
-				// participants.push(await new User("843955033543540756").GetInfo() as User);
-				// participants.push(await new User("666077411615572031").GetInfo() as User);
-				// participants.push(await new User("145466251496390656").GetInfo() as User);
-				await updateLobby();
+				const result = await MultiplayerSession.StartRussianRoulette(user, betValue, "discord");
+				if (!result.success) return warn(btn, result.message);
+				watchSession(result.session.id);
+				return;
 			}
 
-			else if (btn.customId === "participate") {
-				if (participants.some(p => p.Id === btn.user.id)) {
-					return warn(btn, s.alreadyParticipating);
-				}
+			const sessionId = btn.customId === "participate"
+				? activeSessionId
+				: btn.customId.startsWith("join_")
+					? btn.customId.slice(5)
+					: null;
+			if (!sessionId) return;
 
-				if (participants.length >= MAX_PARTICIPANTS) {
-					return warn(btn, s.fullGame(participants.length, MAX_PARTICIPANTS));
-				}
-
-				await deferUpdate(btn);
-
-				const joiningUser = await checkUser(btn.user.id, interaction);
-				if (!joiningUser) {
-					return;
-				}
-
-				const eligible = await checkEligibility(joiningUser, btn);
-				if (!eligible) return;
-
-				if (battleStarted || participants.length >= MAX_PARTICIPANTS) {
-					return warn(btn, s.fullGame(participants.length, MAX_PARTICIPANTS));
-				}
-
-				participants.push(joiningUser);
-				await updateLobby();
-
-				if (participants.length === MAX_PARTICIPANTS) {
-					battleStarted = true;
-					collector?.stop();
-					await runGame();
-				}
+			await deferUpdate(btn);
+			const joiningUser = await checkUser(btn.user.id, interaction);
+			if (!joiningUser) return;
+			const result = await MultiplayerSession.JoinRussianRoulette(sessionId, joiningUser, joiningUser.Language);
+			if (!result.success) {
+				await btn.followUp({ content: result.message || s.alreadyParticipating, flags: MessageFlags.Ephemeral });
+				return;
 			}
+			watchSession(sessionId);
 		});
-
-		async function runGame() {
-			const unavailableUsers = [];
-			for (const participant of participants) {
-				await participant.GetInfo();
-				const { canPlay } = await Casino.CanUserPlayGame(participant, betValue);
-				if (!canPlay) {
-					unavailableUsers.push(participant.GetNameWithImage());
-				}
-			}
-
-			if (unavailableUsers.length > 0) {
-				const unavailableMessage = s.unavailableUsers(unavailableUsers.join(", "));
-				return warn(interaction, unavailableMessage);
-			}
-
-			const startedGames = await Promise.all(participants.map(player => Casino.StartUserGame(player)));
-			if (startedGames.some(started => !started)) {
-				await Promise.all(participants
-					.filter((player, index) => startedGames[index] && player.Casino.IsInGame)
-					.map(async player => {
-						player.Casino.IsInGame = false;
-						await player.Update({ casinoIsInGame: false });
-					}),
-				);
-				return warn(interaction, s.unavailableUsers("A participant started another casino game."));
-			}
-
-			participants.sort(() => Math.random() - 0.5);
-			const participantsStatus = participants.map(p => ({ user: p, alive: true }));
-			const losers: User[] = [];
-			const history: string[] = [];
-
-			function showStatus(currentPlayerId: string) {
-				const emote = (id: string) => currentPlayerId === id ? EmoteString.React : "";
-				return getHeader()
-					.addTexts(history.slice(-15))
-					.addLargeSeparator()
-					.addTexts(participantsStatus.map(p => `-# ${emote(p.user.Id)} ${p.user.GetNameWithImage()} ${p.alive ? EmoteString.Victory : EmoteString.Hospital}`))
-					.addFooter({
-						text: `${formatMoney(user.Money, language)} • ${s.betPrize(formatMoney(betValue, participants[0].Language), formatMoney(prize, participants[0].Language))}`,
-					});
-			}
-
-			const host = user;
-			history.push(s.historyStart(host.GetNameWithImage(), participants[0].GetNameWithImage()));
-
-			container = showStatus(participants[0].Id);
-			await replyWithContainer(interaction, container);
-
-			let winner: User | null = null;
-			await wait(5_000);
-
-			while (winner == null) {
-				for (const player of participantsStatus) {
-					if (!player.alive) continue;
-
-					const aliveParticipants = participantsStatus.filter(p => p.alive);
-					if (aliveParticipants.length === 1) {
-						winner = player.user;
-						break;
-					}
-
-					const hit = Math.random() < 0.2; // 1 muniçao / 5 espaços
-					if (hit) {
-						const hospitalTime = Math.random() * 0.5 + 1.5; // 1.5 a 2.0
-						player.user.Hospital.Time = addHours(new Date(), hospitalTime);
-						player.user.Hospital.Count += 1;
-
-						losers.push(player.user);
-
-						player.alive = false;
-
-						const msgFunc = s.hitMessages[Math.floor(Math.random() * s.hitMessages.length)];
-						history.push(msgFunc(player.user.GetNameWithImage(), EmoteString.Hospital));
-					}
-					else {
-						const msgFunc = s.missMessages[Math.floor(Math.random() * s.missMessages.length)];
-						history.push(msgFunc(player.user.GetNameWithImage()));
-					}
-					container = showStatus(player.user.Id);
-					await replyWithContainer(interaction, container);
-					await wait(3_000);
-				}
-			}
-
-			let actualPrize = prize;
-			let additionalMessage = "";
-
-			if (winner.Class === ClassId.Thief) {
-				actualPrize = thiefPrize;
-				additionalMessage = s.thiefModifier(ClassList[winner.Class].Image.Emote.String, ClassList[winner.Class].Name[language]);
-			}
-			else if (winner.Class === ClassId.Attorney) {
-				actualPrize = attorneyPrize;
-				additionalMessage = s.attorneyModifier(ClassList[winner.Class].Image.Emote.String, ClassList[winner.Class].Name[language]);
-			}
-
-			const prizeToWinner = Math.floor(actualPrize - betValue);
-
-			history.push(
-				"",
-				`${s.winnerMessage(winner.GetNameWithImage())} ${formatMoney(actualPrize, host.Language)}!`,
-				additionalMessage,
-			);
-
-			await Promise.all([
-				...losers.map(loser => Casino.FinishUserGameWithLoss(loser, betValue)),
-				Casino.FinishUserGameWithWin(winner, prizeToWinner, betValue),
-			]);
-
-			container = showStatus(winner.Id);
-			await disableButtons(interaction, container);
-		}
 	},
 };
 
@@ -320,6 +232,7 @@ const Strings = {
 		gameTitle: (nick: string) => `### ${nick}'s Game`,
 		betPrize: (bet: string, prize: string) => `Bet: ${bet} • Prize: ${prize}`,
 		participants: (current: number, max: number) => `-# Participants ${current}/${max}`,
+		openLobbies: "Open lobbies",
 		joinInstruction: "-# Click **Participate** to join. The game will start automatically.",
 		participateButton: "Participate",
 		betDefined: (bet: string) => `You defined the bet as ${bet}`,
@@ -364,6 +277,7 @@ const Strings = {
 		gameTitle: (nick: string) => `### Jogo de ${nick}`,
 		betPrize: (bet: string, prize: string) => `Aposta: ${bet} • Prêmio: ${prize}`,
 		participants: (current: number, max: number) => `-# Participantes ${current}/${max}`,
+		openLobbies: "Salas abertas",
 		joinInstruction: "-# Clique em **Participar** para entrar. O jogo comecará automaticamente.",
 		participateButton: "Participar",
 		betDefined: (bet: string) => `Você definiu a aposta como ${bet}`,
@@ -408,6 +322,7 @@ const Strings = {
 		gameTitle: (nick: string) => `### Juego de ${nick}`,
 		betPrize: (bet: string, prize: string) => `Apuesta: ${bet} • Premio: ${prize}`,
 		participants: (current: number, max: number) => `-# Participantes ${current}/${max}`,
+		openLobbies: "Salas abiertas",
 		joinInstruction: "-# Haz clic en **Participar** para entrar. El juego comenzará automáticamente.",
 		participateButton: "Participar",
 		betDefined: (bet: string) => `Definiste la apuesta como ${bet}`,
