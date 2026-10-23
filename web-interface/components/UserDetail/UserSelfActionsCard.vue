@@ -184,17 +184,7 @@ async function handleAutomaticGrenadeChange() {
 		>
 			<BaseButton
 				variant="secondary"
-				:disabled="dailyLoading || !canReceiveDaily"
-				@click="isFloatingActionsOpen = false; handleDailyReward()"
-			>
-				<CalendarDays
-					:size="16"
-					aria-hidden="true"
-				/>
-				{{ dailyButtonLabel }}
-			</BaseButton>
-			<BaseButton
-				variant="secondary"
+				size="lg"
 				@click="isFloatingActionsOpen = false; isNicknameModalOpen = true"
 			>
 				<Pencil
@@ -205,6 +195,7 @@ async function handleAutomaticGrenadeChange() {
 			</BaseButton>
 			<BaseButton
 				variant="secondary"
+				size="lg"
 				:disabled="classOptions.length === 0"
 				@click="isFloatingActionsOpen = false; isClassModalOpen = true"
 			>
@@ -216,15 +207,28 @@ async function handleAutomaticGrenadeChange() {
 			</BaseButton>
 			<BaseButton
 				variant="secondary"
+				size="lg"
 				@click="isFloatingActionsOpen = false; isAutomaticGrenadeModalOpen = true"
 			>
 				<NuxtImg
 					src="/images/items/18_Grenade.png"
-					width="18"
-					height="18"
+					width="20"
+					height="20"
 					alt=""
 				/>
 				{{ user.automaticGrenade ? "Desativar granadas automáticas" : "Ativar granadas automáticas" }}
+			</BaseButton>
+			<BaseButton
+				variant="secondary"
+				size="lg"
+				:disabled="dailyLoading || !canReceiveDaily"
+				@click="isFloatingActionsOpen = false; handleDailyReward()"
+			>
+				<CalendarDays
+					:size="16"
+					aria-hidden="true"
+				/>
+				{{ dailyButtonLabel }}
 			</BaseButton>
 		</section>
 
