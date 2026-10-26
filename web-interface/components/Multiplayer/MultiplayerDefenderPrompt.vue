@@ -7,9 +7,9 @@ import { computed, onMounted, onUnmounted, ref } from "vue";
 import BeatUpAttackerActionModal from "~/components/Multiplayer/BeatUp/BeatUpAttackerActionModal.vue";
 import BeatUpDefenderModal from "~/components/Multiplayer/BeatUp/BeatUpDefenderModal.vue";
 import BeatUpResultModal from "~/components/Multiplayer/BeatUp/BeatUpResultModal.vue";
-import RobberyAttackerActionModal from "~/components/Multiplayer/Robbery/RobberyAttackerActionModal.vue";
 import InvestmentRobberyDefenderModal from "~/components/Multiplayer/InvestmentRobbery/InvestmentRobberyDefenderModal.vue";
 import InvestmentRobberyResultModal from "~/components/Multiplayer/InvestmentRobbery/InvestmentRobberyResultModal.vue";
+import RobberyAttackerActionModal from "~/components/Multiplayer/Robbery/RobberyAttackerActionModal.vue";
 import RobberyDefenderModal from "~/components/Multiplayer/Robbery/RobberyDefenderModal.vue";
 import RobberyResultModal from "~/components/Multiplayer/Robbery/RobberyResultModal.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
@@ -142,13 +142,13 @@ const previewSession = computed<MultiplayerSession | null>(() => {
 		duelDetails: isInvestment
 			? null
 			: {
-				weaponName: "RPG",
-				weaponImageUrl: "/images/items/10_RPG.png",
-				usedGrenade: true,
-				hospitalMinutes: previewKind.value === "beatUp" ? 60 : 27.5,
-				hospitalMinutesDelta: previewKind.value === "beatUp" ? 20 : 0,
-				prisonMinutesDelta: previewKind.value === "userRobbery" ? 60 : 0,
-			},
+					weaponName: "RPG",
+					weaponImageUrl: "/images/items/10_RPG.png",
+					usedGrenade: true,
+					hospitalMinutes: previewKind.value === "beatUp" ? 60 : 27.5,
+					hospitalMinutesDelta: previewKind.value === "beatUp" ? 20 : 0,
+					prisonMinutesDelta: previewKind.value === "userRobbery" ? 60 : 0,
+				},
 	};
 });
 const session = computed(() =>
@@ -160,13 +160,14 @@ const attackerPreviewSession = computed(() => {
 	if (!previewAttackerAction.value || !preview || !["userRobbery", "beatUp"].includes(preview.kind)) return null;
 	return { ...preview, targetId: "preview-target", targetNickname: "Defensor de exemplo" };
 });
-const liveAttackerSession = computed(() =>
-	sessions.value.find(
-		(candidate) =>
-			candidate.ownerId === userId.value &&
-			["userRobbery", "beatUp"].includes(candidate.kind) &&
-			["awaitingDefender", "resolving"].includes(candidate.phase),
-	) ?? null,
+const liveAttackerSession = computed(
+	() =>
+		sessions.value.find(
+			(candidate) =>
+				candidate.ownerId === userId.value &&
+				["userRobbery", "beatUp"].includes(candidate.kind) &&
+				["awaitingDefender", "resolving"].includes(candidate.phase),
+		) ?? null,
 );
 const attackerActionSession = computed(() => attackerPreviewSession.value ?? liveAttackerSession.value);
 const attackerActionModals = {
@@ -211,13 +212,13 @@ const previewResultSession = computed<MultiplayerSession | null>(() => {
 		duelDetails: isInvestment
 			? null
 			: {
-				weaponName: "RPG",
-				weaponImageUrl: "/images/items/10_RPG.png",
-				usedGrenade: true,
-				hospitalMinutes: scenario.kind === "beatUp" ? 60 : 27.5,
-				hospitalMinutesDelta: scenario.kind === "beatUp" ? 20 : 0,
-				prisonMinutesDelta: scenario.kind === "userRobbery" ? 60 : 0,
-			},
+					weaponName: "RPG",
+					weaponImageUrl: "/images/items/10_RPG.png",
+					usedGrenade: true,
+					hospitalMinutes: scenario.kind === "beatUp" ? 60 : 27.5,
+					hospitalMinutesDelta: scenario.kind === "beatUp" ? 20 : 0,
+					prisonMinutesDelta: scenario.kind === "userRobbery" ? 60 : 0,
+				},
 		result: JSON.stringify(scenario.result()),
 	};
 });
@@ -304,8 +305,7 @@ function closeResult(open: boolean) {
 	if (previewResultKind.value) {
 		previewResultKind.value = null;
 		previewResultPerspective.value = "defender";
-	}
-	else {
+	} else {
 		completedSessions.value = completedSessions.value.slice(1);
 	}
 }
@@ -354,11 +354,9 @@ async function respond(sessionId: string, response: string) {
 			variant: result.success ? "success" : "error",
 		});
 		if (result.success) await refetch();
-	}
-	catch (error: unknown) {
+	} catch (error: unknown) {
 		showToast({ text: error instanceof Error ? error.message : "Erro inesperado.", variant: "error" });
-	}
-	finally {
+	} finally {
 		respondingSessionId.value = null;
 	}
 }

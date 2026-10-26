@@ -251,17 +251,6 @@ onUnmounted(() => {
 				Minha gangue
 			</BaseButton>
 			<BaseButton
-				to="/bar"
-				variant="primary"
-				class="me-page__bar-button"
-			>
-				<Beer
-					:size="18"
-					aria-hidden="true"
-				/>
-				Beber no bar
-			</BaseButton>
-			<BaseButton
 				v-if="pushNotifications.isSupported"
 				variant="secondary"
 				:disabled="isTogglingPush"
@@ -280,6 +269,21 @@ onUnmounted(() => {
 				{{ pushNotifications.isSubscribed.value ? "Desativar notificações" : "Ativar notificações" }}
 			</BaseButton>
 		</section>
+
+		<div>
+			<BaseButton
+				to="/bar"
+				variant="primary"
+				class="me-page__bar-button"
+				size="lg"
+			>
+				<Beer
+					:size="18"
+					aria-hidden="true"
+				/>
+				Beber no bar
+			</BaseButton>
+		</div>
 
 		<section
 			class="me-page__help"
@@ -333,6 +337,7 @@ onUnmounted(() => {
 				v-if="modal === 'badges'"
 				class="me-page__modal-copy"
 			>
+				<p>Insígnias são recompensas por alguma vitória ou participação. Quantas você consegue colecionar?</p>
 				<p
 					v-if="badgeCatalogLoading"
 					role="status"
