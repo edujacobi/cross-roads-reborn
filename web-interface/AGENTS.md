@@ -23,7 +23,7 @@ commands.
 The roadmap is:
 [x] Admin Dashboard, with all functionalities from admin commmands.
 [x] Basic User Info and functionalities. No Complex features.
-[ ] Complex Features, like Robberies, Beat Ups, Gang Management, Casino
+[x] Complex Features, like Robberies, Beat Ups, Gang Management, Casino
 [ ] Deprecate Discord Bot Commands
 
 ## Coding Standards
@@ -48,6 +48,11 @@ Always focus on both readability and performance. Code can be verbose if it impr
 ### New Line
 
 **Always** use CRLF as End of Line Sequence in files.
+
+### Ensuring code quality
+
+**Always**, before ending a task, run tests, lint and build. Only finish the task if all three are passing. **Always**
+review the task with Ponytail skill.
 
 ## Codebase Index & Knowledge Graph
 

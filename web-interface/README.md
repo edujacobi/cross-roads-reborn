@@ -21,30 +21,42 @@ Roles are enforced both on the API server (GraphQL resolvers) and the frontend f
 
 ---
 
+## Current status
+
+The web interface is an active player-facing client as well as an admin tool.
+It covers account and user management, the main game loops, gangs, casino
+games, investments, and admin operations. The Discord bot and its API are
+still required; replacing and deprecating the bot commands remains unfinished.
+
+| Area              | Current coverage                                                                                                                                     |
+|-------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Player features   | Account profile and settings, rankings, gangs, items and shops, jobs, bar, hospital, prison, scavenging, robberies, investments, casino, and updates |
+| Admin features    | Dashboard, user search and actions, VIP management, events, season controls, and audit log                                                           |
+| Remaining roadmap | Deprecate Discord bot commands after the web interface covers the required workflows                                                                 |
+
+The app runs in Nuxt SPA mode and reads game data from the bot's GraphQL API.
+The API server must be running for login and data-backed features to work.
+
+---
+
 ## Environment Variables
 
-The Nuxt commands explicitly load separate environment files. From the
-repository root, create them from the examples:
-
-```powershell
-Copy-Item admin/.env.dev.example admin/.env.dev
-Copy-Item admin/.env.prod.example admin/.env.prod
-```
-
-Set the API URL in each file:
+The Nuxt scripts load `web-interface/.env.dev` and
+`web-interface/.env.prod`. These files are local configuration; create them
+manually and set the API URL:
 
 ```env
-# admin/.env.dev — used by `npm run admin:dev`
+# web-interface/.env.dev — used by `npm run web:dev`
 NUXT_PUBLIC_API_BASE_URL=http://localhost:3001
 ```
 
 ```env
-# admin/.env.prod — used by `npm --prefix admin run generate`
+# web-interface/.env.prod — used by `npm --prefix web-interface run generate`
 NUXT_PUBLIC_API_BASE_URL=https://graphql.ejacobi.com.br
 ```
 
-These scripts pass the corresponding file to Nuxt with `--dotenv`, so the
-production URL in `admin/.env` is not used by them.
+These scripts pass the corresponding file to Nuxt with `--dotenv`; they do not
+use `web-interface/.env`.
 
 The main bot also needs these set in its own `.env`:
 
@@ -65,10 +77,9 @@ FRONTEND_URL=https://crossroads.ejacobi.com.br
 ```
 
 Add `https://crossroads.ejacobi.com.br/auth/discord/callback` to the OAuth2
-redirect URLs in the Discord Developer Portal. Point the subdomain's DNS to the
-server's public IP and configure its HTTPS reverse proxy to route `/graphql`,
-`/auth/*`, and `/health` to the API on port `3001`; route the remaining paths to
-the Nuxt server on port `3000`.
+redirect URLs in the Discord Developer Portal. The hosted frontend must be
+able to reach the API at the configured API URL, and the API's `FRONTEND_URL`
+must match the deployed site.
 
 ---
 
@@ -87,58 +98,60 @@ npm run dev
 
 The API server will be available at `http://localhost:3001`.
 
-### 2. Start the admin dev server
+### 2. Start the web interface dev server
 
 Still from the **project root**:
 
 ```powershell
-npm run admin:dev
+npm run web:dev
 ```
 
-The admin panel will be available at `http://localhost:3000`.
+The web interface will be available at `http://localhost:3000`.
 
 ---
 
-## Production Build
+## Production deployment
 
-To generate the production static site:
-
-```powershell
-npm --prefix admin run generate
-```
-
-This creates `admin/.output` using the production API URL configured
-in `admin/.env.prod`.
-
-For a server-rendered production build:
+The production site is hosted as static files on CPanel. Generate the site:
 
 ```powershell
-npm run admin:build
+npm --prefix web-interface run generate
 ```
 
-Output is placed in `admin/.output/`. Start the production server with:
+This uses `web-interface/.env.prod` and writes the deployable static site to
+`web-interface/.output/public`. Upload the contents of that directory to the
+CPanel document root. The published site still needs to reach the separately
+running GraphQL/API server at the URL configured by
+`NUXT_PUBLIC_API_BASE_URL`.
+
+For local server-build checks, run:
 
 ```powershell
-node admin/.output/server/index.mjs
+npm run web:build
 ```
 
----
+This produces a Nuxt build in `web-interface/.output`; it is not the static
+artifact used for the CPanel deployment.
 
-## Pages
+## Available routes
 
-| Route            | Description                                           |
-|------------------|-------------------------------------------------------|
-| `/login`         | Discord OAuth login screen                            |
-| `/auth/callback` | Handles the OAuth redirect and JWT storage            |
-| `/`              | Dashboard — stats, status grid, language distribution |
-| `/users`         | Searchable, paginated user list                       |
-| `/users/[id]`    | Detailed user profile with admin action modals        |
+| Routes                                                                                  | Features                                                     |
+|-----------------------------------------------------------------------------------------|--------------------------------------------------------------|
+| `/login`, `/auth/callback`                                                              | Discord login and OAuth callback                             |
+| `/`, `/me`, `/rankings`, `/updates`                                                     | Dashboard, own profile, leaderboards, and updates            |
+| `/users`, `/users/[id]`                                                                 | User search, profiles, history, and role-appropriate actions |
+| `/gangs`, `/gangs/[id]`                                                                 | Gang creation, details, and management                       |
+| `/casino`, `/casino/[game]`                                                             | Casino games and multiplayer sessions                        |
+| `/items`, `/shop`, `/specialshop`, `/jobs`                                              | Item catalog, shops, and jobs                                |
+| `/bar`, `/hospital`, `/prison`, `/cemetery`                                             | Player status and related actions                            |
+| `/rob`, `/scavenge`, `/investments`                                                     | Robberies, scavenging, and investments                       |
+| `/admin/dashboard`, `/admin/vips`, `/admin/events`, `/admin/season`, `/admin/audit-log` | Administrative dashboards and controls                       |
 
 ---
 
 ## Stack
 
-- **Nuxt 3** (SPA mode) — routing and SSR framework
+- **Nuxt 3** with **Vue 3 Composition API** (SPA mode)
 - **Apollo Client** + `@vue/apollo-composable` — GraphQL data fetching
 - **Radix Vue** — accessible headless UI primitives (used in `BaseModal`)
 - **SCSS** — custom design tokens and component styles (no Tailwind)
