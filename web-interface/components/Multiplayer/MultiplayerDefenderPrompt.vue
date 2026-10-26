@@ -160,17 +160,27 @@ const attackerPreviewSession = computed(() => {
 	if (!previewAttackerAction.value || !preview || !["userRobbery", "beatUp"].includes(preview.kind)) return null;
 	return { ...preview, targetId: "preview-target", targetNickname: "Defensor de exemplo" };
 });
+const liveAttackerSession = computed(() =>
+	sessions.value.find(
+		(candidate) =>
+			candidate.ownerId === userId.value &&
+			["userRobbery", "beatUp"].includes(candidate.kind) &&
+			["awaitingDefender", "resolving"].includes(candidate.phase),
+	) ?? null,
+);
+const attackerActionSession = computed(() => attackerPreviewSession.value ?? liveAttackerSession.value);
 const attackerActionModals = {
 	beatUp: BeatUpAttackerActionModal,
 	userRobbery: RobberyAttackerActionModal,
 };
 const attackerActionModal = computed(() => {
-	const kind = attackerPreviewSession.value?.kind;
+	const kind = attackerActionSession.value?.kind;
 	return kind && Object.hasOwn(attackerActionModals, kind)
 		? attackerActionModals[kind as keyof typeof attackerActionModals]
 		: null;
 });
 const attackerPreviewKinds = ["userRobbery", "beatUp"] as const;
+const dismissedAttackerSessionId = ref<string | null>(null);
 const previewResultSession = computed<MultiplayerSession | null>(() => {
 	if (!import.meta.dev || !previewResultKind.value) return null;
 	const scenario = previewResults[previewResultKind.value];
@@ -278,6 +288,15 @@ function closePreview(open: boolean) {
 		previewKind.value = null;
 		previewAttackerAction.value = false;
 	}
+}
+
+function closeAttackerAction(open: boolean) {
+	if (open) return;
+	if (attackerPreviewSession.value) {
+		closePreview(false);
+		return;
+	}
+	dismissedAttackerSessionId.value = attackerActionSession.value?.id ?? null;
 }
 
 function closeResult(open: boolean) {
@@ -412,10 +431,15 @@ async function respond(sessionId: string, response: string) {
 	/>
 	<component
 		:is="attackerActionModal"
-		v-if="attackerPreviewSession && attackerActionModal && !completedResult"
-		:session="attackerPreviewSession"
-		:countdown="attackerPreviewSession.expiresAt ? formatCountdown(attackerPreviewSession.expiresAt) : ''"
-		@update:open="closePreview"
+		v-if="
+			attackerActionSession &&
+				attackerActionModal &&
+				!completedResult &&
+				dismissedAttackerSessionId !== attackerActionSession.id
+		"
+		:session="attackerActionSession"
+		:countdown="attackerActionSession.expiresAt ? formatCountdown(attackerActionSession.expiresAt) : ''"
+		@update:open="closeAttackerAction"
 	/>
 	<component
 		:is="completedResultModal"

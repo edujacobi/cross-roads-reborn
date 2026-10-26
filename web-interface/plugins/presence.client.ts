@@ -1,18 +1,16 @@
 import { localStorageKeys } from "~/constants/localStorageKeys";
 
 export default defineNuxtPlugin(() => {
-	const { public: { apiBaseUrl } } = useRuntimeConfig();
+	const {
+		public: { apiBaseUrl },
+	} = useRuntimeConfig();
 	const heartbeatInterval = 60_000;
 	let lastHeartbeatAt = 0;
 	let heartbeatInProgress = false;
 
 	async function sendHeartbeat() {
 		const now = Date.now();
-		if (
-			document.visibilityState !== "visible"
-			|| now - lastHeartbeatAt < heartbeatInterval
-			|| heartbeatInProgress
-		) {
+		if (document.visibilityState !== "visible" || now - lastHeartbeatAt < heartbeatInterval || heartbeatInProgress) {
 			return;
 		}
 
@@ -29,20 +27,24 @@ export default defineNuxtPlugin(() => {
 			});
 
 			if (!response.ok && response.status !== 401) {
+				// biome-ignore lint/suspicious/noConsole: Debug
 				console.warn("Presence heartbeat failed:", response.status);
 			}
-		}
-		catch (error) {
+		} catch (error) {
+			// biome-ignore lint/suspicious/noConsole: Debug
 			console.warn("Presence heartbeat failed:", error);
-		}
-		finally {
+		} finally {
 			heartbeatInProgress = false;
 		}
 	}
 
 	for (const event of ["pointerdown", "pointermove", "keydown", "scroll", "touchstart"]) {
-		window.addEventListener(event, () => {
-			void sendHeartbeat();
-		}, { passive: true });
+		window.addEventListener(
+			event,
+			() => {
+				void sendHeartbeat();
+			},
+			{ passive: true },
+		);
 	}
 });
