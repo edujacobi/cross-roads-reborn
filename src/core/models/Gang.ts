@@ -116,6 +116,10 @@ export class Gang {
 		return 9 + this.Level; // Level 1: 10 members, +1 per additional level (max 19 at level 10)
 	}
 
+	GetJoinCost(): number {
+		return Gang.JOIN_COST * this.Level;
+	}
+
 	/**
 	 * Checks if a user can be added to the gang.
 	 * @returns True if the gang has space for more members, false otherwise.
@@ -600,8 +604,13 @@ export class Gang {
 				return false;
 			}
 
-			user.Money -= Gang.JOIN_COST;
-			this.Money += Gang.JOIN_COST;
+			const joinCost = this.GetJoinCost();
+			if (user.Money < joinCost) {
+				return false;
+			}
+
+			user.Money -= joinCost;
+			this.Money += joinCost;
 
 			await Promise.all([
 				user.Update({
@@ -1654,11 +1663,11 @@ export const Strings = {
 		acceptText: "Accept",
 		declineText: "Decline",
 		invitation: {
-			description: (gangName: string, gangAcronym: string) => `I'm inviting you to join the gang **${gangName}** (${gangAcronym})!\n-# Accepting this invite will cost you **${formatMoney(Gang.JOIN_COST, Language.English)}**.`,
+			description: (gangName: string, gangAcronym: string, joinCost: number) => `I'm inviting you to join the gang **${gangName}** (${gangAcronym})!\n-# Accepting this invite will cost you **${formatMoney(joinCost, Language.English)}**.`,
 			footer: "You have 3 minutes to accept or decline the invitation.",
 		},
 		notEnoughMoney: {
-			private: (gangName: string, gangAcronym: string) => `You don't have enough money to accept the invitation of **${gangName}** (${gangAcronym}). You need **${formatMoney(Gang.JOIN_COST, Language.English)}**.`,
+			private: (gangName: string, gangAcronym: string, joinCost: number) => `You don't have enough money to accept the invitation of **${gangName}** (${gangAcronym}). You need **${formatMoney(joinCost, Language.English)}**.`,
 			channel: (name: string) => `**${name}** tried to accept the invitation, but doesn't have enough money.`,
 		},
 		success: {
@@ -1686,11 +1695,11 @@ export const Strings = {
 		acceptText: "Aceitar",
 		declineText: "Recusar",
 		invitation: {
-			description: (gangName: string, gangAcronym: string) => `Estou convidando você para entrar na gangue **${gangName}** (${gangAcronym})!\n-# Aceitar este convite custará **${formatMoney(Gang.JOIN_COST, Language.Portuguese)}**.`,
+			description: (gangName: string, gangAcronym: string, joinCost: number) => `Estou convidando você para entrar na gangue **${gangName}** (${gangAcronym})!\n-# Aceitar este convite custará **${formatMoney(joinCost, Language.Portuguese)}**.`,
 			footer: "Você tem 3 minutos para aceitar ou recusar o convite.",
 		},
 		notEnoughMoney: {
-			private: (gangName: string, gangAcronym: string) => `Você não tem dinheiro suficiente para aceitar o convite da gangue **${gangName}** (${gangAcronym}). Você precisa de **${formatMoney(Gang.JOIN_COST, Language.Portuguese)}**.`,
+			private: (gangName: string, gangAcronym: string, joinCost: number) => `Você não tem dinheiro suficiente para aceitar o convite da gangue **${gangName}** (${gangAcronym}). Você precisa de **${formatMoney(joinCost, Language.Portuguese)}**.`,
 			channel: (name: string) => `**${name}** tentou aceitar o convite, mas não tem dinheiro suficiente.`,
 		},
 		success: {
@@ -1718,11 +1727,11 @@ export const Strings = {
 		acceptText: "Aceptar",
 		declineText: "Rechazar",
 		invitation: {
-			description: (gangName: string, gangAcronym: string) => `Te estoy invitando a unirte a la cuadrilla **${gangName}** (${gangAcronym})!\n-# Aceptar esta invitación te costará **${formatMoney(Gang.JOIN_COST, Language.Spanish)}**.`,
+			description: (gangName: string, gangAcronym: string, joinCost: number) => `Te estoy invitando a unirte a la cuadrilla **${gangName}** (${gangAcronym})!\n-# Aceptar esta invitación te costará **${formatMoney(joinCost, Language.Spanish)}**.`,
 			footer: "Tienes 3 minutos para aceptar o rechazar la invitación.",
 		},
 		notEnoughMoney: {
-			private: (gangName: string, gangAcronym: string) => `No tienes suficiente dinero para aceptar la invitación de **${gangName}** (${gangAcronym}). Necesitas **${formatMoney(Gang.JOIN_COST, Language.Spanish)}**.`,
+			private: (gangName: string, gangAcronym: string, joinCost: number) => `No tienes suficiente dinero para aceptar la invitación de **${gangName}** (${gangAcronym}). Necesitas **${formatMoney(joinCost, Language.Spanish)}**.`,
 			channel: (name: string) => `**${name}** intentó aceptar la invitación, pero no tiene suficiente dinero.`,
 		},
 		success: {

@@ -1289,7 +1289,7 @@ module.exports = {
 				components: [
 					defaultComponent({
 						user,
-						description: sT.invitation.description(gang.Name, gang.Acronym),
+						description: sT.invitation.description(gang.Name, gang.Acronym, gang.GetJoinCost()),
 						footer: sT.invitation.footer,
 						buttons: row,
 					}),
@@ -1317,8 +1317,9 @@ module.exports = {
 				collector?.stop();
 
 				if (btn.customId === "accept") {
-					if (target.Money < Gang.JOIN_COST) {
-						descriptionPrivate = sT.notEnoughMoney.private(gang.Name, gang.Acronym);
+					const joinCost = gang.GetJoinCost();
+					if (target.Money < joinCost) {
+						descriptionPrivate = sT.notEnoughMoney.private(gang.Name, gang.Acronym, joinCost);
 						descriptionChannel = sI.notEnoughMoney.channel(target.GetNameWithImage());
 					}
 					else {

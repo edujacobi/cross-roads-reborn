@@ -755,7 +755,7 @@ export const gangResolvers: {
 						]);
 						message = currentGang
 							&& currentGang.CanInvite(authUser.userId)
-							&& targetUser.Money >= Gang.JOIN_COST
+							&& targetUser.Money >= currentGang.GetJoinCost()
 							&& await currentGang.AcceptInvite(targetUser)
 							? strings.accepted
 							: strings.failed;

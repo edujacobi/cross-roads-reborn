@@ -12,6 +12,7 @@ vi.mock("#core/database/GangMembers", () => ({
 			{ userId: "user_high_permission", roleId: 2, depositTime: new Date(), depositAmount: 200 },
 			{ userId: "user_mid_permission", roleId: 3, depositTime: new Date(), depositAmount: 300 },
 		])),
+		create: vi.fn((values: object) => Promise.resolve(values)),
 	},
 }));
 
@@ -98,6 +99,37 @@ describe("Gang Model - Member Sorting", () => {
 		// The third should be MidPermUser (2 permissions)
 		expect(gang.Members[2].UserId).toBe("user_mid_permission");
 		expect(gang.Members[2].PermissionCount).toBe(2);
+	});
+});
+
+describe("Gang Model - Joining", () => {
+	it("charges the base join cost multiplied by gang level", async () => {
+		const gang = new Gang();
+		gang.Id = 1;
+		gang.Level = 4;
+		gang.Roles = [{ Id: 2, Name: "Member", Permissions: [] }];
+		const user = new User("new-member");
+		user.Money = Gang.JOIN_COST * gang.Level;
+
+		const findMembership = vi.spyOn(GangMemberRepository, "FindByUserId").mockResolvedValue(null);
+		const updateGang = vi.spyOn(gang, "Update").mockResolvedValue(true);
+		const updateUser = vi.spyOn(user, "Update").mockResolvedValue(true);
+		const loadMembers = vi.spyOn(gang, "LoadMembers").mockResolvedValue();
+
+		try {
+			await expect(gang.AcceptInvite(user)).resolves.toBe(true);
+
+			expect(user.Money).toBe(0);
+			expect(gang.Money).toBe(Gang.JOIN_COST * gang.Level);
+			expect(updateUser).toHaveBeenCalledExactlyOnceWith({ money: 0 });
+			expect(updateGang).toHaveBeenCalledExactlyOnceWith();
+		}
+		finally {
+			findMembership.mockRestore();
+			updateGang.mockRestore();
+			updateUser.mockRestore();
+			loadMembers.mockRestore();
+		}
 	});
 });
 
