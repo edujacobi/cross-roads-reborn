@@ -4,7 +4,7 @@ import { Language, type Localization } from "#core/models/Language";
 import type { User } from "#core/models/User";
 import { UserBadge } from "#core/models/UserBadge";
 import { subMinutes } from "date-fns";
-import { Colors, type User as DiscordUser } from "discord.js";
+import { type User as DiscordUser } from "discord.js";
 import {
 	ActionRowBuilder,
 	AttachmentBuilder,
@@ -163,14 +163,7 @@ export class Inventory {
 		const render = await this.Render();
 
 		const response = await replyInteraction(this.Interaction, {
-			components: [...this.Medias, render.row,
-				new ActionRowBuilder<ButtonBuilder>()
-					.addComponents(new ButtonBuilder()
-						.setLabel("Sorteio de VIP!")
-						.setCustomId("vip")
-						.setEmoji(EmoteId.VIP)
-						.setStyle(ButtonStyle.Primary)),
-			],
+			components: [...this.Medias, render.row],
 			files: this.Attachments,
 			flags: MessageFlags.IsComponentsV2,
 		});
@@ -192,15 +185,6 @@ export class Inventory {
 			}
 			else if (btn.customId === "lessInfo") {
 				this.FullSize = false;
-			}
-			else if (btn.customId === "vip") {
-				return replyWithContainer(btn, defaultComponent({
-					color: Colors.Gold,
-					thumbnail: this.Interaction.client.user.avatarURL() || undefined,
-					description: `# Sorteio de VIP!
-Acesse o servidor oficial de Cross Roads com o comando \`/convite\` e acesse o canal #eventos para saber mais!
-Serão 6 VIPs sorteados, que poderão testar a nova Interface Web do Cross Roads!`,
-				}));
 			}
 			else if (btn.customId === "adminHeal") {
 				await this.Target.Cure(this.Interaction.user.id);
