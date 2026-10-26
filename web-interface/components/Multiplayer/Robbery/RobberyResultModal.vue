@@ -6,9 +6,16 @@ import { computed } from "vue";
 import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
+import type { ImagePath } from "~/constants/imagePaths";
 import { imagePaths } from "~/constants/imagePaths";
 import type { MultiplayerSession } from "~/graphql/generated";
 import { getOutcomeDate, getOutcomeNumber, parseMultiplayerOutcome } from "~/utils/multiplayerResult";
+
+type ResultLine = {
+	text: string;
+	image?: ImagePath;
+	tone: "success" | "hospital" | "neutral" | "prison";
+};
 
 const props = defineProps<{
 	session: MultiplayerSession;
@@ -25,36 +32,44 @@ const attackerName = computed(
 );
 const targetName = computed(() => props.session.targetNickname ?? "o alvo");
 const isTarget = computed(() => props.session.targetId === props.viewerId);
-const details = computed(() => {
+const resultLines = computed<ResultLine[]>(() => {
 	if (succeeded.value === null) return [];
-	const lines: string[] = [];
+	const lines: ResultLine[] = [];
 
 	if (succeeded.value) {
 		const amount = getOutcomeNumber(outcome.value, "moneyRobbed");
-		lines.push(
-			isTarget.value
+		lines.push({
+			text: isTarget.value
 				? `Você foi roubado${amount === null ? "" : ` e perdeu ${formatMoney(amount)}`} para ${attackerName.value}!`
 				: `Você roubou ${targetName.value}${amount === null ? "" : ` e ganhou ${formatMoney(amount)}`}!`,
-		);
+			tone: "neutral",
+		});
 		if (outcome.value?.willBeBeatenUp === true) {
 			const hospitalTime = getOutcomeDate(outcome.value, "defenderHospitalTime");
-			lines.push(
-				isTarget.value
+			lines.push({
+				text: isTarget.value
 					? `Você também foi espancado${hospitalTime ? ` e ficará hospitalizado até ${hospitalTime}` : ""}.`
 					: `${targetName.value} também foi espancado${hospitalTime ? ` e ficará hospitalizado até ${hospitalTime}` : ""}.`,
-			);
+				image: imagePaths.situations.hospital,
+				tone: "hospital",
+			});
 		}
 	} else {
-		lines.push(
-			isTarget.value
+		lines.push({
+			text: isTarget.value
 				? props.session.response === "police"
 					? `${attackerName.value} tentou lhe roubar, mas a polícia o capturou!`
 					: `${attackerName.value} tentou lhe roubar, mas falhou.`
 				: `Seu roubo contra ${targetName.value} falhou.`,
-		);
+			tone: "neutral",
+		});
 		const prisonTime = getOutcomeDate(outcome.value, "attackerPrisonTime");
 		if (prisonTime) {
-			lines.push(isTarget.value ? `Ele ficará preso até ${prisonTime}.` : `Você ficará preso até ${prisonTime}.`);
+			lines.push({
+				text: isTarget.value ? `Ele ficará preso até ${prisonTime}.` : `Você ficará preso até ${prisonTime}.`,
+				image: imagePaths.situations.prison,
+				tone: "prison",
+			});
 		}
 	}
 
@@ -67,24 +82,33 @@ const details = computed(() => {
 		:open="true"
 		title="Roubo finalizado"
 		:icon="imagePaths.situations.robbery"
+		variant="robbery"
 		@update:open="emit('update:open', $event)"
 	>
 		<section class="robbery-result">
 			<BaseBadge
 				v-if="succeeded !== null"
-				:variant="succeeded ? 'success' : 'danger'"
+				:variant="(succeeded && !isTarget) || (!succeeded && isTarget) ? 'success' : 'danger'"
 			>
-				{{ succeeded ? "Sucesso." : "Falha!" }}
+				{{ succeeded ? (isTarget ? "Sucesso." : "Sucesso!") : isTarget ? "Falha!" : "Falha." }}
 			</BaseBadge>
 			<div
-				v-if="details.length"
+				v-if="resultLines.length"
 				class="robbery-result__details"
 			>
 				<p
-					v-for="(line, index) in details"
+					v-for="(line, index) in resultLines"
 					:key="index"
+					:class="`robbery-result__line robbery-result__line--${line.tone}`"
 				>
-					{{ line }}
+					<NuxtImg
+						v-if="line.image"
+						:src="line.image"
+						alt=""
+						width="24"
+						height="24"
+					/>
+					{{ line.text }}
 				</p>
 			</div>
 			<p
@@ -116,12 +140,34 @@ const details = computed(() => {
 	display: grid;
 	gap: $spacing-sm;
 
+	:deep(.base-badge) {
+		justify-content: center;
+		padding: 1rem;
+		border-radius: $radius-sm;
+		font-size: $font-size-18;
+	}
+
 	&__details {
 		display: grid;
 		gap: $spacing-xs;
+	}
 
-		p {
-			margin: 0;
+	&__line {
+		display: flex;
+		align-items: center;
+		gap: $spacing-sm;
+		margin: 0;
+
+		&--success {
+			color: $color-success;
+		}
+
+		&--hospital {
+			color: $color-hospital;
+		}
+
+		&--prison {
+			color: $color-prison;
 		}
 	}
 

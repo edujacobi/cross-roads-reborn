@@ -68,6 +68,7 @@ const responseStatuses: Record<string, string> = {
 		:dismissible="dismissible"
 		title="Roubo em andamento"
 		@update:open="emit('update:open', $event)"
+		variant="robbery"
 		icon="/images/situations/robbery.png"
 	>
 		<section
@@ -106,16 +107,16 @@ const responseStatuses: Record<string, string> = {
 						<strong>{{ session.duelDetails.weaponName }}</strong>
 					</template>
 					<span v-if="session.duelDetails?.usedGrenade">
-							e uma
-							<NuxtImg
-								src="images/items/18_Grenade.png"
-								alt=""
-								width="24"
-								height="24"
-								class="defender-prompt__weapon-image"
-							/>
-							<span>Granada</span>
-						</span>
+						e uma
+						<NuxtImg
+							src="images/items/18_Grenade.png"
+							alt=""
+							width="24"
+							height="24"
+							class="defender-prompt__weapon-image"
+						/>
+						<span>Granada</span>
+					</span>
 					<BaseBadge
 						variant="danger"
 						class="defender-prompt__attack-badge"
@@ -175,9 +176,7 @@ const responseStatuses: Record<string, string> = {
 					width="24"
 					height="24"
 				/>
-				{{
-					(session.response && responseStatuses[session.response]) || "A ação está sendo resolvida."
-				}}
+				{{ (session.response && responseStatuses[session.response]) || "A ação está sendo resolvida." }}
 			</p>
 		</section>
 

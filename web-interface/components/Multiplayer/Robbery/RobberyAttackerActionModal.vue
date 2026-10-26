@@ -20,6 +20,7 @@ const emit = defineEmits<{
 		:open="true"
 		title="Roubo em andamento"
 		:icon="imagePaths.situations.robbery"
+		variant="robbery"
 		@update:open="emit('update:open', $event)"
 	>
 		<section class="robbery-attacker">

@@ -64,6 +64,7 @@ const responseStatuses: Record<string, string> = {
 		:dismissible="dismissible"
 		title="Espancamento em andamento"
 		@update:open="emit('update:open', $event)"
+		variant="beatup"
 		icon="/images/situations/beatup.png"
 	>
 		<section
@@ -173,9 +174,7 @@ const responseStatuses: Record<string, string> = {
 					width="20"
 					height="20"
 				/>
-				{{
-					(session.response && responseStatuses[session.response]) || "A ação está sendo resolvida."
-				}}
+				{{ (session.response && responseStatuses[session.response]) || "A ação está sendo resolvida." }}
 			</p>
 		</section>
 

@@ -20,6 +20,7 @@ const emit = defineEmits<{
 		:open="true"
 		title="Espancamento em andamento"
 		:icon="imagePaths.situations.beatup"
+		variant="beatup"
 		@update:open="emit('update:open', $event)"
 	>
 		<section class="beat-up-attacker">

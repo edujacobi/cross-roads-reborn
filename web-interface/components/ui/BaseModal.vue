@@ -21,6 +21,7 @@ interface Props {
 	description?: string;
 	dismissible?: boolean;
 	icon?: ImagePath;
+	variant?: "robbery" | "beatup";
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -44,7 +45,10 @@ function updateOpen(open: boolean) {
 
 		<DialogPortal>
 			<DialogOverlay class="dialog-overlay" />
-			<DialogContent class="dialog-content">
+			<DialogContent
+				class="dialog-content"
+				:class="variant"
+			>
 				<div class="dialog-header">
 					<div>
 						<DialogTitle class="dialog-title">
@@ -189,6 +193,32 @@ function updateOpen(open: boolean) {
       }
     }
   }
+
+	&.robbery {
+		border: 1px solid color-mix(in lab, $color-robbery 50%, $bg-card);
+		background-color: color-mix(in lab, $color-robbery 10%, $bg-card);
+
+		.dialog-header {
+			border-bottom: 1px solid color-mix(in lab, $color-robbery 30%, $bg-card);
+		}
+
+		.dialog-footer {
+			border-top: 1px solid color-mix(in lab, $color-robbery 30%, $bg-card);
+		}
+	}
+
+	&.beatup {
+		border: 1px solid color-mix(in lab, $color-beatup 50%, $bg-card);
+		background-color: color-mix(in lab, $color-beatup 10%, $bg-card);
+
+		.dialog-header {
+			border-bottom: 1px solid color-mix(in lab, $color-beatup 30%, $bg-card);
+		}
+
+		.dialog-footer {
+			border-top: 1px solid color-mix(in lab, $color-beatup 30%, $bg-card);
+		}
+	}
 }
 
 @keyframes overlay-in {
