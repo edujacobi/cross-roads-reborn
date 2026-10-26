@@ -1492,14 +1492,17 @@ export class Gang {
 		if (role?.Permissions?.length === 1) {
 			emote = EmoteString.OnePermission;
 		}
-		if (role?.Permissions?.length === 2) {
+		else if (role?.Permissions?.length === 2) {
 			emote = EmoteString.TwoPermission;
 		}
-		if (role?.Permissions?.length === 3) {
+		else if (role?.Permissions?.length === 3) {
 			emote = EmoteString.ThreePermission;
 		}
-		if (role?.Permissions?.length === 4) {
+		else if (role?.Permissions?.length === 4) {
 			emote = EmoteString.FourPermission;
+		}
+		else if (role?.Permissions?.length === 5) {
+			emote = EmoteString.FivePermission;
 		}
 		if (isLeader) {
 			emote = EmoteString.AllPermission;
