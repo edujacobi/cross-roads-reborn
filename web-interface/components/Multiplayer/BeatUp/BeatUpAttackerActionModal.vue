@@ -6,10 +6,24 @@ import BaseModal from "~/components/ui/BaseModal.vue";
 import { imagePaths } from "~/constants/imagePaths";
 import type { MultiplayerSession } from "~/graphql/generated";
 
-const props = defineProps<{
+defineProps<{
 	session: MultiplayerSession;
 	countdown: string;
 }>();
+const responseActions: Partial<Record<string, { image: string; status: string }>> = {
+	fight: {
+		image: imagePaths.attributes.attack,
+		status: "está lutando...",
+	},
+	run: {
+		image: imagePaths.uiElements.escape,
+		status: "está correndo...",
+	},
+	nothing: {
+		image: imagePaths.situations.idling,
+		status: "não está fazendo nada...",
+	},
+};
 const emit = defineEmits<{
 	"update:open": [open: boolean];
 }>();
@@ -38,7 +52,17 @@ const emit = defineEmits<{
 				class="beat-up-attacker__status"
 				role="status"
 			>
-				{{ session.response ? "Resolvendo o espancamento..." : "Aguardando resposta do alvo..." }}
+				<template v-if="session.response && responseActions[session.response]">
+					<NuxtImg
+						:src="responseActions[session.response].image"
+						alt=""
+						width="24"
+						height="24"
+					/>
+					{{ session.targetNickname ?? "O defensor" }} {{ responseActions[session.response].status }}
+				</template>
+				<template v-else-if="session.response">A ação está sendo resolvida.</template>
+				<template v-else>Aguardando resposta do alvo...</template>
 			</p>
 		</section>
 	</BaseModal>
