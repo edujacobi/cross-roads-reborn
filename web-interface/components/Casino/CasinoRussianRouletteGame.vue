@@ -68,7 +68,12 @@ async function joinRoom(sessionId: string) {
 			no-body
 		>
 			<template #actions>
-				<BaseButton variant="primary" @click="modalOpen = true"> Criar sala </BaseButton>
+				<BaseButton
+					variant="primary"
+					@click="modalOpen = true"
+				>
+					Criar sala
+				</BaseButton>
 			</template>
 		</BaseCard>
 
@@ -121,20 +126,15 @@ async function joinRoom(sessionId: string) {
 			description="O jogo começa automaticamente ao atingir cinco participantes"
 			@update:open="modalOpen = $event"
 		>
-			<form
-				class="roulette-game__form"
-				@submit.prevent="createRoom()"
-			>
-				<BaseInput
-					id="roulette-bet"
-					v-model="bet"
-					type="number"
-					label="Aposta por jogador (mínimo Cr$ 5.000)"
-					input-mode="numeric"
-					placeholder="5000"
-					required
-				/>
-			</form>
+			<BaseInput
+				id="roulette-bet"
+				v-model="bet"
+				type="number"
+				label="Aposta por jogador (mínimo Cr$ 5.000)"
+				input-mode="numeric"
+				placeholder="5000"
+				required
+			/>
 			<template #footer>
 				<BaseButton
 					variant="secondary"
@@ -145,6 +145,7 @@ async function joinRoom(sessionId: string) {
 				<BaseButton
 					type="submit"
 					variant="primary"
+					@click.prevent="createRoom()"
 				>
 					Criar sala
 				</BaseButton>
