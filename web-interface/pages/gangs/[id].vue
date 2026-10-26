@@ -897,7 +897,7 @@ async function updateGangMoney() {
 							Roubar investimento
 						</BaseButton>
 						<BaseButton
-							v-if="currentUserId === gang.leaderId"
+							v-if="currentUserId === gang.leaderId && gang.base"
 							variant="secondary"
 							@click="isGangHeistModalOpen = true"
 						>
