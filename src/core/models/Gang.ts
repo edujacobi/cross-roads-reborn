@@ -109,11 +109,11 @@ export class Gang {
 	static RESERVED_ROLE_NAMES = [...Gang.LEADER_ROLE_NAMES, ...Gang.MEMBER_ROLE_NAMES];
 
 	/**
-	 * Calculates the maximum number of members based on the gang level.
+	 * Calculates the maximum number of members based on gang level and base ownership.
 	 * @returns The maximum number of members.
 	 */
 	GetMaxMembers(): number {
-		return 9 + this.Level; // Level 1: 10 members, +1 per additional level (max 19 at level 10)
+		return 9 + this.Level + (this.BaseId === GangBaseId.None ? 0 : 1);
 	}
 
 	GetJoinCost(): number {

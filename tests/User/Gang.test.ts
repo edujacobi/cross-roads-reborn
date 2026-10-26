@@ -3,6 +3,7 @@ import { Gang, GangPermission } from "#core/models/Gang";
 import { GangMemberRepository } from "#core/repositories/GangMemberRepository";
 import { GangRepository } from "#core/repositories/GangRepository";
 import { User } from "#core/models/User";
+import { GangBaseId } from "#core/types/GangBases";
 
 // Mock the database models used by Gang
 vi.mock("#core/database/GangMembers", () => ({
@@ -130,6 +131,18 @@ describe("Gang Model - Joining", () => {
 			updateUser.mockRestore();
 			loadMembers.mockRestore();
 		}
+	});
+});
+
+describe("Gang Model - Member Capacity", () => {
+	it("adds a member slot for gangs with a base", () => {
+		const gang = new Gang();
+		gang.Level = 10;
+
+		expect(gang.GetMaxMembers()).toBe(19);
+
+		gang.BaseId = GangBaseId.Airport;
+		expect(gang.GetMaxMembers()).toBe(20);
 	});
 });
 
