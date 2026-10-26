@@ -53,6 +53,7 @@ export interface MultiplayerSessionView {
 	result: string | null;
 	duelDetails: {
 		weaponName: string;
+		weaponEmoji: string;
 		weaponImageUrl: string | null;
 		usedGrenade: boolean;
 		hospitalMinutes: number;
@@ -1184,6 +1185,7 @@ export class MultiplayerSession {
 			result: session.result === null ? null : JSON.stringify(session.result),
 			duelDetails: isDuel ? {
 				weaponName: weapon?.Description[Language.Portuguese] ?? session.initData.usedGunName,
+				weaponEmoji: session.initData.usedGunSkin,
 				weaponImageUrl: weaponSkin ? `https://cdn.discordapp.com/emojis/${weaponSkin.Id}.png` : null,
 				usedGrenade: session.initData.usedGrenade,
 				hospitalMinutes: session.kind === "beatUp"

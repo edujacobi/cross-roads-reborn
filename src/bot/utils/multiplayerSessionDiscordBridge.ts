@@ -4,16 +4,24 @@ import { CrColors } from "#bot/utils/colors";
 import { deferUpdate } from "#bot/utils/discordInteractions";
 import { EmoteString } from "#bot/utils/emotes";
 import { formatMoney } from "#bot/utils/ui";
-import { Strings as BeatUpStrings } from "#core/models/BeatUp";
+import {
+	buildBeatUpDefenderPrompt,
+	buildBeatUpDefenderResponse,
+	buildBeatUpDefenderResult,
+} from "#bot/utils/beatupHelper";
+import {
+	buildRobberyDefenderPrompt,
+	buildRobberyDefenderResponse,
+	buildRobberyDefenderResult,
+} from "#bot/utils/robberyHelper";
 import type { BeatUp as BeatUpModel } from "#core/models/BeatUp";
-import { Strings as RobberyStrings } from "#core/models/strategies/robbery/UserRobberyStrategy";
-import type { UserRobberyStrategy } from "#core/models/strategies/robbery/UserRobberyStrategy";
 import type { InvestmentRobbery } from "#core/models/InvestmentRobbery";
 import { Language } from "#core/models/Language";
 import { User } from "#core/models/User";
 import { MultiplayerSession, type MultiplayerSessionView } from "#core/models/MultiplayerSession";
+import type { UserRobberyStrategy } from "#core/models/strategies/robbery/UserRobberyStrategy";
 import { Log } from "#shared/log";
-import { ButtonStyle, ComponentType, MessageFlags, type ButtonBuilder, type Message } from "discord.js";
+import { ButtonStyle, ComponentType, MessageFlags, type Message } from "discord.js";
 
 const promptedSessions = new Set<string>();
 const shownResponses = new Set<string>();
@@ -56,11 +64,31 @@ async function sendPrompt(session: MultiplayerSessionView): Promise<void> {
 	const client = getClient();
 	const discordTarget = await client.users.fetch(target.Id);
 
-	const prompt = session.kind === "beatUp"
-		? buildBeatUpPrompt(session, attacker, target)
-		: session.kind === "userRobbery"
-			? buildRobberyPrompt(session, attacker, target)
-			: buildInvestmentPrompt(session, attacker, target);
+	let prompt: CustomContainerBuilder;
+	if (session.kind === "beatUp" || session.kind === "userRobbery") {
+		const details = session.duelDetails;
+		if (!details) throw new Error(`Missing duel details for session ${session.id}`);
+
+		const data = {
+			usedGunSkin: details.weaponEmoji,
+			usedGunName: details.weaponName,
+			usedGrenade: details.usedGrenade,
+			allowedResponses: session.allowedResponses,
+		};
+		prompt = session.kind === "beatUp"
+			? buildBeatUpDefenderPrompt(attacker, target, {
+				...data,
+				timeInHospitalAditional: details.hospitalMinutesDelta,
+			})
+			: buildRobberyDefenderPrompt(attacker, target, {
+				...data,
+				defenderTimeInHospital: details.hospitalMinutes,
+				attackerAditionalTimeCallPolice: details.prisonMinutesDelta,
+			});
+	}
+	else {
+		prompt = buildInvestmentPrompt(session, attacker, target);
+	}
 
 	const message = await discordTarget.send({
 		components: [prompt],
@@ -81,46 +109,6 @@ async function sendPrompt(session: MultiplayerSessionView): Promise<void> {
 			await interaction.followUp({ content: result.message, flags: MessageFlags.Ephemeral });
 		}
 	});
-}
-
-function buildBeatUpPrompt(session: MultiplayerSessionView, attacker: User, target: User) {
-	const s = BeatUpStrings[target.Language];
-	const container = new CustomContainerBuilder()
-		.setUser(target)
-		.setAccentColor(CrColors.BeatUp)
-		.addTexts([
-			`${EmoteString.Beat} ${s.beatingInProgress}`,
-			`**${attacker.GetNameWithImage()}** ${s.tryingToBeatYou}`,
-		])
-		.addLargeSeparator();
-	const buttons = session.allowedResponses.map(response => (button: ButtonBuilder) =>
-		button
-			.setCustomId(response)
-			.setLabel(response === "fight" ? s.fight : response === "run" ? s.run : s.doNothing)
-			.setStyle(ButtonStyle.Secondary),
-	);
-	container.addButtonRow(...buttons);
-	return container;
-}
-
-function buildRobberyPrompt(session: MultiplayerSessionView, attacker: User, target: User) {
-	const s = RobberyStrings[target.Language];
-	const container = new CustomContainerBuilder()
-		.setUser(target)
-		.setAccentColor(CrColors.Robbery)
-		.addTexts([
-			`${EmoteString.Robbery} ${s.robberyInProgress}`,
-			`**${attacker.GetNameWithImage()}** ${s.tryingToRobYou}`,
-		])
-		.addLargeSeparator();
-	const buttons = session.allowedResponses.map(response => (button: ButtonBuilder) =>
-		button
-			.setCustomId(response)
-			.setLabel(response === "react" ? s.react : response === "police" ? s.callPolice : s.doNothing)
-			.setStyle(response === "police" ? ButtonStyle.Danger : ButtonStyle.Secondary),
-	);
-	container.addButtonRow(...buttons);
-	return container;
 }
 
 function buildInvestmentPrompt(session: MultiplayerSessionView, attacker: User, target: User) {
@@ -160,6 +148,15 @@ async function showResponse(session: MultiplayerSessionView): Promise<void> {
 	if (!message) return;
 	const target = new User(session.targetId!);
 	if (!await target.GetInfo()) return;
+	if (session.kind === "beatUp") {
+		await message.edit({ components: [buildBeatUpDefenderResponse(target, session.response!)] });
+		return;
+	}
+	if (session.kind === "userRobbery") {
+		await message.edit({ components: [buildRobberyDefenderResponse(target, session.response!)] });
+		return;
+	}
+
 	const responseText = {
 		[Language.English]: "Your response was recorded. Wait for the result.",
 		[Language.Portuguese]: "Sua resposta foi registrada. Aguarde o resultado.",
@@ -167,7 +164,7 @@ async function showResponse(session: MultiplayerSessionView): Promise<void> {
 	}[target.Language];
 	const container = new CustomContainerBuilder()
 		.setUser(target)
-		.setAccentColor(session.kind === "beatUp" ? CrColors.BeatUp : CrColors.Robbery)
+		.setAccentColor(CrColors.Robbery)
 		.addTexts([responseText]);
 	await message.edit({ components: [container] });
 }
@@ -180,6 +177,25 @@ async function showResult(session: MultiplayerSessionView): Promise<void> {
 	const attacker = new User(session.ownerId);
 	if (!await attacker.GetInfo()) return;
 
+	if (session.phase === "completed" && session.result) {
+		if (session.kind === "beatUp") {
+			const outcome = MultiplayerSession.DecodeResult<Awaited<ReturnType<BeatUpModel["Resolve"]>>>(session.result);
+			await message.edit({ components: [buildBeatUpDefenderResult(attacker, target, outcome)] });
+			defenderMessages.delete(session.id);
+			promptedSessions.delete(session.id);
+			shownResponses.delete(session.id);
+			return;
+		}
+		if (session.kind === "userRobbery") {
+			const outcome = MultiplayerSession.DecodeResult<Awaited<ReturnType<UserRobberyStrategy["Resolve"]>>>(session.result);
+			await message.edit({ components: [buildRobberyDefenderResult(attacker, target, outcome)] });
+			defenderMessages.delete(session.id);
+			promptedSessions.delete(session.id);
+			shownResponses.delete(session.id);
+			return;
+		}
+	}
+
 	const actionComplete = {
 		[Language.English]: "The action is complete.",
 		[Language.Portuguese]: "A ação foi concluída.",
@@ -191,42 +207,28 @@ async function showResult(session: MultiplayerSessionView): Promise<void> {
 		[Language.Spanish]: "Esta acción fue cancelada.",
 	}[target.Language];
 	let text = session.phase === "aborted" ? actionAborted : actionComplete;
-	if (session.phase === "completed" && session.result) {
-		if (session.kind === "beatUp") {
-			const result = MultiplayerSession.DecodeResult<Awaited<ReturnType<BeatUpModel["Resolve"]>>>(session.result);
-			text = result.success
-				? BeatUpStrings[target.Language].wereBeated(attacker.GetNameWithImage(), result.defenderHospitalTime!)
-				: BeatUpStrings[target.Language].youBeated(attacker.GetNameWithImage(), result.attackerHospitalTime!);
-		}
-		else if (session.kind === "userRobbery") {
-			const result = MultiplayerSession.DecodeResult<Awaited<ReturnType<UserRobberyStrategy["Resolve"]>>>(session.result);
-			text = result.success
-				? `${RobberyStrings[target.Language].wereRobbed(formatMoney(result.moneyRobbed, target.Language), attacker.GetNameWithImage())}${result.willBeBeatenUp && result.defenderHospitalTime ? `\n${RobberyStrings[target.Language].beatedUp(result.defenderHospitalTime)}` : ""}`
-				: `${RobberyStrings[target.Language].robFailed}${result.attackerPrisonTime ? `\n${RobberyStrings[target.Language].prisonUntil(result.attackerPrisonTime)}` : ""}`;
-		}
-		else {
-			const messages = {
-				[Language.English]: {
-					success: (amount: number) => `Your investment was robbed for ${formatMoney(amount, target.Language)}.`,
-					remaining: (amount: number) => `Remaining yield: ${formatMoney(amount, target.Language)}.`,
-					failure: "The gang was caught; your investment was defended.",
-				},
-				[Language.Portuguese]: {
-					success: (amount: number) => `Seu investimento foi roubado em ${formatMoney(amount, target.Language)}.`,
-					remaining: (amount: number) => `Rendimento restante: ${formatMoney(amount, target.Language)}.`,
-					failure: "A gangue foi pega; seu investimento foi defendido.",
-				},
-				[Language.Spanish]: {
-					success: (amount: number) => `Robaron ${formatMoney(amount, target.Language)} de tu inversión.`,
-					remaining: (amount: number) => `Rendimiento restante: ${formatMoney(amount, target.Language)}.`,
-					failure: "La cuadrilla fue atrapada; defendiste tu inversión.",
-				},
-			};
-			const result = MultiplayerSession.DecodeResult<Awaited<ReturnType<InvestmentRobbery["CalculateAndApplyOutcome"]>>>(session.result);
-			text = result.win
-				? `${messages[target.Language].success(result.robbedAmount)}\n${messages[target.Language].remaining(result.remainingYield)}`
-				: messages[target.Language].failure;
-		}
+	if (session.phase === "completed" && session.result && session.kind === "investmentRobbery") {
+		const messages = {
+			[Language.English]: {
+				success: (amount: number) => `Your investment was robbed for ${formatMoney(amount, target.Language)}.`,
+				remaining: (amount: number) => `Remaining yield: ${formatMoney(amount, target.Language)}.`,
+				failure: "The gang was caught; your investment was defended.",
+			},
+			[Language.Portuguese]: {
+				success: (amount: number) => `Seu investimento foi roubado em ${formatMoney(amount, target.Language)}.`,
+				remaining: (amount: number) => `Rendimento restante: ${formatMoney(amount, target.Language)}.`,
+				failure: "A gangue foi pega; seu investimento foi defendido.",
+			},
+			[Language.Spanish]: {
+				success: (amount: number) => `Robaron ${formatMoney(amount, target.Language)} de tu inversión.`,
+				remaining: (amount: number) => `Rendimiento restante: ${formatMoney(amount, target.Language)}.`,
+				failure: "La cuadrilla fue atrapada; defendiste tu inversión.",
+			},
+		};
+		const result = MultiplayerSession.DecodeResult<Awaited<ReturnType<InvestmentRobbery["CalculateAndApplyOutcome"]>>>(session.result);
+		text = result.win
+			? `${messages[target.Language].success(result.robbedAmount)}\n${messages[target.Language].remaining(result.remainingYield)}`
+			: messages[target.Language].failure;
 	}
 	const container = new CustomContainerBuilder()
 		.setUser(target)

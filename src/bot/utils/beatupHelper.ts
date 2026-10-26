@@ -3,7 +3,7 @@ import { deferUpdate, replyWithContainer } from "#bot/utils/discordInteractions"
 import { EmoteId, EmoteString } from "#bot/utils/emotes";
 import { defaultComponent, formatMoney } from "#bot/utils/ui";
 import { Strings as BeatUpStrings } from "#core/models/BeatUp";
-import type { BeatUpOutcomeData } from "#core/models/BeatUp";
+import type { BeatUpInitData, BeatUpOutcomeData } from "#core/models/BeatUp";
 import type { User } from "#core/models/User";
 import { MultiplayerSession, Strings as MultiplayerStrings } from "#core/models/MultiplayerSession";
 import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, ComponentType, type Message, type MessageComponentInteraction, MessageFlags, time, TimestampStyles } from "discord.js";
@@ -12,9 +12,110 @@ import { getClient } from "#bot/client";
 import { CrColors } from "#bot/utils/colors";
 import { Log } from "#shared/log";
 
+type BeatUpDefenderPromptData = Pick<
+	BeatUpInitData,
+	"timeInHospitalAditional" | "usedGunSkin" | "usedGunName" | "usedGrenade"
+> & { allowedResponses: string[] };
+
+export function buildBeatUpDefenderPrompt(
+	attacker: User,
+	defender: User,
+	data: BeatUpDefenderPromptData,
+): CustomContainerBuilder {
+	const strings = BeatUpStrings[defender.Language];
+	const usedGun = `${data.usedGunSkin} **${data.usedGunName}**${data.usedGrenade ? ` ${strings.andAGrenade}` : ""}`;
+
+	return new CustomContainerBuilder()
+		.setAccentColor(CrColors.BeatUp)
+		.addTexts([`${EmoteString.Beat} ${strings.beatingInProgress}`])
+		.addLargeSeparator()
+		.addTexts([
+			`**${attacker.GetNameWithImage()}** ${strings.tryingToBeatYou} ${usedGun}`,
+			"",
+			`-# ${strings.decide}:`,
+		])
+		.addSectionComponents(fight => fight
+			.addTexts([
+				`### 💪 **${strings.fight}**`,
+				strings.fightDescription(data.timeInHospitalAditional),
+			])
+			.setButtonAccessory(new ButtonBuilder()
+				.setCustomId("fight")
+				.setLabel(strings.fight)
+				.setStyle(ButtonStyle.Secondary)
+				.setEmoji("💪"),
+			),
+		)
+		.addLargeSeparator()
+		.addSectionComponents(run => run
+			.addTexts([
+				`### 👟 **${strings.run}**`,
+				strings.runDescription(data.timeInHospitalAditional),
+			])
+			.setButtonAccessory(new ButtonBuilder()
+				.setCustomId("run")
+				.setLabel(strings.run)
+				.setStyle(ButtonStyle.Secondary)
+				.setEmoji("👟")
+				.setDisabled(!data.allowedResponses.includes("run")),
+			),
+		)
+		.addLargeSeparator()
+		.addSectionComponents(nothing => nothing
+			.addTexts([
+				`### 🏳️ **${strings.doNothing}**`,
+				strings.doNothingDescription,
+			])
+			.setButtonAccessory(new ButtonBuilder()
+				.setCustomId("nothing")
+				.setLabel(strings.doNothing)
+				.setStyle(ButtonStyle.Secondary)
+				.setEmoji("🏳️"),
+			),
+		)
+		.addFooter({
+			text: `${formatMoney(defender.Money, defender.Language)} • ${strings.secondsToRespond}`,
+		});
+}
+
+export function buildBeatUpDefenderResponse(defender: User, response: string): CustomContainerBuilder {
+	const strings = BeatUpStrings[defender.Language];
+	const action = response === "fight"
+		? `### 💪 ${strings.fighting}`
+		: response === "run"
+			? `### 👟 ${strings.running}`
+			: `### 🏳️ ${strings.doingNothing}`;
+
+	return new CustomContainerBuilder()
+		.setAccentColor(CrColors.BeatUp)
+		.addTexts([`${EmoteString.Beat} ${strings.beatingInProgress}`])
+		.addLargeSeparator()
+		.addTexts([`${action} ${EmoteString.Waiting}`])
+		.addFooter({ text: strings.secondsToRespond });
+}
+
+export function buildBeatUpDefenderResult(
+	attacker: User,
+	defender: User,
+	outcome: BeatUpOutcomeData,
+): CustomContainerBuilder {
+	const strings = BeatUpStrings[defender.Language];
+	const container = new CustomContainerBuilder()
+		.setAccentColor(CrColors.BeatUp)
+		.addTexts([`${EmoteString.Beat} ${strings.finishedBeatUpDefender}`])
+		.addLargeSeparator();
+
+	container.addTexts([
+		outcome.success
+			? strings.wereBeated(attacker.GetNameWithImage(), outcome.defenderHospitalTime!)
+			: strings.youBeated(attacker.GetNameWithImage(), outcome.attackerHospitalTime!),
+	]);
+	container.addFooter({ text: formatMoney(defender.Money, defender.Language) });
+	return container;
+}
+
 export async function runUserBeatUp(interaction: ChatInputCommandInteraction, attacker: User, defender: User) {
 	const sA = BeatUpStrings[attacker.Language];
-	const sD = BeatUpStrings[defender.Language];
 
 	const grenade = attacker.Items.find(i => i.Id === ItemId.Grenade);
 	let usedGrenade = false;
@@ -113,62 +214,10 @@ export async function runUserBeatUp(interaction: ChatInputCommandInteraction, at
 		let defenderMessage: Message | undefined;
 		if (defenderDiscordUser) {
 			try {
-				let usedGun = `${initData.usedGunSkin} **${initData.usedGunName}**`;
-				if (usedGrenade) {
-					usedGun += ` ${sD.andAGrenade}`;
-				}
-
-				const privateContainer = new CustomContainerBuilder()
-					.setAccentColor(CrColors.BeatUp)
-					.addTexts([
-						`${EmoteString.Beat} ${sD.beatingInProgress}`,
-					])
-					.addLargeSeparator()
-					.addTexts([
-						`**${attacker.GetNameWithImage()}** ${sD.tryingToBeatYou} ${usedGun}`,
-						``,
-						`-# ${sD.decide}:`,
-					])
-					.addSectionComponents(fight => fight
-						.addTexts([
-							`### 💪 **${sD.fight}**`,
-							`${sD.fightDescription(initData.timeInHospitalAditional)}`,
-						])
-						.setButtonAccessory(new ButtonBuilder()
-							.setCustomId("fight")
-							.setLabel(sD.fight)
-							.setStyle(ButtonStyle.Secondary)
-							.setEmoji("💪"),
-						),
-					)
-					.addLargeSeparator()
-					.addSectionComponents(run => run
-						.addTexts([
-							`### 👟 **${sD.run}**`,
-							`${sD.runDescription(initData.timeInHospitalAditional)}`,
-						])
-						.setButtonAccessory(new ButtonBuilder()
-							.setCustomId("run")
-							.setLabel(sD.run)
-							.setStyle(ButtonStyle.Secondary)
-							.setEmoji("👟")
-							.setDisabled(initData.cannotRun),
-						),
-					)
-					.addLargeSeparator()
-					.addSectionComponents(nothing => nothing
-						.addTexts([
-							`### 🏳️ **${sD.doNothing}**`,
-							`${sD.doNothingDescription}`,
-						])
-						.setButtonAccessory(new ButtonBuilder()
-							.setCustomId("nothing")
-							.setLabel(sD.doNothing)
-							.setStyle(ButtonStyle.Secondary)
-							.setEmoji("🏳️"),
-						),
-					)
-					.addFooter({ text: sD.secondsToRespond });
+				const privateContainer = buildBeatUpDefenderPrompt(attacker, defender, {
+					...initData,
+					allowedResponses: session.allowedResponses,
+				});
 
 				defenderMessage = await defenderDiscordUser.send({
 					components: [privateContainer],
@@ -201,27 +250,18 @@ export async function runUserBeatUp(interaction: ChatInputCommandInteraction, at
 		const updateResponse = async (response: string) => {
 			if (handledResponse !== null) return;
 			handledResponse = response;
-			let descriptionPrivate = "";
 			let descriptionChannel = "";
 			if (response === "fight") {
-				descriptionPrivate = `### 💪 ${sD.fighting} ${EmoteString.Waiting}`;
 				descriptionChannel = `### 💪 ${defender.GetNameWithImage()} ${sA.isFighting}!`;
 			}
 			else if (response === "run") {
-				descriptionPrivate = `### 👟 ${sD.running} ${EmoteString.Waiting}`;
 				descriptionChannel = `### 👟 ${defender.GetNameWithImage()} ${sA.isRunning}!`;
 			}
 			else {
-				descriptionPrivate = `### 🏳️ ${sD.doingNothing} ${EmoteString.Waiting}`;
 				descriptionChannel = `### 🏳️ ${defender.GetNameWithImage()} ${sA.isDoingNothing}!`;
 			}
 
-			const updatedPrivateContainer = new CustomContainerBuilder()
-				.setAccentColor(CrColors.BeatUp)
-				.addTexts([`${EmoteString.Beat} ${sD.beatingInProgress}`])
-				.addLargeSeparator()
-				.addTexts([descriptionPrivate])
-				.addFooter({ text: sD.secondsToRespond });
+			const updatedPrivateContainer = buildBeatUpDefenderResponse(defender, response);
 			channelContainer.changeTextFromSectionId(50, descriptionChannel);
 			stopCollector?.();
 			if (defenderMessage) {
@@ -271,18 +311,9 @@ export async function runUserBeatUp(interaction: ChatInputCommandInteraction, at
 		}
 		const outcome = MultiplayerSession.DecodeResult<BeatUpOutcomeData>(completed.result);
 
-		const finalPrivateContainer = new CustomContainerBuilder()
-			.setAccentColor(CrColors.BeatUp)
-			.addTexts([
-				`${EmoteString.Beat} ${sD.finishedBeatUpDefender}`,
-			])
-			.addLargeSeparator();
+		const finalPrivateContainer = buildBeatUpDefenderResult(attacker, defender, outcome);
 
 		if (outcome.success) {
-			finalPrivateContainer.addTexts([
-				sD.wereBeated(attacker.GetNameWithImage(), outcome.defenderHospitalTime!),
-			]);
-
 			const texts = [
 				`### ${EmoteString.Victory} ${sA.success}!`,
 				`${sA.youBeated(defender.GetNameWithImage(), outcome.defenderHospitalTime!)}`,
@@ -292,10 +323,6 @@ export async function runUserBeatUp(interaction: ChatInputCommandInteraction, at
 			channelContainer.changeTextFromSectionId(50, texts);
 		}
 		else {
-			finalPrivateContainer.addTexts([
-				sD.youBeated(attacker.GetNameWithImage(), outcome.attackerHospitalTime!),
-			]);
-
 			const texts = [
 				`### ${EmoteString.Defeat} ${sA.failure}!`,
 				sA.youFailed(outcome.attackerHospitalTime!),
@@ -311,10 +338,6 @@ export async function runUserBeatUp(interaction: ChatInputCommandInteraction, at
 		await replyWithContainer(interaction, channelContainer);
 
 		if (defenderMessage) {
-			finalPrivateContainer.addFooter({
-				text: formatMoney(defender.Money, defender.Language),
-			});
-
 			await defenderMessage.edit({
 				components: [finalPrivateContainer],
 			});

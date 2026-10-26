@@ -5,16 +5,138 @@ import { deferUpdate, replyWithContainer } from "#bot/utils/discordInteractions"
 import { EmoteId, EmoteString } from "#bot/utils/emotes";
 import { defaultComponent, formatMoney } from "#bot/utils/ui";
 import { Strings as RobberyStrings } from "#core/models/strategies/robbery/UserRobberyStrategy";
-import type { RobberyOutcomeData } from "#core/types/Robbery";
+import type { RobberyInitData, RobberyOutcomeData } from "#core/types/Robbery";
 import type { User } from "#core/models/User";
 import { MultiplayerSession, Strings as MultiplayerStrings } from "#core/models/MultiplayerSession";
 import { ItemId } from "#core/types/Ids";
-import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, ComponentType, type Message, type MessageComponentInteraction, MessageFlags, time, TimestampStyles } from "discord.js";
+import {
+	ButtonBuilder,
+	ButtonStyle,
+	type ChatInputCommandInteraction,
+	ComponentType,
+	type Message,
+	type MessageComponentInteraction,
+	MessageFlags,
+	time,
+	TimestampStyles,
+} from "discord.js";
 import { Log } from "#shared/log";
+
+type RobberyDefenderPromptData = Pick<
+	RobberyInitData,
+	"attackerAditionalTimeCallPolice" | "defenderTimeInHospital" | "usedGunSkin" | "usedGunName" | "usedGrenade"
+> & { allowedResponses: string[] };
+
+export function buildRobberyDefenderPrompt(
+	attacker: User,
+	defender: User,
+	data: RobberyDefenderPromptData,
+): CustomContainerBuilder {
+	const strings = RobberyStrings[defender.Language];
+	const usedGun = `${data.usedGunSkin} **${data.usedGunName}**${data.usedGrenade ? ` ${strings.andAGrenade}` : ""}`;
+
+	return new CustomContainerBuilder()
+		.setAccentColor(CrColors.Robbery)
+		.addTexts([`${EmoteString.Robbery} ${strings.robberyInProgress}`])
+		.addLargeSeparator()
+		.addTexts([
+			`**${attacker.GetNameWithImage()}** ${strings.tryingToRobYou} ${usedGun} • ${EmoteString.Attack}${attacker.Attributes.Attack} ATK`,
+			"",
+			`-# ${strings.decide}:`,
+		])
+		.addSectionComponents(react => react
+			.addTexts([
+				`### ${EmoteString.React} **${strings.react}**`,
+				strings.reactDescription(data.defenderTimeInHospital),
+			])
+			.setButtonAccessory(new ButtonBuilder()
+				.setCustomId("react")
+				.setLabel(strings.react)
+				.setStyle(ButtonStyle.Secondary)
+				.setEmoji(EmoteId.React)
+				.setDisabled(!data.allowedResponses.includes("react")),
+			),
+		)
+		.addLargeSeparator()
+		.addSectionComponents(police => police
+			.addTexts([
+				`### ${EmoteString.Police} **${strings.callPolice}**`,
+				strings.callPoliceDescription(data.attackerAditionalTimeCallPolice),
+			])
+			.setButtonAccessory(new ButtonBuilder()
+				.setCustomId("police")
+				.setLabel(strings.callPolice)
+				.setStyle(ButtonStyle.Secondary)
+				.setEmoji(EmoteId.Police)
+				.setDisabled(!data.allowedResponses.includes("police")),
+			),
+		)
+		.addLargeSeparator()
+		.addSectionComponents(nothing => nothing
+			.addTexts([
+				`### 🏳️ **${strings.doNothing}**`,
+				strings.doNothingDescription,
+			])
+			.setButtonAccessory(new ButtonBuilder()
+				.setCustomId("nothing")
+				.setLabel(strings.doNothing)
+				.setStyle(ButtonStyle.Secondary),
+			),
+		)
+		.addFooter({
+			text: `${formatMoney(defender.Money, defender.Language)} • ${strings.secondsToRespond}`,
+		});
+}
+
+export function buildRobberyDefenderResponse(defender: User, response: string): CustomContainerBuilder {
+	const strings = RobberyStrings[defender.Language];
+	const action = response === "react"
+		? `### ${EmoteString.React} ${strings.reacting}`
+		: response === "police"
+			? `### ${EmoteString.Police} ${strings.callingPolice}`
+			: `### 🏳️ ${strings.doingNothing}`;
+
+	return new CustomContainerBuilder()
+		.setAccentColor(CrColors.Robbery)
+		.addTexts([`${EmoteString.Robbery} ${strings.robberyInProgress}`])
+		.addLargeSeparator()
+		.addTexts([`${action} ${EmoteString.Waiting}`])
+		.addFooter({
+			text: `${formatMoney(defender.Money, defender.Language)} • ${strings.secondsToRespond}`,
+		});
+}
+
+export function buildRobberyDefenderResult(
+	attacker: User,
+	defender: User,
+	outcome: RobberyOutcomeData,
+): CustomContainerBuilder {
+	const strings = RobberyStrings[defender.Language];
+	const container = new CustomContainerBuilder()
+		.setAccentColor(CrColors.Robbery)
+		.addTexts([`${EmoteString.Robbery} ${strings.finishedRobberyDefender}`])
+		.addLargeSeparator();
+
+	if (outcome.success) {
+		container.addTexts([
+			`### ${EmoteString.Defeat} ${strings.success}.`,
+			`${strings.wereRobbed(formatMoney(outcome.moneyRobbed, defender.Language), attacker.GetNameWithImage())}${outcome.willBeBeatenUp ? `\n${strings.beatedUp(outcome.defenderHospitalTime!)} ${EmoteString.Hospital}` : ""}`,
+		]);
+	}
+	else {
+		container.addTexts([
+			`### ${EmoteString.Victory} ${strings.failure}!`,
+			`**${attacker.GetNameWithImage()}** ${strings.robFailed} ${EmoteString.Police}`,
+			`-# ${strings.prisonUntil(outcome.attackerPrisonTime!)}!`,
+		]);
+	}
+
+	container.addFooter({ text: formatMoney(defender.Money, defender.Language) });
+	return container;
+}
 
 export async function runUserRobbery(interaction: ChatInputCommandInteraction, attacker: User, defender: User) {
 	const sA = RobberyStrings[attacker.Language];
-	const sD = RobberyStrings[defender.Language];
 
 	const grenade = attacker.Items.find(i => i.Id === ItemId.Grenade);
 	let usedGrenade = false;
@@ -115,64 +237,10 @@ export async function runUserRobbery(interaction: ChatInputCommandInteraction, a
 		let defenderMessage: Message | undefined;
 		if (defenderDiscordUser) {
 			try {
-				let usedGun = `${initData.usedGunSkin} **${initData.usedGunName}**`;
-				if (usedGrenade) {
-					usedGun += ` ${sD.andAGrenade}`;
-				}
-
-				const privateContainer = new CustomContainerBuilder()
-					.setAccentColor(CrColors.Robbery)
-					.addTexts([
-						`${EmoteString.Robbery} ${sD.robberyInProgress}`,
-					])
-					.addLargeSeparator()
-					.addTexts([
-						`**${attacker.GetNameWithImage()}** ${sD.tryingToRobYou} ${usedGun} • ${EmoteString.Attack}${attacker.Attributes.Attack} ATK`,
-						``,
-						`-# ${sD.decide}:`,
-					])
-					.addSectionComponents(react => react
-						.addTexts([
-							`### ${EmoteString.Defense} **${sD.react}**`,
-							sD.reactDescription(initData.defenderTimeInHospital),
-						])
-						.setButtonAccessory(new ButtonBuilder()
-							.setCustomId("react")
-							.setLabel(sD.react)
-							.setStyle(ButtonStyle.Success)
-							.setEmoji(EmoteId.Defense)
-							.setDisabled(initData.cannotReact),
-						),
-					)
-					.addLargeSeparator()
-					.addSectionComponents(police => police
-						.addTexts([
-							`### ${EmoteString.Police} **${sD.callPolice}**`,
-							sD.callPoliceDescription(initData.attackerAditionalTimeCallPolice),
-						])
-						.setButtonAccessory(new ButtonBuilder()
-							.setCustomId("police")
-							.setLabel(sD.callPolice)
-							.setStyle(ButtonStyle.Danger)
-							.setEmoji(EmoteId.Police)
-							.setDisabled(initData.cannotCallPolice),
-						),
-					)
-					.addLargeSeparator()
-					.addSectionComponents(nothing => nothing
-						.addTexts([
-							`### 🏳️ **${sD.doNothing}**`,
-							sD.doNothingDescription,
-						])
-						.setButtonAccessory(new ButtonBuilder()
-							.setCustomId("nothing")
-							.setLabel(sD.doNothing)
-							.setStyle(ButtonStyle.Secondary),
-						),
-					)
-					.addFooter({
-						text: `${formatMoney(defender.Money, defender.Language)} • ${sD.secondsToRespond}`,
-					});
+				const privateContainer = buildRobberyDefenderPrompt(attacker, defender, {
+					...initData,
+					allowedResponses: session.allowedResponses,
+				});
 
 				defenderMessage = await defenderDiscordUser.send({
 					components: [privateContainer],
@@ -204,27 +272,18 @@ export async function runUserRobbery(interaction: ChatInputCommandInteraction, a
 		const updateResponse = async (response: string) => {
 			if (handledResponse !== null) return;
 			handledResponse = response;
-			let descriptionPrivate = "";
 			let descriptionChannel = "";
 			if (response === "react") {
-				descriptionPrivate = `### ${EmoteString.React} ${sD.reacting} ${EmoteString.Waiting}`;
 				descriptionChannel = `### ${EmoteString.React} ${defender.GetNameWithImage()} ${sA.isReacting}!`;
 			}
 			else if (response === "police") {
-				descriptionPrivate = `### ${EmoteString.Police} ${sD.callingPolice} ${EmoteString.Waiting}`;
 				descriptionChannel = `### ${EmoteString.Police} ${defender.GetNameWithImage()} ${sA.isCallingPolice}!`;
 			}
 			else {
-				descriptionPrivate = `### 🏳️ ${sD.doingNothing} ${EmoteString.Waiting}`;
 				descriptionChannel = `### 🏳️ ${defender.GetNameWithImage()} ${sA.isDoingNothing}!`;
 			}
 
-			const updatedPrivateContainer = new CustomContainerBuilder()
-				.setAccentColor(CrColors.Robbery)
-				.addTexts([`${EmoteString.Robbery} ${sD.robberyInProgress}`])
-				.addLargeSeparator()
-				.addTexts([descriptionPrivate])
-				.addFooter({ text: `${formatMoney(defender.Money, defender.Language)} • ${sD.secondsToRespond}` });
+			const updatedPrivateContainer = buildRobberyDefenderResponse(defender, response);
 			channelContainer.changeTextFromSectionId(50, descriptionChannel);
 			stopCollector?.();
 			if (defenderMessage) {
@@ -274,19 +333,9 @@ export async function runUserRobbery(interaction: ChatInputCommandInteraction, a
 		}
 		const outcome = MultiplayerSession.DecodeResult<RobberyOutcomeData>(completed.result);
 
-		const finalPrivateContainer = new CustomContainerBuilder()
-			.setAccentColor(CrColors.Robbery)
-			.addTexts([
-				`${EmoteString.Robbery} ${sD.finishedRobberyDefender}`,
-			])
-			.addLargeSeparator();
+		const finalPrivateContainer = buildRobberyDefenderResult(attacker, defender, outcome);
 
 		if (outcome.success) {
-			finalPrivateContainer.addTexts([
-				`### ${EmoteString.Defeat} ${sD.success}.`,
-				`${sD.wereRobbed(formatMoney(outcome.moneyRobbed, defender.Language), attacker.GetNameWithImage())}${outcome.willBeBeatenUp ? `\n${sD.beatedUp(outcome.defenderHospitalTime!)} ${EmoteString.Hospital}` : ""}`,
-			]);
-
 			const randomSuccessMessage = sA.successMessages[Math.floor(Math.random() * sA.successMessages.length)];
 			const successMessage = randomSuccessMessage(formatMoney(outcome.moneyRobbed, attacker.Language), defender.GetNameWithImage());
 
@@ -299,12 +348,6 @@ export async function runUserRobbery(interaction: ChatInputCommandInteraction, a
 			channelContainer.changeTextFromSectionId(50, texts);
 		}
 		else {
-			finalPrivateContainer.addTexts([
-				`### ${EmoteString.Victory} ${sD.failure}!`,
-				`**${attacker.GetNameWithImage()}** ${sD.robFailed} ${EmoteString.Police}`,
-				`-# ${sD.prisonUntil(outcome.attackerPrisonTime!)}!`,
-			]);
-
 			const randomFailureMessage = sA.failureMessages[Math.floor(Math.random() * sA.failureMessages.length)];
 
 			const texts = [
@@ -323,9 +366,6 @@ export async function runUserRobbery(interaction: ChatInputCommandInteraction, a
 		await replyWithContainer(interaction, channelContainer);
 
 		if (defenderMessage) {
-			finalPrivateContainer.addFooter({
-				text: formatMoney(defender.Money, defender.Language),
-			});
 			await defenderMessage.edit({
 				components: [finalPrivateContainer],
 			});

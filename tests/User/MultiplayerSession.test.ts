@@ -187,6 +187,7 @@ describe("Multiplayer sessions", () => {
 		if (!started.success) return;
 		const expected = {
 			weaponName: ItemList[ItemId.Pistol].Description[Language.Portuguese],
+			weaponEmoji: "",
 			weaponImageUrl: `https://cdn.discordapp.com/emojis/${ItemList[ItemId.Pistol].Skin[BundleId.Default].Id}.png`,
 			usedGrenade: false,
 			hospitalMinutes: kind === "beatUp" ? 45 : 25,
