@@ -2469,19 +2469,44 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 	}
 
 	// 4 permissions: pentagon
-	&[data-perm="4"]::before, &[data-perm="5"]::before {
+	&[data-perm="4"]::before {
 		width: 0.6rem;
 		height: 0.575rem;
 		border-radius: 0;
 		clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
 	}
 
-	// Leader: hexagon
-	&[data-perm="leader"]::before {
+	// 5 permissions: hexagon
+	&[data-perm="5"]::before {
 		width: 0.65rem;
 		height: 0.6rem;
 		border-radius: 0;
 		clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+	}
+
+	// Leader: eight-point star
+	&[data-perm="leader"]::before {
+		width: 0.65rem;
+		height: 0.65rem;
+		border-radius: 0;
+		clip-path: polygon(
+			50% 0%,
+			59.6% 26.9%,
+			85.4% 14.6%,
+			73.1% 40.4%,
+			100% 50%,
+			73.1% 59.6%,
+			85.4% 85.4%,
+			59.6% 73.1%,
+			50% 100%,
+			40.4% 73.1%,
+			14.6% 85.4%,
+			26.9% 59.6%,
+			0% 50%,
+			26.9% 40.4%,
+			14.6% 14.6%,
+			40.4% 26.9%
+		);
 	}
 }
 
