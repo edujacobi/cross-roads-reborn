@@ -7,6 +7,10 @@ export default defineNuxtConfig({
 
 	devtools: { enabled: false },
 
+	experimental: {
+		checkOutdatedBuildInterval: 300_000,
+	},
+
 	app: {
 		pageTransition: {
 			name: "page",

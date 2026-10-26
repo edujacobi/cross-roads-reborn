@@ -124,6 +124,11 @@ CPanel document root. The published site still needs to reach the separately
 running GraphQL/API server at the URL configured by
 `NUXT_PUBLIC_API_BASE_URL`.
 
+The generated output includes a hidden `.htaccess` file with cache rules. In
+CPanel File Manager, enable **Show Hidden Files (dotfiles)** when uploading. If
+the document root already has an `.htaccess`, merge these rules instead of
+overwriting the existing file.
+
 For local server-build checks, run:
 
 ```powershell
