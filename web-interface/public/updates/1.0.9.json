@@ -1,0 +1,26 @@
+{
+	"version": "1.0.9",
+	"title": "Açoes Multiplayer",
+	"date": "26/10/2026",
+	"comment": "Roubar usuários e muito mais.",
+	"sections": [
+		{
+			"title": "Roubar usuários",
+			"description": "Roube usuários diretamente pela interface. Entre no perfil de um jogador e acessar as Ações.",
+			"imageUrl": "/images/situations/robbery.png"
+		},
+		{
+			"title": "Espancar usuários",
+			"description": "Espanque locais diretamente pela interface. Entre no perfil de um jogador e acessar as Ações.",
+			"imageUrl": "/images/situations/beatup.png"
+		},
+		{
+			"title": "Roleta russa",
+			"description": "Acesse o card no Cassino e abra sua sala. Qualquer jogador pode entrar e participar!"
+		},
+		{
+			"title": "Ações de Gangue",
+			"description": "Roubo à investimentos e golpes estão disponíveis na interface!"
+		}
+	]
+}
