@@ -1,5 +1,6 @@
 import { useMutation, useQuery } from "@vue/apollo-composable";
 import { computed, onBeforeUnmount, ref, watch } from "vue";
+import { localStorageKeys } from "~/constants/localStorageKeys";
 import {
 	AbortMultiplayerSessionDocument,
 	BuyGangHeistGetawayCarsDocument,
@@ -14,6 +15,8 @@ import {
 	StartUserRobberyDocument,
 } from "~/graphql/generated";
 import { readSseData } from "~/utils/readSseData";
+
+const RESULT_DISMISSAL_TTL_MS = 10 * 60_000;
 
 function isMultiplayerSession(value: unknown): value is MultiplayerSession {
 	if (typeof value !== "object" || value === null) return false;
@@ -32,6 +35,8 @@ export function useMultiplayerSessions() {
 	const sessions = ref<MultiplayerSession[]>([]);
 	const completedSessions = ref<MultiplayerSession[]>([]);
 	const reportedResults = new Set<string>();
+	const dismissedResultTimestamps = new Map<string, number>();
+	let dismissedResultsUserId: string | null = null;
 	const streamError = ref<string | null>(null);
 	const { result, loading, error, refetch } = useQuery(
 		GetMultiplayerSessionsDocument,
@@ -41,6 +46,31 @@ export function useMultiplayerSessions() {
 			fetchPolicy: "network-only",
 		},
 	);
+
+	function getDismissedResultTimestamps(userId: string): Map<string, number> {
+		if (!import.meta.client) return dismissedResultTimestamps;
+		if (dismissedResultsUserId === userId) return dismissedResultTimestamps;
+
+		dismissedResultsUserId = userId;
+		dismissedResultTimestamps.clear();
+		const storageKey = `${localStorageKeys.dismissedMultiplayerResults}:${userId}`;
+		const serializedResults = window.localStorage.getItem(storageKey);
+		if (!serializedResults) return dismissedResultTimestamps;
+
+		const now = Date.now();
+		for (const serializedResult of serializedResults.split("\n")) {
+			const separatorIndex = serializedResult.indexOf("\t");
+			if (separatorIndex < 0) continue;
+			const id = serializedResult.slice(0, separatorIndex);
+			const dismissedAt = Number(serializedResult.slice(separatorIndex + 1));
+			if (!id || !Number.isSafeInteger(dismissedAt)) continue;
+			const age = now - dismissedAt;
+			if (age >= 0 && age < RESULT_DISMISSAL_TTL_MS) {
+				dismissedResultTimestamps.set(id, dismissedAt);
+			}
+		}
+		return dismissedResultTimestamps;
+	}
 
 	watch(
 		result,
@@ -80,9 +110,39 @@ export function useMultiplayerSessions() {
 			return;
 		}
 
+		const userId = auth.user.value?.userId;
+		if (userId && getDismissedResultTimestamps(userId).has(session.id)) return;
+
 		reportedResults.add(session.id);
 		completedSessions.value = [...completedSessions.value, session];
 	}
+
+	function dismissResult(sessionId: string) {
+		completedSessions.value = completedSessions.value.filter(({ id }) => id !== sessionId);
+		const userId = auth.user.value?.userId;
+		if (!userId || !import.meta.client) return;
+
+		const timestamps = getDismissedResultTimestamps(userId);
+		const now = Date.now();
+		for (const [id, dismissedAt] of timestamps) {
+			if (now - dismissedAt < 0 || now - dismissedAt >= RESULT_DISMISSAL_TTL_MS) timestamps.delete(id);
+		}
+		timestamps.set(sessionId, now);
+		window.localStorage.setItem(
+			`${localStorageKeys.dismissedMultiplayerResults}:${userId}`,
+			Array.from(timestamps, ([id, dismissedAt]) => `${id}\t${dismissedAt}`).join("\n"),
+		);
+	}
+
+	watch(
+		() => auth.user.value?.userId,
+		(userId) => {
+			if (!userId) return;
+			const dismissedResults = getDismissedResultTimestamps(userId);
+			completedSessions.value = completedSessions.value.filter(({ id }) => !dismissedResults.has(id));
+		},
+		{ immediate: true },
+	);
 
 	function updateSession(session: MultiplayerSession) {
 		const index = sessions.value.findIndex((current) => current.id === session.id);
@@ -149,6 +209,7 @@ export function useMultiplayerSessions() {
 	return {
 		sessions,
 		completedSessions,
+		dismissResult,
 		loading,
 		error,
 		streamError,

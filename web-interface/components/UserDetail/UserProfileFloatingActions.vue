@@ -21,6 +21,7 @@ import {
 	StartBeatUpDocument,
 	StartUserRobberyDocument,
 } from "~/graphql/generated";
+import { ItemId } from "../../../src/core/types/Ids";
 
 const props = defineProps<{ userId: string }>();
 
@@ -37,12 +38,19 @@ const vipDays = ref(7);
 const auth = useAuth();
 const { formatMoney, formatPlain } = useMoneyFormat();
 const isOtherUser = computed(() => !!auth.user.value && auth.user.value.userId !== props.userId);
-const { result: selfActionsResult } = useQuery(
-	GetUserSelfActionsDocument,
-	() => ({ id: auth.user.value?.userId ?? "" }),
-	{ enabled: isOtherUser },
-);
+const {
+	result: selfActionsResult,
+	loading: selfActionsLoading,
+	error: selfActionsError,
+	refetch: refetchSelfActions,
+} = useQuery(GetUserSelfActionsDocument, () => ({ id: auth.user.value?.userId ?? "" }), {
+	enabled: isOtherUser,
+	fetchPolicy: "network-only",
+});
 const automaticGrenade = computed(() => selfActionsResult.value?.user?.automaticGrenade ?? false);
+const grenadeCount = computed(
+	() => selfActionsResult.value?.user?.items.find(({ id }) => id === ItemId.Grenade)?.quantity ?? 0,
+);
 const { mutate: startBeatUp, loading: startingBeatUp } = useMutation(StartBeatUpDocument);
 const { mutate: startUserRobbery, loading: startingUserRobbery } = useMutation(StartUserRobberyDocument);
 const startingDuel = computed(() => startingBeatUp.value || startingUserRobbery.value);
@@ -117,6 +125,15 @@ async function launchDuel() {
 		if (result?.success) {
 			duelAction.value = null;
 			useGrenade.value = false;
+			try {
+				await refetchSelfActions();
+			} catch (error: unknown) {
+				emit(
+					"feedback",
+					"error",
+					error instanceof Error ? error.message : "Não foi possível atualizar a quantidade de granadas.",
+				);
+			}
 		}
 	} catch (error: unknown) {
 		emit("feedback", "error", error instanceof Error ? error.message : "Erro inesperado.");
@@ -254,7 +271,13 @@ async function handleGiveAlms() {
 				class="user-profile-floating-actions__duel"
 				@submit.prevent="launchDuel()"
 			>
-				<label v-if="!automaticGrenade">
+				<p
+					v-if="selfActionsError"
+					role="alert"
+				>
+					Não foi possível carregar a quantidade de granadas.
+				</p>
+				<label v-else-if="!selfActionsLoading && !automaticGrenade && grenadeCount > 0">
 					<input
 						v-model="useGrenade"
 						type="checkbox"
@@ -271,11 +294,17 @@ async function handleGiveAlms() {
 					Usar granada
 				</label>
 				<p
-					v-else
+					v-else-if="!selfActionsLoading && automaticGrenade"
 					role="status"
 				>
 					Uso automático de granadas ativado.
 				</p>
+				<small
+					v-if="!selfActionsLoading && !selfActionsError && selfActionsResult?.user"
+					class="user-profile-floating-actions__grenade-count"
+				>
+					Você possui {{ grenadeCount }} {{ grenadeCount === 1 ? "granada" : "granadas" }}.
+				</small>
 			</form>
 			<template #footer>
 				<BaseButton
@@ -433,12 +462,18 @@ async function handleGiveAlms() {
 
 	&__duel {
 		display: flex;
-		align-items: center;
-		gap: $spacing-sm;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: $spacing-xs;
 
 		p {
 			margin: 0;
 		}
+	}
+
+	&__grenade-count {
+		color: $text-secondary;
+		font-size: $font-size-12;
 	}
 
 	&__toggle {

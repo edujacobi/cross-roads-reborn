@@ -860,6 +860,10 @@ query GetUserMetadata($id: ID!) {
 
 query GetUserSelfActions($id: ID!) {
 	user(id: $id) {
+		items {
+			id
+			quantity
+		}
 		automaticGrenade
 		dailyNextAvailableAt
 		nicknameChangeCost

@@ -18,7 +18,7 @@ import { GetDefenderActionProfilesDocument, type MultiplayerSession } from "~/gr
 
 const auth = useAuth();
 const { showToast } = useToast();
-const { sessions, completedSessions, respondToSession, refetch } = useMultiplayerSessions();
+const { sessions, completedSessions, dismissResult, respondToSession, refetch } = useMultiplayerSessions();
 const isDevelopment = import.meta.dev;
 const now = ref(Date.now());
 let countdownInterval: ReturnType<typeof setInterval> | undefined;
@@ -305,8 +305,8 @@ function closeResult(open: boolean) {
 	if (previewResultKind.value) {
 		previewResultKind.value = null;
 		previewResultPerspective.value = "defender";
-	} else {
-		completedSessions.value = completedSessions.value.slice(1);
+	} else if (completedResult.value) {
+		dismissResult(completedResult.value.id);
 	}
 }
 

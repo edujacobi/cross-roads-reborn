@@ -38,7 +38,7 @@ const emit = defineEmits<{
 				class="beat-up-attacker__status"
 				role="status"
 			>
-				{{ session.response ? "Resolvendo o roubo..." : "Aguardando resposta do alvo..." }}
+				{{ session.response ? "Resolvendo o espancamento..." : "Aguardando resposta do alvo..." }}
 			</p>
 		</section>
 	</BaseModal>

@@ -3,4 +3,5 @@ export const localStorageKeys = {
 	sidebarCollapsed: "isSidebarCollapsed",
 	compactInventory: "isCompactInventory",
 	lastReadUpdates: "lastReadUpdates",
+	dismissedMultiplayerResults: "cr_dismissed_multiplayer_results",
 } as const;
