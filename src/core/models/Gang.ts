@@ -878,13 +878,16 @@ export class Gang {
 	 * Resolves the active import (success or failure).
 	 */
 	async ResolveImport() {
-		if (!this.ImportArrivesAt) return;
+		const latestGang = await Gang.GetById(this.Id);
+		if (!latestGang?.ImportArrivesAt) return;
 
-		await this.LoadMembers();
+		Object.assign(this, latestGang);
+
 		const successChance = this.GetImportSuccessChance();
 		const success = Math.random() < successChance;
 
 		const rewardTexts: string[] = [];
+		let lastImportSuccessAt: Date | undefined;
 
 		// Notify all members
 		const title = {
@@ -911,6 +914,7 @@ export class Gang {
 				}
 
 				this.LastImportSuccess = new Date();
+				lastImportSuccessAt = this.LastImportSuccess;
 
 				for (const member of this.Members) {
 					const user = new User(member.UserId);
@@ -1026,7 +1030,13 @@ export class Gang {
 		}
 
 		this.ImportArrivesAt = null;
-		await this.Update();
+		const updatedAt = new Date();
+		this.UpdatedAt = updatedAt;
+		await GangRepository.Update(this.Id, {
+			shipmentArrivesAt: null,
+			...(lastImportSuccessAt ? { lastShipmentSuccess: lastImportSuccessAt } : {}),
+			updatedAt,
+		});
 	}
 
 	/**

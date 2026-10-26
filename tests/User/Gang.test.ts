@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { Gang, GangPermission } from "#core/models/Gang";
 import { GangMemberRepository } from "#core/repositories/GangMemberRepository";
+import { GangRepository } from "#core/repositories/GangRepository";
 import { User } from "#core/models/User";
 
 // Mock the database models used by Gang
@@ -217,6 +218,77 @@ describe("Gang Model - Role Changes", () => {
 		}
 		finally {
 			updateRole.mockRestore();
+		}
+	});
+});
+
+describe("Gang Model - Import Resolution", () => {
+	it("reloads current gang data and only persists import state", async () => {
+		const gang = new Gang();
+		gang.Id = 1;
+		gang.ImportArrivesAt = new Date();
+		gang.Money = 100;
+		gang.Experience = 10;
+		gang.Level = 1;
+
+		const latestGang = new Gang();
+		latestGang.Id = gang.Id;
+		latestGang.ImportArrivesAt = new Date();
+		latestGang.Money = 900;
+		latestGang.Experience = 400;
+		latestGang.Level = 10;
+
+		const getById = vi.spyOn(Gang, "GetById").mockResolvedValue(latestGang);
+		const updateGang = vi.spyOn(GangRepository, "Update").mockResolvedValue([1]);
+		const random = vi.spyOn(Math, "random").mockReturnValue(0.5);
+
+		try {
+			await gang.ResolveImport();
+
+			expect(getById).toHaveBeenCalledExactlyOnceWith(gang.Id);
+			expect(gang.Money).toBe(latestGang.Money);
+			expect(gang.Experience).toBe(latestGang.Experience);
+			expect(gang.Level).toBe(latestGang.Level);
+			expect(gang.LastImportSuccess).toBeNull();
+			expect(updateGang).toHaveBeenCalledExactlyOnceWith(gang.Id, {
+				shipmentArrivesAt: null,
+				updatedAt: expect.any(Date),
+			});
+		}
+		finally {
+			getById.mockRestore();
+			updateGang.mockRestore();
+			random.mockRestore();
+		}
+	});
+
+	it("persists the success timestamp without writing stale gang data", async () => {
+		const gang = new Gang();
+		gang.Id = 1;
+		gang.ImportArrivesAt = new Date();
+
+		const latestGang = new Gang();
+		latestGang.Id = gang.Id;
+		latestGang.ImportArrivesAt = new Date();
+
+		const getById = vi.spyOn(Gang, "GetById").mockResolvedValue(latestGang);
+		const updateGang = vi.spyOn(GangRepository, "Update").mockResolvedValue([1]);
+		const random = vi.spyOn(Math, "random").mockReturnValue(0);
+
+		try {
+			await gang.ResolveImport();
+
+			expect(gang.LastImportSuccess).toBeInstanceOf(Date);
+			expect(updateGang).toHaveBeenCalledExactlyOnceWith(gang.Id, {
+				shipmentArrivesAt: null,
+				lastShipmentSuccess: gang.LastImportSuccess,
+				updatedAt: expect.any(Date),
+			});
+		}
+		finally {
+			getById.mockRestore();
+			updateGang.mockRestore();
+			random.mockRestore();
 		}
 	});
 });
