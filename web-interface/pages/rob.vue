@@ -882,7 +882,7 @@ onBeforeUnmount(() => sseAbortController?.abort());
 	width: 3rem;
 	height: 3rem;
 	border: 3px solid $border-card;
-	border-top-color: $color-brand;
+	border-top-color: $color-robbery;
 	border-radius: 50%;
 	animation: spin 0.8s linear infinite;
 }

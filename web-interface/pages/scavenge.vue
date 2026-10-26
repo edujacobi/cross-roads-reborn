@@ -1204,7 +1204,7 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 		width: 3rem;
 		height: 3rem;
 		border: 3px solid $border-card;
-		border-top-color: $color-brand;
+		border-top-color: $color-scavenge;
 		border-radius: 50%;
 		animation: spin 0.8s linear infinite;
 	}

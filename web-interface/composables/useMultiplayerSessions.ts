@@ -30,6 +30,8 @@ export function useMultiplayerSessions() {
 	const auth = useAuth();
 	const config = useRuntimeConfig();
 	const sessions = ref<MultiplayerSession[]>([]);
+	const completedSessions = ref<MultiplayerSession[]>([]);
+	const reportedResults = new Set<string>();
 	const streamError = ref<string | null>(null);
 	const { result, loading, error, refetch } = useQuery(
 		GetMultiplayerSessionsDocument,
@@ -43,7 +45,14 @@ export function useMultiplayerSessions() {
 	watch(
 		result,
 		(value) => {
-			sessions.value = value?.multiplayerSessions ?? [];
+			const updatedSessions = value?.multiplayerSessions ?? [];
+			for (const session of updatedSessions) {
+				const previous = sessions.value.find((current) => current.id === session.id);
+				if (previous && previous.phase !== "completed" && session.phase === "completed") {
+					queueResult(session);
+				}
+			}
+			sessions.value = updatedSessions;
 		},
 		{ immediate: true },
 	);
@@ -61,10 +70,25 @@ export function useMultiplayerSessions() {
 	let streamController: AbortController | null = null;
 	let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
 
+	function queueResult(session: MultiplayerSession) {
+		if (
+			!["beatUp", "userRobbery", "investmentRobbery"].includes(session.kind) ||
+			session.phase !== "completed" ||
+			!session.result ||
+			reportedResults.has(session.id)
+		) {
+			return;
+		}
+
+		reportedResults.add(session.id);
+		completedSessions.value = [...completedSessions.value, session];
+	}
+
 	function updateSession(session: MultiplayerSession) {
 		const index = sessions.value.findIndex((current) => current.id === session.id);
 		if (index < 0) sessions.value = [...sessions.value, session];
 		else sessions.value[index] = session;
+		queueResult(session);
 	}
 
 	async function connectToUpdates() {
@@ -124,6 +148,7 @@ export function useMultiplayerSessions() {
 
 	return {
 		sessions,
+		completedSessions,
 		loading,
 		error,
 		streamError,

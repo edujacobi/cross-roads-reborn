@@ -75,6 +75,7 @@ const canRespond = computed(
 );
 const resultSummary = computed(() => {
 	if (!props.session.result) return "";
+	if (!["russianRoulette", "gangHeist"].includes(props.session.kind)) return "";
 	try {
 		const parsed: unknown = JSON.parse(props.session.result);
 		if (typeof parsed !== "object" || parsed === null) return "Resultado disponível.";
@@ -84,40 +85,13 @@ const resultSummary = computed(() => {
 			const winner = props.session.participants.find((participant) => participant.userId === result.winnerId);
 			return winner ? `${winner.nickname} venceu com ${amount(result.prize)}.` : "Partida concluída.";
 		}
-		if (props.session.kind === "investmentRobbery") {
-			if (result.win === true) {
-				return props.session.targetId === props.currentUserId
-					? `Seu investimento perdeu ${amount(result.robbedAmount)}.`
-					: `Roubo concluído: ${amount(result.robbedAmount)} para a gangue.`;
-			}
-			return props.session.targetId === props.currentUserId
-				? "Você defendeu seu investimento."
-				: `Roubo fracassado. Prisão: ${String(result.prisonHours ?? 0)} horas.`;
-		}
 		if (props.session.kind === "gangHeist") {
 			if (result.success !== true) return `Golpe fracassado. Prisão: ${String(result.jailHours ?? 0)} horas.`;
 			return result.stolenAmount === undefined
 				? "Preparação concluída com sucesso."
 				: `Golpe concluído: ${amount(result.stolenAmount)} roubados.`;
 		}
-		if (props.session.kind === "userRobbery") {
-			if (result.success === true) {
-				return props.session.targetId === props.currentUserId
-					? `Você perdeu ${amount(result.moneyRobbed)}.`
-					: `Roubo concluído: ${amount(result.moneyRobbed)}.`;
-			}
-			return props.session.targetId === props.currentUserId ? "Você se defendeu do roubo." : "O roubo falhou.";
-		}
-		if (props.session.kind === "beatUp") {
-			return result.success === true
-				? props.session.targetId === props.currentUserId
-					? "Você foi espancado."
-					: "Espancamento bem-sucedido."
-				: props.session.targetId === props.currentUserId
-					? "Você venceu a luta."
-					: "O espancamento falhou.";
-		}
-		return result.success === true ? "Ação concluída com sucesso." : "Ação concluída.";
+		return "";
 	} catch {
 		return "Não foi possível ler o resultado.";
 	}

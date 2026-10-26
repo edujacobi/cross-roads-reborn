@@ -23,7 +23,7 @@ export type GangNotifier = (
 	gangInfo: { name: string; acronym: string; colorId: GangColorId },
 	message: string | Record<Language, string>,
 	sender?: User,
-	specialMessage?: string | Record<Language, string>
+	specialMessage?: string | Record<Language, string>,
 ) => Promise<unknown>;
 
 export enum GangPermission {
@@ -252,7 +252,7 @@ export class Gang {
 				canImportShipments: false,
 			});
 
-			// Add leader as member
+			// Addleader as member
 			await GangMemberRepository.Create({
 				gangId: gang.id,
 				userId: user.Id,
@@ -1435,7 +1435,11 @@ export class Gang {
 	 */
 	async ComunicateMember(member: GangMember, message: IDescription | string, sender?: User, specialMessage?: IDescription | string) {
 		if (Gang.Notifier) {
-			return await Gang.Notifier(member.UserId, { name: this.Name, acronym: this.Acronym, colorId: this.Color }, message, sender, specialMessage);
+			return await Gang.Notifier(member.UserId, {
+				name: this.Name,
+				acronym: this.Acronym,
+				colorId: this.Color,
+			}, message, sender, specialMessage);
 		}
 	}
 
@@ -1563,6 +1567,7 @@ export class Gang {
 			Log.Warning(`User ${user.Nickname} (Id: ${user.Id}) tried to deposit ${formatMoney(amount, user.Language)} but an error occurred (not member)`);
 		}
 	}
+
 	/**
 	 * Transfers leadership of the gang to another member.
 	 * @param currentUser The current leader.

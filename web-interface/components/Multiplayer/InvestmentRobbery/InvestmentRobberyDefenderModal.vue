@@ -2,12 +2,12 @@
 	setup
 	lang="ts"
 >
+import AttackIcon from "~/components/icons/AttackIcon.vue";
+import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
-import type { MultiplayerSession } from "~/graphql/generated";
-import BaseBadge from "~/components/ui/BaseBadge.vue";
-import AttackIcon from "~/components/icons/AttackIcon.vue";
 import { imagePaths } from "~/constants/imagePaths";
+import type { MultiplayerSession } from "~/graphql/generated";
 
 defineProps<{
 	session: MultiplayerSession;
@@ -35,7 +35,7 @@ const responseStatuses: Record<string, string> = {
 	<BaseModal
 		:open="true"
 		:dismissible="dismissible"
-		title="Roubo em andamento"
+		title="Ataque ao investimento"
 		@update:open="emit('update:open', $event)"
 		icon="/images/situations/defending-investment.png"
 	>
@@ -47,8 +47,8 @@ const responseStatuses: Record<string, string> = {
 				:id="`defender-attackers-${session.id}`"
 				class="defender-prompt__label"
 			>
-				<span>Membros da gangue <strong>{{ session.gangName ?? "" }}</strong></span> estão atacando o seu
-				investimento
+				<span>Membros da gangue <strong>{{ session.gangName ?? "" }}</strong></span>
+				estão atacando o seu investimento
 				<strong>{{ session.investmentName ?? "Investimento" }}</strong>.
 			</h3>
 			<ul
@@ -101,9 +101,7 @@ const responseStatuses: Record<string, string> = {
 					/>
 					{{ responseLabels[response]?.text ?? response }}
 				</BaseButton>
-				<p :id="`response-effect-${session.id}`">
-					+5 DEF, mas quem sair derrotado ficará 30 minutos hospitalizado.
-				</p>
+				<p :id="`response-effect-${session.id}`">+5 DEF, mas quem sair derrotado ficará 30 minutos hospitalizado.</p>
 			</fieldset>
 			<p
 				v-else
@@ -117,9 +115,7 @@ const responseStatuses: Record<string, string> = {
 					width="20"
 					height="20"
 				/>
-				{{
-					(session.response && responseStatuses[session.response]) || "A ação está sendo resolvida."
-				}}
+				{{ (session.response && responseStatuses[session.response]) || "A ação está sendo resolvida." }}
 			</p>
 		</section>
 
@@ -131,9 +127,7 @@ const responseStatuses: Record<string, string> = {
 				<time :datetime="session.expiresAt">{{ countdown }}</time>
 				restantes
 			</p>
-			<span v-if="session.investmentYield">
-				Lucro acumulado: {{ formatMoney(session.investmentYield) }}
-			</span>
+			<span v-if="session.investmentYield"> Lucro acumulado: {{ formatMoney(session.investmentYield) }} </span>
 		</template>
 	</BaseModal>
 </template>
