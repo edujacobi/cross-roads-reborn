@@ -3070,7 +3070,7 @@ async function runInvestmentRobberySession(
 				])
 				.setThumbnailAccessory(thumb => thumb.setURL(getInvestmentImage(view))),
 			);
-			if (!view.participants.some(participant => participant.userId === user.Id)) {
+			if (view.ownerId === user.Id || !view.participants.some(participant => participant.userId === user.Id)) {
 				container.addButtonRow(btn => btn
 					.setLabel(s.participate)
 					.setStyle(ButtonStyle.Primary)
