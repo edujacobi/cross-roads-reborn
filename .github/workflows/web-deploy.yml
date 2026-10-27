@@ -4,16 +4,12 @@ on:
   push:
     branches: [master]
     paths: [web-interface/**]
-  workflow_run:
-    workflows: [Release]
-    types: [completed]
   workflow_dispatch:
 
 concurrency: web-deploy
 
 jobs:
   deploy:
-    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     defaults:
       run:
