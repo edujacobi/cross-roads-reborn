@@ -1,9 +1,6 @@
 name: Web Deploy
 
 on:
-  push:
-    branches: [master]
-    paths: [web-interface/**]
   workflow_dispatch:
 
 concurrency: web-deploy
