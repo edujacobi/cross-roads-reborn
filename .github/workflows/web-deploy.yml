@@ -27,6 +27,11 @@ jobs:
       - run: echo "NUXT_PUBLIC_API_BASE_URL=${{ vars.NUXT_PUBLIC_API_BASE_URL }}" > .env.prod
       - run: npm run generate
 
+      - uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: web-interface/.output/public/
+
       - uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
