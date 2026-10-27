@@ -44,7 +44,6 @@ jobs:
           printf '%s\n' "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_deploy
           chmod 600 ~/.ssh/id_deploy
           ssh-keygen -y -f ~/.ssh/id_deploy > /dev/null
-          ssh-keyscan -p "$SSH_PORT" "$SSH_HOST" >> ~/.ssh/known_hosts
           rsync -rz --chmod=D755,F644 \
-            -e "ssh -i ~/.ssh/id_deploy -p $SSH_PORT" \
+            -e "ssh -v -i ~/.ssh/id_deploy -p $SSH_PORT -o ConnectTimeout=20 -o StrictHostKeyChecking=accept-new" \
             .output/public/ "$SSH_USER@$SSH_HOST:$DEPLOY_PATH"
