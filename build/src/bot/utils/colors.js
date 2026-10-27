@@ -1,0 +1,37 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.CrColors = void 0;
+const discord_js_1 = require("discord.js");
+exports.CrColors = {
+    Admin: 0x80e893,
+    AdminString: "#80e893",
+    Bar: 0x0064FF,
+    BarString: "#0064FF",
+    BeatUp: 0xff8C00,
+    BeatUpString: "#ff8C00",
+    BlackMarket: 0x000001,
+    BlackMarketString: "#000001",
+    Casino: 0x8C55FF,
+    CasinoString: "#8C55FF",
+    Cemetery: 0x7e7e7e,
+    CemeteryString: "#7e7e7e",
+    Default: discord_js_1.Colors.Green,
+    DefaultString: "#57f287",
+    Hospital: 0xe54747,
+    HospitalString: "#e54747",
+    Investment: 0xBBE000,
+    InvestmentString: "#BBE000",
+    Jacobi: 0x426b69,
+    JacobiString: "#426b69",
+    Jobs: 0xFFE300,
+    JobsString: "#FFE300",
+    Police: 0x163cb6,
+    PoliceString: "#163cb6",
+    Robbery: 0xAF0000,
+    RobberyString: "#AF0000",
+    Scavenge: 0x88D3E4,
+    ScavengeString: "#88D3E4",
+    SpecialShop: 0x03a2e9,
+    SpecialShopString: "#03a2e9",
+};
+//# sourceMappingURL=colors.js.map
