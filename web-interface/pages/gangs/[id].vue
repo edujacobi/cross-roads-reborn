@@ -49,6 +49,7 @@ import {
 	UpdateGangMemberRoleDocument,
 	UpdateGangRoleDocument,
 } from "~/graphql/generated";
+import InvestmentIcon from "~/components/icons/InvestmentIcon.vue";
 
 definePageMeta({
 	middleware: "auth",
@@ -894,6 +895,7 @@ async function updateGangMoney() {
 							variant="secondary"
 							@click="openInvestmentRobberyModal()"
 						>
+							<InvestmentIcon :size="18" aria-hidden="true" variant="outline"/>
 							Roubar investimento
 						</BaseButton>
 						<BaseButton
@@ -919,22 +921,22 @@ async function updateGangMoney() {
 				</div>
 			</BaseCard>
 
-			<!--			<section-->
-			<!--				v-if="currentMember && gangMultiplayerSessions.length"-->
-			<!--				class="gang-multiplayer__sessions"-->
-			<!--				aria-label="Ações multiplayer da gangue"-->
-			<!--			>-->
-			<!--				<h2>Salas e resultados recentes</h2>-->
-			<!--				<MultiplayerSessionCard-->
-			<!--					v-for="session in gangMultiplayerSessions"-->
-			<!--					:key="session.id"-->
-			<!--					:session="session"-->
-			<!--					:current-user-id="currentUserId ?? ''"-->
-			<!--					@join="joinGangSession"-->
-			<!--					@respond="respondToGangSession"-->
-			<!--					@abort="abortGangSession"-->
-			<!--				/>-->
-			<!--			</section>-->
+			<section
+				v-if="currentMember && gangMultiplayerSessions.length"
+				class="gang-multiplayer__sessions"
+				aria-label="Ações multiplayer da gangue"
+			>
+				<h2>Ações acontecendo agora</h2>
+				<MultiplayerSessionCard
+					v-for="session in gangMultiplayerSessions"
+					:key="session.id"
+					:session="session"
+					:current-user-id="currentUserId ?? ''"
+					@join="joinGangSession"
+					@respond="respondToGangSession"
+					@abort="abortGangSession"
+				/>
+			</section>
 
 			<div class="gang-detail__content">
 				<!-- Base Card -->
