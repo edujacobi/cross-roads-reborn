@@ -2,20 +2,26 @@ name: Web Deploy
 
 on:
   push:
-    branches: [dev]
+    branches: [master]
     paths: [web-interface/**]
+  workflow_run:
+    workflows: [Release]
+    types: [completed]
   workflow_dispatch:
 
 concurrency: web-deploy
 
 jobs:
   deploy:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: web-interface
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: master
 
       - uses: actions/setup-node@v4
         with:
