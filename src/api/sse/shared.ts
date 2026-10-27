@@ -70,14 +70,16 @@ export function openSseResponse(
 	reply: FastifyReply,
 ): (event: object) => void {
 	const origin = req.headers.origin || "http://localhost:3000";
+	reply.hijack();
 	reply.raw.writeHead(200, {
 		"Content-Type": "text/event-stream",
-		"Cache-Control": "no-cache",
+		"Cache-Control": "no-store",
 		Connection: "keep-alive",
 		"X-Accel-Buffering": "no",
 		"Access-Control-Allow-Origin": origin,
 		"Access-Control-Allow-Headers": "Content-Type, Authorization",
 	});
+	reply.raw.flushHeaders();
 
 	return event => {
 		// Each event is one JSON data line, terminated by a blank line.

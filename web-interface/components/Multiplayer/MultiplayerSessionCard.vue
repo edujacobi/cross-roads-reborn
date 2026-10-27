@@ -242,6 +242,7 @@ function formatCountdown(expiresAt: string) {
 		justify-content: space-between;
 		flex-wrap: wrap;
 		gap: $spacing-md;
+		margin-top: $spacing-md;
 	}
 
 	p[role="status"] {

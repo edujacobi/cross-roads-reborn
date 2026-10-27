@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from "@vue/apollo-composable";
-import { computed, onBeforeUnmount, ref, watch } from "vue";
+import { computed, watch } from "vue";
 import { localStorageKeys } from "~/constants/localStorageKeys";
 import {
 	AbortMultiplayerSessionDocument,
@@ -17,6 +17,7 @@ import {
 import { readSseData } from "~/utils/readSseData";
 
 const RESULT_DISMISSAL_TTL_MS = 10 * 60_000;
+let multiplayerSessionsStreamInitialized = false;
 
 function isMultiplayerSession(value: unknown): value is MultiplayerSession {
 	if (typeof value !== "object" || value === null) return false;
@@ -32,12 +33,12 @@ function isMultiplayerSession(value: unknown): value is MultiplayerSession {
 export function useMultiplayerSessions() {
 	const auth = useAuth();
 	const config = useRuntimeConfig();
-	const sessions = ref<MultiplayerSession[]>([]);
-	const completedSessions = ref<MultiplayerSession[]>([]);
+	const sessions = useState<MultiplayerSession[]>("multiplayer-sessions", () => []);
+	const completedSessions = useState<MultiplayerSession[]>("completed-multiplayer-sessions", () => []);
 	const reportedResults = new Set<string>();
 	const dismissedResultTimestamps = new Map<string, number>();
 	let dismissedResultsUserId: string | null = null;
-	const streamError = ref<string | null>(null);
+	const streamError = useState<string | null>("multiplayer-sessions-stream-error", () => null);
 	const { result, loading, error, refetch } = useQuery(
 		GetMultiplayerSessionsDocument,
 		{},
@@ -71,21 +72,6 @@ export function useMultiplayerSessions() {
 		}
 		return dismissedResultTimestamps;
 	}
-
-	watch(
-		result,
-		(value) => {
-			const updatedSessions = value?.multiplayerSessions ?? [];
-			for (const session of updatedSessions) {
-				const previous = sessions.value.find((current) => current.id === session.id);
-				if (previous && previous.phase !== "completed" && session.phase === "completed") {
-					queueResult(session);
-				}
-			}
-			sessions.value = updatedSessions;
-		},
-		{ immediate: true },
-	);
 
 	const { mutate: startBeatUp } = useMutation(StartBeatUpDocument);
 	const { mutate: startUserRobbery } = useMutation(StartUserRobberyDocument);
@@ -151,6 +137,22 @@ export function useMultiplayerSessions() {
 		queueResult(session);
 	}
 
+	function updateSessions(updatedSessions: MultiplayerSession[]) {
+		for (const session of updatedSessions) {
+			const previous = sessions.value.find((current) => current.id === session.id);
+			if (previous && previous.phase !== "completed" && session.phase === "completed") {
+				queueResult(session);
+			}
+		}
+		sessions.value = updatedSessions;
+	}
+
+	async function refetchSessions() {
+		const refreshed = await refetch();
+		updateSessions(refreshed.data?.multiplayerSessions ?? []);
+		return refreshed;
+	}
+
 	async function connectToUpdates() {
 		if (!import.meta.client || !auth.token.value) return;
 		streamController?.abort();
@@ -160,6 +162,7 @@ export function useMultiplayerSessions() {
 		try {
 			const response = await fetch(`${config.public.apiBaseUrl}/sse/multiplayer-sessions`, {
 				headers: { Authorization: `Bearer ${auth.token.value}` },
+				cache: "no-store",
 				signal: controller.signal,
 			});
 			streamError.value = null;
@@ -181,7 +184,7 @@ export function useMultiplayerSessions() {
 		} finally {
 			if (streamController === controller) streamController = null;
 			if (!controller.signal.aborted && auth.token.value) {
-				void refetch()?.catch((caughtError: unknown) => {
+				void refetchSessions().catch((caughtError: unknown) => {
 					streamError.value =
 						caughtError instanceof Error ? caughtError.message : "Não foi possível atualizar as salas.";
 				});
@@ -190,21 +193,24 @@ export function useMultiplayerSessions() {
 		}
 	}
 
-	watch(
-		() => auth.token.value,
-		(token) => {
-			streamController?.abort();
-			if (reconnectTimer) clearTimeout(reconnectTimer);
-			if (token) void connectToUpdates();
-			else sessions.value = [];
-		},
-		{ immediate: true },
-	);
-
-	onBeforeUnmount(() => {
-		streamController?.abort();
-		if (reconnectTimer) clearTimeout(reconnectTimer);
-	});
+	if (!multiplayerSessionsStreamInitialized) {
+		multiplayerSessionsStreamInitialized = true;
+		watch(
+			result,
+			(value) => updateSessions(value?.multiplayerSessions ?? []),
+			{ immediate: true },
+		);
+		watch(
+			() => auth.token.value,
+			(token) => {
+				streamController?.abort();
+				if (reconnectTimer) clearTimeout(reconnectTimer);
+				if (token) void connectToUpdates();
+				else sessions.value = [];
+			},
+			{ immediate: true },
+		);
+	}
 
 	return {
 		sessions,
@@ -213,7 +219,7 @@ export function useMultiplayerSessions() {
 		loading,
 		error,
 		streamError,
-		refetch,
+		refetch: refetchSessions,
 		startBeatUp,
 		startUserRobbery,
 		startRussianRoulette,
