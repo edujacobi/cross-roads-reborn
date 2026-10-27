@@ -2144,6 +2144,7 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 		font-style: italic;
 		font-size: 0.9rem;
 		margin: 0 0 $spacing-sm;
+		word-break: break-word;
 	}
 
 	&__stats {
