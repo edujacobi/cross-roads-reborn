@@ -311,7 +311,7 @@ module.exports = {
 
 				// Mission 2 is instant buy
 				if (missionId === HeistMissionId.GetawayCars) {
-					const purchase = await MultiplayerSession.BuyGangHeistGetawayCars(user, user.Language);
+					const purchase = await MultiplayerSession.BuyGangHeistGetawayCars(user, user.Language, "discord");
 					if (purchase.success) {
 						currentContainer = new CustomContainerBuilder()
 							.setUser(user)

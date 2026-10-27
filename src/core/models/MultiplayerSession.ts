@@ -2,18 +2,23 @@ import { randomUUID } from "node:crypto";
 import { EventEmitter } from "node:events";
 import { setTimeout as wait } from "node:timers/promises";
 import { addHours } from "date-fns/addHours";
+import { formatDistanceToNow } from "date-fns/formatDistanceToNow";
 import type { BeatUpInitData } from "#core/models/BeatUp";
 import { BeatUp } from "#core/models/BeatUp";
 import { Casino } from "#core/models/Casino";
 import { ClassId, ClassList } from "#core/types/Classes";
 import { Gang } from "#core/models/Gang";
 import { Heist } from "#core/models/Heist";
-import { InvestmentRobbery, type InvestmentRobberyResult } from "#core/models/InvestmentRobbery";
+import {
+	InvestmentRobbery,
+	InvestmentRobberyReason,
+	type InvestmentRobberyResult,
+} from "#core/models/InvestmentRobbery";
 import { HeistMissionId } from "#core/types/Heist";
 import type { RobberyInitData } from "#core/types/Robbery";
 import { UserRobberyStrategy } from "#core/models/strategies/robbery/UserRobberyStrategy";
 import type { User } from "#core/models/User";
-import { Language, type Localization } from "#core/models/Language";
+import { getLocaleFromLanguage, Language, type Localization } from "#core/models/Language";
 import { logger } from "#shared/log";
 import {
 	MultiplayerSessionRepository,
@@ -133,6 +138,79 @@ type RuntimeSession =
 	| RussianRouletteSession
 	| InvestmentRobberySession
 	| GangHeistSession;
+
+const investmentRobberyStartMessages: Partial<Record<InvestmentRobberyReason, string>> = {
+	[InvestmentRobberyReason.NoPermission]: "Você não tem permissão para iniciar um roubo.",
+	[InvestmentRobberyReason.CantRobYourself]: "Você não pode roubar seu próprio investimento.",
+	[InvestmentRobberyReason.LeaderNotIdling]: "Você precisa estar vadiando para iniciar um roubo.",
+	[InvestmentRobberyReason.TargetSameGang]: "O alvo está na sua gangue.",
+	[InvestmentRobberyReason.WithoutItem]: "Você não pode roubar sem uma arma.",
+	[InvestmentRobberyReason.TargetWithoutNick]: "O alvo não tem um nickname.",
+	[InvestmentRobberyReason.TargetWithoutClass]: "O alvo não tem uma classe.",
+	[InvestmentRobberyReason.TargetAlreadyUnderAttack]: "O alvo já está sendo atacado.",
+	[InvestmentRobberyReason.TargetNoInvestment]: "O alvo não tem um investimento.",
+	[InvestmentRobberyReason.TargetNoYield]: "O investimento do alvo não tem lucros.",
+	[InvestmentRobberyReason.LeaderIsWanted]: "Você está sendo procurado pela polícia e não pode iniciar um roubo.",
+};
+
+type HeistStartMessages = {
+	onlyLeader: string;
+	noBase: string;
+	scheduleBlock: string;
+	missionCompleted: string;
+	noMoney: string;
+	missionCooldown: (time: string) => string;
+	heistCooldown: (time: string) => string;
+};
+
+const heistStartMessages: HeistStartMessages = {
+	onlyLeader: "Somente o Líder pode orquestrar um golpe.",
+	noBase: "Sua gangue não pode realizar um golpe sem uma base.",
+	scheduleBlock: "Você só pode realizar o golpe principal na segunda, quarta ou sexta-feira.",
+	missionCompleted: "Sua gangue já concluiu esta missão.",
+	noMoney: "Sua gangue não tem dinheiro suficiente em caixa.",
+	missionCooldown: time => `Sua gangue deve esperar ${time} para tentar esta missão novamente.`,
+	heistCooldown: time => `Sua gangue deve esperar ${time} para tentar o golpe novamente.`,
+};
+
+function getInvestmentRobberyStartMessage(
+	reason: InvestmentRobberyReason | undefined,
+	fallback: string,
+): string {
+	return reason === undefined
+		? fallback
+		: investmentRobberyStartMessages[reason] ?? fallback;
+}
+
+function getHeistStartMessage(
+	reason: string | undefined,
+	time: Date | undefined,
+	fallback: string,
+): string {
+	const messages = heistStartMessages;
+	switch (reason) {
+	case "onlyLeader":
+		return messages.onlyLeader;
+	case "noBase":
+		return messages.noBase;
+	case "scheduleBlock":
+		return messages.scheduleBlock;
+	case "missionCompleted":
+		return messages.missionCompleted;
+	case "noMoney":
+		return messages.noMoney;
+	case "missionCooldown":
+	case "heistCooldown": {
+		if (!time || !Number.isFinite(time.getTime())) return fallback;
+		const relativeTime = formatDistanceToNow(time, { locale: getLocaleFromLanguage(Language.Portuguese) });
+		return reason === "missionCooldown"
+			? messages.missionCooldown(relativeTime)
+			: messages.heistCooldown(relativeTime);
+	}
+	default:
+		return fallback;
+	}
+}
 
 export type MultiplayerStartResult<TInitData = never> =
 	| { success: true; session: MultiplayerSessionView; initData?: TInitData }
@@ -503,7 +581,14 @@ export class MultiplayerSession {
 
 			const model = new InvestmentRobbery(gang, initializer, target);
 			const validation = await model.Validate();
-			if (!validation.success) return { success: false, message: s.cannotStartInvestmentRobbery };
+			if (!validation.success) {
+				return {
+					success: false,
+					message: source === "web"
+						? getInvestmentRobberyStartMessage(validation.reason, s.cannotStartInvestmentRobbery)
+						: s.cannotStartInvestmentRobbery,
+				};
+			}
 
 			model.Participants.set(initializer.Id, initializer);
 			const id = randomUUID();
@@ -567,7 +652,14 @@ export class MultiplayerSession {
 				return { success: false, message: s.gangActionActive };
 			}
 			const validation = await Heist.ValidateStart(leader, gang, missionId);
-			if (!validation.success) return { success: false, message: s.cannotStartHeist };
+			if (!validation.success) {
+				return {
+					success: false,
+					message: source === "web"
+						? getHeistStartMessage(validation.reason, validation.time, s.cannotStartHeist)
+						: s.cannotStartHeist,
+				};
+			}
 
 			const id = randomUUID();
 			const base = this.CreateRuntimeBase(id, "gangHeist", leader, null, gang.GetMaxMembers(), source);
@@ -599,6 +691,7 @@ export class MultiplayerSession {
 	static async BuyGangHeistGetawayCars(
 		leader: User,
 		language = Language.Portuguese,
+		source: "discord" | "web" = "web",
 	): Promise<{ success: boolean; message: string }> {
 		const s = Strings[language];
 		const gang = await leader.GetGang();
@@ -610,7 +703,14 @@ export class MultiplayerSession {
 				return { success: false, message: s.gangActionActive };
 			}
 			const validation = await Heist.ValidateStart(leader, gang, HeistMissionId.GetawayCars);
-			if (!validation.success) return { success: false, message: s.cannotBuyGetawayCars };
+			if (!validation.success) {
+				return {
+					success: false,
+					message: source === "web"
+						? getHeistStartMessage(validation.reason, validation.time, s.cannotBuyGetawayCars)
+						: s.cannotBuyGetawayCars,
+				};
+			}
 			if (!await Heist.ResolveMission2(gang)) {
 				return { success: false, message: s.gangWithoutMoney };
 			}

@@ -1,11 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { Heist } from "#core/models/Heist";
 import { User } from "#core/models/User";
 import { MultiplayerSession } from "#core/models/MultiplayerSession";
+import { InvestmentRobberyReason } from "#core/models/InvestmentRobbery";
 import { ItemList } from "#core/types/Items";
+import { HeistMissionId } from "#core/types/Heist";
 import { BundleId, ItemId } from "#core/types/Ids";
 import { Language } from "#core/models/Language";
 
 const {
+	mockGetGangById,
 	mockCanBeatUser,
 	mockBeatUpLock,
 	mockBeatUpResolve,
@@ -18,9 +22,12 @@ const {
 	mockCasinoStart,
 	mockRepository,
 	mockGetGangByUserId,
+	mockInvestmentValidation,
 	mockInvestmentOutcome,
 } = vi.hoisted(() => ({
+	mockGetGangById: vi.fn(),
 	mockGetGangByUserId: vi.fn(),
+	mockInvestmentValidation: vi.fn(),
 	mockInvestmentOutcome: vi.fn(),
 	mockCanBeatUser: vi.fn(),
 	mockBeatUpLock: vi.fn(),
@@ -86,18 +93,19 @@ vi.mock("#core/models/Casino", () => ({
 }));
 
 vi.mock("#core/models/Gang", () => ({
-	Gang: { GetByUserId: mockGetGangByUserId },
+	Gang: { GetById: mockGetGangById, GetByUserId: mockGetGangByUserId },
 }));
 
 vi.mock("#core/models/InvestmentRobbery", async importOriginal => {
 	const actual = await importOriginal<typeof import("#core/models/InvestmentRobbery")>();
 	return {
+		...actual,
 		InvestmentRobbery: class {
 			constructor(_gang: unknown, _leader: User, public Target: User) {}
 			Participants = new Map();
 			InvestmentBase = { Name: { 0: "Bar", 1: "Bar", 2: "Bar" }, ImageUrl: "" };
 			InvestmentData = { accumulatedYield: 1_000 };
-			Validate = () => ({ success: true });
+			Validate = () => mockInvestmentValidation();
 			ApplyAttackerState = vi.fn();
 			ApplyDefenderState = vi.fn(actual.InvestmentRobbery.prototype.ApplyDefenderState);
 			ClearTargetState = vi.fn(actual.InvestmentRobbery.prototype.ClearTargetState);
@@ -129,6 +137,9 @@ describe("Multiplayer sessions", () => {
 	beforeEach(async () => {
 		vi.useFakeTimers();
 		vi.clearAllMocks();
+		mockGetGangById.mockReset().mockResolvedValue(null);
+		mockGetGangByUserId.mockReset().mockResolvedValue(null);
+		mockInvestmentValidation.mockReset().mockResolvedValue({ success: true });
 		mockRepository.FindActive.mockResolvedValue([]);
 		mockRepository.Create.mockResolvedValue(undefined);
 		mockRepository.Update.mockResolvedValue(undefined);
@@ -166,6 +177,7 @@ describe("Multiplayer sessions", () => {
 
 	afterEach(async () => {
 		await MultiplayerSession.Stop();
+		vi.restoreAllMocks();
 		vi.useRealTimers();
 	});
 
@@ -373,6 +385,54 @@ describe("Multiplayer sessions", () => {
 		});
 		expect((await MultiplayerSession.StartInvestmentRobbery(makeUser("leader"), defender)).success).toBe(false);
 		expect(defender.IsDefendingInvestment()).toBe(false);
+	});
+
+	it.each([
+		[InvestmentRobberyReason.LeaderNotIdling, "Você precisa estar vadiando para iniciar um roubo."],
+		[InvestmentRobberyReason.TargetSameGang, "O alvo está na sua gangue."],
+	])("returns a specific investment robbery validation message", async (reason, message) => {
+		mockGetGangByUserId.mockResolvedValue({
+			Id: 1,
+			Name: "Gang",
+			LastInvestmentRobbery: null,
+			GetMaxMembers: () => 5,
+		});
+		mockInvestmentValidation.mockResolvedValue({ success: false, reason });
+
+		const result = await MultiplayerSession.StartInvestmentRobbery(makeUser("leader"), makeUser("target"));
+
+		expect(result).toEqual({ success: false, message });
+	});
+
+	it("returns the specific gang heist validation message", async () => {
+		const leader = makeUser("leader");
+		leader.GangId = 1;
+		mockGetGangById.mockResolvedValue({ Id: 1, Name: "Gang" });
+		vi.spyOn(Heist, "ValidateStart").mockResolvedValue({ success: false, reason: "noBase" });
+
+		const result = await MultiplayerSession.StartGangHeist(leader, HeistMissionId.Blueprint);
+
+		expect(result).toEqual({
+			success: false,
+			message: "Sua gangue não pode realizar um golpe sem uma base.",
+		});
+	});
+
+	it("returns gang heist cooldown details when buying getaway cars", async () => {
+		const leader = makeUser("leader");
+		leader.GangId = 1;
+		mockGetGangById.mockResolvedValue({ Id: 1, Name: "Gang" });
+		vi.spyOn(Heist, "ValidateStart").mockResolvedValue({
+			success: false,
+			reason: "missionCooldown",
+			time: new Date(Date.now() + 60_000),
+		});
+
+		const result = await MultiplayerSession.BuyGangHeistGetawayCars(leader);
+
+		expect(result.success).toBe(false);
+		expect(result.message).toContain("Sua gangue deve esperar ");
+		expect(result.message).toContain("para tentar esta missão novamente.");
 	});
 
 	it("clears the defender lock when investment attack startup fails or the session stops", async () => {
