@@ -32,12 +32,17 @@ jobs:
           name: site
           path: web-interface/.output/public/
 
-      - uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
-          security: loose
-          local-dir: web-interface/.output/public/
-          server-dir: ${{ vars.FTP_SERVER_DIR }}
+      - name: Upload via rsync over SSH
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PORT: ${{ vars.SSH_PORT }}
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+        run: |
+          install -m 700 -d ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          ssh-keyscan -p "$SSH_PORT" "$SSH_HOST" >> ~/.ssh/known_hosts
+          rsync -rz --chmod=D755,F644 \
+            -e "ssh -i ~/.ssh/id_deploy -p $SSH_PORT" \
+            .output/public/ "$SSH_USER@$SSH_HOST:$DEPLOY_PATH"
