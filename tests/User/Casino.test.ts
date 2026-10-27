@@ -39,6 +39,12 @@ describe("Casino", () => {
 			expect(result.message).toContain("money");
 		});
 
+		it("Should use the requested language for eligibility messages", async () => {
+			user.Money = 0;
+			const result = await Casino.CanUserPlayGame(user, BET_VALUE, Language.Portuguese);
+			expect(result.message).toContain("Você não possui dinheiro suficiente para apostar");
+		});
+
 		it("Should fail if user is scavenging", async () => {
 			user.Scavenge.IsScavengingId = ScavengeId.AlienShip;
 			const result = await Casino.CanUserPlayGame(user, BET_VALUE);
@@ -159,4 +165,3 @@ describe("Casino", () => {
 		});
 	});
 });
-

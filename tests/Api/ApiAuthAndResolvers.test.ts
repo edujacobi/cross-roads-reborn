@@ -6,6 +6,7 @@ import { AdminAuditLog } from "#core/models/AdminAuditLog";
 import { Dashboard } from "#core/models/Dashboard";
 import { Event, EventType } from "#core/models/Event";
 import { SituationId, User } from "#core/models/User";
+import { MultiplayerSession } from "#core/models/MultiplayerSession";
 import { UserAvatarDecoration } from "#core/models/UserAvatarDecoration";
 import { UserBackgroundDecoration } from "#core/models/UserBackgroundDecoration";
 import { UserBundle } from "#core/models/UserBundle";
@@ -133,6 +134,26 @@ describe("API Auth and Resolvers", () => {
 			await expect(
 				resolvers.Mutation.cureUser(null, { userId: "target123" }, { user: null }),
 			).rejects.toThrow("Autenticação necessária para realizar esta ação.");
+		});
+
+		it("should return the specific Russian Roulette creation error", async () => {
+			const message = "Você está trabalhando e não pode apostar.";
+			vi.spyOn(User.prototype, "GetInfo").mockResolvedValue(new User(playerUser.userId));
+			vi.spyOn(MultiplayerSession, "StartRussianRoulette").mockResolvedValue({ success: false, message });
+
+			await expect(
+				resolvers.Mutation.startRussianRoulette(null, { bet: 5_000 }, { user: playerUser }),
+			).resolves.toEqual({ success: false, message, session: null });
+		});
+
+		it("should return the specific multiplayer session join error", async () => {
+			const message = "Você precisa aguardar para participar desta sala.";
+			vi.spyOn(User.prototype, "GetInfo").mockResolvedValue(new User(playerUser.userId));
+			vi.spyOn(MultiplayerSession, "Join").mockResolvedValue({ success: false, message });
+
+			await expect(
+				resolvers.Mutation.joinMultiplayerSession(null, { sessionId: "roulette-room" }, { user: playerUser }),
+			).resolves.toEqual({ success: false, message, session: null });
 		});
 
 		it("should allow dashboard queries when user is HELPER", async () => {

@@ -486,7 +486,7 @@ export class MultiplayerSession {
 			if (this.HasActiveRussianRouletteSession(host.Id)) {
 				return { success: false, message: s.alreadyInRoulette };
 			}
-			const eligibility = await Casino.CanUserPlayGame(host, bet);
+			const eligibility = await Casino.CanUserPlayGame(host, bet, this.LanguageFor(host, source));
 			if (!eligibility.canPlay) return { success: false, message: eligibility.message };
 
 			const id = randomUUID();
@@ -530,7 +530,7 @@ export class MultiplayerSession {
 				return { success: false, message: s.roomFull };
 			}
 
-			const eligibility = await Casino.CanUserPlayGame(participant, session.bet);
+			const eligibility = await Casino.CanUserPlayGame(participant, session.bet, language);
 			if (!eligibility.canPlay) return { success: false, message: eligibility.message };
 			if (session.phase !== "lobby" || session.participants.has(participant.Id) || session.participants.size >= session.maxParticipants) {
 				return { success: false, message: s.roomUnavailable };

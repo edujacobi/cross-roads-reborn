@@ -12,8 +12,8 @@ import { time, TimestampStyles } from "discord.js";
 import { Vault } from "./Vault";
 
 export class Casino {
-	static async CanUserPlayGame(user: User, amount: number) {
-		const s = Strings[user.Language];
+	static async CanUserPlayGame(user: User, amount: number, language = user.Language) {
+		const s = Strings[language];
 		let canPlay = true;
 		let message = "";
 
@@ -28,7 +28,7 @@ export class Casino {
 		}
 
 		if (user.IsWorking()) {
-			message = s.working(JobList[user.Job.Id!].Description[user.Language], user.Job.EndsIn);
+			message = s.working(JobList[user.Job.Id!].Description[language], user.Job.EndsIn);
 			canPlay = false;
 		}
 
@@ -49,41 +49,41 @@ export class Casino {
 
 		if (user.BeatUp.IsBeatingId) {
 			const _user = await UserRepository.FindById(user.BeatUp.IsBeatingId, ["class", "nickname"]);
-			message = globalStrings[user.Language].attackerIsBeatingId(`${ClassList[_user!.class].Image.Emote.String} ${_user!.nickname!}`);
+			message = globalStrings[language].attackerIsBeatingId(`${ClassList[_user!.class].Image.Emote.String} ${_user!.nickname!}`);
 			canPlay = false;
 		}
 
 		if (user.BeatUp.IsBeingBeatUpById) {
 			const _user = await UserRepository.FindById(user.BeatUp.IsBeingBeatUpById, ["class", "nickname"]);
-			message = globalStrings[user.Language].attackerIsBeingBeatedById(`${ClassList[_user!.class!].Image.Emote.String} ${_user!.nickname!}`);
+			message = globalStrings[language].attackerIsBeingBeatedById(`${ClassList[_user!.class!].Image.Emote.String} ${_user!.nickname!}`);
 			canPlay = false;
 		}
 
 		if (user.Robbery.IsRobbingId) {
 			const _user = await UserRepository.FindById(user.Robbery.IsRobbingId, ["class", "nickname"]);
-			message = globalStrings[user.Language].attackerIsRobbingId(`${ClassList[_user!.class].Image.Emote.String} ${_user!.nickname!}`);
+			message = globalStrings[language].attackerIsRobbingId(`${ClassList[_user!.class].Image.Emote.String} ${_user!.nickname!}`);
 			canPlay = false;
 		}
 
 		if (user.Robbery.IsBeingRobbedById) {
 			const _user = await UserRepository.FindById(user.Robbery.IsBeingRobbedById, ["class", "nickname"]);
-			message = globalStrings[user.Language].attackerIsBeingRobbedById(`${ClassList[_user!.class!].Image.Emote.String} ${_user!.nickname!}`);
+			message = globalStrings[language].attackerIsBeingRobbedById(`${ClassList[_user!.class!].Image.Emote.String} ${_user!.nickname!}`);
 			canPlay = false;
 		}
 
 		if (user.Robbery.IsRobbingLocationId !== null) {
 			const location = LocationList[user.Robbery.IsRobbingLocationId];
-			message = globalStrings[user.Language].attackerIsRobbingId(location.Name[user.Language]);
+			message = globalStrings[language].attackerIsRobbingId(location.Name[language]);
 			canPlay = false;
 		}
 
 		if (user.IsDefendingInvestment()) {
-			message = globalStrings[user.Language].attackerIsDefendingInvestment;
+			message = globalStrings[language].attackerIsDefendingInvestment;
 			canPlay = false;
 		}
 
 		if (user.IsParticipatingInGangAction()) {
-			message = globalStrings[user.Language].attackerIsParticipatingInGangAction;
+			message = globalStrings[language].attackerIsParticipatingInGangAction;
 			canPlay = false;
 		}
 

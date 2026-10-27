@@ -1556,11 +1556,7 @@ export const meResolvers: {
 			const result = await MultiplayerSession.StartRussianRoulette(host, args.bet);
 			return {
 				success: result.success,
-				message: result.success
-					? "Sala criada."
-					: (!Number.isSafeInteger(args.bet) || args.bet < 5_000
-						? "A aposta deve ser um valor inteiro de pelo menos Cr$ 5.000."
-						: "Você não pode criar esta sala."),
+				message: result.success ? "Sala criada." : result.message,
 				session: result.success ? result.session : null,
 			};
 		},
@@ -1629,7 +1625,7 @@ export const meResolvers: {
 			const result = await MultiplayerSession.Join(args.sessionId, participant);
 			return {
 				success: result.success,
-				message: result.success ? result.message : "Você não pode entrar nesta sala.",
+				message: result.message,
 				session: result.session ?? null,
 			};
 		},

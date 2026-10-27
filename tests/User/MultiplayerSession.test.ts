@@ -305,6 +305,34 @@ describe("Multiplayer sessions", () => {
 		expect((await MultiplayerSession.JoinRussianRoulette(started.session.id, makeUser("six"))).success).toBe(false);
 	});
 
+	it("uses Portuguese eligibility messages for web roulette rooms", async () => {
+		const host = makeUser("host");
+		host.Language = Language.English;
+		const message = "Você está trabalhando e não pode apostar.";
+		mockCasinoCanPlay.mockResolvedValueOnce({ canPlay: false, message });
+
+		const result = await MultiplayerSession.StartRussianRoulette(host, 5_000, "web");
+
+		expect(mockCasinoCanPlay).toHaveBeenCalledWith(host, 5_000, Language.Portuguese);
+		expect(result).toEqual({ success: false, message });
+	});
+
+	it("returns the Portuguese eligibility message when joining a web roulette room", async () => {
+		const started = await MultiplayerSession.StartRussianRoulette(makeUser("host"), 5_000);
+		expect(started.success).toBe(true);
+		if (!started.success) return;
+
+		const participant = makeUser("participant");
+		participant.Language = Language.English;
+		const message = "Você está trabalhando e não pode apostar.";
+		mockCasinoCanPlay.mockResolvedValueOnce({ canPlay: false, message });
+
+		const result = await MultiplayerSession.Join(started.session.id, participant);
+
+		expect(mockCasinoCanPlay).toHaveBeenCalledWith(participant, 5_000, Language.Portuguese);
+		expect(result).toMatchObject({ success: false, message });
+	});
+
 	it("waits for an in-flight investment defense before resolving on timeout", async () => {
 		const leader = makeUser("leader");
 		const defender = makeUser("defender");
