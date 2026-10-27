@@ -3,6 +3,7 @@ name: Release
 on:
   push:
     branches: [dev]
+    paths-ignore: [web-interface/**]
 
 permissions:
   contents: write
