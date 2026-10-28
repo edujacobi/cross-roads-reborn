@@ -71,7 +71,7 @@ function updateChart() {
 			spanGaps: false,
 		},
 		{
-			label: "Gangues ativas",
+			label: "Gangues",
 			data: history.map(({ totalGangs }) => totalGangs),
 			borderColor: "#8C55FF",
 			backgroundColor: "#8C55FF",
@@ -126,7 +126,8 @@ onBeforeUnmount(() => chart?.destroy());
 
 <template>
 	<BaseCard
-		title="Jogadores nos últimos 30 dias"
+		title="Jogadores"
+		subtitle="Visualização dos últimos 30 dias"
 		class="user-chart-card"
 	>
 		<p

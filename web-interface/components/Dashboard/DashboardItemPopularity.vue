@@ -44,6 +44,8 @@ const sortOptions: SelectorOption[] = [
 		title="Itens mais usados"
 		subtitle="Jogadores ativos que possuem cada item"
 		class="item-popularity-card"
+		no-padding-x
+		no-padding-y
 	>
 		<template #actions>
 			<BaseSelector

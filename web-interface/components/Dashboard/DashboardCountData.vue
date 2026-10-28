@@ -2,7 +2,8 @@
 	setup
 	lang="ts"
 >
-import { Globe, Shield, Users } from "lucide-vue-next";
+import { Globe, Users } from "lucide-vue-next";
+import GangIcon from "~/components/icons/GangIcon.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 
 interface Props {
@@ -24,7 +25,11 @@ withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
-	<BaseCard class="count-card">
+	<BaseCard
+		class="count-card"
+		title="Jogadores"
+		subtitle="Dados atuais"
+	>
 		<dl class="count-list">
 			<div class="count-item">
 				<dt class="count-label">
@@ -83,8 +88,9 @@ withDefaults(defineProps<Props>(), {
 
 			<div class="count-item">
 				<dt class="count-label">
-					<Shield
-						:size="16"
+					<GangIcon
+						:size="18"
+						variant="solid"
 						aria-hidden="true"
 					/>
 					Gangues

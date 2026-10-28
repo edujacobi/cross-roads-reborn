@@ -132,25 +132,12 @@ function refreshData() {
 			</BaseCard>
 		</section>
 
-		<DashboardUserChart
-			:history="history"
-			:current-stats="stats"
-			:history-loading="historyLoading"
-		/>
-
-		<DashboardClassDistribution
-			:history="history"
-			:current-stats="stats"
-			:history-loading="historyLoading"
-			:stats-loading="statsLoading"
-		/>
-
-		<DashboardItemPopularity
-			:items="itemPopularity"
-			:loading="itemPopularityLoading"
-		/>
-
 		<div class="details-row">
+			<DashboardUserChart
+				:history="history"
+				:current-stats="stats"
+				:history-loading="historyLoading"
+			/>
 			<DashboardCountData
 				:total-players="stats?.totalPlayers"
 				:all-users="stats?.allUsers"
@@ -159,8 +146,20 @@ function refreshData() {
 				:portuguese-count="stats?.portugueseCount"
 				:spanish-count="stats?.spanishCount"
 			/>
+		</div>
 
-			<!-- History Snapshots Card -->
+		<DashboardClassDistribution
+			:history="history"
+			:current-stats="stats"
+			:history-loading="historyLoading"
+			:stats-loading="statsLoading"
+		/>
+
+		<div class="two-collumns">
+			<DashboardItemPopularity
+				:items="itemPopularity"
+				:loading="itemPopularityLoading"
+			/>
 			<DashboardUserHistory
 				:history="history"
 				:history-loading="historyLoading"
@@ -180,6 +179,8 @@ function refreshData() {
 	display: flex;
 	flex-direction: column;
 	gap: $spacing-lg;
+	container-name: page;
+	container-type: inline-size;
 
 	> * {
 		animation: reveal-up 0.45s $motion-ease-out both;
@@ -199,12 +200,15 @@ function refreshData() {
 	gap: $spacing-md;
 
 	// ponytail: responsive columns for dashboard status boxes
-	@media (max-width: 992px) {
-		grid-template-columns: repeat(2, 1fr);
+	@container page (max-width: 900px) {
+		grid-template-columns: repeat(3, 1fr);
 	}
 
-	@media (max-width: 480px) {
-		grid-template-columns: 1fr;
+	@container page (max-width: 650px) {
+		grid-template-columns: repeat(2, 1fr);
+	}
+	@container page (max-width: 480px) {
+		gap: $spacing-sm;
 	}
 }
 
@@ -213,19 +217,28 @@ function refreshData() {
 	grid-template-columns: repeat(2, minmax(0, 1fr));
 	gap: $spacing-md;
 
-	@media (max-width: $bp-mobile) {
+	@container page (max-width: 600px) {
 		grid-template-columns: 1fr;
 	}
 }
 
 .details-row {
 	display: grid;
-	grid-template-columns: 320px 1fr;
+	grid-template-columns: 1fr 320px ;
 	gap: 20px;
 
-	@media (max-width: 900px) {
+	@container page (max-width: 900px) {
 		grid-template-columns: 1fr;
 	}
+}
 
+.two-collumns {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 20px;
+
+	@container page (max-width: 900px) {
+		grid-template-columns: 1fr;
+	}
 }
 </style>

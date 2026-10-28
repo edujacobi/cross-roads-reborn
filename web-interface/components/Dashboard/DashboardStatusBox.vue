@@ -106,6 +106,12 @@ const style = computed(() => {
 			margin: 0;
 			font: inherit;
 		}
+
+		@container page (max-width: 400px) {
+			img {
+				display: none;
+			}
+		}
 	}
 
 	.status-box-count {

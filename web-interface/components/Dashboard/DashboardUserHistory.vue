@@ -18,6 +18,7 @@ defineProps<Props>();
 <template>
 	<BaseCard
 		title="Histórico"
+		subtitle="Dados dos últimos 30 dias"
 		class="history-card"
 		no-padding-x
 		no-padding-y
@@ -86,7 +87,6 @@ defineProps<Props>();
 @use "~/assets/scss/mixins" as *;
 
 .history-card {
-
 	.empty-box {
 		@include flex-center;
 		flex-direction: column;
@@ -106,13 +106,13 @@ defineProps<Props>();
 			th,
 			td {
 				padding: 0.625rem 0.875rem;
+				text-align: end;
 			}
 
 			.font-bold {
 				font-weight: $font-weight-bold;
 				color: $text-primary;
 			}
-
 		}
 	}
 }
