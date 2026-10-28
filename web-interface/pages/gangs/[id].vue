@@ -572,7 +572,9 @@ async function confirmLeaveGang() {
 		});
 		if (result?.success) {
 			isLeaveGangModalOpen.value = false;
-			if (currentUserId.value === gang.value?.leaderId) {
+			const wasLeader = currentUserId.value === gang.value?.leaderId;
+			await auth.fetchUser();
+			if (wasLeader) {
 				await router.push("/gangs");
 			} else {
 				await refetch();
@@ -1687,6 +1689,13 @@ async function updateGangMoney() {
 						})
 					}}
 					• ID: {{ gang.id }}
+					<BaseButton
+						to="/gangs"
+						variant="ghost"
+						size="sm"
+					>
+						Ver informações de Gangues
+					</BaseButton>
 				</div>
 			</div>
 

@@ -34,7 +34,7 @@ import { useFallbackUserImage } from "~/composables/useFallbackImage";
 import { hasUnreadUpdates } from "~/composables/useUnreadUpdates";
 import { imagePaths } from "~/constants/imagePaths";
 import { localStorageKeys } from "~/constants/localStorageKeys";
-import { GetBlackMarketOpenDocument } from "~/graphql/generated";
+import { GetBlackMarketOpenDocument, GetUserGangDocument } from "~/graphql/generated";
 import { SituationId } from "../../src/core/types/Ids";
 
 const auth = useAuth();
@@ -48,6 +48,19 @@ const { getSituationName, getSituationImageUrl } = useSituation();
 
 const { result: blackMarketResult } = useQuery(GetBlackMarketOpenDocument);
 const blackMarketOpen = computed(() => blackMarketResult.value?.blackMarketOpen ?? false);
+const currentUserGangId = computed(() => auth.user.value?.gangId ?? null);
+const { result: currentUserGangResult } = useQuery(
+	GetUserGangDocument,
+	() => ({ id: auth.user.value?.userId ?? "" }),
+	{
+		enabled: computed(() => currentUserGangId.value !== null),
+		fetchPolicy: "cache-and-network",
+	},
+);
+const currentUserGang = computed(() => {
+	const gang = currentUserGangResult.value?.user?.gang;
+	return gang?.id === currentUserGangId.value ? gang : null;
+});
 
 onMounted(() => {
 	isCollapsed.value = sidebarStorage.get() === "true";
@@ -141,11 +154,11 @@ const navigationGroups = computed(() => [
 				activeRouteNames: ["prison"],
 			},
 			{
-				label: "Gangues",
-				to: { name: "gangs" },
+				label: currentUserGang.value?.name ?? "Gangues",
+				to: currentUserGangId.value !== null ? `/gangs/${currentUserGangId.value}` : { name: "gangs" },
 				icon: GangIcon,
 				size: 20,
-				activeRouteNames: ["gangs"],
+				activeRouteNames: ["gangs", "gangs-id"],
 			},
 			{
 				label: "Atualizações",
