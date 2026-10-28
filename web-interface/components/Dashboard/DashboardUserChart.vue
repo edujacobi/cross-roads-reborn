@@ -41,6 +41,7 @@ function updateChart() {
 			data: history.map(({ totalPlayers }) => totalPlayers),
 			borderColor: "#57f287",
 			backgroundColor: "#57f287",
+			tension: 0.4,
 		},
 		{
 			label: "Todos os usuários",
@@ -48,6 +49,7 @@ function updateChart() {
 			borderColor: "#f9fafb",
 			backgroundColor: "#f9fafb",
 			spanGaps: false,
+			tension: 0.4,
 		},
 		{
 			label: "Português",
@@ -55,6 +57,7 @@ function updateChart() {
 			borderColor: "#06b6d4",
 			backgroundColor: "#06b6d4",
 			spanGaps: false,
+			tension: 0.4,
 		},
 		{
 			label: "Inglês",
@@ -62,6 +65,7 @@ function updateChart() {
 			borderColor: "#e54747",
 			backgroundColor: "#e54747",
 			spanGaps: false,
+			tension: 0.4,
 		},
 		{
 			label: "Espanhol",
@@ -69,6 +73,7 @@ function updateChart() {
 			borderColor: "#ff8C00",
 			backgroundColor: "#ff8C00",
 			spanGaps: false,
+			tension: 0.4,
 		},
 		{
 			label: "Gangues",
@@ -76,6 +81,7 @@ function updateChart() {
 			borderColor: "#8C55FF",
 			backgroundColor: "#8C55FF",
 			spanGaps: false,
+			tension: 0.4,
 		},
 	];
 
@@ -84,7 +90,7 @@ function updateChart() {
 			type: "line",
 			data: { labels, datasets },
 			options: {
-				animation: { duration: motionEnabled.value ? 650 : 0 },
+				animation: { duration: motionEnabled.value ? 1000 : 0 },
 				responsive: true,
 				maintainAspectRatio: false,
 				interaction: { mode: "index", intersect: false },

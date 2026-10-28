@@ -57,6 +57,7 @@ function updateChart() {
 		borderColor: classColors[index],
 		backgroundColor: classColors[index],
 		spanGaps: false,
+		tension: 0.4,
 	}));
 
 	if (!chart) {
