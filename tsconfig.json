@@ -1,14 +1,14 @@
 {
-  "_version": "24.20.0",
+  "_version": "26.13.0",
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig to read more about this file */
 
     /* Projects */
     "incremental": true,
     /* Language and Environment */
-    "target": "es2024",
+    "target": "esnext",
     "lib": [
-      "es2024"
+      "esnext"
     ],
     /* Modules */
     "module": "NodeNext",

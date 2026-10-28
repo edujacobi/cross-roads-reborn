@@ -5,7 +5,7 @@ these guidelines is mandatory to maintain the project's architecture and code qu
 
 ## Environment Context
 
-- **Runtime**: Node.js (>= 24.20.0)
+- **Runtime**: Node.js (>= 26.13.0)
 - **Language**: TypeScript 7.0
 - **Framework**: Discord.js 14
 - **Linter & Formatter**: Eslint

@@ -14,7 +14,8 @@ Players can earn money, fight other users, work jobs, manage inventory, and much
 - **Class System**: Choose different character classes with unique abilities
 - **Locations**: Visit different locations like the hospital, prison, and shop
 - **Leaderboards**: Compete with other players to reach the top of various leaderboards
-- **VIP System**: Get exclusive benefits by becoming a VIP. In the web interface, use another player's profile actions to gift at least 7 whole days at 170 Special Coins per day, paid from your own balance.
+- **VIP System**: Get exclusive benefits by becoming a VIP. In the web interface, use another player's profile actions
+  to gift at least 7 whole days at 170 Special Coins per day, paid from your own balance.
 - **Multi-language Support**: Available in English, Portuguese, and Spanish
 - **Gang System**: Create or join gangs, manage members, and compete with other gangs
 - **Cosmetics**: Customize your profile with avatar decorations and item skins
@@ -24,7 +25,7 @@ Players can earn money, fight other users, work jobs, manage inventory, and much
 ### Utility Commands
 
 | Command             | Description                                  |
-| ------------------- | -------------------------------------------- |
+|---------------------|----------------------------------------------|
 | `/about`            | Information about the bot                    |
 | `/alms`             | Receive or give alms to other players        |
 | `/automaticgrenade` | Enable or disable automatic grenade usage    |
@@ -70,7 +71,7 @@ Players can earn money, fight other users, work jobs, manage inventory, and much
 ### Admin Commands
 
 | Command           | Description                               |
-| ----------------- | ----------------------------------------- |
+|-------------------|-------------------------------------------|
 | `/addcoins`       | Add coins to a user                       |
 | `/allowmainheist` | Enable or disable the main heist schedule |
 | `/badge`          | Manage user badges                        |
@@ -102,41 +103,55 @@ Players can earn money, fight other users, work jobs, manage inventory, and much
 
 ## Architecture & Development
 
-The project follows a strict **Separation of Concerns** between the interaction layer, business logic, and database access:
+The project follows a strict **Separation of Concerns** between the interaction layer, business logic, and database
+access:
 
-- **Frontend (Commands)**: Located in `src/bot/commands/`. Handles user interactions, input parsing, and UI formatting using `CustomContainerBuilder`. They should **never** contain core game logic.
-- **Backend (Models & Strategies)**: Located in `src/core/models/` and `src/core/models/strategies/`. Encapsulates all business logic, state management, and behavioral game rules.
-- **Database Repositories**: Located in `src/core/repositories/`. The only layer allowed to import and query database files directly, isolating models from database schemas.
-- **Contracts (Types)**: Located in `src/core/types/`. Shared definitions that ensure type safety across frontend, backend, and database repositories.
+- **Frontend (Commands)**: Located in `src/bot/commands/`. Handles user interactions, input parsing, and UI formatting
+  using `CustomContainerBuilder`. They should **never** contain core game logic.
+- **Backend (Models & Strategies)**: Located in `src/core/models/` and `src/core/models/strategies/`. Encapsulates all
+  business logic, state management, and behavioral game rules.
+- **Database Repositories**: Located in `src/core/repositories/`. The only layer allowed to import and query database
+  files directly, isolating models from database schemas.
+- **Contracts (Types)**: Located in `src/core/types/`. Shared definitions that ensure type safety across frontend,
+  backend, and database repositories.
 
 ### Product Direction
 
-The admin web application is the first step in a gradual transition from Discord-only gameplay to a web interface. The transition is planned in three stages:
+The admin web application is the first step in a gradual transition from Discord-only gameplay to a web interface. The
+transition is planned in three stages:
 
 1. **Admin interface**: Provide administrators with a web interface to control and monitor the game.
-2. **Web gameplay**: Let general users play through the web interface while continuing to support the existing Discord commands.
+2. **Web gameplay**: Let general users play through the web interface while continuing to support the existing Discord
+   commands.
 3. **Web-first experience**: Deprecate the Discord commands and direct users to the web interface.
 
-The Discord implementation remains an important supported interface during the transition; game rules and state should therefore live in shared backend services rather than being tied to either the Nuxt app or Discord commands.
+The Discord implementation remains an important supported interface during the transition; game rules and state should
+therefore live in shared backend services rather than being tied to either the Nuxt app or Discord commands.
 
 ### Timed Gameplay Actions
 
 Scavenging and location robberies persist their deadlines and latest results in `timedActions`.
 The backend resolves due actions independently of SSE subscribers and retries pending work after failures or restarts.
-Rewards, penalties, item changes, and active-marker cleanup commit in one SQLite transaction; reconnecting clients read the committed result without replaying the action.
-Startup creates the table through the existing schema synchronization and adopts legacy active markers, whose original deadlines were not stored.
+Rewards, penalties, item changes, and active-marker cleanup commit in one SQLite transaction; reconnecting clients read
+the committed result without replaying the action.
+Startup creates the table through the existing schema synchronization and adopts legacy active markers, whose original
+deadlines were not stored.
 
 ### Server-Sent Events (SSE)
 
 SSE is a one-way HTTP connection: the browser keeps a request open so the API can send status messages.
-It does not execute gameplay. Mutations start actions, backend workers save their outcomes, and SSE reports the saved state.
+It does not execute gameplay. Mutations start actions, backend workers save their outcomes, and SSE reports the saved
+state.
 
 - `src/api/sse/shared.ts` authenticates requests, opens the stream, and waits for saved scavenge/robbery results.
-- Each `*Status.ts` route translates the saved state into messages for its page. Escape observes the user's saved escape state.
-- `web-interface/utils/readSseData.ts` joins network chunks into messages; pages only interpret the JSON and update their UI.
+- Each `*Status.ts` route translates the saved state into messages for its page. Escape observes the user's saved escape
+  state.
+- `web-interface/utils/readSseData.ts` joins network chunks into messages; pages only interpret the JSON and update
+  their UI.
 
 The API sends `data: <JSON>` followed by a blank line. Network chunks are not necessarily complete messages.
-`escape-ended`, `scavenge-ended`, and `rob-ended` mean a result is available; `not-*` means no matching action is active.
+`escape-ended`, `scavenge-ended`, and `rob-ended` mean a result is available; `not-*` means no matching action is
+active.
 `closed` means monitoring was interrupted or timed out, **not** that the gameplay action failed.
 Closing the page or stream does not cancel the backend action.
 
@@ -148,7 +163,8 @@ All user-facing text must be localized. The bot supports:
 - 🇧🇷 Portuguese (`Language.Portuguese`)
 - 🇪🇸 Spanish (`Language.Spanish`)
 
-Localization strings are typically defined as a `Strings` constant at the end of command files or within dedicated localization helpers.
+Localization strings are typically defined as a `Strings` constant at the end of command files or within dedicated
+localization helpers.
 
 ### UI Standards
 
@@ -156,28 +172,32 @@ To maintain visual consistency:
 
 - **Icons**: Item icons must be 128x128px PNGs with transparent backgrounds.
 - **Art Style**: Smooth cartoon illustrations with thick black outlines and flat cel-shading.
-- **Containers**: Use `CustomContainerBuilder` and `defaultComponent` for all Discord responses to ensure a premium, unified look.
+- **Containers**: Use `CustomContainerBuilder` and `defaultComponent` for all Discord responses to ensure a premium,
+  unified look.
 
 ### Canvas UI System
 
-The bot uses `@napi-rs/canvas` for high-performance image generation. Complex UIs (like profiles and inventory) are built using a **Builder Pattern**:
+The bot uses `@napi-rs/canvas` for high-performance image generation. Complex UIs (like profiles and inventory) are
+built using a **Builder Pattern**:
 
 - **BaseCanvasBuilder**: The base class providing core utilities:
-  - `GenerateImage()`: Encodes the canvas into a high-quality WebP buffer.
-  - `LoadLocalImage(path)`: Loads and caches assets from the local filesystem.
-  - `LoadExternalImage(url)`: Loads remote assets (e.g., user avatars).
-  - `tryDrawImage(path, drawAction)`: Safely attempts to draw an image with error handling and fallback support.
-- **Specialized Builders**: Classes like `InventoryCanvasBuilder` or `UserRankingCardCanvasBuilder` that implement modular drawing methods:
-  - `AddHeader()` / `AddSubHeader()`: Draws the user identity and status sections.
-  - `AddItemGrid()`: Renders a dynamic grid of items with quantity/time warnings.
-  - `calculateHeight()`: Dynamically determines canvas dimensions based on content volume.
-- **Asset Registries**: Centralized managers like `BackgroundPatternRegistry` and `AvatarDecorationRegistry` that handle pre-loading and retrieval of complex UI decorations.
+    - `GenerateImage()`: Encodes the canvas into a high-quality WebP buffer.
+    - `LoadLocalImage(path)`: Loads and caches assets from the local filesystem.
+    - `LoadExternalImage(url)`: Loads remote assets (e.g., user avatars).
+    - `tryDrawImage(path, drawAction)`: Safely attempts to draw an image with error handling and fallback support.
+- **Specialized Builders**: Classes like `InventoryCanvasBuilder` or `UserRankingCardCanvasBuilder` that implement
+  modular drawing methods:
+    - `AddHeader()` / `AddSubHeader()`: Draws the user identity and status sections.
+    - `AddItemGrid()`: Renders a dynamic grid of items with quantity/time warnings.
+    - `calculateHeight()`: Dynamically determines canvas dimensions based on content volume.
+- **Asset Registries**: Centralized managers like `BackgroundPatternRegistry` and `AvatarDecorationRegistry` that handle
+  pre-loading and retrieval of complex UI decorations.
 
 ## Installation
 
 ### Prerequisites
 
-- Node.js 24.20.0 or higher
+- Node.js 26.13.0 or higher
 - npm
 - A Discord bot token
 
@@ -256,9 +276,11 @@ The bot uses `@napi-rs/canvas` for high-performance image generation. Complex UI
 
 ### Hot Reload
 
-When running in development mode (`npm run dev`), the bot uses `tsx` in watch mode, which automatically restarts the bot when files are changed.
+When running in development mode (`npm run dev`), the bot uses `tsx` in watch mode, which automatically restarts the bot
+when files are changed.
 
-Additionally, you can use the `/reload` command (Admin only) to reload a specific command without restarting the entire bot. This is useful for testing changes to command logic quickly.
+Additionally, you can use the `/reload` command (Admin only) to reload a specific command without restarting the entire
+bot. This is useful for testing changes to command logic quickly.
 
 ## Technical Information
 
@@ -275,15 +297,15 @@ Additionally, you can use the `/reload` command (Admin only) to reload a specifi
 ### Project Structure
 
 - `src/core` - Core business logic, database models, and types
-  - `database/` - Sequelize database schemas and model configurations.
-  - `repositories/` - Database access layer (isolating queries/mutations).
-  - `models/` - RPG business logic classes, strategies, and behavior patterns.
-  - `types/` - Shared contracts, interfaces, and static lists.
+    - `database/` - Sequelize database schemas and model configurations.
+    - `repositories/` - Database access layer (isolating queries/mutations).
+    - `models/` - RPG business logic classes, strategies, and behavior patterns.
+    - `types/` - Shared contracts, interfaces, and static lists.
 - `src/bot` - Discord bot implementation (commands, events, UI)
-  - `commands/` - Slash commands.
-  - `events/` - Event handlers.
-  - `ui/` - Interface builders and assets.
-  - `utils/` - Bot-specific utilities.
+    - `commands/` - Slash commands.
+    - `events/` - Event handlers.
+    - `ui/` - Interface builders and assets.
+    - `utils/` - Bot-specific utilities.
 - `src/shared` - Shared utilities
 
 ## Contributing

@@ -5,7 +5,7 @@ Adherence to these guidelines is mandatory to maintain the project's architectur
 
 ## Environment Context
 
-- **Runtime**: Node.js (>= 24.20.0)
+- **Runtime**: Node.js (>= 26.13.0)
 - **Language**: TypeScript 7.0
 - **Framework**: Vue 3.5 (Composition API), Nuxt 3.15
 - **Linter & Formatter**: Biome

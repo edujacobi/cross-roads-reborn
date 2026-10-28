@@ -4,7 +4,7 @@
   "description": "The return of Cross Roads",
   "main": "src/index.ts",
   "engines": {
-    "node": ">=24.20.0"
+    "node": ">=26.13.0"
   },
   "scripts": {
     "clear-commands": "npx tsx src/bot/clear-commands.ts",
@@ -67,7 +67,7 @@
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.31.0",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^22.0.3",
+    "@types/node": "^26.6.6",
     "@types/web-push": "^3.6.4",
     "@typescript-eslint/eslint-plugin": "^8.37.0",
     "@typescript-eslint/parser": "^8.37.0",
