@@ -197,6 +197,19 @@ describe("Recovered action outcomes", () => {
 		expect((await UserRepository.FindById("player"))?.scavengeCount).toBe(1);
 	});
 
+	it("does not start a second scavenge when the poller sees an attempt the command already resolved", async () => {
+		await start("scavenge");
+		const staleDue = await TimedActionRepository.FindDue();
+		vi.spyOn(Math, "random").mockReturnValue(0);
+		await new Scavenge(new User("player", Language.English), ScavengeId.Dump).EndScavenge();
+		vi.spyOn(TimedActionRepository, "FindDue").mockResolvedValueOnce(staleDue);
+		await TimedAction.ProcessPending();
+		const row = await UserRepository.FindById("player");
+		expect(row?.scavengingId).toBeNull();
+		expect(row?.scavengeCount).toBe(1);
+		expect((await TimedAction.GetStatus("player", "scavenge"))?.id).toBe(staleDue[0].id);
+	});
+
 	it("retries scavenge save failures without losing the active marker or doubling rewards", async () => {
 		await start("scavenge");
 		vi.spyOn(Math, "random").mockReturnValue(0);

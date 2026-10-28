@@ -92,7 +92,7 @@ export class Scavenge {
 
 	async StartScavenge() {
 		// Recovery must keep the original attempt and deadline.
-		if (this.User.Scavenge.IsScavengingId === null) {
+		if (!this.attemptId) {
 			this.attemptId = await TimedActionRepository.Start(this.User.Id, "scavenge", this.PlaceId, 10_000 + 2_000 * this.PlaceId);
 			this.User.Scavenge.IsScavengingId = this.PlaceId;
 		}
@@ -126,6 +126,8 @@ export class Scavenge {
 			item.Duration.Min = data.Type === ItemType.Consumable ? item.Duration.Min + 1 : (item.Duration.Min * userClassDurationModifier);
 			item.Duration.Max = data.Type === ItemType.Consumable ? item.Duration.Max + 1 : (item.Duration.Max * userClassDurationModifier);
 		});
+
+		Log.Info(`User ${this.User.Nickname} (Id: ${this.User.Id}) started a scavenge at ${place.Description[Language.English]} (Id: ${place.Id}).`);
 	}
 
 	async EndScavenge() {
