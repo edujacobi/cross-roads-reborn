@@ -195,11 +195,7 @@ export function useMultiplayerSessions() {
 
 	if (!multiplayerSessionsStreamInitialized) {
 		multiplayerSessionsStreamInitialized = true;
-		watch(
-			result,
-			(value) => updateSessions(value?.multiplayerSessions ?? []),
-			{ immediate: true },
-		);
+		watch(result, (value) => updateSessions(value?.multiplayerSessions ?? []), { immediate: true });
 		watch(
 			() => auth.token.value,
 			(token) => {

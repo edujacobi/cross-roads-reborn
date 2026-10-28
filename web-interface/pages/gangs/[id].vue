@@ -18,6 +18,7 @@ import {
 	UserRoundCog,
 	Wallet,
 } from "lucide-vue-next";
+import InvestmentIcon from "~/components/icons/InvestmentIcon.vue";
 import MultiplayerSessionCard from "~/components/Multiplayer/MultiplayerSessionCard.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
@@ -49,7 +50,6 @@ import {
 	UpdateGangMemberRoleDocument,
 	UpdateGangRoleDocument,
 } from "~/graphql/generated";
-import InvestmentIcon from "~/components/icons/InvestmentIcon.vue";
 
 definePageMeta({
 	middleware: "auth",
@@ -895,7 +895,11 @@ async function updateGangMoney() {
 							variant="secondary"
 							@click="openInvestmentRobberyModal()"
 						>
-							<InvestmentIcon :size="18" aria-hidden="true" variant="outline"/>
+							<InvestmentIcon
+								:size="18"
+								aria-hidden="true"
+								variant="outline"
+							/>
 							Roubar investimento
 						</BaseButton>
 						<BaseButton

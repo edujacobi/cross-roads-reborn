@@ -5,7 +5,6 @@
 import { useMutation, useQuery } from "@vue/apollo-composable";
 import { ArrowDown, ArrowUp, ArrowUpDown, Search } from "lucide-vue-next";
 import { computed, ref } from "vue";
-// biome-ignore lint/correctness/noUnusedImports: HospitalIcon is used in template
 import HospitalIcon from "~/components/icons/HospitalIcon.vue";
 import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";

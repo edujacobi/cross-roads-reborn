@@ -57,7 +57,7 @@ const height = computed(() => {
 						>
 							<BaseSkeleton
 								:width="column === 1 ? '75%' : '55%'"
-								:height="height + 'px'"
+								:height="`${height}px`"
 							/>
 						</td>
 					</tr>
