@@ -429,11 +429,21 @@ async function respond(sessionId: string, response: string) {
 	/>
 	<component
 		:is="attackerActionModal"
-		v-if="
-			attackerActionSession &&
-				attackerActionModal &&
-				!completedResult &&
-				dismissedAttackerSessionId !== attackerActionSession.id
+		v-if="
+
+
+			attackerActionSession &&
+
+
+				attackerActionModal &&
+
+
+				!completedResult &&
+
+
+				dismissedAttackerSessionId !== attackerActionSession.id
+
+
 		"
 		:session="attackerActionSession"
 		:countdown="attackerActionSession.expiresAt ? formatCountdown(attackerActionSession.expiresAt) : ''"
@@ -453,6 +463,7 @@ async function respond(sessionId: string, response: string) {
 	lang="scss"
 >
 @use "~/assets/scss/variables" as *;
+@use "~/assets/scss/mixins" as *;
 
 .multiplayer-preview-menu {
 	position: fixed;
@@ -481,6 +492,7 @@ async function respond(sessionId: string, response: string) {
 	}
 
 	&__content {
+		@include scrollbar-custom();
 		position: absolute;
 		right: 0;
 		bottom: calc(100% + $spacing-sm);

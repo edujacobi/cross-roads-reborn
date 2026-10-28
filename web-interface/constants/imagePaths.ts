@@ -72,6 +72,7 @@ export const imagePaths = {
 		escape: "/images/ui_elements/Escape.png",
 		react: "/images/ui_elements/React.png",
 		specialCoin: "/images/ui_elements/SpecialCoin.webp",
+		imports: "/images/ui_elements/imports.png",
 	},
 	locations: {
 		oldLady: "/images/locations/OldLady_.png",

@@ -171,6 +171,19 @@ const bases = [
 			</BaseCard>
 
 			<BaseCard
+				title="Importações"
+				:icon="imagePaths.uiElements.imports"
+			>
+				<p class="gangs-page__list-description">
+					Importe carregamentos de itens com sua gangue. A carga chega em 24 horas, se tudo der certo.
+				</p>
+				<p class="gangs-page__list-description">
+					A chance de sucesso começa em 60% no nível 1 e dimiuni a cada nível (mínimo de 20%). Cada membro receberá
+					itens conforme o nível da gangue, além de um bônus de sua melhor arma atual.
+				</p>
+			</BaseCard>
+
+			<BaseCard
 				title="Roubos à investimentos"
 				:icon="imagePaths.situations.defendingInvestment"
 			>
