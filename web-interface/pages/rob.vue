@@ -22,7 +22,6 @@ import { imagePaths } from "~/constants/imagePaths";
 import {
 	GetRobLocationsDocument,
 	GetUserActivityStatsDocument,
-	GetUserProfileDocument,
 	GetUserStatusDocument,
 	StartRobLocationDocument,
 } from "~/graphql/generated";
@@ -41,15 +40,7 @@ const { getLocationImageUrl } = useLocation();
 const { result: locationsResult, loading: locationsLoading, error: locationsError } = useQuery(GetRobLocationsDocument);
 const locations = computed(() => locationsResult.value?.robLocations ?? []);
 
-const {
-	result: profileResult,
-	loading: profileLoading,
-	refetch: refetchProfile,
-} = useQuery(GetUserProfileDocument, () => ({ id: userId.value }), {
-	enabled: !!userId.value,
-	fetchPolicy: "cache-and-network",
-});
-const profile = computed(() => profileResult.value?.user);
+const { user: profile, loading: profileLoading, refetch: refetchProfile } = useUserProfile(userId);
 
 const {
 	result: statusResult,
@@ -73,7 +64,7 @@ const activity = computed(() => activityResult.value?.user?.activityStats);
 
 const { mutate: startRobbery, loading: startingRobbery } = useMutation(StartRobLocationDocument);
 const expandedLocations = ref(new Set<number>());
-const asideOpen = ref(false);
+const { asideOpen, closeAside, toggleAside } = useResponsiveAside();
 const showRulesModal = ref(false);
 const showConfirmModal = ref(false);
 const showLoadingModal = ref(false);
@@ -392,7 +383,7 @@ onBeforeUnmount(() => sseAbortController?.abort());
 						type="button"
 						class="rob-page__aside-close"
 						aria-label="Fechar resumo"
-						@click="asideOpen = false"
+						@click="closeAside"
 					>
 						<ChevronDown :size="20" />
 					</button>
@@ -464,7 +455,7 @@ onBeforeUnmount(() => sseAbortController?.abort());
 				class="rob-page__aside-toggle"
 				:aria-label="asideOpen ? 'Fechar estatísticas' : 'Abrir estatísticas'"
 				:aria-expanded="asideOpen"
-				@click="asideOpen = !asideOpen"
+				@click="toggleAside"
 			>
 				<RobberyIcon
 					:size="28"

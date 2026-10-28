@@ -4,7 +4,7 @@
 >
 import { useMutation, useQuery } from "@vue/apollo-composable";
 import { Bell, BellOff, ChevronDown, X } from "lucide-vue-next";
-import { computed, onMounted, onUnmounted, ref } from "vue";
+import { computed, ref } from "vue";
 import InvestmentIcon from "~/components/icons/InvestmentIcon.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
@@ -65,8 +65,7 @@ const showBuyModal = ref(false);
 const showAbandonModal = ref(false);
 const showHenchmanModal = ref(false);
 const selectedInvestment = ref<InvestmentOption | null>(null);
-const asideOpen = ref(false);
-const lastFocusedElement = ref<HTMLElement | null>(null);
+const { asideOpen, closeAside, toggleAside } = useResponsiveAside();
 
 function canBuy(option: InvestmentOption) {
 	return !!page.value?.isIdling && !investment.value && page.value.money >= option.price;
@@ -157,22 +156,6 @@ async function toggleYieldNotifications() {
 	}
 }
 
-function toggleAside() {
-	if (asideOpen.value) {
-		asideOpen.value = false;
-		lastFocusedElement.value?.focus();
-	} else {
-		lastFocusedElement.value = document.activeElement as HTMLElement | null;
-		asideOpen.value = true;
-	}
-}
-
-function handleKeyDown(event: KeyboardEvent) {
-	if (event.key === "Escape" && asideOpen.value) toggleAside();
-}
-
-onMounted(() => window.addEventListener("keydown", handleKeyDown));
-onUnmounted(() => window.removeEventListener("keydown", handleKeyDown));
 </script>
 
 <template>
@@ -306,7 +289,7 @@ onUnmounted(() => window.removeEventListener("keydown", handleKeyDown));
 						type="button"
 						class="investments-page__aside-close"
 						aria-label="Fechar gerenciamento"
-						@click="toggleAside"
+						@click="closeAside"
 					>
 						<ChevronDown :size="20" />
 					</button>

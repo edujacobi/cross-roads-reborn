@@ -9,6 +9,7 @@ import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseInput from "~/components/ui/BaseInput.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
 import { useMoneyFormat } from "~/composables/useMoneyFormat";
+import { getErrorMessage } from "~/utils/getErrorMessage";
 import {
 	ChangeOwnClassDocument,
 	ChangeOwnNicknameDocument,
@@ -106,10 +107,6 @@ function showSuccess(message: string) {
 
 function showError(message: string) {
 	emit("feedback", "error", message);
-}
-
-function getErrorMessage(error: unknown): string {
-	return error && typeof error === "object" && "message" in error ? String(error.message) : "Erro inesperado.";
 }
 
 async function handleDailyReward() {

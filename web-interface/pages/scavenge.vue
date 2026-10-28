@@ -22,7 +22,6 @@ import {
 	GetMyScavengeStatusDocument,
 	GetScavengeLocationsDocument,
 	GetUserActivityStatsDocument,
-	GetUserProfileDocument,
 	GetUserStatusDocument,
 	StartScavengeDocument,
 } from "~/graphql/generated";
@@ -76,15 +75,7 @@ const scavengeFailures = computed(() => activityStats.value?.scavengeFailures ??
 const scavengeHospitalizations = computed(() => activityStats.value?.scavengeHospitalizations ?? 0);
 const scavengePrisonizations = computed(() => activityStats.value?.scavengePrisonizations ?? 0);
 
-const {
-	result: profileResult,
-	loading: profileLoading,
-	refetch: refetchProfile,
-} = useQuery(GetUserProfileDocument, () => ({ id: userId.value }), {
-	enabled: !!userId.value,
-	fetchPolicy: "cache-and-network",
-});
-const profileUser = computed(() => profileResult.value?.user);
+const { user: profileUser, loading: profileLoading, refetch: refetchProfile } = useUserProfile(userId);
 
 const {
 	result: statusQueryResult,
@@ -99,7 +90,7 @@ const statusUser = computed(() => statusQueryResult.value?.user);
 const { mutate: startScavenge, loading: startingScavenge } = useMutation(StartScavengeDocument);
 
 const expandedLocations = ref(new Set<number>());
-const asideOpen = ref(false);
+const { asideOpen, closeAside, toggleAside } = useResponsiveAside();
 
 // Modals
 const showConfirmModal = ref(false);
@@ -317,10 +308,6 @@ onMounted(async () => {
 
 onBeforeUnmount(() => sseAbortController?.abort());
 
-function toggleAside() {
-	asideOpen.value = !asideOpen.value;
-}
-
 function formatItemDuration(item: { itemType: string; durationMin: number; durationMax: number }): string {
 	if (item.itemType === "Consumable") {
 		return `(${Math.round(item.durationMin)}-${Math.round(item.durationMax)}un)`;
@@ -518,7 +505,7 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 						type="button"
 						class="scavenge-page__aside-close"
 						aria-label="Fechar resumo"
-						@click="toggleAside"
+						@click="closeAside"
 					>
 						<ChevronDown :size="20" />
 					</button>

@@ -4,7 +4,7 @@
 >
 import { useMutation, useQuery } from "@vue/apollo-composable";
 import { ChevronDown, Clock, Coins, X } from "lucide-vue-next";
-import { computed, onMounted, onUnmounted, ref } from "vue";
+import { computed, ref } from "vue";
 import JobsIcon from "~/components/icons/JobsIcon.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
@@ -87,8 +87,7 @@ const { mutate: cancelJob, loading: cancelingJob } = useMutation(CancelJobDocume
 
 const showCancelModal = ref(false);
 const expandedJobs = ref(new Set<number>());
-const asideOpen = ref(false);
-const lastFocusedElement = ref<HTMLElement | null>(null);
+const { asideOpen, closeAside, toggleAside } = useResponsiveAside();
 
 function toggleJobDetails(jobId: number) {
 	return expandedJobs.value.has(jobId) ? expandedJobs.value.delete(jobId) : expandedJobs.value.add(jobId);
@@ -160,31 +159,6 @@ async function handleCancelJob() {
 	showCancelModal.value = false;
 }
 
-function toggleAside() {
-	if (asideOpen.value) {
-		asideOpen.value = false;
-		if (lastFocusedElement.value) {
-			lastFocusedElement.value.focus();
-		}
-	} else {
-		lastFocusedElement.value = document.activeElement as HTMLElement | null;
-		asideOpen.value = true;
-	}
-}
-
-function handleKeyDown(e: KeyboardEvent) {
-	if (e.key === "Escape" && asideOpen.value) {
-		toggleAside();
-	}
-}
-
-onMounted(() => {
-	window.addEventListener("keydown", handleKeyDown);
-});
-
-onUnmounted(() => {
-	window.removeEventListener("keydown", handleKeyDown);
-});
 </script>
 
 <template>
@@ -359,7 +333,7 @@ onUnmounted(() => {
 						type="button"
 						class="jobs-page__aside-close"
 						aria-label="Fechar resumo"
-						@click="toggleAside"
+						@click="closeAside"
 					>
 						<ChevronDown :size="20" />
 					</button>

@@ -22,8 +22,6 @@ import BaseModal from "~/components/ui/BaseModal.vue";
 import { useFallbackUserImage } from "~/composables/useFallbackImage";
 import {
 	GetMyDecorationsDocument,
-	GetUserProfileDocument,
-	type GetUserProfileQuery,
 	SetOwnDecorationDocument,
 	UserDecorationType,
 } from "~/graphql/generated";
@@ -42,13 +40,8 @@ const isOwnUser = computed(() => auth.user.value?.userId === userId.value);
 const canViewPrivateDetails = computed(() => isOwnUser.value || auth.hasAdminAccess.value);
 const canViewPrivateInvestmentInfo = computed(() => isOwnUser.value || auth.isDeveloper.value);
 const profileState = ref<"loading" | "ready" | "not-found" | "error">("loading");
-const {
-	result: profileResult,
-	loading: profileLoading,
-	error: profileError,
-	refetch: refetchProfile,
-} = useQuery(GetUserProfileDocument, () => ({ id: userId.value }), { fetchPolicy: "cache-and-network" });
-const profile = computed<GetUserProfileQuery["user"]>(() => profileResult.value?.user ?? null);
+const { user: profile, loading: profileLoading, error: profileError, refetch: refetchProfile } =
+	useUserProfile(userId);
 const avatarUrl = computed(() => profile.value?.avatarUrl || useFallbackUserImage(userId.value));
 const decorationDialogOpen = ref(false);
 const activeDecorationTab = ref<"avatar" | "background">("avatar");

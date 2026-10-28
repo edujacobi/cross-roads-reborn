@@ -14,6 +14,7 @@ import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
 import RefreshButton from "~/components/ui/RefreshButton.vue";
 import { useItemDetailModal } from "~/composables/useItemDetailModal";
 import { useToast } from "~/composables/useToast";
+import { getErrorMessage } from "~/utils/getErrorMessage";
 import { imagePaths } from "~/constants/imagePaths";
 import { localStorageKeys } from "~/constants/localStorageKeys";
 import {
@@ -88,12 +89,6 @@ function handleConfirmationOpen(open: boolean) {
 	if (!open) pendingBundle.value = null;
 }
 
-function getErrorMessage(caughtError: unknown) {
-	return caughtError && typeof caughtError === "object" && "message" in caughtError
-		? String(caughtError.message)
-		: "Ocorreu um erro inesperado.";
-}
-
 async function confirmBundleActivation() {
 	const bundle = pendingBundle.value;
 	if (!bundle) return;
@@ -114,11 +109,11 @@ async function confirmBundleActivation() {
 		} catch (caughtError: unknown) {
 			showToast({
 				variant: "warning",
-				text: `Pacote aplicado, mas o inventário não foi atualizado: ${getErrorMessage(caughtError)}`,
+				text: `Pacote aplicado, mas o inventário não foi atualizado: ${getErrorMessage(caughtError, "Ocorreu um erro inesperado.")}`,
 			});
 		}
 	} catch (caughtError: unknown) {
-		showToast({ variant: "error", text: getErrorMessage(caughtError) });
+		showToast({ variant: "error", text: getErrorMessage(caughtError, "Ocorreu um erro inesperado.") });
 	}
 }
 

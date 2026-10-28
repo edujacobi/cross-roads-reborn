@@ -22,7 +22,6 @@ import { imagePaths } from "~/constants/imagePaths";
 import {
 	GetHospitalizedUsersDocument,
 	GetPrivateHospitalCostDocument,
-	GetUserProfileDocument,
 	PayPrivateHospitalDocument,
 } from "~/graphql/generated";
 
@@ -75,15 +74,8 @@ const { result: privateCostResult, refetch: refetchPrivateCost } = useQuery(
 
 const privateHospitalCost = computed(() => privateCostResult.value?.privateHospitalCost || 0);
 
-const { result: userProfileResult, refetch: refetchUserProfile } = useQuery(
-	GetUserProfileDocument,
-	() => ({ id: currentUserId.value }),
-	{
-		enabled: !!currentUserId.value,
-		fetchPolicy: "cache-and-network",
-	},
-);
-const userMoney = computed(() => userProfileResult.value?.user?.money ?? 0);
+const { user: userProfile, refetch: refetchUserProfile } = useUserProfile(currentUserId);
+const userMoney = computed(() => userProfile.value?.money ?? 0);
 
 const entries = computed(() => result.value?.hospitalizedUsers?.entries || []);
 const total = computed(() => result.value?.hospitalizedUsers?.total || 0);

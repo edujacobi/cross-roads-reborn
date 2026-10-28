@@ -14,6 +14,7 @@ import { useToast } from "~/composables/useToast";
 import { imagePaths } from "~/constants/imagePaths";
 import { GetItemDocument, GetMySkinBundleIdsDocument, SetOwnItemSkinDocument } from "~/graphql/generated";
 import { ItemType } from "../../src/core/types/ItemType";
+import { getErrorMessage } from "~/utils/getErrorMessage";
 
 const route = useRoute();
 const auth = useAuth();
@@ -86,7 +87,7 @@ async function requestSkinActivation(skin: { bundleId: number; bundleName: strin
 		await closeItemModal();
 		pendingSkin.value = pendingSelection;
 	} catch (caughtError: unknown) {
-		showToast({ variant: "error", text: getErrorMessage(caughtError) });
+		showToast({ variant: "error", text: getErrorMessage(caughtError, "Ocorreu um erro inesperado.") });
 	}
 }
 
@@ -98,18 +99,12 @@ async function cancelSkinConfirmation() {
 	try {
 		await openItemModal({ id: skin.itemId }, skin.ownerUserId);
 	} catch (caughtError: unknown) {
-		showToast({ variant: "error", text: getErrorMessage(caughtError) });
+		showToast({ variant: "error", text: getErrorMessage(caughtError, "Ocorreu um erro inesperado.") });
 	}
 }
 
 async function handleSkinConfirmationOpen(open: boolean) {
 	if (!open) await cancelSkinConfirmation();
-}
-
-function getErrorMessage(caughtError: unknown) {
-	return caughtError && typeof caughtError === "object" && "message" in caughtError
-		? String(caughtError.message)
-		: "Ocorreu um erro inesperado.";
 }
 
 async function confirmSkinActivation() {
@@ -131,11 +126,11 @@ async function confirmSkinActivation() {
 		} catch (caughtError: unknown) {
 			showToast({
 				variant: "warning",
-				text: `Skin ativada, mas o inventário não foi atualizado: ${getErrorMessage(caughtError)}`,
+				text: `Skin ativada, mas o inventário não foi atualizado: ${getErrorMessage(caughtError, "Ocorreu um erro inesperado.")}`,
 			});
 		}
 	} catch (caughtError: unknown) {
-		showToast({ variant: "error", text: getErrorMessage(caughtError) });
+		showToast({ variant: "error", text: getErrorMessage(caughtError, "Ocorreu um erro inesperado.") });
 	}
 }
 

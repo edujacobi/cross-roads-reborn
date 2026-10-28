@@ -14,13 +14,13 @@ import { useAuth } from "~/composables/useAuth";
 import { useItemDetailModal } from "~/composables/useItemDetailModal";
 import { useMoneyFormat } from "~/composables/useMoneyFormat";
 import { useToast } from "~/composables/useToast";
+import { getErrorMessage } from "~/utils/getErrorMessage";
 import {
 	BuyItemDocument,
 	GetBlackMarketOpenDocument,
 	GetItemsDocument,
 	type GetItemsQuery,
 	GetUserInventoryDocument,
-	GetUserProfileDocument,
 } from "~/graphql/generated";
 import { BundleId, ItemId } from "../../src/core/types/Ids";
 import { ItemType } from "../../src/core/types/ItemType";
@@ -55,15 +55,8 @@ const { result: blackMarketResult, loading: blackMarketLoading } = useQuery(GetB
 const blackMarketOpen = computed(() => blackMarketResult.value?.blackMarketOpen ?? false);
 
 const userId = computed(() => authUser.value?.userId ?? "");
-const {
-	result: profileResult,
-	loading: profileLoading,
-	refetch: refetchProfile,
-} = useQuery(GetUserProfileDocument, () => ({ id: userId.value }), {
-	enabled: !!userId.value,
-	fetchPolicy: "cache-and-network",
-});
-const userMoney = computed(() => profileResult.value?.user?.money ?? 0);
+const { user: profile, loading: profileLoading, refetch: refetchProfile } = useUserProfile(userId);
+const userMoney = computed(() => profile.value?.money ?? 0);
 
 const {
 	result: inventoryResult,
@@ -268,7 +261,7 @@ async function confirmPurchase() {
 				failMessages.push(res?.data?.buyItem?.message ?? "Erro desconhecido");
 			}
 		} catch (e: unknown) {
-			failMessages.push(getErrorMessage(e));
+			failMessages.push(getErrorMessage(e, "Erro inesperado."));
 		}
 	}
 
@@ -313,11 +306,6 @@ function handleKeyDown(e: KeyboardEvent) {
 	if (e.key === "Escape" && cartOpen.value) {
 		toggleCart();
 	}
-}
-
-function getErrorMessage(error: unknown): string {
-	const hasMessage = error && typeof error === "object" && "message" in error;
-	return hasMessage ? String(error.message) : "Erro inesperado.";
 }
 
 onMounted(() => {

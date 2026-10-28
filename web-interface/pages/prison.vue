@@ -26,7 +26,6 @@ import {
 	GetBribeCostDocument,
 	GetMyPrisonStatusDocument,
 	GetPrisonersDocument,
-	GetUserProfileDocument,
 	PayBribePrisonDocument,
 } from "~/graphql/generated";
 import { readSseData } from "~/utils/readSseData";
@@ -84,15 +83,8 @@ const { result: bribeCostResult, refetch: refetchBribeCost } = useQuery(
 
 const bribeCost = computed(() => bribeCostResult.value?.bribeCost || 0);
 
-const { result: userProfileResult, refetch: refetchUserProfile } = useQuery(
-	GetUserProfileDocument,
-	() => ({ id: currentUserId.value }),
-	{
-		enabled: !!currentUserId.value,
-		fetchPolicy: "cache-and-network",
-	},
-);
-const userMoney = computed(() => userProfileResult.value?.user?.money ?? 0);
+const { user: userProfile, refetch: refetchUserProfile } = useUserProfile(currentUserId);
+const userMoney = computed(() => userProfile.value?.money ?? 0);
 
 const { result: userStatusResult, refetch: refetchPrisonStatus } = useQuery(
 	GetMyPrisonStatusDocument,

@@ -12,11 +12,11 @@ import { useAuth } from "~/composables/useAuth";
 import { useFallbackUserImage } from "~/composables/useFallbackImage";
 import { useMoneyFormat } from "~/composables/useMoneyFormat";
 import { useToast } from "~/composables/useToast";
+import { getErrorMessage } from "~/utils/getErrorMessage";
 import {
 	BuySpecialShopItemDocument,
 	BuySpecialShopVipDocument,
 	GetSpecialShopDocument,
-	GetUserProfileDocument,
 	SetOwnBundleSkinDocument,
 	SetOwnDecorationDocument,
 	SpecialShopItemType,
@@ -56,16 +56,8 @@ const pendingPurchase = ref<PendingPurchase | null>(null);
 const pendingBundleActivation = ref<{ id: number; name: string } | null>(null);
 const vipDays = ref(7);
 
-const {
-	result: profileResult,
-	loading: profileLoading,
-	error: profileError,
-	refetch: refetchProfile,
-} = useQuery(GetUserProfileDocument, () => ({ id: userId.value }), {
-	enabled: computed(() => !!userId.value),
-	fetchPolicy: "cache-and-network",
-});
-const profile = computed(() => profileResult.value?.user);
+const { user: profile, loading: profileLoading, error: profileError, refetch: refetchProfile } =
+	useUserProfile(userId);
 const specialCoinBalance = computed(() => profile.value?.specialCoin ?? 0);
 const avatarUrl = computed(() => profile.value?.avatarUrl || useFallbackUserImage(userId.value));
 
@@ -217,12 +209,6 @@ function isBackgroundDecorationActive(decorationId: number) {
 	return getBackgroundDecorationClass(decorationId) === `profile-background--${profile.value?.backgroundDecoration}`;
 }
 
-function getErrorMessage(caughtError: unknown) {
-	return caughtError && typeof caughtError === "object" && "message" in caughtError
-		? String(caughtError.message)
-		: "Ocorreu um erro inesperado.";
-}
-
 async function setActiveDecoration(type: UserDecorationType, decorationId: number) {
 	try {
 		const response = await setOwnDecoration({ type, decorationId });
@@ -238,11 +224,11 @@ async function setActiveDecoration(type: UserDecorationType, decorationId: numbe
 		} catch (caughtError: unknown) {
 			showToast({
 				variant: "warning",
-				text: `Decoração aplicada, mas não foi possível atualizar o perfil: ${getErrorMessage(caughtError)}`,
+				text: `Decoração aplicada, mas não foi possível atualizar o perfil: ${getErrorMessage(caughtError, "Ocorreu um erro inesperado.")}`,
 			});
 		}
 	} catch (caughtError: unknown) {
-		showToast({ variant: "error", text: getErrorMessage(caughtError) });
+		showToast({ variant: "error", text: getErrorMessage(caughtError, "Ocorreu um erro inesperado.") });
 	}
 }
 
@@ -261,7 +247,7 @@ async function confirmBundleActivation() {
 		closeBundleActivation(false);
 		showToast({ variant: "success", text: result.message });
 	} catch (caughtError: unknown) {
-		showToast({ variant: "error", text: getErrorMessage(caughtError) });
+		showToast({ variant: "error", text: getErrorMessage(caughtError, "Ocorreu um erro inesperado.") });
 	}
 }
 
@@ -283,7 +269,7 @@ async function confirmPurchase() {
 			result = response?.data?.buySpecialShopItem;
 		}
 	} catch (caughtError: unknown) {
-		showToast({ variant: "error", text: getErrorMessage(caughtError) });
+		showToast({ variant: "error", text: getErrorMessage(caughtError, "Ocorreu um erro inesperado.") });
 		return;
 	}
 
@@ -294,7 +280,7 @@ async function confirmPurchase() {
 		} catch (caughtError: unknown) {
 			showToast({
 				variant: "warning",
-				text: `Não foi possível atualizar o saldo e o catálogo: ${getErrorMessage(caughtError)}`,
+				text: `Não foi possível atualizar o saldo e o catálogo: ${getErrorMessage(caughtError, "Ocorreu um erro inesperado.")}`,
 			});
 		}
 		return;
@@ -307,7 +293,7 @@ async function confirmPurchase() {
 	} catch (caughtError: unknown) {
 		showToast({
 			variant: "warning",
-			text: `Compra concluída, mas a loja não foi atualizada: ${getErrorMessage(caughtError)}`,
+			text: `Compra concluída, mas a loja não foi atualizada: ${getErrorMessage(caughtError, "Ocorreu um erro inesperado.")}`,
 		});
 	}
 }

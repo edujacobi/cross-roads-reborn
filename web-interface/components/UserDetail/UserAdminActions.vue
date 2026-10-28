@@ -26,6 +26,7 @@ import BaseSelector, { type SelectorOption } from "~/components/ui/BaseSelector.
 import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
 import RefreshButton from "~/components/ui/RefreshButton.vue";
 import { imagePaths } from "~/constants/imagePaths";
+import { getErrorMessage } from "~/utils/getErrorMessage";
 import {
 	AddBadgeDocument,
 	AddSpecialCoinsDocument,
@@ -147,11 +148,6 @@ function showSuccess(message: string) {
 
 function showError(message: string) {
 	emit("feedback", "error", message);
-}
-
-function getErrorMessage(error: unknown): string {
-	const hasMessage = error && typeof error === "object" && "message" in error;
-	return hasMessage ? String(error.message) : "Erro inesperado.";
 }
 
 async function handleCure() {
