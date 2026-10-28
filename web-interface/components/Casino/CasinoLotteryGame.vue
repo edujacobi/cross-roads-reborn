@@ -126,16 +126,11 @@ function formatDate(date: string | null | undefined) {
 	scoped
 >
 @use "~/assets/scss/variables" as *;
+@use "~/assets/scss/mixins" as *;
 
 .casino-game {
 	&__card {
-		border: 1px solid rgba($color-gold, 0.2);
-		background: linear-gradient(145deg, rgba(#153426, 0.44), $bg-card 54%);
-		box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
-
-		:deep(.card-title) {
-			color: #fff0cb;
-		}
+		@include casino-card-surface;
 	}
 
 	&__balance {

@@ -108,7 +108,7 @@ const emit = defineEmits<{
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.robbery-attacker__spinner {
+	.beat-up-attacker__spinner {
 		transition: none !important;
 		animation: none !important;
 	}

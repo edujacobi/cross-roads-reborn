@@ -106,12 +106,6 @@ const sortOptions: SelectorOption[] = [
 >
 @use "~/assets/scss/variables" as *;
 
-.sort-control {
-	display: flex;
-	align-items: center;
-	gap: $spacing-sm;
-}
-
 .item-name {
 	display: flex;
 	align-items: center;

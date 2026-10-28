@@ -435,10 +435,6 @@ function nextPage() {
 }
 
 .history-action {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-
 	&__icon {
 		object-fit: contain;
 	}

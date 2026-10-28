@@ -237,9 +237,7 @@ function formatCountdown(expiresAt: string) {
 
 	&__header,
 	&__actions {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
+		@include flex-between;
 		flex-wrap: wrap;
 		gap: $spacing-md;
 		margin-top: $spacing-md;

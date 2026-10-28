@@ -175,16 +175,4 @@ function remainingVipTime(vipTime: string | null): string {
 	}
 }
 
-.list-state {
-	@include flex-center;
-	gap: $spacing-sm;
-	padding: 3rem 1.25rem;
-	color: $text-muted;
-	font-size: $font-size-14;
-}
-
-.error-state {
-	color: $color-danger;
-}
-
 </style>

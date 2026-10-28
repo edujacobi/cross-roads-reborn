@@ -236,9 +236,9 @@ onUnmounted(() => {
 						v-for="job in jobs"
 						:key="job.id"
 						class="job-card"
-						:class="{
-							'job-card--black-market': job.special,
-							'job-card--disabled': job.special && !blackMarketOpen,
+						:class="{
+							'job-card--black-market': job.special,
+							'job-card--disabled': job.special && !blackMarketOpen,
 						}"
 					>
 						<div
@@ -469,6 +469,7 @@ onUnmounted(() => {
 	lang="scss"
 >
 @use "~/assets/scss/variables" as *;
+@use "~/assets/scss/mixins" as *;
 
 .jobs-page {
 	display: flex;
@@ -550,9 +551,7 @@ onUnmounted(() => {
 	}
 
 	&-header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
+		@include flex-between;
 		padding: $spacing-md;
 		border-bottom: 1px solid $border-card;
 	}
@@ -607,15 +606,6 @@ onUnmounted(() => {
 	display: flex;
 	flex-direction: column;
 	gap: $spacing-sm;
-}
-
-.jobs-page__action-message {
-	margin: 0;
-	padding: $spacing-md;
-	background: $bg-card;
-	border: 1px solid $border-card;
-	border-radius: $radius-sm;
-	color: $text-primary;
 }
 
 .jobs-page__stat {
@@ -731,9 +721,7 @@ onUnmounted(() => {
 		right: -0.25rem;
 		min-width: 1.5rem;
 		height: 1.5rem;
-		display: flex;
-		align-items: center;
-		justify-content: center;
+		@include flex-center;
 		background-color: $color-working;
 		color: #000;
 		border-radius: 999px;
@@ -796,9 +784,7 @@ onUnmounted(() => {
 	}
 
 	&__header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
+		@include flex-between;
 		flex-shrink: 0;
 		min-width: 0;
 	}
@@ -815,9 +801,7 @@ onUnmounted(() => {
 	}
 
 	&__body {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
+		@include flex-between;
 		flex-wrap: wrap;
 		gap: $spacing-sm;
 		flex: 1;
@@ -851,9 +835,7 @@ onUnmounted(() => {
 		cursor: pointer;
 		color: $text-secondary;
 		padding: 0.25rem;
-		display: flex;
-		align-items: center;
-		justify-content: center;
+		@include flex-center;
 		transition: color 0.15s ease, transform 0.2s ease;
 		flex-shrink: 0;
 
@@ -946,9 +928,7 @@ onUnmounted(() => {
 }
 
 .jobs-error {
-	display: flex;
-	justify-content: center;
-	align-items: center;
+	@include flex-center;
 	padding: $spacing-xl;
 	color: $text-secondary;
 }

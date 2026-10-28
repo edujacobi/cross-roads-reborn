@@ -59,17 +59,17 @@ function getSortIcon(column: SortColumn) {
 							<ArrowUpDown
 								v-if="getSortIcon(column) === 'unsorted'"
 								:size="14"
-								class="base-table__sort-icon unsorted"
+								class="base-table__sort-icon base-table__sort-icon--unsorted"
 							/>
 							<ArrowUp
 								v-if="getSortIcon(column) === 'asc'"
 								:size="14"
-								class="base-table__sort-icon asc"
+								class="base-table__sort-icon base-table__sort-icon--asc"
 							/>
 							<ArrowDown
 								v-if="getSortIcon(column) === 'desc'"
 								:size="14"
-								class="base-table__sort-icon desc"
+								class="base-table__sort-icon base-table__sort-icon--desc"
 							/>
 						</span>
 					</button>
@@ -154,33 +154,33 @@ function getSortIcon(column: SortColumn) {
 			color: $text-primary;
 		}
 
-		.sort-label {
-			flex: 1;
-		}
-
-		.sort-icons {
-			display: flex;
-			align-items: center;
-			flex-shrink: 0;
-		}
-
-		.sort-icon {
-			opacity: 0.35;
-			@include transition-opacity;
-
-			&.unsorted {
-				opacity: 0.35;
-			}
-
-			&.asc,
-			&.desc {
-				opacity: 1;
-				color: $color-special;
-			}
-		}
-
-		&:hover .sort-icon.unsorted {
+		&:hover .base-table__sort-icon--unsorted {
 			opacity: 0.7;
+		}
+	}
+
+	&__sort-label {
+		flex: 1;
+	}
+
+	&__sort-icons {
+		display: flex;
+		align-items: center;
+		flex-shrink: 0;
+	}
+
+	&__sort-icon {
+		opacity: 0.35;
+		@include transition-opacity;
+
+		&--unsorted {
+			opacity: 0.35;
+		}
+
+		&--asc,
+		&--desc {
+			opacity: 1;
+			color: $color-special;
 		}
 	}
 }

@@ -299,20 +299,6 @@ function setModalOpen(isOpen: boolean) {
 	gap: $spacing-lg;
 }
 
-.audit-state {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	gap: $spacing-sm;
-	padding: 3rem 1.25rem;
-	color: $text-secondary;
-	text-align: center;
-}
-
-.audit-state--error {
-	color: $color-danger;
-}
-
 .audit-filter {
 	display: flex;
 	align-items: center;

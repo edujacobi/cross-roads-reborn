@@ -529,6 +529,7 @@ onUnmounted(() => {
 >
 @use "~/assets/scss/variables" as *;
 @use "sass:color";
+@use "~/assets/scss/mixins" as *;
 
 .me-page {
 	display: flex;
@@ -541,9 +542,7 @@ onUnmounted(() => {
 	container-name: page;
 
 	&__header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
+		@include flex-between;
 		gap: $spacing-md;
 		flex-wrap: wrap;
 
@@ -552,7 +551,7 @@ onUnmounted(() => {
 		}
 	}
 
-	&__bar-button.variant-primary {
+	&__bar-button.base-button--variant-primary {
 		background-color: $color-bar;
 		color: $text-primary;
 
@@ -655,7 +654,7 @@ onUnmounted(() => {
 	&__help {
 		margin-top: auto;
 
-		:deep(.card-actions){
+		:deep(.base-card__actions) {
 			@container page (max-width: 425px) {
 				flex-direction: column;
 				align-items: stretch;

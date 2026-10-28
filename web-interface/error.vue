@@ -143,7 +143,7 @@ async function copyErrorMessage() {
 		font-size: 0.85rem;
 	}
 
-	:deep(.card-footer) {
+	:deep(.base-card__footer) {
 		@include flex-center;
 		gap: $spacing-sm;
 	}

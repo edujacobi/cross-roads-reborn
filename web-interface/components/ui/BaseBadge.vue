@@ -12,7 +12,7 @@ withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
-	<span :class="['base-badge', `badge-${variant}`]">
+	<span :class="['base-badge', `base-badge--${variant}`]">
 		<slot />
 	</span>
 </template>
@@ -36,43 +36,43 @@ withDefaults(defineProps<Props>(), {
   text-transform: uppercase;
   letter-spacing: 0.04em;
 
-  &.badge-developer {
+  &--developer {
     @include accent-surface($color-developer);
     color: color.adjust($color-developer, $lightness: 10%);
   }
 
-  &.badge-moderator {
+  &--moderator {
     @include accent-surface($color-moderator);
     color: color.adjust($color-moderator, $lightness: 15%);
   }
 
-	&.badge-helper {
+	&--helper {
 		@include accent-surface($color-helper);
 		color: color.adjust($color-helper, $lightness: 15%);
 	}
 
-  &.badge-vip {
+  &--vip {
     background-color: rgba($color-vip, 0.2);
     color: color.adjust($color-vip, $lightness: 15%);
     border: 1px solid rgba($color-vip, 0.5);
   }
 
-  &.badge-success {
+  &--success {
     @include accent-surface($color-success);
     color: color.adjust($color-success, $lightness: 15%);
   }
 
-  &.badge-danger {
+  &--danger {
     @include accent-surface($color-danger);
     color: color.adjust($color-danger, $lightness: 15%);
   }
 
-  &.badge-warning {
+  &--warning {
     @include accent-surface($color-warning);
     color: color.adjust($color-warning, $lightness: 15%);
   }
 
-  &.badge-neutral {
+  &--neutral {
     background-color: rgba($border-subtle, 0.5);
     color: $text-secondary;
     border: 1px solid $border-subtle;

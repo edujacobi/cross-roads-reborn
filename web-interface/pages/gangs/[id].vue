@@ -1324,7 +1324,7 @@ async function updateGangMoney() {
 				>
 					<form
 						id="gang-role-form"
-						class="gangs-page__create-form"
+						class="gang-detail__create-form"
 						@submit.prevent="saveRole()"
 					>
 						<BaseInput
@@ -1732,7 +1732,7 @@ async function updateGangMoney() {
 			>
 				<form
 					id="edit-gang-form"
-					class="gangs-page__create-form"
+					class="gang-detail__create-form"
 					@submit.prevent="updateGang()"
 				>
 					<BaseInput
@@ -1755,17 +1755,17 @@ async function updateGangMoney() {
 						:model-value="editDraft.acronym"
 						@update:model-value="editDraft.acronym = String($event)"
 					/>
-					<div class="gangs-page__form-field">
+					<div class="gang-detail__form-field">
 						<label
 							for="edit-gang-description"
-							class="gangs-page__input-label"
+							class="gang-detail__input-label"
 						>
 							Descrição
 						</label>
 						<textarea
 							id="edit-gang-description"
 							v-model="editDraft.description"
-							class="gangs-page__textarea"
+							class="gang-detail__textarea"
 							placeholder="Descreva sua gangue"
 							maxlength="500"
 							required
@@ -1990,7 +1990,7 @@ $highlight-color: var(--highlight-color);
 $border-color: color-mix(in lab, $border-card 100%, $highlight-color 75%);
 $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 
-.gangs-page {
+.gang-detail {
 	&__create-form {
 		display: flex;
 		flex-direction: column;
@@ -2118,9 +2118,7 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 	}
 
 	&__title-row {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
+		@include flex-between;
 		gap: $spacing-sm;
 
 		@media (max-width: $bp-mobile) {
@@ -2408,22 +2406,6 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 	white-space: nowrap;
 }
 
-.gang-leader {
-	display: flex;
-	flex-direction: column;
-	gap: $spacing-xs;
-
-	&__name {
-		font-weight: $font-weight-semibold;
-		color: $text-primary;
-	}
-
-	&__id {
-		font-size: $font-size-12;
-		color: $text-muted;
-	}
-}
-
 .table-container {
 	max-height: 50dvh;
 	overflow-y: auto;
@@ -2524,11 +2506,6 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 			40.4% 26.9%
 		);
 	}
-}
-
-.permission-count {
-	color: $text-muted;
-	font-size: $font-size-12;
 }
 
 .perm-icon {

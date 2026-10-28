@@ -212,6 +212,7 @@ useSeoMeta({
 	scoped
 >
 @use "~/assets/scss/variables" as *;
+@use "~/assets/scss/mixins" as *;
 
 .game-home {
 	position: relative;
@@ -240,9 +241,7 @@ useSeoMeta({
 	}
 
 	&__header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
+		@include flex-between;
 		gap: $spacing-md;
 		flex-wrap: wrap;
 

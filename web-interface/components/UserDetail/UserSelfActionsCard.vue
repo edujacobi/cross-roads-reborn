@@ -382,6 +382,7 @@ async function handleAutomaticGrenadeChange() {
 >
 @use "~/assets/scss/variables" as *;
 @use "sass:color";
+@use "~/assets/scss/mixins" as *;
 
 .user-self-actions {
 	&__skeleton {
@@ -395,9 +396,7 @@ async function handleAutomaticGrenadeChange() {
 		left: calc(50% - 2rem);
 		bottom: 1rem;
 		z-index: 20;
-		display: flex;
-		align-items: center;
-		justify-content: center;
+		@include flex-center;
 		width: 4rem;
 		height: 4rem;
 		border: 1px solid $border-subtle;

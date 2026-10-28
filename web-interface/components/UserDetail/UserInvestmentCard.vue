@@ -121,6 +121,7 @@ const { getInvestmentImageUrl } = useInvestment();
 	scoped
 >
 @use "~/assets/scss/variables" as *;
+@use "~/assets/scss/mixins" as *;
 
 .user-investment {
 	&__skeleton {
@@ -137,10 +138,8 @@ const { getInvestmentImageUrl } = useInvestment();
 	}
 
 	&__content {
-		display: flex;
+		@include flex-between;
 		gap: $spacing-sm;
-		align-items: center;
-		justify-content: space-between;
 
 		// ponytail: stack investment info on mobile
 		@media (max-width: 640px) {

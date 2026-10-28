@@ -53,47 +53,11 @@ useHead({
 
 <style lang="scss">
 @use "~/assets/scss/variables" as *;
-@use "~/assets/scss/mixins" as *;
 
 #app-shell {
 	min-height: 100%;
 	display: flex;
 	flex-direction: column;
-}
-
-.motion-toggle {
-	position: fixed;
-	right: $spacing-md;
-	bottom: $spacing-md;
-	z-index: 90;
-	display: inline-flex;
-	align-items: center;
-	gap: $spacing-xs;
-	padding: 0.5rem 0.75rem;
-	border: 1px solid $border-card;
-	border-radius: $radius-full;
-	background: rgba($bg-card, 0.94);
-	color: $text-secondary;
-	font-size: $font-size-12;
-	font-weight: $font-weight-semibold;
-	box-shadow: $shadow-md;
-	backdrop-filter: blur(10px);
-	cursor: pointer;
-	transition: color $transition-fast ease, border-color $transition-fast ease, background-color $transition-fast ease;
-
-	&:hover {
-		border-color: rgba($color-brand, 0.55);
-		background-color: $bg-card-hover;
-		color: $text-primary;
-	}
-
-	&:focus-visible {
-		@include focus-outline($color-brand, 3px);
-	}
-
-	@media (max-width: $bp-tablet) {
-		bottom: 5.5rem;
-	}
 }
 
 .app-update-notice {

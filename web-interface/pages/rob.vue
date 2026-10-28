@@ -593,6 +593,7 @@ onBeforeUnmount(() => sseAbortController?.abort());
 	lang="scss"
 >
 @use "~/assets/scss/variables" as *;
+@use "~/assets/scss/mixins" as *;
 
 .rob-page {
 	display: flex;
@@ -816,15 +817,6 @@ onBeforeUnmount(() => sseAbortController?.abort());
 	}
 }
 
-.rob-page__action-message {
-	margin: 0;
-	padding: $spacing-md;
-	background: $bg-card;
-	border: 1px solid $border-card;
-	border-radius: $radius-sm;
-	color: $text-primary;
-}
-
 .rob-page__status,
 .rob-page__cooldown {
 	padding: $spacing-md;
@@ -949,9 +941,7 @@ onBeforeUnmount(() => sseAbortController?.abort());
 		position: fixed;
 		bottom: 1rem;
 		left: calc(50% - 2rem);
-		display: flex;
-		align-items: center;
-		justify-content: center;
+		@include flex-center;
 		width: 4rem;
 		height: 4rem;
 		border: 1px solid $border-subtle;

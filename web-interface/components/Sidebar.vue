@@ -259,7 +259,7 @@ const user = computed(() => {
 	<input
 		id="mobile-menu-toggle"
 		ref="mobileMenu"
-		class="mobile-menu-toggle"
+		class="sidebar__mobile-menu-toggle"
 		type="checkbox"
 		aria-label="Menu de navegação"
 		aria-controls="user-sidebar"
@@ -267,7 +267,7 @@ const user = computed(() => {
 	<!-- biome-ignore lint/a11y/noLabelWithoutControl: External labels toggle the CSS-controlled checkbox. -->
 	<label
 		for="mobile-menu-toggle"
-		class="mobile-menu-open"
+		class="sidebar__mobile-menu-open"
 		aria-hidden="true"
 	>
 		<Menu
@@ -278,7 +278,7 @@ const user = computed(() => {
 	<!-- biome-ignore lint/a11y/noLabelWithoutControl: External labels toggle the CSS-controlled checkbox. -->
 	<label
 		for="mobile-menu-toggle"
-		class="sidebar-backdrop"
+		class="sidebar__backdrop"
 		aria-hidden="true"
 	/>
 	<aside
@@ -286,16 +286,16 @@ const user = computed(() => {
 		:class="['sidebar', { 'sidebar--collapsed': isCollapsed }]"
 		aria-label="Painel do usuário"
 	>
-		<div class="brand">
+		<div class="sidebar__brand">
 			<NuxtLink
 				to="/me"
-				class="brand-link"
+				class="sidebar__brand-link"
 				aria-label="Início"
 			>
-				<div class="brand-icon">
+				<div class="sidebar__brand-icon">
 					<NuxtImg
 						:src="imagePaths.brand.logo"
-						class="img"
+						class="sidebar__brand-image"
 						alt="CROSS ROADS"
 						width="112"
 						height="50"
@@ -306,7 +306,7 @@ const user = computed(() => {
 			</NuxtLink>
 			<button
 				type="button"
-				class="collapse-toggle"
+				class="sidebar__collapse-toggle"
 				:aria-label="isCollapsed ? 'Expandir menu' : 'Recolher menu'"
 				:data-popover-text="isCollapsed ? 'Expandir menu' : 'Recolher menu'"
 				data-popover-direction="top"
@@ -316,7 +316,7 @@ const user = computed(() => {
 			>
 				<component
 					:is="ChevronLeft"
-					:class="{ 'collapse-icon--collapsed': isCollapsed }"
+					:class="['sidebar__collapse-icon', { 'sidebar__collapse-icon--collapsed': isCollapsed }]"
 					:size="18"
 					aria-hidden="true"
 				/>
@@ -324,7 +324,7 @@ const user = computed(() => {
 			<!-- biome-ignore lint/a11y/noLabelWithoutControl: External labels toggle the CSS-controlled checkbox. -->
 			<label
 				for="mobile-menu-toggle"
-				class="mobile-menu-close"
+				class="sidebar__mobile-menu-close"
 				aria-hidden="true"
 			>
 				<X
@@ -335,17 +335,17 @@ const user = computed(() => {
 		</div>
 
 		<nav
-			class="nav-links"
+			class="sidebar__nav-links"
 			aria-label="Navegação principal"
 		>
 			<div
 				v-for="group in navigationGroups"
 				:key="group.title ?? 'default'"
-				:class="['nav-group', { 'nav-group--titled': group.title }]"
+				:class="['sidebar__nav-group', { 'sidebar__nav-group--titled': group.title }]"
 			>
 				<h2
 					v-if="group.title"
-					class="nav-group-title"
+					class="sidebar__nav-group-title"
 				>
 					{{ group.title }}
 				</h2>
@@ -353,7 +353,10 @@ const user = computed(() => {
 					v-for="item in group.links"
 					:key="item.label"
 					:to="item.to"
-					:class="['nav-item', { active: item.activeRouteNames.some((name) => name === route.name) }]"
+					:class="[
+						'sidebar__nav-item',
+						{ 'sidebar__nav-item--active': item.activeRouteNames.some((name) => name === route.name) },
+					]"
 					:aria-label="item.label"
 					:data-popover-text="isCollapsed ? item.label : undefined"
 					data-popover-direction="right"
@@ -364,17 +367,17 @@ const user = computed(() => {
 						aria-hidden="true"
 						variant="solid"
 					/>
-					<div class="nav-label">
+					<div class="sidebar__nav-label">
 						<p>{{ item.label }}</p>
 						<span
 							v-if="item.hasNewBadge && hasNew"
-							class="nav-item-badge nav-item-badge__new"
+							class="sidebar__nav-item-badge sidebar__nav-item-badge--new"
 						>
 							NOVO
 						</span>
 						<span
 							v-if="item.blackMarketBadge && blackMarketOpen"
-							class="nav-item-badge nav-item-badge__blackmarket"
+							class="sidebar__nav-item-badge sidebar__nav-item-badge--blackmarket"
 						>
 							Mercado Negro
 						</span>
@@ -384,32 +387,32 @@ const user = computed(() => {
 		</nav>
 
 		<div
-			class="user-profile"
+			class="sidebar__user-profile"
 			v-if="user"
 		>
 			<NuxtLink
 				data-popover-text="Meu inventário"
 				data-popover-direction="top"
 				:to="`/users/${user.id}`"
-				class="user-info"
+				class="sidebar__user-info"
 				:aria-label="user.username ? `Perfil de ${user.username}` : 'Perfil do usuário'"
 			>
 				<UserPicture
 					:image-url="user.avatarUrl ?? useFallbackUserImage(user.id)"
 					:decoration="user.avatarDecoration"
-					image-class="sidebar-user-avatar"
+					image-class="sidebar__user-avatar"
 					lazy
 				/>
-				<div class="user-details">
-					<span class="user-name">{{ user.username }}</span>
+				<div class="sidebar__user-details">
+					<span class="sidebar__user-name">{{ user.username }}</span>
 					<NuxtLink
 						v-if="user.isDead"
 						to="/cemetery"
-						class="user-situation"
+						class="sidebar__user-situation"
 					>
 						<NuxtImg
 							:src="user.situationImageUrl"
-							class="img-situation"
+							class="sidebar__situation-image"
 							width="16"
 							height="16"
 							alt=""
@@ -418,11 +421,11 @@ const user = computed(() => {
 					</NuxtLink>
 					<p
 						v-else
-						class="user-situation"
+						class="sidebar__user-situation"
 					>
 						<NuxtImg
 							:src="user.situationImageUrl"
-							class="img-situation"
+							class="sidebar__situation-image"
 							width="16"
 							height="16"
 							alt=""
@@ -433,7 +436,7 @@ const user = computed(() => {
 			</NuxtLink>
 			<button
 				type="button"
-				class="logout-btn"
+				class="sidebar__logout-button"
 				data-popover-text="Encerrar sessão"
 				data-popover-direction="top"
 				aria-label="Encerrar sessão"
@@ -488,13 +491,13 @@ const user = computed(() => {
 	position: relative;
 	transition: width $transition-slow cubic-bezier(0.2, 0.8, 0.2, 1);
 
-	.brand {
+	.sidebar__brand {
 		flex-shrink: 0;
 		@include flex-center;
 		padding: 1.5rem 1.25rem;
 		border-bottom: 1px solid $border-subtle;
 
-		.brand-link {
+		.sidebar__brand-link {
 			display: flex;
 			flex: 1;
 			min-width: 0;
@@ -502,7 +505,7 @@ const user = computed(() => {
 			text-decoration: none;
 		}
 
-		.brand-icon {
+		.sidebar__brand-icon {
 			@include flex-center;
 			max-width: 7rem;
 			height: 2.5rem;
@@ -510,13 +513,13 @@ const user = computed(() => {
 			color: $color-brand;
 			transition: max-width $transition-slow ease, opacity $transition-normal ease, transform $transition-slow ease;
 
-			.img {
+			.sidebar__brand-image {
 				width: 7rem;
 				max-width: none;
 			}
 		}
 
-		.mobile-menu-close {
+		.sidebar__mobile-menu-close {
 			display: none;
 			margin-left: auto;
 			color: $text-secondary;
@@ -528,7 +531,7 @@ const user = computed(() => {
 		}
 	}
 
-	.collapse-toggle {
+	.sidebar__collapse-toggle {
 		@include flex-center;
 		position: absolute;
 		top: 50%;
@@ -554,7 +557,7 @@ const user = computed(() => {
 			@include focus-outline($color-brand, 2px);
 		}
 
-		.collapse-icon--collapsed {
+		.sidebar__collapse-icon--collapsed {
 			transform: rotate(180deg);
 		}
 
@@ -563,7 +566,7 @@ const user = computed(() => {
 		}
 	}
 
-	.nav-links {
+	.sidebar__nav-links {
 		flex: 1;
 		min-height: 0;
 		padding: $spacing-md 0.75rem;
@@ -575,19 +578,19 @@ const user = computed(() => {
 		overscroll-behavior: contain;
 		@include scrollbar-custom;
 
-		.nav-group {
+		.sidebar__nav-group {
 			display: flex;
 			flex-direction: column;
 			gap: $spacing-xs;
 		}
 
-		.nav-group--titled {
+		.sidebar__nav-group--titled {
 			margin-top: $spacing-md;
 			padding-top: $spacing-md;
 			border-top: 1px solid $border-subtle;
 		}
 
-		.nav-group-title {
+		.sidebar__nav-group-title {
 			padding: 0.25rem 0.875rem 0.5rem;
 			color: $text-muted;
 			font-size: $font-size-12;
@@ -598,7 +601,7 @@ const user = computed(() => {
 			transition: opacity $transition-normal ease, max-height $transition-slow ease;
 		}
 
-		.nav-item {
+		.sidebar__nav-item {
 			display: grid;
 			grid-template-columns: 18px minmax(0, 1fr);
 			align-items: center;
@@ -615,25 +618,25 @@ const user = computed(() => {
 				color: $text-primary;
 			}
 
-			&.active {
+			&--active {
 				background-color: rgba($color-brand, 0.12);
 				color: $color-brand;
 				font-weight: $font-weight-semibold;
 			}
 
-			&:has(.nav-item-badge) {
+			&:has(.sidebar__nav-item-badge) {
 				grid-template-columns: 18px minmax(0, 1fr);
 			}
 		}
 
-		.nav-label {
+		.sidebar__nav-label {
 			white-space: nowrap;
 			transition: max-width $transition-slow ease, opacity $transition-normal ease, transform $transition-slow ease;
 			display: flex;
 			justify-content: space-between;
 		}
 
-		.nav-item-badge {
+		.sidebar__nav-item-badge {
 			display: flex;
 			align-items: center;
 			padding: $spacing-xs $spacing-sm;
@@ -646,19 +649,19 @@ const user = computed(() => {
 			line-height: 0;
 			white-space: nowrap;
 
-			&__new {
+			&--new {
 				background-color: $color-danger;
 				box-shadow: 0 0 16px 0 $color-danger;
 			}
 
-			&__blackmarket {
+			&--blackmarket {
 				background-color: $color-success;
 				box-shadow: 0 0 16px 0 $color-success;
 			}
 		}
 	}
 
-	.user-profile {
+	.sidebar__user-profile {
 		flex-shrink: 0;
 		border-top: 1px solid $border-subtle;
 		display: flex;
@@ -668,7 +671,7 @@ const user = computed(() => {
 		justify-content: flex-start;
 		background-color: $bg-card-header;
 
-		.user-info {
+		.sidebar__user-info {
 			display: flex;
 			flex: 1;
 			min-width: 0;
@@ -682,33 +685,26 @@ const user = computed(() => {
 			}
 		}
 
-		.user-avatar {
-			width: 2.375rem;
-			height: 2.375rem;
-			border-width: 2px;
-			flex: 0 0 auto;
-		}
-
-		.user-situation {
+		.sidebar__user-situation {
 			color: $text-secondary;
 			font-size: 0.85rem;
 			display: flex;
 			align-items: center;
 			gap: $spacing-xs;
 
-			.img-situation {
+			.sidebar__situation-image {
 				width: 16px;
 			}
 		}
 
-		.user-details {
+		.sidebar__user-details {
 			flex: 1;
 			min-width: 0;
 			max-width: 10rem;
 			overflow: hidden;
 			transition: max-width $transition-slow ease, opacity $transition-normal ease;
 
-			.user-name {
+			.sidebar__user-name {
 				display: block;
 				font-size: $font-size-12;
 				font-weight: $font-weight-semibold;
@@ -719,7 +715,7 @@ const user = computed(() => {
 			}
 		}
 
-		.logout-btn {
+		.sidebar__logout-button {
 			@include flex-center;
 			background: transparent;
 			border: none;
@@ -749,7 +745,7 @@ const user = computed(() => {
 		visibility: hidden;
 		transition: transform $transition-slow ease-in-out, visibility $transition-slow;
 
-		.collapse-toggle {
+		.sidebar__collapse-toggle {
 			display: none;
 		}
 	}
@@ -758,27 +754,27 @@ const user = computed(() => {
 		&.sidebar--collapsed {
 			width: 4.5rem;
 
-			.brand {
+			.sidebar__brand {
 				justify-content: center;
 
-				.brand-icon {
+				.sidebar__brand-icon {
 					max-width: 0;
 					transform: scale(0.45);
 				}
 			}
 
-			.nav-links {
+			.sidebar__nav-links {
 				padding-right: 0.75rem;
 				padding-left: 0.75rem;
 
-				.nav-group-title {
+				.sidebar__nav-group-title {
 					max-height: 0;
 					padding: 0;
 					opacity: 0;
 					overflow: hidden;
 				}
 
-				.nav-item {
+				.sidebar__nav-item {
 					grid-template-columns: 18px minmax(0, 0fr);
 					gap: 0;
 					justify-content: center;
@@ -786,24 +782,24 @@ const user = computed(() => {
 					padding-left: 0.5625rem;
 				}
 
-				.nav-label {
+				.sidebar__nav-label {
 					max-width: 0;
 					opacity: 0;
 					transform: translateX(-0.5rem);
 				}
 			}
 
-			.user-profile {
-				.user-info {
+			.sidebar__user-profile {
+				.sidebar__user-info {
 					padding: 0.5rem;
 				}
 
-				.user-details {
+				.sidebar__user-details {
 					max-width: 0;
 					opacity: 0;
 				}
 
-				.logout-btn {
+				.sidebar__logout-button {
 					display: none;
 				}
 			}
@@ -819,7 +815,7 @@ const user = computed(() => {
 	}
 }
 
-.mobile-menu-toggle {
+.sidebar__mobile-menu-toggle {
 	display: none;
 	position: fixed;
 	top: 0;
@@ -832,15 +828,15 @@ const user = computed(() => {
 		display: block;
 	}
 
-	&:focus-visible + .mobile-menu-open {
+	&:focus-visible + .sidebar__mobile-menu-open {
 		@include focus-outline($color-brand, 3px);
 	}
 
-	&:checked ~ .mobile-menu-open {
+	&:checked ~ .sidebar__mobile-menu-open {
 		display: none;
 	}
 
-	&:checked ~ .sidebar-backdrop {
+	&:checked ~ .sidebar__backdrop {
 		display: block;
 	}
 
@@ -850,11 +846,11 @@ const user = computed(() => {
 	}
 }
 
-:global(body:has(.mobile-menu-toggle:checked)) {
+:global(body:has(.sidebar__mobile-menu-toggle:checked)) {
 	overflow: hidden;
 }
 
-.sidebar-backdrop {
+.sidebar__backdrop {
 	display: none;
 	position: fixed;
 	inset: 0;
@@ -868,7 +864,7 @@ const user = computed(() => {
 	cursor: pointer;
 }
 
-.mobile-menu-open {
+.sidebar__mobile-menu-open {
 	display: none;
 	cursor: pointer;
 

@@ -20,6 +20,16 @@
   box-shadow: $shadow-md;
 }
 
+@mixin casino-card-surface {
+  border: 1px solid rgba($color-gold, 0.2);
+  background: linear-gradient(145deg, rgba(#153426, 0.44), $bg-card 54%);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+
+  :deep(.base-card__title) {
+    color: #fff0cb;
+  }
+}
+
 @mixin accent-surface($accent, $background-opacity: 0.15, $border-opacity: 0.4) {
   background-color: rgba($accent, $background-opacity);
   border: 1px solid rgba($accent, $border-opacity);

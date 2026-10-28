@@ -89,6 +89,7 @@ const games = Object.entries(casinoGames).map(([slug, game]) => ({
 	scoped
 >
 @use "~/assets/scss/variables" as *;
+@use "~/assets/scss/mixins" as *;
 
 .casino-page {
 	display: flex;
@@ -210,9 +211,7 @@ const games = Object.entries(casinoGames).map(([slug, game]) => ({
 
 		&-link {
 			width: 100%;
-			display: flex;
-			justify-content: center;
-			align-items: center;
+			@include flex-center;
 			gap: $spacing-xs;
 			padding: $spacing-sm $spacing-md;
 			border: 1px solid rgba($color-gold, 0.35);

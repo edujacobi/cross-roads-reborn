@@ -600,9 +600,7 @@ onUnmounted(() => window.removeEventListener("keydown", handleKeyDown));
 		}
 
 		&-header {
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
+			@include flex-between;
 			padding: $spacing-md;
 			border-bottom: 1px solid $border-card;
 		}
@@ -658,9 +656,7 @@ onUnmounted(() => window.removeEventListener("keydown", handleKeyDown));
 		margin: 0;
 
 		> div {
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
+			@include flex-between;
 			gap: $spacing-sm;
 			padding: $spacing-sm;
 			border: 1px solid $border-card;
@@ -772,9 +768,7 @@ onUnmounted(() => window.removeEventListener("keydown", handleKeyDown));
 			right: -0.25rem;
 			min-width: 1.5rem;
 			height: 1.5rem;
-			display: flex;
-			align-items: center;
-			justify-content: center;
+			@include flex-center;
 			background-color: $color-investment;
 			color: #000;
 			border-radius: 999px;

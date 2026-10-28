@@ -740,9 +740,7 @@ onUnmounted(() => {
 		}
 
 		&-header {
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
+			@include flex-between;
 			padding: $spacing-md;
 			border-bottom: 1px solid $border-card;
 		}
@@ -831,9 +829,7 @@ onUnmounted(() => {
 		}
 
 		&-item-info {
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
+			@include flex-between;
 		}
 
 		&-item-name {
@@ -851,9 +847,7 @@ onUnmounted(() => {
 		}
 
 		&-item-controls {
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
+			@include flex-between;
 		}
 
 		&-quantity {
@@ -865,9 +859,7 @@ onUnmounted(() => {
 		&-qty-btn {
 			width: 1.75rem;
 			height: 1.75rem;
-			display: flex;
-			align-items: center;
-			justify-content: center;
+			@include flex-center;
 			background-color: $bg-card;
 			border: 1px solid $border-subtle;
 			border-radius: $radius-sm;
@@ -916,9 +908,7 @@ onUnmounted(() => {
 		}
 
 		&-total {
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
+			@include flex-between;
 			font-size: $font-size-16;
 			font-weight: $font-weight-bold;
 		}
@@ -937,9 +927,7 @@ onUnmounted(() => {
 		}
 
 		&-money {
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
+			@include flex-between;
 			font-size: $font-size-12;
 		}
 
@@ -1007,9 +995,7 @@ onUnmounted(() => {
 			right: -0.25rem;
 			min-width: 1.5rem;
 			height: 1.5rem;
-			display: flex;
-			align-items: center;
-			justify-content: center;
+			@include flex-center;
 			background-color: #f04d48;
 			color: white;
 			border-radius: 999px;

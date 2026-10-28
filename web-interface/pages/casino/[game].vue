@@ -90,6 +90,7 @@ useHead({
 	scoped
 >
 @use "~/assets/scss/variables" as *;
+@use "~/assets/scss/mixins" as *;
 
 .casino-game-page {
 	display: flex;
@@ -103,7 +104,7 @@ useHead({
 			$bg-card;
 		box-shadow: 0 14px 36px rgba(0, 0, 0, 0.18);
 
-		:deep(.card-title) {
+		:deep(.base-card__title) {
 			color: #fff0cb;
 		}
 	}
@@ -152,9 +153,7 @@ useHead({
 	}
 
 	&__images {
-		display: flex;
-		align-items: center;
-		justify-content: center;
+		@include flex-center;
 		flex-wrap: wrap;
 		gap: $spacing-md;
 		margin-bottom: $spacing-lg;

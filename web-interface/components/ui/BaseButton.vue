@@ -24,7 +24,7 @@ withDefaults(defineProps<Props>(), {
 	<NuxtLink
 		v-if="to"
 		:to="to"
-		:class="['base-button', `variant-${variant}`, `size-${size}`]"
+		:class="['base-button', `base-button--variant-${variant}`, `base-button--size-${size}`]"
 	>
 		<slot />
 	</NuxtLink>
@@ -32,7 +32,7 @@ withDefaults(defineProps<Props>(), {
 		v-else
 		:type="type"
 		:disabled="disabled"
-		:class="['base-button', `variant-${variant}`, `size-${size}`]"
+		:class="['base-button', `base-button--variant-${variant}`, `base-button--size-${size}`]"
 	>
 		<slot />
 	</button>
@@ -80,23 +80,23 @@ withDefaults(defineProps<Props>(), {
   }
 
   // Sizes
-  &.size-sm {
+  &--size-sm {
     padding: 0.375rem 0.75rem;
     font-size: $font-size-12;
   }
 
-  &.size-md {
+  &--size-md {
     padding: $spacing-sm $spacing-md;
     font-size: $font-size-14;
   }
 
-  &.size-lg {
+  &--size-lg {
     padding: 0.75rem 1.5rem;
     font-size: $font-size-16;
   }
 
   // Variants
-  &.variant-primary {
+  &--variant-primary {
     background-color: $color-brand;
   	border: none;
     color: #000;
@@ -110,7 +110,7 @@ withDefaults(defineProps<Props>(), {
     }
   }
 
-  &.variant-secondary {
+  &--variant-secondary {
     background-color: $bg-card-hover;
     border-color: $border-subtle;
     color: $text-primary;
@@ -121,7 +121,7 @@ withDefaults(defineProps<Props>(), {
     }
   }
 
-  &.variant-danger {
+  &--variant-danger {
     @include accent-surface($color-danger);
     color: color.adjust($color-danger, $lightness: 15%);
 
@@ -131,7 +131,7 @@ withDefaults(defineProps<Props>(), {
     }
   }
 
-  &.variant-success {
+  &--variant-success {
     @include accent-surface($color-success);
     color: color.adjust($color-success, $lightness: 15%);
 
@@ -141,7 +141,7 @@ withDefaults(defineProps<Props>(), {
     }
   }
 
-  &.variant-ghost {
+  &--variant-ghost {
     background-color: transparent;
     color: $text-secondary;
 

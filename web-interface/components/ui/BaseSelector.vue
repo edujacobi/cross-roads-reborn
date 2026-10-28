@@ -281,9 +281,7 @@ watch(isOpen, (open) => {
 
 	.selector-trigger {
 		width: 100%;
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
+		@include flex-between;
 		gap: $spacing-sm;
 		padding: 0.625rem 0.875rem;
 		background-color: $bg-card-hover;

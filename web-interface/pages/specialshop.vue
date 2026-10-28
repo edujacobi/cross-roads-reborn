@@ -706,6 +706,7 @@ async function confirmPurchase() {
 >
 @use "~/assets/scss/variables" as *;
 @use "sass:color" as color;
+@use "~/assets/scss/mixins" as *;
 
 .special-shop {
 	display: flex;
@@ -713,9 +714,7 @@ async function confirmPurchase() {
 	gap: $spacing-lg;
 
 	&__balance {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
+		@include flex-between;
 		gap: $spacing-md;
 		padding: $spacing-md $spacing-lg;
 		border: 1px solid color-mix(in lab, $color-special 45%, $border-card);
@@ -910,10 +909,8 @@ async function confirmPurchase() {
 	}
 
 	&__vip-total {
-		display: flex;
+		@include flex-between;
 		width: 100%;
-		align-items: center;
-		justify-content: space-between;
 		gap: $spacing-sm;
 		padding-top: $spacing-sm;
 		border-top: 1px solid color-mix(in lab, $color-vip 50%, $bg-card);

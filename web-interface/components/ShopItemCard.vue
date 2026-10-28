@@ -356,18 +356,14 @@ function handleUpdateUnits(itemId: number, delta: number) {
 	}
 
 	&__quantity {
-		display: flex;
-		align-items: center;
-		justify-content: center;
+		@include flex-center;
 		gap: $spacing-xs;
 	}
 
 	&__qty-btn {
 		width: 1.75rem;
 		height: 1.75rem;
-		display: flex;
-		align-items: center;
-		justify-content: center;
+		@include flex-center;
 		background-color: $bg-card;
 		border: 1px solid $border-subtle;
 		border-radius: $radius-sm;

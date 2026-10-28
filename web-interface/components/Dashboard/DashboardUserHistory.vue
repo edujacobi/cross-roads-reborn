@@ -113,21 +113,6 @@ defineProps<Props>();
 				color: $text-primary;
 			}
 
-			.text-hospital {
-				color: $color-hospital;
-			}
-
-			.text-prison {
-				color: $color-prison;
-			}
-
-			.text-working {
-				color: $color-working;
-			}
-
-			.text-scavenge {
-				color: $color-scavenge;
-			}
 		}
 	}
 }

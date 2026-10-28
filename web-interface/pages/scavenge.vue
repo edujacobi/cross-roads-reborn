@@ -705,6 +705,7 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 	lang="scss"
 >
 @use "~/assets/scss/variables" as *;
+@use "~/assets/scss/mixins" as *;
 
 .scavenge-page {
 	display: flex;
@@ -786,9 +787,7 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 	}
 
 	&-header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
+		@include flex-between;
 		padding: $spacing-md;
 		border-bottom: 1px solid $border-card;
 	}
@@ -980,10 +979,8 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 	}
 
 	&__row {
-		display: flex;
+		@include flex-between;
 		gap: $spacing-xs;
-		align-items: center;
-		justify-content: space-between;
 
 		@media (max-width: $bp-mobile){
 			gap: $spacing-md;
@@ -1026,9 +1023,7 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 	}
 
 	&__body {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
+		@include flex-between;
 		flex-wrap: wrap;
 		gap: $spacing-sm;
 
@@ -1049,9 +1044,7 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 		cursor: pointer;
 		color: $text-secondary;
 		padding: 0.25rem;
-		display: flex;
-		align-items: center;
-		justify-content: center;
+		@include flex-center;
 		transition: color 0.15s ease, transform 0.2s ease;
 
 		&:hover {
@@ -1181,9 +1174,7 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 }
 
 .scavenge-error {
-	display: flex;
-	justify-content: center;
-	align-items: center;
+	@include flex-center;
 	padding: $spacing-xl;
 	color: $text-secondary;
 }

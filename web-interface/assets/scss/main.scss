@@ -40,7 +40,7 @@ textarea {
   font-size: inherit;
 }
 
-input[type="checkbox"]:not(.mobile-menu-toggle) {
+input[type="checkbox"]:not(.sidebar__mobile-menu-toggle) {
   appearance: none;
   display: inline-grid;
   place-content: center;

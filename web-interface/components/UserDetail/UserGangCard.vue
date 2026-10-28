@@ -95,7 +95,7 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 		gap: $spacing-md;
 	}
 
-	:deep(.card-header) {
+	:deep(.base-card__header) {
 		border-color: $border-color !important;
 	}
 

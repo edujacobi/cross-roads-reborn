@@ -161,9 +161,7 @@ function updateOpen(open: boolean) {
       cursor: pointer;
       padding: $spacing-xs;
       border-radius: $radius-xs;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      @include flex-center;
       transition: all $transition-fast;
 
       &:hover {

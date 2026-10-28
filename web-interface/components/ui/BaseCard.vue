@@ -20,20 +20,20 @@ defineProps<Props>();
 	<div class="base-card">
 		<div
 			v-if="title || subtitle || $slots.header"
-			class="card-header"
-			:class="{'no-body': noBody}"
+			class="base-card__header"
+			:class="{ 'base-card__header--no-body': noBody }"
 		>
 			<div
 				v-if="title || subtitle"
-				class="card-header__title-wrapper"
+				class="base-card__title-wrapper"
 			>
 				<h2
 					v-if="title"
-					class="card-title"
+					class="base-card__title"
 				>
 					<NuxtImg
 						v-if="icon"
-						class="card-icon"
+						class="base-card__icon"
 						:src="icon"
 						alt=""
 						width="26"
@@ -43,7 +43,7 @@ defineProps<Props>();
 				</h2>
 				<p
 					v-if="subtitle"
-					class="card-subtitle"
+					class="base-card__subtitle"
 				>
 					{{ subtitle }}
 				</p>
@@ -51,21 +51,24 @@ defineProps<Props>();
 			<slot name="header" />
 			<div
 				v-if="$slots.actions"
-				class="card-actions"
+				class="base-card__actions"
 			>
 				<slot name="actions" />
 			</div>
 		</div>
 		<div
-			class="card-body"
-			:class="{'card-body__no-padding-x': noPaddingX,'card-body__no-padding-y': noPaddingY}"
+			class="base-card__body"
+			:class="{
+				'base-card__body--no-padding-x': noPaddingX,
+				'base-card__body--no-padding-y': noPaddingY,
+			}"
 			v-if="!noBody"
 		>
 			<slot />
 		</div>
 		<div
 			v-if="$slots.footer"
-			class="card-footer"
+			class="base-card__footer"
 		>
 			<slot name="footer" />
 		</div>
@@ -90,54 +93,54 @@ defineProps<Props>();
 		overflow: visible;
 	}
 
-	.card-header {
+	&__header {
 		@include flex-between;
 		padding: $spacing-md 1.25rem;
 		gap: $spacing-sm;
 		flex-wrap: wrap;
 
-		&__title-wrapper {
-			display: flex;
-			flex-direction: column;
-			gap: $spacing-xs;
-			flex: 1 1 12rem;
-			min-width: 0;
-		}
-
-		&:not(.no-body) {
+		&:not(.base-card__header--no-body) {
 			border-bottom: 1px solid $border-subtle;
-		}
-
-		.card-title {
-			font-size: $font-size-16;
-			font-weight: $font-weight-semibold;
-			color: $text-primary;
-			display: flex;
-			align-items: center;
-			gap: $spacing-sm;
-		}
-
-		.card-subtitle {
-			font-size: $font-size-12;
-			color: $text-secondary;
-			margin-top: 0.125rem;
 		}
 	}
 
-	.card-body {
+	&__title-wrapper {
+		display: flex;
+		flex-direction: column;
+		gap: $spacing-xs;
+		flex: 1 1 12rem;
+		min-width: 0;
+	}
+
+	&__title {
+		font-size: $font-size-16;
+		font-weight: $font-weight-semibold;
+		color: $text-primary;
+		display: flex;
+		align-items: center;
+		gap: $spacing-sm;
+	}
+
+	&__subtitle {
+		font-size: $font-size-12;
+		color: $text-secondary;
+		margin-top: 0.125rem;
+	}
+
+	&__body {
 		padding: 1.25rem;
 		flex: 1;
 
-		&__no-padding-x {
-			padding-inline: 0
+		&--no-padding-x {
+			padding-inline: 0;
 		}
 
-		&__no-padding-y {
+		&--no-padding-y {
 			padding-block: 0;
 		}
 	}
 
-	.card-actions {
+	&__actions {
 		display: flex;
 		flex: 0 1 auto;
 		align-items: center;
@@ -147,7 +150,7 @@ defineProps<Props>();
 		margin-left: auto;
 	}
 
-	.card-footer {
+	&__footer {
 		padding: 0.75rem 1.25rem;
 		border-top: 1px solid $border-subtle;
 		background-color: $bg-card-header;

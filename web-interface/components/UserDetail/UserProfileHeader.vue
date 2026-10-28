@@ -275,9 +275,7 @@ function getBadgeImage(badgeId: BadgeId): string {
 		position: absolute;
 		z-index: 1;
 		inset: 0;
-		display: flex;
-		align-items: center;
-		justify-content: center;
+		@include flex-center;
 		border: 0;
 		border-radius: $radius-full;
 		background: rgba(0, 0, 0, 0.5);

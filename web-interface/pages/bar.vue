@@ -302,7 +302,7 @@ async function drink() {
 	gap: $spacing-lg;
 	margin: 0 auto;
 
-	.base-button.variant-primary {
+	.base-button.base-button--variant-primary {
 		background-color: $color-bar;
 		color: $text-primary;
 
@@ -312,7 +312,7 @@ async function drink() {
 	}
 
 	&__card {
-		:deep(.card-body) {
+		:deep(.base-card__body) {
 			display: flex;
 			gap: $spacing-lg;
 			align-items: flex-end;
