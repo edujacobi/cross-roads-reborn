@@ -446,10 +446,11 @@ async function confirmPurchase() {
 								</strong>
 							</div>
 							<BaseButton
-								variant="secondary"
+								variant="primary"
 								size="lg"
 								:disabled="!canBuyVip"
 								@click="requestVipPurchase"
+								class="special-shop__button-vip"
 							>
 								Comprar VIP
 							</BaseButton>
@@ -704,6 +705,7 @@ async function confirmPurchase() {
 	scoped
 >
 @use "~/assets/scss/variables" as *;
+@use "sass:color" as color;
 
 .special-shop {
 	display: flex;
@@ -831,6 +833,16 @@ async function confirmPurchase() {
 		gap: $spacing-md;
 	}
 
+	&__button-vip.base-button {
+		background-color: $color-vip;
+		border: none;
+		color: #000;
+
+		&:hover:not(:disabled) {
+			background-color: color.adjust($color-vip, $lightness: 10%);
+		}
+	}
+
 	&__card {
 		display: flex;
 		min-width: 0;
@@ -842,7 +854,7 @@ async function confirmPurchase() {
 		&--vip {
 			align-items: flex-start;
 			border: 1px solid color-mix(in lab, $color-vip 50%, $bg-card);
-			background: color-mix(in lab, $color-vip 7%, $bg-card);
+			background: color-mix(in lab, $color-vip 10%, $bg-card);
 		}
 
 		&--background-decoration,

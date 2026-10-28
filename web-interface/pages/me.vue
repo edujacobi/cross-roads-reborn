@@ -537,6 +537,8 @@ onUnmounted(() => {
 	max-width: 80rem;
 	margin: 0 auto;
 	height: 100%;
+	container-type: inline-size;
+	container-name: page;
 
 	&__header {
 		display: flex;
@@ -591,7 +593,7 @@ onUnmounted(() => {
 		grid-template-columns: repeat(3, minmax(0, 1fr));
 		gap: $spacing-md;
 
-		@media (max-width: 700px) {
+		@container page (max-width: 700px) {
 			grid-template-columns: 1fr;
 		}
 	}
@@ -652,6 +654,15 @@ onUnmounted(() => {
 
 	&__help {
 		margin-top: auto;
+
+		:deep(.card-actions){
+			@container page (max-width: 425px) {
+				flex-direction: column;
+				align-items: stretch;
+				margin-left: 0;
+				width: 100%;
+			}
+		}
 	}
 
 	&__error {

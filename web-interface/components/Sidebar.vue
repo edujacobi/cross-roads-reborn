@@ -621,15 +621,16 @@ const user = computed(() => {
 		}
 
 		.nav-item-badge {
-			display: inline-block;
+			display: flex;
+			align-items: center;
 			padding: $spacing-xs $spacing-sm;
 			margin-left: auto;
-			font-size: 0.625rem;
+			font-size: 0.6rem;
 			font-weight: $font-weight-bold;
 			letter-spacing: 0.05em;
 			color: $text-primary;
 			border-radius: $radius-full;
-			line-height: 1;
+			line-height: 0;
 			white-space: nowrap;
 
 			&__new {

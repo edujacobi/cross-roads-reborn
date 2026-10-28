@@ -47,6 +47,7 @@ withDefaults(defineProps<Props>(), {
 @use "sass:color";
 
 .base-button {
+	appearance: button;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
@@ -56,7 +57,7 @@ withDefaults(defineProps<Props>(), {
   border-radius: $radius-sm;
   border: 1px solid transparent;
   cursor: pointer;
-  @include transition-all;
+	touch-action: manipulation;
   outline: none;
   transition:
   	transform $transition-fast $motion-ease-out,
@@ -99,10 +100,10 @@ withDefaults(defineProps<Props>(), {
     background-color: $color-brand;
   	border: none;
     color: #000;
-  	box-shadow: inset 0 1px 0 #ffffff59,
-  				inset 0 -2px 0 #0003,
-	  			0 1px 2px #0006,
-	  			0 8px 24px -6px color-mix(in lab, $color-brand 20%, #000);
+  	box-shadow: inset 0 1px 0 hsl(none 0% 100% / 0.35),
+				inset 0 3px 4px hsl(none 0% 100% / 0.25),
+  				inset 0 -2px 0 hsl(none 0% 0% / 0.25),
+				inset 0 -6px 8px hsl(none 0% 0% / 0.15);
 
     &:hover:not(:disabled) {
       background-color: color.adjust($color-brand, $lightness: 8%);

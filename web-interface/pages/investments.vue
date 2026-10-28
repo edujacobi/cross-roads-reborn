@@ -281,9 +281,7 @@ onUnmounted(() => window.removeEventListener("keydown", handleKeyDown));
 								@click="openBuyModal(option)"
 								v-if="!investment"
 							>
-								{{
-									!page.isIdling ? "Disponível ao vadiar" : page.money < option.price ? "Saldo insuficiente" : "Comprar"
-								}}
+								{{ !page.isIdling ? "Indisponível" : "Comprar" }}
 							</BaseButton>
 						</div>
 					</li>

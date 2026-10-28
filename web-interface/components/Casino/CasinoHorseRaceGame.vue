@@ -118,11 +118,11 @@ function formatDate(date: string | null | undefined) {
 				@submit.prevent="submitBet"
 			>
 				<label for="bet-amount">
-					Valor (mínimo {{ formatMoney(5_000) }})
+					Valor (mínimo {{ formatMoney(5_000) }}, máximo {{ formatMoney(status.maxBet) }})
 					<BaseInput
 						v-model.number="amount"
 						type="number"
-						min="5000"
+						:min="5000"
 						:max="status.maxBet"
 						step="1"
 						required

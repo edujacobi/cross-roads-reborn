@@ -247,6 +247,7 @@ function nextPage() {
 				v-if="loading"
 				:rows="pageSize"
 				:columns="isGangRanking ? 4 : activeRanking.countLabel ? 3 : 2"
+				size="lg"
 				label="Carregando ranking"
 			/>
 			<BaseErrorState v-else-if="error"> Não foi possível carregar este ranking. </BaseErrorState>

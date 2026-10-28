@@ -15,6 +15,8 @@ interface Props {
 	step?: string | number;
 	minlength?: number;
 	maxlength?: number;
+	min?: number;
+	max?: number;
 }
 
 defineProps<Props>();
@@ -43,6 +45,8 @@ defineEmits<(e: "update:modelValue", value: string | number) => void>();
 			:aria-label="ariaLabel"
 			:minlength="minlength"
 			:maxlength="maxlength"
+			:min="min"
+			:max="max"
 			class="base-input"
 			@input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
 		>
