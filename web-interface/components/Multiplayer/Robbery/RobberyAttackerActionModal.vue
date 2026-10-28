@@ -54,12 +54,13 @@ const emit = defineEmits<{
 			>
 				<template v-if="session.response && responseActions[session.response]">
 					<NuxtImg
-						:src="responseActions[session.response].image"
+						v-if="responseActions[session.response]?.image"
+						:src="responseActions[session.response]?.image"
 						alt=""
 						width="24"
 						height="24"
 					/>
-					{{ session.targetNickname ?? "O defensor" }} {{ responseActions[session.response].status }}
+					{{ session.targetNickname ?? "O defensor" }} {{ responseActions[session.response]?.status }}
 				</template>
 				<template v-else-if="session.response">A ação está sendo resolvida.</template>
 				<template v-else>Aguardando resposta do alvo...</template>
