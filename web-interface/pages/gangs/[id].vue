@@ -35,7 +35,6 @@ import {
 	CommunicateGangDocument,
 	CreateGangRoleDocument,
 	DepositGangDocument,
-	GangJoinRequestStatus,
 	GangJoinRequestsDocument,
 	type GangJoinRequestsQuery,
 	GangRecruitmentType,
@@ -193,53 +192,7 @@ const {
 	() => ({ enabled: canInviteMembers.value }),
 );
 
-const joinRequests = computed(() =>
-	joinRequestsData.value?.gangJoinRequests?.length ? joinRequestsData.value.gangJoinRequests : MOCK_JOIN_REQUESTS,
-);
-
-// TODO(mock): remove after styling review
-const MOCK_JOIN_REQUESTS: GangJoinRequestsQuery["gangJoinRequests"] = [
-	{
-		id: "mock-1",
-		gangId: "0",
-		gangName: "",
-		gangAcronym: "",
-		userId: "1",
-		userName: "Zé Pequeno",
-		userAvatarUrl: null,
-		userAvatarDecoration: "default",
-		message: "Quero entrar, sou ativo todo dia.",
-		status: GangJoinRequestStatus.Pending,
-		createdAt: new Date(Date.now() - 5 * 60_000).toISOString(),
-	},
-	{
-		id: "mock-2",
-		gangId: "0",
-		gangName: "",
-		gangAcronym: "",
-		userId: "2",
-		userName: "Jogador_Com_Nome_Bem_Comprido_123",
-		userAvatarUrl: null,
-		userAvatarDecoration: "default",
-		message:
-			"Mensagem longa para testar o layout: já fui líder de outra gangue, tenho experiência em roubos a investimentos e importações, e estou disponível em quase todos os horários.",
-		status: GangJoinRequestStatus.Pending,
-		createdAt: new Date(Date.now() - 3 * 3_600_000).toISOString(),
-	},
-	{
-		id: "mock-3",
-		gangId: "0",
-		gangName: "",
-		gangAcronym: "",
-		userId: "3",
-		userName: "Buscapé",
-		userAvatarUrl: null,
-		userAvatarDecoration: null,
-		message: null,
-		status: GangJoinRequestStatus.Pending,
-		createdAt: new Date(Date.now() - 2 * 86_400_000).toISOString(),
-	},
-];
+const joinRequests = computed(() => joinRequestsData.value?.gangJoinRequests ?? []);
 
 const { mutate: resolveRequestMutation, loading: resolvingRequest } = useMutation(ResolveGangJoinRequestDocument);
 const reviewingRequest = ref<GangJoinRequestsQuery["gangJoinRequests"][number] | null>(null);

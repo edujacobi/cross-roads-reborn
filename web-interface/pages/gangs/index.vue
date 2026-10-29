@@ -29,7 +29,6 @@ import {
 	JoinOpenGangDocument,
 	MyActiveGangJoinRequestDocument,
 	MyGangJoinRequestsHistoryDocument,
-	type MyGangJoinRequestsHistoryQuery,
 } from "~/graphql/generated";
 
 definePageMeta({
@@ -139,68 +138,7 @@ const requestStatusBadges = {
 	[GangJoinRequestStatus.Cancelled]: { variant: "neutral", label: "Cancelada" },
 } as const;
 
-const requestHistory = computed(() =>
-	historyData.value?.myGangJoinRequestsHistory?.length
-		? historyData.value.myGangJoinRequestsHistory
-		: MOCK_REQUEST_HISTORY,
-);
-
-// TODO(mock): remove after styling review
-const MOCK_REQUEST_HISTORY: MyGangJoinRequestsHistoryQuery["myGangJoinRequestsHistory"] = [
-	{
-		id: "mock-1",
-		gangId: "1",
-		gangName: "Os Brabos da Quebrada",
-		gangAcronym: "BRB",
-		gangImage: imagePaths.gangBases.bikeclub,
-		gangColor: "#e11d48",
-		userId: "0",
-		userName: "Você",
-		message: "Sou ativo todo dia e tenho uma AK. Me aceitem!",
-		status: GangJoinRequestStatus.Pending,
-		createdAt: new Date().toISOString(),
-	},
-	{
-		id: "mock-2",
-		gangId: "2",
-		gangName: "Cartel do Norte",
-		gangAcronym: "CDN",
-		gangImage: null,
-		gangColor: "#22c55e",
-		userId: "0",
-		userName: "Você",
-		message: null,
-		status: GangJoinRequestStatus.Accepted,
-		createdAt: new Date(Date.now() - 86_400_000).toISOString(),
-	},
-	{
-		id: "mock-3",
-		gangId: "3",
-		gangName: "Família Corleone com um nome bem comprido para testar quebra de linha",
-		gangAcronym: "FCL",
-		gangImage: imagePaths.gangBases.bunker,
-		gangColor: "#f59e0b",
-		userId: "0",
-		userName: "Você",
-		message:
-			"Mensagem longa para testar o layout: já fui líder de outra gangue, tenho experiência em roubos a investimentos e importações, e estou disponível em quase todos os horários.",
-		status: GangJoinRequestStatus.Rejected,
-		createdAt: new Date(Date.now() - 3 * 86_400_000).toISOString(),
-	},
-	{
-		id: "mock-4",
-		gangId: "4",
-		gangName: "Motoclube Asfalto",
-		gangAcronym: "MCA",
-		gangImage: null,
-		gangColor: null,
-		userId: "0",
-		userName: "Você",
-		message: "Tenho moto.",
-		status: GangJoinRequestStatus.Cancelled,
-		createdAt: new Date(Date.now() - 10 * 86_400_000).toISOString(),
-	},
-];
+const requestHistory = computed(() => historyData.value?.myGangJoinRequestsHistory ?? []);
 
 // Modals State
 const isCreateModalOpen = ref(false);
