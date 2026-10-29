@@ -335,6 +335,7 @@ export const typeDefs = /* GraphQL */ `
         acronym: String!
         description: String!
         level: Int!
+        joinCost: Float!
         image: String
         color: String!
         baseName: String

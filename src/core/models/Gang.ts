@@ -120,8 +120,12 @@ export class Gang {
 		return 9 + this.Level + (this.BaseId === GangBaseId.None ? 0 : 1);
 	}
 
+	static GetJoinCostForLevel(level: number): number {
+		return Gang.JOIN_COST * level;
+	}
+
 	GetJoinCost(): number {
-		return Gang.JOIN_COST * this.Level;
+		return Gang.GetJoinCostForLevel(this.Level);
 	}
 
 	/**
@@ -1698,6 +1702,9 @@ export class Gang {
 		if (!this.CanAddMember()) {
 			return { success: false, reason: "gangFull" };
 		}
+		if (user.Money < this.GetJoinCost()) {
+			return { success: false, reason: "notEnoughMoney" };
+		}
 		const joined = await this.AcceptInvite(user);
 		if (joined) {
 			return { success: true };
@@ -1718,6 +1725,9 @@ export class Gang {
 		}
 		if (!this.CanAddMember()) {
 			return { success: false, reason: "gangFull" };
+		}
+		if (user.Money < this.GetJoinCost()) {
+			return { success: false, reason: "notEnoughMoney" };
 		}
 		const activeRequest = await GangJoinRequestsRepository.FindActiveByUser(user.Id);
 		if (activeRequest) {
@@ -1802,6 +1812,10 @@ export class Gang {
 				GangJoinRequestStatus.Cancelled,
 			);
 			return { success: false, reason: "alreadyInGang" };
+		}
+
+		if (applicant.Money < this.GetJoinCost()) {
+			return { success: false, reason: "applicantNotEnoughMoney" };
 		}
 
 		const accepted = await GangJoinRequestsRepository.UpdateStatusIfCurrent(

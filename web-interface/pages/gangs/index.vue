@@ -42,6 +42,7 @@ useHead({
 
 const auth = useAuth();
 const { showToast } = useToast();
+const { formatMoney } = useMoneyFormat();
 const { getGangBaseImageUrl } = useGangBase();
 
 const userGang = computed(() => auth.user?.value?.gangId ?? 0);
@@ -709,6 +710,10 @@ const bases = [
 					rows="4"
 				/>
 				<span class="approval-modal-count">{{ approvalMessage.length }}/280 caracteres</span>
+				<p class="gangs-page__modal-description">
+					Taxa de adesão: <strong>{{ formatMoney(targetGangForApproval?.joinCost ?? 0) }}</strong>. Você precisa ter
+					essa grana quando sua solicitação for aceita, ou ela não poderá ser aprovada.
+				</p>
 			</div>
 			<template #footer>
 				<BaseButton
@@ -737,8 +742,9 @@ const bases = [
 			@update:open="isOpenJoinModalOpen = $event"
 		>
 			<p class="gangs-page__modal-description">
-				Esta gangue está com recrutamento aberto. Ao confirmar, você se tornará membro imediatamente. A taxa de adesão
-				padrão será debitada do seu saldo.
+				Esta gangue está com recrutamento aberto. Ao confirmar, você se tornará membro imediatamente e
+				<strong>{{ formatMoney(targetGangForOpen?.joinCost ?? 0) }}</strong>
+				serão debitados da sua grana. Você precisa ter esse valor para entrar.
 			</p>
 			<template #footer>
 				<BaseButton

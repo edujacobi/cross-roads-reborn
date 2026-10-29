@@ -1814,6 +1814,7 @@ query GangRecruitmentBoard($search: String, $type: GangRecruitmentType, $sortBy:
 			acronym
 			description
 			level
+			joinCost
 			image
 			color
 			baseName

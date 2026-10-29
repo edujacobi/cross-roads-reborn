@@ -114,6 +114,7 @@ describe("Gang Model - Joining", () => {
 		gang.LeaderId = "leader";
 		gang.RecruitmentType = GangRecruitmentType.Approval;
 		const applicant = new User("applicant");
+		applicant.Money = gang.GetJoinCost();
 
 		vi.spyOn(GangMemberRepository, "FindByUserId").mockResolvedValue(null);
 		vi.spyOn(GangJoinRequestsRepository, "FindActiveByUser").mockResolvedValue(null);
@@ -126,6 +127,26 @@ describe("Gang Model - Joining", () => {
 				reason: "alreadyHasPendingRequest",
 			});
 			expect(send).not.toHaveBeenCalled();
+		}
+		finally {
+			vi.restoreAllMocks();
+		}
+	});
+
+	it("rejects an application when the applicant cannot afford the join cost", async () => {
+		const gang = new Gang();
+		gang.Id = 1;
+		gang.Level = 2;
+		gang.RecruitmentType = GangRecruitmentType.Approval;
+		const applicant = new User("applicant");
+		applicant.Money = gang.GetJoinCost() - 1;
+
+		vi.spyOn(GangMemberRepository, "FindByUserId").mockResolvedValue(null);
+		const createRequest = vi.spyOn(GangJoinRequestsRepository, "CreateRequest");
+
+		try {
+			await expect(gang.ApplyToGang(applicant)).resolves.toEqual({ success: false, reason: "notEnoughMoney" });
+			expect(createRequest).not.toHaveBeenCalled();
 		}
 		finally {
 			vi.restoreAllMocks();
@@ -204,6 +225,7 @@ describe("Gang Model - Joining", () => {
 		}));
 		const applicant = new User("applicant");
 		applicant.Nickname = "Applicant";
+		applicant.Money = gang.GetJoinCost();
 
 		vi.spyOn(GangMemberRepository, "FindByUserId").mockResolvedValue(null);
 		vi.spyOn(GangJoinRequestsRepository, "FindActiveByUser").mockResolvedValue(null);

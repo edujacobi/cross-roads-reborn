@@ -251,6 +251,7 @@ export const gangResolvers: {
 						acronym: gang.acronym,
 						description: gang.description,
 						level: gang.level,
+						joinCost: Gang.GetJoinCostForLevel(gang.level),
 						image: gang.image,
 						color: convertHexNumberToString(GangColor[gang.color].Color),
 						baseName: base.Name[Language.Portuguese],
@@ -1004,9 +1005,15 @@ export const gangResolvers: {
 						message: "Esta gangue não está com recrutamento aberto.",
 					};
 				}
+				if (result.reason === "notEnoughMoney") {
+					return {
+						success: false,
+						message: `Você precisa de ${formatMoney(gang.GetJoinCost(), Language.Portuguese)} para entrar nesta gangue.`,
+					};
+				}
 				return {
 					success: false,
-					message: "Não foi possível entrar na gangue. Verifique se você tem a grana necessária.",
+					message: "Não foi possível entrar na gangue.",
 				};
 			}
 			return { success: true, message: `Você entrou na gangue ${gang.Name} com sucesso!` };
@@ -1049,6 +1056,12 @@ export const gangResolvers: {
 					return {
 						success: false,
 						message: "Esta gangue não está aceitando solicitações de adesão.",
+					};
+				}
+				if (result.reason === "notEnoughMoney") {
+					return {
+						success: false,
+						message: `Você precisa de ${formatMoney(gang.GetJoinCost(), Language.Portuguese)} para solicitar entrada nesta gangue.`,
 					};
 				}
 				return { success: false, message: "Não foi possível enviar a solicitação." };
@@ -1110,6 +1123,12 @@ export const gangResolvers: {
 					return {
 						success: false,
 						message: "Solicitação não encontrada ou já respondida.",
+					};
+				}
+				if (result.reason === "applicantNotEnoughMoney") {
+					return {
+						success: false,
+						message: `O jogador não tem os ${formatMoney(gang.GetJoinCost(), Language.Portuguese)} necessários para entrar na gangue.`,
 					};
 				}
 				return { success: false, message: "Não foi possível processar a solicitação." };
