@@ -247,6 +247,7 @@ export type GangDetail = {
   members: Array<GangMemberInfo>;
   money: Scalars['Float']['output'];
   name: Scalars['String']['output'];
+  recruitmentType: GangRecruitmentType;
   roles: Array<GangRoleInfo>;
   shipmentArrivesAt?: Maybe<Scalars['String']['output']>;
   shipmentStartedAt?: Maybe<Scalars['String']['output']>;
@@ -262,6 +263,28 @@ export type GangInfo = {
   name: Scalars['String']['output'];
   role: Scalars['String']['output'];
 };
+
+export type GangJoinRequest = {
+  __typename?: 'GangJoinRequest';
+  createdAt: Scalars['String']['output'];
+  gangAcronym: Scalars['String']['output'];
+  gangId: Scalars['ID']['output'];
+  gangName: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  message?: Maybe<Scalars['String']['output']>;
+  status: GangJoinRequestStatus;
+  userAvatar?: Maybe<Scalars['String']['output']>;
+  userId: Scalars['ID']['output'];
+  userLevel: Scalars['Int']['output'];
+  userName: Scalars['String']['output'];
+};
+
+export enum GangJoinRequestStatus {
+  Accepted = 'ACCEPTED',
+  Cancelled = 'CANCELLED',
+  Pending = 'PENDING',
+  Rejected = 'REJECTED'
+}
 
 export type GangMemberInfo = {
   __typename?: 'GangMemberInfo';
@@ -304,6 +327,28 @@ export type GangRankingResult = {
   entries: Array<GangRankingEntry>;
   total: Scalars['Int']['output'];
 };
+
+export type GangRecruitmentBoardEntry = {
+  __typename?: 'GangRecruitmentBoardEntry';
+  acronym: Scalars['String']['output'];
+  baseImage?: Maybe<Scalars['String']['output']>;
+  baseName?: Maybe<Scalars['String']['output']>;
+  color: Scalars['String']['output'];
+  description: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  image?: Maybe<Scalars['String']['output']>;
+  level: Scalars['Int']['output'];
+  maxMembers: Scalars['Int']['output'];
+  membersCount: Scalars['Int']['output'];
+  name: Scalars['String']['output'];
+  recruitmentType: GangRecruitmentType;
+};
+
+export enum GangRecruitmentType {
+  Approval = 'APPROVAL',
+  Disabled = 'DISABLED',
+  Open = 'OPEN'
+}
 
 export type GangRoleInfo = {
   __typename?: 'GangRoleInfo';
@@ -553,6 +598,7 @@ export type Mutation = {
   abortMultiplayerSession: MultiplayerActionResult;
   addBadge: MutationResult;
   addSpecialCoins: MutationResult;
+  applyToGang: GangMutationResult;
   attemptPrisonEscape: PrisonEscapeStartResult;
   buyInvestment: MutationResult;
   buyItem: ShopBuyResult;
@@ -560,6 +606,7 @@ export type Mutation = {
   buySpecialShopItem: MutationResult;
   buySpecialShopVip: MutationResult;
   cancelGangImport: GangMutationResult;
+  cancelGangJoinRequest: GangMutationResult;
   cancelJob: JobMutationResult;
   changeOwnClass: MutationResult;
   changeOwnNickname: MutationResult;
@@ -580,6 +627,7 @@ export type Mutation = {
   hireInvestmentHenchman: MutationResult;
   inviteGangMember: GangMutationResult;
   joinMultiplayerSession: MultiplayerActionResult;
+  joinOpenGang: GangMutationResult;
   kickGangMember: GangMutationResult;
   killUser: MutationResult;
   leaveGang: GangMutationResult;
@@ -590,9 +638,11 @@ export type Mutation = {
   removeAction: MutationResult;
   removeBadge: MutationResult;
   resetCooldown: MutationResult;
+  resolveGangJoinRequest: GangMutationResult;
   respondMultiplayerSession: MultiplayerActionResult;
   setClass: MutationResult;
   setGangMoney: GangMutationResult;
+  setGangRecruitmentType: GangMutationResult;
   setItem: MutationResult;
   setMainHeistAllowed: SeasonMutationResult;
   setMoney: MutationResult;
@@ -639,6 +689,12 @@ export type MutationAddSpecialCoinsArgs = {
 };
 
 
+export type MutationApplyToGangArgs = {
+  gangId: Scalars['ID']['input'];
+  message?: InputMaybe<Scalars['String']['input']>;
+};
+
+
 export type MutationBuyInvestmentArgs = {
   investmentId: Scalars['Int']['input'];
 };
@@ -663,6 +719,11 @@ export type MutationBuySpecialShopVipArgs = {
 
 export type MutationCancelGangImportArgs = {
   gangId: Scalars['ID']['input'];
+};
+
+
+export type MutationCancelGangJoinRequestArgs = {
+  requestId?: InputMaybe<Scalars['ID']['input']>;
 };
 
 
@@ -763,6 +824,11 @@ export type MutationJoinMultiplayerSessionArgs = {
 };
 
 
+export type MutationJoinOpenGangArgs = {
+  gangId: Scalars['ID']['input'];
+};
+
+
 export type MutationKickGangMemberArgs = {
   gangId: Scalars['ID']['input'];
   targetUserId: Scalars['ID']['input'];
@@ -811,6 +877,13 @@ export type MutationResetCooldownArgs = {
 };
 
 
+export type MutationResolveGangJoinRequestArgs = {
+  accept: Scalars['Boolean']['input'];
+  gangId: Scalars['ID']['input'];
+  requestId: Scalars['ID']['input'];
+};
+
+
 export type MutationRespondMultiplayerSessionArgs = {
   response: Scalars['String']['input'];
   sessionId: Scalars['ID']['input'];
@@ -827,6 +900,12 @@ export type MutationSetGangMoneyArgs = {
   amount: Scalars['Float']['input'];
   gangId: Scalars['ID']['input'];
   mode: SetMoneyMode;
+};
+
+
+export type MutationSetGangRecruitmentTypeArgs = {
+  gangId: Scalars['ID']['input'];
+  recruitmentType: GangRecruitmentType;
 };
 
 
@@ -1067,6 +1146,8 @@ export type Query = {
   deadUsers: Array<DeadUser>;
   events: Array<Event>;
   gang?: Maybe<GangDetail>;
+  gangJoinRequests: Array<GangJoinRequest>;
+  gangRecruitmentBoard: Array<GangRecruitmentBoardEntry>;
   hospitalizedUsers: HospitalizedUserPage;
   item?: Maybe<ItemDetails>;
   items: Array<ItemDetails>;
@@ -1074,8 +1155,10 @@ export type Query = {
   me?: Maybe<AuthUser>;
   multiplayerSession?: Maybe<MultiplayerSession>;
   multiplayerSessions: Array<MultiplayerSession>;
+  myActiveGangJoinRequest?: Maybe<GangJoinRequest>;
   myCasinoStatus: CasinoStatus;
   myDecorations: MyDecorations;
+  myGangJoinRequestsHistory: Array<GangJoinRequest>;
   myHorseRaceStatus: HorseRaceStatus;
   myInvestmentPage: MyInvestmentPage;
   myLotteryStatus: LotteryStatus;
@@ -1114,6 +1197,17 @@ export type QueryGangArgs = {
 };
 
 
+export type QueryGangJoinRequestsArgs = {
+  gangId: Scalars['ID']['input'];
+};
+
+
+export type QueryGangRecruitmentBoardArgs = {
+  search?: InputMaybe<Scalars['String']['input']>;
+  type?: InputMaybe<GangRecruitmentType>;
+};
+
+
 export type QueryHospitalizedUsersArgs = {
   limit?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
@@ -1130,6 +1224,11 @@ export type QueryItemArgs = {
 
 export type QueryMultiplayerSessionArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type QueryMyGangJoinRequestsHistoryArgs = {
+  limit?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
@@ -1597,6 +1696,17 @@ export enum VaultType {
   Casino = 'CASINO'
 }
 
+export type GangJoinRequestStatus =
+  | 'ACCEPTED'
+  | 'CANCELLED'
+  | 'PENDING'
+  | 'REJECTED';
+
+export type GangRecruitmentType =
+  | 'APPROVAL'
+  | 'DISABLED'
+  | 'OPEN';
+
 export type ScavengeRewardItemType =
   | 'Consumable'
   | 'Duration';
@@ -1861,7 +1971,7 @@ export type GetGangDetailQueryVariables = Exact<{
 }>;
 
 
-export type GetGangDetailQuery = { gang: { id: number, name: string, acronym: string, description: string, money: number, maxDepositAmount: number, level: number, experience: number, xpForNextLevel: number, color: string, imageUrl: string | null, shipmentStartedAt: string | null, shipmentArrivesAt: string | null, importCost: number | null, importSuccessChance: number | null, canImport: boolean, canStartImport: boolean | null, canViewShipmentInfo: boolean, leaderId: string, leaderNickname: string | null, leaderAvatarUrl: string | null, createdAt: string, base: { id: number, name: string, modifierDefense: number | null, modifierAttack: number | null, modifierPrisonEscape: number | null } | null, members: Array<{ userId: string, nickname: string, avatarUrl: string | null, avatarDecoration: string | null, backgroundDecoration: string | null, roleId: number, roleName: string, permissionCount: number, depositAmount: number, depositTime: string | null, lastDepositAt: string | null }>, roles: Array<{ id: number, name: string, canInvite: boolean, canKick: boolean, canPromote: boolean, canEditGang: boolean, canImport: boolean }> } | null };
+export type GetGangDetailQuery = { gang: { id: number, name: string, acronym: string, description: string, money: number, maxDepositAmount: number, level: number, experience: number, xpForNextLevel: number, color: string, imageUrl: string | null, shipmentStartedAt: string | null, shipmentArrivesAt: string | null, importCost: number | null, importSuccessChance: number | null, canImport: boolean, canStartImport: boolean | null, canViewShipmentInfo: boolean, recruitmentType: GangRecruitmentType, leaderId: string, leaderNickname: string | null, leaderAvatarUrl: string | null, createdAt: string, base: { id: number, name: string, modifierDefense: number | null, modifierAttack: number | null, modifierPrisonEscape: number | null } | null, members: Array<{ userId: string, nickname: string, avatarUrl: string | null, avatarDecoration: string | null, backgroundDecoration: string | null, roleId: number, roleName: string, permissionCount: number, depositAmount: number, depositTime: string | null, lastDepositAt: string | null }>, roles: Array<{ id: number, name: string, canInvite: boolean, canKick: boolean, canPromote: boolean, canEditGang: boolean, canImport: boolean }> } | null };
 
 export type StartGangImportMutationVariables = Exact<{
   gangId: string | number;
@@ -2497,6 +2607,72 @@ export type ToggleInvestmentYieldNotificationsMutationVariables = Exact<{ [key: 
 
 export type ToggleInvestmentYieldNotificationsMutation = { toggleInvestmentYieldNotifications: { success: boolean, message: string } };
 
+export type GangRecruitmentBoardQueryVariables = Exact<{
+  search?: string | null | undefined;
+  type?: GangRecruitmentType | null | undefined;
+}>;
+
+
+export type GangRecruitmentBoardQuery = { gangRecruitmentBoard: Array<{ id: string, name: string, acronym: string, description: string, level: number, image: string | null, color: string, baseName: string | null, baseImage: string | null, membersCount: number, maxMembers: number, recruitmentType: GangRecruitmentType }> };
+
+export type MyActiveGangJoinRequestQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MyActiveGangJoinRequestQuery = { myActiveGangJoinRequest: { id: string, gangId: string, gangName: string, gangAcronym: string, userId: string, userName: string, userAvatar: string | null, userLevel: number, message: string | null, status: GangJoinRequestStatus, createdAt: string } | null };
+
+export type MyGangJoinRequestsHistoryQueryVariables = Exact<{
+  limit?: number | null | undefined;
+}>;
+
+
+export type MyGangJoinRequestsHistoryQuery = { myGangJoinRequestsHistory: Array<{ id: string, gangId: string, gangName: string, gangAcronym: string, userId: string, userName: string, userAvatar: string | null, userLevel: number, message: string | null, status: GangJoinRequestStatus, createdAt: string }> };
+
+export type GangJoinRequestsQueryVariables = Exact<{
+  gangId: string | number;
+}>;
+
+
+export type GangJoinRequestsQuery = { gangJoinRequests: Array<{ id: string, gangId: string, gangName: string, gangAcronym: string, userId: string, userName: string, userAvatar: string | null, userLevel: number, message: string | null, status: GangJoinRequestStatus, createdAt: string }> };
+
+export type SetGangRecruitmentTypeMutationVariables = Exact<{
+  gangId: string | number;
+  recruitmentType: GangRecruitmentType;
+}>;
+
+
+export type SetGangRecruitmentTypeMutation = { setGangRecruitmentType: { success: boolean, message: string } };
+
+export type JoinOpenGangMutationVariables = Exact<{
+  gangId: string | number;
+}>;
+
+
+export type JoinOpenGangMutation = { joinOpenGang: { success: boolean, message: string } };
+
+export type ApplyToGangMutationVariables = Exact<{
+  gangId: string | number;
+  message?: string | null | undefined;
+}>;
+
+
+export type ApplyToGangMutation = { applyToGang: { success: boolean, message: string } };
+
+export type CancelGangJoinRequestMutationVariables = Exact<{
+  requestId?: string | number | null | undefined;
+}>;
+
+
+export type CancelGangJoinRequestMutation = { cancelGangJoinRequest: { success: boolean, message: string } };
+
+export type ResolveGangJoinRequestMutationVariables = Exact<{
+  gangId: string | number;
+  requestId: string | number;
+  accept: boolean;
+}>;
+
+
+export type ResolveGangJoinRequestMutation = { resolveGangJoinRequest: { success: boolean, message: string } };
+
 
 export const GetDashboardStatsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetDashboardStats"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"dashboardStats"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"totalPlayers"}},{"kind":"Field","name":{"kind":"Name","value":"allUsers"}},{"kind":"Field","name":{"kind":"Name","value":"classCounts"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"classId"}},{"kind":"Field","name":{"kind":"Name","value":"count"}}]}},{"kind":"Field","name":{"kind":"Name","value":"bankVaultValue"}},{"kind":"Field","name":{"kind":"Name","value":"casinoVaultValue"}},{"kind":"Field","name":{"kind":"Name","value":"totalGangs"}},{"kind":"Field","name":{"kind":"Name","value":"prisonCount"}},{"kind":"Field","name":{"kind":"Name","value":"hospitalCount"}},{"kind":"Field","name":{"kind":"Name","value":"jobCount"}},{"kind":"Field","name":{"kind":"Name","value":"scavengeCount"}},{"kind":"Field","name":{"kind":"Name","value":"casinoCount"}},{"kind":"Field","name":{"kind":"Name","value":"robberyCount"}},{"kind":"Field","name":{"kind":"Name","value":"beatUpCount"}},{"kind":"Field","name":{"kind":"Name","value":"idleCount"}},{"kind":"Field","name":{"kind":"Name","value":"englishCount"}},{"kind":"Field","name":{"kind":"Name","value":"portugueseCount"}},{"kind":"Field","name":{"kind":"Name","value":"spanishCount"}}]}}]}}]} as unknown as DocumentNode<GetDashboardStatsQuery, GetDashboardStatsQueryVariables>;
 export const GetDashboardHistoryDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetDashboardHistory"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"dashboardHistory"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"totalPlayers"}},{"kind":"Field","name":{"kind":"Name","value":"allUsers"}},{"kind":"Field","name":{"kind":"Name","value":"classCounts"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"classId"}},{"kind":"Field","name":{"kind":"Name","value":"count"}}]}},{"kind":"Field","name":{"kind":"Name","value":"totalGangs"}},{"kind":"Field","name":{"kind":"Name","value":"prisonCount"}},{"kind":"Field","name":{"kind":"Name","value":"hospitalCount"}},{"kind":"Field","name":{"kind":"Name","value":"jobCount"}},{"kind":"Field","name":{"kind":"Name","value":"scavengeCount"}},{"kind":"Field","name":{"kind":"Name","value":"casinoCount"}},{"kind":"Field","name":{"kind":"Name","value":"robberyCount"}},{"kind":"Field","name":{"kind":"Name","value":"beatUpCount"}},{"kind":"Field","name":{"kind":"Name","value":"idleCount"}},{"kind":"Field","name":{"kind":"Name","value":"englishCount"}},{"kind":"Field","name":{"kind":"Name","value":"portugueseCount"}},{"kind":"Field","name":{"kind":"Name","value":"spanishCount"}}]}}]}}]} as unknown as DocumentNode<GetDashboardHistoryQuery, GetDashboardHistoryQueryVariables>;
@@ -2531,7 +2707,7 @@ export const GetAlmsStatusDocument = {"kind":"Document","definitions":[{"kind":"
 export const GetUserInventoryDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetUserInventory"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"items"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"quantity"}},{"kind":"Field","name":{"kind":"Name","value":"skin"}},{"kind":"Field","name":{"kind":"Name","value":"remainingTime"}}]}}]}}]}}]} as unknown as DocumentNode<GetUserInventoryQuery, GetUserInventoryQueryVariables>;
 export const GetUserInvestmentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetUserInvestment"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"investment"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"expiresAt"}},{"kind":"Field","name":{"kind":"Name","value":"defense"}},{"kind":"Field","name":{"kind":"Name","value":"nextPaymentValue"}},{"kind":"Field","name":{"kind":"Name","value":"henchmanEndsAt"}}]}}]}}]}}]} as unknown as DocumentNode<GetUserInvestmentQuery, GetUserInvestmentQueryVariables>;
 export const GetUserGangDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetUserGang"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"gang"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"imageUrl"}},{"kind":"Field","name":{"kind":"Name","value":"color"}},{"kind":"Field","name":{"kind":"Name","value":"level"}},{"kind":"Field","name":{"kind":"Name","value":"role"}}]}}]}}]}}]} as unknown as DocumentNode<GetUserGangQuery, GetUserGangQueryVariables>;
-export const GetGangDetailDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetGangDetail"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"gang"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"acronym"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"money"}},{"kind":"Field","name":{"kind":"Name","value":"maxDepositAmount"}},{"kind":"Field","name":{"kind":"Name","value":"level"}},{"kind":"Field","name":{"kind":"Name","value":"experience"}},{"kind":"Field","name":{"kind":"Name","value":"xpForNextLevel"}},{"kind":"Field","name":{"kind":"Name","value":"color"}},{"kind":"Field","name":{"kind":"Name","value":"imageUrl"}},{"kind":"Field","name":{"kind":"Name","value":"shipmentStartedAt"}},{"kind":"Field","name":{"kind":"Name","value":"shipmentArrivesAt"}},{"kind":"Field","name":{"kind":"Name","value":"importCost"}},{"kind":"Field","name":{"kind":"Name","value":"importSuccessChance"}},{"kind":"Field","name":{"kind":"Name","value":"canImport"}},{"kind":"Field","name":{"kind":"Name","value":"canStartImport"}},{"kind":"Field","name":{"kind":"Name","value":"canViewShipmentInfo"}},{"kind":"Field","name":{"kind":"Name","value":"base"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"modifierDefense"}},{"kind":"Field","name":{"kind":"Name","value":"modifierAttack"}},{"kind":"Field","name":{"kind":"Name","value":"modifierPrisonEscape"}}]}},{"kind":"Field","name":{"kind":"Name","value":"leaderId"}},{"kind":"Field","name":{"kind":"Name","value":"leaderNickname"}},{"kind":"Field","name":{"kind":"Name","value":"leaderAvatarUrl"}},{"kind":"Field","name":{"kind":"Name","value":"members"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"nickname"}},{"kind":"Field","name":{"kind":"Name","value":"avatarUrl"}},{"kind":"Field","name":{"kind":"Name","value":"avatarDecoration"}},{"kind":"Field","name":{"kind":"Name","value":"backgroundDecoration"}},{"kind":"Field","name":{"kind":"Name","value":"roleId"}},{"kind":"Field","name":{"kind":"Name","value":"roleName"}},{"kind":"Field","name":{"kind":"Name","value":"permissionCount"}},{"kind":"Field","name":{"kind":"Name","value":"depositAmount"}},{"kind":"Field","name":{"kind":"Name","value":"depositTime"}},{"kind":"Field","name":{"kind":"Name","value":"lastDepositAt"}}]}},{"kind":"Field","name":{"kind":"Name","value":"roles"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"canInvite"}},{"kind":"Field","name":{"kind":"Name","value":"canKick"}},{"kind":"Field","name":{"kind":"Name","value":"canPromote"}},{"kind":"Field","name":{"kind":"Name","value":"canEditGang"}},{"kind":"Field","name":{"kind":"Name","value":"canImport"}}]}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}}]} as unknown as DocumentNode<GetGangDetailQuery, GetGangDetailQueryVariables>;
+export const GetGangDetailDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetGangDetail"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"gang"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"acronym"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"money"}},{"kind":"Field","name":{"kind":"Name","value":"maxDepositAmount"}},{"kind":"Field","name":{"kind":"Name","value":"level"}},{"kind":"Field","name":{"kind":"Name","value":"experience"}},{"kind":"Field","name":{"kind":"Name","value":"xpForNextLevel"}},{"kind":"Field","name":{"kind":"Name","value":"color"}},{"kind":"Field","name":{"kind":"Name","value":"imageUrl"}},{"kind":"Field","name":{"kind":"Name","value":"shipmentStartedAt"}},{"kind":"Field","name":{"kind":"Name","value":"shipmentArrivesAt"}},{"kind":"Field","name":{"kind":"Name","value":"importCost"}},{"kind":"Field","name":{"kind":"Name","value":"importSuccessChance"}},{"kind":"Field","name":{"kind":"Name","value":"canImport"}},{"kind":"Field","name":{"kind":"Name","value":"canStartImport"}},{"kind":"Field","name":{"kind":"Name","value":"canViewShipmentInfo"}},{"kind":"Field","name":{"kind":"Name","value":"base"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"modifierDefense"}},{"kind":"Field","name":{"kind":"Name","value":"modifierAttack"}},{"kind":"Field","name":{"kind":"Name","value":"modifierPrisonEscape"}}]}},{"kind":"Field","name":{"kind":"Name","value":"recruitmentType"}},{"kind":"Field","name":{"kind":"Name","value":"leaderId"}},{"kind":"Field","name":{"kind":"Name","value":"leaderNickname"}},{"kind":"Field","name":{"kind":"Name","value":"leaderAvatarUrl"}},{"kind":"Field","name":{"kind":"Name","value":"members"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"nickname"}},{"kind":"Field","name":{"kind":"Name","value":"avatarUrl"}},{"kind":"Field","name":{"kind":"Name","value":"avatarDecoration"}},{"kind":"Field","name":{"kind":"Name","value":"backgroundDecoration"}},{"kind":"Field","name":{"kind":"Name","value":"roleId"}},{"kind":"Field","name":{"kind":"Name","value":"roleName"}},{"kind":"Field","name":{"kind":"Name","value":"permissionCount"}},{"kind":"Field","name":{"kind":"Name","value":"depositAmount"}},{"kind":"Field","name":{"kind":"Name","value":"depositTime"}},{"kind":"Field","name":{"kind":"Name","value":"lastDepositAt"}}]}},{"kind":"Field","name":{"kind":"Name","value":"roles"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"canInvite"}},{"kind":"Field","name":{"kind":"Name","value":"canKick"}},{"kind":"Field","name":{"kind":"Name","value":"canPromote"}},{"kind":"Field","name":{"kind":"Name","value":"canEditGang"}},{"kind":"Field","name":{"kind":"Name","value":"canImport"}}]}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}}]} as unknown as DocumentNode<GetGangDetailQuery, GetGangDetailQueryVariables>;
 export const StartGangImportDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"StartGangImport"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"gangId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"startGangImport"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"gangId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"gangId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<StartGangImportMutation, StartGangImportMutationVariables>;
 export const CancelGangImportDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CancelGangImport"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"gangId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cancelGangImport"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"gangId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"gangId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<CancelGangImportMutation, CancelGangImportMutationVariables>;
 export const SetGangMoneyDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SetGangMoney"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"gangId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"amount"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Float"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"mode"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"SetMoneyMode"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"setGangMoney"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"gangId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"gangId"}}},{"kind":"Argument","name":{"kind":"Name","value":"amount"},"value":{"kind":"Variable","name":{"kind":"Name","value":"amount"}}},{"kind":"Argument","name":{"kind":"Name","value":"mode"},"value":{"kind":"Variable","name":{"kind":"Name","value":"mode"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<SetGangMoneyMutation, SetGangMoneyMutationVariables>;
@@ -2620,148 +2796,12 @@ export const BuyInvestmentDocument = {"kind":"Document","definitions":[{"kind":"
 export const AbandonInvestmentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"AbandonInvestment"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"abandonInvestment"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<AbandonInvestmentMutation, AbandonInvestmentMutationVariables>;
 export const HireInvestmentHenchmanDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"HireInvestmentHenchman"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hireInvestmentHenchman"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<HireInvestmentHenchmanMutation, HireInvestmentHenchmanMutationVariables>;
 export const ToggleInvestmentYieldNotificationsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ToggleInvestmentYieldNotifications"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"toggleInvestmentYieldNotifications"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<ToggleInvestmentYieldNotificationsMutation, ToggleInvestmentYieldNotificationsMutationVariables>;
-export enum GangRecruitmentType {
-  Disabled = 'DISABLED',
-  Approval = 'APPROVAL',
-  Open = 'OPEN'
-}
-
-export enum GangJoinRequestStatus {
-  Pending = 'PENDING',
-  Accepted = 'ACCEPTED',
-  Rejected = 'REJECTED',
-  Cancelled = 'CANCELLED'
-}
-
-export type GangRecruitmentBoardEntry = {
-  __typename?: 'GangRecruitmentBoardEntry';
-  id: Scalars['ID']['output'];
-  name: Scalars['String']['output'];
-  acronym: Scalars['String']['output'];
-  description: Scalars['String']['output'];
-  level: Scalars['Int']['output'];
-  image?: Maybe<Scalars['String']['output']>;
-  color: Scalars['String']['output'];
-  baseName?: Maybe<Scalars['String']['output']>;
-  baseImage?: Maybe<Scalars['String']['output']>;
-  membersCount: Scalars['Int']['output'];
-  maxMembers: Scalars['Int']['output'];
-  recruitmentType: GangRecruitmentType;
-};
-
-export type GangJoinRequest = {
-  __typename?: 'GangJoinRequest';
-  id: Scalars['ID']['output'];
-  gangId: Scalars['ID']['output'];
-  gangName: Scalars['String']['output'];
-  gangAcronym: Scalars['String']['output'];
-  userId: Scalars['ID']['output'];
-  userName: Scalars['String']['output'];
-  userAvatar?: Maybe<Scalars['String']['output']>;
-  userLevel: Scalars['Int']['output'];
-  message?: Maybe<Scalars['String']['output']>;
-  status: GangJoinRequestStatus;
-  createdAt: Scalars['String']['output'];
-};
-
-export type GangRecruitmentBoardQueryVariables = Exact<{
-  search?: InputMaybe<Scalars['String']['input']>;
-  type?: InputMaybe<GangRecruitmentType>;
-}>;
-
-export type GangRecruitmentBoardQuery = {
-  __typename?: 'Query';
-  gangRecruitmentBoard: Array<GangRecruitmentBoardEntry>;
-};
-
-export type MyActiveGangJoinRequestQueryVariables = Exact<{ [key: string]: never; }>;
-
-export type MyActiveGangJoinRequestQuery = {
-  __typename?: 'Query';
-  myActiveGangJoinRequest?: Maybe<GangJoinRequest>;
-};
-
-export type MyGangJoinRequestsHistoryQueryVariables = Exact<{
-  limit?: InputMaybe<Scalars['Int']['input']>;
-}>;
-
-export type MyGangJoinRequestsHistoryQuery = {
-  __typename?: 'Query';
-  myGangJoinRequestsHistory: Array<GangJoinRequest>;
-};
-
-export type GangJoinRequestsQueryVariables = Exact<{
-  gangId: Scalars['ID']['input'];
-}>;
-
-export type GangJoinRequestsQuery = {
-  __typename?: 'Query';
-  gangJoinRequests: Array<GangJoinRequest>;
-};
-
-export type SetGangRecruitmentTypeMutationVariables = Exact<{
-  gangId: Scalars['ID']['input'];
-  recruitmentType: GangRecruitmentType;
-}>;
-
-export type SetGangRecruitmentTypeMutation = {
-  __typename?: 'Mutation';
-  setGangRecruitmentType: GangMutationResult;
-};
-
-export type JoinOpenGangMutationVariables = Exact<{
-  gangId: Scalars['ID']['input'];
-}>;
-
-export type JoinOpenGangMutation = {
-  __typename?: 'Mutation';
-  joinOpenGang: GangMutationResult;
-};
-
-export type ApplyToGangMutationVariables = Exact<{
-  gangId: Scalars['ID']['input'];
-  message?: InputMaybe<Scalars['String']['input']>;
-}>;
-
-export type ApplyToGangMutation = {
-  __typename?: 'Mutation';
-  applyToGang: GangMutationResult;
-};
-
-export type CancelGangJoinRequestMutationVariables = Exact<{
-  requestId?: InputMaybe<Scalars['ID']['input']>;
-}>;
-
-export type CancelGangJoinRequestMutation = {
-  __typename?: 'Mutation';
-  cancelGangJoinRequest: GangMutationResult;
-};
-
-export type ResolveGangJoinRequestMutationVariables = Exact<{
-  gangId: Scalars['ID']['input'];
-  requestId: Scalars['ID']['input'];
-  accept: Scalars['Boolean']['input'];
-}>;
-
-export type ResolveGangJoinRequestMutation = {
-  __typename?: 'Mutation';
-  resolveGangJoinRequest: GangMutationResult;
-};
-
 export const GangRecruitmentBoardDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GangRecruitmentBoard"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"search"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"type"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"GangRecruitmentType"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"gangRecruitmentBoard"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"search"},"value":{"kind":"Variable","name":{"kind":"Name","value":"search"}}},{"kind":"Argument","name":{"kind":"Name","value":"type"},"value":{"kind":"Variable","name":{"kind":"Name","value":"type"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"acronym"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"level"}},{"kind":"Field","name":{"kind":"Name","value":"image"}},{"kind":"Field","name":{"kind":"Name","value":"color"}},{"kind":"Field","name":{"kind":"Name","value":"baseName"}},{"kind":"Field","name":{"kind":"Name","value":"baseImage"}},{"kind":"Field","name":{"kind":"Name","value":"membersCount"}},{"kind":"Field","name":{"kind":"Name","value":"maxMembers"}},{"kind":"Field","name":{"kind":"Name","value":"recruitmentType"}}]}}]}}]} as unknown as DocumentNode<GangRecruitmentBoardQuery, GangRecruitmentBoardQueryVariables>;
-
 export const MyActiveGangJoinRequestDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"MyActiveGangJoinRequest"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"myActiveGangJoinRequest"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"gangId"}},{"kind":"Field","name":{"kind":"Name","value":"gangName"}},{"kind":"Field","name":{"kind":"Name","value":"gangAcronym"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"userName"}},{"kind":"Field","name":{"kind":"Name","value":"userAvatar"}},{"kind":"Field","name":{"kind":"Name","value":"userLevel"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}}]} as unknown as DocumentNode<MyActiveGangJoinRequestQuery, MyActiveGangJoinRequestQueryVariables>;
-
 export const MyGangJoinRequestsHistoryDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"MyGangJoinRequestsHistory"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"limit"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"myGangJoinRequestsHistory"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"limit"},"value":{"kind":"Variable","name":{"kind":"Name","value":"limit"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"gangId"}},{"kind":"Field","name":{"kind":"Name","value":"gangName"}},{"kind":"Field","name":{"kind":"Name","value":"gangAcronym"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"userName"}},{"kind":"Field","name":{"kind":"Name","value":"userAvatar"}},{"kind":"Field","name":{"kind":"Name","value":"userLevel"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}}]} as unknown as DocumentNode<MyGangJoinRequestsHistoryQuery, MyGangJoinRequestsHistoryQueryVariables>;
-
 export const GangJoinRequestsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GangJoinRequests"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"gangId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"gangJoinRequests"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"gangId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"gangId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"gangId"}},{"kind":"Field","name":{"kind":"Name","value":"gangName"}},{"kind":"Field","name":{"kind":"Name","value":"gangAcronym"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"userName"}},{"kind":"Field","name":{"kind":"Name","value":"userAvatar"}},{"kind":"Field","name":{"kind":"Name","value":"userLevel"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}}]} as unknown as DocumentNode<GangJoinRequestsQuery, GangJoinRequestsQueryVariables>;
-
 export const SetGangRecruitmentTypeDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SetGangRecruitmentType"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"gangId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"recruitmentType"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"GangRecruitmentType"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"setGangRecruitmentType"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"gangId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"gangId"}}},{"kind":"Argument","name":{"kind":"Name","value":"recruitmentType"},"value":{"kind":"Variable","name":{"kind":"Name","value":"recruitmentType"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<SetGangRecruitmentTypeMutation, SetGangRecruitmentTypeMutationVariables>;
-
 export const JoinOpenGangDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"JoinOpenGang"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"gangId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"joinOpenGang"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"gangId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"gangId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<JoinOpenGangMutation, JoinOpenGangMutationVariables>;
-
 export const ApplyToGangDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ApplyToGang"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"gangId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"message"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"applyToGang"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"gangId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"gangId"}}},{"kind":"Argument","name":{"kind":"Name","value":"message"},"value":{"kind":"Variable","name":{"kind":"Name","value":"message"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<ApplyToGangMutation, ApplyToGangMutationVariables>;
-
 export const CancelGangJoinRequestDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CancelGangJoinRequest"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"requestId"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cancelGangJoinRequest"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"requestId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"requestId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<CancelGangJoinRequestMutation, CancelGangJoinRequestMutationVariables>;
-
 export const ResolveGangJoinRequestDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ResolveGangJoinRequest"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"gangId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"requestId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"accept"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"resolveGangJoinRequest"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"gangId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"gangId"}}},{"kind":"Argument","name":{"kind":"Name","value":"requestId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"requestId"}}},{"kind":"Argument","name":{"kind":"Name","value":"accept"},"value":{"kind":"Variable","name":{"kind":"Name","value":"accept"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<ResolveGangJoinRequestMutation, ResolveGangJoinRequestMutationVariables>;

@@ -376,7 +376,7 @@ export class Gang {
 		result.Experience = gang.experience;
 		result.Level = gang.level;
 		result.LeaderId = gang.leaderId;
-			result.RecruitmentType = gang.recruitmentType ?? GangRecruitmentType.Disabled;
+		result.RecruitmentType = gang.recruitmentType ?? GangRecruitmentType.Disabled;
 		result.LastInvestmentRobbery = gang.lastInvestmentRobbery;
 		result.ImportArrivesAt = gang.shipmentArrivesAt;
 		result.LastImportSuccess = gang.lastShipmentSuccess;
@@ -1670,7 +1670,10 @@ export class Gang {
 	 * Sets the recruitment type of the gang.
 	 * Only the gang leader can perform this action.
 	 */
-	async SetRecruitmentType(userId: string, recruitmentType: GangRecruitmentType): Promise<{ success: boolean; reason?: string }> {
+	async SetRecruitmentType(userId: string, recruitmentType: GangRecruitmentType): Promise<{
+		success: boolean;
+		reason?: string
+	}> {
 		if (this.LeaderId !== userId) {
 			return { success: false, reason: "notLeader" };
 		}
@@ -1726,14 +1729,15 @@ export class Gang {
 		const recruiterIds = new Set<string>();
 		recruiterIds.add(this.LeaderId);
 		for (const member of this.Members) {
-			if (member.Role?.Permissions.includes(GangPermission.Invite)) {
-				recruiterIds.add(member.Id);
+			const role = this.Roles.find(role => role.Id === member.RoleId);
+			if (role?.Permissions.includes(GangPermission.Invite)) {
+				recruiterIds.add(member.UserId);
 			}
 		}
 
 		const pushBody = `${user.Nickname} solicitou entrar para a gangue ${this.Name}!`;
 		for (const targetId of recruiterIds) {
-			WebPush.Send(targetId, pushBody).catch(() => {});
+			await WebPush.Send(targetId, pushBody);
 		}
 
 		return { success: true };
@@ -1743,7 +1747,10 @@ export class Gang {
 	 * Resolves a pending join request (Accept or Reject).
 	 * Only the Leader or a member with Invite permission can resolve requests.
 	 */
-	async ResolveJoinRequest(manager: User, requestId: number, accept: boolean): Promise<{ success: boolean; reason?: string }> {
+	async ResolveJoinRequest(manager: User, requestId: number, accept: boolean): Promise<{
+		success: boolean;
+		reason?: string
+	}> {
 		const request = await GangJoinRequestsRepository.FindById(requestId);
 		if (!request || request.gangId !== this.Id || request.status !== GangJoinRequestStatus.Pending) {
 			return { success: false, reason: "requestNotFound" };
@@ -1757,7 +1764,7 @@ export class Gang {
 
 		if (!accept) {
 			await GangJoinRequestsRepository.UpdateRequestStatus(requestId, GangJoinRequestStatus.Rejected);
-			WebPush.Send(request.userId, `Sua solicitaÁ„o para entrar na gangue ${this.Name} foi recusada.`).catch(() => {});
+			await WebPush.Send(request.userId, `Sua solicita√ß√£o para entrar na gangue ${this.Name} foi recusada.`);
 			return { success: true };
 		}
 
@@ -1765,7 +1772,7 @@ export class Gang {
 			return { success: false, reason: "gangFull" };
 		}
 
-		const applicant = await User.GetBasicInfo(request.userId);
+		const applicant = await new User(request.userId).GetSimpleInfo();
 		if (!applicant) {
 			return { success: false, reason: "userNotFound" };
 		}
@@ -1780,7 +1787,7 @@ export class Gang {
 		if (joined) {
 			await GangJoinRequestsRepository.UpdateRequestStatus(requestId, GangJoinRequestStatus.Accepted);
 			await GangJoinRequestsRepository.CancelUserPendingRequests(applicant.Id);
-			WebPush.Send(applicant.Id, `Sua solicitaÁ„o para entrar na gangue ${this.Name} foi aceita!`).catch(() => {});
+			await WebPush.Send(applicant.Id, `Sua solicita√ß√£o para entrar na gangue ${this.Name} foi aceita!`);
 			return { success: true };
 		}
 

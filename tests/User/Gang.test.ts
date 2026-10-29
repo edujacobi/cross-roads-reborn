@@ -1,9 +1,13 @@
 import { describe, it, expect, vi } from "vitest";
 import { Gang, GangPermission } from "#core/models/Gang";
 import { GangMemberRepository } from "#core/repositories/GangMemberRepository";
+import { GangJoinRequestsRepository } from "#core/repositories/GangJoinRequestsRepository";
 import { GangRepository } from "#core/repositories/GangRepository";
+import { GangJoinRequests } from "#core/database/GangJoinRequests";
 import { User } from "#core/models/User";
+import { WebPush } from "#core/models/WebPush";
 import { GangBaseId } from "#core/types/GangBases";
+import { GangRecruitmentType, GangJoinRequestStatus } from "#core/types/GangRecruitment";
 
 // Mock the database models used by Gang
 vi.mock("#core/database/GangMembers", () => ({
@@ -104,6 +108,49 @@ describe("Gang Model - Member Sorting", () => {
 });
 
 describe("Gang Model - Joining", () => {
+	it("notifies the leader and members with invite permission about an application", async () => {
+		const gang = new Gang();
+		gang.Id = 1;
+		gang.Name = "Gang";
+		gang.LeaderId = "leader";
+		gang.RecruitmentType = GangRecruitmentType.Approval;
+		gang.Roles = [
+			{ Id: 1, Name: "Recruiter", Permissions: [GangPermission.Invite] },
+			{ Id: 2, Name: "Member", Permissions: [] },
+		];
+		gang.Members = [
+			{ UserId: "leader", RoleId: 1 },
+			{ UserId: "recruiter", RoleId: 1 },
+			{ UserId: "member", RoleId: 2 },
+			{ UserId: "unknown-role", RoleId: 3 },
+		].map(member => ({
+			...member,
+			Nickname: member.UserId,
+			PermissionCount: 0,
+			RoleName: "",
+			Deposit: { Time: new Date(), Amount: 0 },
+		}));
+		const applicant = new User("applicant");
+		applicant.Nickname = "Applicant";
+
+		vi.spyOn(GangMemberRepository, "FindByUserId").mockResolvedValue(null);
+		vi.spyOn(GangJoinRequestsRepository, "FindActiveByUser").mockResolvedValue(null);
+		vi.spyOn(GangJoinRequestsRepository, "CreateRequest").mockResolvedValue(
+			GangJoinRequests.build({ gangId: 1, userId: applicant.Id, status: GangJoinRequestStatus.Pending }),
+		);
+		const send = vi.spyOn(WebPush, "Send").mockResolvedValue();
+
+		try {
+			await expect(gang.ApplyToGang(applicant)).resolves.toEqual({ success: true });
+			expect(send).toHaveBeenCalledTimes(2);
+			expect(send).toHaveBeenCalledWith("leader", expect.any(String));
+			expect(send).toHaveBeenCalledWith("recruiter", expect.any(String));
+		}
+		finally {
+			vi.restoreAllMocks();
+		}
+	});
+
 	it("charges the base join cost multiplied by gang level", async () => {
 		const gang = new Gang();
 		gang.Id = 1;

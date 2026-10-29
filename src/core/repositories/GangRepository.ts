@@ -1,6 +1,6 @@
 import { Gangs } from "#core/database/Gangs";
 import GangMembers from "#core/database/GangMembers";
-import { Op } from "sequelize";
+import { Op, type WhereOptions } from "sequelize";
 import type { InferAttributes, InferCreationAttributes, Optional } from "sequelize";
 import type { NullishPropertiesOf } from "sequelize/lib/utils";
 
@@ -108,7 +108,7 @@ export class GangRepository {
 	}
 
 	static async FindRecruitingGangs(recruitmentType?: number, search?: string): Promise<Gangs[]> {
-		const where: any = {
+		const where: WhereOptions = {
 			recruitmentType: recruitmentType !== undefined ? recruitmentType : { [Op.gt]: 0 },
 		};
 		if (search && search.trim()) {

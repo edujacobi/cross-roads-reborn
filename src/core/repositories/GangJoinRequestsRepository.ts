@@ -10,8 +10,6 @@ export interface GangJoinRequestWithDetails {
 	gangAcronym: string;
 	userId: string;
 	userName: string;
-	userAvatar: string | null;
-	userLevel: number;
 	message: string | null;
 	status: GangJoinRequestStatus;
 	createdAt: Date;
@@ -38,9 +36,7 @@ export class GangJoinRequestsRepository {
 			gangName: gang?.name ?? "Gangue Desconhecida",
 			gangAcronym: gang?.acronym ?? "???",
 			userId: request.userId,
-			userName: user?.name ?? "Usuário Desconhecido",
-			userAvatar: user?.avatar ?? null,
-			userLevel: user?.level ?? 1,
+			userName: user?.nickname ?? "Usuário Desconhecido",
 			message: request.message,
 			status: request.status,
 			createdAt: request.createdAt,
@@ -72,9 +68,7 @@ export class GangJoinRequestsRepository {
 				gangName: gang?.name ?? "Gangue Desconhecida",
 				gangAcronym: gang?.acronym ?? "???",
 				userId: r.userId,
-				userName: user?.name ?? "Usuário Desconhecido",
-				userAvatar: user?.avatar ?? null,
-				userLevel: user?.level ?? 1,
+				userName: user?.nickname ?? "Usuário Desconhecido",
 				message: r.message,
 				status: r.status,
 				createdAt: r.createdAt,
@@ -105,9 +99,7 @@ export class GangJoinRequestsRepository {
 				gangName: gang?.name ?? "Gangue Desconhecida",
 				gangAcronym: gang?.acronym ?? "???",
 				userId: r.userId,
-				userName: user?.name ?? "Usuário Desconhecido",
-				userAvatar: user?.avatar ?? null,
-				userLevel: user?.level ?? 1,
+				userName: user?.nickname ?? "Usuário Desconhecido",
 				message: r.message,
 				status: r.status,
 				createdAt: r.createdAt,
@@ -151,5 +143,3 @@ export class GangJoinRequestsRepository {
 		return affected;
 	}
 }
-
-export default GangJoinRequestsRepository;

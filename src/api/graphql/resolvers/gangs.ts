@@ -1,6 +1,6 @@
 import { GangRoleRepository } from "#core/repositories/GangRoleRepository";
 import { GangJoinRequestsRepository } from "#core/repositories/GangJoinRequestsRepository";
-import { GangRecruitmentType, GangJoinRequestStatus } from "#core/types/GangRecruitment";
+import { GangRecruitmentType } from "#core/types/GangRecruitment";
 import { GangMemberRepository } from "#core/repositories/GangMemberRepository";
 import { GangRepository } from "#core/repositories/GangRepository";
 import { UserRepository } from "#core/repositories/UserRepository";
@@ -204,9 +204,6 @@ export const gangResolvers: {
 				createdAt: gang.createdAt.toISOString(),
 			};
 		},
-	},
-
-	Mutation: {
 		gangRecruitmentBoard: async (
 			_: unknown,
 			args: { search?: string; type?: "DISABLED" | "APPROVAL" | "OPEN" },
@@ -214,9 +211,15 @@ export const gangResolvers: {
 		) => {
 			assertAuthenticated(context);
 			let filterType: number | undefined;
-			if (args.type === "APPROVAL") filterType = GangRecruitmentType.Approval;
-			else if (args.type === "OPEN") filterType = GangRecruitmentType.Open;
-			else if (args.type === "DISABLED") filterType = GangRecruitmentType.Disabled;
+			if (args.type === "APPROVAL") {
+				filterType = GangRecruitmentType.Approval;
+			}
+			else if (args.type === "OPEN") {
+				filterType = GangRecruitmentType.Open;
+			}
+			else if (args.type === "DISABLED") {
+				filterType = GangRecruitmentType.Disabled;
+			}
 
 			const recruitingGangs = await GangRepository.FindRecruitingGangs(filterType, args.search);
 
@@ -230,7 +233,6 @@ export const gangResolvers: {
 				// Exclude gangs that have reached their member cap
 				if (membersCount >= maxMembers) continue;
 
-				const baseConfig = gang.BaseId && gang.BaseId !== GangBaseId.None ? GangBases[gang.BaseId] : null;
 
 				results.push({
 					id: gang.Id.toString(),
@@ -240,8 +242,8 @@ export const gangResolvers: {
 					level: gang.Level,
 					image: gang.Image,
 					color: GangColor[gang.Color].Color,
-					baseName: baseConfig ? baseConfig.Name[Language.Portuguese] : null,
-					baseImage: baseConfig ? baseConfig.Image : null,
+					baseName: GangBases[gang.BaseId].Name[Language.Portuguese],
+					baseId: GangBases[gang.BaseId].Id,
 					membersCount,
 					maxMembers,
 					recruitmentType: gang.RecruitmentType === GangRecruitmentType.Open ? "OPEN" : "APPROVAL",
@@ -262,8 +264,6 @@ export const gangResolvers: {
 				gangAcronym: request.gangAcronym,
 				userId: request.userId,
 				userName: request.userName,
-				userAvatar: request.userAvatar,
-				userLevel: request.userLevel,
 				message: request.message,
 				status: request.status,
 				createdAt: request.createdAt.toISOString(),
@@ -281,8 +281,6 @@ export const gangResolvers: {
 				gangAcronym: h.gangAcronym,
 				userId: h.userId,
 				userName: h.userName,
-				userAvatar: h.userAvatar,
-				userLevel: h.userLevel,
 				message: h.message,
 				status: h.status,
 				createdAt: h.createdAt.toISOString(),
@@ -313,13 +311,14 @@ export const gangResolvers: {
 				gangAcronym: r.gangAcronym,
 				userId: r.userId,
 				userName: r.userName,
-				userAvatar: r.userAvatar,
-				userLevel: r.userLevel,
 				message: r.message,
 				status: r.status,
 				createdAt: r.createdAt.toISOString(),
 			}));
 		},
+	},
+
+	Mutation: {
 		createGang: async (
 			_: unknown,
 			args: { name: string; acronym: string; description: string; color: string; imageUrl?: string | null },
@@ -478,7 +477,10 @@ export const gangResolvers: {
 				await recordAdminAction(admin, AdminAuditActionId.SetGangMoney, { gangId }, previousMoney, money);
 			}
 			return success
-				? { success: true, message: `Dinheiro da gangue atualizado para ${formatMoney(money, Language.Portuguese)}.` }
+				? {
+					success: true,
+					message: `Dinheiro da gangue atualizado para ${formatMoney(money, Language.Portuguese)}.`,
+				}
 				: { success: false, message: "Falha ao atualizar o dinheiro da gangue." };
 		},
 
@@ -510,7 +512,10 @@ export const gangResolvers: {
 					[GangImportFailureReason.CancelCooldown]: "A importa√ß√£o est√° em per√≠odo de espera ap√≥s um cancelamento.",
 					[GangImportFailureReason.NotEnoughMoney]: "O banco da gangue n√£o tem dinheiro suficiente.",
 				};
-				return { success: false, message: check.reason === undefined ? "N√£o foi poss√≠vel iniciar a importa√ß√£o." : messages[check.reason] };
+				return {
+					success: false,
+					message: check.reason === undefined ? "N√£o foi poss√≠vel iniciar a importa√ß√£o." : messages[check.reason],
+				};
 			}
 
 			await gang.StartImport();
@@ -540,7 +545,10 @@ export const gangResolvers: {
 			}
 
 			const refund = await gang.CancelImport();
-			return { success: true, message: `Importa√ß√£o cancelada. ${formatMoney(refund, Language.Portuguese)} foi reembolsado ao banco da gangue.` };
+			return {
+				success: true,
+				message: `Importa√ß√£o cancelada. ${formatMoney(refund, Language.Portuguese)} foi reembolsado ao banco da gangue.`,
+			};
 		},
 
 		createGangRole: async (
@@ -743,7 +751,10 @@ export const gangResolvers: {
 
 			const success = await gang.LeaveGang(user);
 			return success
-				? { success: true, message: gang.LeaderId === user.Id ? "Gangue encerrada com sucesso." : "Voc√™ saiu da gangue." }
+				? {
+					success: true,
+					message: gang.LeaderId === user.Id ? "Gangue encerrada com sucesso." : "Voc√™ saiu da gangue.",
+				}
 				: { success: false, message: "O l√≠der n√£o pode sair enquanto houver outros membros." };
 		},
 
@@ -843,7 +854,7 @@ export const gangResolvers: {
 				new ButtonBuilder().setCustomId("decline").setLabel(strings.decline).setStyle(ButtonStyle.Secondary),
 			);
 			inviteCooldown.set(targetUser.Id, Date.now());
-			let invitation: Message<boolean>;
+			let invitation: Message;
 			try {
 				const discordUser = await client.users.fetch(targetUser.Id);
 				invitation = await discordUser.send({ content: strings.invitation, components: [row] });
@@ -870,25 +881,37 @@ export const gangResolvers: {
 							targetUser.GetInfo(),
 						]);
 						message = currentGang
-							&& currentGang.CanInvite(authUser.userId)
-							&& targetUser.Money >= currentGang.GetJoinCost()
-							&& await currentGang.AcceptInvite(targetUser)
+						&& currentGang.CanInvite(authUser.userId)
+						&& targetUser.Money >= currentGang.GetJoinCost()
+						&& await currentGang.AcceptInvite(targetUser)
 							? strings.accepted
 							: strings.failed;
 					}
 					await invitation.edit({ content: message, components: [] });
 				}
 				catch (error) {
-					logger.error({ error, gangId: gang.Id, targetUserId: targetUser.Id }, "Failed to process gang invitation response.");
+					logger.error({
+						error,
+						gangId: gang.Id,
+						targetUserId: targetUser.Id,
+					}, "Failed to process gang invitation response.");
 					await invitation.edit({ content: strings.failed, components: [] }).catch(editError => {
-						logger.warn({ error: editError, gangId: gang.Id, targetUserId: targetUser.Id }, "Failed to update gang invitation response.");
+						logger.warn({
+							error: editError,
+							gangId: gang.Id,
+							targetUserId: targetUser.Id,
+						}, "Failed to update gang invitation response.");
 					});
 				}
 			});
 			collector.on("end", (collected) => {
 				if (collected.size > 0) return;
 				void invitation.edit({ content: strings.expired, components: [] }).catch(error => {
-					logger.warn({ error, gangId: gang.Id, targetUserId: targetUser.Id }, "Failed to expire gang invitation.");
+					logger.warn({
+						error,
+						gangId: gang.Id,
+						targetUserId: targetUser.Id,
+					}, "Failed to expire gang invitation.");
 				});
 			});
 
@@ -900,85 +923,128 @@ export const gangResolvers: {
 			context: GraphQLContext,
 		) => {
 			const authUser = assertAuthenticated(context);
-			assertCanWrite(authUser);
 			const gangId = Number.parseInt(args.gangId, 10);
-			if (Number.isNaN(gangId)) return { success: false, message: "ID da gangue inv·lido." };
+			if (Number.isNaN(gangId)) return { success: false, message: "ID da gangue inv√°lido." };
 
 			const gangEntity = await GangRepository.FindById(gangId);
-			if (!gangEntity) return { success: false, message: "Gangue n„o encontrada." };
+			if (!gangEntity) return { success: false, message: "Gangue n√£o encontrada." };
 			const gang = await Gang.GetInfo(gangEntity);
-			if (!gang) return { success: false, message: "Gangue n„o encontrada." };
+			if (!gang) return { success: false, message: "Gangue n√£o encontrada." };
 
 			let mode = GangRecruitmentType.Disabled;
-			if (args.recruitmentType === "APPROVAL") mode = GangRecruitmentType.Approval;
-			else if (args.recruitmentType === "OPEN") mode = GangRecruitmentType.Open;
+			if (args.recruitmentType === "APPROVAL") {
+				mode = GangRecruitmentType.Approval;
+			}
+			else if (args.recruitmentType === "OPEN") {
+				mode = GangRecruitmentType.Open;
+			}
 
 			const result = await gang.SetRecruitmentType(authUser.userId, mode);
 			if (!result.success) {
-				if (result.reason === "notLeader") return { success: false, message: "Apenas o lÌder pode alterar as configuraÁıes de recrutamento." };
-				return { success: false, message: "N„o foi possÌvel atualizar o tipo de recrutamento." };
+				if (result.reason === "notLeader") {
+					return {
+						success: false,
+						message: "Apenas o l√≠der pode alterar as configura√ß√µes de recrutamento.",
+					};
+				}
+				return { success: false, message: "N√£o foi poss√≠vel atualizar o tipo de recrutamento." };
 			}
 			return { success: true, message: "Tipo de recrutamento atualizado com sucesso." };
 		},
 
 		joinOpenGang: async (_: unknown, args: { gangId: string }, context: GraphQLContext) => {
 			const authUser = assertAuthenticated(context);
-			assertCanWrite(authUser);
 			const gangId = Number.parseInt(args.gangId, 10);
-			if (Number.isNaN(gangId)) return { success: false, message: "ID da gangue inv·lido." };
+			if (Number.isNaN(gangId)) return { success: false, message: "ID da gangue inv√°lido." };
 
 			const gangEntity = await GangRepository.FindById(gangId);
-			if (!gangEntity) return { success: false, message: "Gangue n„o encontrada." };
+			if (!gangEntity) return { success: false, message: "Gangue n√£o encontrada." };
 			const gang = await Gang.GetInfo(gangEntity);
-			if (!gang) return { success: false, message: "Gangue n„o encontrada." };
+			if (!gang) return { success: false, message: "Gangue n√£o encontrada." };
 
 			const user = await new User(authUser.userId).GetInfo();
-			if (!user) return { success: false, message: "Usu·rio n„o encontrado." };
+			if (!user) return { success: false, message: "Usu√°rio n√£o encontrado." };
 
 			const result = await gang.JoinOpenGang(user);
 			if (!result.success) {
-				if (result.reason === "alreadyInGang") return { success: false, message: "VocÍ j· pertence a uma gangue." };
-				if (result.reason === "gangFull") return { success: false, message: "Esta gangue atingiu o limite de membros." };
-				if (result.reason === "notOpenRecruitment") return { success: false, message: "Esta gangue n„o est· com recrutamento aberto." };
-				return { success: false, message: "N„o foi possÌvel entrar na gangue. Verifique se vocÍ tem o valor necess·rio." };
+				if (result.reason === "alreadyInGang") {
+					return {
+						success: false,
+						message: "Voc√™ j√° pertence a uma gangue.",
+					};
+				}
+				if (result.reason === "gangFull") {
+					return {
+						success: false,
+						message: "Esta gangue atingiu o limite de membros.",
+					};
+				}
+				if (result.reason === "notOpenRecruitment") {
+					return {
+						success: false,
+						message: "Esta gangue n√£o est√° com recrutamento aberto.",
+					};
+				}
+				return {
+					success: false,
+					message: "N√£o foi poss√≠vel entrar na gangue. Verifique se voc√™ tem a grana necess√°ria.",
+				};
 			}
-			return { success: true, message: `VocÍ entrou na gangue ${gang.Name} com sucesso!` };
+			return { success: true, message: `Voc√™ entrou na gangue ${gang.Name} com sucesso!` };
 		},
 
 		applyToGang: async (_: unknown, args: { gangId: string; message?: string }, context: GraphQLContext) => {
 			const authUser = assertAuthenticated(context);
-			assertCanWrite(authUser);
 			const gangId = Number.parseInt(args.gangId, 10);
-			if (Number.isNaN(gangId)) return { success: false, message: "ID da gangue inv·lido." };
+			if (Number.isNaN(gangId)) return { success: false, message: "ID da gangue inv√°lido." };
 
 			const gangEntity = await GangRepository.FindById(gangId);
-			if (!gangEntity) return { success: false, message: "Gangue n„o encontrada." };
+			if (!gangEntity) return { success: false, message: "Gangue n√£o encontrada." };
 			const gang = await Gang.GetInfo(gangEntity);
-			if (!gang) return { success: false, message: "Gangue n„o encontrada." };
+			if (!gang) return { success: false, message: "Gangue n√£o encontrada." };
 
 			const user = await new User(authUser.userId).GetInfo();
-			if (!user) return { success: false, message: "Usu·rio n„o encontrado." };
+			if (!user) return { success: false, message: "Usu√°rio n√£o encontrado." };
 
 			const result = await gang.ApplyToGang(user, args.message);
 			if (!result.success) {
-				if (result.reason === "alreadyInGang") return { success: false, message: "VocÍ j· pertence a uma gangue." };
-				if (result.reason === "gangFull") return { success: false, message: "Esta gangue atingiu o limite de membros." };
-				if (result.reason === "alreadyHasPendingRequest") return { success: false, message: "VocÍ j· possui uma solicitaÁ„o pendente." };
-				if (result.reason === "notApprovalRecruitment") return { success: false, message: "Esta gangue n„o est· aceitando solicitaÁıes de ades„o." };
-				return { success: false, message: "N„o foi possÌvel enviar a solicitaÁ„o." };
+				if (result.reason === "alreadyInGang") {
+					return {
+						success: false,
+						message: "Voc√™ j√° pertence a uma gangue.",
+					};
+				}
+				if (result.reason === "gangFull") {
+					return {
+						success: false,
+						message: "Esta gangue atingiu o limite de membros.",
+					};
+				}
+				if (result.reason === "alreadyHasPendingRequest") {
+					return {
+						success: false,
+						message: "Voc√™ j√° possui uma solicit√ß√£o pendente.",
+					};
+				}
+				if (result.reason === "notApprovalRecruitment") {
+					return {
+						success: false,
+						message: "Esta gangue n√£o est√° aceitando solicita√ß√µes de ades√£o.",
+					};
+				}
+				return { success: false, message: "N√£o foi poss√≠vel enviar a solicita√ß√£o." };
 			}
-			return { success: true, message: `SolicitaÁ„o enviada para a gangue ${gang.Name} com sucesso!` };
+			return { success: true, message: `Solicita√ß√£o enviada para a gangue ${gang.Name} com sucesso!` };
 		},
 
 		cancelGangJoinRequest: async (_: unknown, args: { requestId?: string }, context: GraphQLContext) => {
 			const authUser = assertAuthenticated(context);
-			assertCanWrite(authUser);
 			const reqId = args.requestId ? Number.parseInt(args.requestId, 10) : undefined;
 			const result = await Gang.CancelJoinRequest(authUser.userId, reqId);
 			if (!result.success) {
-				return { success: false, message: "Nenhuma solicitaÁ„o pendente encontrada para cancelar." };
+				return { success: false, message: "Nenhuma solicita√ß√£o pendente encontrada para cancelar." };
 			}
-			return { success: true, message: "SolicitaÁ„o cancelada com sucesso." };
+			return { success: true, message: "Solicita√ß√£o cancelada com sucesso." };
 		},
 
 		resolveGangJoinRequest: async (
@@ -987,32 +1053,51 @@ export const gangResolvers: {
 			context: GraphQLContext,
 		) => {
 			const authUser = assertAuthenticated(context);
-			assertCanWrite(authUser);
 			const gangId = Number.parseInt(args.gangId, 10);
 			const requestId = Number.parseInt(args.requestId, 10);
 			if (Number.isNaN(gangId) || Number.isNaN(requestId)) {
-				return { success: false, message: "Dados inv·lidos." };
+				return { success: false, message: "Dados inv√°lidos." };
 			}
 
 			const gangEntity = await GangRepository.FindById(gangId);
-			if (!gangEntity) return { success: false, message: "Gangue n„o encontrada." };
+			if (!gangEntity) return { success: false, message: "Gangue n√£o encontrada." };
 			const gang = await Gang.GetInfo(gangEntity);
-			if (!gang) return { success: false, message: "Gangue n„o encontrada." };
+			if (!gang) return { success: false, message: "Gangue n√£o encontrada." };
 
 			const manager = await new User(authUser.userId).GetInfo();
-			if (!manager) return { success: false, message: "Gerente n„o encontrado." };
+			if (!manager) return { success: false, message: "Gerente n√£o encontrado." };
 
 			const result = await gang.ResolveJoinRequest(manager, requestId, args.accept);
 			if (!result.success) {
-				if (result.reason === "noPermission") return { success: false, message: "VocÍ n„o tem permiss„o para gerenciar solicitaÁıes." };
-				if (result.reason === "gangFull") return { success: false, message: "A gangue j· atingiu o limite de membros." };
-				if (result.reason === "alreadyInGang") return { success: false, message: "O usu·rio j· entrou em outra gangue." };
-				if (result.reason === "requestNotFound") return { success: false, message: "SolicitaÁ„o n„o encontrada ou j· respondida." };
-				return { success: false, message: "N„o foi possÌvel processar a solicitaÁ„o." };
+				if (result.reason === "noPermission") {
+					return {
+						success: false,
+						message: "Voc√¢ n√£o tem permiss√£o para gerenciar solicita√ß√µes.",
+					};
+				}
+				if (result.reason === "gangFull") {
+					return {
+						success: false,
+						message: "A gangue j√° atingiu o limite de membros.",
+					};
+				}
+				if (result.reason === "alreadyInGang") {
+					return {
+						success: false,
+						message: "O usu√°rio j√° entrou em outra gangue.",
+					};
+				}
+				if (result.reason === "requestNotFound") {
+					return {
+						success: false,
+						message: "Solicita√ß√£o n√£o encontrada ou j√° respondida.",
+					};
+				}
+				return { success: false, message: "N√£o foi poss√≠vel processar a solicita√ß√£o." };
 			}
 			return {
 				success: true,
-				message: args.accept ? "SolicitaÁ„o aceita com sucesso!" : "SolicitaÁ„o recusada com sucesso.",
+				message: args.accept ? "Solicita√ß√£o aceita com sucesso!" : "Solicita√ß√£o recusada com sucesso.",
 			};
 		},
 	},

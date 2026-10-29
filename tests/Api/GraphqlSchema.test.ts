@@ -1,8 +1,26 @@
 import { buildSchema, graphql } from "graphql";
+import { createSchema } from "graphql-yoga";
 import { describe, expect, it } from "vitest";
 import { typeDefs } from "#api/graphql/schema";
+import { resolvers } from "#api/graphql/resolvers";
 
 describe("GraphQL schema", () => {
+	it("routes gang recruitment queries to their authenticated resolvers", async () => {
+		const schema = createSchema({ typeDefs, resolvers });
+
+		for (const name of [
+			"gangRecruitmentBoard",
+			"myActiveGangJoinRequest",
+			"myGangJoinRequestsHistory",
+			"gangJoinRequests",
+		]) {
+			const resolve = schema.getQueryType()?.getFields()[name].resolve;
+			expect(resolve).toBeDefined();
+			await expect(resolve!(null, {}, { user: null }, undefined!))
+				.rejects.toThrow("Autenticação necessária para realizar esta ação.");
+		}
+	});
+
 	it("accepts vault balances above the GraphQL Int limit", async () => {
 		let received: { vault: string; amount: number } | undefined;
 		const result = await graphql({

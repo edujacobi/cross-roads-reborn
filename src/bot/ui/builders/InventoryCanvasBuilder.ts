@@ -54,7 +54,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 		SUBHEADER_END_OPEN: 317, // 186 + 83 + 48
 		GRID_START_Y_CLOSED: 304,
 		GRID_START_Y_OPEN: 390,
-		BOTTOM_PADDING: 8
+		BOTTOM_PADDING: 8,
 	} as const;
 
 	constructor(params: InventoryCanvasBuilderOptions) {
@@ -68,7 +68,10 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 		this.IsOnline = params.IsOnline;
 	}
 
-	public static getFooterType(params: { User: { Investment: { Id: InvestmentId | null } }, Gang: Gang | null }): FooterType {
+	public static getFooterType(params: {
+		User: { Investment: { Id: InvestmentId | null } },
+		Gang: Gang | null
+	}): FooterType {
 		const hasInvestment = params.User.Investment.Id != null;
 		const hasGang = params.Gang != null;
 
@@ -95,9 +98,15 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 		let footerHeight = 0;
 
 		if (params.FullSize) {
-			if (footerType === FooterType.Both) footerHeight = 132;
-			else if (footerType === FooterType.InvestmentOnly) footerHeight = 32;
-			else if (footerType === FooterType.GangOnly) footerHeight = 64;
+			if (footerType === FooterType.Both) {
+				footerHeight = 132;
+			}
+			else if (footerType === FooterType.InvestmentOnly) {
+				footerHeight = 32;
+			}
+			else if (footerType === FooterType.GangOnly) {
+				footerHeight = 64;
+			}
 		}
 		else if (footerType !== FooterType.None) {
 			footerHeight = 32;
@@ -157,7 +166,10 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 	 * Header: Name, Badges, Money, Avatar, Online Indicator
 	 */
 	async AddHeader() {
-		const avatarBuilder = new UserImageCanvasBuilder(this.User, this.DiscordUser.displayAvatarURL({ extension: "png", size: 128 }));
+		const avatarBuilder = new UserImageCanvasBuilder(this.User, this.DiscordUser.displayAvatarURL({
+			extension: "png",
+			size: 128,
+		}));
 		avatarBuilder.SetDecoration(this.User.AvatarDecoration.Id);
 		const avatarImage = await avatarBuilder.GetCanvas();
 
@@ -267,7 +279,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 
 		// Situation
 		await this.tryDrawImage(AssetPaths.getSituationImage(this.User.Situation.Id), imgSit =>
-			this.Ctx.drawImage(imgSit, this.Padding, subHeaderY, 48, 48)
+			this.Ctx.drawImage(imgSit, this.Padding, subHeaderY, 48, 48),
 		);
 
 		this.Ctx.fillStyle = "#E3E3E6";
@@ -303,12 +315,12 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 		this.Ctx.fillStyle = "#F4E7D2";
 		this.Ctx.fillText(defText, this.Width - this.Padding, statsY + 24);
 		await this.tryDrawImage("ui/assets/images/attributes/defense.png", imgDef =>
-			this.Ctx.drawImage(imgDef, this.Width - this.Padding - defWidth - 36, statsY + 7, 36, 36)
+			this.Ctx.drawImage(imgDef, this.Width - this.Padding - defWidth - 36, statsY + 7, 36, 36),
 		);
 
 		this.Ctx.fillText(atkText, this.Width - this.Padding - defWidth - 60, statsY + 24);
 		await this.tryDrawImage("ui/assets/images/attributes/attack.png", imgAtk =>
-			this.Ctx.drawImage(imgAtk, this.Width - this.Padding - defWidth - 60 - atkWidth - 36, statsY + 7, 36, 36)
+			this.Ctx.drawImage(imgAtk, this.Width - this.Padding - defWidth - 60 - atkWidth - 36, statsY + 7, 36, 36),
 		);
 
 		this.Ctx.textAlign = "left";
@@ -431,7 +443,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 
 			if (!success && item.SelectedSkin !== 0) {
 				await this.tryDrawImage(AssetPaths.getItemImage(item.Id, 0), imgDefault =>
-					this.Ctx.drawImage(imgDefault, x + OFFSET, y + OFFSET, ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE)
+					this.Ctx.drawImage(imgDefault, x + OFFSET, y + OFFSET, ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE),
 				);
 			}
 
@@ -467,7 +479,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 			}
 			else if (iconPath) {
 				await this.tryDrawImage(iconPath, imgSub =>
-					this.Ctx.drawImage(imgSub, x + 78, y + 78, 36, 36)
+					this.Ctx.drawImage(imgSub, x + 78, y + 78, 36, 36),
 				);
 			}
 		}
@@ -497,7 +509,7 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 			await this.DrawInvestmentBar(this.Padding, footerY);
 			if (this.FullSize) {
 				footerY += 36 + 36 + 32;
-			};
+			}
 		}
 
 		if (this.FullSize && footerType === FooterType.GangOnly) {
@@ -554,12 +566,12 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 
 const Strings = {
 	[Language.English]: {
-		inventoryOf: "Inventory of"
+		inventoryOf: "Inventory of",
 	},
 	[Language.Portuguese]: {
-		inventoryOf: "Inventário de"
+		inventoryOf: "Inventário de",
 	},
 	[Language.Spanish]: {
-		inventoryOf: "Inventario de"
+		inventoryOf: "Inventario de",
 	},
 } as const satisfies Localization;
