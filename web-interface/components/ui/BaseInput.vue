@@ -33,23 +33,33 @@ defineEmits<(e: "update:modelValue", value: string | number) => void>();
 			{{ label }}
 		</label>
 
-		<input
-			:id="id"
-			:type="type || 'text'"
-			:value="modelValue"
-			:placeholder="placeholder"
-			:inputmode="inputMode"
-			:disabled="disabled"
-			:required="required"
-			:step="step"
-			:aria-label="ariaLabel"
-			:minlength="minlength"
-			:maxlength="maxlength"
-			:min="min"
-			:max="max"
-			class="base-input"
-			@input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
-		>
+		<div class="input-field">
+			<span
+				v-if="$slots.leading"
+				class="input-leading"
+				aria-hidden="true"
+			>
+				<slot name="leading" />
+			</span>
+			<input
+				:id="id"
+				:type="type || 'text'"
+				:value="modelValue"
+				:placeholder="placeholder"
+				:inputmode="inputMode"
+				:disabled="disabled"
+				:required="required"
+				:step="step"
+				:aria-label="ariaLabel"
+				:minlength="minlength"
+				:maxlength="maxlength"
+				:min="min"
+				:max="max"
+				class="base-input"
+				:class="{ 'base-input--leading': $slots.leading }"
+				@input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
+			>
+		</div>
 	</div>
 </template>
 
@@ -94,6 +104,24 @@ defineEmits<(e: "update:modelValue", value: string | number) => void>();
       opacity: 0.5;
       cursor: not-allowed;
     }
+
+    &--leading {
+      padding-left: 2.375rem;
+    }
+  }
+
+  .input-field {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .input-leading {
+    position: absolute;
+    left: 0.75rem;
+    display: flex;
+    color: $text-muted;
+    pointer-events: none;
   }
 }
 </style>

@@ -33,50 +33,62 @@ function getSortIcon(column: SortColumn) {
 	if (props.sortColumn !== column.key) return "unsorted";
 	return props.sortDirection;
 }
+
+function getAriaSort(column: SortColumn) {
+	if (!column.sortable) return undefined;
+	if (props.sortColumn !== column.key || !props.sortDirection) return "none";
+	return props.sortDirection === "asc" ? "ascending" : "descending";
+}
 </script>
 
 <template>
 	<div class="base-table">
-		<slot v-if="!columns" />
-		<template v-else>
-			<slot name="header">
-				<div class="base-table__header">
-					<button
+		<table v-if="columns">
+			<thead>
+				<tr>
+					<th
 						v-for="column in columns"
 						:key="column.key"
-						type="button"
-						class="base-table__sort-header"
-						:class="{ 'base-table__sort-header--active': sortColumn === column.key && column.sortable }"
-						:disabled="!column.sortable"
-						@click="onHeaderClick(column)"
+						scope="col"
+						:class="column.class"
+						:aria-sort="getAriaSort(column)"
 					>
-						<span class="base-table__sort-label">{{ column.label }}</span>
-						<span
+						<button
 							v-if="column.sortable"
-							class="base-table__sort-icons"
-							aria-hidden="true"
+							type="button"
+							class="base-table__sort-header"
+							:class="{ 'base-table__sort-header--active': sortColumn === column.key }"
+							@click="onHeaderClick(column)"
 						>
-							<ArrowUpDown
-								v-if="getSortIcon(column) === 'unsorted'"
-								:size="14"
-								class="base-table__sort-icon base-table__sort-icon--unsorted"
-							/>
-							<ArrowUp
-								v-if="getSortIcon(column) === 'asc'"
-								:size="14"
-								class="base-table__sort-icon base-table__sort-icon--asc"
-							/>
-							<ArrowDown
-								v-if="getSortIcon(column) === 'desc'"
-								:size="14"
-								class="base-table__sort-icon base-table__sort-icon--desc"
-							/>
-						</span>
-					</button>
-				</div>
-			</slot>
+							<span class="base-table__sort-label">{{ column.label }}</span>
+							<span
+								class="base-table__sort-icons"
+								aria-hidden="true"
+							>
+								<ArrowUpDown
+									v-if="getSortIcon(column) === 'unsorted'"
+									:size="14"
+									class="base-table__sort-icon base-table__sort-icon--unsorted"
+								/>
+								<ArrowUp
+									v-if="getSortIcon(column) === 'asc'"
+									:size="14"
+									class="base-table__sort-icon base-table__sort-icon--asc"
+								/>
+								<ArrowDown
+									v-if="getSortIcon(column) === 'desc'"
+									:size="14"
+									class="base-table__sort-icon base-table__sort-icon--desc"
+								/>
+							</span>
+						</button>
+						<template v-else>{{ column.label }}</template>
+					</th>
+				</tr>
+			</thead>
 			<slot />
-		</template>
+		</table>
+		<slot v-else />
 	</div>
 </template>
 
@@ -113,16 +125,8 @@ function getSortIcon(column: SortColumn) {
 		}
 	}
 
-	&__header {
-		display: grid;
-		grid-template-columns: subgrid;
-		padding: 0.75rem $spacing-md;
-		border-bottom: 1px solid $border-subtle;
-		background-color: $bg-card;
-	}
-
 	&__sort-header {
-		display: flex;
+		display: inline-flex;
 		align-items: center;
 		gap: 6px;
 		padding: 0;
@@ -143,11 +147,6 @@ function getSortIcon(column: SortColumn) {
 
 		&:focus-visible {
 			@include focus-outline;
-		}
-
-		&:disabled {
-			cursor: default;
-			color: $text-muted;
 		}
 
 		&--active {

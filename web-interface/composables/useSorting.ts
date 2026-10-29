@@ -7,6 +7,7 @@ export interface SortColumn {
 	key: string;
 	label: string;
 	sortable?: boolean;
+	class?: string;
 }
 
 export function useSorting(initialColumn?: string, initialDirection: SortDirection = null) {

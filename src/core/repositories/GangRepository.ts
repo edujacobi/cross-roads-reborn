@@ -145,10 +145,10 @@ export class GangRepository {
 				OR gang."recruitmentType" = :recruitmentType)
 				AND COALESCE(member_count."membersCount", 0)
 					< (9 + gang."level" + CASE WHEN gang."baseId" = 0 THEN 0 ELSE 1 END)
-				AND (:search IS NULL OR gang."name" LIKE :search OR gang."acronym" LIKE :search)`;
+				AND (:search IS NULL OR gang."name" LIKE :search ESCAPE '\\' OR gang."acronym" LIKE :search ESCAPE '\\')`;
 		const replacements = {
 			recruitmentType: recruitmentType ?? null,
-			search: searchTerm ? `%${searchTerm}%` : null,
+			search: searchTerm ? `%${searchTerm.replace(/[\\%_]/g, "\\$&")}%` : null,
 			limit,
 			offset,
 		};

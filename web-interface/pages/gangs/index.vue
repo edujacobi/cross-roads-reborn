@@ -3,7 +3,7 @@
 	lang="ts"
 >
 import { useMutation, useQuery } from "@vue/apollo-composable";
-import { ArrowDown, ArrowUp, ArrowUpDown, Check, History, Search, Send } from "lucide-vue-next";
+import { Check, History, Search, Send } from "lucide-vue-next";
 import { computed, ref, watch } from "vue";
 import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
@@ -13,9 +13,10 @@ import BaseModal from "~/components/ui/BaseModal.vue";
 import BaseSelector, { type SelectorOption } from "~/components/ui/BaseSelector.vue";
 import BaseTable from "~/components/ui/BaseTable.vue";
 import BaseTableFooter from "~/components/ui/BaseTableFooter.vue";
+import BaseTableSkeleton from "~/components/ui/BaseTableSkeleton.vue";
 import PageTitle from "~/components/ui/PageTitle.vue";
 import { usePagination } from "~/composables/usePagination";
-import { useSorting } from "~/composables/useSorting";
+import { type SortColumn, useSorting } from "~/composables/useSorting";
 import { imagePaths } from "~/constants/imagePaths";
 import {
 	ApplyToGangDocument,
@@ -47,6 +48,13 @@ const userGang = computed(() => auth.user?.value?.gangId ?? 0);
 const BOARD_PAGE_SIZE = 25;
 const { page, pageSize: boardPageSize, offset, resetPage } = usePagination(1, BOARD_PAGE_SIZE);
 const { sortColumn, sortDirection, toggleSort } = useSorting();
+const boardColumns: SortColumn[] = [
+	{ key: "name", label: "Gangue", sortable: true, class: "col-gang" },
+	{ key: "base", label: "Base", sortable: true },
+	{ key: "membersCount", label: "Membros", sortable: true },
+	{ key: "recruitmentType", label: "Adesão", sortable: true },
+	{ key: "action", label: "Ação", class: "col-action" },
+];
 const searchQuery = ref("");
 const selectedRecruitmentFilter = ref("ALL");
 
@@ -67,14 +75,18 @@ const {
 	result: boardData,
 	loading: loadingBoard,
 	refetch: refetchBoard,
-} = useQuery(GangRecruitmentBoardDocument, () => ({
-	search: searchQuery.value.trim() || undefined,
-	type: filterTypeArg.value,
-	sortBy: sortColumn.value || undefined,
-	sortOrder: sortDirection.value?.toUpperCase() || undefined,
-	limit: boardPageSize.value,
-	offset: offset.value,
-}));
+} = useQuery(
+	GangRecruitmentBoardDocument,
+	() => ({
+		search: searchQuery.value.trim() || undefined,
+		type: filterTypeArg.value,
+		sortBy: sortColumn.value || undefined,
+		sortOrder: sortDirection.value?.toUpperCase() || undefined,
+		limit: boardPageSize.value,
+		offset: offset.value,
+	}),
+	{ debounce: 300 },
+);
 
 const recruitingBoard = computed(() => boardData.value?.gangRecruitmentBoard);
 const recruitingGangs = computed<GangRecruitmentBoardEntry[]>(() => recruitingBoard.value?.entries ?? []);
@@ -366,260 +378,147 @@ const bases = [
 					<div class="gangs-board__search">
 						<BaseInput
 							id="search-gang-board"
-							placeholder="Buscar por nome da gangue..."
+							type="search"
+							aria-label="Buscar gangues por nome ou acrônimo"
+							placeholder="Buscar por nome ou acrônimo..."
 							:model-value="searchQuery"
 							@update:model-value="searchQuery = String($event)"
 						>
 							<template #leading>
-								<Search
-									:size="16"
-									class="gangs-board__search-icon"
-								/>
+								<Search :size="16" />
 							</template>
 						</BaseInput>
 					</div>
 				</div>
 			</template>
 			<div class="gangs-board">
-				<BaseTable>
-					<table class="gangs-board__table">
-						<thead>
-							<tr>
-								<th
-									scope="col"
-									class="col-gang"
-									:aria-sort="sortColumn === 'name' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'"
-								>
-									<button
-										class="gangs-board__sort-header"
-										type="button"
-										@click="handleSort('name')"
-									>
-										GANGUE
-										<ArrowUpDown
-											v-if="sortColumn !== 'name'"
-											:size="14"
-											aria-hidden="true"
-										/>
-										<ArrowUp
-											v-else-if="sortDirection === 'asc'"
-											:size="14"
-											aria-hidden="true"
-										/>
-										<ArrowDown
-											v-else
-											:size="14"
-											aria-hidden="true"
-										/>
-									</button>
-								</th>
-								<th
-									scope="col"
-									:aria-sort="sortColumn === 'base' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'"
-								>
-									<button
-										class="gangs-board__sort-header"
-										type="button"
-										@click="handleSort('base')"
-									>
-										BASE
-										<ArrowUpDown
-											v-if="sortColumn !== 'base'"
-											:size="14"
-											aria-hidden="true"
-										/>
-										<ArrowUp
-											v-else-if="sortDirection === 'asc'"
-											:size="14"
-											aria-hidden="true"
-										/>
-										<ArrowDown
-											v-else
-											:size="14"
-											aria-hidden="true"
-										/>
-									</button>
-								</th>
-								<th
-									scope="col"
-									:aria-sort="sortColumn === 'membersCount' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'"
-								>
-									<button
-										class="gangs-board__sort-header"
-										type="button"
-										@click="handleSort('membersCount')"
-									>
-										MEMBROS
-										<ArrowUpDown
-											v-if="sortColumn !== 'membersCount'"
-											:size="14"
-											aria-hidden="true"
-										/>
-										<ArrowUp
-											v-else-if="sortDirection === 'asc'"
-											:size="14"
-											aria-hidden="true"
-										/>
-										<ArrowDown
-											v-else
-											:size="14"
-											aria-hidden="true"
-										/>
-									</button>
-								</th>
-								<th
-									scope="col"
-									:aria-sort="sortColumn === 'recruitmentType' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'"
-								>
-									<button
-										class="gangs-board__sort-header"
-										type="button"
-										@click="handleSort('recruitmentType')"
-									>
-										ADESÃO
-										<ArrowUpDown
-											v-if="sortColumn !== 'recruitmentType'"
-											:size="14"
-											aria-hidden="true"
-										/>
-										<ArrowUp
-											v-else-if="sortDirection === 'asc'"
-											:size="14"
-											aria-hidden="true"
-										/>
-										<ArrowDown
-											v-else
-											:size="14"
-											aria-hidden="true"
-										/>
-									</button>
-								</th>
-								<th
-									scope="col"
-									class="col-action"
-								>
-									AÇÃO
-								</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr v-if="loadingBoard">
-								<td
-									colspan="5"
-									class="gangs-board__empty"
-								>
-									Carregando gangues disponíveis...
-								</td>
-							</tr>
-							<tr v-else-if="recruitingGangs.length === 0">
-								<td
-									colspan="5"
-									class="gangs-board__empty"
-								>
-									Nenhuma gangue com recrutamento ativo encontrada.
-								</td>
-							</tr>
-							<tr
-								v-for="g in recruitingGangs"
-								:key="g.id"
-								class="gangs-board__row"
+				<BaseTableSkeleton
+					v-if="loadingBoard"
+					:rows="6"
+					:columns="5"
+					label="Carregando gangues disponíveis"
+				/>
+				<BaseTable
+					v-else
+					class="gangs-board__table"
+					:columns="boardColumns"
+					:sort-column="sortColumn"
+					:sort-direction="sortDirection"
+					@sort="handleSort"
+				>
+					<tbody>
+						<tr v-if="recruitingGangs.length === 0">
+							<td
+								colspan="5"
+								class="gangs-board__empty"
 							>
-								<td class="col-gang">
-									<div class="gang-info-cell">
-										<div
-											class="gang-info-cell__avatar"
-											:style="{ borderColor: g.color }"
-										>
-											<NuxtImg
-												v-if="g.image"
-												:src="g.image"
-												alt=""
-												width="44"
-												height="44"
-												class="gang-info-cell__img"
-											/>
-											<div
-												v-else
-												class="gang-info-cell__fallback"
-												:style="{ color: g.color }"
-											>
-												{{ g.acronym }}
-											</div>
-										</div>
-										<div class="gang-info-cell__details">
-											<div class="gang-info-cell__header">
-												<span class="gang-info-cell__name">{{ g.name }}</span>
-												<span class="gang-info-cell__level">Nv. {{ g.level }}</span>
-											</div>
-											<p class="gang-info-cell__desc">{{ g.description || "Sem descrição." }}</p>
-										</div>
-									</div>
-								</td>
-								<td>
-									<div class="gang-base-cell">
+								Nenhuma gangue com recrutamento ativo encontrada.
+							</td>
+						</tr>
+						<tr
+							v-for="g in recruitingGangs"
+							:key="g.id"
+							class="gangs-board__row"
+						>
+							<td class="col-gang">
+								<div class="gang-info-cell">
+									<div
+										class="gang-info-cell__avatar"
+										:style="{ borderColor: g.color }"
+									>
 										<NuxtImg
-											v-if="g.baseId"
-											:src="getGangBaseImageUrl(g.baseId)"
+											v-if="g.image"
+											:src="g.image"
 											alt=""
-											width="32"
-											height="32"
-											class="gang-base-cell__img"
+											width="48"
+											height="48"
+											class="gang-info-cell__img"
 										/>
-										<span>{{ g.baseName || "Nenhuma" }}</span>
+										<div
+											v-else
+											class="gang-info-cell__fallback"
+											:style="{ color: g.color }"
+										>
+											{{ g.acronym }}
+										</div>
 									</div>
-								</td>
-								<td>
-									<span class="gang-members-badge"> {{ g.membersCount }}/{{ g.maxMembers }} </span>
-								</td>
-								<td>
-									<BaseBadge :variant="g.recruitmentType === 'OPEN' ? 'success' : 'helper'">
-										{{ g.recruitmentType === "OPEN" ? "Aberto" : "Aprovação" }}
-									</BaseBadge>
-								</td>
-								<td class="col-action">
-									<template v-if="userGang">
-										<span class="gang-action-muted">Já em gangue</span>
-									</template>
-									<template v-else-if="activeRequest && activeRequest.gangId === g.id">
-										<BaseButton
-											variant="danger"
-											size="sm"
-											@click="openCancelModal(activeRequest.id)"
-										>
-											Retirar
-										</BaseButton>
-									</template>
-									<template v-else-if="activeRequest">
-										<span
-											class="gang-action-muted"
-											title="Você já tem uma solicitação pendente"
-										>
-											Bloqueado
-										</span>
-									</template>
-									<template v-else-if="g.recruitmentType === 'OPEN'">
-										<BaseButton
-											variant="primary"
-											size="sm"
-											class="btn-enter-green"
-											@click="openJoinConfirmModal(g)"
-										>
-											Entrar
-										</BaseButton>
-									</template>
-									<template v-else>
-										<BaseButton
-											variant="secondary"
-											size="sm"
-											@click="openApprovalModal(g)"
-										>
-											Solicitar
-										</BaseButton>
-									</template>
-								</td>
-							</tr>
-						</tbody>
-					</table>
+									<div class="gang-info-cell__details">
+										<div class="gang-info-cell__header">
+											<span class="gang-info-cell__name">
+												<NuxtLink :to="`/gangs/${g.id}`">
+													{{ g.name }}
+												</NuxtLink>
+											</span>
+											<span class="gang-info-cell__level">Nv. {{ g.level }}</span>
+										</div>
+										<p class="gang-info-cell__desc">{{ g.description || "Sem descrição." }}</p>
+									</div>
+								</div>
+							</td>
+							<td>
+								<div class="gang-base-cell">
+									<NuxtImg
+										v-if="g.baseId"
+										:src="getGangBaseImageUrl(g.baseId)"
+										alt=""
+										width="48"
+										height="48"
+										class="gang-base-cell__img"
+									/>
+									<span>{{ g.baseName || "Nenhuma" }}</span>
+								</div>
+							</td>
+							<td>
+								<span class="gang-members-badge"> {{ g.membersCount }}/{{ g.maxMembers }} </span>
+							</td>
+							<td>
+								<BaseBadge :variant="g.recruitmentType === 'OPEN' ? 'success' : 'helper'">
+									{{ g.recruitmentType === "OPEN" ? "Aberto" : "Aprovação" }}
+								</BaseBadge>
+							</td>
+							<td class="col-action">
+								<template v-if="userGang">
+									<span class="gang-action-muted">Já em gangue</span>
+								</template>
+								<template v-else-if="activeRequest && activeRequest.gangId === g.id">
+									<BaseButton
+										variant="danger"
+										size="sm"
+										@click="openCancelModal(activeRequest.id)"
+									>
+										Retirar
+									</BaseButton>
+								</template>
+								<template v-else-if="activeRequest">
+									<span
+										class="gang-action-muted"
+										title="Você já tem uma solicitação pendente"
+									>
+										Bloqueado
+									</span>
+								</template>
+								<template v-else-if="g.recruitmentType === 'OPEN'">
+									<BaseButton
+										variant="primary"
+										size="sm"
+										class="btn-enter-green"
+										@click="openJoinConfirmModal(g)"
+									>
+										Entrar
+									</BaseButton>
+								</template>
+								<template v-else>
+									<BaseButton
+										variant="secondary"
+										size="sm"
+										@click="openApprovalModal(g)"
+									>
+										Solicitar
+									</BaseButton>
+								</template>
+							</td>
+						</tr>
+					</tbody>
 				</BaseTable>
 			</div>
 
@@ -650,10 +549,6 @@ const bases = [
 			<BaseCard title="Bases de gangue">
 				<p class="gangs-page__list-description">
 					Bases custam Cr$ 1.000.000 do caixa da gangue. A cada nível, todos os membros ganham bônus especiais.
-				</p>
-				<p class="gangs-page__list-description">
-					Bases também permitem realizar importações! Importe armas e equipamentos do exterior. Com sorte, o
-					carregamento chegará e todos os membros receberão itens!
 				</p>
 				<div class="gangs-page__bases-container">
 					<section
@@ -724,7 +619,6 @@ const bases = [
 			</BaseCard>
 		</div>
 
-		<!-- Modal: Solicitar Adesão (Approval) -->
 		<BaseModal
 			:open="isApprovalModalOpen"
 			:title="`Solicitar adesão - ${targetGangForApproval?.name}`"
@@ -1031,7 +925,7 @@ const bases = [
 
 		&-image {
 			width: 100%;
-			height: 50%;
+			aspect-ratio: 8 / 4;
 			object-fit: cover;
 			border-radius: $radius-sm;
 		}
@@ -1047,7 +941,8 @@ const bases = [
 
 		&-modifier {
 			display: inline-flex;
-			align-items:center;
+			align-items: center;
+			margin-top: auto;
 			font-size: $font-size-12;
 			color: $text-primary;
 			gap: $spacing-sm;
@@ -1193,12 +1088,7 @@ const bases = [
 	}
 
 	&__search {
-		min-width: 240px;
-		position: relative;
-
-		&-icon {
-			color: $text-muted;
-		}
+		min-width: 320px;
 	}
 
 	&__table {
@@ -1217,23 +1107,6 @@ const bases = [
 		}
 	}
 
-	&__sort-header {
-		display: inline-flex;
-		align-items: center;
-		gap: $spacing-xs;
-		padding: 0;
-		border: 0;
-		background: none;
-		color: inherit;
-		font: inherit;
-		text-transform: inherit;
-		cursor: pointer;
-
-		&:focus-visible {
-			@include focus-outline;
-		}
-	}
-
 	&__empty {
 		text-align: center;
 		padding: 2.5rem 1rem !important;
@@ -1248,10 +1121,10 @@ const bases = [
 	gap: 0.875rem;
 
 	&__avatar {
-		width: 44px;
-		height: 44px;
-		border-radius: $radius-sm;
-		border: 2px solid $border-subtle;
+		width: 64px;
+		height: 64px;
+		border-radius: $radius-xs;
+		border: 1px solid $border-subtle;
 		display: flex;
 		align-items: center;
 		justify-content: center;
