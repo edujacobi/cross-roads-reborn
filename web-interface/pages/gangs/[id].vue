@@ -5,6 +5,9 @@
 import { useMutation, useQuery } from "@vue/apollo-composable";
 import {
 	ArrowLeft,
+	UserCheck,
+	UserX,
+	Inbox,
 	Crown,
 	LogOut,
 	MessageSquareText,
@@ -32,6 +35,10 @@ import { useMultiplayerSessions } from "~/composables/useMultiplayerSessions";
 import { imagePaths } from "~/constants/imagePaths";
 import {
 	CancelGangImportDocument,
+	GangJoinRequestsDocument,
+	GangRecruitmentType,
+	ResolveGangJoinRequestDocument,
+	SetGangRecruitmentTypeDocument,
 	CommunicateGangDocument,
 	CreateGangRoleDocument,
 	DepositGangDocument,
@@ -137,6 +144,59 @@ const sortedMembers = computed(() =>
 		}
 	}),
 );
+const recruitmentOptions = [
+	{ label: "Desativado", value: "DISABLED" },
+	{ label: "Por Aprovação", value: "APPROVAL" },
+	{ label: "Aberto", value: "OPEN" },
+];
+
+const selectedRecruitmentType = ref<string>("DISABLED");
+watch(() => gang.value?.recruitmentType, (type) => {
+	if (type) selectedRecruitmentType.value = type;
+}, { immediate: true });
+
+const { mutate: setRecruitmentTypeMutation, loading: updatingRecruitmentType } = useMutation(SetGangRecruitmentTypeDocument);
+
+async function onRecruitmentTypeChange(val: string) {
+	if (!gang.value) return;
+	selectedRecruitmentType.value = val;
+	const res = await setRecruitmentTypeMutation({
+		gangId: String(gang.value.id),
+		recruitmentType: val as any,
+	});
+	if (res?.data?.setGangRecruitmentType?.success) {
+		showToast({ text: "Tipo de recrutamento atualizado!", variant: "success" });
+		void refetch();
+	} else {
+		showToast({ text: res?.data?.setGangRecruitmentType?.message ?? "Falha ao atualizar.", variant: "error" });
+	}
+}
+
+const { result: joinRequestsData, loading: loadingRequests, refetch: refetchJoinRequests } = useQuery(
+	GangJoinRequestsDocument,
+	() => ({ gangId: String(gangId.value) }),
+	() => ({ enabled: canInviteMembers.value }),
+);
+
+const joinRequests = computed(() => joinRequestsData.value?.gangJoinRequests ?? []);
+
+const { mutate: resolveRequestMutation, loading: resolvingRequest } = useMutation(ResolveGangJoinRequestDocument);
+
+async function resolveRequest(requestId: string, accept: boolean) {
+	if (!gang.value) return;
+	const res = await resolveRequestMutation({
+		gangId: String(gang.value.id),
+		requestId,
+		accept,
+	});
+	if (res?.data?.resolveGangJoinRequest?.success) {
+		showToast({ text: res.data.resolveGangJoinRequest.message, variant: "success" });
+		void refetchJoinRequests();
+		void refetch();
+	} else {
+		showToast({ text: res?.data?.resolveGangJoinRequest?.message ?? "Erro ao responder solicitação.", variant: "error" });
+	}
+}
 const canInviteMembers = computed(
 	() =>
 		!!currentMember.value && (currentUserId.value === gang.value?.leaderId || currentRole.value?.canInvite === true),

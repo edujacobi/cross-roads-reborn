@@ -1,4 +1,5 @@
 import { type GangColorId } from "#core/types/GangColors";
+import { GangRecruitmentType } from "#core/types/GangRecruitment";
 import { type CreationOptional, DataTypes, type InferAttributes, type InferCreationAttributes, Model } from "sequelize";
 import { sequelize } from "./Database";
 
@@ -17,6 +18,7 @@ export class Gangs extends Model<
 	declare experience: number;
 	declare level: number;
 	declare leaderId: string;
+	declare recruitmentType: CreationOptional<GangRecruitmentType>;
 	declare lastInvestmentRobbery: CreationOptional<Date | null>;
 	declare shipmentArrivesAt: CreationOptional<Date | null>;
 	declare lastShipmentSuccess: CreationOptional<Date | null>;
@@ -74,6 +76,11 @@ Gangs.init(
 			type: DataTypes.INTEGER,
 			allowNull: false,
 			defaultValue: 1,
+		},
+		recruitmentType: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: GangRecruitmentType.Disabled,
 		},
 		leaderId: {
 			type: new DataTypes.STRING(18),

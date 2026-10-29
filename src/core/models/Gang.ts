@@ -5,6 +5,9 @@ import { GangMemberRepository } from "#core/repositories/GangMemberRepository";
 import { GangRoleRepository } from "#core/repositories/GangRoleRepository";
 import { UserRepository } from "#core/repositories/UserRepository";
 import type { Gangs } from "#core/database/Gangs";
+import { GangRecruitmentType, GangJoinRequestStatus } from "#core/types/GangRecruitment";
+import { GangJoinRequestsRepository } from "#core/repositories/GangJoinRequestsRepository";
+import { WebPush } from "#core/models/WebPush";
 import { GangBaseId } from "#core/types/GangBases";
 import { GangColorId } from "#core/types/GangColors";
 import { GangImportTiers, type ImportReward } from "#core/types/GangImportPools";
@@ -79,6 +82,7 @@ export class Gang {
 	Experience = 0;
 	Level = 1;
 	LeaderId = "";
+	RecruitmentType: GangRecruitmentType = GangRecruitmentType.Disabled;
 	LastInvestmentRobbery: Date | null = null;
 	ImportArrivesAt: Date | null = null;
 	LastImportSuccess: Date | null = null;
@@ -337,6 +341,7 @@ export class Gang {
 			result.Experience = gang.experience;
 			result.Level = gang.level;
 			result.LeaderId = gang.leaderId;
+			result.RecruitmentType = gang.recruitmentType ?? GangRecruitmentType.Disabled;
 			result.LastInvestmentRobbery = gang.lastInvestmentRobbery;
 			result.ImportArrivesAt = gang.shipmentArrivesAt;
 			result.LastImportSuccess = gang.lastShipmentSuccess;
@@ -371,6 +376,7 @@ export class Gang {
 		result.Experience = gang.experience;
 		result.Level = gang.level;
 		result.LeaderId = gang.leaderId;
+			result.RecruitmentType = gang.recruitmentType ?? GangRecruitmentType.Disabled;
 		result.LastInvestmentRobbery = gang.lastInvestmentRobbery;
 		result.ImportArrivesAt = gang.shipmentArrivesAt;
 		result.LastImportSuccess = gang.lastShipmentSuccess;
@@ -1658,6 +1664,146 @@ export class Gang {
 			Log.Warning(`Failed to transfer leadership of gang ${this.Name} (Id: ${this.Id}) to ${targetUser.Nickname} (Id: ${targetUser.Id}): ${err}`);
 			return false;
 		}
+	}
+
+	/**
+	 * Sets the recruitment type of the gang.
+	 * Only the gang leader can perform this action.
+	 */
+	async SetRecruitmentType(userId: string, recruitmentType: GangRecruitmentType): Promise<{ success: boolean; reason?: string }> {
+		if (this.LeaderId !== userId) {
+			return { success: false, reason: "notLeader" };
+		}
+		this.RecruitmentType = recruitmentType;
+		await GangRepository.Update(this.Id, { recruitmentType });
+		return { success: true };
+	}
+
+	/**
+	 * Allows a user to join an open recruitment gang directly.
+	 */
+	async JoinOpenGang(user: User): Promise<{ success: boolean; reason?: string }> {
+		if (this.RecruitmentType !== GangRecruitmentType.Open) {
+			return { success: false, reason: "notOpenRecruitment" };
+		}
+		const existingMembership = await GangMemberRepository.FindByUserId(user.Id);
+		if (existingMembership) {
+			return { success: false, reason: "alreadyInGang" };
+		}
+		if (!this.CanAddMember()) {
+			return { success: false, reason: "gangFull" };
+		}
+		const joined = await this.AcceptInvite(user);
+		if (joined) {
+			await GangJoinRequestsRepository.CancelUserPendingRequests(user.Id);
+			return { success: true };
+		}
+		return { success: false, reason: "failedToJoin" };
+	}
+
+	/**
+	 * Submits a join request to an approval-based recruitment gang.
+	 */
+	async ApplyToGang(user: User, message?: string): Promise<{ success: boolean; reason?: string }> {
+		if (this.RecruitmentType !== GangRecruitmentType.Approval) {
+			return { success: false, reason: "notApprovalRecruitment" };
+		}
+		const existingMembership = await GangMemberRepository.FindByUserId(user.Id);
+		if (existingMembership) {
+			return { success: false, reason: "alreadyInGang" };
+		}
+		if (!this.CanAddMember()) {
+			return { success: false, reason: "gangFull" };
+		}
+		const activeRequest = await GangJoinRequestsRepository.FindActiveByUser(user.Id);
+		if (activeRequest) {
+			return { success: false, reason: "alreadyHasPendingRequest" };
+		}
+
+		await GangJoinRequestsRepository.CreateRequest(this.Id, user.Id, message);
+
+		// Notify Leader and members with canInvite via WebPush
+		const recruiterIds = new Set<string>();
+		recruiterIds.add(this.LeaderId);
+		for (const member of this.Members) {
+			if (member.Role?.Permissions.includes(GangPermission.Invite)) {
+				recruiterIds.add(member.Id);
+			}
+		}
+
+		const pushBody = `${user.Nickname} solicitou entrar para a gangue ${this.Name}!`;
+		for (const targetId of recruiterIds) {
+			WebPush.Send(targetId, pushBody).catch(() => {});
+		}
+
+		return { success: true };
+	}
+
+	/**
+	 * Resolves a pending join request (Accept or Reject).
+	 * Only the Leader or a member with Invite permission can resolve requests.
+	 */
+	async ResolveJoinRequest(manager: User, requestId: number, accept: boolean): Promise<{ success: boolean; reason?: string }> {
+		const request = await GangJoinRequestsRepository.FindById(requestId);
+		if (!request || request.gangId !== this.Id || request.status !== GangJoinRequestStatus.Pending) {
+			return { success: false, reason: "requestNotFound" };
+		}
+
+		const isLeader = this.LeaderId === manager.Id;
+		const canInvite = this.CanInvite(manager.Id);
+		if (!isLeader && !canInvite) {
+			return { success: false, reason: "noPermission" };
+		}
+
+		if (!accept) {
+			await GangJoinRequestsRepository.UpdateRequestStatus(requestId, GangJoinRequestStatus.Rejected);
+			WebPush.Send(request.userId, `Sua solicitação para entrar na gangue ${this.Name} foi recusada.`).catch(() => {});
+			return { success: true };
+		}
+
+		if (!this.CanAddMember()) {
+			return { success: false, reason: "gangFull" };
+		}
+
+		const applicant = await User.GetBasicInfo(request.userId);
+		if (!applicant) {
+			return { success: false, reason: "userNotFound" };
+		}
+
+		const existingMembership = await GangMemberRepository.FindByUserId(applicant.Id);
+		if (existingMembership) {
+			await GangJoinRequestsRepository.UpdateRequestStatus(requestId, GangJoinRequestStatus.Cancelled);
+			return { success: false, reason: "alreadyInGang" };
+		}
+
+		const joined = await this.AcceptInvite(applicant);
+		if (joined) {
+			await GangJoinRequestsRepository.UpdateRequestStatus(requestId, GangJoinRequestStatus.Accepted);
+			await GangJoinRequestsRepository.CancelUserPendingRequests(applicant.Id);
+			WebPush.Send(applicant.Id, `Sua solicitação para entrar na gangue ${this.Name} foi aceita!`).catch(() => {});
+			return { success: true };
+		}
+
+		return { success: false, reason: "failedToJoin" };
+	}
+
+	/**
+	 * Cancels a user's pending join request.
+	 */
+	static async CancelJoinRequest(userId: string, requestId?: number): Promise<{ success: boolean; reason?: string }> {
+		if (requestId) {
+			const req = await GangJoinRequestsRepository.FindById(requestId);
+			if (!req || req.userId !== userId) {
+				return { success: false, reason: "requestNotFound" };
+			}
+			if (req.status !== GangJoinRequestStatus.Pending) {
+				return { success: false, reason: "notPending" };
+			}
+			await GangJoinRequestsRepository.UpdateRequestStatus(requestId, GangJoinRequestStatus.Cancelled);
+			return { success: true };
+		}
+		const count = await GangJoinRequestsRepository.CancelUserPendingRequests(userId);
+		return { success: count > 0 };
 	}
 }
 

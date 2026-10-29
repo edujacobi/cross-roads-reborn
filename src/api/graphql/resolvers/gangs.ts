@@ -1,4 +1,6 @@
 import { GangRoleRepository } from "#core/repositories/GangRoleRepository";
+import { GangJoinRequestsRepository } from "#core/repositories/GangJoinRequestsRepository";
+import { GangRecruitmentType, GangJoinRequestStatus } from "#core/types/GangRecruitment";
 import { GangMemberRepository } from "#core/repositories/GangMemberRepository";
 import { GangRepository } from "#core/repositories/GangRepository";
 import { UserRepository } from "#core/repositories/UserRepository";
@@ -198,12 +200,126 @@ export const gangResolvers: {
 					canEditGang: role.canEditGang ?? false,
 					canImport: role.canImportShipments ?? false,
 				})),
+				recruitmentType: gang.recruitmentType === GangRecruitmentType.Open ? "OPEN" : gang.recruitmentType === GangRecruitmentType.Approval ? "APPROVAL" : "DISABLED",
 				createdAt: gang.createdAt.toISOString(),
 			};
 		},
 	},
 
 	Mutation: {
+		gangRecruitmentBoard: async (
+			_: unknown,
+			args: { search?: string; type?: "DISABLED" | "APPROVAL" | "OPEN" },
+			context: GraphQLContext,
+		) => {
+			assertAuthenticated(context);
+			let filterType: number | undefined;
+			if (args.type === "APPROVAL") filterType = GangRecruitmentType.Approval;
+			else if (args.type === "OPEN") filterType = GangRecruitmentType.Open;
+			else if (args.type === "DISABLED") filterType = GangRecruitmentType.Disabled;
+
+			const recruitingGangs = await GangRepository.FindRecruitingGangs(filterType, args.search);
+
+			const results = [];
+			for (const gangEntity of recruitingGangs) {
+				const gang = await Gang.GetInfo(gangEntity);
+				if (!gang) continue;
+				const membersCount = gang.Members.length;
+				const maxMembers = gang.GetMaxMembers();
+
+				// Exclude gangs that have reached their member cap
+				if (membersCount >= maxMembers) continue;
+
+				const baseConfig = gang.BaseId && gang.BaseId !== GangBaseId.None ? GangBases[gang.BaseId] : null;
+
+				results.push({
+					id: gang.Id.toString(),
+					name: gang.Name,
+					acronym: gang.Acronym,
+					description: gang.Description,
+					level: gang.Level,
+					image: gang.Image,
+					color: GangColor[gang.Color].Color,
+					baseName: baseConfig ? baseConfig.Name[Language.Portuguese] : null,
+					baseImage: baseConfig ? baseConfig.Image : null,
+					membersCount,
+					maxMembers,
+					recruitmentType: gang.RecruitmentType === GangRecruitmentType.Open ? "OPEN" : "APPROVAL",
+				});
+			}
+
+			return results;
+		},
+
+		myActiveGangJoinRequest: async (_: unknown, __: unknown, context: GraphQLContext) => {
+			const authUser = assertAuthenticated(context);
+			const request = await GangJoinRequestsRepository.FindActiveByUser(authUser.userId);
+			if (!request) return null;
+			return {
+				id: request.id.toString(),
+				gangId: request.gangId.toString(),
+				gangName: request.gangName,
+				gangAcronym: request.gangAcronym,
+				userId: request.userId,
+				userName: request.userName,
+				userAvatar: request.userAvatar,
+				userLevel: request.userLevel,
+				message: request.message,
+				status: request.status,
+				createdAt: request.createdAt.toISOString(),
+			};
+		},
+
+		myGangJoinRequestsHistory: async (_: unknown, args: { limit?: number }, context: GraphQLContext) => {
+			const authUser = assertAuthenticated(context);
+			const limit = args.limit ? Math.min(Math.max(args.limit, 1), 50) : 20;
+			const history = await GangJoinRequestsRepository.FindHistoryByUser(authUser.userId, limit);
+			return history.map(h => ({
+				id: h.id.toString(),
+				gangId: h.gangId.toString(),
+				gangName: h.gangName,
+				gangAcronym: h.gangAcronym,
+				userId: h.userId,
+				userName: h.userName,
+				userAvatar: h.userAvatar,
+				userLevel: h.userLevel,
+				message: h.message,
+				status: h.status,
+				createdAt: h.createdAt.toISOString(),
+			}));
+		},
+
+		gangJoinRequests: async (_: unknown, args: { gangId: string }, context: GraphQLContext) => {
+			const authUser = assertAuthenticated(context);
+			const gangId = Number.parseInt(args.gangId, 10);
+			if (Number.isNaN(gangId)) return [];
+
+			const gangEntity = await GangRepository.FindById(gangId);
+			if (!gangEntity) return [];
+			const gang = await Gang.GetInfo(gangEntity);
+			if (!gang) return [];
+
+			const isLeader = gang.LeaderId === authUser.userId;
+			const canInvite = gang.CanInvite(authUser.userId);
+			if (!isLeader && !canInvite) {
+				return [];
+			}
+
+			const requests = await GangJoinRequestsRepository.FindPendingByGang(gangId);
+			return requests.map(r => ({
+				id: r.id.toString(),
+				gangId: r.gangId.toString(),
+				gangName: r.gangName,
+				gangAcronym: r.gangAcronym,
+				userId: r.userId,
+				userName: r.userName,
+				userAvatar: r.userAvatar,
+				userLevel: r.userLevel,
+				message: r.message,
+				status: r.status,
+				createdAt: r.createdAt.toISOString(),
+			}));
+		},
 		createGang: async (
 			_: unknown,
 			args: { name: string; acronym: string; description: string; color: string; imageUrl?: string | null },
@@ -777,6 +893,127 @@ export const gangResolvers: {
 			});
 
 			return { success: true, message: "Convite enviado por mensagem privada." };
+		},
+		setGangRecruitmentType: async (
+			_: unknown,
+			args: { gangId: string; recruitmentType: "DISABLED" | "APPROVAL" | "OPEN" },
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			assertCanWrite(authUser);
+			const gangId = Number.parseInt(args.gangId, 10);
+			if (Number.isNaN(gangId)) return { success: false, message: "ID da gangue inválido." };
+
+			const gangEntity = await GangRepository.FindById(gangId);
+			if (!gangEntity) return { success: false, message: "Gangue não encontrada." };
+			const gang = await Gang.GetInfo(gangEntity);
+			if (!gang) return { success: false, message: "Gangue não encontrada." };
+
+			let mode = GangRecruitmentType.Disabled;
+			if (args.recruitmentType === "APPROVAL") mode = GangRecruitmentType.Approval;
+			else if (args.recruitmentType === "OPEN") mode = GangRecruitmentType.Open;
+
+			const result = await gang.SetRecruitmentType(authUser.userId, mode);
+			if (!result.success) {
+				if (result.reason === "notLeader") return { success: false, message: "Apenas o líder pode alterar as configurações de recrutamento." };
+				return { success: false, message: "Não foi possível atualizar o tipo de recrutamento." };
+			}
+			return { success: true, message: "Tipo de recrutamento atualizado com sucesso." };
+		},
+
+		joinOpenGang: async (_: unknown, args: { gangId: string }, context: GraphQLContext) => {
+			const authUser = assertAuthenticated(context);
+			assertCanWrite(authUser);
+			const gangId = Number.parseInt(args.gangId, 10);
+			if (Number.isNaN(gangId)) return { success: false, message: "ID da gangue inválido." };
+
+			const gangEntity = await GangRepository.FindById(gangId);
+			if (!gangEntity) return { success: false, message: "Gangue não encontrada." };
+			const gang = await Gang.GetInfo(gangEntity);
+			if (!gang) return { success: false, message: "Gangue não encontrada." };
+
+			const user = await new User(authUser.userId).GetInfo();
+			if (!user) return { success: false, message: "Usuário não encontrado." };
+
+			const result = await gang.JoinOpenGang(user);
+			if (!result.success) {
+				if (result.reason === "alreadyInGang") return { success: false, message: "Você já pertence a uma gangue." };
+				if (result.reason === "gangFull") return { success: false, message: "Esta gangue atingiu o limite de membros." };
+				if (result.reason === "notOpenRecruitment") return { success: false, message: "Esta gangue não está com recrutamento aberto." };
+				return { success: false, message: "Não foi possível entrar na gangue. Verifique se você tem o valor necessário." };
+			}
+			return { success: true, message: `Você entrou na gangue ${gang.Name} com sucesso!` };
+		},
+
+		applyToGang: async (_: unknown, args: { gangId: string; message?: string }, context: GraphQLContext) => {
+			const authUser = assertAuthenticated(context);
+			assertCanWrite(authUser);
+			const gangId = Number.parseInt(args.gangId, 10);
+			if (Number.isNaN(gangId)) return { success: false, message: "ID da gangue inválido." };
+
+			const gangEntity = await GangRepository.FindById(gangId);
+			if (!gangEntity) return { success: false, message: "Gangue não encontrada." };
+			const gang = await Gang.GetInfo(gangEntity);
+			if (!gang) return { success: false, message: "Gangue não encontrada." };
+
+			const user = await new User(authUser.userId).GetInfo();
+			if (!user) return { success: false, message: "Usuário não encontrado." };
+
+			const result = await gang.ApplyToGang(user, args.message);
+			if (!result.success) {
+				if (result.reason === "alreadyInGang") return { success: false, message: "Você já pertence a uma gangue." };
+				if (result.reason === "gangFull") return { success: false, message: "Esta gangue atingiu o limite de membros." };
+				if (result.reason === "alreadyHasPendingRequest") return { success: false, message: "Você já possui uma solicitação pendente." };
+				if (result.reason === "notApprovalRecruitment") return { success: false, message: "Esta gangue não está aceitando solicitações de adesão." };
+				return { success: false, message: "Não foi possível enviar a solicitação." };
+			}
+			return { success: true, message: `Solicitação enviada para a gangue ${gang.Name} com sucesso!` };
+		},
+
+		cancelGangJoinRequest: async (_: unknown, args: { requestId?: string }, context: GraphQLContext) => {
+			const authUser = assertAuthenticated(context);
+			assertCanWrite(authUser);
+			const reqId = args.requestId ? Number.parseInt(args.requestId, 10) : undefined;
+			const result = await Gang.CancelJoinRequest(authUser.userId, reqId);
+			if (!result.success) {
+				return { success: false, message: "Nenhuma solicitação pendente encontrada para cancelar." };
+			}
+			return { success: true, message: "Solicitação cancelada com sucesso." };
+		},
+
+		resolveGangJoinRequest: async (
+			_: unknown,
+			args: { gangId: string; requestId: string; accept: boolean },
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			assertCanWrite(authUser);
+			const gangId = Number.parseInt(args.gangId, 10);
+			const requestId = Number.parseInt(args.requestId, 10);
+			if (Number.isNaN(gangId) || Number.isNaN(requestId)) {
+				return { success: false, message: "Dados inválidos." };
+			}
+
+			const gangEntity = await GangRepository.FindById(gangId);
+			if (!gangEntity) return { success: false, message: "Gangue não encontrada." };
+			const gang = await Gang.GetInfo(gangEntity);
+			if (!gang) return { success: false, message: "Gangue não encontrada." };
+
+			const manager = await new User(authUser.userId).GetInfo();
+			if (!manager) return { success: false, message: "Gerente não encontrado." };
+
+			const result = await gang.ResolveJoinRequest(manager, requestId, args.accept);
+			if (!result.success) {
+				if (result.reason === "noPermission") return { success: false, message: "Você não tem permissão para gerenciar solicitações." };
+				if (result.reason === "gangFull") return { success: false, message: "A gangue já atingiu o limite de membros." };
+				if (result.reason === "alreadyInGang") return { success: false, message: "O usuário já entrou em outra gangue." };
+				if (result.reason === "requestNotFound") return { success: false, message: "Solicitação não encontrada ou já respondida." };
+				return { success: false, message: "Não foi possível processar a solicitação." };
+			}
+			return {
+				success: true,
+				message: args.accept ? "Solicitação aceita com sucesso!" : "Solicitação recusada com sucesso.",
+			};
 		},
 	},
 };
