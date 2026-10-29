@@ -338,10 +338,15 @@ export const typeDefs = /* GraphQL */ `
         image: String
         color: String!
         baseName: String
-        baseImage: String
+        baseId: Int!
         membersCount: Int!
         maxMembers: Int!
         recruitmentType: GangRecruitmentType!
+    }
+
+    type GangRecruitmentBoardPage {
+        entries: [GangRecruitmentBoardEntry!]!
+        total: Int!
     }
 
     type GangJoinRequest {
@@ -351,8 +356,6 @@ export const typeDefs = /* GraphQL */ `
         gangAcronym: String!
         userId: ID!
         userName: String!
-        userAvatar: String
-        userLevel: Int!
         message: String
         status: GangJoinRequestStatus!
         createdAt: String!
@@ -908,7 +911,7 @@ export const typeDefs = /* GraphQL */ `
         topUsers(ranking: UserRanking!, limit: Int, offset: Int): UserRankingResult!
         topGangs(limit: Int, offset: Int): GangRankingResult!
         gang(id: ID!): GangDetail
-                gangRecruitmentBoard(search: String, type: GangRecruitmentType): [GangRecruitmentBoardEntry!]!
+        gangRecruitmentBoard(search: String, type: GangRecruitmentType, sortBy: String, sortOrder: String, limit: Int, offset: Int): GangRecruitmentBoardPage!
         myActiveGangJoinRequest: GangJoinRequest
         myGangJoinRequestsHistory(limit: Int): [GangJoinRequest!]!
         gangJoinRequests(gangId: ID!): [GangJoinRequest!]!
@@ -1090,7 +1093,7 @@ export const typeDefs = /* GraphQL */ `
         leaveGang(gangId: ID!): GangMutationResult!
         transferGang(gangId: ID!, targetUserId: ID!): GangMutationResult!
         inviteGangMember(gangId: ID!, targetUserId: ID!): GangMutationResult!
-                setGangRecruitmentType(gangId: ID!, recruitmentType: GangRecruitmentType!): GangMutationResult!
+        setGangRecruitmentType(gangId: ID!, recruitmentType: GangRecruitmentType!): GangMutationResult!
         joinOpenGang(gangId: ID!): GangMutationResult!
         applyToGang(gangId: ID!, message: String): GangMutationResult!
         cancelGangJoinRequest(requestId: ID): GangMutationResult!

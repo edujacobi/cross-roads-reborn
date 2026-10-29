@@ -1,8 +1,12 @@
 import { buildSchema, graphql } from "graphql";
 import { createSchema } from "graphql-yoga";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { typeDefs } from "#api/graphql/schema";
 import { resolvers } from "#api/graphql/resolvers";
+import { GangRepository } from "#core/repositories/GangRepository";
+import { GangBaseId } from "#core/types/GangBases";
+import { GangColorId } from "#core/types/GangColors";
+import { GangRecruitmentType } from "#core/types/GangRecruitment";
 
 describe("GraphQL schema", () => {
 	it("routes gang recruitment queries to their authenticated resolvers", async () => {
@@ -18,6 +22,51 @@ describe("GraphQL schema", () => {
 			expect(resolve).toBeDefined();
 			await expect(resolve!(null, {}, { user: null }, undefined!))
 				.rejects.toThrow("Autenticação necessária para realizar esta ação.");
+		}
+	});
+
+	it("returns paginated, available gangs using the web board data contract", async () => {
+		const gang = {
+			id: 2,
+			name: "Gang 2",
+			acronym: "G2",
+			description: "Description",
+			level: 1,
+			image: null,
+			color: GangColorId.Blue,
+			baseId: GangBaseId.Bunker,
+			recruitmentType: GangRecruitmentType.Open,
+			membersCount: 2,
+		};
+		const findGangs = vi.spyOn(GangRepository, "FindRecruitingGangs").mockResolvedValue({
+			entries: [gang],
+			total: 1,
+		});
+
+		try {
+			const result = await resolvers.Query.gangRecruitmentBoard(
+				null,
+				{ limit: 1, offset: 0, sortBy: "membersCount", sortOrder: "DESC" },
+				{ user: { userId: "player", username: "Player", avatar: null, role: "PLAYER", situationId: 0 } },
+			);
+
+			expect(result).toEqual({
+				total: 1,
+				entries: [
+					expect.objectContaining({
+						id: "2",
+						color: "#448AFF",
+						baseId: GangBaseId.Bunker,
+						membersCount: 2,
+						maxMembers: 11,
+						recruitmentType: "OPEN",
+					}),
+				],
+			});
+			expect(findGangs).toHaveBeenCalledWith(undefined, undefined, "membersCount", "DESC", 1, 0);
+		}
+		finally {
+			findGangs.mockRestore();
 		}
 	});
 

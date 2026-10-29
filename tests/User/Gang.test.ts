@@ -108,6 +108,78 @@ describe("Gang Model - Member Sorting", () => {
 });
 
 describe("Gang Model - Joining", () => {
+	it("rejects an application when another pending request wins the database race", async () => {
+		const gang = new Gang();
+		gang.Id = 1;
+		gang.LeaderId = "leader";
+		gang.RecruitmentType = GangRecruitmentType.Approval;
+		const applicant = new User("applicant");
+
+		vi.spyOn(GangMemberRepository, "FindByUserId").mockResolvedValue(null);
+		vi.spyOn(GangJoinRequestsRepository, "FindActiveByUser").mockResolvedValue(null);
+		vi.spyOn(GangJoinRequestsRepository, "CreateRequest").mockResolvedValue(null);
+		const send = vi.spyOn(WebPush, "Send").mockResolvedValue();
+
+		try {
+			await expect(gang.ApplyToGang(applicant)).resolves.toEqual({
+				success: false,
+				reason: "alreadyHasPendingRequest",
+			});
+			expect(send).not.toHaveBeenCalled();
+		}
+		finally {
+			vi.restoreAllMocks();
+		}
+	});
+
+	it("does not resolve a request another action already changed", async () => {
+		const gang = new Gang();
+		gang.Id = 1;
+		gang.LeaderId = "leader";
+		const request = GangJoinRequests.build({
+			id: 1,
+			gangId: gang.Id,
+			userId: "applicant",
+			status: GangJoinRequestStatus.Pending,
+		});
+		vi.spyOn(GangJoinRequestsRepository, "FindById").mockResolvedValue(request);
+		const updateStatus = vi.spyOn(GangJoinRequestsRepository, "UpdateStatusIfCurrent").mockResolvedValue(false);
+		const send = vi.spyOn(WebPush, "Send").mockResolvedValue();
+
+		try {
+			await expect(gang.ResolveJoinRequest(new User("leader"), 1, false)).resolves.toEqual({
+				success: false,
+				reason: "requestNotFound",
+			});
+			expect(updateStatus).toHaveBeenCalledWith(
+				1,
+				GangJoinRequestStatus.Pending,
+				GangJoinRequestStatus.Rejected,
+			);
+			expect(send).not.toHaveBeenCalled();
+		}
+		finally {
+			vi.restoreAllMocks();
+		}
+	});
+
+	it("does not treat request ID zero as a request to cancel every pending request", async () => {
+		const findRequest = vi.spyOn(GangJoinRequestsRepository, "FindById").mockResolvedValue(null);
+		const cancelAll = vi.spyOn(GangJoinRequestsRepository, "CancelUserPendingRequests").mockResolvedValue(0);
+
+		try {
+			await expect(Gang.CancelJoinRequest("applicant", 0)).resolves.toEqual({
+				success: false,
+				reason: "requestNotFound",
+			});
+			expect(findRequest).toHaveBeenCalledWith(0);
+			expect(cancelAll).not.toHaveBeenCalled();
+		}
+		finally {
+			vi.restoreAllMocks();
+		}
+	});
+
 	it("notifies the leader and members with invite permission about an application", async () => {
 		const gang = new Gang();
 		gang.Id = 1;
@@ -163,6 +235,7 @@ describe("Gang Model - Joining", () => {
 		const updateGang = vi.spyOn(gang, "Update").mockResolvedValue(true);
 		const updateUser = vi.spyOn(user, "Update").mockResolvedValue(true);
 		const loadMembers = vi.spyOn(gang, "LoadMembers").mockResolvedValue();
+		const cancelRequests = vi.spyOn(GangJoinRequestsRepository, "CancelUserPendingRequests").mockResolvedValue(0);
 
 		try {
 			await expect(gang.AcceptInvite(user)).resolves.toBe(true);
@@ -171,12 +244,14 @@ describe("Gang Model - Joining", () => {
 			expect(gang.Money).toBe(Gang.JOIN_COST * gang.Level);
 			expect(updateUser).toHaveBeenCalledExactlyOnceWith({ money: 0 });
 			expect(updateGang).toHaveBeenCalledExactlyOnceWith();
+			expect(cancelRequests).toHaveBeenCalledExactlyOnceWith(user.Id);
 		}
 		finally {
 			findMembership.mockRestore();
 			updateGang.mockRestore();
 			updateUser.mockRestore();
 			loadMembers.mockRestore();
+			cancelRequests.mockRestore();
 		}
 	});
 });

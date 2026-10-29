@@ -267,6 +267,7 @@ export class Gang {
 				roleId: leaderRole.id,
 				depositTime: addHours(new Date(), Gang.TIME_BETWEEN_DEPOSITS * 2),
 			});
+			await GangJoinRequestsRepository.CancelUserPendingRequests(user.Id);
 
 			Log.Success(`User ${user.Nickname} (Id: ${user.Id}) created gang '${name}' (Id: ${gang.id}) for ${formatMoney(Gang.CREATION_COST, Language.English)}.`);
 
@@ -632,6 +633,7 @@ export class Gang {
 			]);
 
 			await this.LoadMembers();
+			await GangJoinRequestsRepository.CancelUserPendingRequests(user.Id);
 
 			Log.Success(`User ${user.Nickname} (Id: ${user.Id}) joined gang ${this.Name} (Id: ${this.Id})`);
 			return true;
@@ -1698,7 +1700,6 @@ export class Gang {
 		}
 		const joined = await this.AcceptInvite(user);
 		if (joined) {
-			await GangJoinRequestsRepository.CancelUserPendingRequests(user.Id);
 			return { success: true };
 		}
 		return { success: false, reason: "failedToJoin" };
@@ -1723,7 +1724,18 @@ export class Gang {
 			return { success: false, reason: "alreadyHasPendingRequest" };
 		}
 
-		await GangJoinRequestsRepository.CreateRequest(this.Id, user.Id, message);
+		const request = await GangJoinRequestsRepository.CreateRequest(this.Id, user.Id, message);
+		if (!request) {
+			return { success: false, reason: "alreadyHasPendingRequest" };
+		}
+		if (await GangMemberRepository.FindByUserId(user.Id)) {
+			await GangJoinRequestsRepository.UpdateStatusIfCurrent(
+				request.id,
+				GangJoinRequestStatus.Pending,
+				GangJoinRequestStatus.Cancelled,
+			);
+			return { success: false, reason: "alreadyInGang" };
+		}
 
 		// Notify Leader and members with canInvite via WebPush
 		const recruiterIds = new Set<string>();
@@ -1763,7 +1775,12 @@ export class Gang {
 		}
 
 		if (!accept) {
-			await GangJoinRequestsRepository.UpdateRequestStatus(requestId, GangJoinRequestStatus.Rejected);
+			const rejected = await GangJoinRequestsRepository.UpdateStatusIfCurrent(
+				requestId,
+				GangJoinRequestStatus.Pending,
+				GangJoinRequestStatus.Rejected,
+			);
+			if (!rejected) return { success: false, reason: "requestNotFound" };
 			await WebPush.Send(request.userId, `Sua solicitação para entrar na gangue ${this.Name} foi recusada.`);
 			return { success: true };
 		}
@@ -1779,18 +1796,32 @@ export class Gang {
 
 		const existingMembership = await GangMemberRepository.FindByUserId(applicant.Id);
 		if (existingMembership) {
-			await GangJoinRequestsRepository.UpdateRequestStatus(requestId, GangJoinRequestStatus.Cancelled);
+			await GangJoinRequestsRepository.UpdateStatusIfCurrent(
+				requestId,
+				GangJoinRequestStatus.Pending,
+				GangJoinRequestStatus.Cancelled,
+			);
 			return { success: false, reason: "alreadyInGang" };
 		}
 
+		const accepted = await GangJoinRequestsRepository.UpdateStatusIfCurrent(
+			requestId,
+			GangJoinRequestStatus.Pending,
+			GangJoinRequestStatus.Accepted,
+		);
+		if (!accepted) return { success: false, reason: "requestNotFound" };
+
 		const joined = await this.AcceptInvite(applicant);
 		if (joined) {
-			await GangJoinRequestsRepository.UpdateRequestStatus(requestId, GangJoinRequestStatus.Accepted);
-			await GangJoinRequestsRepository.CancelUserPendingRequests(applicant.Id);
 			await WebPush.Send(applicant.Id, `Sua solicitação para entrar na gangue ${this.Name} foi aceita!`);
 			return { success: true };
 		}
 
+		await GangJoinRequestsRepository.UpdateStatusIfCurrent(
+			requestId,
+			GangJoinRequestStatus.Accepted,
+			GangJoinRequestStatus.Pending,
+		);
 		return { success: false, reason: "failedToJoin" };
 	}
 
@@ -1798,7 +1829,7 @@ export class Gang {
 	 * Cancels a user's pending join request.
 	 */
 	static async CancelJoinRequest(userId: string, requestId?: number): Promise<{ success: boolean; reason?: string }> {
-		if (requestId) {
+		if (requestId !== undefined) {
 			const req = await GangJoinRequestsRepository.FindById(requestId);
 			if (!req || req.userId !== userId) {
 				return { success: false, reason: "requestNotFound" };
@@ -1806,8 +1837,12 @@ export class Gang {
 			if (req.status !== GangJoinRequestStatus.Pending) {
 				return { success: false, reason: "notPending" };
 			}
-			await GangJoinRequestsRepository.UpdateRequestStatus(requestId, GangJoinRequestStatus.Cancelled);
-			return { success: true };
+			const cancelled = await GangJoinRequestsRepository.UpdateStatusIfCurrent(
+				requestId,
+				GangJoinRequestStatus.Pending,
+				GangJoinRequestStatus.Cancelled,
+			);
+			return { success: cancelled, reason: cancelled ? undefined : "notPending" };
 		}
 		const count = await GangJoinRequestsRepository.CancelUserPendingRequests(userId);
 		return { success: count > 0 };

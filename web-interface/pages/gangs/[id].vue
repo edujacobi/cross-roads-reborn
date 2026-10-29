@@ -5,9 +5,6 @@
 import { useMutation, useQuery } from "@vue/apollo-composable";
 import {
 	ArrowLeft,
-	UserCheck,
-	UserX,
-	Inbox,
 	Crown,
 	LogOut,
 	MessageSquareText,
@@ -35,21 +32,21 @@ import { useMultiplayerSessions } from "~/composables/useMultiplayerSessions";
 import { imagePaths } from "~/constants/imagePaths";
 import {
 	CancelGangImportDocument,
-	GangJoinRequestsDocument,
-	GangRecruitmentType,
-	ResolveGangJoinRequestDocument,
-	SetGangRecruitmentTypeDocument,
 	CommunicateGangDocument,
 	CreateGangRoleDocument,
 	DepositGangDocument,
+	GangJoinRequestsDocument,
+	GangRecruitmentType,
 	type GangRoleInfo,
 	GetGangDetailDocument,
 	InviteGangMemberDocument,
 	KickGangMemberDocument,
 	LeaveGangDocument,
+	ResolveGangJoinRequestDocument,
 	SearchUsersDocument,
 	type SearchUsersQuery,
 	SetGangMoneyDocument,
+	SetGangRecruitmentTypeDocument,
 	SetMoneyMode,
 	StartGangImportDocument,
 	TransferGangDocument,
@@ -144,27 +141,34 @@ const sortedMembers = computed(() =>
 		}
 	}),
 );
-const recruitmentOptions = [
-	{ label: "Desativado", value: "DISABLED" },
-	{ label: "Por Aprova��o", value: "APPROVAL" },
-	{ label: "Aberto", value: "OPEN" },
+const recruitmentOptions: SelectorOption[] = [
+	{ label: "Desativado", value: GangRecruitmentType.Disabled },
+	{ label: "Por Aprovação", value: GangRecruitmentType.Approval },
+	{ label: "Aberto", value: GangRecruitmentType.Open },
 ];
 
-const selectedRecruitmentType = ref<string>("DISABLED");
-watch(() => gang.value?.recruitmentType, (type) => {
-	if (type) selectedRecruitmentType.value = type;
-}, { immediate: true });
+const selectedRecruitmentType = ref<GangRecruitmentType>(GangRecruitmentType.Disabled);
+watch(
+	() => gang.value?.recruitmentType,
+	(type) => {
+		if (type) selectedRecruitmentType.value = type;
+	},
+	{ immediate: true },
+);
 
-const { mutate: setRecruitmentTypeMutation, loading: updatingRecruitmentType } = useMutation(SetGangRecruitmentTypeDocument);
+const { mutate: setRecruitmentTypeMutation, loading: updatingRecruitmentType } =
+	useMutation(SetGangRecruitmentTypeDocument);
 
 async function onRecruitmentTypeChange(val: string) {
 	if (!gang.value) return;
-	selectedRecruitmentType.value = val;
+	const recruitmentType = Object.values(GangRecruitmentType).find((type) => type === val);
+	if (!recruitmentType) return;
 	const res = await setRecruitmentTypeMutation({
 		gangId: String(gang.value.id),
-		recruitmentType: val as any,
+		recruitmentType,
 	});
 	if (res?.data?.setGangRecruitmentType?.success) {
+		selectedRecruitmentType.value = recruitmentType;
 		showToast({ text: "Tipo de recrutamento atualizado!", variant: "success" });
 		void refetch();
 	} else {
@@ -172,7 +176,16 @@ async function onRecruitmentTypeChange(val: string) {
 	}
 }
 
-const { result: joinRequestsData, loading: loadingRequests, refetch: refetchJoinRequests } = useQuery(
+const canInviteMembers = computed(
+	() =>
+		!!currentMember.value && (currentUserId.value === gang.value?.leaderId || currentRole.value?.canInvite === true),
+);
+
+const {
+	result: joinRequestsData,
+	loading: loadingRequests,
+	refetch: refetchJoinRequests,
+} = useQuery(
 	GangJoinRequestsDocument,
 	() => ({ gangId: String(gangId.value) }),
 	() => ({ enabled: canInviteMembers.value }),
@@ -194,13 +207,12 @@ async function resolveRequest(requestId: string, accept: boolean) {
 		void refetchJoinRequests();
 		void refetch();
 	} else {
-		showToast({ text: res?.data?.resolveGangJoinRequest?.message ?? "Erro ao responder solicita��o.", variant: "error" });
+		showToast({
+			text: res?.data?.resolveGangJoinRequest?.message ?? "Erro ao responder solicita��o.",
+			variant: "error",
+		});
 	}
 }
-const canInviteMembers = computed(
-	() =>
-		!!currentMember.value && (currentUserId.value === gang.value?.leaderId || currentRole.value?.canInvite === true),
-);
 const canTransferGang = computed(
 	() => currentUserId.value === gang.value?.leaderId && (gang.value?.members.length ?? 0) > 1,
 );
@@ -985,6 +997,81 @@ async function updateGangMoney() {
 						</BaseButton>
 					</fieldset>
 				</div>
+			</BaseCard>
+
+			<BaseCard
+				v-if="canInviteMembers"
+				:title="`Solicitações de adesão (${joinRequests.length})`"
+				no-padding-y
+				no-padding-x
+			>
+				<template
+					#actions
+					v-if="currentUserId === gang.leaderId"
+				>
+					<BaseSelector
+						id="gang-recruitment-type"
+						label="Tipo de recrutamento"
+						:options="recruitmentOptions"
+						:model-value="selectedRecruitmentType"
+						:disabled="updatingRecruitmentType"
+						@update:model-value="onRecruitmentTypeChange"
+					/>
+				</template>
+				<p
+					v-if="loadingRequests"
+					class="gang-detail__join-requests-message"
+				>
+					Carregando solicitações...
+				</p>
+				<p
+					v-else-if="joinRequests.length === 0"
+					class="gang-detail__join-requests-message"
+				>
+					Nenhuma solicitação pendente.
+				</p>
+				<BaseTable v-else>
+					<table>
+						<thead>
+							<tr>
+								<th scope="col">Jogador</th>
+								<th scope="col">Mensagem</th>
+								<th scope="col">Data</th>
+								<th scope="col">Ações</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr
+								v-for="request in joinRequests"
+								:key="request.id"
+							>
+								<td>{{ request.userName }}</td>
+								<td>{{ request.message || "—" }}</td>
+								<td>{{ relative(request.createdAt) }}</td>
+								<td>
+									<div class="gang-detail__request-actions">
+										<BaseButton
+											variant="success"
+											size="sm"
+											:disabled="resolvingRequest"
+											@click="resolveRequest(request.id, true)"
+										>
+											Aceitar
+										</BaseButton>
+										<BaseButton
+											variant="danger"
+											size="sm"
+											:disabled="resolvingRequest"
+											@click="resolveRequest(request.id, false)"
+										>
+											Recusar
+										</BaseButton>
+									</div>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</BaseTable>
 			</BaseCard>
 
 			<section
@@ -2051,6 +2138,15 @@ $border-color: color-mix(in lab, $border-card 100%, $highlight-color 75%);
 $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 
 .gang-detail {
+	&__join-requests-message {
+		padding: $spacing-md;
+	}
+
+	&__request-actions {
+		display: flex;
+		gap: $spacing-sm;
+	}
+
 	&__create-form {
 		display: flex;
 		flex-direction: column;

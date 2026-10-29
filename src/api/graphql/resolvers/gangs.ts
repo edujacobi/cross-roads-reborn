@@ -206,10 +206,22 @@ export const gangResolvers: {
 		},
 		gangRecruitmentBoard: async (
 			_: unknown,
-			args: { search?: string; type?: "DISABLED" | "APPROVAL" | "OPEN" },
+			args: {
+				search?: string;
+				type?: "DISABLED" | "APPROVAL" | "OPEN";
+				sortBy?: string;
+				sortOrder?: string;
+				limit?: number;
+				offset?: number;
+			},
 			context: GraphQLContext,
 		) => {
 			assertAuthenticated(context);
+			const limit = args.limit ?? 25;
+			const offset = args.offset ?? 0;
+			if (!Number.isInteger(limit) || limit < 1 || limit > 50 || !Number.isInteger(offset) || offset < 0) {
+				throw new Error("Invalid recruitment board pagination.");
+			}
 			let filterType: number | undefined;
 			if (args.type === "APPROVAL") {
 				filterType = GangRecruitmentType.Approval;
@@ -221,36 +233,38 @@ export const gangResolvers: {
 				filterType = GangRecruitmentType.Disabled;
 			}
 
-			const recruitingGangs = await GangRepository.FindRecruitingGangs(filterType, args.search);
-
-			const results = [];
-			for (const gangEntity of recruitingGangs) {
-				const gang = await Gang.GetInfo(gangEntity);
-				if (!gang) continue;
-				const membersCount = gang.Members.length;
-				const maxMembers = gang.GetMaxMembers();
-
-				// Exclude gangs that have reached their member cap
-				if (membersCount >= maxMembers) continue;
-
-
-				results.push({
-					id: gang.Id.toString(),
-					name: gang.Name,
-					acronym: gang.Acronym,
-					description: gang.Description,
-					level: gang.Level,
-					image: gang.Image,
-					color: GangColor[gang.Color].Color,
-					baseName: GangBases[gang.BaseId].Name[Language.Portuguese],
-					baseId: GangBases[gang.BaseId].Id,
-					membersCount,
-					maxMembers,
-					recruitmentType: gang.RecruitmentType === GangRecruitmentType.Open ? "OPEN" : "APPROVAL",
-				});
-			}
-
-			return results;
+			const page = await GangRepository.FindRecruitingGangs(
+				filterType,
+				args.search,
+				args.sortBy,
+				args.sortOrder,
+				limit,
+				offset,
+			);
+			return {
+				total: page.total,
+				entries: page.entries.map((gang) => {
+					const base = GangBases[gang.baseId] ?? GangBases[GangBaseId.None];
+					return {
+						id: gang.id.toString(),
+						name: gang.name,
+						acronym: gang.acronym,
+						description: gang.description,
+						level: gang.level,
+						image: gang.image,
+						color: convertHexNumberToString(GangColor[gang.color].Color),
+						baseName: base.Name[Language.Portuguese],
+						baseId: base.Id,
+						membersCount: gang.membersCount,
+						maxMembers: 9 + gang.level + (gang.baseId === GangBaseId.None ? 0 : 1),
+						recruitmentType: gang.recruitmentType === GangRecruitmentType.Open
+							? "OPEN"
+							: gang.recruitmentType === GangRecruitmentType.Approval
+								? "APPROVAL"
+								: "DISABLED",
+					};
+				}),
+			};
 		},
 
 		myActiveGangJoinRequest: async (_: unknown, __: unknown, context: GraphQLContext) => {

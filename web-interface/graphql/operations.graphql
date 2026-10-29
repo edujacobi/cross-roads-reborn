@@ -1806,20 +1806,23 @@ mutation ToggleInvestmentYieldNotifications {
 	}
 }
 
-query GangRecruitmentBoard($search: String, $type: GangRecruitmentType) {
-	gangRecruitmentBoard(search: $search, type: $type) {
-		id
-		name
-		acronym
-		description
-		level
-		image
-		color
-		baseName
-		baseImage
-		membersCount
-		maxMembers
-		recruitmentType
+query GangRecruitmentBoard($search: String, $type: GangRecruitmentType, $sortBy: String, $sortOrder: String, $limit: Int, $offset: Int) {
+	gangRecruitmentBoard(search: $search, type: $type, sortBy: $sortBy, sortOrder: $sortOrder, limit: $limit, offset: $offset) {
+		entries {
+			id
+			name
+			acronym
+			description
+			level
+			image
+			color
+			baseName
+			baseId
+			membersCount
+			maxMembers
+			recruitmentType
+		}
+		total
 	}
 }
 
@@ -1831,8 +1834,6 @@ query MyActiveGangJoinRequest {
 		gangAcronym
 		userId
 		userName
-		userAvatar
-		userLevel
 		message
 		status
 		createdAt
@@ -1847,8 +1848,6 @@ query MyGangJoinRequestsHistory($limit: Int) {
 		gangAcronym
 		userId
 		userName
-		userAvatar
-		userLevel
 		message
 		status
 		createdAt
@@ -1863,8 +1862,6 @@ query GangJoinRequests($gangId: ID!) {
 		gangAcronym
 		userId
 		userName
-		userAvatar
-		userLevel
 		message
 		status
 		createdAt

@@ -2,6 +2,7 @@
 import { Gangs } from "#core/database/Gangs";
 import { Users } from "#core/database/Users";
 import { GangJoinRequestStatus } from "#core/types/GangRecruitment";
+import { UniqueConstraintError } from "sequelize";
 
 export interface GangJoinRequestWithDetails {
 	id: number;
@@ -115,22 +116,29 @@ export class GangJoinRequestsRepository {
 		gangId: number,
 		userId: string,
 		message?: string | null,
-	): Promise<GangJoinRequests> {
-		return await GangJoinRequests.create({
-			gangId,
-			userId,
-			message: message?.trim() ? message.trim().slice(0, 280) : null,
-			status: GangJoinRequestStatus.Pending,
-		});
+	): Promise<GangJoinRequests | null> {
+		try {
+			return await GangJoinRequests.create({
+				gangId,
+				userId,
+				message: message?.trim() ? message.trim().slice(0, 280) : null,
+				status: GangJoinRequestStatus.Pending,
+			});
+		}
+		catch (error) {
+			if (error instanceof UniqueConstraintError) return null;
+			throw error;
+		}
 	}
 
-	static async UpdateRequestStatus(
+	static async UpdateStatusIfCurrent(
 		id: number,
+		currentStatus: GangJoinRequestStatus,
 		status: GangJoinRequestStatus,
 	): Promise<boolean> {
 		const [affected] = await GangJoinRequests.update(
 			{ status },
-			{ where: { id } },
+			{ where: { id, status: currentStatus } },
 		);
 		return affected > 0;
 	}
