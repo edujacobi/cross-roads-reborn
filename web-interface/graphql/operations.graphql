@@ -910,6 +910,13 @@ query GetUserHistory($userId: ID!, $limit: Int, $offset: Int) {
 	}
 }
 
+mutation SetVaultBalance($vault: VaultType!, $amount: Float!) {
+	setVaultBalance(vault: $vault, amount: $amount) {
+		success
+		message
+	}
+}
+
 mutation SetMoney($userId: ID!, $amount: Float!, $mode: SetMoneyMode!) {
 	setMoney(userId: $userId, amount: $amount, mode: $mode) {
 		success

@@ -1,6 +1,7 @@
 import { GraphQLError } from "graphql";
 import { AdminAuditLog } from "#core/models/AdminAuditLog";
-import { AdminAuditActionId } from "#core/types/AdminAuditLog";
+import { AdminAuditActionId, AdminAuditSettingId } from "#core/types/AdminAuditLog";
+import { Vault } from "#core/models/Vault";
 import { User } from "#core/models/User";
 import { UserRepository } from "#core/repositories/UserRepository";
 import { UserItemRepository } from "#core/repositories/UserItemRepository";
@@ -89,6 +90,28 @@ export const adminResolvers: {
 	},
 
 	Mutation: {
+		setVaultBalance: async (
+			_: unknown,
+			args: { vault: "BANK" | "CASINO"; amount: number },
+			context: GraphQLContext,
+		) => {
+			const admin = assertCanWrite(context);
+			if (!Number.isSafeInteger(args.amount) || args.amount < 0) {
+				return { success: false, message: "Informe um saldo inteiro igual ou maior que zero." };
+			}
+
+			const vault = args.vault === "BANK" ? "bank" : "casino";
+			const previousValue = await Vault.SetBalance(vault, args.amount);
+			await recordAdminAction(
+				admin,
+				AdminAuditActionId.SetVaultBalance,
+				{ settingId: vault === "bank" ? AdminAuditSettingId.BankVault : AdminAuditSettingId.CasinoVault },
+				previousValue,
+				args.amount,
+			);
+			return { success: true, message: "Saldo do cofre atualizado." };
+		},
+
 		setMoney: async (
 			_: unknown,
 			args: { userId: string; amount: number; mode: "ADD" | "SET" },

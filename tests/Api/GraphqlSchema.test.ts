@@ -3,6 +3,26 @@ import { describe, expect, it } from "vitest";
 import { typeDefs } from "#api/graphql/schema";
 
 describe("GraphQL schema", () => {
+	it("accepts vault balances above the GraphQL Int limit", async () => {
+		let received: { vault: string; amount: number } | undefined;
+		const result = await graphql({
+			schema: buildSchema(typeDefs),
+			source: `mutation ($vault: VaultType!, $amount: Float!) {
+				setVaultBalance(vault: $vault, amount: $amount) { success }
+			}`,
+			variableValues: { vault: "BANK", amount: 3_085_113_585 },
+			rootValue: {
+				setVaultBalance: (args: { vault: string; amount: number }) => {
+					received = args;
+					return { success: true };
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(received).toEqual({ vault: "BANK", amount: 3_085_113_585 });
+	});
+
 	it("serializes all money fields above the GraphQL Int limit", async () => {
 		const schema = buildSchema(typeDefs);
 		const result = await graphql({

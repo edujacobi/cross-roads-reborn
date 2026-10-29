@@ -27,6 +27,13 @@ export class VaultRepository {
 		);
 	}
 
+	static async SetBalance(vault: "bank" | "casino", amount: number): Promise<void> {
+		await Vault.update(
+			vault === "bank" ? { bankBalance: amount } : { casinoBalance: amount },
+			{ where: { id: 1 } },
+		);
+	}
+
 	/**
 	 * Toggle the main heist allowed flag in the database.
 	 */

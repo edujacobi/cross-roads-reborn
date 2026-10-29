@@ -20,6 +20,7 @@ export enum AdminAuditActionId {
 	SwapUsers = 19,
 	DeleteUser = 20,
 	SetGangMoney = 21,
+	SetVaultBalance = 22,
 }
 
 export enum AdminAuditSettingId {
@@ -27,6 +28,8 @@ export enum AdminAuditSettingId {
 	Season = 2,
 	Events = 3,
 	UserAccounts = 4,
+	BankVault = 5,
+	CasinoVault = 6,
 }
 
 export interface AdminAuditRequestInfo {

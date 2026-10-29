@@ -74,6 +74,7 @@ const actionNames: Record<number, string> = {
 	19: "Trocar contas",
 	20: "Excluir jogador",
 	21: "Alterar dinheiro da gangue",
+	22: "Alterar saldo do cofre",
 };
 
 const settingNames: Record<number, string> = {
@@ -81,6 +82,8 @@ const settingNames: Record<number, string> = {
 	2: "Temporada",
 	3: "Eventos",
 	4: "Contas de jogadores",
+	5: "Cofre do Banco",
+	6: "Cofre do Cassino",
 };
 
 const actionOptions = Object.entries(actionNames).map(([id, name]) => ({ id, name }));

@@ -13,6 +13,15 @@ export class Vault {
 		};
 	}
 
+	static async SetBalance(vault: "bank" | "casino", amount: number): Promise<number> {
+		if (!Number.isSafeInteger(amount) || amount < 0) {
+			throw new RangeError("Vault balance must be a non-negative safe integer.");
+		}
+		const balances = await this.GetBalances();
+		await VaultRepository.SetBalance(vault, amount);
+		return balances[vault];
+	}
+
 	/**
 	 * Checks if the main heist is allowed (e.g. by admin overrides).
 	 */

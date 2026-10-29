@@ -968,7 +968,13 @@ export const typeDefs = /* GraphQL */ `
         value: Float!
     }
 
+    enum VaultType {
+        BANK
+        CASINO
+    }
+
     type Mutation {
+        setVaultBalance(vault: VaultType!, amount: Float!): SeasonMutationResult!
         setMoney(userId: ID!, amount: Float!, mode: SetMoneyMode!): MutationResult!
         cureUser(userId: ID!): MutationResult!
         freeUser(userId: ID!): MutationResult!

@@ -2,13 +2,16 @@
 	setup
 	lang="ts"
 >
-import { useQuery } from "@vue/apollo-composable";
+import { useMutation, useQuery } from "@vue/apollo-composable";
 import DashboardClassDistribution from "~/components/Dashboard/DashboardClassDistribution.vue";
 import DashboardItemPopularity from "~/components/Dashboard/DashboardItemPopularity.vue";
 import DashboardStatusBox from "~/components/Dashboard/DashboardStatusBox.vue";
 import DashboardUserChart from "~/components/Dashboard/DashboardUserChart.vue";
 import DashboardUserHistory from "~/components/Dashboard/DashboardUserHistory.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
+import BaseButton from "~/components/ui/BaseButton.vue";
+import BaseInput from "~/components/ui/BaseInput.vue";
+import BaseModal from "~/components/ui/BaseModal.vue";
 import PageTitle from "~/components/ui/PageTitle.vue";
 import RefreshButton from "~/components/ui/RefreshButton.vue";
 import { useMoneyFormat } from "~/composables/useMoneyFormat";
@@ -20,6 +23,8 @@ import {
 	type GetDashboardItemPopularityQuery,
 	GetDashboardStatsDocument,
 	type GetDashboardStatsQuery,
+	SetVaultBalanceDocument,
+	VaultType,
 } from "~/graphql/generated";
 
 definePageMeta({
@@ -30,7 +35,12 @@ useHead({
 	title: "Dashboard",
 });
 
+const auth = useAuth();
+const { showToast } = useToast();
 const { result: statsResult, loading: statsLoading, refetch: refetchStats } = useQuery(GetDashboardStatsDocument);
+const { mutate: setVaultBalance, loading: savingVault } = useMutation(SetVaultBalanceDocument);
+const selectedVault = ref<VaultType | null>(null);
+const vaultAmount = ref<string | number>("");
 const {
 	result: itemPopularityResult,
 	loading: itemPopularityLoading,
@@ -56,6 +66,37 @@ function refreshData() {
 	refetchStats();
 	refetchHistory();
 	refetchItemPopularity();
+}
+
+function openVault(vault: VaultType) {
+	if (!stats.value) return;
+	selectedVault.value = vault;
+	vaultAmount.value = vault === VaultType.Bank ? stats.value.bankVaultValue : stats.value.casinoVaultValue;
+}
+
+function updateVaultModal(open: boolean) {
+	if (!open) selectedVault.value = null;
+}
+
+async function saveVault() {
+	const amount = Number(vaultAmount.value);
+	if (vaultAmount.value === "" || !Number.isSafeInteger(amount) || amount < 0 || !selectedVault.value) {
+		showToast({ variant: "error", text: "Informe um saldo inteiro igual ou maior que zero." });
+		return;
+	}
+	try {
+		const response = await setVaultBalance({ vault: selectedVault.value, amount });
+		const result = response?.data?.setVaultBalance;
+		if (!result?.success) {
+			showToast({ variant: "error", text: result?.message || "Não foi possível atualizar o cofre." });
+			return;
+		}
+		selectedVault.value = null;
+		showToast({ variant: "success", text: result.message });
+		await refetchStats();
+	} catch (error: unknown) {
+		showToast({ variant: "error", text: error instanceof Error ? error.message : "Erro ao atualizar o cofre." });
+	}
 }
 </script>
 
@@ -121,16 +162,36 @@ function refreshData() {
 				:icon="imagePaths.uiElements.vaultBank"
 				no-body
 			>
-				<template #actions>{{ formatMoney(stats?.bankVaultValue ?? 0) }}</template>
+				<template #actions>
+					{{ formatMoney(stats?.bankVaultValue ?? 0) }}
+					<BaseButton v-if="auth.canWrite.value" variant="secondary" size="sm" :disabled="!stats || savingVault" @click="openVault(VaultType.Bank)">Alterar</BaseButton>
+				</template>
 			</BaseCard>
 			<BaseCard
 				title="Cofre do Cassino"
 				:icon="imagePaths.uiElements.vaultCasino"
 				no-body
 			>
-				<template #actions> {{ formatMoney(stats?.casinoVaultValue ?? 0) }} </template>
+				<template #actions>
+					{{ formatMoney(stats?.casinoVaultValue ?? 0) }}
+					<BaseButton v-if="auth.canWrite.value" variant="secondary" size="sm" :disabled="!stats || savingVault" @click="openVault(VaultType.Casino)">Alterar</BaseButton>
+				</template>
 			</BaseCard>
 		</section>
+
+		<BaseModal
+			:open="selectedVault !== null"
+			:title="selectedVault === VaultType.Bank ? 'Alterar cofre do Banco' : 'Alterar cofre do Cassino'"
+			description="Defina o novo saldo do cofre."
+			:dismissible="!savingVault"
+			@update:open="updateVaultModal"
+		>
+			<BaseInput id="vault-balance" v-model="vaultAmount" label="Saldo (Cr$)" type="number" :min="0" :step="1" />
+			<template #footer>
+				<BaseButton variant="ghost" :disabled="savingVault" @click="selectedVault = null">Cancelar</BaseButton>
+				<BaseButton :disabled="savingVault" @click="saveVault">Confirmar alteração</BaseButton>
+			</template>
+		</BaseModal>
 
 		<div class="details-row">
 			<DashboardUserChart
