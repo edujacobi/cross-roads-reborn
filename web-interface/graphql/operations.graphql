@@ -629,6 +629,7 @@ query GetGangDetail($id: ID!) {
 			modifierAttack
 			modifierPrisonEscape
 		}
+		recruitmentType
 		leaderId
 		leaderNickname
 		leaderAvatarUrl
@@ -1793,6 +1794,106 @@ mutation HireInvestmentHenchman {
 
 mutation ToggleInvestmentYieldNotifications {
 	toggleInvestmentYieldNotifications {
+		success
+		message
+	}
+}
+
+query GangRecruitmentBoard($search: String, $type: GangRecruitmentType) {
+	gangRecruitmentBoard(search: $search, type: $type) {
+		id
+		name
+		acronym
+		description
+		level
+		image
+		color
+		baseName
+		baseImage
+		membersCount
+		maxMembers
+		recruitmentType
+	}
+}
+
+query MyActiveGangJoinRequest {
+	myActiveGangJoinRequest {
+		id
+		gangId
+		gangName
+		gangAcronym
+		userId
+		userName
+		userAvatar
+		userLevel
+		message
+		status
+		createdAt
+	}
+}
+
+query MyGangJoinRequestsHistory($limit: Int) {
+	myGangJoinRequestsHistory(limit: $limit) {
+		id
+		gangId
+		gangName
+		gangAcronym
+		userId
+		userName
+		userAvatar
+		userLevel
+		message
+		status
+		createdAt
+	}
+}
+
+query GangJoinRequests($gangId: ID!) {
+	gangJoinRequests(gangId: $gangId) {
+		id
+		gangId
+		gangName
+		gangAcronym
+		userId
+		userName
+		userAvatar
+		userLevel
+		message
+		status
+		createdAt
+	}
+}
+
+mutation SetGangRecruitmentType($gangId: ID!, $recruitmentType: GangRecruitmentType!) {
+	setGangRecruitmentType(gangId: $gangId, recruitmentType: $recruitmentType) {
+		success
+		message
+	}
+}
+
+mutation JoinOpenGang($gangId: ID!) {
+	joinOpenGang(gangId: $gangId) {
+		success
+		message
+	}
+}
+
+mutation ApplyToGang($gangId: ID!, $message: String) {
+	applyToGang(gangId: $gangId, message: $message) {
+		success
+		message
+	}
+}
+
+mutation CancelGangJoinRequest($requestId: ID) {
+	cancelGangJoinRequest(requestId: $requestId) {
+		success
+		message
+	}
+}
+
+mutation ResolveGangJoinRequest($gangId: ID!, $requestId: ID!, $accept: Boolean!) {
+	resolveGangJoinRequest(gangId: $gangId, requestId: $requestId, accept: $accept) {
 		success
 		message
 	}

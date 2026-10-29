@@ -106,4 +106,17 @@ export class GangRepository {
 	static async CountAllGangs(): Promise<number> {
 		return await Gangs.count();
 	}
+
+	static async FindRecruitingGangs(recruitmentType?: number, search?: string): Promise<Gangs[]> {
+		const where: any = {
+			recruitmentType: recruitmentType !== undefined ? recruitmentType : { [Op.gt]: 0 },
+		};
+		if (search && search.trim()) {
+			where.name = { [Op.like]: `%${search.trim()}%` };
+		}
+		return await Gangs.findAll({
+			where,
+			order: [["level", "DESC"], ["experience", "DESC"]],
+		});
+	}
 }

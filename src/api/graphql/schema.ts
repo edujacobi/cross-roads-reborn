@@ -316,6 +316,47 @@ export const typeDefs = /* GraphQL */ `
         modifierAttack: Float
         modifierPrisonEscape: Float
     }
+    enum GangRecruitmentType {
+        DISABLED
+        APPROVAL
+        OPEN
+    }
+
+    enum GangJoinRequestStatus {
+        PENDING
+        ACCEPTED
+        REJECTED
+        CANCELLED
+    }
+
+    type GangRecruitmentBoardEntry {
+        id: ID!
+        name: String!
+        acronym: String!
+        description: String!
+        level: Int!
+        image: String
+        color: String!
+        baseName: String
+        baseImage: String
+        membersCount: Int!
+        maxMembers: Int!
+        recruitmentType: GangRecruitmentType!
+    }
+
+    type GangJoinRequest {
+        id: ID!
+        gangId: ID!
+        gangName: String!
+        gangAcronym: String!
+        userId: ID!
+        userName: String!
+        userAvatar: String
+        userLevel: Int!
+        message: String
+        status: GangJoinRequestStatus!
+        createdAt: String!
+    }
 
     type GangDetail {
         id: Int!
@@ -337,6 +378,7 @@ export const typeDefs = /* GraphQL */ `
         canImport: Boolean!
         canStartImport: Boolean
         canViewShipmentInfo: Boolean!
+        recruitmentType: GangRecruitmentType!
         leaderId: ID!
         leaderNickname: String
         leaderAvatarUrl: String
@@ -866,6 +908,10 @@ export const typeDefs = /* GraphQL */ `
         topUsers(ranking: UserRanking!, limit: Int, offset: Int): UserRankingResult!
         topGangs(limit: Int, offset: Int): GangRankingResult!
         gang(id: ID!): GangDetail
+                gangRecruitmentBoard(search: String, type: GangRecruitmentType): [GangRecruitmentBoardEntry!]!
+        myActiveGangJoinRequest: GangJoinRequest
+        myGangJoinRequestsHistory(limit: Int): [GangJoinRequest!]!
+        gangJoinRequests(gangId: ID!): [GangJoinRequest!]!
         user(id: ID!): UserDetail
         userHistory(userId: ID!, limit: Int, offset: Int): UserHistoryResult!
         items: [ItemDetails!]!
@@ -1038,5 +1084,10 @@ export const typeDefs = /* GraphQL */ `
         leaveGang(gangId: ID!): GangMutationResult!
         transferGang(gangId: ID!, targetUserId: ID!): GangMutationResult!
         inviteGangMember(gangId: ID!, targetUserId: ID!): GangMutationResult!
+                setGangRecruitmentType(gangId: ID!, recruitmentType: GangRecruitmentType!): GangMutationResult!
+        joinOpenGang(gangId: ID!): GangMutationResult!
+        applyToGang(gangId: ID!, message: String): GangMutationResult!
+        cancelGangJoinRequest(requestId: ID): GangMutationResult!
+        resolveGangJoinRequest(gangId: ID!, requestId: ID!, accept: Boolean!): GangMutationResult!
     }
 `;
