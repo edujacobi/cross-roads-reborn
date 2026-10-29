@@ -2,6 +2,7 @@
 import { Gangs } from "#core/database/Gangs";
 import { Users } from "#core/database/Users";
 import { GangJoinRequestStatus } from "#core/types/GangRecruitment";
+import type { GangColorId } from "#core/types/GangColors";
 import { UniqueConstraintError } from "sequelize";
 
 export interface GangJoinRequestWithDetails {
@@ -9,8 +10,11 @@ export interface GangJoinRequestWithDetails {
 	gangId: number;
 	gangName: string;
 	gangAcronym: string;
+	gangImage?: string | null;
+	gangColor?: GangColorId;
 	userId: string;
 	userName: string;
+	userAvatarDecoration?: number;
 	message: string | null;
 	status: GangJoinRequestStatus;
 	createdAt: Date;
@@ -68,6 +72,8 @@ export class GangJoinRequestsRepository {
 				gangId: r.gangId,
 				gangName: gang?.name ?? "Gangue Desconhecida",
 				gangAcronym: gang?.acronym ?? "???",
+				gangImage: gang?.image ?? null,
+				gangColor: gang?.color,
 				userId: r.userId,
 				userName: user?.nickname ?? "Usuário Desconhecido",
 				message: r.message,
@@ -101,6 +107,7 @@ export class GangJoinRequestsRepository {
 				gangAcronym: gang?.acronym ?? "???",
 				userId: r.userId,
 				userName: user?.nickname ?? "Usuário Desconhecido",
+				userAvatarDecoration: user?.avatarDecoration ?? 0,
 				message: r.message,
 				status: r.status,
 				createdAt: r.createdAt,

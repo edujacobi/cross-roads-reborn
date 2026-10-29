@@ -35,7 +35,9 @@ import {
 	CommunicateGangDocument,
 	CreateGangRoleDocument,
 	DepositGangDocument,
+	GangJoinRequestStatus,
 	GangJoinRequestsDocument,
+	type GangJoinRequestsQuery,
 	GangRecruitmentType,
 	type GangRoleInfo,
 	GetGangDetailDocument,
@@ -191,18 +193,66 @@ const {
 	() => ({ enabled: canInviteMembers.value }),
 );
 
-const joinRequests = computed(() => joinRequestsData.value?.gangJoinRequests ?? []);
+const joinRequests = computed(() =>
+	joinRequestsData.value?.gangJoinRequests?.length ? joinRequestsData.value.gangJoinRequests : MOCK_JOIN_REQUESTS,
+);
+
+// TODO(mock): remove after styling review
+const MOCK_JOIN_REQUESTS: GangJoinRequestsQuery["gangJoinRequests"] = [
+	{
+		id: "mock-1",
+		gangId: "0",
+		gangName: "",
+		gangAcronym: "",
+		userId: "1",
+		userName: "Zé Pequeno",
+		userAvatarUrl: null,
+		userAvatarDecoration: "default",
+		message: "Quero entrar, sou ativo todo dia.",
+		status: GangJoinRequestStatus.Pending,
+		createdAt: new Date(Date.now() - 5 * 60_000).toISOString(),
+	},
+	{
+		id: "mock-2",
+		gangId: "0",
+		gangName: "",
+		gangAcronym: "",
+		userId: "2",
+		userName: "Jogador_Com_Nome_Bem_Comprido_123",
+		userAvatarUrl: null,
+		userAvatarDecoration: "default",
+		message:
+			"Mensagem longa para testar o layout: já fui líder de outra gangue, tenho experiência em roubos a investimentos e importações, e estou disponível em quase todos os horários.",
+		status: GangJoinRequestStatus.Pending,
+		createdAt: new Date(Date.now() - 3 * 3_600_000).toISOString(),
+	},
+	{
+		id: "mock-3",
+		gangId: "0",
+		gangName: "",
+		gangAcronym: "",
+		userId: "3",
+		userName: "Buscapé",
+		userAvatarUrl: null,
+		userAvatarDecoration: null,
+		message: null,
+		status: GangJoinRequestStatus.Pending,
+		createdAt: new Date(Date.now() - 2 * 86_400_000).toISOString(),
+	},
+];
 
 const { mutate: resolveRequestMutation, loading: resolvingRequest } = useMutation(ResolveGangJoinRequestDocument);
+const reviewingRequest = ref<GangJoinRequestsQuery["gangJoinRequests"][number] | null>(null);
 
-async function resolveRequest(requestId: string, accept: boolean) {
-	if (!gang.value) return;
+async function resolveRequest(accept: boolean) {
+	if (!gang.value || !reviewingRequest.value) return;
 	const res = await resolveRequestMutation({
 		gangId: String(gang.value.id),
-		requestId,
+		requestId: reviewingRequest.value.id,
 		accept,
 	});
 	if (res?.data?.resolveGangJoinRequest?.success) {
+		reviewingRequest.value = null;
 		showToast({ text: res.data.resolveGangJoinRequest.message, variant: "success" });
 		void refetchJoinRequests();
 		void refetch();
@@ -1032,40 +1082,23 @@ async function updateGangMoney() {
 				</p>
 				<BaseTable v-else>
 					<table>
-						<thead>
-							<tr>
-								<th scope="col">Jogador</th>
-								<th scope="col">Mensagem</th>
-								<th scope="col">Data</th>
-								<th scope="col">Ações</th>
-							</tr>
-						</thead>
 						<tbody>
 							<tr
 								v-for="request in joinRequests"
 								:key="request.id"
+								class="clickable-row"
+								@click="reviewingRequest = request"
 							>
-								<td>{{ request.userName }}</td>
-								<td>{{ request.message || "—" }}</td>
-								<td>{{ relative(request.createdAt) }}</td>
 								<td>
-									<div class="gang-detail__request-actions">
-										<BaseButton
-											variant="success"
-											size="sm"
-											:disabled="resolvingRequest"
-											@click="resolveRequest(request.id, true)"
-										>
-											Aceitar
-										</BaseButton>
-										<BaseButton
-											variant="danger"
-											size="sm"
-											:disabled="resolvingRequest"
-											@click="resolveRequest(request.id, false)"
-										>
-											Recusar
-										</BaseButton>
+									<div class="member-cell">
+										<UserPicture
+											:image-url="request.userAvatarUrl || useFallbackUserImage(request.userId)"
+											:decoration="request.userAvatarDecoration ?? 'default'"
+											image-class="member-avatar"
+											width="32"
+											height="32"
+										/>
+										<span>{{ request.userName }}</span>
 									</div>
 								</td>
 							</tr>
@@ -1073,6 +1106,48 @@ async function updateGangMoney() {
 					</table>
 				</BaseTable>
 			</BaseCard>
+
+			<BaseModal
+				:open="!!reviewingRequest"
+				title="Revisar solicitação"
+				@update:open="reviewingRequest = null"
+			>
+				<div
+					v-if="reviewingRequest"
+					class="gang-detail__request-review"
+				>
+					<div class="member-cell">
+						<UserPicture
+							:image-url="reviewingRequest.userAvatarUrl || useFallbackUserImage(reviewingRequest.userId)"
+							:decoration="reviewingRequest.userAvatarDecoration ?? 'default'"
+							image-class="member-avatar"
+							width="48"
+							height="48"
+						/>
+						<NuxtLink :to="`/users/${reviewingRequest.userId}`">{{ reviewingRequest.userName }}</NuxtLink>
+					</div>
+					<p class="gang-detail__request-date">Enviada há {{ relative(reviewingRequest.createdAt) }}</p>
+					<p class="gang-detail__request-message">
+						{{ reviewingRequest.message || "Nenhuma mensagem." }}
+					</p>
+				</div>
+				<template #footer>
+					<BaseButton
+						variant="danger"
+						:disabled="resolvingRequest"
+						@click="resolveRequest(false)"
+					>
+						Recusar
+					</BaseButton>
+					<BaseButton
+						variant="success"
+						:disabled="resolvingRequest"
+						@click="resolveRequest(true)"
+					>
+						Aceitar
+					</BaseButton>
+				</template>
+			</BaseModal>
 
 			<section
 				v-if="currentMember && gangMultiplayerSessions.length"
@@ -1211,7 +1286,7 @@ async function updateGangMoney() {
 							</BaseButton>
 							<BaseButton
 								v-else
-								variant="success"
+								variant="secondary"
 								:disabled="startingImport || !gang.canStartImport"
 								@click="startGangShipmentImport()"
 							>
@@ -2142,9 +2217,24 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 		padding: $spacing-md;
 	}
 
-	&__request-actions {
+	&__request-review {
 		display: flex;
+		flex-direction: column;
 		gap: $spacing-sm;
+	}
+
+	&__request-date {
+		font-size: $font-size-12;
+		color: $text-muted;
+	}
+
+	&__request-message {
+		padding: $spacing-sm $spacing-md;
+		background: $bg-input;
+		border-radius: $radius-sm;
+		color: $text-secondary;
+		white-space: pre-wrap;
+		overflow-wrap: anywhere;
 	}
 
 	&__create-form {

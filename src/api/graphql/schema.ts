@@ -354,8 +354,12 @@ export const typeDefs = /* GraphQL */ `
         gangId: ID!
         gangName: String!
         gangAcronym: String!
+        gangImage: String
+        gangColor: String
         userId: ID!
         userName: String!
+        userAvatarUrl: String
+        userAvatarDecoration: String
         message: String
         status: GangJoinRequestStatus!
         createdAt: String!

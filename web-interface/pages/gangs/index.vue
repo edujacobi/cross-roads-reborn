@@ -22,12 +22,14 @@ import {
 	ApplyToGangDocument,
 	CancelGangJoinRequestDocument,
 	CreateGangDocument,
+	GangJoinRequestStatus,
 	GangRecruitmentBoardDocument,
 	type GangRecruitmentBoardEntry,
 	GangRecruitmentType,
 	JoinOpenGangDocument,
 	MyActiveGangJoinRequestDocument,
 	MyGangJoinRequestsHistoryDocument,
+	type MyGangJoinRequestsHistoryQuery,
 } from "~/graphql/generated";
 
 definePageMeta({
@@ -129,7 +131,75 @@ const {
 	enabled: isHistoryModalOpen.value,
 }));
 
-const requestHistory = computed(() => historyData.value?.myGangJoinRequestsHistory ?? []);
+const requestStatusBadges = {
+	[GangJoinRequestStatus.Pending]: { variant: "warning", label: "Pendente" },
+	[GangJoinRequestStatus.Accepted]: { variant: "success", label: "Aceita" },
+	[GangJoinRequestStatus.Rejected]: { variant: "danger", label: "Recusada" },
+	[GangJoinRequestStatus.Cancelled]: { variant: "neutral", label: "Cancelada" },
+} as const;
+
+const requestHistory = computed(() =>
+	historyData.value?.myGangJoinRequestsHistory?.length
+		? historyData.value.myGangJoinRequestsHistory
+		: MOCK_REQUEST_HISTORY,
+);
+
+// TODO(mock): remove after styling review
+const MOCK_REQUEST_HISTORY: MyGangJoinRequestsHistoryQuery["myGangJoinRequestsHistory"] = [
+	{
+		id: "mock-1",
+		gangId: "1",
+		gangName: "Os Brabos da Quebrada",
+		gangAcronym: "BRB",
+		gangImage: imagePaths.gangBases.bikeclub,
+		gangColor: "#e11d48",
+		userId: "0",
+		userName: "Você",
+		message: "Sou ativo todo dia e tenho uma AK. Me aceitem!",
+		status: GangJoinRequestStatus.Pending,
+		createdAt: new Date().toISOString(),
+	},
+	{
+		id: "mock-2",
+		gangId: "2",
+		gangName: "Cartel do Norte",
+		gangAcronym: "CDN",
+		gangImage: null,
+		gangColor: "#22c55e",
+		userId: "0",
+		userName: "Você",
+		message: null,
+		status: GangJoinRequestStatus.Accepted,
+		createdAt: new Date(Date.now() - 86_400_000).toISOString(),
+	},
+	{
+		id: "mock-3",
+		gangId: "3",
+		gangName: "Família Corleone com um nome bem comprido para testar quebra de linha",
+		gangAcronym: "FCL",
+		gangImage: imagePaths.gangBases.bunker,
+		gangColor: "#f59e0b",
+		userId: "0",
+		userName: "Você",
+		message:
+			"Mensagem longa para testar o layout: já fui líder de outra gangue, tenho experiência em roubos a investimentos e importações, e estou disponível em quase todos os horários.",
+		status: GangJoinRequestStatus.Rejected,
+		createdAt: new Date(Date.now() - 3 * 86_400_000).toISOString(),
+	},
+	{
+		id: "mock-4",
+		gangId: "4",
+		gangName: "Motoclube Asfalto",
+		gangAcronym: "MCA",
+		gangImage: null,
+		gangColor: null,
+		userId: "0",
+		userName: "Você",
+		message: "Tenho moto.",
+		status: GangJoinRequestStatus.Cancelled,
+		createdAt: new Date(Date.now() - 10 * 86_400_000).toISOString(),
+	},
+];
 
 // Modals State
 const isCreateModalOpen = ref(false);
@@ -361,6 +431,7 @@ const bases = [
 		</div>
 
 		<BaseCard
+			class="gangs-board-card"
 			title="Recrutamento"
 			no-padding-y
 			no-padding-x
@@ -422,10 +493,7 @@ const bases = [
 						>
 							<td class="col-gang">
 								<div class="gang-info-cell">
-									<div
-										class="gang-info-cell__avatar"
-										:style="{ borderColor: g.color }"
-									>
+									<div class="gang-info-cell__avatar">
 										<NuxtImg
 											v-if="g.image"
 											:src="g.image"
@@ -750,24 +818,35 @@ const bases = [
 						class="history-card"
 					>
 						<div class="history-card__header">
-							<div>
-								<span class="history-card__gang">{{ item.gangName }}</span>
-								<span class="history-card__acronym">({{ item.gangAcronym }})</span>
+							<div class="history-card__identity">
+								<div class="gang-info-cell__avatar history-card__avatar">
+									<NuxtImg
+										v-if="item.gangImage"
+										:src="item.gangImage"
+										alt=""
+										width="64"
+										height="64"
+										class="gang-info-cell__img"
+									/>
+									<span
+										v-else
+										class="gang-info-cell__fallback"
+										:style="{ color: item.gangColor ?? undefined }"
+									>
+										{{ item.gangAcronym }}
+									</span>
+								</div>
+								<div>
+									<span class="history-card__gang">{{ item.gangName }}</span>
+									<span class="history-card__acronym">[{{ item.gangAcronym }}]</span>
+								</div>
 							</div>
-							<span
+							<BaseBadge
 								class="history-card__status"
-								:class="`history-card__status--${item.status.toLowerCase()}`"
+								:variant="requestStatusBadges[item.status].variant"
 							>
-								{{
-									item.status === "PENDING"
-										? "Pendente"
-										: item.status === "ACCEPTED"
-											? "Aceita"
-											: item.status === "REJECTED"
-												? "Recusada"
-												: "Cancelada"
-								}}
-							</span>
+								{{ requestStatusBadges[item.status].label }}
+							</BaseBadge>
 						</div>
 						<p
 							v-if="item.message"
@@ -781,8 +860,7 @@ const bases = [
 							</span>
 							<BaseButton
 								v-if="item.status === 'PENDING'"
-								variant="danger"
-								size="sm"
+								variant="secondary"
 								@click="openCancelModal(item.id)"
 							>
 								Retirar
@@ -897,6 +975,8 @@ const bases = [
 	display: flex;
 	flex-direction: column;
 	gap: $spacing-lg;
+	container-type: inline-size;
+	container-name: page;
 
 	&__list {
 		display: flex;
@@ -1055,6 +1135,12 @@ const bases = [
 	}
 }
 
+.gangs-board-card :deep(.base-card__actions) {
+	@container page (max-width: #{$bp-mobile}) {
+		flex-basis: 100%;
+	}
+}
+
 .gangs-board {
 	display: flex;
 	flex-direction: column;
@@ -1081,6 +1167,15 @@ const bases = [
 		align-items: center;
 		gap: $spacing-sm;
 		flex-wrap: wrap;
+
+		@container page (max-width: #{$bp-mobile}) {
+			width: 100%;
+
+			> * {
+				flex: 1 1 100%;
+				min-width: 0;
+			}
+		}
 	}
 
 	&__filter-selector {
@@ -1089,6 +1184,10 @@ const bases = [
 
 	&__search {
 		min-width: 320px;
+
+		@container page (max-width: #{$bp-mobile}) {
+			min-width: 0;
+		}
 	}
 
 	&__table {
@@ -1104,6 +1203,64 @@ const bases = [
 
 		.col-action {
 			text-align: right;
+		}
+
+		@container page (max-width: #{$bp-mobile}) {
+			:deep(thead) {
+				display: none;
+			}
+
+			.gangs-board__row {
+				display: grid;
+				grid-template-columns: auto auto 1fr auto;
+				grid-template-areas:
+					"gang gang gang gang"
+					"base members type action";
+				align-items: center;
+				gap: $spacing-sm $spacing-md;
+				padding: $spacing-md;
+				border-bottom: 1px solid $border-subtle;
+
+				td {
+					padding: 0;
+					border: none;
+				}
+
+				td:nth-child(1) {
+					grid-area: gang;
+				}
+
+				td:nth-child(2) {
+					grid-area: base;
+				}
+
+				td:nth-child(3) {
+					grid-area: members;
+				}
+
+				td:nth-child(4) {
+					grid-area: type;
+				}
+
+				td:nth-child(5) {
+					grid-area: action;
+				}
+			}
+
+			.col-gang {
+				width: auto;
+				min-width: 0;
+			}
+
+			.gang-info-cell__avatar {
+				width: 48px;
+				height: 48px;
+			}
+
+			.gang-base-cell__img {
+				width: 24px;
+				height: 24px;
+			}
 		}
 	}
 
@@ -1124,7 +1281,6 @@ const bases = [
 		width: 64px;
 		height: 64px;
 		border-radius: $radius-xs;
-		border: 1px solid $border-subtle;
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -1254,12 +1410,6 @@ const bases = [
 	text-align: right;
 }
 
-.history-modal-content {
-	max-height: 400px;
-	overflow-y: auto;
-	@include scrollbar-custom;
-}
-
 .history-list {
 	display: flex;
 	flex-direction: column;
@@ -1279,6 +1429,19 @@ const bases = [
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
+		gap: $spacing-sm;
+	}
+
+	&__identity {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		min-width: 0;
+	}
+
+	&__avatar {
+		width: 64px;
+		height: 64px;
 	}
 
 	&__gang {

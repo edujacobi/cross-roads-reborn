@@ -293,6 +293,8 @@ export const gangResolvers: {
 				gangId: h.gangId.toString(),
 				gangName: h.gangName,
 				gangAcronym: h.gangAcronym,
+				gangImage: h.gangImage ?? null,
+				gangColor: h.gangColor === undefined ? null : convertHexNumberToString(GangColor[h.gangColor].Color),
 				userId: h.userId,
 				userName: h.userName,
 				message: h.message,
@@ -318,17 +320,20 @@ export const gangResolvers: {
 			}
 
 			const requests = await GangJoinRequestsRepository.FindPendingByGang(gangId);
-			return requests.map(r => ({
+			const client = getClient();
+			return Promise.all(requests.map(async r => ({
 				id: r.id.toString(),
 				gangId: r.gangId.toString(),
 				gangName: r.gangName,
 				gangAcronym: r.gangAcronym,
 				userId: r.userId,
 				userName: r.userName,
+				userAvatarUrl: await client.users.fetch(r.userId).then(discordUser => discordUser.avatarURL(), () => null),
+				userAvatarDecoration: AvatarDecorationList[r.userAvatarDecoration ?? 0].Description[Language.English].toLowerCase().replaceAll(" ", "_"),
 				message: r.message,
 				status: r.status,
 				createdAt: r.createdAt.toISOString(),
-			}));
+			})));
 		},
 	},
 

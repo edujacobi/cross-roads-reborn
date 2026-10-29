@@ -1846,6 +1846,8 @@ query MyGangJoinRequestsHistory($limit: Int) {
 		gangId
 		gangName
 		gangAcronym
+		gangImage
+		gangColor
 		userId
 		userName
 		message
@@ -1862,6 +1864,8 @@ query GangJoinRequests($gangId: ID!) {
 		gangAcronym
 		userId
 		userName
+		userAvatarUrl
+		userAvatarDecoration
 		message
 		status
 		createdAt
