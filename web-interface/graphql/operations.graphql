@@ -1327,15 +1327,15 @@ query GetMyPrisonStatus {
 	}
 }
 
-mutation CreateGang($name: String!, $acronym: String!, $description: String!, $color: String!, $imageUrl: String) {
-	createGang(name: $name, acronym: $acronym, description: $description, color: $color, imageUrl: $imageUrl) {
+mutation CreateGang($name: String!, $acronym: String!, $description: String!, $color: String!, $imageUrl: String, $recruitmentType: GangRecruitmentType!) {
+	createGang(name: $name, acronym: $acronym, description: $description, color: $color, imageUrl: $imageUrl, recruitmentType: $recruitmentType) {
 		success
 		message
 	}
 }
 
-mutation UpdateGang($id: ID!, $name: String, $acronym: String, $description: String, $color: String, $imageUrl: String) {
-	updateGang(id: $id, name: $name, acronym: $acronym, description: $description, color: $color, imageUrl: $imageUrl) {
+mutation UpdateGang($id: ID!, $name: String, $acronym: String, $description: String, $color: String, $imageUrl: String, $recruitmentType: GangRecruitmentType) {
+	updateGang(id: $id, name: $name, acronym: $acronym, description: $description, color: $color, imageUrl: $imageUrl, recruitmentType: $recruitmentType) {
 		success
 		message
 	}
@@ -1870,13 +1870,6 @@ query GangJoinRequests($gangId: ID!) {
 		message
 		status
 		createdAt
-	}
-}
-
-mutation SetGangRecruitmentType($gangId: ID!, $recruitmentType: GangRecruitmentType!) {
-	setGangRecruitmentType(gangId: $gangId, recruitmentType: $recruitmentType) {
-		success
-		message
 	}
 }
 

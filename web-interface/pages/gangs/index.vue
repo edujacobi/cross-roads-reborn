@@ -50,13 +50,13 @@ const userGang = computed(() => auth.user?.value?.gangId ?? 0);
 const BOARD_PAGE_SIZE = 25;
 const { page, pageSize: boardPageSize, offset, resetPage } = usePagination(1, BOARD_PAGE_SIZE);
 const { sortColumn, sortDirection, toggleSort } = useSorting();
-const boardColumns: SortColumn[] = [
+const boardColumns = computed<SortColumn[]>(() => [
 	{ key: "name", label: "Gangue", sortable: true, class: "col-gang" },
 	{ key: "base", label: "Base", sortable: true },
 	{ key: "membersCount", label: "Membros", sortable: true },
 	{ key: "recruitmentType", label: "Adesão", sortable: true },
-	{ key: "action", label: "Ação", class: "col-action" },
-];
+	...(!userGang.value ? [{ key: "action", label: "Ação", class: "col-action" }] : []),
+]);
 const searchQuery = ref("");
 const selectedRecruitmentFilter = ref("ALL");
 
@@ -166,6 +166,7 @@ const draft = ref({
 	description: "",
 	color: "",
 	imageUrl: "",
+	recruitmentType: GangRecruitmentType.Disabled,
 });
 
 const gangColors = [
@@ -179,6 +180,12 @@ const gangColors = [
 	{ value: "pink", label: "Rosa", colorHex: "#EB459E" },
 ];
 
+const recruitmentOptions: SelectorOption[] = [
+	{ label: "Desativado", value: GangRecruitmentType.Disabled },
+	{ label: "Por Aprovação", value: GangRecruitmentType.Approval },
+	{ label: "Aberto", value: GangRecruitmentType.Open },
+];
+
 function resetDraft() {
 	draft.value = {
 		name: "",
@@ -186,6 +193,7 @@ function resetDraft() {
 		description: "",
 		color: "",
 		imageUrl: "",
+		recruitmentType: GangRecruitmentType.Disabled,
 	};
 }
 
@@ -196,6 +204,7 @@ async function createGang() {
 		description: draft.value.description,
 		color: draft.value.color,
 		imageUrl: draft.value.imageUrl || null,
+		recruitmentType: draft.value.recruitmentType,
 	});
 
 	if (res?.errors?.[0]) {
@@ -405,7 +414,7 @@ const bases = [
 				<BaseTableSkeleton
 					v-if="loadingBoard"
 					:rows="6"
-					:columns="5"
+					:columns="boardColumns.length"
 					label="Carregando gangues disponíveis"
 				/>
 				<BaseTable
@@ -419,7 +428,7 @@ const bases = [
 					<tbody>
 						<tr v-if="recruitingGangs.length === 0">
 							<td
-								colspan="5"
+								:colspan="boardColumns.length"
 								class="gangs-board__empty"
 							>
 								Nenhuma gangue com recrutamento ativo encontrada.
@@ -483,46 +492,38 @@ const bases = [
 									{{ g.recruitmentType === "OPEN" ? "Aberto" : "Aprovação" }}
 								</BaseBadge>
 							</td>
-							<td class="col-action">
-								<template v-if="userGang">
-									<span class="gang-action-muted">Já em gangue</span>
-								</template>
-								<template v-else-if="activeRequest && activeRequest.gangId === g.id">
-									<BaseButton
-										variant="danger"
-										size="sm"
-										@click="openCancelModal(activeRequest.id)"
-									>
-										Retirar
-									</BaseButton>
-								</template>
-								<template v-else-if="activeRequest">
-									<span
-										class="gang-action-muted"
-										title="Você já tem uma solicitação pendente"
-									>
-										Bloqueado
-									</span>
-								</template>
-								<template v-else-if="g.recruitmentType === 'OPEN'">
-									<BaseButton
-										variant="primary"
-										size="sm"
-										class="btn-enter-green"
-										@click="openJoinConfirmModal(g)"
-									>
-										Entrar
-									</BaseButton>
-								</template>
-								<template v-else>
-									<BaseButton
-										variant="secondary"
-										size="sm"
-										@click="openApprovalModal(g)"
-									>
-										Solicitar
-									</BaseButton>
-								</template>
+							<td
+								class="col-action"
+								v-if="!userGang"
+							>
+								<BaseButton
+									v-if="activeRequest && activeRequest.gangId === g.id"
+									variant="danger"
+									@click="openCancelModal(activeRequest.id)"
+								>
+									Retirar
+								</BaseButton>
+								<span
+									v-else-if="activeRequest"
+									class="gang-action-muted"
+									data-popover-text="Você já tem uma solicitação pendente"
+								>
+									Bloqueado
+								</span>
+								<BaseButton
+									v-else-if="g.recruitmentType === 'OPEN'"
+									variant="primary"
+									@click="openJoinConfirmModal(g)"
+								>
+									Entrar
+								</BaseButton>
+								<BaseButton
+									v-else
+									variant="secondary"
+									@click="openApprovalModal(g)"
+								>
+									Solicitar
+								</BaseButton>
 							</td>
 						</tr>
 					</tbody>
@@ -879,6 +880,14 @@ const bases = [
 					:model-value="draft.color"
 					required
 					@update:model-value="draft.color = String($event)"
+				/>
+				<BaseSelector
+					id="gang-recruitment-type"
+					label="Tipo de recrutamento"
+					:options="recruitmentOptions"
+					:model-value="draft.recruitmentType"
+					required
+					@update:model-value="draft.recruitmentType = $event as GangRecruitmentType"
 				/>
 				<BaseInput
 					id="gang-image"
@@ -1304,22 +1313,6 @@ const bases = [
 	color: $text-primary;
 }
 
-.btn-enter-green {
-	background-color: #10b981 !important;
-	border-color: #10b981 !important;
-	color: #ffffff !important;
-
-	&:hover:not(:disabled) {
-		background-color: #059669 !important;
-	}
-}
-
-.gang-action-muted {
-	font-size: 0.75rem;
-	color: $text-muted;
-	font-style: italic;
-}
-
 .approval-modal-body {
 	display: flex;
 	flex-direction: column;
@@ -1327,7 +1320,7 @@ const bases = [
 }
 
 .approval-modal-label {
-	font-size: 0.85rem;
+	font-size: $font-size-14;
 	color: $text-secondary;
 }
 

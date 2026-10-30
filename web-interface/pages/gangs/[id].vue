@@ -47,7 +47,6 @@ import {
 	SearchUsersDocument,
 	type SearchUsersQuery,
 	SetGangMoneyDocument,
-	SetGangRecruitmentTypeDocument,
 	SetMoneyMode,
 	StartGangImportDocument,
 	TransferGangDocument,
@@ -124,6 +123,11 @@ const memberSortOptions: SelectorOption[] = [
 	{ value: "depositAmount", label: "Total depositado" },
 ];
 const memberSort = ref("role");
+const recruitmentOptions: SelectorOption[] = [
+	{ label: "Desativado", value: GangRecruitmentType.Disabled },
+	{ label: "Por Aprovação", value: GangRecruitmentType.Approval },
+	{ label: "Aberto", value: GangRecruitmentType.Open },
+];
 const sortedMembers = computed(() =>
 	[...(gang.value?.members ?? [])].sort((first, second) => {
 		const nameOrder = first.nickname.localeCompare(second.nickname, "pt-BR");
@@ -142,41 +146,6 @@ const sortedMembers = computed(() =>
 		}
 	}),
 );
-const recruitmentOptions: SelectorOption[] = [
-	{ label: "Desativado", value: GangRecruitmentType.Disabled },
-	{ label: "Por Aprovação", value: GangRecruitmentType.Approval },
-	{ label: "Aberto", value: GangRecruitmentType.Open },
-];
-
-const selectedRecruitmentType = ref<GangRecruitmentType>(GangRecruitmentType.Disabled);
-watch(
-	() => gang.value?.recruitmentType,
-	(type) => {
-		if (type) selectedRecruitmentType.value = type;
-	},
-	{ immediate: true },
-);
-
-const { mutate: setRecruitmentTypeMutation, loading: updatingRecruitmentType } =
-	useMutation(SetGangRecruitmentTypeDocument);
-
-async function onRecruitmentTypeChange(val: string) {
-	if (!gang.value) return;
-	const recruitmentType = Object.values(GangRecruitmentType).find((type) => type === val);
-	if (!recruitmentType) return;
-	const res = await setRecruitmentTypeMutation({
-		gangId: String(gang.value.id),
-		recruitmentType,
-	});
-	if (res?.data?.setGangRecruitmentType?.success) {
-		selectedRecruitmentType.value = recruitmentType;
-		showToast({ text: "Tipo de recrutamento atualizado!", variant: "success" });
-		void refetch();
-	} else {
-		showToast({ text: res?.data?.setGangRecruitmentType?.message ?? "Falha ao atualizar.", variant: "error" });
-	}
-}
-
 const canInviteMembers = computed(
 	() =>
 		!!currentMember.value && (currentUserId.value === gang.value?.leaderId || currentRole.value?.canInvite === true),
@@ -730,6 +699,7 @@ const editDraft = ref({
 	description: "",
 	color: "",
 	imageUrl: "",
+	recruitmentType: GangRecruitmentType.Disabled,
 });
 
 const { mutate: updateGangMutation, loading: updating } = useMutation(UpdateGangDocument);
@@ -754,6 +724,7 @@ function openEditModal() {
 		description: gang.value.description,
 		color: hexToColor[gang.value.color?.toUpperCase()] ?? "",
 		imageUrl: gang.value.imageUrl ?? "",
+		recruitmentType: gang.value.recruitmentType,
 	};
 	isEditModalOpen.value = true;
 }
@@ -766,6 +737,7 @@ async function updateGang() {
 		description: editDraft.value.description || null,
 		color: editDraft.value.color || null,
 		imageUrl: editDraft.value.imageUrl || null,
+		recruitmentType: editDraft.value.recruitmentType || null,
 	});
 
 	if (res?.errors?.[0]) {
@@ -1008,19 +980,6 @@ async function updateGangMoney() {
 				no-padding-y
 				no-padding-x
 			>
-				<template
-					#actions
-					v-if="currentUserId === gang.leaderId"
-				>
-					<BaseSelector
-						id="gang-recruitment-type"
-						label="Tipo de recrutamento"
-						:options="recruitmentOptions"
-						:model-value="selectedRecruitmentType"
-						:disabled="updatingRecruitmentType"
-						@update:model-value="onRecruitmentTypeChange"
-					/>
-				</template>
 				<p
 					v-if="loadingRequests"
 					class="gang-detail__join-requests-message"
@@ -1952,8 +1911,19 @@ async function updateGangMoney() {
 						placeholder="Selecione uma cor"
 						:options="gangColors"
 						:model-value="editDraft.color"
+						variant="collumn"
 						required
 						@update:model-value="editDraft.color = String($event)"
+					/>
+					<BaseSelector
+						v-if="currentUserId === gang?.leaderId"
+						id="edit-gang-recruitment-type"
+						label="Tipo de recrutamento"
+						:options="recruitmentOptions"
+						:model-value="editDraft.recruitmentType"
+						variant="collumn"
+						required
+						@update:model-value="editDraft.recruitmentType = $event as GangRecruitmentType"
 					/>
 					<BaseInput
 						id="edit-gang-image"
@@ -2210,15 +2180,17 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 	}
 
 	&__textarea {
-		width: 100%;
+		min-block-size: 3lh;
+		max-block-size: 8lh;
 		padding: 0.625rem 0.875rem;
+		box-sizing: content-box;
+		field-sizing: content;
 		background-color: $bg-input;
 		border: 1px solid $border-subtle;
 		border-radius: $radius-sm;
 		color: $text-primary;
 		outline: none;
 		resize: vertical;
-		min-height: 80px;
 		font-family: inherit;
 		font-size: $font-size-14;
 		transition: border-color $transition-fast ease-in-out;

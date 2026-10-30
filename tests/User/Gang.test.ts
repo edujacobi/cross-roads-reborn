@@ -290,6 +290,29 @@ describe("Gang Model - Member Capacity", () => {
 	});
 });
 
+describe("Gang Model - Recruitment Settings", () => {
+	it("persists the recruitment type when editing a gang", async () => {
+		const gang = new Gang();
+		gang.Id = 1;
+		gang.RecruitmentType = GangRecruitmentType.Disabled;
+		const updateGang = vi.spyOn(GangRepository, "Update").mockResolvedValue([1]);
+
+		try {
+			await expect(
+				gang.Edit(null, null, null, null, null, GangRecruitmentType.Open),
+			).resolves.toBe(true);
+			expect(gang.RecruitmentType).toBe(GangRecruitmentType.Open);
+			expect(updateGang).toHaveBeenCalledWith(
+				gang.Id,
+				expect.objectContaining({ recruitmentType: GangRecruitmentType.Open }),
+			);
+		}
+		finally {
+			updateGang.mockRestore();
+		}
+	});
+});
+
 describe("Gang Model - Leadership Transfer", () => {
 	const createGang = () => {
 		const gang = new Gang();

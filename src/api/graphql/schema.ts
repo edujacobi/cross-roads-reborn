@@ -1084,8 +1084,8 @@ export const typeDefs = /* GraphQL */ `
         toggleInvestmentYieldNotifications: MutationResult!
         buyLotteryTicket: LotteryPurchaseResult!
         placeHorseRaceBet(raceId: Int!, horseId: Int!, amount: Int!): HorseRaceBetResult!
-        createGang(name: String!, acronym: String!, description: String!, color: String!, imageUrl: String): GangMutationResult!
-        updateGang(id: ID!, name: String, acronym: String, description: String, color: String, imageUrl: String): GangMutationResult!
+        createGang(name: String!, acronym: String!, description: String!, color: String!, imageUrl: String, recruitmentType: GangRecruitmentType!): GangMutationResult!
+        updateGang(id: ID!, name: String, acronym: String, description: String, color: String, imageUrl: String, recruitmentType: GangRecruitmentType): GangMutationResult!
         startGangImport(gangId: ID!): GangMutationResult!
         cancelGangImport(gangId: ID!): GangMutationResult!
         setGangMoney(gangId: ID!, amount: Float!, mode: SetMoneyMode!): GangMutationResult!
@@ -1098,7 +1098,6 @@ export const typeDefs = /* GraphQL */ `
         leaveGang(gangId: ID!): GangMutationResult!
         transferGang(gangId: ID!, targetUserId: ID!): GangMutationResult!
         inviteGangMember(gangId: ID!, targetUserId: ID!): GangMutationResult!
-        setGangRecruitmentType(gangId: ID!, recruitmentType: GangRecruitmentType!): GangMutationResult!
         joinOpenGang(gangId: ID!): GangMutationResult!
         applyToGang(gangId: ID!, message: String): GangMutationResult!
         cancelGangJoinRequest(requestId: ID): GangMutationResult!

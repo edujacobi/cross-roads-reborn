@@ -20,6 +20,13 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Collection, ComponentType
 import { logger } from "#shared/log";
 import { AdminAuditActionId } from "#core/types/AdminAuditLog";
 
+const gangRecruitmentTypes = {
+	DISABLED: GangRecruitmentType.Disabled,
+	APPROVAL: GangRecruitmentType.Approval,
+	OPEN: GangRecruitmentType.Open,
+} as const;
+type GangRecruitmentTypeName = keyof typeof gangRecruitmentTypes;
+
 function getGangRolePermissions(args: {
 	canInvite: boolean;
 	canKick: boolean;
@@ -341,7 +348,14 @@ export const gangResolvers: {
 	Mutation: {
 		createGang: async (
 			_: unknown,
-			args: { name: string; acronym: string; description: string; color: string; imageUrl?: string | null },
+			args: {
+				name: string;
+				acronym: string;
+				description: string;
+				color: string;
+				imageUrl?: string | null;
+				recruitmentType: GangRecruitmentTypeName;
+			},
 			context: GraphQLContext,
 		) => {
 			const authUser = assertAuthenticated(context);
@@ -378,7 +392,15 @@ export const gangResolvers: {
 				return { success: false, message: "Usuário não encontrado." };
 			}
 
-			const result = await Gang.Create(user, args.name, args.acronym.toLocaleUpperCase("en"), args.description, colorId, args.imageUrl || null);
+			const result = await Gang.Create(
+				user,
+				args.name,
+				args.acronym.toLocaleUpperCase("en"),
+				args.description,
+				colorId,
+				args.imageUrl || null,
+				gangRecruitmentTypes[args.recruitmentType],
+			);
 
 			if (result.gang) {
 				return { success: true, message: "Gangue criada com sucesso." };
@@ -402,6 +424,7 @@ export const gangResolvers: {
 				description?: string;
 				color?: string;
 				imageUrl?: string
+				recruitmentType?: GangRecruitmentTypeName;
 			},
 			context: GraphQLContext,
 		) => {
@@ -416,6 +439,14 @@ export const gangResolvers: {
 			const canEdit = gang.CanEdit(authUser.userId);
 			if (!canEdit) {
 				return { success: false, message: "Você não tem permissão para editar esta gangue." };
+			}
+
+			const recruitmentType = args.recruitmentType ? gangRecruitmentTypes[args.recruitmentType] : null;
+			if (recruitmentType !== null && recruitmentType !== gang.RecruitmentType && authUser.userId !== gang.LeaderId) {
+				return {
+					success: false,
+					message: "Apenas o líder pode alterar as configurações de recrutamento.",
+				};
 			}
 
 			// Map color string to GangColorId enum if provided
@@ -458,6 +489,7 @@ export const gangResolvers: {
 				args.description ?? null,
 				colorId,
 				args.imageUrl ?? null,
+				recruitmentType,
 			);
 
 			if (success) {
@@ -937,41 +969,6 @@ export const gangResolvers: {
 
 			return { success: true, message: "Convite enviado por mensagem privada." };
 		},
-		setGangRecruitmentType: async (
-			_: unknown,
-			args: { gangId: string; recruitmentType: "DISABLED" | "APPROVAL" | "OPEN" },
-			context: GraphQLContext,
-		) => {
-			const authUser = assertAuthenticated(context);
-			const gangId = Number.parseInt(args.gangId, 10);
-			if (Number.isNaN(gangId)) return { success: false, message: "ID da gangue inválido." };
-
-			const gangEntity = await GangRepository.FindById(gangId);
-			if (!gangEntity) return { success: false, message: "Gangue não encontrada." };
-			const gang = await Gang.GetInfo(gangEntity);
-			if (!gang) return { success: false, message: "Gangue não encontrada." };
-
-			let mode = GangRecruitmentType.Disabled;
-			if (args.recruitmentType === "APPROVAL") {
-				mode = GangRecruitmentType.Approval;
-			}
-			else if (args.recruitmentType === "OPEN") {
-				mode = GangRecruitmentType.Open;
-			}
-
-			const result = await gang.SetRecruitmentType(authUser.userId, mode);
-			if (!result.success) {
-				if (result.reason === "notLeader") {
-					return {
-						success: false,
-						message: "Apenas o líder pode alterar as configurações de recrutamento.",
-					};
-				}
-				return { success: false, message: "Não foi possível atualizar o tipo de recrutamento." };
-			}
-			return { success: true, message: "Tipo de recrutamento atualizado com sucesso." };
-		},
-
 		joinOpenGang: async (_: unknown, args: { gangId: string }, context: GraphQLContext) => {
 			const authUser = assertAuthenticated(context);
 			const gangId = Number.parseInt(args.gangId, 10);

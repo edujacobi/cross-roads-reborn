@@ -190,7 +190,15 @@ export class Gang {
 	 * @param image The image URL of the gang (optional).
 	 * @returns The result object with the created gang or a failure reason.
 	 */
-	static async Create(user: User, name: string, acronym: string, description: string, color: GangColorId, image: string | null = null): Promise<GangCreateResult> {
+	static async Create(
+		user: User,
+		name: string,
+		acronym: string,
+		description: string,
+		color: GangColorId,
+		image: string | null = null,
+		recruitmentType: GangRecruitmentType = GangRecruitmentType.Disabled,
+	): Promise<GangCreateResult> {
 		if (user.Money < Gang.CREATION_COST) {
 			return { gang: null, reason: "notEnoughMoney" };
 		}
@@ -227,6 +235,7 @@ export class Gang {
 				experience: 0,
 				money: 0,
 				leaderId: user.Id,
+				recruitmentType,
 			});
 
 			const names = {
@@ -287,6 +296,7 @@ export class Gang {
 			newGang.Experience = gang.experience;
 			newGang.Level = gang.level;
 			newGang.LeaderId = gang.leaderId;
+			newGang.RecruitmentType = recruitmentType;
 			newGang.LastInvestmentRobbery = gang.lastInvestmentRobbery;
 			newGang.CreatedAt = gang.createdAt;
 			newGang.UpdatedAt = gang.updatedAt;
@@ -782,6 +792,7 @@ export class Gang {
 				level: this.Level,
 				leaderId: this.LeaderId,
 				lastInvestmentRobbery: this.LastInvestmentRobbery,
+				recruitmentType: this.RecruitmentType,
 				shipmentArrivesAt: this.ImportArrivesAt,
 				lastShipmentSuccess: this.LastImportSuccess,
 				lastShipmentCancelled: this.LastImportCancelled,
@@ -1142,17 +1153,26 @@ export class Gang {
 	 * @param description New description (optional).
 	 * @param color New color (optional).
 	 * @param image New image URL (optional).
+	 * @param recruitmentType New recruitment type (optional).
 	 * @returns True if the edit was successful, false otherwise.
 	 */
-	async Edit(name: string | null, acronym: string | null, description: string | null, color: GangColorId | null, image: string | null): Promise<boolean> {
+	async Edit(
+		name: string | null,
+		acronym: string | null,
+		description: string | null,
+		color: GangColorId | null,
+		image: string | null,
+		recruitmentType: GangRecruitmentType | null = null,
+	): Promise<boolean> {
 
 		if (name) this.Name = name;
 		if (acronym) this.Acronym = acronym;
 		if (description) this.Description = description;
 		if (color != null) this.Color = color;
 		if (image) this.Image = image;
+		if (recruitmentType != null) this.RecruitmentType = recruitmentType;
 
-		Log.Success(`Editing gang ${this.Id} with new values: ${name ? `[Name: ${this.Name}]` : ""} ${acronym ? `[Acronym: ${this.Acronym}]` : ""} ${description ? `[Description: ${this.Description}]` : ""} ${color ? `[Color: ${this.Color}]` : ""} ${image ? `[Image: ${this.Image}]` : ""}`);
+		Log.Success(`Editing gang ${this.Id} with new values: ${name ? `[Name: ${this.Name}]` : ""} ${acronym ? `[Acronym: ${this.Acronym}]` : ""} ${description ? `[Description: ${this.Description}]` : ""} ${color ? `[Color: ${this.Color}]` : ""} ${image ? `[Image: ${this.Image}]` : ""} ${recruitmentType != null ? `[Recruitment type: ${this.RecruitmentType}]` : ""}`);
 
 		return await this.Update();
 	}
@@ -1670,22 +1690,6 @@ export class Gang {
 			Log.Warning(`Failed to transfer leadership of gang ${this.Name} (Id: ${this.Id}) to ${targetUser.Nickname} (Id: ${targetUser.Id}): ${err}`);
 			return false;
 		}
-	}
-
-	/**
-	 * Sets the recruitment type of the gang.
-	 * Only the gang leader can perform this action.
-	 */
-	async SetRecruitmentType(userId: string, recruitmentType: GangRecruitmentType): Promise<{
-		success: boolean;
-		reason?: string
-	}> {
-		if (this.LeaderId !== userId) {
-			return { success: false, reason: "notLeader" };
-		}
-		this.RecruitmentType = recruitmentType;
-		await GangRepository.Update(this.Id, { recruitmentType });
-		return { success: true };
 	}
 
 	/**
