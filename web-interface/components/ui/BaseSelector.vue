@@ -18,6 +18,7 @@ interface Props {
 	placeholder?: string;
 	options: SelectorOption[];
 	disabled?: boolean;
+	variant?: "collumn" | "row";
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -25,6 +26,7 @@ const props = withDefaults(defineProps<Props>(), {
 	label: undefined,
 	placeholder: "Selecione...",
 	disabled: false,
+	variant: "row",
 });
 
 const emit = defineEmits<(e: "update:modelValue", value: string) => void>();
@@ -128,7 +130,7 @@ watch(isOpen, (open) => {
 <template>
 	<div
 		class="base-selector"
-		:class="{ 'is-disabled': disabled, 'is-open': isOpen }"
+		:class="[{ 'is-disabled': disabled, 'is-open': isOpen}, variant]"
 	>
 		<label
 			v-if="label"
@@ -230,9 +232,17 @@ watch(isOpen, (open) => {
 
 .base-selector {
 	display: flex;
-	flex-direction: row;
-	align-items: center;
 	gap: $spacing-sm;
+
+	&.row {
+		flex-direction: row;
+		align-items: center;
+	}
+
+	&.collumn {
+		flex-direction: column;
+		align-items: flex-start;
+	}
 
 	@media (max-width: $bp-mobile) {
 		flex-direction: column;
