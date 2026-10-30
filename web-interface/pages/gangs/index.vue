@@ -878,6 +878,7 @@ const bases = [
 					placeholder="Selecione uma cor"
 					:options="gangColors"
 					:model-value="draft.color"
+					variant="collumn"
 					required
 					@update:model-value="draft.color = String($event)"
 				/>
@@ -886,6 +887,7 @@ const bases = [
 					label="Tipo de recrutamento"
 					:options="recruitmentOptions"
 					:model-value="draft.recruitmentType"
+					variant="collumn"
 					required
 					@update:model-value="draft.recruitmentType = $event as GangRecruitmentType"
 				/>
@@ -1065,15 +1067,17 @@ const bases = [
 	}
 
 	&__textarea {
-		width: 100%;
+		min-block-size: 3lh;
+		max-block-size: 8lh;
 		padding: 0.625rem 0.875rem;
+		box-sizing: content-box;
+		field-sizing: content;
 		background-color: $bg-input;
 		border: 1px solid $border-subtle;
 		border-radius: $radius-sm;
 		color: $text-primary;
 		outline: none;
 		resize: vertical;
-		min-height: 80px;
 		font-family: inherit;
 		font-size: $font-size-14;
 		transition: border-color $transition-fast ease-in-out;
