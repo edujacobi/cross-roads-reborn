@@ -115,9 +115,10 @@ export const gangResolvers: {
 			importState.LastImportSuccess = gang.lastShipmentSuccess;
 			importState.LastImportCancelled = gang.lastShipmentCancelled;
 			const canStartImport = (await importState.CanStartImport()).can;
-			const canViewShipmentInfo = authUser.role === "DEVELOPER"
+			const canViewGangPrivateInfo = authUser.role === "DEVELOPER"
 				|| gang.leaderId === authUser.userId
 				|| members.some(member => member.userId === authUser.userId);
+			const canViewShipmentInfo = canViewGangPrivateInfo;
 			const canImport = gang.leaderId === authUser.userId || members.some(member =>
 				member.userId === authUser.userId
 				&& roles.some(role => role.id === member.roleId && role.canImportShipments),
@@ -155,9 +156,9 @@ export const gangResolvers: {
 						roleId: member.roleId,
 						roleName: role?.name ?? "Unknown",
 						permissionCount: permCount,
-						depositAmount: member.depositAmount,
-						depositTime: member.depositTime?.toISOString() ?? null,
-						lastDepositAt: member.depositAmount > 0 && member.depositTime
+						depositAmount: canViewGangPrivateInfo ? member.depositAmount : 0,
+						depositTime: canViewGangPrivateInfo ? member.depositTime?.toISOString() ?? null : null,
+						lastDepositAt: canViewGangPrivateInfo && member.depositAmount > 0 && member.depositTime
 							? new Date(member.depositTime.getTime() - Gang.TIME_BETWEEN_DEPOSITS * 60 * 60 * 1_000).toISOString()
 							: null,
 					};

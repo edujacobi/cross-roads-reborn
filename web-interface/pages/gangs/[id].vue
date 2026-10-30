@@ -105,6 +105,7 @@ watch(completedGangSessionIds, (current, previous) => {
 const maxDepositAmount = computed(() => gang.value?.maxDepositAmount ?? 0);
 const currentUserId = computed(() => auth.user.value?.userId);
 const currentMember = computed(() => gang.value?.members.find((member) => member.userId === currentUserId.value));
+const canViewDepositInfo = computed(() => auth.isDeveloper.value || !!currentMember.value);
 const currentRole = computed(() => gang.value?.roles.find((role) => role.id === currentMember.value?.roleId));
 const canPromoteMembers = computed(
 	() =>
@@ -116,12 +117,16 @@ const canCommunicate = computed(
 	() =>
 		!!currentMember.value && (currentUserId.value === gang.value?.leaderId || currentRole.value?.canEditGang === true),
 );
-const memberSortOptions: SelectorOption[] = [
+const memberSortOptions = computed<SelectorOption[]>(() => [
 	{ value: "role", label: "Cargo" },
 	{ value: "name", label: "Nome" },
-	{ value: "depositDate", label: "Data do último depósito" },
-	{ value: "depositAmount", label: "Total depositado" },
-];
+	...(canViewDepositInfo.value
+		? [
+				{ value: "depositDate", label: "Data do último depósito" },
+				{ value: "depositAmount", label: "Total depositado" },
+			]
+		: []),
+]);
 const memberSort = ref("role");
 const recruitmentOptions: SelectorOption[] = [
 	{ label: "Desativado", value: GangRecruitmentType.Disabled },
@@ -135,15 +140,18 @@ const sortedMembers = computed(() =>
 			case "name":
 				return nameOrder;
 			case "depositDate":
+				if (!canViewDepositInfo.value) break;
 				return (
 					(second.lastDepositAt ? new Date(second.lastDepositAt).getTime() : 0) -
 						(first.lastDepositAt ? new Date(first.lastDepositAt).getTime() : 0) || nameOrder
 				);
 			case "depositAmount":
+				if (!canViewDepositInfo.value) break;
 				return second.depositAmount - first.depositAmount || nameOrder;
 			default:
 				return second.permissionCount - first.permissionCount || nameOrder;
 		}
+		return second.permissionCount - first.permissionCount || nameOrder;
 	}),
 );
 const canInviteMembers = computed(
@@ -1105,8 +1113,18 @@ async function updateGangMoney() {
 									<tr>
 										<th scope="col">Membro</th>
 										<th scope="col">Cargo</th>
-										<th scope="col">Último depósito</th>
-										<th scope="col">Total depositado</th>
+										<th
+											v-if="canViewDepositInfo"
+											scope="col"
+										>
+											Último depósito
+										</th>
+										<th
+											v-if="canViewDepositInfo"
+											scope="col"
+										>
+											Total depositado
+										</th>
 										<th
 											v-if="canManageMembers"
 											scope="col"
@@ -1144,7 +1162,7 @@ async function updateGangMoney() {
 												{{ member.roleName }}
 											</span>
 										</td>
-										<td>
+										<td v-if="canViewDepositInfo">
 											<time
 												v-if="member.lastDepositAt"
 												:datetime="member.lastDepositAt"
@@ -1153,7 +1171,7 @@ async function updateGangMoney() {
 											</time>
 											<span v-else>{{ member.depositAmount > 0 ? "—" : "Nunca" }}</span>
 										</td>
-										<td>{{ formatMoney(member.depositAmount) }}</td>
+										<td v-if="canViewDepositInfo">{{ formatMoney(member.depositAmount) }}</td>
 										<td
 											v-if="canManageMembers"
 											class="member-actions-cell"

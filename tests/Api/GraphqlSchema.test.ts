@@ -1,9 +1,14 @@
 import { buildSchema, graphql } from "graphql";
 import { createSchema } from "graphql-yoga";
 import { describe, expect, it, vi } from "vitest";
+import { setClient } from "#bot/client";
 import { typeDefs } from "#api/graphql/schema";
 import { resolvers } from "#api/graphql/resolvers";
+import { Gang } from "#core/models/Gang";
 import { GangRepository } from "#core/repositories/GangRepository";
+import { GangMemberRepository } from "#core/repositories/GangMemberRepository";
+import { GangRoleRepository } from "#core/repositories/GangRoleRepository";
+import { UserRepository } from "#core/repositories/UserRepository";
 import { GangBaseId } from "#core/types/GangBases";
 import { GangColorId } from "#core/types/GangColors";
 import { GangRecruitmentType } from "#core/types/GangRecruitment";
@@ -67,6 +72,79 @@ describe("GraphQL schema", () => {
 		}
 		finally {
 			findGangs.mockRestore();
+		}
+	});
+
+	it("only returns gang deposit details to members and developers", async () => {
+		const depositTime = new Date("2026-10-30T12:00:00.000Z");
+		const client = setClient();
+		vi.spyOn(client.users, "fetch").mockResolvedValue({ avatarURL: () => null } as never);
+		vi.spyOn(GangRepository, "FindById").mockResolvedValue({
+			id: 1,
+			name: "Gang",
+			acronym: "GNG",
+			description: "Description",
+			money: 0,
+			level: 1,
+			experience: 0,
+			color: GangColorId.Blue,
+			baseId: GangBaseId.None,
+			leaderId: "leader",
+			recruitmentType: GangRecruitmentType.Disabled,
+			image: null,
+			shipmentArrivesAt: null,
+			lastShipmentSuccess: null,
+			lastShipmentCancelled: null,
+			createdAt: new Date("2026-01-01T00:00:00.000Z"),
+		} as never);
+		vi.spyOn(GangMemberRepository, "FindAllByGang").mockResolvedValue([
+			{ userId: "member", roleId: 1, depositAmount: 2_500, depositTime },
+		] as never);
+		vi.spyOn(GangRoleRepository, "FindAllByGangId").mockResolvedValue([
+			{
+				id: 1,
+				name: "Member",
+				canInvite: false,
+				canKick: false,
+				canPromote: false,
+				canEditGang: false,
+				canImportShipments: false,
+			},
+		] as never);
+		vi.spyOn(UserRepository, "FindById").mockImplementation(async (id) => ({
+			id,
+			nickname: id,
+			money: 1_000,
+			avatarDecoration: 0,
+			backgroundDecoration: 0,
+		} as never));
+
+		const getGang = (userId: string, role: "DEVELOPER" | "PLAYER") =>
+			resolvers.Query.gang(null, { id: "1" }, {
+				user: { userId, username: userId, avatar: null, role, situationId: 0 },
+			});
+
+		try {
+			const outsider = await getGang("outsider", "PLAYER");
+			const member = await getGang("member", "PLAYER");
+			const developer = await getGang("developer", "DEVELOPER");
+
+			expect(outsider.members[0]).toMatchObject({
+				depositAmount: 0,
+				depositTime: null,
+				lastDepositAt: null,
+			});
+			for (const result of [member, developer]) {
+				expect(result.members[0]).toMatchObject({
+					depositAmount: 2_500,
+					depositTime: depositTime.toISOString(),
+					lastDepositAt: new Date(depositTime.getTime() - Gang.TIME_BETWEEN_DEPOSITS * 3_600_000).toISOString(),
+				});
+			}
+		}
+		finally {
+			vi.restoreAllMocks();
+			client.destroy();
 		}
 	});
 
