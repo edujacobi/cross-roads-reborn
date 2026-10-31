@@ -1,0 +1,21 @@
+{
+	"version": "1.0.10",
+	"title": "Recrutamento de membros para gangue",
+	"date": "31/10/2026",
+	"comment": "A primeira funcionalidade exclusiva da interface web!",
+	"sections": [
+		{
+			"title": "Recrutamento",
+			"description": "Gangues agora podem determinar um tipo de Recrutamento: Aberto, Por aprovação ou Desativado. Usuários sem gangue podem entrar na gangue sem convite.",
+			"imageUrl": "/images/situations/gang-action.png"
+		},
+		{
+			"title": "Golpes",
+			"description": "O modal de início de Golpe foi atualizado e melhorado."
+		},
+		{
+			"title": "Depósitos",
+			"description": "Os valores dos depósitos (e quanto depositou) agora são sigilosos para membros da gangue."
+		}
+	]
+}
