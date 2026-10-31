@@ -68,6 +68,23 @@ const router = useRouter();
 const { formatMoney } = useMoneyFormat();
 const { relative } = useDateFormat();
 const { getGangBaseImageUrl, getGangBaseShipmentImageUrl } = useGangBase();
+const heistMissionDescriptions = computed(() =>
+	gang.value?.heistTarget === "BANK"
+		? {
+				blueprint: "Roubar as plantas do banco revelará o layout do cofre, redes de segurança e rotas de entrada.",
+				getawayCars:
+					"Um assalto ao banco é barulhento; comprar carros de fuga ajudará você a escapar da polícia. A alternativa é correr descalço!",
+				cameras: "Hackear o sistema do banco desativará alarmes e atrasará a resposta da SWAT.",
+				mainHeist: "Invada o cofre e garanta as reservas do Banco Central!",
+			}
+		: {
+				blueprint: "Roubar as plantas ajudará você a navegar pelos complexos corredores e salas dos fundos do Cassino.",
+				getawayCars:
+					"Malas de dinheiro de cassino são pesadas; carros de fuga garantem uma fuga rápida. A alternativa é correr descalço!",
+				cameras: "Hackear o sistema de vigilância do cassino colocará as câmeras em loop e burlará sensores a laser.",
+				mainHeist: "Penetre no cofre do cassino e limpe o dinheiro dos grandes apostadores!",
+			},
+);
 const auth = useAuth();
 const canWrite = auth.canWrite;
 const { showToast } = useToast();
@@ -2102,41 +2119,75 @@ async function updateGangMoney() {
 					</BaseButton>
 				</template>
 			</BaseModal>
+
 			<BaseModal
 				:open="isGangHeistModalOpen"
 				title="Golpes"
 				description="Escolha uma preparação ou tente o golpe principal. Os membros da gangue poderão entrar na sala."
 				@update:open="isGangHeistModalOpen = $event"
 			>
-				<fieldset
-					class="gang-multiplayer__actions"
-					aria-label="Escolha uma missão de gangue"
-				>
-					<BaseButton
-						variant="secondary"
-						@click="launchGangHeist(1)"
+				<section class="heist-modal">
+					<h3 class="heist-modal__subtitle">Missões de preparação</h3>
+					<BaseCard
+						title="Roubar planta"
+						:icon="imagePaths.uiElements.heistBlueprint"
+						:subtitle="heistMissionDescriptions.blueprint"
 					>
-						Roubar planta
-					</BaseButton>
-					<BaseButton
-						variant="secondary"
-						@click="launchGangHeist(2)"
+						<p class="heist-modal__description">+4% chance de sucesso</p>
+						<p class="heist-modal__reminder">cooldown de 6h</p>
+						<BaseButton
+							variant="secondary"
+							@click="launchGangHeist(1)"
+						>
+							Roubar planta
+						</BaseButton>
+					</BaseCard>
+
+					<BaseCard
+						title="Comprar carros de fuga"
+						:subtitle="heistMissionDescriptions.getawayCars"
 					>
-						Comprar carros de fuga
-					</BaseButton>
-					<BaseButton
-						variant="secondary"
-						@click="launchGangHeist(3)"
+						<p class="heist-modal__description">+2% chance de sucesso</p>
+						<p class="heist-modal__reminder">custa Cr$ 8.000.000 do caixa da gangue</p>
+						<BaseButton
+							variant="secondary"
+							@click="launchGangHeist(2)"
+						>
+							Comprar carros
+						</BaseButton>
+					</BaseCard>
+
+					<BaseCard
+						title="Hackear câmeras de segurança"
+						:subtitle="heistMissionDescriptions.cameras"
+						:icon="imagePaths.uiElements.heistCamera"
 					>
-						Hackear câmeras
-					</BaseButton>
-					<BaseButton
-						variant="primary"
-						@click="launchGangHeist(4)"
+						<p class="heist-modal__description">+5% chance de sucesso</p>
+						<p class="heist-modal__reminder">cooldown de 6h</p>
+						<BaseButton
+							variant="secondary"
+							@click="launchGangHeist(3)"
+						>
+							Hackear câmeras
+						</BaseButton>
+					</BaseCard>
+				</section>
+
+				<section class="heist-modal">
+					<h3 class="heist-modal__subtitle">Missão principal</h3>
+					<BaseCard
+						:title="`Executar golpe - ${gang?.heistTarget === 'BANK' ? 'Banco central' : 'Cofre do Cassino'}`"
+						:subtitle="heistMissionDescriptions.mainHeist"
+						:icon="gang?.heistTarget === 'BANK' ? imagePaths.uiElements.vaultBank : imagePaths.uiElements.vaultCasino"
 					>
-						Iniciar golpe principal
-					</BaseButton>
-				</fieldset>
+						<BaseButton
+							variant="primary"
+							@click="launchGangHeist(4)"
+						>
+							Executar golpe
+						</BaseButton>
+					</BaseCard>
+				</section>
 			</BaseModal>
 		</template>
 	</main>
@@ -2759,4 +2810,32 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 	gap: $spacing-sm;
 }
 
+.heist-modal {
+	display: flex;
+	flex-direction: column;
+	gap: $spacing-md;
+	margin-bottom: $spacing-lg;
+
+	&__subtitle {
+		color: $text-secondary;
+		text-transform: uppercase;
+		font-size: $font-size-12;
+	}
+
+	&__description {
+		color: $text-secondary;
+		font-size: $font-size-14;
+	}
+
+	&__reminder {
+		color: $text-muted;
+		font-size: $font-size-12;
+		margin-top: $spacing-xs;
+		margin-bottom: $spacing-md;
+	}
+
+	.base-button {
+		width: 100%;
+	}
+}
 </style>

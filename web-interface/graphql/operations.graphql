@@ -622,6 +622,7 @@ query GetGangDetail($id: ID!) {
 		canImport
 		canStartImport
 		canViewShipmentInfo
+		heistTarget
 		base {
 			id
 			name

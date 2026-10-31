@@ -386,6 +386,7 @@ export const typeDefs = /* GraphQL */ `
         canImport: Boolean!
         canStartImport: Boolean
         canViewShipmentInfo: Boolean!
+        heistTarget: String!
         recruitmentType: GangRecruitmentType!
         leaderId: ID!
         leaderNickname: String

@@ -11,6 +11,7 @@ import { Gang, GangImportFailureReason, GangPermission } from "#core/models/Gang
 import { User } from "#core/models/User";
 import { GangBases, GangBaseId } from "#core/types/GangBases";
 import { GangColor, GangColorId } from "#core/types/GangColors";
+import { getWeeklyTarget } from "#core/types/Heist";
 import type { GraphQLContext } from "#api/types";
 import { convertHexNumberToString, formatMoney } from "#bot/utils/ui";
 import { getClient } from "#bot/client";
@@ -195,6 +196,7 @@ export const gangResolvers: {
 				canImport,
 				canStartImport: canViewShipmentInfo ? canStartImport : null,
 				canViewShipmentInfo,
+				heistTarget: getWeeklyTarget().VaultType.toUpperCase(),
 				leaderId: gang.leaderId,
 				leaderNickname: leader?.nickname ?? null,
 				leaderAvatarUrl: null,

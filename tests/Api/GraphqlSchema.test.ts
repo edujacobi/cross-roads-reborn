@@ -12,6 +12,7 @@ import { UserRepository } from "#core/repositories/UserRepository";
 import { GangBaseId } from "#core/types/GangBases";
 import { GangColorId } from "#core/types/GangColors";
 import { GangRecruitmentType } from "#core/types/GangRecruitment";
+import { getWeeklyTarget } from "#core/types/Heist";
 
 describe("GraphQL schema", () => {
 	it("routes gang recruitment queries to their authenticated resolvers", async () => {
@@ -129,6 +130,7 @@ describe("GraphQL schema", () => {
 			const member = await getGang("member", "PLAYER");
 			const developer = await getGang("developer", "DEVELOPER");
 
+			expect(outsider.heistTarget).toBe(getWeeklyTarget().VaultType.toUpperCase());
 			expect(outsider.members[0]).toMatchObject({
 				depositAmount: 0,
 				depositTime: null,

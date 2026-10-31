@@ -65,6 +65,8 @@ export const imagePaths = {
 		inventory: "/images/ui_elements/inventory.png",
 		vaultCasino: "/images/ui_elements/CasinoVault.png",
 		vaultBank: "/images/ui_elements/CentralBank.png",
+		heistBlueprint: "/images/ui_elements/Blueprint.png",
+		heistCamera: "/images/ui_elements/Camera.png",
 		daily: "/images/ui_elements/Heads.png",
 		alms: "/images/ui_elements/Alms.png",
 		shop: "/images/ui_elements/Shop.png",
