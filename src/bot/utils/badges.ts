@@ -110,6 +110,7 @@ export const EmoteBadgeId = {
 		Christmas2021: "925027603352526878",
 		KeyishMandrake: "934631816546123876",
 		Coroamuru: "852733290616062002",
+		Halloween2026: "1565530513052012575",
 	},
 
 };
@@ -225,5 +226,6 @@ export const EmoteBadgeString = {
 		Christmas2021: `<:badge_BiscoitoNatalino:${EmoteBadgeId.Events.Christmas2021}>`,
 		KeyishMandrake: `<:badge_mandrakeChavoso:${EmoteBadgeId.Events.KeyishMandrake}>`,
 		Coroamuru: `<:EuDerroteiCoroamuru:${EmoteBadgeId.Events.Coroamuru}>`,
+		Halloween2026: `<:BadgeHalloween2026:${EmoteBadgeId.Events.Halloween2026}>`,
 	},
 };

@@ -207,6 +207,7 @@ export enum BadgeId {
 	S6Top1Gang,
 
 	DefeatedCoroamuru,
+	HalloweenArt2026,
 
 	// Just for /badges command
 	S_Top1Money = 1_000,

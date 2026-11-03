@@ -1670,6 +1670,23 @@ export const BadgeList: BadgeListType = {
 			String: EmoteBadgeString.Events.Coroamuru,
 		},
 	},
+	[BadgeId.HalloweenArt2026]: {
+		Id: BadgeId.HalloweenArt2026,
+		Name: {
+			[Language.English]: "Halloween 2026",
+			[Language.Portuguese]: "Halloween 2026",
+			[Language.Spanish]: "Halloween 2026",
+		},
+		Description: {
+			[Language.English]: "Halloween Art Event 2026",
+			[Language.Portuguese]: "Evento de Arte de Halloween 2026",
+			[Language.Spanish]: "Evento de Arte de Halloween 2026",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Events.Halloween2026,
+			String: EmoteBadgeString.Events.Halloween2026,
+		},
+	},
 
 	// Just for /badges command
 	[BadgeId.S_Top1Money]: {
@@ -1999,6 +2016,7 @@ export function getCommandBadgeGroups() {
 		BadgeId.ChristmasCookie2021,
 		BadgeId.DefeatedCoroamuru,
 		BadgeId.KeyishMandrake,
+		BadgeId.HalloweenArt2026,
 	];
 	const seasonalBadgeIds: BadgeId[] = [
 		BadgeId.S_Top1Money,
