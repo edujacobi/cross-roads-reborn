@@ -73,10 +73,3 @@ const left = computed(() => leftColorOptions[props.variant || "normal"]);
 		/>
 	</svg>
 </template>
-
-<style
-	scoped
-	lang="scss"
->
-
-</style>

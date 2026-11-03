@@ -6,8 +6,7 @@ import { User } from "#core/models/User";
 import { UserRepository } from "#core/repositories/UserRepository";
 import { UserItemRepository } from "#core/repositories/UserItemRepository";
 import { Language } from "#core/models/Language";
-import { ItemList } from "#core/types/Items";
-import { ItemType } from "#core/types/Items";
+import { ItemList, ItemType } from "#core/types/Items";
 import { BundleId } from "#core/types/Ids";
 import { ClassList } from "#core/types/Classes";
 import { BadgeList } from "#core/types/Badges";
@@ -20,17 +19,17 @@ import { formatMoney } from "#bot/utils/ui";
 import { CrColors } from "#bot/utils/colors";
 import { sendPrivateMessage } from "#bot/utils/discordInteractions";
 import { GangRepository } from "#core/repositories/GangRepository";
+import type { ResolverFn } from "./helpers";
 import {
 	assertAuthenticated,
 	assertCanWrite,
 	assertDeveloper,
-	recordAdminAction,
-	getCooldownValue,
 	getActionValue,
-	mapUserDetail,
+	getCooldownValue,
 	getCurrentDiscordProfile,
+	mapUserDetail,
+	recordAdminAction,
 } from "./helpers";
-import type { ResolverFn } from "./helpers";
 
 const AdminNotificationStrings = {
 	[Language.English]: {
@@ -140,7 +139,11 @@ export const adminResolvers: {
 		) => {
 			const admin = assertCanWrite(context);
 			if (!Number.isSafeInteger(args.amount)) {
-				return { success: false, message: "O valor do dinheiro deve ser um número inteiro válido.", user: null };
+				return {
+					success: false,
+					message: "O valor do dinheiro deve ser um número inteiro válido.",
+					user: null,
+				};
 			}
 
 			const target = new User(args.userId);
@@ -151,7 +154,11 @@ export const adminResolvers: {
 
 			const money = args.mode === "ADD" ? target.Money + args.amount : args.amount;
 			if (!Number.isSafeInteger(money)) {
-				return { success: false, message: "O dinheiro atualizado deve ser um número inteiro válido.", user: null };
+				return {
+					success: false,
+					message: "O dinheiro atualizado deve ser um número inteiro válido.",
+					user: null,
+				};
 			}
 
 			const previousMoney = target.Money;
@@ -292,7 +299,11 @@ export const adminResolvers: {
 				return { success: false, message: `Item com Id ${args.itemId} não encontrado.`, user: null };
 			}
 			if (itemData.Type === ItemType.Consumable && (!Number.isInteger(args.hoursOrQuantity) || args.hoursOrQuantity < 0)) {
-				return { success: false, message: "A quantidade do consumível deve ser um número inteiro não negativo.", user: null };
+				return {
+					success: false,
+					message: "A quantidade do consumível deve ser um número inteiro não negativo.",
+					user: null,
+				};
 			}
 			const target = new User(args.userId);
 			const found = await target.GetInfo();
@@ -388,7 +399,11 @@ export const adminResolvers: {
 		) => {
 			const admin = assertCanWrite(context);
 			if (!Number.isSafeInteger(args.amount)) {
-				return { success: false, message: "O valor de moedas especiais deve ser um número inteiro válido.", user: null };
+				return {
+					success: false,
+					message: "O valor de moedas especiais deve ser um número inteiro válido.",
+					user: null,
+				};
 			}
 
 			const target = new User(args.userId);
@@ -398,7 +413,11 @@ export const adminResolvers: {
 			}
 
 			if (!Number.isSafeInteger(target.SpecialCoin + args.amount)) {
-				return { success: false, message: "As moedas especiais atualizadas devem ser um número inteiro válido.", user: null };
+				return {
+					success: false,
+					message: "As moedas especiais atualizadas devem ser um número inteiro válido.",
+					user: null,
+				};
 			}
 
 			const previousValue = target.SpecialCoin;

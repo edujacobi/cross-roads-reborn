@@ -14,7 +14,6 @@ import { useAuth } from "~/composables/useAuth";
 import { useItemDetailModal } from "~/composables/useItemDetailModal";
 import { useMoneyFormat } from "~/composables/useMoneyFormat";
 import { useToast } from "~/composables/useToast";
-import { getErrorMessage } from "~/utils/getErrorMessage";
 import {
 	BuyItemDocument,
 	GetBlackMarketOpenDocument,
@@ -22,6 +21,7 @@ import {
 	type GetItemsQuery,
 	GetUserInventoryDocument,
 } from "~/graphql/generated";
+import { getErrorMessage } from "~/utils/getErrorMessage";
 import { BundleId, ItemId } from "../../src/core/types/Ids";
 import { ItemType } from "../../src/core/types/ItemType";
 
@@ -754,10 +754,6 @@ onUnmounted(() => {
 			justify-content: center;
 			min-width: 1.25rem;
 			height: 1.25rem;
-			//background-color: color-mix(in lab, $bg-card 100%, $color-danger 50%);
-			//color: $color-danger;
-			//border: $color-danger 1px solid;
-			//border-radius: $radius-xs;
 			background-color: $color-danger;
 			color: $text-primary;
 			border-radius: $radius-full;
@@ -805,7 +801,6 @@ onUnmounted(() => {
 			margin: 0;
 			display: flex;
 			flex-direction: column;
-			//gap: $spacing-sm;
 		}
 
 		&-item {

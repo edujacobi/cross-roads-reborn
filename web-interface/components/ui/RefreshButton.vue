@@ -32,10 +32,3 @@ const emit = defineEmits<(e: "refresh", value: boolean) => void>();
 		{{ (label ?? loading) ? "Atualizando" : "Atualizar" }}
 	</BaseButton>
 </template>
-
-<style
-	scoped
-	lang="scss"
->
-
-</style>

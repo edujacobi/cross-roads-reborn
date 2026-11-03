@@ -83,14 +83,14 @@ module.exports = {
 
 		const usersWithItem = await UserItemRepository.CountUsersWithItem(item.Id);
 
-		interface buttonParams {
+		interface ButtonParams {
 			label: string;
 			customId: string;
 			style?: ButtonStyle;
 			emoji?: ComponentEmojiResolvable;
 		}
 
-		function button(params: buttonParams) {
+		function button(params: ButtonParams) {
 			const btn = new ButtonBuilder()
 				.setLabel(params.label)
 				.setDisabled(true)

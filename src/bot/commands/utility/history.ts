@@ -60,8 +60,8 @@ module.exports = {
 				historyList = `\n${s.empty}`;
 			}
 
-			for (let i = 0; i < robHistories.length; i++) {
-				const rob = robHistories[i];
+			for (const element of robHistories) {
+				const rob = element;
 
 				const emoji = rob.success ? EmoteString.Victory : EmoteString.Defeat;
 				const text = rob.success ? s.success : s.failure;

@@ -49,7 +49,7 @@ export class LogManager {
 		const LOG_CHANNEL_ID = process.env.LOG_CHANNEL_ID;
 		const channel = LOG_CHANNEL_ID ? getClient().channels.cache.get(LOG_CHANNEL_ID) : null;
 
-		if (!channel || channel.type !== ChannelType.GuildText) return;
+		if (channel?.type !== ChannelType.GuildText) return;
 
 		let currentLength = 0;
 		let currentTexts: string[] = [];

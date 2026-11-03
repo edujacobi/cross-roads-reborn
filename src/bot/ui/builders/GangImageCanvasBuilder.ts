@@ -24,7 +24,7 @@ export class GangImageCanvasBuilder extends BaseCanvasBuilder {
 		this.IsFullSize = isFullSize;
 	}
 
-	private static GangImageCache = new Map<string, Image>();
+	private static readonly GangImageCache = new Map<string, Image>();
 
 	async GetCanvas(): Promise<Canvas> {
 		const ctx = this.Ctx;

@@ -36,7 +36,7 @@ const legacyActions: Record<string, AdminAuditActionId> = {
 };
 
 function mapLegacyTarget(target: string): { targetUserId: string | null; targetSettingId: AdminAuditSettingId | null } {
-	const userId = target.match(/\((\d+)\)(?:\s+-\s+.*)?$/)?.[1];
+	const userId = new RegExp(/\((\d+)\)(?:\s+-\s+.*)?$/).exec(target)?.[1];
 	if (userId) {
 		return { targetUserId: userId, targetSettingId: null };
 	}
@@ -127,10 +127,22 @@ export async function migrateAdminAuditLogsV2(database: Sequelize = sequelize): 
 
 		await queryInterface.dropTable("admin_audit_logs", { transaction });
 		await queryInterface.renameTable(migratedTable, "admin_audit_logs", { transaction });
-		await queryInterface.addIndex("admin_audit_logs", ["createdAt"], { name: "admin_audit_logs_created_at", transaction });
-		await queryInterface.addIndex("admin_audit_logs", ["adminId"], { name: "admin_audit_logs_admin_id", transaction });
-		await queryInterface.addIndex("admin_audit_logs", ["targetUserId"], { name: "admin_audit_logs_target_user_id", transaction });
-		await queryInterface.addIndex("admin_audit_logs", ["targetSettingId"], { name: "admin_audit_logs_target_setting_id", transaction });
+		await queryInterface.addIndex("admin_audit_logs", ["createdAt"], {
+			name: "admin_audit_logs_created_at",
+			transaction,
+		});
+		await queryInterface.addIndex("admin_audit_logs", ["adminId"], {
+			name: "admin_audit_logs_admin_id",
+			transaction,
+		});
+		await queryInterface.addIndex("admin_audit_logs", ["targetUserId"], {
+			name: "admin_audit_logs_target_user_id",
+			transaction,
+		});
+		await queryInterface.addIndex("admin_audit_logs", ["targetSettingId"], {
+			name: "admin_audit_logs_target_setting_id",
+			transaction,
+		});
 		await transaction.commit();
 	}
 	catch (error) {

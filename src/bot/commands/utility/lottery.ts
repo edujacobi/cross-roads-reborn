@@ -9,7 +9,16 @@ import { Language, type Localization } from "#core/models/Language";
 import { Lottery } from "#core/models/Lottery";
 import type { User } from "#core/models/User";
 import { ClassList, getCasinoClassModifier } from "#core/types/Classes";
-import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Colors, Locale, SlashCommandBuilder, time, TimestampStyles } from "discord.js";
+import {
+	ButtonBuilder,
+	ButtonStyle,
+	type ChatInputCommandInteraction,
+	Colors,
+	Locale,
+	SlashCommandBuilder,
+	time,
+	TimestampStyles,
+} from "discord.js";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -40,10 +49,10 @@ module.exports = {
 		const lastWinnerInfo = await Lottery.GetLastWinner();
 		let lastWinnerText = `${s.noLastWinner}`;
 
-		if (lastWinnerInfo && lastWinnerInfo.user && lastWinnerInfo.ticket) {
+		if (lastWinnerInfo?.user && lastWinnerInfo.ticket) {
 			lastWinnerText = s.lastWinner(
 				lastWinnerInfo.user.GetNameWithImage() || "Unknown",
-				formatMoney(lastWinnerInfo.ticket.winnings, language)
+				formatMoney(lastWinnerInfo.ticket.winnings, language),
 			);
 		}
 
@@ -74,8 +83,8 @@ module.exports = {
 					...(modifierText ? [modifierText] : []),
 				])
 				.setThumbnailAccessory(thumb => thumb
-					.setURL("https://media.discordapp.net/attachments/1233604589064818808/1494366208307499199/Ticket.png")
-				)
+					.setURL("https://media.discordapp.net/attachments/1233604589064818808/1494366208307499199/Ticket.png"),
+				),
 			)
 			.addLargeSeparator()
 			.addTexts([
@@ -84,14 +93,14 @@ module.exports = {
 					`### ${EmoteString.Ticket} ${s.nextDrawTitle}`,
 				s.nextDrawInfo(time(draw.drawTime, TimestampStyles.RelativeTime), formatMoney(ticketCost, language), hasVipDiscount ? formatMoney(ticketPrice, language) : undefined),
 				s.accumulated(accumulatorText),
-				lastWinnerText
+				lastWinnerText,
 			]);
 
 		if (hasBought) {
 			container
 				.addLargeSeparator()
 				.addTexts([
-					s.alreadyBought(hasBought.id)
+					s.alreadyBought(hasBought.id),
 				])
 				.addFooter({
 					text: formatMoney(user.Money, language),
@@ -120,12 +129,12 @@ module.exports = {
 					.setAccentColor(CrColors.Casino)
 					.addTexts([
 						`### ${EmoteString.Ticket} ${s.confirmTitle}`,
-						s.confirmDescription(formatMoney(ticketCost, language))
+						s.confirmDescription(formatMoney(ticketCost, language)),
 					])
 					.addButtonRow(btnConfirm => btnConfirm
 						.setCustomId("confirm")
 						.setLabel(s.confirmButton)
-						.setStyle(ButtonStyle.Success)
+						.setStyle(ButtonStyle.Success),
 					)
 					.addFooter({
 						text: formatMoney(user.Money, language),
@@ -144,7 +153,7 @@ module.exports = {
 					.setUser(user)
 					.setAccentColor(buyResult.success ? CrColors.Casino : Colors.Red)
 					.addTexts([
-						`${EmoteString.Ticket} ${buyResult.message}`
+						`${EmoteString.Ticket} ${buyResult.message}`,
 					])
 					.addFooter({
 						text: formatMoney(user.Money, language),

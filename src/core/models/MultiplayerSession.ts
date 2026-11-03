@@ -217,9 +217,9 @@ export type MultiplayerStartResult<TInitData = never> =
 	| { success: false; message: string };
 
 export class MultiplayerSession {
-	private static sessions = new Map<string, RuntimeSession>();
-	private static updates = new EventEmitter().setMaxListeners(0);
-	private static reservations = new Set<string>();
+	private static readonly sessions = new Map<string, RuntimeSession>();
+	private static readonly updates = new EventEmitter().setMaxListeners(0);
+	private static readonly reservations = new Set<string>();
 
 	static async Initialize(): Promise<void> {
 		let cleanupFailure: unknown;
@@ -241,10 +241,7 @@ export class MultiplayerSession {
 		let cleanupFailure: unknown;
 		for (const session of this.sessions.values()) {
 			if (session.phase === "completed" || session.phase === "aborted") continue;
-			while (
-				session.task &&
-				(session.phase === "starting" || session.phase === "resolving" || session.phase === "settling")
-			) {
+			while (session.task && (session.phase === "starting" || session.phase === "resolving" || session.phase === "settling")) {
 				const task = session.task;
 				try {
 					await task;
@@ -517,7 +514,7 @@ export class MultiplayerSession {
 		if (!this.TryReserve(reservation)) return { success: false, message: s.roomBusy };
 		try {
 			const session = this.sessions.get(sessionId);
-			if (!session || session.kind !== "russianRoulette" || session.phase !== "lobby") {
+			if (session?.kind !== "russianRoulette" || session.phase !== "lobby") {
 				return { success: false, message: s.roomUnavailable };
 			}
 			if (session.participants.has(participant.Id)) {
@@ -539,7 +536,7 @@ export class MultiplayerSession {
 			session.participants.set(participant.Id, participant);
 			await this.RenewLobby(session);
 			const currentSession = this.sessions.get(sessionId);
-			if (!currentSession || currentSession.phase !== "lobby") {
+			if (currentSession?.phase !== "lobby") {
 				return { success: false, message: s.roomUnavailable };
 			}
 			if (session.participants.size === session.maxParticipants) {
@@ -843,7 +840,7 @@ export class MultiplayerSession {
 		const s = Strings[language];
 		const session = this.sessions.get(sessionId);
 		if (!session) return { success: false, message: s.actionUnavailable };
-		if (!session.target || session.target.Id !== userId) return { success: false, message: s.cannotRespond };
+		if (session.target?.Id !== userId) return { success: false, message: s.cannotRespond };
 		if (session.phase !== "awaitingDefender" || session.response !== null) {
 			return { success: false, message: s.alreadyResponded };
 		}
@@ -949,9 +946,9 @@ export class MultiplayerSession {
 		});
 		if (session.phase !== phase) return;
 		this.sessions.set(session.id, session);
-		session.timer = setTimeout(() => {
+		session.timer = setTimeout(async () => {
 			session.timer = null;
-			this.TrackTask(session, onTimeout().catch(async error => {
+			await this.TrackTask(session, onTimeout().catch(async error => {
 				logger.error(`Failed to resolve multiplayer session ${session.id}: ${error}`);
 				try {
 					await this.AbortRuntime(session, "resolution-failed");
@@ -1016,7 +1013,7 @@ export class MultiplayerSession {
 		await MultiplayerSessionRepository.Update(session.id, { phase: session.phase });
 		if (session.phase !== "running") return;
 		this.Publish(session);
-		this.TrackTask(session, this.RunRussianRoulette(session, players).catch(async error => {
+		await this.TrackTask(session, this.RunRussianRoulette(session, players).catch(async error => {
 			logger.error(`Failed to resolve Russian Roulette session ${session.id}: ${error}`);
 			try {
 				await this.AbortRuntime(session, "resolution-failed");
@@ -1245,7 +1242,9 @@ export class MultiplayerSession {
 		if (
 			session.target?.Id === userId &&
 			(session.kind !== "investmentRobbery" || session.phase !== "lobby")
-		) return true;
+		) {
+			return true;
+		}
 		if (session.kind === "russianRoulette") return true;
 		return session.gangId !== null && session.gangId === gangId && session.phase === "lobby";
 	}

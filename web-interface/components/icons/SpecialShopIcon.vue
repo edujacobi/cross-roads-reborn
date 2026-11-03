@@ -67,10 +67,3 @@ const color2 = computed(() => color2Options[props.variant || "normal"]);
 		</defs>
 	</svg>
 </template>
-
-<style
-	scoped
-	lang="scss"
->
-
-</style>

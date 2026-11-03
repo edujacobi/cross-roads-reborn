@@ -450,7 +450,13 @@ export class InventoryCanvasBuilder extends BaseCanvasBuilder {
 			const consumable = item.Type === ItemType.Consumable;
 			const isLessThan24Hours = consumable ? item.Quantity <= 2 : differenceInHours(item.RemainingTime, Date.now()) < 24;
 			const isLessThan12Hours = consumable ? item.Quantity <= 1 : differenceInHours(item.RemainingTime, Date.now()) < 12;
-			const iconPath = isLessThan12Hours ? "ui/assets/images/ui_elements/infoDanger.png" : isLessThan24Hours ? "ui/assets/images/ui_elements/infoWarning.png" : null;
+			let iconPath: string | null = null;
+			if (isLessThan12Hours) {
+				iconPath = "ui/assets/images/ui_elements/infoDanger.png";
+			}
+			else if (isLessThan24Hours) {
+				iconPath = "ui/assets/images/ui_elements/infoWarning.png";
+			}
 
 			if (this.FullSize) {
 				this.Ctx.textBaseline = "top";

@@ -2002,7 +2002,7 @@ export function getBadgeList(): IBadge[] {
 }
 
 export function getCommandBadgeGroups() {
-	const specialBadgeIds: BadgeId[] = [
+	const specialBadgeIds: Set<BadgeId> = new Set([
 		BadgeId.VIP,
 		BadgeId.Developer,
 		BadgeId.Moderator,
@@ -2017,8 +2017,8 @@ export function getCommandBadgeGroups() {
 		BadgeId.DefeatedCoroamuru,
 		BadgeId.KeyishMandrake,
 		BadgeId.HalloweenArt2026,
-	];
-	const seasonalBadgeIds: BadgeId[] = [
+	]);
+	const seasonalBadgeIds: Set<BadgeId> = new Set([
 		BadgeId.S_Top1Money,
 		BadgeId.S_Top2Money,
 		BadgeId.S_Top3Money,
@@ -2037,11 +2037,11 @@ export function getCommandBadgeGroups() {
 		BadgeId.S_Top1Bribery,
 		BadgeId.S_Top1Hospital,
 		BadgeId.S_Top1Gang,
-	];
+	]);
 	const badges = getBadgeList();
 
 	return {
-		special: badges.filter(({ Id }) => specialBadgeIds.includes(Id)),
-		seasonal: badges.filter(({ Id }) => seasonalBadgeIds.includes(Id)),
+		special: badges.filter(({ Id }) => specialBadgeIds.has(Id)),
+		seasonal: badges.filter(({ Id }) => seasonalBadgeIds.has(Id)),
 	};
 }

@@ -226,8 +226,8 @@ export class DashboardCanvasBuilder extends BaseCanvasBuilder {
 		ctx.textBaseline = "top";
 		ctx.font = "10px Inter";
 
-		for (let i = 0; i < points.length; i++) {
-			const point = points[i];
+		for (const element of points) {
+			const point = element;
 			const dateObj = new Date(point.date);
 			const dateStr = `${dateObj.getDate().toString().padStart(2, "0")}/${(dateObj.getMonth() + 1).toString().padStart(2, "0")}`;
 			ctx.fillText(dateStr, point.px, y + height + 5);

@@ -89,12 +89,12 @@ export class Dashboard {
 			now.getFullYear(),
 			now.getMonth(),
 			now.getDate() + 1,
-			0, 0, 0
+			0, 0, 0,
 		);
 		const timeUntilMidnight = nextMidnight.getTime() - now.getTime();
 
-		setTimeout(() => {
-			Dashboard.TakeSnapshot();
+		setTimeout(async () => {
+			await Dashboard.TakeSnapshot();
 			// Then set an interval to run every 24 hours
 			setInterval(Dashboard.TakeSnapshot, 24 * 60 * 60 * 1000);
 		}, timeUntilMidnight);

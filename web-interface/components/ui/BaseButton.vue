@@ -47,7 +47,7 @@ withDefaults(defineProps<Props>(), {
 @use "sass:color";
 
 .base-button {
-	appearance: button;
+	appearance: auto;
   text-decoration: none;
   display: inline-flex;
   align-items: center;

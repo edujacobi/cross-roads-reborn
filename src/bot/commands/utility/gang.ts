@@ -3,19 +3,29 @@ import { DEFAULT_GANG_IMAGE } from "#bot/ui/builders/GangImageCanvasBuilder";
 import { ProgressBarCanvasBuilder } from "#bot/ui/builders/ProgressBarCanvasBuilder";
 import { createButtonCollector, disableButtons } from "#bot/utils/collectors";
 import { CrColors } from "#bot/utils/colors";
-import { deferReply, deferUpdate, replyInteraction, replyWithContainer, sendComplexPrivateMessage } from "#bot/utils/discordInteractions";
+import {
+	deferReply,
+	deferUpdate,
+	replyInteraction,
+	replyWithContainer,
+	sendComplexPrivateMessage,
+} from "#bot/utils/discordInteractions";
 import { EmoteId, EmoteString } from "#bot/utils/emotes";
 import { convertHexNumberToString, defaultComponent, formatMoney, hexToRGB } from "#bot/utils/ui";
 import { checkUser, searchUser } from "#bot/utils/userUtils";
-import { Gang, GangPermission, GangImportFailureReason, Strings as GangStrings } from "#core/models/Gang";
-import { InvestmentRobberyReason } from "#core/models/InvestmentRobbery";
+import { Gang, GangImportFailureReason, GangPermission, Strings as GangStrings } from "#core/models/Gang";
 import type { InvestmentRobberyResult } from "#core/models/InvestmentRobbery";
-import { MultiplayerSession, type MultiplayerSessionView, Strings as MultiplayerStrings } from "#core/models/MultiplayerSession";
+import { InvestmentRobberyReason } from "#core/models/InvestmentRobbery";
+import {
+	MultiplayerSession,
+	type MultiplayerSessionView,
+	Strings as MultiplayerStrings,
+} from "#core/models/MultiplayerSession";
 import { Log } from "#shared/log";
 import { getLanguageFromLocale, Language, type Localization } from "#core/models/Language";
 import { User } from "#core/models/User";
 import { GangBaseId, GangBases, type GangModifier, getGangBases } from "#core/types/GangBases";
-import { GangColor, type IGangColor } from "#core/types/GangColors";
+import { GangColor, GangColorId, type IGangColor } from "#core/types/GangColors";
 import { InvestmentList } from "#core/types/Investments";
 import { addHours, isFuture } from "date-fns";
 import {
@@ -24,20 +34,25 @@ import {
 	ButtonBuilder,
 	ButtonStyle,
 	type ChatInputCommandInteraction,
+	Collection,
 	type ColorResolvable,
 	Colors,
+	ComponentType,
 	Locale,
+	type Message,
+	type MessageComponentInteraction,
 	MessageFlags,
 	SlashCommandBuilder,
-	Collection,
-	ComponentType,
-	type MessageComponentInteraction,
-	type Message,
 	time,
 	TimestampStyles,
 } from "discord.js";
+import { type IDescription } from "#core/types/Interfaces";
 
-Gang.Notifier = async (userId, gangInfo, message, sender, specialMessage) => {
+Gang.Notifier = async (userId: string, gangInfo: {
+	name: string,
+	acronym: string,
+	colorId: GangColorId
+}, message: IDescription | string, sender?: User, specialMessage?: IDescription | string) => {
 	const recipient = new User(userId);
 	await recipient.GetSimpleInfo();
 	const language = recipient.Language;
@@ -1783,9 +1798,7 @@ module.exports = {
 			}
 
 			let amount = interaction.options.getInteger("amount");
-			if (amount === null) {
-				amount = Math.min(user.Money, Gang.MAX_DEPOSIT_PER_DAY * gang.Level);
-			}
+			amount ??= Math.min(user.Money, Gang.MAX_DEPOSIT_PER_DAY * gang.Level);
 
 			if (amount <= 0) {
 				return warn(s.notEnoughMoneyDeposit(formatMoney(1, language)));
@@ -2006,7 +2019,7 @@ module.exports = {
 				return warn(s.userNotInGang(target.Nickname));
 			}
 
-			const roles = gang.Roles.sort((a, b) => a.Id - b.Id);
+			const roles = gang.Roles.toSorted((a, b) => a.Id - b.Id);
 			const currentRole = roles.find(r => r.Id === member.RoleId);
 
 			const getContainer = () => {
@@ -2064,7 +2077,7 @@ module.exports = {
 				await deferUpdate(btn);
 
 				if (btn.customId.startsWith("role_")) {
-					const roleId = parseInt(btn.customId.split("_")[1]);
+					const roleId = Number.parseInt(btn.customId.split("_")[1]);
 					const success = await gang.ChangeRole(user.Id, target.Id, roleId);
 
 					if (!success) {
@@ -2235,7 +2248,7 @@ module.exports = {
 				return warn(s.errorCantTransferToSelf);
 			}
 
-			const targetMember = gang.Members.find(m => m.UserId === target.Id);
+			const targetMember = gang.Members.some(m => m.UserId === target.Id);
 			if (!targetMember) {
 				return warn(s.userNotInGang(target.Nickname));
 			}
@@ -2313,7 +2326,7 @@ module.exports = {
 					])
 					.addLargeSeparator();
 
-				const roles = gang!.Roles.sort((a, b) => b.Permissions.length - a.Permissions.length);
+				const roles = gang!.Roles.toSorted((a, b) => b.Permissions.length - a.Permissions.length);
 
 				for (const role of roles) {
 					const permissions = role.Permissions.map(p => {
@@ -2359,7 +2372,7 @@ module.exports = {
 				gang = freshGang;
 
 				if (btn.customId.startsWith("delete_role_")) {
-					const roleId = parseInt(btn.customId.split("_")[2]);
+					const roleId = Number.parseInt(btn.customId.split("_")[2]);
 					const role = gang.Roles.find(r => r.Id === roleId);
 					if (!role) return;
 
@@ -2382,7 +2395,7 @@ module.exports = {
 				}
 
 				if (btn.customId.startsWith("confirm_delete_")) {
-					const roleId = parseInt(btn.customId.split("_")[2]);
+					const roleId = Number.parseInt(btn.customId.split("_")[2]);
 					const success = await gang.DeleteRole(user.Id, roleId);
 					if (!success) {
 						return warn(s.errorDeleteRole);
@@ -3016,7 +3029,11 @@ async function runInvestmentRobberySession(
 	const s = Strings[language];
 	const gang = await Gang.GetByUserId(user.Id);
 	if (!gang) {
-		await replyWithContainer(interaction, defaultComponent({ user, color: CrColors.Robbery, description: s.notInGang }));
+		await replyWithContainer(interaction, defaultComponent({
+			user,
+			color: CrColors.Robbery,
+			description: s.notInGang,
+		}));
 		return;
 	}
 
@@ -3029,7 +3046,11 @@ async function runInvestmentRobberySession(
 	if (existing?.targetId) {
 		targetUser = new User(existing.targetId);
 		if (!await targetUser.GetInfo()) {
-			await replyWithContainer(interaction, defaultComponent({ user, color: CrColors.Robbery, description: MultiplayerStrings[user.Language].playerNotFound }));
+			await replyWithContainer(interaction, defaultComponent({
+				user,
+				color: CrColors.Robbery,
+				description: MultiplayerStrings[user.Language].playerNotFound,
+			}));
 			return;
 		}
 		session = existing;
@@ -3037,7 +3058,11 @@ async function runInvestmentRobberySession(
 	else {
 		const result = await MultiplayerSession.StartInvestmentRobbery(user, targetUser, "discord");
 		if (!result.success) {
-			await replyWithContainer(interaction, defaultComponent({ user, color: CrColors.Robbery, description: result.message }));
+			await replyWithContainer(interaction, defaultComponent({
+				user,
+				color: CrColors.Robbery,
+				description: result.message,
+			}));
 			return;
 		}
 		session = result.session;

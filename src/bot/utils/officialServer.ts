@@ -183,7 +183,7 @@ export async function syncUserInOfficialServer(interaction: ChatInputCommandInte
  * @param interaction - The interaction triggering the check.
  * @returns True if the user is a booster, false otherwise.
  */
-export async function isUserBoosterInOfficialServer(interaction: ChatInputCommandInteraction) {
+export function isUserBoosterInOfficialServer(interaction: ChatInputCommandInteraction) {
 	if (process.env.NODE_ENV !== "PROD") {
 		return false;
 	}

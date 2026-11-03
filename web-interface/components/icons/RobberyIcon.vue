@@ -101,10 +101,3 @@ const background = computed(() => backgroundOptions[props.variant || "normal"]);
 		/>
 	</svg>
 </template>
-
-<style
-	scoped
-	lang="scss"
->
-
-</style>

@@ -66,7 +66,7 @@ export async function createApiServer(): Promise<FastifyInstance> {
 				ipAddress: req.ip || null,
 				userAgent: typeof userAgentHeader === "string" ? userAgentHeader : null,
 			};
-			if (authHeader && authHeader.startsWith("Bearer ")) {
+			if (authHeader?.startsWith("Bearer ")) {
 				const token = authHeader.substring(7);
 				const user = verifyAuthToken(token);
 				return { user, auditRequestInfo };
@@ -114,7 +114,7 @@ export async function createApiServer(): Promise<FastifyInstance> {
 	// Auth: Check Me
 	app.get("/auth/me", async (req, reply) => {
 		const authHeader = req.headers.authorization;
-		if (!authHeader || !authHeader.startsWith("Bearer ")) {
+		if (!authHeader?.startsWith("Bearer ")) {
 			return reply.status(401).send({ error: "Missing or invalid authorization header." });
 		}
 
@@ -147,7 +147,7 @@ export async function createApiServer(): Promise<FastifyInstance> {
 
 	app.post("/presence/heartbeat", async (req, reply) => {
 		const authHeader = req.headers.authorization;
-		if (!authHeader || !authHeader.startsWith("Bearer ")) {
+		if (!authHeader?.startsWith("Bearer ")) {
 			return reply.status(401).send({ error: "Missing or invalid authorization header." });
 		}
 

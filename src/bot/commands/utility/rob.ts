@@ -8,12 +8,23 @@ import { defaultComponent, formatMoney } from "#bot/utils/ui";
 import { searchUser } from "#bot/utils/userUtils";
 import { Language, type Localization } from "#core/models/Language";
 import { Pagination } from "#core/models/Pagination";
-import { LocationRobberyStrategy, Strings as RobberyLocationStrings } from "#core/models/strategies/robbery/LocationRobberyStrategy";
+import {
+	LocationRobberyStrategy,
+	Strings as RobberyLocationStrings,
+} from "#core/models/strategies/robbery/LocationRobberyStrategy";
 import type { User } from "#core/models/User";
 import { getRobberyClassModifier } from "#core/types/Classes";
 import { getLocationList, LocationList } from "#core/types/Locations";
-import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder, time, TimestampStyles } from "discord.js";
-import { setTimeout as wait } from "timers/promises";
+import {
+	ButtonBuilder,
+	ButtonStyle,
+	type ChatInputCommandInteraction,
+	Locale,
+	SlashCommandBuilder,
+	time,
+	TimestampStyles,
+} from "discord.js";
+import { setTimeout as wait } from "node:timers/promises";
 
 module.exports = {
 	data: new SlashCommandBuilder()

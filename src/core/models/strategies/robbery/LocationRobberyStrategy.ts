@@ -115,9 +115,7 @@ export class LocationRobberyStrategy implements IRobberyStrategy {
 		return { canRob, message };
 	}
 
-	async LockStates(useGrenade?: boolean): Promise<RobberyInitData> {
-		void useGrenade;
-
+	async LockStates(): Promise<RobberyInitData> {
 		this.attemptId = await TimedActionRepository.Start(this.Attacker.Id, "robbery", this.LocationId, 10_000 + 5_000 * this.LocationId);
 		this.Attacker.Robbery.IsRobbingLocationId = this.LocationId;
 
@@ -138,16 +136,19 @@ export class LocationRobberyStrategy implements IRobberyStrategy {
 		};
 	}
 
-	async Resolve(defenderReaction?: string): Promise<RobberyLocationOutcomeData> {
-		void defenderReaction;
+	async Resolve(): Promise<RobberyLocationOutcomeData> {
 		const result = await TimedActionRepository.Run(this.Attacker.Id, "robbery", this.LocationId, () => this.ResolveLocation(), this.attemptId);
-		if (!await this.Attacker.GetInfo()) throw new Error(`Robbing user ${this.Attacker.Id} was not found.`);
+		if (!await this.Attacker.GetInfo()) {
+			throw new Error(`Robbing user ${this.Attacker.Id} was not found.`);
+		}
 		return result;
 	}
 
 	private async ResolveLocation(): Promise<RobberyLocationOutcomeData> {
 		try {
-			if (!await this.Attacker.GetInfo()) throw new Error(`Robbing user ${this.Attacker.Id} was not found.`);
+			if (!await this.Attacker.GetInfo()) {
+				throw new Error(`Robbing user ${this.Attacker.Id} was not found.`);
+			}
 
 			this.Chance = Math.random() * 100;
 			const robLocationChanceBonus = await Event.GetActiveBonusFromType(EventType.ROB_LOCATION_CHANCE_BONUS);

@@ -92,25 +92,25 @@ export class Gang {
 	Members: GangMember[] = [];
 	Roles: GangRole[] = [];
 
-	static IMPORT_COOLDOWN_HOURS = 24; // cooldown after success
-	static IMPORT_CANCEL_COOLDOWN_HOURS = 6; // cooldown after cancellation
-	static IMPORT_WAIT_HOURS = 24;
-	static IMPORT_BASE_SUCCESS_CHANCE = 0.60; // 60% at level 1
-	static IMPORT_SUCCESS_DECREASE_PER_LEVEL = 0.03; // -3% per level
-	static IMPORT_COST_BASE = 150_000;
-	static IMPORT_COST_PER_LEVEL = 350_000;
-	static IMPORT_CANCEL_REFUND_RATIO = 2 / 3;
-	static IMPORT_MIN_REWARDS = 1;
-	static IMPORT_MAX_REWARDS = 3;
+	static readonly IMPORT_COOLDOWN_HOURS = 24; // cooldown after success
+	static readonly IMPORT_CANCEL_COOLDOWN_HOURS = 6; // cooldown after cancellation
+	static readonly IMPORT_WAIT_HOURS = 24;
+	static readonly IMPORT_BASE_SUCCESS_CHANCE = 0.60; // 60% at level 1
+	static readonly IMPORT_SUCCESS_DECREASE_PER_LEVEL = 0.03; // -3% per level
+	static readonly IMPORT_COST_BASE = 150_000;
+	static readonly IMPORT_COST_PER_LEVEL = 350_000;
+	static readonly IMPORT_CANCEL_REFUND_RATIO = 2 / 3;
+	static readonly IMPORT_MIN_REWARDS = 1;
+	static readonly IMPORT_MAX_REWARDS = 3;
 
-	static CREATION_COST = 1_000_000;
-	static JOIN_COST = 100_000;
-	static TIME_BETWEEN_DEPOSITS = 12;
-	static MAX_DEPOSIT_PER_DAY = 100_000;
+	static readonly CREATION_COST = 1_000_000;
+	static readonly JOIN_COST = 100_000;
+	static readonly TIME_BETWEEN_DEPOSITS = 12;
+	static readonly MAX_DEPOSIT_PER_DAY = 100_000;
 
-	static LEADER_ROLE_NAMES = ["Leader", "Líder"];
-	static MEMBER_ROLE_NAMES = ["Member", "Membro", "Miembro"];
-	static RESERVED_ROLE_NAMES = [...Gang.LEADER_ROLE_NAMES, ...Gang.MEMBER_ROLE_NAMES];
+	static readonly LEADER_ROLE_NAMES = ["Leader", "Líder"];
+	static readonly MEMBER_ROLE_NAMES = ["Member", "Membro", "Miembro"];
+	static readonly RESERVED_ROLE_NAMES = [...Gang.LEADER_ROLE_NAMES, ...Gang.MEMBER_ROLE_NAMES];
 
 	/**
 	 * Calculates the maximum number of members based on gang level and base ownership.
@@ -734,7 +734,7 @@ export class Gang {
 	 * @returns True if the role was changed successfully, false otherwise.
 	 */
 	async ChangeRole(changerId: string, targetUserId: string, newRoleId: number): Promise<boolean> {
-		const target = this.Members.find(m => m.UserId === targetUserId);
+		const target = this.Members.some(m => m.UserId === targetUserId);
 		if (!target || changerId === targetUserId || targetUserId === this.LeaderId) {
 			return false;
 		}
@@ -744,7 +744,7 @@ export class Gang {
 		if (!changer) return false;
 
 		const changerRole = this.Roles.find(r => r.Id === changer.RoleId);
-		if (!changerRole || !changerRole.Permissions.includes(GangPermission.Promote)) {
+		if (!changerRole?.Permissions.includes(GangPermission.Promote)) {
 			return false;
 		}
 
@@ -835,7 +835,7 @@ export class Gang {
 	 * Checks if the gang can start a new import.
 	 * @returns An object with a boolean and an optional reason.
 	 */
-	async CanStartImport(): Promise<{ can: boolean; reason?: GangImportFailureReason }> {
+	CanStartImport(): { can: boolean; reason?: GangImportFailureReason } {
 		if (this.BaseId === GangBaseId.None) {
 			return { can: false, reason: GangImportFailureReason.NoBase };
 		}
@@ -1247,7 +1247,7 @@ export class Gang {
 		try {
 			const role = await GangRoleRepository.FindById(roleId);
 
-			if (!role || role.gangId !== this.Id) {
+			if (role?.gangId !== this.Id) {
 				return false;
 			}
 			if (this.Members.some(member => member.UserId === this.LeaderId && member.RoleId === roleId)) {
@@ -1555,7 +1555,7 @@ export class Gang {
 
 		const member = await GangMemberRepository.FindByUserId(user.Id);
 
-		if (!member || member.gangId !== this.Id) {
+		if (member?.gangId !== this.Id) {
 			canDeposit = false;
 		}
 		else if (member.depositTime > new Date()) {
@@ -1593,7 +1593,7 @@ export class Gang {
 
 		const member = await GangMemberRepository.FindByUserId(user.Id);
 
-		if (member && member.gangId === this.Id) {
+		if (member?.gangId === this.Id) {
 			const nextDepositTime = addHours(new Date(), Gang.TIME_BETWEEN_DEPOSITS);
 			const nextDepositAmount = member.depositAmount + amount;
 
@@ -1637,7 +1637,7 @@ export class Gang {
 			return false; // Cannot transfer to yourself
 		}
 
-		const newLeaderMember = this.Members.find(m => m.UserId === targetUser.Id);
+		const newLeaderMember = this.Members.some(m => m.UserId === targetUser.Id);
 		if (!newLeaderMember) {
 			return false; // Target must be in the gang
 		}
@@ -1778,7 +1778,7 @@ export class Gang {
 		reason?: string
 	}> {
 		const request = await GangJoinRequestsRepository.FindById(requestId);
-		if (!request || request.gangId !== this.Id || request.status !== GangJoinRequestStatus.Pending) {
+		if (request?.gangId !== this.Id || request.status !== GangJoinRequestStatus.Pending) {
 			return { success: false, reason: "requestNotFound" };
 		}
 
@@ -1849,7 +1849,7 @@ export class Gang {
 	static async CancelJoinRequest(userId: string, requestId?: number): Promise<{ success: boolean; reason?: string }> {
 		if (requestId !== undefined) {
 			const req = await GangJoinRequestsRepository.FindById(requestId);
-			if (!req || req.userId !== userId) {
+			if (req?.userId !== userId) {
 				return { success: false, reason: "requestNotFound" };
 			}
 			if (req.status !== GangJoinRequestStatus.Pending) {

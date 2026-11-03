@@ -231,10 +231,3 @@ const stroke = computed(() => strokeOptions[props.variant || "normal"]);
 		/>
 	</svg>
 </template>
-
-<style
-	scoped
-	lang="scss"
->
-
-</style>

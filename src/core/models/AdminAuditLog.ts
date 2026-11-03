@@ -65,39 +65,65 @@ export class AdminAuditLog {
 			return { deviceType: "Unknown", operatingSystem: "Unknown", browser: "Unknown" };
 		}
 
-		const deviceType = /iPad|Tablet/i.test(userAgent) || (/Android/i.test(userAgent) && !/Mobile/i.test(userAgent))
-			? "Tablet"
-			: /Mobile|iPhone|iPod/i.test(userAgent)
-				? "Mobile"
-				: "Desktop";
-		const operatingSystem = /Android/i.test(userAgent)
-			? "Android"
-			: /iPhone|iPad|iPod/i.test(userAgent)
-				? "iOS"
-				: /Windows NT/i.test(userAgent)
-					? "Windows"
-					: /Mac OS X/i.test(userAgent)
-						? "macOS"
-						: /CrOS/i.test(userAgent)
-							? "ChromeOS"
-							: /Linux/i.test(userAgent)
-								? "Linux"
-								: "Unknown";
-		const browser = /SamsungBrowser/i.test(userAgent)
-			? "Samsung Internet"
-			: /Edg(e|A|iOS)?\/|Edge\//i.test(userAgent)
-				? "Edge"
-				: /OPR\/|Opera/i.test(userAgent)
-					? "Opera"
-					: /Firefox|FxiOS/i.test(userAgent)
-						? "Firefox"
-						: /Chromium/i.test(userAgent)
-							? "Chromium"
-							: /CriOS|Chrome/i.test(userAgent)
-								? "Chrome"
-								: /Safari/i.test(userAgent)
-									? "Safari"
-									: "Unknown";
+		const isAndroid = /Android/i.test(userAgent);
+		const isTablet = /iPad|Tablet/i.test(userAgent) || (isAndroid && !/Mobile/i.test(userAgent));
+		let deviceType: string;
+		if (isTablet) {
+			deviceType = "Tablet";
+		}
+		else if (/Mobile|iPhone|iPod/i.test(userAgent)) {
+			deviceType = "Mobile";
+		}
+		else {
+			deviceType = "Desktop";
+		}
+
+		let operatingSystem = "Unknown";
+		if (isAndroid) {
+			operatingSystem = "Android";
+		}
+		else if (/iPhone|iPad|iPod/i.test(userAgent)) {
+			operatingSystem = "iOS";
+		}
+		else if (/Windows NT/i.test(userAgent)) {
+			operatingSystem = "Windows";
+		}
+		else if (/Mac OS X/i.test(userAgent)) {
+			operatingSystem = "macOS";
+		}
+		else if (/CrOS/i.test(userAgent)) {
+			operatingSystem = "ChromeOS";
+		}
+		else if (/Linux/i.test(userAgent)) {
+			operatingSystem = "Linux";
+		}
+
+		let browser: string;
+
+		if (/SamsungBrowser/i.test(userAgent)) {
+			browser = "Samsung Internet";
+		}
+		else if (/Edg(e|A|iOS)?\/|Edge\//i.test(userAgent)) {
+			browser = "Edge";
+		}
+		else if (/OPR\/|Opera/i.test(userAgent)) {
+			browser = "Opera";
+		}
+		else if (/Firefox|FxiOS/i.test(userAgent)) {
+			browser = "Firefox";
+		}
+		else if (/Chromium/i.test(userAgent)) {
+			browser = "Chromium";
+		}
+		else if (/CriOS|Chrome/i.test(userAgent)) {
+			browser = "Chrome";
+		}
+		else if (/Safari/i.test(userAgent)) {
+			browser = "Safari";
+		}
+		else {
+			browser = "Unknown";
+		}
 
 		return { deviceType, operatingSystem, browser };
 	}

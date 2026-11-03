@@ -54,8 +54,8 @@ export class Prison {
 		DefaultDuration: 40,
 	};
 
-	static BribeTimeInMinutesWanted = 40;
-	static EscapeTimeInMinutesWanted = 40;
+	static readonly BribeTimeInMinutesWanted = 40;
+	static readonly EscapeTimeInMinutesWanted = 40;
 
 	static async Initialize() {
 		if (recoveryTimer) return;

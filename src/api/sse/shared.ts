@@ -28,7 +28,7 @@ export async function waitForActionResult(
 
 	while (isSseResponseOpen(reply)) {
 		// Do not report a newer action's result to a subscriber waiting for this one.
-		if (!currentAttempt || currentAttempt.id !== initialAttempt.id) {
+		if (currentAttempt?.id !== initialAttempt.id) {
 			sendEvent({ type: "closed" });
 			return null;
 		}
@@ -45,20 +45,20 @@ export async function waitForActionResult(
 
 export async function getSseUser(req: FastifyRequest, reply: FastifyReply): Promise<User | null> {
 	const authHeader = req.headers.authorization;
-	if (!authHeader || !authHeader.startsWith("Bearer ")) {
-		reply.status(401).send({ error: "Missing or invalid authorization header." });
+	if (!authHeader?.startsWith("Bearer ")) {
+		await reply.status(401).send({ error: "Missing or invalid authorization header." });
 		return null;
 	}
 
 	const user = verifyAuthToken(authHeader.substring(7));
 	if (!user) {
-		reply.status(401).send({ error: "Invalid or expired token." });
+		await reply.status(401).send({ error: "Invalid or expired token." });
 		return null;
 	}
 
 	const userModel = new User(user.userId);
 	if (!(await userModel.GetInfo())) {
-		reply.status(404).send({ error: "User not found." });
+		await reply.status(404).send({ error: "User not found." });
 		return null;
 	}
 

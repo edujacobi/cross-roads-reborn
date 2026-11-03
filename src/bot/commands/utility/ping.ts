@@ -13,7 +13,7 @@ module.exports = {
 	async execute(interaction: ChatInputCommandInteraction, user: User) {
 
 		const botPing = Math.round(interaction.client.ws.ping);
-		const svPing = new Date().getTime();
+		const svPing = Date.now();
 
 		const container = defaultComponent({
 			user,
@@ -22,7 +22,7 @@ module.exports = {
 
 		await replyWithContainer(interaction, container);
 
-		container.changeTextFromSectionId(1, `:satellite_orbital: ${botPing}ms API. ${Math.round(new Date().getTime() - svPing)}ms Server.`);
+		container.changeTextFromSectionId(1, `:satellite_orbital: ${botPing}ms API. ${Math.round(Date.now() - svPing)}ms Server.`);
 
 		return replyWithContainer(interaction, container);
 	},

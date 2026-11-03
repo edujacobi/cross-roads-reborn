@@ -22,7 +22,7 @@ module.exports = {
 		let text = "";
 		const total = groupedCountResultItems.reduce((acc, currentValue) => acc + currentValue.count, 0);
 
-		for (const item of groupedCountResultItems.sort((a, b) => b.count - a.count)) {
+		for (const item of groupedCountResultItems.toSorted((a, b) => b.count - a.count)) {
 			const classData = ClassList[<ClassId>item.class];
 			text += `### ${classData.Image.Emote.String} ${classData.Name[Language.English]}: ${item.count} (${(item.count / total * 100).toFixed(2)}%)\n`;
 		}

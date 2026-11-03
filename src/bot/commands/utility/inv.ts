@@ -26,7 +26,7 @@ import {
 	MessageFlags,
 	SlashCommandBuilder,
 	time,
-	TimestampStyles
+	TimestampStyles,
 } from "discord.js";
 
 module.exports = {
@@ -97,7 +97,16 @@ module.exports = {
 			const value = consumable ? String(userItem.Quantity) : time(userItem.RemainingTime, TimestampStyles.RelativeTime);
 			const isLessThan24Hours = consumable ? userItem.Quantity <= 2 : differenceInHours(userItem.RemainingTime, Date.now()) < 24;
 			const isLessThan12Hours = consumable ? userItem.Quantity <= 1 : differenceInHours(userItem.RemainingTime, Date.now()) < 12;
-			const emote = isLessThan12Hours ? EmoteString.LessThan12Hours : isLessThan24Hours ? EmoteString.LessThan24Hours : "";
+			let emote: string;
+			if (isLessThan12Hours) {
+				emote = EmoteString.LessThan12Hours;
+			}
+			else if (isLessThan24Hours) {
+				emote = EmoteString.LessThan24Hours;
+			}
+			else {
+				emote = "";
+			}
 
 			return `**${name}** ${value}${emote}`;
 		}).join("\n");

@@ -52,7 +52,7 @@ function createLinearGradient(ctx: SKRSContext2D, colors: string[], angle = 90, 
 }
 
 export class AvatarDecorationRegistry {
-	private static patterns = new Map<AvatarDecorationId, Image>();
+	private static readonly patterns = new Map<AvatarDecorationId, Image>();
 
 	static async initialize() {
 		Log.Info("Initializing avatar decoration frames...");
@@ -166,14 +166,56 @@ export class AvatarDecorationRegistry {
 
 				const layout = [
 					// left
-					{ file: "8_Sniper.png", x: FIRST_ROW_X, y: FIRST_ROW_Y, w: IMAGE_SIZE, h: IMAGE_SIZE, flipped: true },
-					{ file: "6_AssaultRifle.png", x: SECOND_ROW_X, y: SECOND_ROW_Y, w: IMAGE_SIZE, h: IMAGE_SIZE, flipped: true },
-					{ file: "11_Minigun.png", x: THIRD_ROW_X, y: THIRD_ROW_Y, w: IMAGE_SIZE, h: IMAGE_SIZE, flipped: true },
+					{
+						file: "8_Sniper.png",
+						x: FIRST_ROW_X,
+						y: FIRST_ROW_Y,
+						w: IMAGE_SIZE,
+						h: IMAGE_SIZE,
+						flipped: true,
+					},
+					{
+						file: "6_AssaultRifle.png",
+						x: SECOND_ROW_X,
+						y: SECOND_ROW_Y,
+						w: IMAGE_SIZE,
+						h: IMAGE_SIZE,
+						flipped: true,
+					},
+					{
+						file: "11_Minigun.png",
+						x: THIRD_ROW_X,
+						y: THIRD_ROW_Y,
+						w: IMAGE_SIZE,
+						h: IMAGE_SIZE,
+						flipped: true,
+					},
 
 					// right
-					{ file: "5_SMG.png", x: 100 - FIRST_ROW_X, y: FIRST_ROW_Y, w: IMAGE_SIZE, h: IMAGE_SIZE, flipped: false },
-					{ file: "7_Carbine.png", x: 100 - SECOND_ROW_X, y: SECOND_ROW_Y, w: IMAGE_SIZE, h: IMAGE_SIZE, flipped: false },
-					{ file: "4_Shotgun.png", x: 100 - THIRD_ROW_X, y: THIRD_ROW_Y, w: IMAGE_SIZE, h: IMAGE_SIZE, flipped: false },
+					{
+						file: "5_SMG.png",
+						x: 100 - FIRST_ROW_X,
+						y: FIRST_ROW_Y,
+						w: IMAGE_SIZE,
+						h: IMAGE_SIZE,
+						flipped: false,
+					},
+					{
+						file: "7_Carbine.png",
+						x: 100 - SECOND_ROW_X,
+						y: SECOND_ROW_Y,
+						w: IMAGE_SIZE,
+						h: IMAGE_SIZE,
+						flipped: false,
+					},
+					{
+						file: "4_Shotgun.png",
+						x: 100 - THIRD_ROW_X,
+						y: THIRD_ROW_Y,
+						w: IMAGE_SIZE,
+						h: IMAGE_SIZE,
+						flipped: false,
+					},
 
 					// center
 					{ file: "18_Grenade.png", x: 53, y: 105, w: IMAGE_SIZE, h: IMAGE_SIZE, flipped: false },

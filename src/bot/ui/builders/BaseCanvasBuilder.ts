@@ -14,7 +14,7 @@ export class BaseCanvasBuilder {
 	protected IsBuilt = false;
 
 	// Centralized cache for decoded Image objects
-	private static AssetCache = new Map<string, Image>();
+	private static readonly AssetCache = new Map<string, Image>();
 
 	constructor(width: number, height: number, language: Language) {
 		this.Width = width;
@@ -128,7 +128,7 @@ export class BaseCanvasBuilder {
 	 */
 	protected async tryDrawImage(
 		imagePath: string,
-		draw: (img: Image) => void
+		draw: (img: Image) => void,
 	): Promise<boolean> {
 		try {
 			const img = await this.LoadLocalImage(imagePath);

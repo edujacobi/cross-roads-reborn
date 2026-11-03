@@ -89,7 +89,7 @@ module.exports = {
 			await deferUpdate(select);
 
 			if (select.customId === "select_season") {
-				const selectedSeasonNumber = parseInt(select.values[0]);
+				const selectedSeasonNumber = Number.parseInt(select.values[0]);
 				season = await Season.GetByNumber(selectedSeasonNumber);
 
 				if (!season) {

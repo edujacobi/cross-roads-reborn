@@ -135,7 +135,7 @@ export class GangRepository {
 		offset: number,
 	): Promise<RecruitingGangPage> {
 		const searchTerm = search?.trim();
-		const fromAndWhere = `FROM "gangs" AS gang
+		const fromAndWhere = String.raw`FROM "gangs" AS gang
 			LEFT JOIN (
 				SELECT "gangId", COUNT(*) AS "membersCount"
 				FROM "gangmembers"
@@ -145,7 +145,7 @@ export class GangRepository {
 				OR gang."recruitmentType" = :recruitmentType)
 				AND COALESCE(member_count."membersCount", 0)
 					< (9 + gang."level" + CASE WHEN gang."baseId" = 0 THEN 0 ELSE 1 END)
-				AND (:search IS NULL OR gang."name" LIKE :search ESCAPE '\\' OR gang."acronym" LIKE :search ESCAPE '\\')`;
+				AND (:search IS NULL OR gang."name" LIKE :search ESCAPE '\' OR gang."acronym" LIKE :search ESCAPE '\')`;
 		const replacements = {
 			recruitmentType: recruitmentType ?? null,
 			search: searchTerm ? `%${searchTerm.replace(/[\\%_]/g, "\\$&")}%` : null,
@@ -159,9 +159,16 @@ export class GangRepository {
 			recruitmentType: "gang.\"recruitmentType\"",
 		};
 		const sortColumn = sortBy && Object.hasOwn(sortColumns, sortBy) ? sortColumns[sortBy] : undefined;
-		const orderBy = sortColumn
-			? `${sortColumn} ${sortOrder === "ASC" ? "ASC" : "DESC"}, gang."id" ASC`
-			: "gang.\"level\" DESC, gang.\"experience\" DESC, gang.\"id\" ASC";
+
+		let orderBy = "gang.\"level\" DESC, gang.\"experience\" DESC, gang.\"id\" ASC";
+		if (sortColumn) {
+			let sortDirection = "DESC";
+			if (sortOrder === "ASC") {
+				sortDirection = "ASC";
+			}
+			orderBy = `${sortColumn} ${sortDirection}, gang."id" ASC`;
+		}
+
 		const [entries, totalResult] = await Promise.all([
 			sequelize.query<RecruitingGangEntry>(
 				`SELECT gang."id", gang."name", gang."acronym", gang."description", gang."level",

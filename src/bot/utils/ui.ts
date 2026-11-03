@@ -94,7 +94,7 @@ export function formatMoney(money: number, lang: Language, prefix = "Cr$") {
 	let m = Math.floor(money).toLocaleString("en-US");
 
 	if (lang === Language.Portuguese) {
-		m = Math.floor(money).toLocaleString("pt-BR").replace(/,/g, ".");
+		m = Math.floor(money).toLocaleString("pt-BR").replaceAll(",", ".");
 	}
 
 	if (prefix === "") {
@@ -191,8 +191,8 @@ export function convertHexNumberToString(hex: number): string {
  */
 export function hexToRGB(hex: string): RGBTuple {
 	return [
-		parseInt(hex.substring(1, 3), 16),
-		parseInt(hex.substring(3, 5), 16),
-		parseInt(hex.substring(5, 7), 16),
+		Number.parseInt(hex.substring(1, 3), 16),
+		Number.parseInt(hex.substring(3, 5), 16),
+		Number.parseInt(hex.substring(5, 7), 16),
 	];
 }

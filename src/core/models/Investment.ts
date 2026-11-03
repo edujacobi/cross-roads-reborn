@@ -47,7 +47,7 @@ export class Investment {
 					if (!investmentData) return;
 
 					// Find the anchor for payment calculation
-					const lastBasis = currentInvestment.lastYieldAt || currentInvestment.createdAt;
+					const lastBasis = currentInvestment.lastYieldAt ?? currentInvestment.createdAt;
 					const lastBasisHour = startOfHour(lastBasis);
 
 					// How many full hours passed across the boundary?
@@ -76,7 +76,7 @@ export class Investment {
 						if (!isIdling) return; // Wait for idling to end gracefully
 
 						// Final proportional yield: calculate how many minutes elapsed since last process until expiration
-						const lastYieldPoint = currentInvestment.lastYieldAt || currentInvestment.createdAt;
+						const lastYieldPoint = currentInvestment.lastYieldAt ?? currentInvestment.createdAt;
 						const minutesRemaining = (currentInvestment.expiresAt.getTime() - lastYieldPoint.getTime()) / (1_000 * 60);
 
 						let expirationYield = 0;
@@ -189,7 +189,7 @@ export class Investment {
 						await UserInvestmentRepository.IncrementYieldAndFee(
 							currentInvestment.userId,
 							Math.round(totalPayout),
-							Math.round(totalPayoutFee)
+							Math.round(totalPayoutFee),
 						);
 						await UserInvestmentRepository.UpdateByUserId(currentInvestment.userId, { lastYieldAt: nowHour });
 					}

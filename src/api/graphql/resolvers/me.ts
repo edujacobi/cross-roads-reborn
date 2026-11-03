@@ -7,24 +7,31 @@ import { UserBundle } from "#core/models/UserBundle";
 import { UserRepository } from "#core/repositories/UserRepository";
 import { Language } from "#core/models/Language";
 import { getCommandBadgeGroups } from "#core/types/Badges";
-import { ItemList, type Items } from "#core/types/Items";
-import { ItemType } from "#core/types/Items";
-import { BundleId, ItemId, type AvatarDecorationId, type BackgroundDecorationId } from "#core/types/Ids";
+import { ItemList, type Items, ItemType } from "#core/types/Items";
+import { type AvatarDecorationId, type BackgroundDecorationId, BundleId, ItemId } from "#core/types/Ids";
 import { AvatarDecorationList, getAvatarDecorationList } from "#core/types/AvatarDecorations";
 import { BackgroundDecorationList, getBackgroundDecorationList } from "#core/types/BackgroundDecorations";
 import { BundleList, getSkinBundleList } from "#core/types/Skins";
-import { getJobList, JobList } from "#core/types/Jobs";
 import type { JobId } from "#core/types/Jobs";
+import { getJobList, JobList } from "#core/types/Jobs";
 import { ScavengeFailureReason, ScavengeList } from "#core/types/Scavenge";
 import { Scavenge } from "#core/models/Scavenge";
-import { ClassId, ClassList, getInvestmentYieldClassModifier, getJobClassModifier, getRobberyClassModifier, getScavengeDurationClassModifier } from "#core/types/Classes";
+import {
+	ClassId,
+	ClassList,
+	getCasinoClassModifier,
+	getInvestmentYieldClassModifier,
+	getJobClassModifier,
+	getRobberyClassModifier,
+	getScavengeDurationClassModifier,
+} from "#core/types/Classes";
 import { Event, EventType } from "#core/models/Event";
 import { Shop } from "#core/models/Shop";
 import { UserItemRepository } from "#core/repositories/UserItemRepository";
 import type { GraphQLContext } from "#api/types";
 import { isUserBoosterInOfficialServerByUserId } from "#bot/utils/officialServer";
-import { assertAuthenticated, isBlackMarketOpen, mapUserDetail } from "./helpers";
 import type { ResolverFn } from "./helpers";
+import { assertAuthenticated, isBlackMarketOpen, mapUserDetail } from "./helpers";
 import { formatMoney } from "#bot/utils/ui";
 import { Prison } from "#core/models/Prison";
 import { Hospital, HospitalFailureReason } from "#core/models/Hospital";
@@ -32,7 +39,6 @@ import { Casino } from "#core/models/Casino";
 import { Lottery } from "#core/models/Lottery";
 import { BetFailureReason, HorseRacing } from "#core/models/HorseRacing";
 import { HorseList } from "#core/types/Horses";
-import { getCasinoClassModifier } from "#core/types/Classes";
 import { Alms } from "#core/models/Alms";
 import { Investment as InvestmentModel } from "#core/models/Investment";
 import { type InvestmentActionReason, type InvestmentId, InvestmentList } from "#core/types/Investments";
@@ -62,7 +68,7 @@ function getBarSession(userId: string, happyHour: boolean) {
 	}
 
 	let session = barSessions.get(userId);
-	if (!session || session.happyHour !== happyHour) {
+	if (session?.happyHour !== happyHour) {
 		session = { count: 0, happyHour, lastActivityAt: now };
 		barSessions.set(userId, session);
 	}
@@ -397,7 +403,10 @@ export const meResolvers: {
 			const userClassDurationModifier = getScavengeDurationClassModifier(player.Class);
 
 			return Object.values(ScavengeList).map((place) => {
- 				const rewardItems = place.Reward.Items.map((item: { Id: number; Duration: { Min: number; Max: number } }) => {
+				const rewardItems = place.Reward.Items.map((item: {
+					Id: number;
+					Duration: { Min: number; Max: number }
+				}) => {
 					const itemDef = ItemList[item.Id];
 					const defaultFilename = `${item.Id}_${ItemId[item.Id]}.png`;
 					const isConsumable = itemDef?.Type === ItemType.Consumable;
@@ -614,7 +623,11 @@ export const meResolvers: {
 				return { success: false, message: "Investimento não encontrado.", user: null };
 			}
 			if (!player.IsIdling()) {
-				return { success: false, message: "Você precisa estar vadiando para comprar um investimento.", user: null };
+				return {
+					success: false,
+					message: "Você precisa estar vadiando para comprar um investimento.",
+					user: null,
+				};
 			}
 
 			const result = await InvestmentModel.Buy(player, args.investmentId as InvestmentId);
@@ -646,7 +659,11 @@ export const meResolvers: {
 				return { success: false, message: "Você não possui um investimento.", user: null };
 			}
 			if (!player.IsIdling()) {
-				return { success: false, message: "Você precisa estar vadiando para abandonar seu investimento.", user: null };
+				return {
+					success: false,
+					message: "Você precisa estar vadiando para abandonar seu investimento.",
+					user: null,
+				};
 			}
 
 			const result = await InvestmentModel.Abandon(player);
@@ -702,7 +719,11 @@ export const meResolvers: {
 		giftVip: async (_: unknown, args: { receiverId: string; days: number }, context: GraphQLContext) => {
 			const authUser = assertAuthenticated(context);
 			if (!Number.isSafeInteger(args.days) || args.days < User.VIP_MIN_DAYS) {
-				return { success: false, message: `Presenteie pelo menos ${User.VIP_MIN_DAYS} dias inteiros de VIP.`, user: null };
+				return {
+					success: false,
+					message: `Presenteie pelo menos ${User.VIP_MIN_DAYS} dias inteiros de VIP.`,
+					user: null,
+				};
 			}
 			const price = args.days * User.VIP_PRICE_PER_DAY;
 			if (!Number.isSafeInteger(price)) {
@@ -725,7 +746,11 @@ export const meResolvers: {
 				return { success: false, message: "Saldo insuficiente de Moedas Especiais.", user: null };
 			}
 			if (!await giver.GiftVipForDays(receiver, args.days)) {
-				return { success: false, message: "Não foi possível presentear VIP. Atualize o saldo e tente novamente.", user: null };
+				return {
+					success: false,
+					message: "Não foi possível presentear VIP. Atualize o saldo e tente novamente.",
+					user: null,
+				};
 			}
 			return {
 				success: true,
@@ -947,7 +972,11 @@ export const meResolvers: {
 				return { success: false, message: "Jogador não encontrado.", user: null };
 			}
 			if (!Number.isSafeInteger(args.days) || args.days < User.VIP_MIN_DAYS) {
-				return { success: false, message: `O VIP deve ser comprado por pelo menos ${User.VIP_MIN_DAYS} dias.`, user: null };
+				return {
+					success: false,
+					message: `O VIP deve ser comprado por pelo menos ${User.VIP_MIN_DAYS} dias.`,
+					user: null,
+				};
 			}
 
 			const price = args.days * User.VIP_PRICE_PER_DAY;
@@ -1363,7 +1392,13 @@ export const meResolvers: {
 			const player = new User(authUser.userId);
 			const found = await player.GetInfo();
 			if (!found) {
-				return { success: false, message: "Jogador não encontrado.", money: 0, bribeAccepted: false, bribeCost: 0 };
+				return {
+					success: false,
+					message: "Jogador não encontrado.",
+					money: 0,
+					bribeAccepted: false,
+					bribeCost: 0,
+				};
 			}
 
 			const prison = new Prison(player);

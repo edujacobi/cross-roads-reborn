@@ -12,8 +12,16 @@ import { ItemList, ItemType } from "#core/types/Items";
 import { JobList } from "#core/types/Jobs";
 import { type IScavenge, ScavengeFailureReason, ScavengeList } from "#core/types/Scavenge";
 import { addHours } from "date-fns";
-import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder, time, TimestampStyles } from "discord.js";
-import { setTimeout as wait } from "timers/promises";
+import {
+	ButtonBuilder,
+	ButtonStyle,
+	type ChatInputCommandInteraction,
+	Locale,
+	SlashCommandBuilder,
+	time,
+	TimestampStyles,
+} from "discord.js";
+import { setTimeout as wait } from "node:timers/promises";
 
 module.exports = {
 	data: new SlashCommandBuilder()

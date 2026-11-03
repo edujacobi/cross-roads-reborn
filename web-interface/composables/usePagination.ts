@@ -5,7 +5,7 @@ export function usePagination(initialPage = 1, initialPageSize = 15) {
 	const route = useRoute();
 	const router = useRouter();
 
-	const page = ref(parseInt(route.query.page as string, 10) || initialPage);
+	const page = ref(Number.parseInt(route.query.page as string, 10) || initialPage);
 	const pageSize = ref(initialPageSize);
 	const offset = computed(() => (page.value - 1) * pageSize.value);
 

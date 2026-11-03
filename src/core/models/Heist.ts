@@ -87,7 +87,7 @@ export class Heist {
 	/**
 	 * Validates if a member can join a heist or mission lobby.
 	 */
-	static async ValidateJoin(user: User, gang: Gang): Promise<HeistValidationResult> {
+	static ValidateJoin(user: User, gang: Gang): HeistValidationResult {
 		if (!user.GangId) {
 			return { success: false, reason: "notInGang" };
 		}
@@ -148,7 +148,16 @@ export class Heist {
 			});
 
 			for (const p of players) {
-				const factor = p.Class === ClassId.Thief ? 1.15 : (p.Class === ClassId.Attorney ? 0.85 : 1.0);
+				let factor: number;
+				if (p.Class === ClassId.Thief) {
+					factor = 1.15;
+				}
+				else if (p.Class === ClassId.Attorney) {
+					factor = 0.85;
+				}
+				else {
+					factor = 1.0;
+				}
 				const wantedMins = Math.round(45 * factor);
 				p.Wanted.Time = addMinutes(now, wantedMins);
 				p.Robbery.SuccessCount += 1;
@@ -216,7 +225,17 @@ export class Heist {
 			});
 
 			for (const p of players) {
-				const factor = p.Class === ClassId.Thief ? 1.15 : (p.Class === ClassId.Attorney ? 0.85 : 1.0);
+				let factor: number;
+				if (p.Class === ClassId.Thief) {
+					factor = 1.15;
+				}
+				else if (p.Class === ClassId.Attorney) {
+					factor = 0.85;
+				}
+				else {
+					factor = 1.0;
+				}
+
 				const wantedMins = Math.round(45 * factor);
 				p.Wanted.Time = addMinutes(now, wantedMins);
 				p.Robbery.SuccessCount += 1;
@@ -305,7 +324,16 @@ export class Heist {
 			const baseShare = Math.floor(stolenAmount / shares);
 
 			for (const p of players) {
-				const factor = p.Class === ClassId.Thief ? 1.15 : (p.Class === ClassId.Attorney ? 0.85 : 1.0);
+				let factor: number;
+				if (p.Class === ClassId.Thief) {
+					factor = 1.15;
+				}
+				else if (p.Class === ClassId.Attorney) {
+					factor = 0.85;
+				}
+				else {
+					factor = 1.0;
+				}
 				const wantedMins = Math.round(45 * factor);
 				p.Wanted.Time = addMinutes(now, wantedMins);
 

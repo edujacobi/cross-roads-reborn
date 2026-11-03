@@ -109,10 +109,3 @@ const detailHighlight = computed(() => detailHighlightOptions[props.variant || "
 		/>
 	</svg>
 </template>
-
-<style
-	scoped
-	lang="scss"
->
-
-</style>

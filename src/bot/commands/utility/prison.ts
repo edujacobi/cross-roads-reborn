@@ -12,8 +12,16 @@ import type { User } from "#core/models/User";
 import { ClassList, getPrisonEscapeClassModifier } from "#core/types/Classes";
 import { ItemId } from "#core/types/Ids";
 import { ItemList } from "#core/types/Items";
-import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder, time, TimestampStyles } from "discord.js";
-import { setTimeout as wait } from "timers/promises";
+import {
+	ButtonBuilder,
+	ButtonStyle,
+	type ChatInputCommandInteraction,
+	Locale,
+	SlashCommandBuilder,
+	time,
+	TimestampStyles,
+} from "discord.js";
+import { setTimeout as wait } from "node:timers/promises";
 import { Log } from "#shared/log";
 
 module.exports = {

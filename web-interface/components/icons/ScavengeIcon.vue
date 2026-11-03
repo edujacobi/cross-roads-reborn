@@ -159,10 +159,3 @@ const metal = computed(() => metalOptions[props.variant || "normal"]);
 		/>
 	</svg>
 </template>
-
-<style
-	scoped
-	lang="scss"
->
-
-</style>

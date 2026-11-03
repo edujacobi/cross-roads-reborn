@@ -188,7 +188,7 @@ linear-gradient(
           apply-alpha(#57c785, "80"),
           apply-alpha(#eddd53, "80"),
           apply-alpha(#edb753, "80"),
-  );;
+  );
   --profile-border-gradient: #{$border};
   @include rankingBackground($bg, $border);
 

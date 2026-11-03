@@ -33,7 +33,6 @@ const props = withDefaults(
 	{
 		isBlackMarket: false,
 		isDisabled: false,
-		userItems: () => [],
 	},
 );
 

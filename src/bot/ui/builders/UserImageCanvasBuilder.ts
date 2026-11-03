@@ -43,7 +43,7 @@ export class UserImageCanvasBuilder extends BaseCanvasBuilder {
 	}
 
 	// Cache for fully rendered decorated avatars as Buffers
-	private static AvatarCache = new Map<string, Buffer>();
+	private static readonly AvatarCache = new Map<string, Buffer>();
 
 	async GetCanvas(): Promise<Canvas> {
 		// Cache Key: Unique combination of avatar source and aesthetic choices

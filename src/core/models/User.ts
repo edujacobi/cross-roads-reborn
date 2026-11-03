@@ -10,7 +10,7 @@ import { BackgroundDecorationList, type BackgroundDecorations } from "#core/type
 import { ClassId, ClassList, getJobClassModifier } from "#core/types/Classes";
 import { GangBases } from "#core/types/GangBases";
 import type { GangColorId } from "#core/types/GangColors";
-import { AvatarDecorationId, BackgroundDecorationId, BundleId, ItemId } from "#core/types/Ids";
+import { AvatarDecorationId, BackgroundDecorationId, BundleId, ItemId, SituationId } from "#core/types/Ids";
 import { ItemList, type Items, ItemType, type UserItem } from "#core/types/Items";
 import { type JobId, JobList } from "#core/types/Jobs";
 import { type LocationId, LocationList } from "#core/types/Locations";
@@ -30,7 +30,6 @@ import { Vault } from "./Vault";
 
 import { type InvestmentId } from "#core/types/Investments";
 import { time, TimestampStyles } from "discord.js";
-import { SituationId } from "#core/types/Ids";
 import { BarBeverages, DrinkSensations, isHappyHour } from "#core/types/Drinks";
 import { getRandomItemFromArray } from "#shared/utils";
 
@@ -64,9 +63,9 @@ export type AvailabilityResult =
 };
 
 export class User {
-	static VIP_BASE_PRICE = 5_000; // special coins
-	static VIP_PRICE_PER_DAY = 170;
-	static VIP_MIN_DAYS = 7;
+	static readonly VIP_BASE_PRICE = 5_000; // special coins
+	static readonly VIP_PRICE_PER_DAY = 170;
+	static readonly VIP_MIN_DAYS = 7;
 
 	Id: string;
 	CreatedAt = new Date();
@@ -781,7 +780,7 @@ export class User {
 			this.Daily.MaxStreak = this.Daily.CurrentStreak;
 		}
 
-		const streakMultiplier = this.Daily.CurrentStreak <= 7 ? this.Daily.CurrentStreak : 7;
+		const streakMultiplier = Math.min(this.Daily.CurrentStreak, 7);
 
 		let baseValue = 300;
 
@@ -800,14 +799,18 @@ export class User {
 
 			if (cycle === 1) {
 				// 7th day: 3 days of Knife, 2 days of Pistol, 1 day of Compact SMG
-				bonusItems.push({ item: ItemList[ItemId.Knife], days: 3 });
-				bonusItems.push({ item: ItemList[ItemId.Pistol], days: 2 });
-				bonusItems.push({ item: ItemList[ItemId.CompactSMG], days: 1 });
+				bonusItems.push(
+					{ item: ItemList[ItemId.Knife], days: 3 },
+					{ item: ItemList[ItemId.Pistol], days: 2 },
+					{ item: ItemList[ItemId.CompactSMG], days: 1 },
+				);
 			}
 			else if (cycle === 2) {
 				// 14th day: 3 days of Light Vest, 2 days of Baseball Bat, 1 day of best gun or Sawnoff
-				bonusItems.push({ item: ItemList[ItemId.LightVest], days: 3 });
-				bonusItems.push({ item: ItemList[ItemId.BaseballBat], days: 2 });
+				bonusItems.push(
+					{ item: ItemList[ItemId.LightVest], days: 3 },
+					{ item: ItemList[ItemId.BaseballBat], days: 2 },
+				);
 
 				const fallback = ItemList[ItemId.Sawnoff];
 				const best = this.BestGun && this.BestGun.Attack > fallback.Attack ? this.BestGun : fallback;
@@ -815,8 +818,10 @@ export class User {
 			}
 			else if (cycle === 3) {
 				// 21st day: 3 days of Advanced Scope, 2 days of Heavy Vest, 1 day of best gun or Carbine
-				bonusItems.push({ item: ItemList[ItemId.AdvancedScope], days: 3 });
-				bonusItems.push({ item: ItemList[ItemId.HeavyVest], days: 2 });
+				bonusItems.push(
+					{ item: ItemList[ItemId.AdvancedScope], days: 3 },
+					{ item: ItemList[ItemId.HeavyVest], days: 2 },
+				);
 
 				const fallback = ItemList[ItemId.Carbine];
 				const best = this.BestGun && this.BestGun.Attack > fallback.Attack ? this.BestGun : fallback;
@@ -824,8 +829,10 @@ export class User {
 			}
 			else {
 				// 28th day and beyond: 7 days of Sunglasses, 2 Grenades, 1 day of best gun or Katana
-				bonusItems.push({ item: ItemList[ItemId.Sunglasses], days: 7 });
-				bonusItems.push({ item: ItemList[ItemId.Grenade], quantity: 2 });
+				bonusItems.push(
+					{ item: ItemList[ItemId.Sunglasses], days: 7 },
+					{ item: ItemList[ItemId.Grenade], quantity: 2 },
+				);
 
 				const fallback = ItemList[ItemId.Katana];
 				const best = this.BestGun && this.BestGun.Attack > fallback.Attack ? this.BestGun : fallback;

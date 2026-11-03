@@ -17,7 +17,7 @@ import {
 	type SlashCommandIntegerOption,
 	type SlashCommandNumberOption,
 } from "discord.js";
-import { setTimeout as wait } from "timers/promises";
+import { setTimeout as wait } from "node:timers/promises";
 
 const BET_COOLDOWN_MS = 10_000;
 // While cooling down the user is not "in casino game", so he can be robbed

@@ -4,17 +4,17 @@ import { Language, type Localization } from "#core/models/Language";
 import type { User } from "#core/models/User";
 import { UserBadge } from "#core/models/UserBadge";
 import { subMinutes } from "date-fns";
-import { type User as DiscordUser } from "discord.js";
 import {
 	ActionRowBuilder,
 	AttachmentBuilder,
 	ButtonBuilder,
 	ButtonStyle,
+	type ChatInputCommandInteraction,
 	MediaGalleryBuilder,
 	MessageFlags,
 	StringSelectMenuBuilder,
 	StringSelectMenuOptionBuilder,
-	type ChatInputCommandInteraction,
+	type User as DiscordUser,
 } from "discord.js";
 import { deferUpdate, replyInteraction, replyWithContainer } from "./discordInteractions";
 import { EmoteId, EmoteString } from "./emotes";

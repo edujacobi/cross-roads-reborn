@@ -1,4 +1,12 @@
-import { type ChatInputCommandInteraction, Colors, Locale, PermissionFlagsBits, SlashCommandBuilder, time, TimestampStyles } from "discord.js";
+import {
+	type ChatInputCommandInteraction,
+	Colors,
+	Locale,
+	PermissionFlagsBits,
+	SlashCommandBuilder,
+	time,
+	TimestampStyles,
+} from "discord.js";
 import { UserRepository } from "#core/repositories/UserRepository";
 import type { Users } from "#core/database/Users";
 import { EmoteString } from "#bot/utils/emotes";
@@ -33,8 +41,7 @@ module.exports = {
 
 			let text = "";
 
-			for (let i = 0; i < users.length; i++) {
-				const user = users[i];
+			for (const user of users) {
 				const emoteClass = ClassList[user.class].Image.Emote.String;
 
 				const timeText = user.vipEternal ? "**Eternal**" : `Ends in ${time(user.vipTime!, TimestampStyles.ShortDateTime)}`;

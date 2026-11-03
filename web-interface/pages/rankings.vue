@@ -208,7 +208,7 @@ onMounted(async () => {
 
 function formatValue(value: number): string {
 	const num = Math.floor(value);
-	return activeRanking.value.isMoney ? formatMoney(num) : num.toLocaleString("pt-BR").replace(/,/g, ".");
+	return activeRanking.value.isMoney ? formatMoney(num) : num.toLocaleString("pt-BR").replaceAll(",", ".");
 }
 
 function previousPage() {

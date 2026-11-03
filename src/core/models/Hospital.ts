@@ -26,7 +26,7 @@ export class Hospital {
 		this.PrivatePrice = Math.floor(this.PrivateBasePrice + defFactor + moneyFactor);
 	}
 
-	async CanPayPrivate() {
+	CanPayPrivate() {
 		if (!this.User.IsInHospital()) {
 			return { canPay: false, reason: HospitalFailureReason.UserFree };
 		}

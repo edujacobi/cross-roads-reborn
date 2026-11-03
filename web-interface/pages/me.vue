@@ -200,7 +200,7 @@ onUnmounted(() => {
 					>
 						<div class="me-page__event-title">
 							<NuxtImg
-								v-if="eventTypes.find(({ id }) => id === event.type)"
+								v-if="eventTypes.some(({ id }) => id === event.type)"
 								:src="eventTypes.find(({ id }) => id === event.type)?.image"
 								width="24"
 								height="24"

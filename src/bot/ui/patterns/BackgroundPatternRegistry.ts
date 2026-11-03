@@ -34,7 +34,7 @@ function createLinearGradient(ctx: SKRSContext2D, colors: string[], angle = 45, 
 	const width = CARD_WIDTH;
 	const centerX = width / 2;
 	const centerY = y + height / 2;
-	const radius = Math.sqrt(width ** 2 + height ** 2) / 2;
+	const radius = Math.hypot(width, height) / 2;
 
 	const radian = (angle * Math.PI) / 180;
 	const x0 = centerX - radius * Math.cos(radian);
@@ -51,7 +51,7 @@ function createLinearGradient(ctx: SKRSContext2D, colors: string[], angle = 45, 
 }
 
 export class BackgroundPatternRegistry {
-	private static patterns = new Map<BackgroundDecorationId, Image>();
+	private static readonly patterns = new Map<BackgroundDecorationId, Image>();
 
 	static async initialize() {
 		Log.Info("Initializing ranking card background patterns...");
