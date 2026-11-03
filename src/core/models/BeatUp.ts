@@ -436,12 +436,12 @@ export const Strings = {
 
 			const word = words[Math.round(Math.random() * (words.length - 1))];
 
-			return `You ${word} **${defenderNick}**!\n-# They will stay in the hospital until ${time(date, TimestampStyles.ShortDateTime)}`;
+			return `You ${word} **${defenderNick}**!\n-# They will stay in the hospital until ${time(date, TimestampStyles.LongDateShortTime)}`;
 		},
 		success: "Success",
 		failure: "Failure",
 		willBeAbleAgain: "Will be able to beat up again",
-		youFailed: (date: Date) => `You tried, but you were the one beaten up!\n-# Will stay in the hospital until ${time(date, TimestampStyles.ShortDateTime)} ${EmoteString.Hospital}`,
+		youFailed: (date: Date) => `You tried, but you were the one beaten up!\n-# Will stay in the hospital until ${time(date, TimestampStyles.LongDateShortTime)} ${EmoteString.Hospital}`,
 		finishedBeatUpAttacker: (success: boolean) => `Beating ${success ? "successful" : "unsuccessful"}`,
 		preparingToBeat: (nick: string) => `Preparing to beat **${nick}**`,
 		useGrenadeDescription: (quantity: number) => `You have ${quantity} ${quantity === 1 ? "grenade" : "grenades"}`,
@@ -512,12 +512,12 @@ export const Strings = {
 
 			const word = words[Math.round(Math.random() * (words.length - 1))];
 
-			return `Você ${word} **${defenderNick}**!\n-# Ele ficará hospitalizado até ${time(date, TimestampStyles.ShortDateTime)}`;
+			return `Você ${word} **${defenderNick}**!\n-# Ele ficará hospitalizado até ${time(date, TimestampStyles.LongDateShortTime)}`;
 		},
 		success: "Sucesso",
 		failure: "Falha",
 		willBeAbleAgain: "Poderá espancar novamente",
-		youFailed: (date: Date) => `Você até tentou, mas o espancado foi você!\n-# Ficará hospitalizado até ${time(date, TimestampStyles.ShortDateTime)} ${EmoteString.Hospital}`,
+		youFailed: (date: Date) => `Você até tentou, mas o espancado foi você!\n-# Ficará hospitalizado até ${time(date, TimestampStyles.LongDateShortTime)} ${EmoteString.Hospital}`,
 		finishedBeatUpAttacker: (success: boolean) => `Espancamento ${success ? "bem" : "mal"}-sucedido`,
 		preparingToBeat: (nick: string) => `Preparando-se para espancar **${nick}**`,
 		useGrenadeDescription: (quantity: number) => `Você tem ${quantity} ${quantity === 1 ? "granada" : "granadas"}`,
@@ -588,12 +588,12 @@ export const Strings = {
 
 			const word = words[Math.round(Math.random() * (words.length - 1))];
 
-			return `¡${word} **${defenderNick}**!\n-# Permanecerá en el hospital hasta ${time(date, TimestampStyles.ShortDateTime)}`;
+			return `¡${word} **${defenderNick}**!\n-# Permanecerá en el hospital hasta ${time(date, TimestampStyles.LongDateShortTime)}`;
 		},
 		success: "Éxito",
 		failure: "Fracaso",
 		willBeAbleAgain: "Podrás golpear de nuevo",
-		youFailed: (date: Date) => `¡Lo intentaste, pero tú fuiste el golpeado!\n-# Permanecerás en el hospital hasta ${time(date, TimestampStyles.ShortDateTime)} ${EmoteString.Hospital}`,
+		youFailed: (date: Date) => `¡Lo intentaste, pero tú fuiste el golpeado!\n-# Permanecerás en el hospital hasta ${time(date, TimestampStyles.LongDateShortTime)} ${EmoteString.Hospital}`,
 		finishedBeatUpAttacker: (success: boolean) => `Golpiza ${success ? "exitosa" : "fallida"}`,
 		preparingToBeat: (nick: string) => `Preparándose para golpear a **${nick}**`,
 		useGrenadeDescription: (quantity: number) => `Tienes ${quantity} ${quantity === 1 ? "granada" : "granadas"}`,

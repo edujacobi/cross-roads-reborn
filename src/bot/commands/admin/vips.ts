@@ -44,7 +44,7 @@ module.exports = {
 			for (const user of users) {
 				const emoteClass = ClassList[user.class].Image.Emote.String;
 
-				const timeText = user.vipEternal ? "**Eternal**" : `Ends in ${time(user.vipTime!, TimestampStyles.ShortDateTime)}`;
+				const timeText = user.vipEternal ? "**Eternal**" : `Ends in ${time(user.vipTime!, TimestampStyles.LongDateShortTime)}`;
 
 				text += `### ${emoteClass} ${user.nickname}\n${timeText}\n-# \`Id: ${user.id}\`\n`;
 			}

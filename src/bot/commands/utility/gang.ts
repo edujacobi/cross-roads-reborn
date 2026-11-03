@@ -767,7 +767,7 @@ module.exports = {
 						() => depositBtn,
 					)
 					.addFooter({
-						text: `${s.created} ${time(gang.CreatedAt, TimestampStyles.ShortDateTime)}${adminIdText}`,
+						text: `${s.created} ${time(gang.CreatedAt, TimestampStyles.LongDateShortTime)}${adminIdText}`,
 						button: new ButtonBuilder()
 							.setLabel("Info")
 							.setCustomId("info")
@@ -976,10 +976,10 @@ module.exports = {
 					if (!check.can && check.reason !== undefined) {
 						let data = {};
 						if (check.reason === GangImportFailureReason.Cooldown && gang.LastImportSuccess) {
-							data = { time: time(addHours(gang.LastImportSuccess, Gang.IMPORT_COOLDOWN_HOURS), TimestampStyles.ShortDateTime) };
+							data = { time: time(addHours(gang.LastImportSuccess, Gang.IMPORT_COOLDOWN_HOURS), TimestampStyles.LongDateShortTime) };
 						}
 						else if (check.reason === GangImportFailureReason.CancelCooldown && gang.LastImportCancelled) {
-							data = { time: time(addHours(gang.LastImportCancelled, Gang.IMPORT_CANCEL_COOLDOWN_HOURS), TimestampStyles.ShortDateTime) };
+							data = { time: time(addHours(gang.LastImportCancelled, Gang.IMPORT_CANCEL_COOLDOWN_HOURS), TimestampStyles.LongDateShortTime) };
 						}
 						else if (check.reason === GangImportFailureReason.NotEnoughMoney) {
 							data = { cost: formatMoney(gang.GetImportCost(), language) };

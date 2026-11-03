@@ -205,9 +205,9 @@ const Strings = {
 		seasonTitle: (num: number) => `🏆 Season ${num}`,
 		seasonDescription: (season: Season, isActive: boolean) => {
 			if (isActive) {
-				return `**Current Season**\n-# Ends ${time(season.EndDate, TimestampStyles.RelativeTime)} (${time(season.EndDate, TimestampStyles.ShortDateTime)})\n\n**Start Date**: ${time(season.StartDate, TimestampStyles.ShortDateTime)}\n**End Date**: ${time(season.EndDate, TimestampStyles.ShortDateTime)}\n\n-# Each season lasts ${Season.DEFAULT_DURATION_DAYS} days and tracks top players across all categories.`;
+				return `**Current Season**\n-# Ends ${time(season.EndDate, TimestampStyles.RelativeTime)} (${time(season.EndDate, TimestampStyles.LongDateShortTime)})\n\n**Start Date**: ${time(season.StartDate, TimestampStyles.LongDateShortTime)}\n**End Date**: ${time(season.EndDate, TimestampStyles.LongDateShortTime)}\n\n-# Each season lasts ${Season.DEFAULT_DURATION_DAYS} days and tracks top players across all categories.`;
 			}
-			return `**Past Season**\n\n**Start Date**: ${time(season.StartDate, TimestampStyles.ShortDateTime)}\n**End Date**: ${time(season.EndDate, TimestampStyles.ShortDateTime)}\n\n-# Historical Hall of Fame archive.`;
+			return `**Past Season**\n\n**Start Date**: ${time(season.StartDate, TimestampStyles.LongDateShortTime)}\n**End Date**: ${time(season.EndDate, TimestampStyles.LongDateShortTime)}\n\n-# Historical Hall of Fame archive.`;
 		},
 		selectSeason: "Select a season to view",
 		seasonNotFound: (num: number) => `Season ${num} was not found.`,
@@ -235,9 +235,9 @@ const Strings = {
 		seasonTitle: (num: number) => `🏆 Temporada ${num}`,
 		seasonDescription: (season: Season, isActive: boolean) => {
 			if (isActive) {
-				return `**Temporada Atual**\n-# Termina ${time(season.EndDate, TimestampStyles.RelativeTime)} (${time(season.EndDate, TimestampStyles.ShortDateTime)})\n\n**Data de Início**: ${time(season.StartDate, TimestampStyles.ShortDateTime)}\n**Data de Término**: ${time(season.EndDate, TimestampStyles.ShortDateTime)}\n\n-# Cada temporada dura ${Season.DEFAULT_DURATION_DAYS} dias e acompanha os melhores jogadores em todas as categorias.`;
+				return `**Temporada Atual**\n-# Termina ${time(season.EndDate, TimestampStyles.RelativeTime)} (${time(season.EndDate, TimestampStyles.LongDateShortTime)})\n\n**Data de Início**: ${time(season.StartDate, TimestampStyles.LongDateShortTime)}\n**Data de Término**: ${time(season.EndDate, TimestampStyles.LongDateShortTime)}\n\n-# Cada temporada dura ${Season.DEFAULT_DURATION_DAYS} dias e acompanha os melhores jogadores em todas as categorias.`;
 			}
-			return `**Temporada Passada**\n\n**Data de Início**: ${time(season.StartDate, TimestampStyles.ShortDateTime)}\n**Data de Término**: ${time(season.EndDate, TimestampStyles.ShortDateTime)}\n\n-# Arquivo histórico do Hall da Fama.`;
+			return `**Temporada Passada**\n\n**Data de Início**: ${time(season.StartDate, TimestampStyles.LongDateShortTime)}\n**Data de Término**: ${time(season.EndDate, TimestampStyles.LongDateShortTime)}\n\n-# Arquivo histórico do Hall da Fama.`;
 		},
 		selectSeason: "Selecione uma temporada para visualizar",
 		seasonNotFound: (num: number) => `Temporada ${num} não foi encontrada.`,
@@ -265,9 +265,9 @@ const Strings = {
 		seasonTitle: (num: number) => `🏆 Temporada ${num}`,
 		seasonDescription: (season: Season, isActive: boolean) => {
 			if (isActive) {
-				return `**Temporada Actual**\n-# Termina ${time(season.EndDate, TimestampStyles.RelativeTime)} (${time(season.EndDate, TimestampStyles.ShortDateTime)})\n\n**Fecha de Inicio**: ${time(season.StartDate, TimestampStyles.ShortDateTime)}\n**Fecha de Fin**: ${time(season.EndDate, TimestampStyles.ShortDateTime)}\n\n-# Cada temporada dura ${Season.DEFAULT_DURATION_DAYS} días y sigue a los mejores jugadores en todas las categorías.`;
+				return `**Temporada Actual**\n-# Termina ${time(season.EndDate, TimestampStyles.RelativeTime)} (${time(season.EndDate, TimestampStyles.LongDateShortTime)})\n\n**Fecha de Inicio**: ${time(season.StartDate, TimestampStyles.LongDateShortTime)}\n**Fecha de Fin**: ${time(season.EndDate, TimestampStyles.LongDateShortTime)}\n\n-# Cada temporada dura ${Season.DEFAULT_DURATION_DAYS} días y sigue a los mejores jugadores en todas las categorías.`;
 			}
-			return `**Temporada Pasada**\n\n**Fecha de Inicio**: ${time(season.StartDate, TimestampStyles.ShortDateTime)}\n**Fecha de Fin**: ${time(season.EndDate, TimestampStyles.ShortDateTime)}\n\n-# Archivo histórico del Salón de la Fama.`;
+			return `**Temporada Pasada**\n\n**Fecha de Inicio**: ${time(season.StartDate, TimestampStyles.LongDateShortTime)}\n**Fecha de Fin**: ${time(season.EndDate, TimestampStyles.LongDateShortTime)}\n\n-# Archivo histórico del Salón de la Fama.`;
 		},
 		selectSeason: "Selecciona una temporada para ver",
 		seasonNotFound: (num: number) => `La temporada ${num} no fue encontrada.`,
