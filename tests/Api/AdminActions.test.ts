@@ -5,10 +5,20 @@ import { SituationId, User } from "#core/models/User";
 import { UserBadge } from "#core/models/UserBadge";
 import { UserRepository } from "#core/repositories/UserRepository";
 import { UserItemRepository } from "#core/repositories/UserItemRepository";
+import { Language } from "#core/models/Language";
 import { AdminAuditActionId } from "#core/types/AdminAuditLog";
 import { BadgeId } from "#core/types/Badges";
 import { ClassId } from "#core/types/Classes";
 import { BundleId, ItemId } from "#core/types/Ids";
+
+const { mockSendPrivateMessage } = vi.hoisted(() => ({
+	mockSendPrivateMessage: vi.fn(),
+}));
+
+vi.mock("#bot/utils/discordInteractions", async importOriginal => ({
+	...(await importOriginal<typeof import("#bot/utils/discordInteractions")>()),
+	sendPrivateMessage: mockSendPrivateMessage,
+}));
 
 vi.mock("#bot/client", () => ({
 	getClient: () => ({
@@ -34,6 +44,7 @@ const developer = {
 
 describe("Admin action mutations", () => {
 	beforeEach(() => {
+		mockSendPrivateMessage.mockClear();
 		vi.spyOn(AdminAuditLog, "Record").mockResolvedValue();
 		vi.spyOn(User.prototype, "GetInfo").mockImplementation(async function(this: User) {
 			return this;
@@ -136,6 +147,11 @@ describe("Admin action mutations", () => {
 		).resolves.toMatchObject({ success: true });
 
 		expect(addSpecialCoin).toHaveBeenCalledWith(12);
+		expect(mockSendPrivateMessage).toHaveBeenCalledWith(
+			"target123",
+			expect.stringContaining("12 Special Coins!"),
+			expect.anything(),
+		);
 	});
 
 	it("removes special coins when given a negative amount", async () => {
@@ -146,6 +162,11 @@ describe("Admin action mutations", () => {
 		).resolves.toMatchObject({ success: true });
 
 		expect(addSpecialCoin).toHaveBeenCalledWith(-12);
+		expect(mockSendPrivateMessage).toHaveBeenCalledWith(
+			"target123",
+			expect.stringContaining("reduced by 12 Special Coins."),
+			expect.anything(),
+		);
 	});
 
 	it("changes a user's class", async () => {
@@ -237,6 +258,37 @@ describe("Admin action mutations", () => {
 		).resolves.toMatchObject({ success: true });
 
 		expect(createBadge).toHaveBeenCalledWith("target123", BadgeId.Helper);
+		expect(mockSendPrivateMessage).toHaveBeenCalledWith(
+			"target123",
+			expect.stringContaining("Helper"),
+			expect.anything(),
+		);
+	});
+
+	it("does not notify when adding a badge fails", async () => {
+		vi.spyOn(UserBadge, "Create").mockResolvedValue(false);
+
+		await expect(
+			resolvers.Mutation.addBadge(null, { userId: "target123", badgeId: BadgeId.Helper }, { user: moderator }),
+		).resolves.toMatchObject({ success: false });
+
+		expect(mockSendPrivateMessage).not.toHaveBeenCalled();
+	});
+
+	it("localizes badge notifications to the target user's language", async () => {
+		vi.spyOn(User.prototype, "GetInfo").mockImplementation(async function(this: User) {
+			this.Language = Language.Portuguese;
+			return this;
+		});
+		vi.spyOn(UserBadge, "Create").mockResolvedValue(true);
+
+		await resolvers.Mutation.addBadge(null, { userId: "target123", badgeId: BadgeId.Helper }, { user: moderator });
+
+		expect(mockSendPrivateMessage).toHaveBeenCalledWith(
+			"target123",
+			expect.stringContaining("Você recebeu a insígnia"),
+			expect.anything(),
+		);
 	});
 
 	it("removes a badge from a user", async () => {

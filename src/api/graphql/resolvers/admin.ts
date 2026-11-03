@@ -10,12 +10,15 @@ import { ItemList } from "#core/types/Items";
 import { ItemType } from "#core/types/Items";
 import { BundleId } from "#core/types/Ids";
 import { ClassList } from "#core/types/Classes";
+import { BadgeList } from "#core/types/Badges";
 import { UserBadge } from "#core/models/UserBadge";
 import { addHours } from "date-fns";
 import { randomBytes } from "node:crypto";
 import { logger } from "#shared/log";
 import type { GraphQLContext } from "#api/types";
 import { formatMoney } from "#bot/utils/ui";
+import { CrColors } from "#bot/utils/colors";
+import { sendPrivateMessage } from "#bot/utils/discordInteractions";
 import { GangRepository } from "#core/repositories/GangRepository";
 import {
 	assertAuthenticated,
@@ -28,6 +31,24 @@ import {
 	getCurrentDiscordProfile,
 } from "./helpers";
 import type { ResolverFn } from "./helpers";
+
+const AdminNotificationStrings = {
+	[Language.English]: {
+		specialCoinsReceived: (amount: string) => `You received ${amount} Special Coins!`,
+		specialCoinsRemoved: (amount: string) => `Your balance was reduced by ${amount} Special Coins.`,
+		badgeReceived: (badge: string) => `You received the **${badge}** badge!`,
+	},
+	[Language.Portuguese]: {
+		specialCoinsReceived: (amount: string) => `Você recebeu ${amount} Moedas Especiais!`,
+		specialCoinsRemoved: (amount: string) => `Seu saldo foi reduzido em ${amount} Moedas Especiais.`,
+		badgeReceived: (badge: string) => `Você recebeu a insígnia **${badge}**!`,
+	},
+	[Language.Spanish]: {
+		specialCoinsReceived: (amount: string) => `¡Has recibido ${amount} Monedas Especiales!`,
+		specialCoinsRemoved: (amount: string) => `Tu saldo se redujo en ${amount} Monedas Especiales.`,
+		badgeReceived: (badge: string) => `¡Has recibido la insignia **${badge}**!`,
+	},
+} as const;
 
 export const adminResolvers: {
 	Query: Record<string, ResolverFn>;
@@ -384,6 +405,15 @@ export const adminResolvers: {
 			await target.AddSpecialCoin(args.amount);
 			await target.GetInfo();
 			await recordAdminAction(admin, AdminAuditActionId.AddSpecialCoins, { userId: target.Id }, previousValue, target.SpecialCoin);
+			if (args.amount !== 0) {
+				const s = AdminNotificationStrings[target.Language];
+				const formattedAmount = formatMoney(Math.abs(args.amount), target.Language, "");
+				await sendPrivateMessage(
+					target.Id,
+					args.amount > 0 ? s.specialCoinsReceived(formattedAmount) : s.specialCoinsRemoved(formattedAmount),
+					CrColors.SpecialShop,
+				);
+			}
 			return {
 				success: true,
 				message: `Adicionado ${args.amount} Moedas Especiais a ${target.Nickname}.`,
@@ -508,6 +538,12 @@ export const adminResolvers: {
 			await target.GetInfo();
 			if (success) {
 				await recordAdminAction(admin, AdminAuditActionId.AddBadge, { userId: target.Id }, previousValue, true);
+				const badgeName = BadgeList[args.badgeId]?.Name[target.Language] ?? String(args.badgeId);
+				await sendPrivateMessage(
+					target.Id,
+					AdminNotificationStrings[target.Language].badgeReceived(badgeName),
+					CrColors.Default,
+				);
 			}
 			return {
 				success,
