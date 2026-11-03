@@ -3046,11 +3046,14 @@ async function runInvestmentRobberySession(
 	const getInvestmentName = (view: MultiplayerSessionView) =>
 		view.investmentName ??
 		(targetUser.Investment.Id === null ? s.robInvestment : InvestmentList[targetUser.Investment.Id].Name[language]);
+
 	const getInvestmentImage = (view: MultiplayerSessionView) =>
 		view.investmentImageUrl ??
 		(targetUser.Investment.Id === null ? "" : InvestmentList[targetUser.Investment.Id].ImageUrl);
+
 	const calculateTotalAttack = (view: MultiplayerSessionView) =>
 		Math.round(view.participants.reduce((total, participant) => total + participant.attack, 0) * 0.5);
+
 	const getStatusContainer = (view: MultiplayerSessionView) => {
 		const container = new CustomContainerBuilder()
 			.setUser(user)
@@ -3138,12 +3141,17 @@ async function runInvestmentRobberySession(
 	let defenderPromptSent = false;
 	let defenderResponseShown = false;
 	let defenderResultSent = false;
+	let collectorEnded = false;
+	let currentView = session;
+
 	const sendDefenderPrompt = async (view: MultiplayerSessionView) => {
 		if (defenderPromptSent || view.phase !== "awaitingDefender" || !view.targetId) return;
+
 		defenderPromptSent = true;
 		const defender = targetUser;
 		const defenderStrings = Strings[defender.Language];
 		const investmentName = getInvestmentName(view);
+
 		const container = new CustomContainerBuilder()
 			.setUser(defender)
 			.setAccentColor(CrColors.Robbery)
@@ -3164,15 +3172,18 @@ async function runInvestmentRobberySession(
 			.addFooter({
 				text: `${defenderStrings.nextYield}: ${formatMoney(view.investmentYield ?? defender.Investment.AccumulatedYield, defender.Language)}`,
 			});
+
 		defenderMessage = await sendComplexPrivateMessage(defender.Id, {
 			components: [container],
 			flags: MessageFlags.IsComponentsV2,
 		});
+
 		const collector = defenderMessage?.createMessageComponentCollector({
 			filter: (btn: MessageComponentInteraction) => btn.user.id === defender.Id,
 			componentType: ComponentType.Button,
 			time: 60_000,
 		});
+
 		collector?.on("collect", async btn => {
 			await deferUpdate(btn);
 			const response = await MultiplayerSession.Respond(view.id, defender.Id, "defend", defender.Language);
@@ -3219,7 +3230,14 @@ async function runInvestmentRobberySession(
 
 	const update = async (view: MultiplayerSessionView) => {
 		if (view.id !== session.id) return;
-		await replyWithContainer(interaction, getStatusContainer(view));
+		currentView = view;
+		const container = getStatusContainer(view);
+		if (collectorEnded) {
+			await disableButtons(interaction, container);
+		}
+		else {
+			await replyWithContainer(interaction, container);
+		}
 		await sendDefenderPrompt(view);
 		if (view.response === "defend" && defenderMessage && !defenderResponseShown) {
 			defenderResponseShown = true;
@@ -3245,18 +3263,23 @@ async function runInvestmentRobberySession(
 		});
 		return updateQueue;
 	};
+
 	const unsubscribe = MultiplayerSession.Subscribe(user.Id, gang.Id, view => {
 		queueUpdate(view);
 	});
+
 	const reply = await replyWithContainer(interaction, getStatusContainer(session));
 	const collector = reply?.createMessageComponentCollector({ time: 60_000 });
 	const latest = MultiplayerSession.GetVisibleSession(session.id, user.Id, gang.Id);
+
 	if (latest && (latest.phase !== session.phase || latest.participants.length !== session.participants.length)) {
 		await queueUpdate(latest);
 	}
+
 	collector?.on("collect", async btn => {
 		await deferUpdate(btn);
 		let result: { success: boolean; message: string };
+
 		if (btn.customId === "abort_investment_robbery") {
 			result = await MultiplayerSession.Abort(session.id, btn.user.id, getLanguageFromLocale(btn.locale));
 		}
@@ -3268,16 +3291,20 @@ async function runInvestmentRobberySession(
 		else {
 			return;
 		}
+
 		if (!result.success) {
 			await btn.followUp({ content: result.message, flags: MessageFlags.Ephemeral });
 		}
 	});
-	collector?.on("end", () => void disableButtons(interaction, getStatusContainer(session)));
+
+	collector?.on("end", () => {
+		collectorEnded = true;
+		updateQueue = updateQueue.then(() => disableButtons(interaction, getStatusContainer(currentView)));
+	});
 
 	try {
 		const completed = await MultiplayerSession.WaitForCompletion(session.id);
-		await updateQueue;
-		await update(completed);
+		await queueUpdate(completed);
 	}
 	finally {
 		unsubscribe();
