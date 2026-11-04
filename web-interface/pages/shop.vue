@@ -326,41 +326,43 @@ onUnmounted(() => {
 
 		<div
 			v-if="itemsLoading || profileLoading || inventoryLoading || blackMarketLoading"
-			class="shop-page__skeleton"
+			class="shop-page__skeleton shop-page__layout"
 			role="status"
 			aria-label="Carregando loja"
 		>
-			<div class="shop-page__grid">
-				<div
-					v-for="i in 14"
-					:key="i"
-					class="shop-item-card shop-item-card--skeleton"
-				>
-					<BaseSkeleton
-						class="shop-item-card__image"
-						height="6rem"
-					/>
-					<div class="shop-item-card__info">
+			<div class="shop-page__items">
+				<div class="shop-page__grid">
+					<div
+						v-for="i in 14"
+						:key="i"
+						class="shop-item-card shop-item-card--skeleton"
+					>
 						<BaseSkeleton
-							height="1.2rem"
-							width="70%"
+							class="shop-item-card__image"
+							height="6rem"
 						/>
-						<BaseSkeleton
-							height="0.8rem"
-							width="50%"
-						/>
-						<BaseSkeleton
-							height="0.375rem"
-							width="100%"
-						/>
-						<BaseSkeleton
-							height="1rem"
-							width="40%"
-						/>
-						<BaseSkeleton
-							height="2rem"
-							width="100%"
-						/>
+						<div class="shop-item-card__info">
+							<BaseSkeleton
+								height="1.2rem"
+								width="70%"
+							/>
+							<BaseSkeleton
+								height="0.8rem"
+								width="50%"
+							/>
+							<BaseSkeleton
+								height="0.375rem"
+								width="100%"
+							/>
+							<BaseSkeleton
+								height="1rem"
+								width="40%"
+							/>
+							<BaseSkeleton
+								height="2rem"
+								width="100%"
+							/>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -607,17 +609,13 @@ onUnmounted(() => {
 	}
 
 	&__skeleton {
-		min-width: 0;
-		container-name: shop;
-		container-type: inline-size;
-		display: flex;
-		gap: $spacing-lg;
-
 		&--cart {
 			width: unset !important;
 			height: unset !important;
-			max-width: 320px;
-			flex: 1;
+
+			@media (max-width: 1024px) {
+				display: none;
+			}
 		}
 	}
 
@@ -632,7 +630,6 @@ onUnmounted(() => {
 
 		&--skeleton {
 			pointer-events: none;
-			border: none;
 		}
 
 		&__image {

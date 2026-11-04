@@ -271,8 +271,34 @@ onBeforeUnmount(() => sseAbortController?.abort());
 					:key="index"
 					class="rob-card rob-card--skeleton"
 				>
-					<BaseSkeleton height="2rem" />
-					<BaseSkeleton height="3rem" />
+					<div class="rob-card__row">
+						<div class="rob-card__header">
+							<div class="rob-card__name">
+								<BaseSkeleton
+									width="2.75rem"
+									height="2.75rem"
+								/>
+								<BaseSkeleton
+									width="min(10rem, 100%)"
+									height="1.25rem"
+								/>
+							</div>
+							<BaseSkeleton
+								class="rob-card__description"
+								width="min(18rem, 100%)"
+							/>
+						</div>
+						<div class="rob-card__actions">
+							<BaseSkeleton
+								width="6rem"
+								height="2.25rem"
+							/>
+							<BaseSkeleton
+								width="1.75rem"
+								height="2.25rem"
+							/>
+						</div>
+					</div>
 				</div>
 			</div>
 			<BaseSkeleton class="rob-page__loading-aside" />
@@ -636,9 +662,7 @@ onBeforeUnmount(() => sseAbortController?.abort());
 	border-radius: $radius-sm;
 
 	&--skeleton {
-		display: flex;
-		flex-direction: column;
-		gap: $spacing-sm;
+		pointer-events: none;
 	}
 }
 

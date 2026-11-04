@@ -326,21 +326,37 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 		<!-- Loading State -->
 		<div
 			v-if="locationsLoading || statusLoading || activityLoading || profileLoading || statusQueryLoading"
-			class="scavenge-page__loading"
+			class="scavenge-page__loading scavenge-page__layout"
 			role="status"
 			aria-label="Carregando locais"
 		>
-			<div class="scavenge-grid">
+			<div class="scavenge-page__list scavenge-grid">
 				<div
 					v-for="i in 4"
 					:key="i"
 					class="scavenge-card scavenge-card--skeleton"
 				>
-					<BaseSkeleton
-						class="scavenge-card__header"
-						height="2rem"
-					/>
-					<BaseSkeleton height="3rem" />
+					<div class="scavenge-card__row">
+						<div class="scavenge-card__header">
+							<BaseSkeleton
+								width="min(14rem, 100%)"
+								height="1.25rem"
+							/>
+							<BaseSkeleton width="min(18rem, 100%)" />
+						</div>
+						<div class="scavenge-card__body">
+							<div class="scavenge-card__button-row">
+								<BaseSkeleton
+									width="6rem"
+									height="2.25rem"
+								/>
+								<BaseSkeleton
+									width="1.75rem"
+									height="2.25rem"
+								/>
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
 			<BaseSkeleton class="scavenge-page__loading-aside" />
@@ -701,21 +717,13 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 }
 
 .scavenge-page__loading {
-	min-width: 0;
-	container-name: scavenge;
-	container-type: inline-size;
-	display: flex;
-	gap: $spacing-lg;
-
-	.scavenge-grid {
-		flex-grow: 1;
-	}
-
 	&-aside {
 		width: unset !important;
 		height: unset !important;
-		max-width: 320px;
-		flex: 1;
+
+		@media (max-width: 1024px) {
+			display: none;
+		}
 	}
 }
 
@@ -959,10 +967,6 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 
 	&--skeleton {
 		pointer-events: none;
-		border: none;
-		display: flex;
-		flex-direction: column;
-		gap: $spacing-sm;
 	}
 
 	&__row {

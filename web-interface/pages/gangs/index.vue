@@ -415,6 +415,7 @@ const bases = [
 					v-if="loadingBoard"
 					:rows="6"
 					:columns="boardColumns.length"
+					size="lg"
 					label="Carregando gangues disponíveis"
 				/>
 				<BaseTable

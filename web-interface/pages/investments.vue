@@ -155,7 +155,6 @@ async function toggleYieldNotifications() {
 		showToast({ text: "Não foi possível atualizar as notificações. Tente novamente.", variant: "error" });
 	}
 }
-
 </script>
 
 <template>
@@ -167,27 +166,48 @@ async function toggleYieldNotifications() {
 
 		<div
 			v-if="pageLoading && !page"
-			class="investments-loading"
+			class="investments-loading investments-page__layout"
 			role="status"
 			aria-label="Carregando investimentos"
 		>
-			<ul class="investments-list">
+			<ul class="investments-page__list investments-list">
 				<li
 					v-for="i in 6"
 					:key="i"
 					class="investment-card investment-card--skeleton"
 				>
-					<BaseSkeleton
-						width="7rem"
-						height="7rem"
-					/>
-					<div class="investment-card__skeleton-details">
+					<div class="investment-card__image">
+						<BaseSkeleton height="100%" />
+					</div>
+					<div class="investment-card__content">
+						<div class="investment-card__heading">
+							<BaseSkeleton
+								width="min(12rem, 100%)"
+								height="1.25rem"
+							/>
+							<BaseSkeleton width="100%" />
+						</div>
+						<div class="investment-card__stats">
+							<BaseSkeleton
+								width="5rem"
+								height="2rem"
+							/>
+							<BaseSkeleton
+								width="5rem"
+								height="2rem"
+							/>
+							<BaseSkeleton
+								width="5rem"
+								height="2rem"
+							/>
+						</div>
+					</div>
+					<div class="investment-card__action">
+						<BaseSkeleton width="5rem" />
 						<BaseSkeleton
-							width="12rem"
-							height="1.25rem"
+							width="6rem"
+							height="2.25rem"
 						/>
-						<BaseSkeleton width="100%" />
-						<BaseSkeleton width="8rem" />
 					</div>
 				</li>
 			</ul>
@@ -518,13 +538,13 @@ async function toggleYieldNotifications() {
 	gap: $spacing-lg;
 
 	.investments-loading {
-		min-width: 0;
-		display: flex;
-		gap: $spacing-lg;
-
 		&__aside {
-			max-width: 320px;
-			flex: 1;
+			width: unset !important;
+			height: unset !important;
+
+			@media (max-width: 1024px) {
+				display: none;
+			}
 		}
 	}
 
@@ -862,13 +882,6 @@ async function toggleYieldNotifications() {
 			margin: 0;
 			color: $text-primary;
 			font-weight: $font-weight-bold;
-		}
-
-		&__skeleton-details {
-			display: flex;
-			flex: 1;
-			flex-direction: column;
-			gap: $spacing-sm;
 		}
 
 		@container page (max-width: 600px) {

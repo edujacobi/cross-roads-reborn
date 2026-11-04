@@ -6,7 +6,7 @@ import { FileText } from "lucide-vue-next";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseEmptyState from "~/components/ui/BaseEmptyState.vue";
 import BaseErrorState from "~/components/ui/BaseErrorState.vue";
-import BaseTableSkeleton from "~/components/ui/BaseTableSkeleton.vue";
+import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
 import PageTitle from "~/components/ui/PageTitle.vue";
 import { markUpdatesAsRead } from "~/composables/useUnreadUpdates";
 
@@ -71,7 +71,7 @@ async function loadUpdates() {
 	}
 }
 
-await loadUpdates();
+onMounted(loadUpdates);
 </script>
 
 <template>
@@ -81,12 +81,36 @@ await loadUpdates();
 			subtitle="Histórico de atualizações e novidades"
 		/>
 
-		<BaseTableSkeleton
+		<div
 			v-if="loading"
-			:rows="3"
-			:columns="1"
-			label="Carregando atualizações"
-		/>
+			class="updates-page__list"
+			role="status"
+			aria-label="Carregando atualizações"
+		>
+			<BaseCard
+				v-for="i in 3"
+				:key="i"
+			>
+				<template #header>
+					<div class="updates-page__skeleton-header">
+						<BaseSkeleton
+							width="min(12rem, 100%)"
+							height="1.25rem"
+						/>
+						<BaseSkeleton width="5rem" />
+					</div>
+				</template>
+				<div class="updates-page__skeleton-body">
+					<BaseSkeleton width="90%" />
+					<BaseSkeleton width="70%" />
+					<BaseSkeleton
+						width="min(10rem, 100%)"
+						height="1.25rem"
+					/>
+					<BaseSkeleton width="80%" />
+				</div>
+			</BaseCard>
+		</div>
 		<BaseErrorState v-else-if="error">
 			{{ error }}
 		</BaseErrorState>
@@ -149,6 +173,15 @@ await loadUpdates();
 		display: flex;
 		flex-direction: column;
 		gap: $spacing-lg;
+	}
+
+	&__skeleton-header,
+	&__skeleton-body {
+		display: flex;
+		min-width: 0;
+		flex: 1;
+		flex-direction: column;
+		gap: $spacing-sm;
 	}
 
 	&__update-comment {

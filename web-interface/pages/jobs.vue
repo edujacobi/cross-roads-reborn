@@ -158,7 +158,6 @@ async function handleCancelJob() {
 	}
 	showCancelModal.value = false;
 }
-
 </script>
 
 <template>
@@ -170,24 +169,40 @@ async function handleCancelJob() {
 
 		<div
 			v-if="jobsLoading || statusLoading || blackMarketLoading || activityLoading"
-			class="jobs-loading"
+			class="jobs-loading jobs-page__layout"
 			role="status"
 			aria-label="Carregando trabalhos"
 		>
-			<div class="jobs-grid">
+			<div class="jobs-page__list jobs-grid">
 				<div
 					v-for="i in 6"
 					:key="i"
 					class="job-card job-card--skeleton"
 				>
-					<BaseSkeleton
-						class="job-card__header"
-						height="2rem"
-					/>
-					<BaseSkeleton
-						class="job-card__stats"
-						height="3rem"
-					/>
+					<div class="job-card__row">
+						<div class="job-card__header">
+							<BaseSkeleton
+								width="8rem"
+								height="1.25rem"
+							/>
+						</div>
+						<div class="job-card__body">
+							<div class="job-card__stats">
+								<BaseSkeleton width="4rem" />
+								<BaseSkeleton width="5rem" />
+							</div>
+							<div class="job-card__button-row">
+								<BaseSkeleton
+									width="6rem"
+									height="2.25rem"
+								/>
+								<BaseSkeleton
+									width="1.75rem"
+									height="2.25rem"
+								/>
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
 			<BaseSkeleton class="jobs-loading__aside" />
@@ -210,10 +225,7 @@ async function handleCancelJob() {
 						v-for="job in jobs"
 						:key="job.id"
 						class="job-card"
-						:class="{
-							'job-card--black-market': job.special,
-							'job-card--disabled': job.special && !blackMarketOpen,
-						}"
+						:class="job.special && ['job-card--black-market', !blackMarketOpen && 'job-card--disabled']"
 					>
 						<div
 							class="job-card__row"
@@ -452,21 +464,13 @@ async function handleCancelJob() {
 }
 
 .jobs-loading {
-	min-width: 0;
-	container-name: shop;
-	container-type: inline-size;
-	display: flex;
-	gap: $spacing-lg;
-
-	.jobs-grid {
-		flex-grow: 1;
-	}
-
 	&__aside {
 		width: unset !important;
 		height: unset !important;
-		max-width: 320px;
-		flex: 1;
+
+		@media (max-width: 1024px) {
+			display: none;
+		}
 	}
 }
 
@@ -740,10 +744,6 @@ async function handleCancelJob() {
 
 	&--skeleton {
 		pointer-events: none;
-		border: none;
-		display: flex;
-		flex-direction: column;
-		gap: $spacing-sm;
 	}
 
 	&__row {

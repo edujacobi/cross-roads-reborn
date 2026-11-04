@@ -26,6 +26,7 @@ import BaseErrorState from "~/components/ui/BaseErrorState.vue";
 import BaseInput from "~/components/ui/BaseInput.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
 import BaseSelector, { type SelectorOption } from "~/components/ui/BaseSelector.vue";
+import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
 import BaseTable from "~/components/ui/BaseTable.vue";
 import BaseTableSkeleton from "~/components/ui/BaseTableSkeleton.vue";
 import { useMultiplayerSessions } from "~/composables/useMultiplayerSessions";
@@ -832,12 +833,76 @@ async function updateGangMoney() {
 
 		<BaseErrorState v-if="error"> Não foi possível carregar os dados da gangue. </BaseErrorState>
 
-		<BaseTableSkeleton
+		<div
 			v-else-if="loading"
-			:rows="6"
-			:columns="3"
-			label="Carregando gangue"
-		/>
+			class="gang-detail__content"
+			role="status"
+			aria-label="Carregando gangue"
+		>
+			<BaseCard class="gang-detail__header">
+				<div class="gang-header">
+					<BaseSkeleton
+						class="gang-header__avatar"
+						width="6rem"
+						height="6rem"
+					/>
+					<div class="gang-detail__skeleton-info">
+						<BaseSkeleton
+							width="min(14rem, 100%)"
+							height="1.5rem"
+						/>
+						<BaseSkeleton width="min(20rem, 100%)" />
+						<BaseSkeleton
+							width="min(8rem, 100%)"
+							height="1.2rem"
+						/>
+					</div>
+				</div>
+				<div class="gang-xp-bar">
+					<BaseSkeleton
+						width="100%"
+						height="0.75rem"
+					/>
+				</div>
+			</BaseCard>
+			<div class="columns">
+				<BaseCard
+					title="Membros"
+					no-padding-x
+					no-padding-y
+				>
+					<BaseTableSkeleton
+						:rows="3"
+						:columns="3"
+						size="lg"
+						label="Carregando membros"
+					/>
+				</BaseCard>
+				<BaseCard title="Base da gangue">
+					<div class="gang-base-info">
+						<BaseSkeleton
+							width="8rem"
+							height="8rem"
+						/>
+						<div class="gang-detail__skeleton-info">
+							<BaseSkeleton width="min(10rem, 100%)" />
+							<BaseSkeleton width="min(5rem, 100%)" />
+						</div>
+					</div>
+				</BaseCard>
+			</div>
+			<BaseCard
+				title="Cargos"
+				no-padding-x
+				no-padding-y
+			>
+				<BaseTableSkeleton
+					:rows="3"
+					:columns="6"
+					label="Carregando cargos"
+				/>
+			</BaseCard>
+		</div>
 
 		<div
 			v-else-if="!gang"
@@ -2346,6 +2411,14 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 	&__header {
 		border-color: $border-color;
 		background-color: $background-color;
+	}
+
+	&__skeleton-info {
+		display: flex;
+		flex: 1;
+		min-width: 0;
+		flex-direction: column;
+		gap: $spacing-sm;
 	}
 }
 
