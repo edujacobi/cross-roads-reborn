@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { randomInt, randomUUID } from "node:crypto";
 import { EventEmitter } from "node:events";
 import { setTimeout as wait } from "node:timers/promises";
 import { addHours } from "date-fns/addHours";
@@ -1007,13 +1007,16 @@ export class MultiplayerSession {
 		}
 
 		if (session.phase !== "starting") return;
-		players.sort(() => Math.random() - 0.5);
+		for (let index = players.length - 1; index > 0; index--) {
+			const randomIndex = randomInt(index + 1);
+			[players[index], players[randomIndex]] = [players[randomIndex], players[index]];
+		}
 		session.aliveUserIds = players.map(player => player.Id);
 		session.phase = "running";
 		await MultiplayerSessionRepository.Update(session.id, { phase: session.phase });
 		if (session.phase !== "running") return;
 		this.Publish(session);
-		await this.TrackTask(session, this.RunRussianRoulette(session, players).catch(async error => {
+		void this.TrackTask(session, this.RunRussianRoulette(session, players).catch(async error => {
 			logger.error(`Failed to resolve Russian Roulette session ${session.id}: ${error}`);
 			try {
 				await this.AbortRuntime(session, "resolution-failed");
@@ -1021,7 +1024,9 @@ export class MultiplayerSession {
 			catch (cleanupError) {
 				logger.error(`Failed to clean up Russian Roulette session ${session.id}: ${cleanupError}`);
 			}
-		}));
+		})).catch(error => {
+			logger.error(`Failed to track Russian Roulette session ${session.id}: ${error}`);
+		});
 	}
 
 	private static async RunRussianRoulette(session: RussianRouletteSession, players: User[]): Promise<void> {
@@ -1040,7 +1045,7 @@ export class MultiplayerSession {
 					break;
 				}
 
-				const hit = Math.random() < 0.2;
+				const hit = randomInt(5) === 0;
 				if (hit) {
 					player.Hospital.Time = addHours(new Date(), Math.random() * 0.5 + 1.5);
 					player.Hospital.Count += 1;

@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { Casino } from "#core/models/Casino";
 import { signAuthToken, verifyAuthToken } from "#api/auth/jwt";
 import type { AuthUser } from "#api/types";
 import { resolvers } from "#api/graphql/resolvers";
@@ -14,6 +15,14 @@ import { Vault } from "#core/models/Vault";
 import { UserRepository } from "#core/repositories/UserRepository";
 import { UserItemRepository } from "#core/repositories/UserItemRepository";
 import { AvatarDecorationId, BackgroundDecorationId, BundleId, ItemId } from "#core/types/Ids";
+import { ClassId } from "#core/types/Classes";
+
+const { mockRandomInt } = vi.hoisted(() => ({ mockRandomInt: vi.fn() }));
+
+vi.mock("node:crypto", async importOriginal => {
+	const actual = await importOriginal<typeof import("node:crypto")>();
+	return { ...actual, randomInt: mockRandomInt };
+});
 
 describe("API Auth and Resolvers", () => {
 	const devUser: AuthUser = {
@@ -144,6 +153,37 @@ describe("API Auth and Resolvers", () => {
 			await expect(
 				resolvers.Mutation.startRussianRoulette(null, { bet: 5_000 }, { user: playerUser }),
 			).resolves.toEqual({ success: false, message, session: null });
+		});
+
+		it.each([
+			{ draw: 0, resultSide: "HEADS", won: true },
+			{ draw: 1, resultSide: "TAILS", won: false },
+		])("uses a cryptographic coin flip draw: $resultSide", async ({ draw, resultSide, won }) => {
+			vi.spyOn(User.prototype, "GetInfo").mockImplementation(async function(this: User) {
+				this.Money = 10_000;
+				this.Class = ClassId.Entrepreneur;
+				return this;
+			});
+			vi.spyOn(User.prototype, "Update").mockResolvedValue(true);
+			vi.spyOn(Casino, "CanUserPlayGame").mockResolvedValue({ canPlay: true, message: "" });
+			vi.spyOn(Casino, "StartUserGame").mockImplementation(async user => {
+				user.Casino.IsInGame = true;
+				return true;
+			});
+			const finishWin = vi.spyOn(Casino, "FinishUserGameWithWin").mockResolvedValue();
+			const finishLoss = vi.spyOn(Casino, "FinishUserGameWithLoss").mockResolvedValue();
+			mockRandomInt.mockReturnValueOnce(draw);
+
+			const result = await resolvers.Mutation.playCoinFlip(
+				null,
+				{ side: "HEADS", amount: 1_000 },
+				{ user: playerUser },
+			);
+
+			expect(result).toMatchObject({ success: true, resultSide, won });
+			expect(mockRandomInt).toHaveBeenCalledWith(2);
+			expect(finishWin).toHaveBeenCalledTimes(won ? 1 : 0);
+			expect(finishLoss).toHaveBeenCalledTimes(won ? 0 : 1);
 		});
 
 		it("should return the specific multiplayer session join error", async () => {

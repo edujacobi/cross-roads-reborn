@@ -65,5 +65,6 @@ const rest = new REST().setToken(token);
 	catch (error) {
 		// And of course, make sure you catch and log any errors!
 		logger.error(error);
+		process.exitCode = 1;
 	}
 })();

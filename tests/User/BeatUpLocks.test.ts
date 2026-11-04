@@ -41,7 +41,6 @@ describe("BeatUp — LockStates & ReleaseLocks", () => {
 		defender.Money = 2_000;
 		defender.Items = [ItemList[ItemId.Pistol] as UserItem];
 
-		// Prevent fire-and-forget GetAttributes in constructor from interfering
 		vi.spyOn(attacker, "GetAttributes").mockResolvedValue(undefined as any);
 		vi.spyOn(defender, "GetAttributes").mockResolvedValue(undefined as any);
 		vi.spyOn(attacker, "GetItemSkin").mockReturnValue("🔪");

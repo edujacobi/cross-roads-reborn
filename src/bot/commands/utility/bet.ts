@@ -8,6 +8,7 @@ import { Casino } from "#core/models/Casino";
 import { Language, type Localization } from "#core/models/Language";
 import type { User } from "#core/models/User";
 import { getCasinoClassModifier } from "#core/types/Classes";
+import { randomInt } from "node:crypto";
 import {
 	ButtonStyle,
 	type ChatInputCommandInteraction,
@@ -133,7 +134,7 @@ module.exports = {
 			const range = () => Math.floor(Math.random() * 1_001) + 2_000;
 
 			await wait(range());
-			const coinFlip = Math.floor(Math.random() * 2);
+			const coinFlip = randomInt(2);
 
 			const win = side === coinFlip;
 

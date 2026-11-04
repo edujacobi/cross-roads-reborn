@@ -50,6 +50,40 @@ describe("BeatUp", () => {
 			expect(result.message).toContain("yourself");
 		});
 
+		it("waits for attribute refreshes before validating combat stats", async () => {
+			let resolveAttackerRefresh!: () => void;
+			const attackerRefresh = new Promise<void>(resolve => {
+				resolveAttackerRefresh = resolve;
+			});
+			user.Attributes.Attack = 0;
+			defender.Attributes.Attack = 10;
+
+			const attackerAttributes = vi.spyOn(user, "GetAttributes").mockImplementation(async () => {
+				await attackerRefresh;
+				user.Attributes.Attack = 10;
+				user.BestGun = ItemList[ItemId.Knife] as UserItem;
+			});
+			const defenderAttributes = vi.spyOn(defender, "GetAttributes").mockImplementation(async () => {
+				defender.Attributes.Attack = 10;
+				defender.BestGun = ItemList[ItemId.Knife] as UserItem;
+			});
+
+			const validation = new BeatUp(user, defender).CanBeatUser();
+			expect(attackerAttributes).toHaveBeenCalledOnce();
+			expect(defenderAttributes).not.toHaveBeenCalled();
+
+			resolveAttackerRefresh();
+			await expect(validation).resolves.toMatchObject({ canBeat: true });
+			expect(defenderAttributes).toHaveBeenCalledOnce();
+		});
+
+		it("propagates attribute refresh failures", async () => {
+			const error = new Error("attribute refresh failed");
+			vi.spyOn(user, "GetAttributes").mockRejectedValue(error);
+
+			await expect(new BeatUp(user, defender).CanBeatUser()).rejects.toBe(error);
+		});
+
 		it("Should fail if attacker and defender are in same gang", async () => {
 			user.GangId = 1;
 			defender.GangId = 1;

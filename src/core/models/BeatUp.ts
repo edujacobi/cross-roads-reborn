@@ -46,11 +46,14 @@ export class BeatUp {
 		this.Attacker = attacker;
 		this.Defender = defender;
 		this.Date = new Date();
-		this.Attacker.GetAttributes(true);
-		this.Defender.GetAttributes(true);
 	}
 
 	async CanBeatUser() {
+		await this.Attacker.GetAttributes(true);
+		if (this.Defender !== this.Attacker) {
+			await this.Defender.GetAttributes(true);
+		}
+
 		const s = Strings[this.Attacker.Language];
 		let canBeat = true;
 		let message = "";

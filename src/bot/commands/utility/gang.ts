@@ -25,7 +25,7 @@ import { Log } from "#shared/log";
 import { getLanguageFromLocale, Language, type Localization } from "#core/models/Language";
 import { User } from "#core/models/User";
 import { GangBaseId, GangBases, type GangModifier, getGangBases } from "#core/types/GangBases";
-import { GangColor, GangColorId, type IGangColor } from "#core/types/GangColors";
+import { GangColor, type GangColorId, type IGangColor } from "#core/types/GangColors";
 import { InvestmentList } from "#core/types/Investments";
 import { addHours, isFuture } from "date-fns";
 import {
@@ -1322,78 +1322,88 @@ module.exports = {
 			let responded = false;
 
 			collector?.on("collect", async btn => {
-				let descriptionPrivate = "";
-				let descriptionChannel = "";
+				try {
+					let descriptionPrivate = "";
+					let descriptionChannel = "";
 
-				responded = true;
+					responded = true;
 
-				await target.GetInfo();
+					await target.GetInfo();
 
-				collector?.stop();
+					collector?.stop();
 
-				if (btn.customId === "accept") {
-					const joinCost = gang.GetJoinCost();
-					if (target.Money < joinCost) {
-						descriptionPrivate = sT.notEnoughMoney.private(gang.Name, gang.Acronym, joinCost);
-						descriptionChannel = sI.notEnoughMoney.channel(target.GetNameWithImage());
-					}
-					else {
-						const success = await gang.AcceptInvite(target);
-
-						if (!success) {
-							descriptionPrivate = sT.notSuccess.private(gang.Name, gang.Acronym);
-							descriptionChannel = sI.notSuccess.channel(target.GetNameWithImage());
+					if (btn.customId === "accept") {
+						const joinCost = gang.GetJoinCost();
+						if (target.Money < joinCost) {
+							descriptionPrivate = sT.notEnoughMoney.private(gang.Name, gang.Acronym, joinCost);
+							descriptionChannel = sI.notEnoughMoney.channel(target.GetNameWithImage());
 						}
 						else {
-							descriptionPrivate = sT.success.private(gang.Name, gang.Acronym);
-							descriptionChannel = sI.success.channel(target.GetNameWithImage());
+							const success = await gang.AcceptInvite(target);
+
+							if (!success) {
+								descriptionPrivate = sT.notSuccess.private(gang.Name, gang.Acronym);
+								descriptionChannel = sI.notSuccess.channel(target.GetNameWithImage());
+							}
+							else {
+								descriptionPrivate = sT.success.private(gang.Name, gang.Acronym);
+								descriptionChannel = sI.success.channel(target.GetNameWithImage());
+							}
 						}
 					}
-				}
-				else if (btn.customId === "decline") {
-					descriptionPrivate = sT.decline.private(gang.Name, gang.Acronym);
-					descriptionChannel = sI.decline.channel(target.GetNameWithImage());
-				}
+					else if (btn.customId === "decline") {
+						descriptionPrivate = sT.decline.private(gang.Name, gang.Acronym);
+						descriptionChannel = sI.decline.channel(target.GetNameWithImage());
+					}
 
-				response?.edit({
-					components: [defaultComponent({
-						user,
-						description: descriptionPrivate,
-					})],
-				});
-
-				await sendComplexPrivateMessage(user.Id, {
-					components: [
-						defaultComponent({
+					await response?.edit({
+						components: [defaultComponent({
 							user,
-							description: descriptionChannel,
-							footer: gang.Name,
-						}),
-					],
-					flags: [MessageFlags.IsComponentsV2],
-				});
+							description: descriptionPrivate,
+						})],
+					});
+
+					await sendComplexPrivateMessage(user.Id, {
+						components: [
+							defaultComponent({
+								user,
+								description: descriptionChannel,
+								footer: gang.Name,
+							}),
+						],
+						flags: [MessageFlags.IsComponentsV2],
+					});
+				}
+				catch (error) {
+					Log.Error(`Failed to process gang invitation response: ${error}`);
+				}
 			});
 
 			collector?.on("end", async () => {
 				if (responded) return;
 
-				response?.edit({
-					components: [defaultComponent({
-						user,
-						description: sT.timeout.private(gang.Name, gang.Acronym),
-					})],
-				});
-
-				await sendComplexPrivateMessage(user.Id, {
-					components: [
-						defaultComponent({
+				try {
+					await response?.edit({
+						components: [defaultComponent({
 							user,
-							description: sI.timeout.channel(target.GetNameWithImage(), gang.Name, gang.Acronym),
-							footer: gang.Name,
-						}),
-					],
-					flags: [MessageFlags.IsComponentsV2],
-				});
+							description: sT.timeout.private(gang.Name, gang.Acronym),
+						})],
+					});
+
+					await sendComplexPrivateMessage(user.Id, {
+						components: [
+							defaultComponent({
+								user,
+								description: sI.timeout.channel(target.GetNameWithImage(), gang.Name, gang.Acronym),
+								footer: gang.Name,
+							}),
+						],
+						flags: [MessageFlags.IsComponentsV2],
+					});
+				}
+				catch (error) {
+					Log.Error(`Failed to process gang invitation timeout: ${error}`);
+				}
 			});
 
 			const container = defaultComponent({

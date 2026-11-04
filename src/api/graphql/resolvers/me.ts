@@ -1,4 +1,5 @@
 import { GraphQLError } from "graphql";
+import { randomInt } from "node:crypto";
 import { Season } from "#core/models/Season";
 import { User } from "#core/models/User";
 import { UserAvatarDecoration } from "#core/models/UserAvatarDecoration";
@@ -1713,7 +1714,7 @@ export const meResolvers: {
 				return { success: false, message: "Você já está jogando no cassino.", money: player.Money };
 			}
 			try {
-				const resultSide = Math.random() < 0.5 ? "HEADS" : "TAILS";
+				const resultSide = randomInt(2) === 0 ? "HEADS" : "TAILS";
 				const won = resultSide === args.side;
 				const prize = won ? Math.round(args.amount * 0.5 * getCasinoClassModifier(player.Class)) : 0;
 

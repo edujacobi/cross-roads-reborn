@@ -52,7 +52,7 @@ module.exports = {
 					.addTexts([
 						`# ${s.title}`,
 						`-# ${s.subtitle}`,
-						raceInfo ? s.nextRace(raceInfo.race.raceTime) : s.noRace
+						raceInfo ? s.nextRace(raceInfo.race.raceTime) : s.noRace,
 					])
 					.setThumbnailAccessory(thumb => thumb
 						.setURL("https://media.discordapp.net/attachments/1233604589064818808/1499581098408280096/HorseRacing.png"),
@@ -127,14 +127,14 @@ module.exports = {
 				container
 					.addSectionComponents(section => section
 						.addTexts([
-							`### ${horse.Emote} ${horseName}\n${horse.Description[user.Language]}\n-# ${horse.Multiplier}× → **${formatMoney(Math.floor(amount * horse.Multiplier), user.Language)}**`
+							`### ${horse.Emote} ${horseName}\n${horse.Description[user.Language]}\n-# ${horse.Multiplier}× → **${formatMoney(Math.floor(amount * horse.Multiplier), user.Language)}**`,
 						])
 						.setButtonAccessory(new ButtonBuilder()
 							.setCustomId(`horse_${horse.Id}`)
 							.setLabel(horseName)
 							.setEmoji(horse.Emote)
 							.setStyle(ButtonStyle.Secondary),
-						)
+						),
 					);
 
 				if (i + 1 < HorseList.length) {
@@ -203,7 +203,7 @@ module.exports = {
 		const collector = createButtonCollector(interaction, response, { maxClicks: 1 });
 
 		collector?.on("collect", async btn => {
-			const horseId = parseInt(btn.customId.replace("horse_", ""));
+			const horseId = Number.parseInt(btn.customId.replace("horse_", ""));
 
 			await user.GetInfo();
 			const result = await racing.PlaceBet(raceInfo.race.id, horseId, amount);
@@ -233,7 +233,7 @@ module.exports = {
 				.setAccentColor(CrColors.Casino)
 				.addSectionComponents(section => section
 					.addTexts([
-						s.betPlaced(horse.Emote, horseName, formatMoney(amount, language), prize, horse.Multiplier, raceTime)
+						s.betPlaced(horse.Emote, horseName, formatMoney(amount, language), prize, horse.Multiplier, raceTime),
 					])
 					.setThumbnailAccessory(thumb => thumb
 						.setURL("https://media.discordapp.net/attachments/1233604589064818808/1499581098408280096/HorseRacing.png"),

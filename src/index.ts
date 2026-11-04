@@ -56,23 +56,35 @@ const handleExit = async (signal: string) => {
 	cleanupActiveEscapes();
 	TimedAction.Stop();
 	stopMultiplayerSessionDiscordBridge();
+	let exitCode = 0;
 	try {
 		await MultiplayerSession.Stop();
 	}
 	catch (error) {
 		logger.error("Failed to abort multiplayer sessions during shutdown:", error);
+		exitCode = 1;
 	}
 	try {
 		await stopApiServer();
 	}
+	catch (error) {
+		logger.error("Failed to stop API server during shutdown:", error);
+		exitCode = 1;
+	}
 	finally {
 		client.destroy();
-		process.exit(0);
 	}
+	process.exit(exitCode);
 };
 
-process.on("SIGINT", () => void handleExit("SIGINT"));
-process.on("SIGTERM", () => void handleExit("SIGTERM"));
+for (const signal of ["SIGINT", "SIGTERM"] as const) {
+	process.on(signal, () => {
+		void handleExit(signal).catch(error => {
+			logger.error(`Failed to shut down after ${signal}:`, error);
+			process.exit(1);
+		});
+	});
+}
 
 process.loadEnvFile();
 

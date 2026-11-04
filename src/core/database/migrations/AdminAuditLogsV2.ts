@@ -36,9 +36,34 @@ const legacyActions: Record<string, AdminAuditActionId> = {
 };
 
 function mapLegacyTarget(target: string): { targetUserId: string | null; targetSettingId: AdminAuditSettingId | null } {
-	const userId = new RegExp(/\((\d+)\)(?:\s+-\s+.*)?$/).exec(target)?.[1];
-	if (userId) {
-		return { targetUserId: userId, targetSettingId: null };
+	const dotEnd = target.length - (target.endsWith("\r\n") ? 2 : isLineTerminator(target.charCodeAt(target.length - 1)) ? 1 : 0);
+	let lastLineTerminator = dotEnd - 1;
+	while (lastLineTerminator >= 0 && !isLineTerminator(target.charCodeAt(lastLineTerminator))) lastLineTerminator--;
+
+	for (let openIndex = 0; openIndex < target.length; openIndex++) {
+		if (target[openIndex] !== "(") continue;
+
+		let closeIndex = openIndex + 1;
+		while (closeIndex < target.length && target.charCodeAt(closeIndex) >= 48 && target.charCodeAt(closeIndex) <= 57) {
+			closeIndex++;
+		}
+
+		if (closeIndex === openIndex + 1 || target[closeIndex] !== ")") continue;
+
+		const suffixStart = closeIndex + 1;
+		if (suffixStart === dotEnd) {
+			return { targetUserId: target.slice(openIndex + 1, closeIndex), targetSettingId: null };
+		}
+
+		let dashIndex = suffixStart;
+		while (dashIndex < dotEnd && /\s/.test(target[dashIndex])) dashIndex++;
+		if (dashIndex === suffixStart || target[dashIndex] !== "-") continue;
+
+		let suffixTextStart = dashIndex + 1;
+		while (suffixTextStart < dotEnd && /\s/.test(target[suffixTextStart])) suffixTextStart++;
+		if (suffixTextStart === dashIndex + 1 || lastLineTerminator >= suffixTextStart) continue;
+
+		return { targetUserId: target.slice(openIndex + 1, closeIndex), targetSettingId: null };
 	}
 
 	if (target === "Main heist setting") {
@@ -55,6 +80,10 @@ function mapLegacyTarget(target: string): { targetUserId: string | null; targetS
 	}
 
 	throw new Error("Admin audit log migration found an unrecognized legacy target.");
+}
+
+function isLineTerminator(code: number): boolean {
+	return code === 10 || code === 13 || code === 0x2028 || code === 0x2029;
 }
 
 export async function migrateAdminAuditLogsV2(database: Sequelize = sequelize): Promise<void> {

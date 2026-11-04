@@ -9,6 +9,7 @@ import { BundleId, ItemId } from "#core/types/Ids";
 import { Language } from "#core/models/Language";
 
 const {
+	mockRandomInt,
 	mockGetGangById,
 	mockCanBeatUser,
 	mockBeatUpLock,
@@ -25,6 +26,7 @@ const {
 	mockInvestmentValidation,
 	mockInvestmentOutcome,
 } = vi.hoisted(() => ({
+	mockRandomInt: vi.fn(),
 	mockGetGangById: vi.fn(),
 	mockGetGangByUserId: vi.fn(),
 	mockInvestmentValidation: vi.fn(),
@@ -48,6 +50,11 @@ const {
 		ReleaseLocks: vi.fn(),
 	},
 }));
+
+vi.mock("node:crypto", async importOriginal => {
+	const actual = await importOriginal<typeof import("node:crypto")>();
+	return { ...actual, randomInt: mockRandomInt };
+});
 
 vi.mock("#core/models/BeatUp", () => ({
 	BeatUp: class {
@@ -278,6 +285,7 @@ describe("Multiplayer sessions", () => {
 	});
 
 	it("starts roulette only at five players and rejects joins after the room closes", async () => {
+		mockRandomInt.mockReturnValue(0);
 		const host = makeUser("host");
 		const started = await MultiplayerSession.StartRussianRoulette(host, 5_000);
 		expect(started.success).toBe(true);
@@ -303,6 +311,17 @@ describe("Multiplayer sessions", () => {
 		expect(running?.phase).toBe("running");
 		expect(running?.participants).toHaveLength(5);
 		expect((await MultiplayerSession.JoinRussianRoulette(started.session.id, makeUser("six"))).success).toBe(false);
+		expect(mockRandomInt.mock.calls.slice(0, 4)).toEqual([[5], [4], [3], [2]]);
+	});
+
+	it("releases participant reservations when beat-up validation fails", async () => {
+		mockCanBeatUser.mockRejectedValueOnce(new Error("attribute refresh failed"));
+
+		await expect(MultiplayerSession.StartBeatUp(makeUser("attacker"), makeUser("defender"), false))
+			.rejects.toThrow("attribute refresh failed");
+		expect(mockRepository.Create).not.toHaveBeenCalled();
+
+		expect((await MultiplayerSession.StartBeatUp(makeUser("attacker"), makeUser("defender"), false)).success).toBe(true);
 	});
 
 	it("uses Portuguese eligibility messages for web roulette rooms", async () => {

@@ -26,5 +26,6 @@ const rest = new REST().setToken(token);
 	}
 	catch (error) {
 		logger.error(`${error}`);
+		process.exitCode = 1;
 	}
 })();

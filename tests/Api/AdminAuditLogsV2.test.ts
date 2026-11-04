@@ -47,6 +47,16 @@ describe("Admin audit log schema migration", () => {
 				newValue: "false",
 				createdAt: new Date("2026-01-02T00:00:00.000Z"),
 			},
+			{
+				id: 5,
+				adminId: "111",
+				adminName: "Old name",
+				action: "setItem",
+				target: "Player (edition) (00042) - item (legacy)",
+				previousValue: "",
+				newValue: "",
+				createdAt: new Date("2026-01-03T00:00:00.000Z"),
+			},
 		]);
 
 		await migrateAdminAuditLogsV2(database);
@@ -86,7 +96,43 @@ describe("Admin audit log schema migration", () => {
 				previousValue: "true",
 				newValue: "false",
 			},
+			{
+				id: 5,
+				actionId: 11,
+				targetUserId: "00042",
+				targetSettingId: null,
+				previousValue: "",
+				newValue: "",
+			},
 		]);
+	});
+
+	it("rolls back legacy rows with malformed targets", async () => {
+		database = new Sequelize({ dialect: "sqlite", storage: ":memory:", logging: false });
+		const queryInterface = database.getQueryInterface();
+		await queryInterface.createTable("admin_audit_logs", {
+			id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true, allowNull: false },
+			adminId: { type: DataTypes.STRING, allowNull: false },
+			adminName: { type: DataTypes.STRING, allowNull: false },
+			action: { type: DataTypes.STRING, allowNull: false },
+			target: { type: DataTypes.STRING, allowNull: false },
+			previousValue: { type: DataTypes.TEXT, allowNull: false },
+			newValue: { type: DataTypes.TEXT, allowNull: false },
+			createdAt: { type: DataTypes.DATE, allowNull: false },
+		});
+		await queryInterface.bulkInsert("admin_audit_logs", [{
+			adminId: "111",
+			adminName: "Old name",
+			action: "setItem",
+			target: `Player (${"1".repeat(10_000)}) invalid`,
+			previousValue: "",
+			newValue: "",
+			createdAt: new Date("2026-01-01T00:00:00.000Z"),
+		}]);
+
+		await expect(migrateAdminAuditLogsV2(database)).rejects.toThrow("unrecognized legacy target");
+		expect(await queryInterface.describeTable("admin_audit_logs")).toHaveProperty("target");
+		expect(await queryInterface.showAllTables()).not.toContain("admin_audit_logs_v2");
 	});
 
 	it("adds nullable request metadata columns idempotently", async () => {
