@@ -3,9 +3,11 @@ import { Heist } from "#core/models/Heist";
 import { User } from "#core/models/User";
 import { MultiplayerSession } from "#core/models/MultiplayerSession";
 import { InvestmentRobberyReason } from "#core/models/InvestmentRobbery";
+import { GangHeists } from "#core/database/GangHeists";
+import { GangHeistRepository } from "#core/repositories/GangHeistRepository";
 import { ItemList } from "#core/types/Items";
 import { HeistMissionId } from "#core/types/Heist";
-import { BundleId, ItemId } from "#core/types/Ids";
+import { BundleId, GangBaseId, ItemId } from "#core/types/Ids";
 import { globalStrings, Language } from "#core/models/Language";
 
 const {
@@ -138,6 +140,18 @@ function makeUser(id: string): User {
 	vi.spyOn(user, "GetInfo").mockResolvedValue(user);
 	vi.spyOn(user, "Update").mockResolvedValue(true);
 	return user;
+}
+
+function makeHeistState() {
+	return GangHeists.build({
+		gangId: 1,
+		mission1Completed: false,
+		mission2Completed: false,
+		mission3Completed: false,
+		heistWins: 0,
+		heistLosses: 0,
+		totalStolen: 0,
+	});
 }
 
 describe("Multiplayer sessions", () => {
@@ -522,6 +536,79 @@ describe("Multiplayer sessions", () => {
 			success: false,
 			message: "Sua gangue não pode realizar um golpe sem uma base.",
 		});
+	});
+
+	it.each([
+		["prison", "Você está preso e não pode iniciar o golpe."],
+		["wanted", "Você está sendo procurado e não pode iniciar o golpe."],
+		["working", "Você está trabalhando e não pode iniciar o golpe."],
+	] as const)("rejects a leader who is %s for heists and getaway cars", async (status, message) => {
+		const leader = makeUser("leader");
+		leader.GangId = 1;
+		if (status === "prison") leader.Prison.Time = new Date(Date.now() + 60_000);
+		if (status === "wanted") leader.Wanted.Time = new Date(Date.now() + 60_000);
+		if (status === "working") vi.spyOn(leader, "IsWorking").mockReturnValue(true);
+		mockGetGangById.mockResolvedValue({
+			Id: 1,
+			LeaderId: leader.Id,
+			BaseId: GangBaseId.Airport,
+			Money: 0,
+			Name: "Gang",
+			GetMaxMembers: () => 5,
+		});
+		vi.spyOn(GangHeistRepository, "GetByGangId").mockResolvedValue(makeHeistState());
+
+		expect(await MultiplayerSession.StartGangHeist(leader, HeistMissionId.Blueprint)).toEqual({ success: false, message });
+		expect(await MultiplayerSession.BuyGangHeistGetawayCars(leader)).toEqual({ success: false, message });
+		expect(mockRepository.Create).not.toHaveBeenCalled();
+		expect(leader.Update).not.toHaveBeenCalled();
+	});
+
+	it("allows an available leader to start an eligible heist", async () => {
+		const leader = makeUser("leader");
+		leader.GangId = 1;
+		mockGetGangById.mockResolvedValue({
+			Id: 1,
+			LeaderId: leader.Id,
+			BaseId: GangBaseId.Airport,
+			Name: "Gang",
+			GetMaxMembers: () => 5,
+		});
+		vi.spyOn(GangHeistRepository, "GetByGangId").mockResolvedValue(makeHeistState());
+
+		expect((await MultiplayerSession.StartGangHeist(leader, HeistMissionId.Blueprint)).success).toBe(true);
+	});
+
+	it("refreshes the leader before validating heists and getaway cars", async () => {
+		const leader = makeUser("leader");
+		leader.GangId = 1;
+		vi.mocked(leader.GetInfo).mockImplementation(async () => {
+			leader.Wanted.Time = new Date(Date.now() + 60_000);
+			return leader;
+		});
+		mockGetGangById.mockResolvedValue({
+			Id: 1,
+			LeaderId: leader.Id,
+			BaseId: GangBaseId.Airport,
+			Name: "Gang",
+			GetMaxMembers: () => 5,
+		});
+
+		const failure = { success: false, message: "Você está sendo procurado e não pode iniciar o golpe." };
+		expect(await MultiplayerSession.StartGangHeist(leader, HeistMissionId.Blueprint)).toEqual(failure);
+		leader.Wanted.Time = new Date(0);
+		expect(await MultiplayerSession.BuyGangHeistGetawayCars(leader)).toEqual(failure);
+		expect(leader.GetInfo).toHaveBeenCalledTimes(2);
+	});
+
+	it("rejects heist starts when the leader cannot be refreshed", async () => {
+		const leader = makeUser("leader");
+		vi.mocked(leader.GetInfo).mockResolvedValue(null);
+
+		const failure = { success: false, message: "Jogador não encontrado." };
+		expect(await MultiplayerSession.StartGangHeist(leader, HeistMissionId.Blueprint)).toEqual(failure);
+		expect(await MultiplayerSession.BuyGangHeistGetawayCars(leader)).toEqual(failure);
+		expect(mockRepository.Create).not.toHaveBeenCalled();
 	});
 
 	it("returns gang heist cooldown details when buying getaway cars", async () => {

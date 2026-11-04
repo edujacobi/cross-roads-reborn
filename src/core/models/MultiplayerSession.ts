@@ -201,6 +201,32 @@ function getHeistStartMessage(
 		return messages.missionCompleted;
 	case "noMoney":
 		return messages.noMoney;
+	case "dead":
+		return "Você está morto e não pode iniciar o golpe.";
+	case "scavenging":
+		return "Você está coletando itens e não pode iniciar o golpe.";
+	case "working":
+		return "Você está trabalhando e não pode iniciar o golpe.";
+	case "prison":
+		return "Você está preso e não pode iniciar o golpe.";
+	case "wanted":
+		return "Você está sendo procurado e não pode iniciar o golpe.";
+	case "hospital":
+		return "Você está hospitalizado e não pode iniciar o golpe.";
+	case "escaping":
+		return "Você está fugindo e não pode iniciar o golpe.";
+	case "casino":
+		return "Você está jogando no cassino e não pode iniciar o golpe.";
+	case "defendingInvestment":
+		return "Você está defendendo um investimento e não pode iniciar o golpe.";
+	case "gangAction":
+		return "Você está participando de outra ação de gangue e não pode iniciar o golpe.";
+	case "beating":
+	case "beingBeatUp":
+	case "robbing":
+	case "beingRobbed":
+	case "robbingLocation":
+		return "Você está ocupado em outra ação e não pode iniciar o golpe.";
 	case "missionCooldown":
 	case "heistCooldown": {
 		if (!time || !Number.isFinite(time.getTime())) return fallback;
@@ -655,6 +681,7 @@ export class MultiplayerSession {
 		if (missionId === HeistMissionId.GetawayCars) {
 			return { success: false, message: s.getawayCarsHaveNoLobby };
 		}
+		if (!await leader.GetInfo()) return { success: false, message: s.playerNotFound };
 		const gang = await leader.GetGang();
 		if (!gang) return { success: false, message: s.notInGang };
 		const reservation = [`user:${leader.Id}`, `gang:${gang.Id}`];
@@ -708,6 +735,7 @@ export class MultiplayerSession {
 		source: "discord" | "web" = "web",
 	): Promise<{ success: boolean; message: string }> {
 		const s = Strings[language];
+		if (!await leader.GetInfo()) return { success: false, message: s.playerNotFound };
 		const gang = await leader.GetGang();
 		if (!gang) return { success: false, message: s.notInGang };
 		const reservation = [`user:${leader.Id}`, `gang:${gang.Id}`];

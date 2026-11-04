@@ -292,9 +292,12 @@ module.exports = {
 				else if (customId === "m3_hack") missionId = HeistMissionId.HackCameras;
 				else if (customId === "m4_heist") missionId = HeistMissionId.MainHeist;
 
+				if (!await user.GetInfo()) {
+					return btnInteraction.reply({ content: s.cannotStart, flags: MessageFlags.Ephemeral });
+				}
 				const checkStart = await Heist.ValidateStart(user, gang, missionId);
 				if (!checkStart.success) {
-					let errText: string = s.cannotStart;
+					let errText: string = checkStart.reason ? s.cannotParticipate(checkStart.reason) : s.cannotStart;
 					if (checkStart.reason === "onlyLeader") errText = s.onlyLeader;
 					else if (checkStart.reason === "noBase") errText = s.noBase;
 					else if (checkStart.reason === "scheduleBlock") errText = s.scheduleBlock;

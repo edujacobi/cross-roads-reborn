@@ -33,6 +33,11 @@ export class Heist {
 			return { success: false, reason: "onlyLeader" };
 		}
 
+		const availability = user.CheckAvailability();
+		if (!availability.available) {
+			return { success: false, reason: availability.reason, time: availability.time };
+		}
+
 		// 2. Must have a base
 		if (gang.BaseId === GangBaseId.None) {
 			return { success: false, reason: "noBase" };
