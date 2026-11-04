@@ -28,46 +28,51 @@ export function isHappyHour(date = new Date()) {
 
 export type DrinkCountMessageLanguage = "English" | "Portuguese" | "Spanish";
 
+const drinkCountThresholds = [5, 10, 15, 20, 30, 40, 50, 60, 70, 80, 100];
+const drinkCountMessages: Record<DrinkCountMessageLanguage, readonly string[]> = {
+	Portuguese: [
+		"Desce redondo, hein?",
+		"Vai com calma, {adjective}.",
+		"Acho que já deu por hoje.",
+		"Depois de hoje, duvido não ter cirrose.",
+		"Você é um deus ou algo do tipo?",
+		"Você é o diabo, isso sim.",
+		"Estou declarando falência!",
+		"Minha mulher falou que vai me abandonar...",
+		"Por favor, pare.",
+		"Meu estoque acabou, eu nem sei mais o que você está bebendo.",
+		"POR ACASO VOCÊ É O JACOBI???!",
+	],
+	English: [
+		"Goes down smooth, huh?",
+		"Take it easy, {adjective}.",
+		"I think that's enough for today.",
+		"After today, I doubt you won't have cirrhosis.",
+		"Are you a god or something?",
+		"You're the devil, that's what you are.",
+		"I'm declaring bankruptcy!",
+		"My wife said she's going to leave me...",
+		"Please, stop.",
+		"My stock is gone, I don't even know what you're drinking anymore.",
+		"ARE YOU JACOBI BY ANY CHANCE???!",
+	],
+	Spanish: [
+		"¿Baja suave, eh?",
+		"Con calma, {adjective}.",
+		"Creo que ya es suficiente por hoy.",
+		"Después de hoy, dudo que no tengas cirrosis.",
+		"¿Eres un dios o algo así?",
+		"Eres el diablo, eso sí.",
+		"¡Estoy declarando la bancarrota!",
+		"Mi mujer dijo que me va a abandonar...",
+		"Por favor, para.",
+		"Mi stock se acabó, ya ni sé lo que estás bebiendo.",
+		"¿ACASO ERES JACOBI???!",
+	],
+};
+
 export function getDrinkCountMessages(count: number, adjective: string, language: DrinkCountMessageLanguage) {
-	const messages: string[] = [];
-	if (language === "Portuguese") {
-		if (count > 5) messages.push("Desce redondo, hein?");
-		if (count > 10) messages.push(`Vai com calma, ${adjective}.`);
-		if (count > 15) messages.push("Acho que já deu por hoje.");
-		if (count > 20) messages.push("Depois de hoje, duvido não ter cirrose.");
-		if (count > 30) messages.push("Você é um deus ou algo do tipo?");
-		if (count > 40) messages.push("Você é o diabo, isso sim.");
-		if (count > 50) messages.push("Estou declarando falência!");
-		if (count > 60) messages.push("Minha mulher falou que vai me abandonar...");
-		if (count > 70) messages.push("Por favor, pare.");
-		if (count > 80) messages.push("Meu estoque acabou, eu nem sei mais o que você está bebendo.");
-		if (count > 100) messages.push("POR ACASO VOCÊ É O JACOBI???!");
-	}
-	else if (language === "English") {
-		if (count > 5) messages.push("Goes down smooth, huh?");
-		if (count > 10) messages.push(`Take it easy, ${adjective}.`);
-		if (count > 15) messages.push("I think that's enough for today.");
-		if (count > 20) messages.push("After today, I doubt you won't have cirrhosis.");
-		if (count > 30) messages.push("Are you a god or something?");
-		if (count > 40) messages.push("You're the devil, that's what you are.");
-		if (count > 50) messages.push("I'm declaring bankruptcy!");
-		if (count > 60) messages.push("My wife said she's going to leave me...");
-		if (count > 70) messages.push("Please, stop.");
-		if (count > 80) messages.push("My stock is gone, I don't even know what you're drinking anymore.");
-		if (count > 100) messages.push("ARE YOU JACOBI BY ANY CHANCE???!");
-	}
-	else if (language === "Spanish") {
-		if (count > 5) messages.push("¿Baja suave, eh?");
-		if (count > 10) messages.push(`Con calma, ${adjective}.`);
-		if (count > 15) messages.push("Creo que ya es suficiente por hoy.");
-		if (count > 20) messages.push("Después de hoy, dudo que no tengas cirrosis.");
-		if (count > 30) messages.push("¿Eres un dios o algo así?");
-		if (count > 40) messages.push("Eres el diablo, eso sí.");
-		if (count > 50) messages.push("¡Estoy declarando la bancarrota!");
-		if (count > 60) messages.push("Mi mujer dijo que me va a abandonar...");
-		if (count > 70) messages.push("Por favor, para.");
-		if (count > 80) messages.push("Mi stock se acabó, ya ni sé lo que estás bebiendo.");
-		if (count > 100) messages.push("¿ACASO ERES JACOBI???!");
-	}
-	return messages;
+	return drinkCountMessages[language].flatMap((message, index) =>
+		count > drinkCountThresholds[index]! ? message.replace("{adjective}", adjective) : [],
+	);
 }

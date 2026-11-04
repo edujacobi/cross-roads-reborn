@@ -1,5 +1,6 @@
 import { type CreationOptional, DataTypes, type InferAttributes, type InferCreationAttributes, Model } from "sequelize";
 import { sequelize } from "./Database";
+import { createIdAttribute } from "./ModelAttributes";
 
 export class UserBadges extends Model<
 	InferAttributes<UserBadges>,
@@ -12,11 +13,7 @@ export class UserBadges extends Model<
 
 UserBadges.init(
 	{
-		id: {
-			type: DataTypes.INTEGER,
-			autoIncrement: true,
-			primaryKey: true,
-		},
+		...createIdAttribute(),
 		userId: {
 			type: new DataTypes.STRING(18),
 			allowNull: false,

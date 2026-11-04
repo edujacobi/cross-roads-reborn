@@ -1,5 +1,6 @@
 import { type CreationOptional, DataTypes, type InferAttributes, type InferCreationAttributes, Model } from "sequelize";
 import { sequelize } from "./Database";
+import { createIdAttribute } from "./ModelAttributes";
 
 export class DashboardStats extends Model<
 	InferAttributes<DashboardStats>,
@@ -27,11 +28,7 @@ export class DashboardStats extends Model<
 
 DashboardStats.init(
 	{
-		id: {
-			type: DataTypes.INTEGER,
-			autoIncrement: true,
-			primaryKey: true,
-		},
+		...createIdAttribute(),
 		date: {
 			type: DataTypes.DATE,
 			allowNull: false,

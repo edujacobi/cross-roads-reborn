@@ -7,6 +7,7 @@ import {
 	Model,
 } from "sequelize";
 import { sequelize } from "./Database";
+import { createIdAttribute } from "./ModelAttributes";
 import type { Users } from "./Users";
 
 export class RobHistories extends Model<
@@ -27,11 +28,7 @@ export class RobHistories extends Model<
 
 RobHistories.init(
 	{
-		id: {
-			type: DataTypes.INTEGER,
-			autoIncrement: true,
-			primaryKey: true,
-		},
+		...createIdAttribute(),
 		attackerId: {
 			type: new DataTypes.STRING(18),
 			allowNull: false,

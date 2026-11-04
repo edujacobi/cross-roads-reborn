@@ -1,6 +1,7 @@
 import { type CreationOptional, DataTypes, type InferAttributes, type InferCreationAttributes, Model } from "sequelize";
 import { sequelize } from "./Database";
 import { HorseRaces } from "./HorseRaces";
+import { createIdAttribute, createTimestampAttributes } from "./ModelAttributes";
 
 export class HorseRaceBets extends Model<
 	InferAttributes<HorseRaceBets>,
@@ -19,11 +20,7 @@ export class HorseRaceBets extends Model<
 
 HorseRaceBets.init(
 	{
-		id: {
-			type: DataTypes.INTEGER,
-			primaryKey: true,
-			autoIncrement: true,
-		},
+		...createIdAttribute(),
 		userId: {
 			type: new DataTypes.STRING(18),
 			allowNull: false,
@@ -58,16 +55,7 @@ HorseRaceBets.init(
 			allowNull: false,
 			defaultValue: 0,
 		},
-		createdAt: {
-			type: DataTypes.DATE,
-			allowNull: false,
-			defaultValue: DataTypes.NOW,
-		},
-		updatedAt: {
-			type: DataTypes.DATE,
-			allowNull: false,
-			defaultValue: DataTypes.NOW,
-		},
+		...createTimestampAttributes(),
 	},
 	{
 		sequelize,

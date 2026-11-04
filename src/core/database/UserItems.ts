@@ -7,6 +7,7 @@ import {
 	Model,
 } from "sequelize";
 import { sequelize } from "./Database";
+import { createIdAttribute } from "./ModelAttributes";
 import type { Users } from "./Users";
 import type { BundleId, ItemId } from "#core/types/Ids";
 
@@ -24,11 +25,7 @@ export class UserItems extends Model<
 
 UserItems.init(
 	{
-		id: {
-			type: DataTypes.INTEGER,
-			autoIncrement: true,
-			primaryKey: true,
-		},
+		...createIdAttribute(),
 		userId: {
 			type: new DataTypes.STRING(18),
 			allowNull: false,

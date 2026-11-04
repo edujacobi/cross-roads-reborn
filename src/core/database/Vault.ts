@@ -1,5 +1,6 @@
 import { type CreationOptional, DataTypes, type InferAttributes, type InferCreationAttributes, Model } from "sequelize";
 import { sequelize } from "./Database";
+import { createIdAttribute } from "./ModelAttributes";
 
 export class Vault extends Model<
 	InferAttributes<Vault>,
@@ -13,11 +14,7 @@ export class Vault extends Model<
 
 Vault.init(
 	{
-		id: {
-			type: DataTypes.INTEGER,
-			autoIncrement: true,
-			primaryKey: true,
-		},
+		...createIdAttribute(),
 		bankBalance: {
 			type: DataTypes.INTEGER,
 			allowNull: false,

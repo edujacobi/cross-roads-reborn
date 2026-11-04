@@ -1,5 +1,6 @@
 import { type CreationOptional, DataTypes, type InferAttributes, type InferCreationAttributes, Model } from "sequelize";
 import { sequelize } from "./Database";
+import { createIdAttribute } from "./ModelAttributes";
 import type { BackgroundDecorationId } from "#core/types/Ids";
 
 export class UserBackgroundDecorations extends Model<
@@ -13,11 +14,7 @@ export class UserBackgroundDecorations extends Model<
 
 UserBackgroundDecorations.init(
 	{
-		id: {
-			type: DataTypes.INTEGER,
-			autoIncrement: true,
-			primaryKey: true,
-		},
+		...createIdAttribute(),
 		userId: {
 			type: new DataTypes.STRING(18),
 			allowNull: false,

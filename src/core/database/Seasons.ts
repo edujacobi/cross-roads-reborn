@@ -1,5 +1,6 @@
 import { type CreationOptional, DataTypes, type InferAttributes, type InferCreationAttributes, Model } from "sequelize";
 import { sequelize } from "./Database";
+import { createIdAttribute } from "./ModelAttributes";
 
 export class Seasons extends Model<
 	InferAttributes<Seasons>,
@@ -17,11 +18,7 @@ export class Seasons extends Model<
 
 Seasons.init(
 	{
-		id: {
-			type: DataTypes.INTEGER,
-			autoIncrement: true,
-			primaryKey: true,
-		},
+		...createIdAttribute(),
 		number: {
 			type: DataTypes.INTEGER,
 			allowNull: false,

@@ -1,5 +1,6 @@
 import { type CreationOptional, DataTypes, type InferAttributes, type InferCreationAttributes, Model } from "sequelize";
 import { sequelize } from "./Database";
+import { createIdAttribute } from "./ModelAttributes";
 import type { AdminAuditActionId, AdminAuditSettingId } from "#core/types/AdminAuditLog";
 
 export class AdminAuditLogs extends Model<
@@ -23,11 +24,7 @@ export class AdminAuditLogs extends Model<
 
 AdminAuditLogs.init(
 	{
-		id: {
-			type: DataTypes.INTEGER,
-			autoIncrement: true,
-			primaryKey: true,
-		},
+		...createIdAttribute(),
 		adminId: {
 			type: DataTypes.STRING,
 			allowNull: false,

@@ -7,6 +7,7 @@
 } from "sequelize";
 import type { GangJoinRequestStatus } from "#core/types/GangRecruitment";
 import { sequelize } from "./Database";
+import { createIdAttribute } from "./ModelAttributes";
 
 export class GangJoinRequests extends Model<
 	InferAttributes<GangJoinRequests>,
@@ -23,11 +24,7 @@ export class GangJoinRequests extends Model<
 
 GangJoinRequests.init(
 	{
-		id: {
-			type: DataTypes.INTEGER,
-			autoIncrement: true,
-			primaryKey: true,
-		},
+		...createIdAttribute(),
 		gangId: {
 			type: DataTypes.INTEGER,
 			allowNull: false,

@@ -1,6 +1,7 @@
 import { type CreationOptional, DataTypes, type InferAttributes, type InferCreationAttributes, Model } from "sequelize";
 import { sequelize } from "./Database";
 import { LotteryDraws } from "./LotteryDraws";
+import { createIdAttribute, createTimestampAttributes } from "./ModelAttributes";
 
 export class LotteryTickets extends Model<
 	InferAttributes<LotteryTickets>,
@@ -18,11 +19,7 @@ export class LotteryTickets extends Model<
 
 LotteryTickets.init(
 	{
-		id: {
-			type: DataTypes.INTEGER,
-			primaryKey: true,
-			autoIncrement: true,
-		},
+		...createIdAttribute(),
 		userId: {
 			type: new DataTypes.STRING(18),
 			allowNull: false,
@@ -53,16 +50,7 @@ LotteryTickets.init(
 			allowNull: false,
 			defaultValue: 0,
 		},
-		createdAt: {
-			type: DataTypes.DATE,
-			allowNull: false,
-			defaultValue: DataTypes.NOW,
-		},
-		updatedAt: {
-			type: DataTypes.DATE,
-			allowNull: false,
-			defaultValue: DataTypes.NOW,
-		},
+		...createTimestampAttributes(),
 	},
 	{
 		sequelize,

@@ -28,6 +28,12 @@ describe("getDrinkCountMessages", () => {
 			"Vai com calma, cliente.",
 		]);
 	});
+
+	it("keeps the threshold and adjective messages for each language", () => {
+		expect(getDrinkCountMessages(10, "customer", "English")).toEqual(["Goes down smooth, huh?"]);
+		expect(getDrinkCountMessages(11, "customer", "English")).toContain("Take it easy, customer.");
+		expect(getDrinkCountMessages(11, "cliente", "Spanish")).toContain("Con calma, cliente.");
+	});
 });
 
 describe("User.DrinkAtBar", () => {

@@ -7,6 +7,7 @@ import {
 	Model,
 } from "sequelize";
 import { sequelize } from "./Database";
+import { createIdAttribute } from "./ModelAttributes";
 import type { Users } from "./Users";
 
 export class UserInvestments extends Model<
@@ -27,11 +28,7 @@ export class UserInvestments extends Model<
 
 UserInvestments.init(
 	{
-		id: {
-			type: DataTypes.INTEGER,
-			autoIncrement: true,
-			primaryKey: true,
-		},
+		...createIdAttribute(),
 		userId: {
 			type: DataTypes.STRING(18),
 			allowNull: false,

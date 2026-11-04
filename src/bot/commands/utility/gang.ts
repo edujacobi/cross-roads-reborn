@@ -602,6 +602,35 @@ module.exports = {
 
 	async execute(interaction: ChatInputCommandInteraction, user: User, language: Language) {
 		const s = Strings[language];
+		const rolePermissions = [
+			["invite", s.permissionInvite, GangPermission.Invite],
+			["kick", s.permissionKick, GangPermission.Kick],
+			["promote", s.permissionPromote, GangPermission.Promote],
+			["edit", s.permissionEditGang, GangPermission.EditGang],
+			["import_shipments", s.permissionImportShipments, GangPermission.ImportShipments],
+		] as const;
+		const getRolePermissionButtons = (permissions: GangPermission[]) => rolePermissions.map(
+			([id, label, permission]) => (btn: ButtonBuilder) => btn
+				.setLabel(label)
+				.setCustomId(id)
+				.setStyle(permissions.includes(permission) ? ButtonStyle.Primary : ButtonStyle.Secondary),
+		);
+		const toggleRolePermission = (permissions: GangPermission[], customId: string) => {
+			const permission = rolePermissions.find(([id]) => id === customId)?.[2];
+			if (permission === undefined) {
+				return false;
+			}
+
+			const index = permissions.indexOf(permission);
+			if (index === -1) {
+				permissions.push(permission);
+			}
+			else {
+				permissions.splice(index, 1);
+			}
+
+			return true;
+		};
 
 		const containerInfo = new CustomContainerBuilder()
 			.setUser(user)
@@ -1918,28 +1947,7 @@ module.exports = {
 					.addTexts([
 						`### ${s.permissions}`,
 					])
-					.addButtonRow(
-						btn => btn
-							.setLabel(s.permissionInvite)
-							.setCustomId("invite")
-							.setStyle(permissions.includes(GangPermission.Invite) ? ButtonStyle.Primary : ButtonStyle.Secondary),
-						btn => btn
-							.setLabel(s.permissionKick)
-							.setCustomId("kick")
-							.setStyle(permissions.includes(GangPermission.Kick) ? ButtonStyle.Primary : ButtonStyle.Secondary),
-						btn => btn
-							.setLabel(s.permissionPromote)
-							.setCustomId("promote")
-							.setStyle(permissions.includes(GangPermission.Promote) ? ButtonStyle.Primary : ButtonStyle.Secondary),
-						btn => btn
-							.setLabel(s.permissionEditGang)
-							.setCustomId("edit")
-							.setStyle(permissions.includes(GangPermission.EditGang) ? ButtonStyle.Primary : ButtonStyle.Secondary),
-						btn => btn
-							.setLabel(s.permissionImportShipments)
-							.setCustomId("import_shipments")
-							.setStyle(permissions.includes(GangPermission.ImportShipments) ? ButtonStyle.Primary : ButtonStyle.Secondary),
-					)
+					.addButtonRow(...getRolePermissionButtons(permissions))
 					.addButtonRow(
 						btn => btn
 							.setLabel(s.confirm)
@@ -1974,25 +1982,7 @@ module.exports = {
 					return replyWithContainer(interaction, container);
 				}
 
-				const permissionMap: Record<string, GangPermission> = {
-					invite: GangPermission.Invite,
-					kick: GangPermission.Kick,
-					promote: GangPermission.Promote,
-					edit: GangPermission.EditGang,
-					import_shipments: GangPermission.ImportShipments,
-				};
-
-				const permission = permissionMap[btn.customId];
-
-				if (permission !== undefined) {
-					if (permissions.includes(permission)) {
-						const index = permissions.indexOf(permission);
-						permissions.splice(index, 1);
-					}
-					else {
-						permissions.push(permission);
-					}
-
+				if (toggleRolePermission(permissions, btn.customId)) {
 					container = getContainer();
 					return replyWithContainer(interaction, container);
 				}
@@ -2149,28 +2139,7 @@ module.exports = {
 					.addTexts([
 						`### ${s.permissions}`,
 					])
-					.addButtonRow(
-						btn => btn
-							.setLabel(s.permissionInvite)
-							.setCustomId("invite")
-							.setStyle(permissions.includes(GangPermission.Invite) ? ButtonStyle.Primary : ButtonStyle.Secondary),
-						btn => btn
-							.setLabel(s.permissionKick)
-							.setCustomId("kick")
-							.setStyle(permissions.includes(GangPermission.Kick) ? ButtonStyle.Primary : ButtonStyle.Secondary),
-						btn => btn
-							.setLabel(s.permissionPromote)
-							.setCustomId("promote")
-							.setStyle(permissions.includes(GangPermission.Promote) ? ButtonStyle.Primary : ButtonStyle.Secondary),
-						btn => btn
-							.setLabel(s.permissionEditGang)
-							.setCustomId("edit")
-							.setStyle(permissions.includes(GangPermission.EditGang) ? ButtonStyle.Primary : ButtonStyle.Secondary),
-						btn => btn
-							.setLabel(s.permissionImportShipments)
-							.setCustomId("import_shipments")
-							.setStyle(permissions.includes(GangPermission.ImportShipments) ? ButtonStyle.Primary : ButtonStyle.Secondary),
-					)
+					.addButtonRow(...getRolePermissionButtons(permissions))
 					.addButtonRow(
 						btn => btn
 							.setLabel(s.confirm)
@@ -2205,24 +2174,7 @@ module.exports = {
 					return replyWithContainer(interaction, container);
 				}
 
-				const permissionMap: Record<string, GangPermission> = {
-					invite: GangPermission.Invite,
-					kick: GangPermission.Kick,
-					promote: GangPermission.Promote,
-					edit: GangPermission.EditGang,
-					import_shipments: GangPermission.ImportShipments,
-				};
-
-				const permission = permissionMap[btn.customId];
-
-				if (permission !== undefined) {
-					if (permissions.includes(permission)) {
-						const index = permissions.indexOf(permission);
-						permissions.splice(index, 1);
-					}
-					else {
-						permissions.push(permission);
-					}
+				if (toggleRolePermission(permissions, btn.customId)) {
 					container = getContainer();
 					return replyWithContainer(interaction, container);
 				}

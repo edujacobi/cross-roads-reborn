@@ -1,12 +1,12 @@
 import { EmoteString } from "#bot/utils/emotes";
 import { formatMoney } from "#bot/utils/ui";
+import { getAvailabilityConflictMessage } from "#core/models/AvailabilityMessages";
 import { RobHistoryRepository } from "#core/repositories/RobHistoryRepository";
-import { UserRepository } from "#core/repositories/UserRepository";
 import { Event, EventType } from "#core/models/Event";
-import { globalStrings, Language, type Localization } from "#core/models/Language";
+import { Language, type Localization } from "#core/models/Language";
 import { Notification } from "#core/models/Notification";
 import { type User } from "#core/models/User";
-import { ClassList, getRobberyClassModifier } from "#core/types/Classes";
+import { getRobberyClassModifier } from "#core/types/Classes";
 import { type JobId, JobList } from "#core/types/Jobs";
 import { type LocationId, LocationList } from "#core/types/Locations";
 import { ClashType, type RobberyInitData, type RobberyLocationOutcomeData } from "#core/types/Robbery";
@@ -79,36 +79,14 @@ export class LocationRobberyStrategy implements IRobberyStrategy {
 				message = s.isInCasino;
 				break;
 			case "defendingInvestment":
-				message = globalStrings[this.Attacker.Language].attackerIsDefendingInvestment;
-				break;
 			case "gangAction":
-				message = globalStrings[this.Attacker.Language].attackerIsParticipatingInGangAction;
+			case "beating":
+			case "beingBeatUp":
+			case "robbing":
+			case "beingRobbed":
+			case "robbingLocation":
+				message = (await getAvailabilityConflictMessage(attackerCheck, this.Attacker.Language, { type: "attacker" })) ?? message;
 				break;
-			case "beating": {
-				const user = await UserRepository.FindById(attackerCheck.targetId!, ["class", "nickname"]);
-				message = globalStrings[this.Attacker.Language].attackerIsBeatingId(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname!}`);
-				break;
-			}
-			case "beingBeatUp": {
-				const user = await UserRepository.FindById(attackerCheck.targetId!, ["class", "nickname"]);
-				message = globalStrings[this.Attacker.Language].attackerIsBeingBeatedById(`${ClassList[user!.class!].Image.Emote.String} ${user!.nickname!}`);
-				break;
-			}
-			case "robbing": {
-				const user = await UserRepository.FindById(attackerCheck.targetId!, ["class", "nickname"]);
-				message = globalStrings[this.Attacker.Language].attackerIsRobbingId(`${ClassList[user!.class].Image.Emote.String} ${user!.nickname!}`);
-				break;
-			}
-			case "beingRobbed": {
-				const user = await UserRepository.FindById(attackerCheck.targetId!, ["class", "nickname"]);
-				message = globalStrings[this.Attacker.Language].attackerIsBeingRobbedById(`${ClassList[user!.class!].Image.Emote.String} ${user!.nickname!}`);
-				break;
-			}
-			case "robbingLocation": {
-				const location = LocationList[attackerCheck.referenceId as LocationId];
-				message = globalStrings[this.Attacker.Language].attackerIsRobbingId(location.Name[this.Attacker.Language]);
-				break;
-			}
 			}
 		}
 

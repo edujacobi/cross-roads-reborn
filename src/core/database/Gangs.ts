@@ -2,6 +2,7 @@ import { type GangColorId } from "#core/types/GangColors";
 import { GangRecruitmentType } from "#core/types/GangRecruitment";
 import { type CreationOptional, DataTypes, type InferAttributes, type InferCreationAttributes, Model } from "sequelize";
 import { sequelize } from "./Database";
+import { createIdAttribute } from "./ModelAttributes";
 
 export class Gangs extends Model<
 	InferAttributes<Gangs>,
@@ -29,11 +30,7 @@ export class Gangs extends Model<
 
 Gangs.init(
 	{
-		id: {
-			type: DataTypes.INTEGER,
-			autoIncrement: true,
-			primaryKey: true,
-		},
+		...createIdAttribute(),
 		name: {
 			type: DataTypes.STRING(50),
 			allowNull: false,

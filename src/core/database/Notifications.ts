@@ -7,6 +7,7 @@ import {
 	Model,
 } from "sequelize";
 import { sequelize } from "./Database";
+import { createIdAttribute } from "./ModelAttributes";
 import type { NotificationType } from "#core/models/Notification";
 import type { Users } from "./Users";
 
@@ -23,11 +24,7 @@ export class Notifications extends Model<
 
 Notifications.init(
 	{
-		id: {
-			type: DataTypes.INTEGER,
-			autoIncrement: true,
-			primaryKey: true,
-		},
+		...createIdAttribute(),
 		userId: {
 			type: new DataTypes.STRING(18),
 			allowNull: false,

@@ -7,6 +7,7 @@ import {
 	Model,
 } from "sequelize";
 import { sequelize } from "./Database";
+import { createIdAttribute } from "./ModelAttributes";
 import { Gangs } from "./Gangs";
 
 export class GangRoles extends Model<
@@ -25,11 +26,7 @@ export class GangRoles extends Model<
 
 GangRoles.init(
 	{
-		id: {
-			type: DataTypes.INTEGER,
-			autoIncrement: true,
-			primaryKey: true,
-		},
+		...createIdAttribute(),
 		gangId: {
 			type: DataTypes.INTEGER,
 			references: {
