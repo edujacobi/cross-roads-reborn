@@ -6,7 +6,7 @@ import { InvestmentRobberyReason } from "#core/models/InvestmentRobbery";
 import { ItemList } from "#core/types/Items";
 import { HeistMissionId } from "#core/types/Heist";
 import { BundleId, ItemId } from "#core/types/Ids";
-import { Language } from "#core/models/Language";
+import { globalStrings, Language } from "#core/models/Language";
 
 const {
 	mockRandomInt,
@@ -410,7 +410,10 @@ describe("Multiplayer sessions", () => {
 			GetMaxMembers: () => 5,
 		});
 		const staleDefender = makeUser(defender.Id);
-		expect((await MultiplayerSession.StartInvestmentRobbery(makeUser("other-leader"), staleDefender)).success).toBe(false);
+		expect(await MultiplayerSession.StartInvestmentRobbery(makeUser("other-leader"), defender)).toEqual({
+			success: false,
+			message: globalStrings[Language.Portuguese].defenderIsDefendingInvestment(defender.GetNameWithImage()),
+		});
 		expect((await MultiplayerSession.StartBeatUp(makeUser("attacker"), staleDefender, false)).success).toBe(false);
 		expect((await MultiplayerSession.StartUserRobbery(makeUser("robber"), staleDefender, false)).success).toBe(false);
 
@@ -419,6 +422,62 @@ describe("Multiplayer sessions", () => {
 		expect((await completed).phase).toBe("completed");
 		expect(mockInvestmentOutcome).toHaveBeenCalledWith(false);
 		expect(defender.IsDefendingInvestment()).toBe(false);
+	});
+
+	it("reports the target's current action when investment validation rejects them", async () => {
+		const target = makeUser("target");
+		mockGetGangByUserId.mockResolvedValue({
+			Id: 1,
+			Name: "Gang",
+			LastInvestmentRobbery: null,
+			GetMaxMembers: () => 5,
+		});
+		mockInvestmentValidation.mockResolvedValue({
+			success: false,
+			reason: InvestmentRobberyReason.TargetAlreadyUnderAttack,
+		});
+		vi.spyOn(target, "CheckAvailability").mockReturnValue({ available: false, reason: "defendingInvestment" });
+
+		expect(await MultiplayerSession.StartInvestmentRobbery(makeUser("leader"), target)).toEqual({
+			success: false,
+			message: globalStrings[Language.Portuguese].defenderIsDefendingInvestment(target.GetNameWithImage()),
+		});
+	});
+
+	it("reports why an investment defender cannot respond while busy", async () => {
+		const defender = makeUser("defender");
+		mockGetGangByUserId.mockResolvedValue({
+			Id: 1,
+			Name: "Gang",
+			LastInvestmentRobbery: null,
+			GetMaxMembers: () => 5,
+			UpdateLastInvestmentRobbery: vi.fn(),
+		});
+		mockInvestmentOutcome.mockResolvedValue({ win: false });
+		const started = await MultiplayerSession.StartInvestmentRobbery(makeUser("leader"), defender);
+		expect(started.success).toBe(true);
+		if (!started.success) return;
+		await vi.advanceTimersByTimeAsync(60_000);
+
+		vi.spyOn(defender, "CheckAvailability").mockReturnValue({ available: false, reason: "gangAction" });
+
+		expect(await MultiplayerSession.Respond(started.session.id, defender.Id, "defend")).toEqual({
+			success: false,
+			message: globalStrings[Language.Portuguese].attackerIsParticipatingInGangAction,
+		});
+	});
+
+	it("reports the existing action and target when a player already has an incoming session", async () => {
+		const existingAttacker = makeUser("existing-attacker");
+		const defender = makeUser("defender");
+		const busyMessage = `**${defender.GetNameWithImage()}** ${globalStrings[Language.Portuguese].defenderIsBeingBeatedById(existingAttacker.GetNameWithImage())}`;
+
+		expect((await MultiplayerSession.StartBeatUp(existingAttacker, defender, false)).success).toBe(true);
+		mockCanBeatUser.mockResolvedValue({ canBeat: false, message: busyMessage });
+
+		const result = await MultiplayerSession.StartBeatUp(makeUser("next-attacker"), defender, false);
+
+		expect(result).toEqual({ success: false, message: busyMessage });
 	});
 
 	it("rejects an investment attack while another incoming action is active", async () => {

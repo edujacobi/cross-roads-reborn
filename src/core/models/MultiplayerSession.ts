@@ -4,6 +4,7 @@ import { setTimeout as wait } from "node:timers/promises";
 import { addHours } from "date-fns/addHours";
 import { addMilliseconds } from "date-fns/addMilliseconds";
 import { formatDistanceToNow } from "date-fns/formatDistanceToNow";
+import { getAvailabilityConflictMessage } from "#core/models/AvailabilityMessages";
 import type { BeatUpInitData } from "#core/models/BeatUp";
 import { BeatUp } from "#core/models/BeatUp";
 import { Casino } from "#core/models/Casino";
@@ -441,9 +442,9 @@ export class MultiplayerSession {
 		const reservation = [`user:${attacker.Id}`, `user:${defender.Id}`];
 		if (!this.TryReserve(reservation)) return { success: false, message: s.playersBusy };
 		try {
-			if (this.HasActiveIncomingSession(defender.Id)) return { success: false, message: s.playersBusy };
 			const validationMessage = await validate();
 			if (validationMessage !== null) return { success: false, message: validationMessage };
+			if (this.HasActiveIncomingSession(defender.Id)) return { success: false, message: s.playersBusy };
 
 			const base = this.CreateRuntimeBase(randomUUID(), kind, attacker, defender, 2, source);
 			await this.CreateRecord(base);
@@ -559,7 +560,16 @@ export class MultiplayerSession {
 		target: User,
 		source: "discord" | "web" = "web",
 	): Promise<MultiplayerStartResult> {
-		const s = Strings[this.LanguageFor(initializer, source)];
+		const language = this.LanguageFor(initializer, source);
+		const s = Strings[language];
+		const getTargetBusyMessage = async () => {
+			const availability = target.CheckAvailability();
+			if (availability.available) return undefined;
+			return getAvailabilityConflictMessage(availability, language, {
+				type: "defender",
+				name: target.GetNameWithImage(),
+			});
+		};
 		const gang = await Gang.GetByUserId(initializer.Id);
 		if (!gang) return { success: false, message: s.notInGang };
 		const reservation = [`user:${initializer.Id}`, `user:${target.Id}`, `gang:${gang.Id}`];
@@ -568,7 +578,10 @@ export class MultiplayerSession {
 		}
 		try {
 			if (this.HasActiveIncomingSession(target.Id)) {
-				return { success: false, message: s.cannotStartInvestmentRobbery };
+				return {
+					success: false,
+					message: (await getTargetBusyMessage()) ?? s.cannotStartInvestmentRobbery,
+				};
 			}
 			if (this.HasActiveGangSession(gang.Id)) {
 				return { success: false, message: s.gangActionActive };
@@ -580,11 +593,14 @@ export class MultiplayerSession {
 			const model = new InvestmentRobbery(gang, initializer, target);
 			const validation = await model.Validate();
 			if (!validation.success) {
+				const busyMessage = validation.reason === InvestmentRobberyReason.TargetAlreadyUnderAttack
+					? await getTargetBusyMessage()
+					: undefined;
 				return {
 					success: false,
-					message: source === "web"
+					message: busyMessage ?? (source === "web"
 						? getInvestmentRobberyStartMessage(validation.reason, s.cannotStartInvestmentRobbery)
-						: s.cannotStartInvestmentRobbery,
+						: s.cannotStartInvestmentRobbery),
 				};
 			}
 
@@ -848,7 +864,7 @@ export class MultiplayerSession {
 		if (session.kind === "investmentRobbery") {
 			if (response !== "defend") return { success: false, message: s.invalidResponse };
 			session.response = response;
-			const defense = this.DefendInvestment(session, s);
+			const defense = this.DefendInvestment(session, s, language);
 			session.responseTask = defense.then(() => undefined, () => undefined);
 			return defense;
 		}
@@ -862,12 +878,18 @@ export class MultiplayerSession {
 	private static async DefendInvestment(
 		session: InvestmentRobberySession,
 		s: (typeof Strings)[Language],
+		language: Language,
 	): Promise<{ success: boolean; message: string }> {
 		try {
-			if (!await session.target.GetInfo() ||
-				!session.target.CheckAvailability(["defendingInvestment", "dead", "wanted", "escaping"]).available) {
+			if (!await session.target.GetInfo()) {
 				session.response = null;
 				return { success: false, message: s.mustBeIdleToDefend };
+			}
+			const availability = session.target.CheckAvailability(["defendingInvestment", "dead", "wanted", "escaping"]);
+			if (!availability.available) {
+				session.response = null;
+				const message = await getAvailabilityConflictMessage(availability, language, { type: "attacker" });
+				return { success: false, message: message ?? s.mustBeIdleToDefend };
 			}
 		}
 		catch (error) {
