@@ -45,7 +45,7 @@ const clientId = process.env.NODE_ENV === "DEV" ? process.env.CLIENT_ID_DEV : pr
 const rest = new REST().setToken(token);
 
 // and deploy your commands!
-(async () => {
+void (async () => {
 	try {
 		logger.info(`Started refreshing ${commands.length} application (/) commands.`);
 

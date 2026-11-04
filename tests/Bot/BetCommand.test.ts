@@ -85,7 +85,7 @@ describe("Discord coin flip", () => {
 			Casino: { IsInGame: false },
 			Update: vi.fn().mockResolvedValue(true),
 		} as unknown as User;
-		mockRandomInt.mockReturnValueOnce(draw);
+		mockRandomInt.mockReturnValueOnce(2_000).mockReturnValueOnce(draw);
 		mockStartUserGame.mockImplementation(async () => {
 			user.Casino.IsInGame = true;
 			return true;
@@ -111,7 +111,8 @@ describe("Discord coin flip", () => {
 		const command = imported.default ?? imported as Required<typeof imported>;
 		await command.execute(interaction as never, user, Language.English);
 
-		expect(mockRandomInt).toHaveBeenCalledWith(2);
+		expect(mockRandomInt).toHaveBeenNthCalledWith(1, 2_000, 3_001);
+		expect(mockRandomInt).toHaveBeenNthCalledWith(2, 2);
 		expect(mockFinishWin).toHaveBeenCalledTimes(expectedOutcome === "win" ? 1 : 0);
 		expect(mockFinishLoss).toHaveBeenCalledTimes(expectedOutcome === "loss" ? 1 : 0);
 	});

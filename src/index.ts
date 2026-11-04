@@ -72,7 +72,7 @@ const handleExit = async (signal: string) => {
 		exitCode = 1;
 	}
 	finally {
-		client.destroy();
+		await client.destroy();
 	}
 	process.exit(exitCode);
 };

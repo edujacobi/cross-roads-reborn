@@ -130,10 +130,7 @@ module.exports = {
 
 			await replyWithContainer(interaction, container);
 
-			// Generate numbers between 2_000 and 3_000 (2s and 3s)
-			const range = () => Math.floor(Math.random() * 1_001) + 2_000;
-
-			await wait(range());
+			await wait(randomInt(2_000, 3_001));
 			const coinFlip = randomInt(2);
 
 			const win = side === coinFlip;

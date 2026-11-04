@@ -8,7 +8,7 @@ const clientId = process.env.NODE_ENV === "DEV" ? process.env.CLIENT_ID_DEV : pr
 
 const rest = new REST().setToken(token);
 
-(async () => {
+void (async () => {
 	try {
 		logger.info(`Started clearing application (/) commands.`);
 

@@ -2,6 +2,7 @@ import { randomInt, randomUUID } from "node:crypto";
 import { EventEmitter } from "node:events";
 import { setTimeout as wait } from "node:timers/promises";
 import { addHours } from "date-fns/addHours";
+import { addMilliseconds } from "date-fns/addMilliseconds";
 import { formatDistanceToNow } from "date-fns/formatDistanceToNow";
 import type { BeatUpInitData } from "#core/models/BeatUp";
 import { BeatUp } from "#core/models/BeatUp";
@@ -1047,7 +1048,7 @@ export class MultiplayerSession {
 
 				const hit = randomInt(5) === 0;
 				if (hit) {
-					player.Hospital.Time = addHours(new Date(), Math.random() * 0.5 + 1.5);
+					player.Hospital.Time = addMilliseconds(new Date(), randomInt(5_400_000, 7_200_000));
 					player.Hospital.Count += 1;
 					losers.push(player);
 					session.aliveUserIds = session.aliveUserIds.filter(id => id !== player.Id);

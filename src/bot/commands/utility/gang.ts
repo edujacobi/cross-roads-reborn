@@ -3300,7 +3300,7 @@ async function runInvestmentRobberySession(
 	};
 
 	const unsubscribe = MultiplayerSession.Subscribe(user.Id, gang.Id, view => {
-		queueUpdate(view);
+		void queueUpdate(view);
 	});
 
 	const reply = await replyWithContainer(interaction, getStatusContainer(session));
