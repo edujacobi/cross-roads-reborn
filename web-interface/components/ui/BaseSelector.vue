@@ -233,10 +233,13 @@ watch(isOpen, (open) => {
 .base-selector {
 	display: flex;
 	gap: $spacing-sm;
+	min-width: 0;
+	max-width: 100%;
 
 	&.row {
 		flex-direction: row;
 		align-items: center;
+		flex-wrap: wrap;
 	}
 
 	&.collumn {
@@ -245,9 +248,12 @@ watch(isOpen, (open) => {
 	}
 
 	@media (max-width: $bp-mobile) {
-		flex-direction: column;
-		align-items: flex-start;
 		flex-grow: 1;
+
+		&.row {
+			flex-direction: column;
+			align-items: flex-start;
+		}
 	}
 
 	.selector-enter-active,
@@ -272,6 +278,7 @@ watch(isOpen, (open) => {
 		font-weight: $font-weight-medium;
 		color: $text-secondary;
 		text-align: right;
+		white-space: nowrap;
 
 		@media (max-width: $bp-mobile) {
 			text-align: left;
@@ -281,11 +288,13 @@ watch(isOpen, (open) => {
 
 	.selector-wrapper {
 		position: relative;
-		flex-shrink: 0;
-		min-width: 15rem;
+		flex: 1 1 auto;
+		width: 15rem;
+		min-width: 0;
+		max-width: 100%;
 
 		@media (max-width: $bp-mobile) {
-			min-width: 100%;
+			width: 100%;
 		}
 	}
 

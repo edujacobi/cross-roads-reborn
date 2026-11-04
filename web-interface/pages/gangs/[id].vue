@@ -2206,6 +2206,8 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 
 .gang-detail {
 	&__join-requests-message {
+		color: $text-secondary;
+		font-size: $font-size-14;
 		padding: $spacing-md;
 	}
 

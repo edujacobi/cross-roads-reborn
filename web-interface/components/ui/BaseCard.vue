@@ -87,6 +87,7 @@ defineProps<Props>();
 	overflow: hidden;
 	display: flex;
 	flex-direction: column;
+	min-width: 0;
 	transition: border-color $transition-normal ease, box-shadow $transition-normal ease;
 
 	&:has(.base-selector.is-open) {
@@ -130,6 +131,7 @@ defineProps<Props>();
 	&__body {
 		padding: 1.25rem;
 		flex: 1;
+		min-width: 0;
 
 		&--no-padding-x {
 			padding-inline: 0;
@@ -148,6 +150,8 @@ defineProps<Props>();
 		justify-content: flex-end;
 		gap: $spacing-sm;
 		margin-left: auto;
+		min-width: 0;
+		max-width: 100%;
 	}
 
 	&__footer {
