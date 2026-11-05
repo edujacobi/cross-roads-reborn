@@ -475,6 +475,7 @@ export class User {
 	 * Loads basic user information from the database without expensive lookups.
 	 * @param fromUser Optional Users model instance to load from.
 	 * @param language Optional language to override.
+	 * @param options Optional settings to skip certain lookups.
 	 * @returns The User instance or null if not found.
 	 */
 	async GetSimpleInfo(fromUser?: Users, language?: Language, options?: { skipGangLookup?: boolean }) {
@@ -705,6 +706,7 @@ export class User {
 	/**
 	 * Adds VIP time to the user.
 	 * @param days Number of days to add.
+	 * @param setAvatarDecoration if true, sets the avatar decoration to VIP if it's currently default.
 	 */
 	async AddVip(days: number, setAvatarDecoration = true) {
 		if (this.VipTime == null || this.VipTime < new Date()) {
@@ -1217,6 +1219,7 @@ export class User {
 
 		if (this.IsInHospital()) {
 			this.Attributes.Defense -= 5;
+			this.Attributes.Attack -= 5;
 		}
 
 		// Gang Modifiers
