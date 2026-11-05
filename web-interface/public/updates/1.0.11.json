@@ -1,0 +1,33 @@
+{
+	"version": "1.0.11",
+	"title": "Reequilíbrio de armas e recompensas",
+	"date": "04/11/2026",
+	"comment": "Sniper deixará de ser pulada?",
+	"sections": [
+		{
+			"title": "Roubos a locais",
+			"description": "A Máfia Italiana agora exige 55 ATK (antes 60) e paga Cr$ 40.000–100.000 (antes Cr$ 50.000–150.000). A recompensa máxima do Banco Pequeno foi reduzida de Cr$ 40.000 para Cr$ 35.000. A mensagem em espanhol da Máfia Italiana também foi corrigida.",
+			"imageUrl": "/images/situations/robbery.png"
+		},
+		{
+			"title": "Vasculho",
+			"description": "A Usina Nuclear agora exige 55 ATK (antes 60) e sua recompensa em dinheiro mudou de Cr$ 30.000–75.000 para Cr$ 25.000–55.000. Os itens incluem Sniper (3–4 h), Katana (0,5–1 h), Colete Leve (1–2 h), Óculos e Mira Avançada.\nA variedade e a duração dos itens foram reequilibradas no Lixão, Floresta, Esgoto, Fábrica de Armas, Laboratório de Drogas e Base Militar.",
+			"imageUrl": "/images/situations/scavenging.png"
+		},
+		{
+			"title": "Katana",
+			"description": "O preço aumentou de Cr$ 330.000 para Cr$ 350.000.",
+			"imageUrl": "/images/items/9_Katana.png"
+		},
+		{
+			"title": "Hospitalização",
+			"description": "Enquanto hospitalizado, o jogador agora perde 5 ATK, além dos 5 DEF.",
+			"imageUrl": "/images/situations/hospital.png"
+		},
+		{
+			"title": "Correções",
+			"description": "Corrigida uma mensagem de falha da Máfia Italiana em espanhol que aparecia em inglês.\nCorrigida a mensagem do Roubo à investimento resetando ao fim do tempo.\nCorrigida a mensagem de \"usuário ocupado\" em ações multiplayer (normalmente aparecia no roubo à investimento).",
+			"imageUrl": "/images/badges/BugCatcher.png"
+		}
+	]
+}

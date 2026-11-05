@@ -230,6 +230,7 @@ onMounted(loadUpdates);
 		font-size: $font-size-14;
 		color: $text-secondary;
 		line-height: 1.7;
+		white-space: pre-line;
 	}
 }
 </style>
