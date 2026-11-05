@@ -61,7 +61,7 @@ const responseStatuses: Record<string, string> = {
 				>
 					<strong>{{ participant.nickname }}</strong>
 					<BaseBadge
-						variant="danger"
+						variant="attribute"
 						class="defender-prompt__attack-badge"
 					>
 						<AttackIcon

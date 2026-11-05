@@ -31,6 +31,7 @@ definePageMeta({ middleware: "auth" });
 useHead({ title: "Roubar" });
 
 const auth = useAuth();
+const isDevelopment = import.meta.dev;
 const userId = computed(() => auth.user.value?.userId ?? "");
 const { formatMoney } = useMoneyFormat();
 const { distance, relative } = useDateFormat();
@@ -123,7 +124,7 @@ const actionUnavailableMessage = computed(() => {
 	if (userStatus?.isScavenging) return "Você não pode roubar enquanto vasculha!";
 	if (userStatus?.isWorking) return "Você não pode roubar enquanto trabalha!";
 	if (userStatus?.isRobbing || userStatus?.isBeingRobbed) return "Você não pode roubar enquanto já está em um roubo!";
-	return "";
+	return null;
 });
 const isLoading = computed(
 	() => locationsLoading.value || profileLoading.value || statusLoading.value || activityLoading.value,
@@ -149,6 +150,27 @@ function toggleLocationDetails(locationId: number) {
 function openConfirmModal(locationId: number) {
 	selectedLocationId.value = locationId;
 	showConfirmModal.value = true;
+}
+
+function previewRobberyResult(success: boolean) {
+	showConfirmModal.value = false;
+	showLoadingModal.value = false;
+	selectedLocationId.value = locations.value[0]?.id ?? null;
+	resultSuccess.value = success;
+	resultMoney.value = 45_000;
+	resultLocationName.value = locations.value[0]?.name ?? "Local de exemplo";
+	const resultTime = new Date(Date.now() + 60 * 60_000);
+	resultWantedTime.value = success ? resultTime : null;
+	resultPrisonTime.value = success ? null : resultTime;
+	resultPrisonText.value = success ? "" : "A polícia flagrou você durante o roubo.";
+	showResultModal.value = true;
+}
+
+function previewRobberyInProgress() {
+	showConfirmModal.value = false;
+	showResultModal.value = false;
+	selectedLocationId.value = locations.value[0]?.id ?? null;
+	showLoadingModal.value = true;
 }
 
 async function handleStartRobbery() {
@@ -259,6 +281,32 @@ onBeforeUnmount(() => sseAbortController?.abort());
 			title="Roubar"
 			subtitle="Encontre um alvo e roube tudo!"
 		/>
+		<details
+			v-if="isDevelopment"
+			class="rob-preview-menu"
+		>
+			<summary>Pré-visualizações</summary>
+			<div class="rob-preview-menu__actions">
+				<BaseButton
+					variant="secondary"
+					@click="previewRobberyInProgress"
+				>
+					Roubo em andamento
+				</BaseButton>
+				<BaseButton
+					variant="secondary"
+					@click="previewRobberyResult(true)"
+				>
+					Roubo (sucesso)
+				</BaseButton>
+				<BaseButton
+					variant="secondary"
+					@click="previewRobberyResult(false)"
+				>
+					Roubo (falha)
+				</BaseButton>
+			</div>
+		</details>
 		<div
 			v-if="isLoading"
 			class="rob-page__loading"
@@ -415,6 +463,12 @@ onBeforeUnmount(() => sseAbortController?.abort());
 					</button>
 				</div>
 				<div class="rob-page__aside-body">
+					<BaseButton
+						variant="secondary"
+						@click="showRulesModal = true"
+					>
+						Mais informações
+					</BaseButton>
 					<dl class="rob-page__stats">
 						<div>
 							<dt>Roubos bem-sucedidos</dt>
@@ -437,12 +491,6 @@ onBeforeUnmount(() => sseAbortController?.abort());
 							<dd>{{ formatMoney(activity?.robberyBeingRobbedSum ?? 0) }}</dd>
 						</div>
 					</dl>
-					<BaseButton
-						variant="secondary"
-						@click="showRulesModal = true"
-					>
-						Mais informações
-					</BaseButton>
 					<div
 						v-if="isRobbingLocation"
 						class="rob-page__status"
@@ -549,14 +597,10 @@ onBeforeUnmount(() => sseAbortController?.abort());
 			class="rob-modal-loading"
 			:open="showLoadingModal"
 			title="Roubo em andamento"
+			:icon="imagePaths.situations.robbery"
 			@update:open="showLoadingModal = $event"
 		>
 			<div class="rob-modal-loading__content">
-				<NuxtImg
-					:src="imagePaths.situations.robbery"
-					width="100"
-					alt=""
-				/>
 				<div
 					class="rob-modal-loading__spinner"
 					role="status"
@@ -569,19 +613,25 @@ onBeforeUnmount(() => sseAbortController?.abort());
 		<BaseModal
 			:open="showResultModal"
 			:title="resultSuccess ? 'Roubo bem-sucedido!' : 'Roubo fracassado'"
+			:icon="imagePaths.situations.robbery"
 			@update:open="showResultModal = $event"
 		>
 			<div class="rob-result">
 				<template v-if="resultSuccess">
 					<p>Você roubou <strong>{{ formatMoney(resultMoney) }}</strong> de {{ resultLocationName }}.</p>
-					<p v-if="resultWantedTime">Poderá roubar novamente em {{ distance(new Date(), resultWantedTime) }}.</p>
+					<p
+						class="rob-result__wanted-text"
+						v-if="resultWantedTime"
+					>
+						Poderá roubar novamente em {{ distance(new Date(), resultWantedTime) }}.
+					</p>
 				</template>
 				<template v-else>
 					<p>Você falhou na tentativa de roubar {{ resultLocationName }}.</p>
 					<p class="rob-result__prison-text">
 						<PrisonIcon
-							:size="20"
-							variant="solid"
+							:size="22"
+							variant="normal"
 						/>
 						{{ resultPrisonText }}
 					</p>
@@ -616,6 +666,20 @@ onBeforeUnmount(() => sseAbortController?.abort());
 	display: flex;
 	flex-direction: column;
 	gap: $spacing-lg;
+}
+
+.rob-preview-menu {
+	summary {
+		color: $text-secondary;
+		cursor: pointer;
+	}
+
+	&__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: $spacing-sm;
+		margin-top: $spacing-sm;
+	}
 }
 
 .rob-page__rules {
@@ -813,7 +877,6 @@ onBeforeUnmount(() => sseAbortController?.abort());
 	display: flex;
 	flex: 1;
 	flex-direction: column;
-	justify-content: space-between;
 	gap: $spacing-md;
 	padding: $spacing-md;
 	overflow-y: auto;
@@ -823,7 +886,7 @@ onBeforeUnmount(() => sseAbortController?.abort());
 	display: flex;
 	flex-direction: column;
 	gap: $spacing-sm;
-	margin: 0;
+	margin: 0 0 auto 0;
 
 	div {
 		padding: $spacing-sm;
@@ -877,6 +940,7 @@ onBeforeUnmount(() => sseAbortController?.abort());
 	flex-direction: column;
 	align-items: center;
 	gap: $spacing-md;
+	padding: $spacing-lg 0;
 
 	p {
 		margin: 0;
@@ -904,10 +968,16 @@ onBeforeUnmount(() => sseAbortController?.abort());
 	}
 
 	&__prison-text {
-
+		color: $color-prison;
+		font-weight: $font-weight-semibold;
+		
 		svg {
 			vertical-align: sub;
 		}
+	}
+
+	&__wanted-text {
+		color: $text-secondary;
 	}
 
 	&__free-text {

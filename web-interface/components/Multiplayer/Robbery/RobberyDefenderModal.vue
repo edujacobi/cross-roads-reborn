@@ -68,7 +68,6 @@ const responseStatuses: Record<string, string> = {
 		:dismissible="dismissible"
 		title="Roubo em andamento"
 		@update:open="emit('update:open', $event)"
-		variant="robbery"
 		icon="/images/situations/robbery.png"
 	>
 		<section
@@ -118,7 +117,7 @@ const responseStatuses: Record<string, string> = {
 						<span>Granada</span>
 					</span>
 					<BaseBadge
-						variant="danger"
+						variant="attribute"
 						class="defender-prompt__attack-badge"
 					>
 						<AttackIcon

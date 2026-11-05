@@ -103,11 +103,18 @@ const details = computed(() => {
 
 .investment-robbery-result {
 	display: grid;
-	gap: $spacing-sm;
+	gap: $spacing-md;
+
+	:deep(.base-badge) {
+		justify-content: center;
+		padding: 1rem;
+		border-radius: $radius-sm;
+		font-size: $font-size-18;
+	}
 
 	&__details {
 		display: grid;
-		gap: $spacing-xs;
+		gap: $spacing-sm;
 
 		p {
 			margin: 0;

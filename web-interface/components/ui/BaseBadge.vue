@@ -3,7 +3,7 @@
 	lang="ts"
 >
 interface Props {
-	variant?: "developer" | "moderator" | "helper" | "vip" | "success" | "danger" | "warning" | "neutral";
+	variant?: "developer" | "moderator" | "helper" | "vip" | "success" | "danger" | "warning" | "neutral" | "attribute";
 }
 
 withDefaults(defineProps<Props>(), {
@@ -76,6 +76,11 @@ withDefaults(defineProps<Props>(), {
     background-color: rgba($border-subtle, 0.5);
     color: $text-secondary;
     border: 1px solid $border-subtle;
+  }
+
+  &--attribute {
+	  @include accent-surface($color-attribute);
+    color: $color-attribute;
   }
 }
 </style>

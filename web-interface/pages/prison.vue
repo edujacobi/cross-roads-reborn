@@ -39,6 +39,7 @@ useHead({
 });
 
 const auth = useAuth();
+const isDevelopment = import.meta.dev;
 const currentUserId = computed(() => auth.user?.value?.userId ?? "");
 const { distance } = useDateFormat();
 const { getClassImageUrl, getClassName } = useClasses();
@@ -148,6 +149,24 @@ async function onEscapeResult(success: boolean, message: string) {
 	escapeResultSuccess.value = success;
 	showEscapeResultModal.value = true;
 	await Promise.all([auth.fetchUser(), refetchPrisoners(), refetchPrisonStatus(), refetchBribeCost()]);
+}
+
+function previewEscapeResult(success: boolean) {
+	showEscapeModal.value = false;
+	showEscapeLoadingModal.value = false;
+	isEscaping.value = false;
+	escapeResultSuccess.value = success;
+	escapeResultMessage.value = success
+		? "Você conseguiu escapar da prisão por um túnel."
+		: "A polícia impediu sua fuga e você continuará preso.";
+	showEscapeResultModal.value = true;
+}
+
+function previewEscapeInProgress() {
+	showEscapeModal.value = false;
+	showEscapeResultModal.value = false;
+	isEscaping.value = false;
+	showEscapeLoadingModal.value = true;
 }
 
 async function listenToEscapeSSE() {
@@ -291,6 +310,33 @@ function formatBribeCost() {
 			title="Prisão"
 			subtitle="Ao tentar roubar alguém e falhar, você será preso por um tempo determinado pelo seu ATK."
 		/>
+
+		<details
+			v-if="isDevelopment"
+			class="prison-preview-menu"
+		>
+			<summary>Pré-visualizações</summary>
+			<div class="prison-preview-menu__actions">
+				<BaseButton
+					variant="secondary"
+					@click="previewEscapeInProgress"
+				>
+					Fuga em andamento
+				</BaseButton>
+				<BaseButton
+					variant="secondary"
+					@click="previewEscapeResult(true)"
+				>
+					Fuga (sucesso)
+				</BaseButton>
+				<BaseButton
+					variant="secondary"
+					@click="previewEscapeResult(false)"
+				>
+					Fuga (falha)
+				</BaseButton>
+			</div>
+		</details>
 
 		<BaseCard class="info-card">
 			<template #header>
@@ -620,33 +666,30 @@ function formatBribeCost() {
 		<BaseModal
 			class="escape-loading-modal"
 			:open="showEscapeLoadingModal"
-			title="Tentando fugir..."
+			title="Fuga em andamento"
+			:icon="imagePaths.uiElements.escape"
 			@update:open="showEscapeLoadingModal = $event"
 		>
 			<div class="escape-loading">
-				<NuxtImg
-					:src="imagePaths.uiElements.escape"
-					width="100"
-				/>
 				<div
 					class="escape-loading__spinner"
 					role="status"
 					aria-label="Carregando"
-				>
-					<span class="sr-only">Tentando fugir...</span>
-				</div>
+				/>
+				<p>Tentando fugir...</p>
 			</div>
 		</BaseModal>
 
 		<BaseModal
 			:open="showEscapeResultModal"
 			:title="escapeResultSuccess ? 'Fuga bem-sucedida!' : 'Fuga fracassada'"
+			:icon="imagePaths.uiElements.escape"
 			@update:open="showEscapeResultModal = $event"
 		>
 			<p>{{ escapeResultMessage }}</p>
 			<template #footer>
 				<BaseButton
-					variant="primary"
+					variant="secondary"
 					@click="showEscapeResultModal = false"
 				>
 					Entendi
@@ -723,6 +766,20 @@ function formatBribeCost() {
 		left: 12px;
 		color: $text-muted;
 		pointer-events: none;
+	}
+}
+
+.prison-preview-menu {
+	summary {
+		color: $text-secondary;
+		cursor: pointer;
+	}
+
+	&__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: $spacing-sm;
+		margin-top: $spacing-sm;
 	}
 }
 
@@ -882,21 +939,16 @@ function formatBribeCost() {
 		width: 3rem;
 		height: 3rem;
 		border: 4px solid $border-subtle;
-		border-top-color: $color-brand;
+		border-top-color: $color-prison;
 		border-radius: 50%;
 		animation: spin 0.8s linear infinite;
 	}
 
-	&__text {
-		font-size: $font-size-16;
-		font-weight: $font-weight-semibold;
-		color: $text-primary;
+	p {
+		margin: 0;
+		color: $text-secondary;
 		text-align: center;
 	}
-}
-
-.escape-loading-modal :deep(.dialog-header) {
-	display: none;
 }
 
 @keyframes spin {

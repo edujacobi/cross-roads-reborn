@@ -34,12 +34,9 @@ const emit = defineEmits<{
 		:open="true"
 		title="Espancamento em andamento"
 		:icon="imagePaths.situations.beatup"
-		variant="beatup"
 		@update:open="emit('update:open', $event)"
 	>
 		<section class="beat-up-attacker">
-			<p>Tentando espancar <strong>{{ session.targetNickname ?? "o alvo" }}</strong>...</p>
-
 			<div
 				class="beat-up-attacker__spinner"
 				role="status"
@@ -47,6 +44,8 @@ const emit = defineEmits<{
 			>
 				<span class="sr-only">Espancando...</span>
 			</div>
+
+			<p>Tentando espancar <strong>{{ session.targetNickname ?? "o alvo" }}</strong>...</p>
 
 			<p
 				class="beat-up-attacker__status"
@@ -78,6 +77,8 @@ const emit = defineEmits<{
 .beat-up-attacker {
 	display: grid;
 	gap: $spacing-md;
+	padding: $spacing-lg 0;
+	justify-items: center;
 
 	p {
 		margin: 0;
@@ -96,6 +97,10 @@ const emit = defineEmits<{
 	&__status,
 	&__countdown {
 		color: $text-secondary;
+		
+		img {
+			vertical-align: middle;
+		}
 	}
 
 	&__spinner {

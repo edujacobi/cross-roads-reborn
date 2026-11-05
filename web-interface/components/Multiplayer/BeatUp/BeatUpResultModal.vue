@@ -3,17 +3,17 @@
 	lang="ts"
 >
 import { computed } from "vue";
+import HospitalIcon from "~/components/icons/HospitalIcon.vue";
 import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
-import type { ImagePath } from "~/constants/imagePaths";
 import { imagePaths } from "~/constants/imagePaths";
 import type { MultiplayerSession } from "~/graphql/generated";
 import { getOutcomeDate, parseMultiplayerOutcome } from "~/utils/multiplayerResult";
 
 type ResultLine = {
 	text: string;
-	image?: ImagePath;
+	icon?: typeof HospitalIcon;
 	tone: "success" | "hospital" | "neutral";
 };
 
@@ -48,7 +48,7 @@ const resultLines = computed<ResultLine[]>(() => {
 				text: isTarget.value
 					? `Você ficará hospitalizado até ${hospitalTime}.`
 					: `${targetName.value} ficará hospitalizado até ${hospitalTime}.`,
-				image: imagePaths.situations.hospital,
+				icon: HospitalIcon,
 				tone: "hospital",
 			});
 		}
@@ -70,7 +70,7 @@ const resultLines = computed<ResultLine[]>(() => {
 			text: isTarget.value
 				? `${attackerName.value} ficará hospitalizado até ${hospitalTime}.`
 				: `Você ficará hospitalizado até ${hospitalTime}.`,
-			image: imagePaths.situations.hospital,
+			icon: HospitalIcon,
 			tone: "hospital",
 		});
 	}
@@ -83,7 +83,6 @@ const resultLines = computed<ResultLine[]>(() => {
 		:open="true"
 		title="Espancamento finalizado"
 		:icon="imagePaths.situations.beatup"
-		variant="beatup"
 		@update:open="emit('update:open', $event)"
 	>
 		<section class="beat-up-result">
@@ -102,12 +101,11 @@ const resultLines = computed<ResultLine[]>(() => {
 					:key="index"
 					:class="`beat-up-result__line beat-up-result__line--${line.tone}`"
 				>
-					<NuxtImg
-						v-if="line.image"
-						:src="line.image"
-						alt=""
-						width="24"
-						height="24"
+					<component
+						v-if="line.icon"
+						:is="line.icon"
+						:size="24"
+						variant="normal"
 					/>
 					{{ line.text }}
 				</p>
@@ -139,7 +137,7 @@ const resultLines = computed<ResultLine[]>(() => {
 
 .beat-up-result {
 	display: grid;
-	gap: $spacing-sm;
+	gap: $spacing-md;
 
 	:deep(.base-badge) {
 		justify-content: center;
@@ -150,14 +148,15 @@ const resultLines = computed<ResultLine[]>(() => {
 
 	&__details {
 		display: grid;
-		gap: $spacing-xs;
+		gap: $spacing-sm;
 	}
 
 	&__line {
-		display: flex;
-		align-items: center;
-		gap: $spacing-sm;
 		margin: 0;
+
+		svg {
+			vertical-align: middle;
+		}
 
 		&--success {
 			color: $color-success;
@@ -165,6 +164,7 @@ const resultLines = computed<ResultLine[]>(() => {
 
 		&--hospital {
 			color: $color-hospital;
+			font-weight: $font-weight-semibold;
 		}
 	}
 

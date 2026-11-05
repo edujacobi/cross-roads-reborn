@@ -3,17 +3,18 @@
 	lang="ts"
 >
 import { computed } from "vue";
+import HospitalIcon from "~/components/icons/HospitalIcon.vue";
+import PrisonIcon from "~/components/icons/PrisonIcon.vue";
 import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
-import type { ImagePath } from "~/constants/imagePaths";
 import { imagePaths } from "~/constants/imagePaths";
 import type { MultiplayerSession } from "~/graphql/generated";
 import { getOutcomeDate, getOutcomeNumber, parseMultiplayerOutcome } from "~/utils/multiplayerResult";
 
 type ResultLine = {
 	text: string;
-	image?: ImagePath;
+	icon?: typeof HospitalIcon | typeof PrisonIcon;
 	tone: "success" | "hospital" | "neutral" | "prison";
 };
 
@@ -50,7 +51,7 @@ const resultLines = computed<ResultLine[]>(() => {
 				text: isTarget.value
 					? `Você também foi espancado${hospitalTime ? ` e ficará hospitalizado até ${hospitalTime}` : ""}.`
 					: `${targetName.value} também foi espancado${hospitalTime ? ` e ficará hospitalizado até ${hospitalTime}` : ""}.`,
-				image: imagePaths.situations.hospital,
+				icon: HospitalIcon,
 				tone: "hospital",
 			});
 		}
@@ -67,7 +68,7 @@ const resultLines = computed<ResultLine[]>(() => {
 		if (prisonTime) {
 			lines.push({
 				text: isTarget.value ? `Ele ficará preso até ${prisonTime}.` : `Você ficará preso até ${prisonTime}.`,
-				image: imagePaths.situations.prison,
+				icon: PrisonIcon,
 				tone: "prison",
 			});
 		}
@@ -82,7 +83,6 @@ const resultLines = computed<ResultLine[]>(() => {
 		:open="true"
 		title="Roubo finalizado"
 		:icon="imagePaths.situations.robbery"
-		variant="robbery"
 		@update:open="emit('update:open', $event)"
 	>
 		<section class="robbery-result">
@@ -101,12 +101,11 @@ const resultLines = computed<ResultLine[]>(() => {
 					:key="index"
 					:class="`robbery-result__line robbery-result__line--${line.tone}`"
 				>
-					<NuxtImg
-						v-if="line.image"
-						:src="line.image"
-						alt=""
-						width="24"
-						height="24"
+					<component
+						v-if="line.icon"
+						:is="line.icon"
+						:size="24"
+						variant="normal"
 					/>
 					{{ line.text }}
 				</p>
@@ -138,7 +137,7 @@ const resultLines = computed<ResultLine[]>(() => {
 
 .robbery-result {
 	display: grid;
-	gap: $spacing-sm;
+	gap: $spacing-md;
 
 	:deep(.base-badge) {
 		justify-content: center;
@@ -149,14 +148,15 @@ const resultLines = computed<ResultLine[]>(() => {
 
 	&__details {
 		display: grid;
-		gap: $spacing-xs;
+		gap: $spacing-sm;
 	}
 
 	&__line {
-		display: flex;
-		align-items: center;
-		gap: $spacing-sm;
 		margin: 0;
+
+		svg {
+			vertical-align: middle;
+		}
 
 		&--success {
 			color: $color-success;
@@ -164,10 +164,12 @@ const resultLines = computed<ResultLine[]>(() => {
 
 		&--hospital {
 			color: $color-hospital;
+			font-weight: $font-weight-semibold;
 		}
 
 		&--prison {
 			color: $color-prison;
+			font-weight: $font-weight-semibold;
 		}
 	}
 

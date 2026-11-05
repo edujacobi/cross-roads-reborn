@@ -36,6 +36,7 @@ useHead({
 });
 
 const auth = useAuth();
+const isDevelopment = import.meta.dev;
 const { user: authUser } = auth;
 const { formatMoney } = useMoneyFormat();
 const { showToast } = useToast();
@@ -227,6 +228,47 @@ function onScavengeResult(data: {
 	void Promise.all([auth.fetchUser(), refetchStatus(), refetchActivity(), refetchProfile(), refetchStatusQuery()]);
 }
 
+function previewScavengeResult(outcome: "success" | "failure" | "hospital" | "prison") {
+	const location = locations.value[0];
+	const rewardItem = location?.rewardItems[0];
+	const success = outcome === "success";
+	const hospitalized = outcome === "hospital";
+	const imprisoned = outcome === "prison";
+
+	showConfirmModal.value = false;
+	showLoadingModal.value = false;
+	selectedLocationId.value = location?.id ?? null;
+	resultSuccess.value = success;
+	resultLocationName.value = location?.name ?? "Local de exemplo";
+	resultRewardImage.value = success ? (rewardItem?.defaultImagePath ?? "") : "";
+	resultRewardDescription.value = "";
+	if (success) {
+		if (!rewardItem) resultRewardDescription.value = formatMoney(1_000);
+		else if (rewardItem.itemType === "Consumable") resultRewardDescription.value = `3 ${rewardItem.name}`;
+		else resultRewardDescription.value = `${rewardItem.name} (1.5h)`;
+	}
+	resultCooldownEndsAt.value = success ? new Date(Date.now() + 60 * 60_000) : null;
+	resultFailureType.value = hospitalized ? "hospital" : imprisoned ? "prison" : null;
+	resultFailureReason.value = hospitalized
+		? "Você se machucou enquanto vasculhava."
+		: imprisoned
+			? "Você foi capturado enquanto vasculhava."
+			: "";
+	resultFailureEndsAt.value = hospitalized
+		? new Date(Date.now() + 30 * 60_000)
+		: imprisoned
+			? new Date(Date.now() + 60 * 60_000)
+			: null;
+	showResultModal.value = true;
+}
+
+function previewScavengeInProgress() {
+	showConfirmModal.value = false;
+	showResultModal.value = false;
+	selectedLocationId.value = locations.value[0]?.id ?? null;
+	showLoadingModal.value = true;
+}
+
 async function listenToScavengeSSE() {
 	// Guard against duplicate SSE calls
 	if (sseInProgress) return;
@@ -322,6 +364,44 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 			title="Vasculhar"
 			subtitle="Procuro pessoas corajosas e sem nojo de entrar em locais sujos e perigosos."
 		/>
+		<details
+			v-if="isDevelopment"
+			class="scavenge-preview-menu"
+		>
+			<summary>Pré-visualizações</summary>
+			<div class="scavenge-preview-menu__actions">
+				<BaseButton
+					variant="secondary"
+					@click="previewScavengeInProgress"
+				>
+					Vasculho em andamento
+				</BaseButton>
+				<BaseButton
+					variant="secondary"
+					@click="previewScavengeResult('success')"
+				>
+					Vasculho (sucesso)
+				</BaseButton>
+				<BaseButton
+					variant="secondary"
+					@click="previewScavengeResult('failure')"
+				>
+					Vasculho (falha)
+				</BaseButton>
+				<BaseButton
+					variant="secondary"
+					@click="previewScavengeResult('hospital')"
+				>
+					Vasculho (hospital)
+				</BaseButton>
+				<BaseButton
+					variant="secondary"
+					@click="previewScavengeResult('prison')"
+				>
+					Vasculho (prisão)
+				</BaseButton>
+			</div>
+		</details>
 
 		<!-- Loading State -->
 		<div
@@ -538,11 +618,23 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 							<dd>{{ scavengeFailures }}</dd>
 						</div>
 						<div class="scavenge-page__stat">
-							<dt>Hospitalizações</dt>
+							<dt>
+								<HospitalIcon
+									:size="16"
+									variant="solid"
+								/>
+								Hospitalizações
+							</dt>
 							<dd>{{ scavengeHospitalizations }}</dd>
 						</div>
 						<div class="scavenge-page__stat">
-							<dt>Prisões</dt>
+							<dt>
+								<PrisonIcon
+									:size="16"
+									variant="solid"
+								/>
+								Prisões
+							</dt>
 							<dd>{{ scavengePrisonizations }}</dd>
 						</div>
 					</dl>
@@ -616,20 +708,15 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 			class="scavenge-modal-loading"
 			:open="showLoadingModal"
 			title="Vasculho em andamento"
+			:icon="imagePaths.badges.topScavenge"
 			@update:open="showLoadingModal = $event"
 		>
 			<div class="scavenge-modal-loading__content">
-				<NuxtImg
-					:src="imagePaths.badges.topScavenge"
-					width="100"
-				/>
 				<div
 					class="scavenge-modal-loading__spinner"
 					role="status"
 					aria-label="Carregando"
-				>
-					<span class="sr-only">Vasculhando...</span>
-				</div>
+				/>
 				<p class="scavenge-modal-loading__text">
 					{{ scavengingLocationName ? `Vasculhando ${scavengingLocationName}...` : "Vasculhando..." }}
 				</p>
@@ -640,13 +727,14 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 		<BaseModal
 			:open="showResultModal"
 			:title="resultSuccess ? 'Vasculho bem-sucedido!' : 'Vasculho fracassado'"
+			:icon="imagePaths.badges.topScavenge"
 			@update:open="showResultModal = $event"
 		>
 			<div
 				v-if="resultSuccess"
 				class="scavenge-result"
 			>
-				<p>Você encontrou</p>
+				<span>Você encontrou</span>
 				<div class="scavenge-result__reward">
 					<NuxtImg
 						v-if="resultRewardImage"
@@ -657,46 +745,53 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 					/>
 					<strong>{{ resultRewardDescription }}</strong>
 				</div>
-				<p v-if="resultLocationName">enquanto vasculhava {{ resultLocationName }}</p>
-				<p v-if="resultCooldownEndsAt">
-					Poderá vasculhar novamente em {{ distance(new Date(), resultCooldownEndsAt) }}
+				<span v-if="resultLocationName">enquanto vasculhava {{ resultLocationName }}.</span>
+				<p
+					v-if="resultCooldownEndsAt"
+					class="scavenge-result__again"
+				>
+					Poderá vasculhar novamente em {{ distance(new Date(), resultCooldownEndsAt) }}.
 				</p>
 			</div>
 			<div
 				v-else
 				class="scavenge-result"
 			>
-				<p
-					v-if="resultFailureType"
-					class="scavenge-result__failure"
-					:class="`scavenge-result__failure--${resultFailureType}`"
-				>
-					<PrisonIcon
-						v-if="resultFailureType === 'prison'"
-						:size="18"
-						variant="solid"
-					/>
-					<HospitalIcon
-						v-else
-						:size="18"
-						variant="solid"
-					/>
-					<span>
-						{{ resultFailureReason }}
-						<template v-if="resultFailureEndsAt">
+				<p>Você não encontrou nada enquanto vasculhava {{ resultLocationName }}.</p>
+				<div>
+					<template v-if="resultFailureType">
+						<PrisonIcon
+							v-if="resultFailureType === 'prison'"
+							:size="22"
+							variant="normal"
+						/>
+						<HospitalIcon
+							v-else
+							:size="22"
+							variant="normal"
+						/>
+						<span
+							class="scavenge-result__failure"
+							:class="`scavenge-result__failure--${resultFailureType}`"
+						>
+							{{ resultFailureReason }}
+						</span>
+						<p
+							v-if="resultFailureEndsAt"
+							class="scavenge-result__again"
+						>
 							{{ resultFailureType === "prison" ? "Será solto" : "Será curado" }}
 							em {{ distance(new Date(), resultFailureEndsAt) }}.
-						</template>
-					</span>
-				</p>
-				<p v-else>Você não encontrou nada enquanto vasculhava {{ resultLocationName }}.</p>
+						</p>
+					</template>
+				</div>
 			</div>
 			<template #footer>
 				<BaseButton
 					variant="secondary"
 					@click="showResultModal = false"
 				>
-					Voltar
+					Entendi
 				</BaseButton>
 			</template>
 		</BaseModal>
@@ -714,6 +809,20 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 	display: flex;
 	flex-direction: column;
 	gap: $spacing-lg;
+}
+
+.scavenge-preview-menu {
+	summary {
+		color: $text-secondary;
+		cursor: pointer;
+	}
+
+	&__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: $spacing-sm;
+		margin-top: $spacing-sm;
+	}
 }
 
 .scavenge-page__loading {
@@ -846,6 +955,10 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 	padding: $spacing-sm;
 	border: 1px solid $border-card;
 	border-radius: $radius-sm;
+
+	svg {
+		vertical-align: sub;
+	}
 
 	dt {
 		color: $text-secondary;
@@ -1180,6 +1293,7 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 		flex-direction: column;
 		align-items: center;
 		gap: $spacing-md;
+		padding: $spacing-lg 0;
 	}
 
 	&__spinner {
@@ -1199,15 +1313,14 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 	}
 }
 
-.scavenge-result {
-	display: flex;
-	flex-direction: column;
-	gap: $spacing-sm;
+.scavenge-result{
+	svg {
+		margin-right: $spacing-xs;
+		vertical-align: bottom;
+	}
 
 	&__failure {
-		display: flex;
-		align-items: flex-start;
-		gap: $spacing-xs;
+		font-weight: $font-weight-semibold;
 
 		&--prison {
 			color: $color-prison;
@@ -1219,17 +1332,22 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 	}
 
 	&__reward {
-		display: flex;
-		align-items: center;
-		gap: $spacing-sm;
+		display: inline;
+		margin: 0 $spacing-xs;
 
 		img {
+			display: inline;
 			object-fit: contain;
 		}
 	}
 
 	p {
-		margin: 0;
+		margin-bottom: $spacing-sm;
+	}
+
+	&__again {
+		display: block;
+		color: $text-secondary;
 	}
 
 }

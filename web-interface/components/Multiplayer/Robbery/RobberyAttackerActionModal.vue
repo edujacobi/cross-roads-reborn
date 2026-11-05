@@ -34,12 +34,9 @@ const emit = defineEmits<{
 		:open="true"
 		title="Roubo em andamento"
 		:icon="imagePaths.situations.robbery"
-		variant="robbery"
 		@update:open="emit('update:open', $event)"
 	>
 		<section class="robbery-attacker">
-			<p>Tentando roubar <strong>{{ session.targetNickname ?? "o alvo" }}</strong>...</p>
-
 			<div
 				class="robbery-attacker__spinner"
 				role="status"
@@ -47,6 +44,8 @@ const emit = defineEmits<{
 			>
 				<span class="sr-only">Roubando...</span>
 			</div>
+
+			<p>Tentando roubar <strong>{{ session.targetNickname ?? "o alvo" }}</strong>...</p>
 
 			<p
 				class="robbery-attacker__status"
@@ -78,6 +77,8 @@ const emit = defineEmits<{
 .robbery-attacker {
 	display: grid;
 	gap: $spacing-md;
+	padding: $spacing-lg 0;
+	justify-items: center;
 
 	p {
 		margin: 0;
@@ -96,6 +97,10 @@ const emit = defineEmits<{
 	&__status,
 	&__countdown {
 		color: $text-secondary;
+
+		img {
+			vertical-align: middle;
+		}
 	}
 
 	&__spinner {
