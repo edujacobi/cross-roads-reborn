@@ -19,6 +19,7 @@ import {
 import HospitalIcon from "~/components/icons/HospitalIcon.vue";
 import PrisonIcon from "~/components/icons/PrisonIcon.vue";
 import SpecialShopIcon from "~/components/icons/SpecialShopIcon.vue";
+import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseInput from "~/components/ui/BaseInput.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
@@ -478,6 +479,42 @@ async function handleDeleteUser() {
 				class="user-admin-actions__buttons"
 			>
 				<BaseButton
+					variant="danger"
+					:disabled="!canWrite || killLoading"
+					@click="isFloatingActionsOpen = false; isKillModalOpen = true"
+				>
+					<Skull
+						:size="16"
+						aria-hidden="true"
+					/>
+					Aplicar Punição de Morte
+				</BaseButton>
+				<BaseButton
+					v-if="isDeveloper"
+					variant="danger"
+					:disabled="swapUsersLoading"
+					@click="isFloatingActionsOpen = false; isSwapUsersModalOpen = true"
+				>
+					<ArrowLeftRight
+						:size="16"
+						aria-hidden="true"
+					/>
+					Trocar Jogadores
+				</BaseButton>
+				<BaseButton
+					v-if="isDeveloper"
+					variant="danger"
+					:disabled="deleteUserLoading"
+					@click="isFloatingActionsOpen = false; isDeleteUserModalOpen = true"
+				>
+					<Trash2
+						:size="16"
+						aria-hidden="true"
+					/>
+					Excluir Jogador
+				</BaseButton>
+				<div class="user-admin-actions__separator"></div>
+				<BaseButton
 					variant="secondary"
 					:disabled="!canWrite || !isInHospital || cureLoading"
 					@click="isFloatingActionsOpen = false; handleCure()"
@@ -610,41 +647,6 @@ async function handleDeleteUser() {
 						aria-hidden="true"
 					/>
 					Remover Insígnia
-				</BaseButton>
-				<BaseButton
-					variant="danger"
-					:disabled="!canWrite || killLoading"
-					@click="isFloatingActionsOpen = false; isKillModalOpen = true"
-				>
-					<Skull
-						:size="16"
-						aria-hidden="true"
-					/>
-					Aplicar Punição de Morte
-				</BaseButton>
-				<BaseButton
-					v-if="isDeveloper"
-					variant="danger"
-					:disabled="swapUsersLoading"
-					@click="isFloatingActionsOpen = false; isSwapUsersModalOpen = true"
-				>
-					<ArrowLeftRight
-						:size="16"
-						aria-hidden="true"
-					/>
-					Trocar Jogadores
-				</BaseButton>
-				<BaseButton
-					v-if="isDeveloper"
-					variant="danger"
-					:disabled="deleteUserLoading"
-					@click="isFloatingActionsOpen = false; isDeleteUserModalOpen = true"
-				>
-					<Trash2
-						:size="16"
-						aria-hidden="true"
-					/>
-					Excluir Jogador
 				</BaseButton>
 			</div>
 		</BaseToggleMenu>
@@ -1246,6 +1248,11 @@ async function handleDeleteUser() {
 		&:focus {
 			border-color: $color-brand;
 		}
+	}
+
+	&__separator {
+		margin: $spacing-xs 0;
+		border-bottom: 1px solid $border-card;
 	}
 }
 

@@ -3,6 +3,14 @@
 	lang="ts"
 >
 import { computed } from "vue";
+import CasinoIcon from "~/components/icons/CasinoIcon.vue";
+import GangIcon from "~/components/icons/GangIcon.vue";
+import HospitalIcon from "~/components/icons/HospitalIcon.vue";
+import InvestmentIcon from "~/components/icons/InvestmentIcon.vue";
+import JobsIcon from "~/components/icons/JobsIcon.vue";
+import PrisonIcon from "~/components/icons/PrisonIcon.vue";
+import RobberyIcon from "~/components/icons/RobberyIcon.vue";
+import ScavengeIcon from "~/components/icons/ScavengeIcon.vue";
 import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
@@ -58,7 +66,13 @@ const error = computed(() => props.error);
 			class="user-status__rows"
 		>
 			<div class="user-status__row">
-				<dt class="user-status__label">Hospital</dt>
+				<dt class="user-status__label">
+					<HospitalIcon
+						:size="16"
+						variant="solid"
+					/>
+					Hospital
+				</dt>
 				<dd class="user-status__value">
 					<BaseBadge
 						v-if="user.isInHospital && user.hospitalTime"
@@ -84,7 +98,13 @@ const error = computed(() => props.error);
 				</dd>
 			</div>
 			<div class="user-status__row">
-				<dt class="user-status__label">Prisão</dt>
+				<dt class="user-status__label">
+					<PrisonIcon
+						:size="16"
+						variant="solid"
+					/>
+					Prisão
+				</dt>
 				<dd class="user-status__value">
 					<BaseBadge
 						v-if="user.isInPrison && user.prisonTime"
@@ -110,7 +130,13 @@ const error = computed(() => props.error);
 				</dd>
 			</div>
 			<div class="user-status__row">
-				<dt class="user-status__label">Trabalho</dt>
+				<dt class="user-status__label">
+					<JobsIcon
+						:size="16"
+						variant="solid"
+					/>
+					Trabalho
+				</dt>
 				<dd class="user-status__value">
 					<BaseBadge
 						v-if="user.isWorking && user.jobEndsIn"
@@ -136,7 +162,13 @@ const error = computed(() => props.error);
 				</dd>
 			</div>
 			<div class="user-status__row">
-				<dt class="user-status__label">Vasculho</dt>
+				<dt class="user-status__label">
+					<ScavengeIcon
+						:size="16"
+						variant="solid"
+					/>
+					Vasculho
+				</dt>
 				<dd class="user-status__value">
 					<BaseBadge
 						v-if="user.isScavenging"
@@ -159,7 +191,13 @@ const error = computed(() => props.error);
 				</dd>
 			</div>
 			<div class="user-status__row">
-				<dt class="user-status__label">Roubo</dt>
+				<dt class="user-status__label">
+					<RobberyIcon
+						:size="16"
+						variant="solid"
+					/>
+					Roubo
+				</dt>
 				<dd class="user-status__value">
 					<BaseBadge
 						v-if="user.isRobbing || user.isBeingRobbed"
@@ -253,7 +291,13 @@ const error = computed(() => props.error);
 				</dd>
 			</div>
 			<div class="user-status__row">
-				<dt class="user-status__label">Cassino</dt>
+				<dt class="user-status__label">
+					<CasinoIcon
+						:size="16"
+						variant="solid"
+					/>
+					Cassino
+				</dt>
 				<dd class="user-status__value">
 					<BaseBadge
 						v-if="user.isInCasino"
@@ -276,7 +320,13 @@ const error = computed(() => props.error);
 				</dd>
 			</div>
 			<div class="user-status__row">
-				<dt class="user-status__label">Defendendo investimento</dt>
+				<dt class="user-status__label">
+					<InvestmentIcon
+						:size="16"
+						variant="solid"
+					/>
+					Defendendo investimento
+				</dt>
 				<dd class="user-status__value">
 					<BaseBadge
 						v-if="user.isDefendingInvestment"
@@ -299,7 +349,13 @@ const error = computed(() => props.error);
 				</dd>
 			</div>
 			<div class="user-status__row">
-				<dt class="user-status__label">Em ação de gangue</dt>
+				<dt class="user-status__label">
+					<GangIcon
+						:size="16"
+						variant="solid"
+					/>
+					Em ação de gangue
+				</dt>
 				<dd class="user-status__value">
 					<BaseBadge
 						v-if="user.isInGangAction"
@@ -367,22 +423,45 @@ const error = computed(() => props.error);
 
 	&__rows {
 		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		gap: $spacing-sm;
+		grid-template-columns: repeat(4, 1fr);
+		gap: $spacing-xs;
+
+		@container page (max-width: 850px) {
+			grid-template-columns: repeat(3, 1fr);
+		}
+
+		@container page (max-width: 600px) {
+			grid-template-columns: repeat(2, 1fr);
+		}
+
+		@container page (max-width: 450px) {
+			grid-template-columns: 1fr;
+		}
 	}
 
 	&__row {
-		@include flex-between;
-		padding: 0.75rem 0;
+		border: 1px solid $border-subtle;
+		padding: $spacing-sm;
+		border-radius: $radius-sm;
+		display: flex;
+		flex-direction: column;
+		gap: $spacing-sm;
 		font-size: $font-size-14;
+		background-color: $bg-medium;
 
-		&:not(:last-child) {
-			border-bottom: 1px solid $border-card;
+		@container page (max-width: 450px) {
+			flex-direction: row;
+			flex-wrap: wrap;
+			justify-content: space-between;
 		}
 	}
 
 	&__label {
 		color: $text-secondary;
+
+		svg {
+			vertical-align: sub;
+		}
 	}
 
 	&__value {

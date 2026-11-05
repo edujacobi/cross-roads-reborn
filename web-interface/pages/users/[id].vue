@@ -319,6 +319,8 @@ async function refreshUserDetails() {
 	display: flex;
 	flex-direction: column;
 	gap: $spacing-md;
+	container-name: page;
+	container-type: inline-size;
 
 	&__nav-back {
 		margin-bottom: $spacing-xs;
