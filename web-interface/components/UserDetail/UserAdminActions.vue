@@ -15,7 +15,6 @@ import {
 	Trash2,
 	Unlock,
 	UserRound,
-	X,
 } from "lucide-vue-next";
 import HospitalIcon from "~/components/icons/HospitalIcon.vue";
 import PrisonIcon from "~/components/icons/PrisonIcon.vue";
@@ -25,7 +24,7 @@ import BaseInput from "~/components/ui/BaseInput.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
 import BaseSelector, { type SelectorOption } from "~/components/ui/BaseSelector.vue";
 import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
-import RefreshButton from "~/components/ui/RefreshButton.vue";
+import BaseToggleMenu from "~/components/ui/BaseToggleMenu.vue";
 import { imagePaths } from "~/constants/imagePaths";
 import {
 	AddBadgeDocument,
@@ -62,7 +61,7 @@ const emit = defineEmits<{
 	deleted: [];
 }>();
 
-const { result, loading, refetch } = useQuery(GetUserAdminActionsDocument, () => ({ id: props.userId }), {
+const { result, loading } = useQuery(GetUserAdminActionsDocument, () => ({ id: props.userId }), {
 	fetchPolicy: "cache-and-network",
 });
 const isFloatingActionsOpen = ref(false);
@@ -445,12 +444,21 @@ async function handleDeleteUser() {
 
 <template>
 	<div class="user-admin-actions">
-		<section
-			v-show="isFloatingActionsOpen"
-			id="user-admin-actions-floating-menu"
-			class="user-admin-actions__floating-menu"
-			aria-label="Ações administrativas"
+		<BaseToggleMenu
+			v-model:open="isFloatingActionsOpen"
+			menu-id="user-admin-actions-floating-menu"
+			menu-label="Ações administrativas"
+			toggle-label="Admin"
+			open-label="Abrir ações administrativas"
+			close-label="Fechar ações administrativas"
+			:scrollable="true"
 		>
+			<template #icon>
+				<Shield
+					:size="24"
+					aria-hidden="true"
+				/>
+			</template>
 			<div
 				v-if="loading && !user"
 				class="user-admin-actions__skeleton"
@@ -639,28 +647,7 @@ async function handleDeleteUser() {
 					Excluir Jogador
 				</BaseButton>
 			</div>
-		</section>
-
-		<button
-			type="button"
-			class="user-admin-actions__floating-toggle"
-			:aria-label="isFloatingActionsOpen ? 'Fechar ações administrativas' : 'Abrir ações administrativas'"
-			aria-controls="user-admin-actions-floating-menu"
-			:aria-expanded="isFloatingActionsOpen"
-			@click="isFloatingActionsOpen = !isFloatingActionsOpen"
-		>
-			<X
-				v-if="isFloatingActionsOpen"
-				:size="24"
-				aria-hidden="true"
-			/>
-			<Shield
-				v-else
-				:size="24"
-				aria-hidden="true"
-			/>
-			<span class="user-admin-actions__floating-label">Admin</span>
-		</button>
+		</BaseToggleMenu>
 
 		<BaseModal
 			:open="isMoneyModalOpen"
@@ -1180,87 +1167,9 @@ async function handleDeleteUser() {
 	scoped
 >
 @use "~/assets/scss/variables" as *;
-@use "~/assets/scss/mixins" as *;
 
 .user-admin-actions {
 	display: contents;
-
-	&__floating-toggle {
-		@include flex-center;
-		width: 4rem;
-		height: 4rem;
-		border: 1px solid $border-subtle;
-		border-radius: $radius-full;
-		background-color: $bg-sidebar;
-		color: $text-primary;
-		box-shadow: $shadow-lg;
-		cursor: pointer;
-		transition: transform 0.2s ease;
-
-		&:hover {
-			transform: scale(1.05);
-		}
-
-		&:focus-visible {
-			outline: 2px solid $border-focus;
-			outline-offset: 2px;
-		}
-
-		@media (min-width: 426px) {
-			width: auto;
-			padding: 0 1.25rem;
-			gap: $spacing-sm;
-		}
-	}
-
-	&__floating-label {
-		@media (max-width: 768px) {
-			display: none;
-			font-weight: $font-weight-semibold;
-		}
-	}
-
-	&__floating-menu {
-		position: fixed;
-		bottom: 4.5rem;
-		z-index: 21;
-		display: flex;
-		flex-direction: column;
-		gap: $spacing-sm;
-		width: min(20rem, calc(100vw - 2rem));
-		max-height: calc(100dvh - 7rem);
-		box-sizing: border-box;
-		padding: $spacing-sm;
-		border: 1px solid $border-card;
-		border-radius: $radius-md;
-		background-color: $bg-card;
-		box-shadow: $shadow-lg;
-
-		.base-button {
-			width: 100%;
-		}
-	}
-
-	&__floating-header {
-		display: flex;
-		flex-direction: column;
-		gap: $spacing-sm;
-		padding-bottom: $spacing-sm;
-		border-bottom: 1px solid $border-subtle;
-	}
-
-	&__floating-heading {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: $spacing-sm;
-
-		h2 {
-			margin: 0;
-			color: $text-primary;
-			font-size: $font-size-16;
-		}
-	}
 
 	&__skeleton {
 		display: flex;

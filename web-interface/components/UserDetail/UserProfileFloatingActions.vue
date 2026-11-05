@@ -3,12 +3,13 @@
 	lang="ts"
 >
 import { useMutation, useQuery } from "@vue/apollo-composable";
-import { CircleUserRound, X } from "lucide-vue-next";
+import { CircleUserRound } from "lucide-vue-next";
 import { computed, ref, watch } from "vue";
 import SpecialShopIcon from "~/components/icons/SpecialShopIcon.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseInput from "~/components/ui/BaseInput.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
+import BaseToggleMenu from "~/components/ui/BaseToggleMenu.vue";
 import { useAuth } from "~/composables/useAuth";
 import { useMoneyFormat } from "~/composables/useMoneyFormat";
 import { imagePaths } from "~/constants/imagePaths";
@@ -190,12 +191,20 @@ async function handleGiveAlms() {
 
 <template>
 	<template v-if="almsStatus || isOtherUser">
-		<fieldset
-			v-show="isMenuOpen"
-			id="user-profile-floating-menu"
-			class="user-profile-floating-actions__menu"
-			aria-label="Ações para este jogador"
+		<BaseToggleMenu
+			v-model:open="isMenuOpen"
+			menu-id="user-profile-floating-menu"
+			menu-label="Ações para este jogador"
+			toggle-label="Ações"
+			open-label="Abrir ações"
+			close-label="Fechar ações"
 		>
+			<template #icon>
+				<CircleUserRound
+					:size="24"
+					aria-hidden="true"
+				/>
+			</template>
 			<BaseButton
 				v-if="isOtherUser"
 				variant="ghost"
@@ -258,7 +267,7 @@ async function handleGiveAlms() {
 				/>
 				Roubar
 			</BaseButton>
-		</fieldset>
+		</BaseToggleMenu>
 
 		<BaseModal
 			:open="duelAction !== null"
@@ -406,27 +415,6 @@ async function handleGiveAlms() {
 				</BaseButton>
 			</template>
 		</BaseModal>
-
-		<button
-			type="button"
-			class="user-profile-floating-actions__toggle"
-			:aria-label="isMenuOpen ? 'Fechar ações' : 'Abrir ações'"
-			aria-controls="user-profile-floating-menu"
-			:aria-expanded="isMenuOpen"
-			@click="isMenuOpen = !isMenuOpen"
-		>
-			<X
-				v-if="isMenuOpen"
-				:size="24"
-				aria-hidden="true"
-			/>
-			<CircleUserRound
-				v-else
-				:size="24"
-				aria-hidden="true"
-			/>
-			<span class="user-profile-floating-actions__label">Ações</span>
-		</button>
 	</template>
 </template>
 
@@ -436,7 +424,6 @@ async function handleGiveAlms() {
 >
 @use "~/assets/scss/variables" as *;
 @use "sass:color";
-@use "~/assets/scss/mixins" as *;
 
 .user-profile-floating-actions {
 	&__gift {
@@ -477,60 +464,6 @@ async function handleGiveAlms() {
 		font-size: $font-size-12;
 	}
 
-	&__toggle {
-		@include flex-center;
-		width: 4rem;
-		height: 4rem;
-		border: 1px solid $border-subtle;
-		border-radius: $radius-full;
-		background-color: $bg-sidebar;
-		color: $text-primary;
-		box-shadow: $shadow-lg;
-		cursor: pointer;
-		transition: transform 0.2s ease;
-
-		&:hover {
-			transform: scale(1.05);
-		}
-
-		@media (min-width: 426px) {
-			width: auto;
-			padding: 0 1.25rem;
-			border-radius: $radius-full;
-			gap: $spacing-sm;
-
-			&:hover {
-				transform: scale(1.05);
-			}
-		}
-	}
-
-	&__label {
-		@media (max-width: 768px) {
-			display: none;
-			font-weight: $font-weight-semibold;
-		}
-	}
-
-	&__menu {
-		position: fixed;
-		bottom: 4.5rem;
-		z-index: 21;
-		display: flex;
-		flex-direction: column;
-		gap: $spacing-sm;
-		width: min(20rem, calc(100vw - 2rem));
-		box-sizing: border-box;
-		padding: $spacing-sm;
-		border: 1px solid $border-card;
-		border-radius: $radius-md;
-		background-color: $bg-card;
-		box-shadow: $shadow-lg;
-
-		.base-button {
-			width: 100%;
-		}
-	}
 }
 
 .base-button.btn-beatup {

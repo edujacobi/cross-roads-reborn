@@ -3,11 +3,12 @@
 	lang="ts"
 >
 import { useMutation, useQuery } from "@vue/apollo-composable";
-import { CalendarDays, CircleUserRound, Pencil, UserRound, X } from "lucide-vue-next";
+import { CalendarDays, CircleUserRound, Pencil, UserRound } from "lucide-vue-next";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseInput from "~/components/ui/BaseInput.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
+import BaseToggleMenu from "~/components/ui/BaseToggleMenu.vue";
 import { useMoneyFormat } from "~/composables/useMoneyFormat";
 import {
 	ChangeOwnClassDocument,
@@ -172,84 +173,70 @@ async function handleAutomaticGrenadeChange() {
 </script>
 
 <template>
-	<template v-if="user">
-		<section
-			v-show="isFloatingActionsOpen"
-			id="user-self-actions-floating-menu"
-			class="user-self-actions__floating-menu"
-			aria-label="Ações da minha conta"
-		>
-			<BaseButton
-				variant="secondary"
-				size="lg"
-				@click="isFloatingActionsOpen = false; isNicknameModalOpen = true"
-			>
-				<Pencil
-					:size="16"
-					aria-hidden="true"
-				/>
-				Alterar apelido
-			</BaseButton>
-			<BaseButton
-				variant="secondary"
-				size="lg"
-				:disabled="classOptions.length === 0"
-				@click="isFloatingActionsOpen = false; isClassModalOpen = true"
-			>
-				<UserRound
-					:size="16"
-					aria-hidden="true"
-				/>
-				Alterar classe
-			</BaseButton>
-			<BaseButton
-				variant="secondary"
-				size="lg"
-				@click="isFloatingActionsOpen = false; isAutomaticGrenadeModalOpen = true"
-			>
-				<NuxtImg
-					src="/images/items/18_Grenade.png"
-					width="20"
-					height="20"
-					alt=""
-				/>
-				{{ user.automaticGrenade ? "Desativar granadas automáticas" : "Ativar granadas automáticas" }}
-			</BaseButton>
-			<BaseButton
-				variant="secondary"
-				size="lg"
-				:disabled="dailyLoading || !canReceiveDaily"
-				@click="isFloatingActionsOpen = false; handleDailyReward()"
-			>
-				<CalendarDays
-					:size="16"
-					aria-hidden="true"
-				/>
-				{{ dailyButtonLabel }}
-			</BaseButton>
-		</section>
-
-		<button
-			type="button"
-			class="user-self-actions__floating-toggle"
-			:aria-label="isFloatingActionsOpen ? 'Fechar ações da conta' : 'Abrir ações da conta'"
-			aria-controls="user-self-actions-floating-menu"
-			:aria-expanded="isFloatingActionsOpen"
-			@click="isFloatingActionsOpen = !isFloatingActionsOpen"
-		>
-			<X
-				v-if="isFloatingActionsOpen"
-				:size="24"
-				aria-hidden="true"
-			/>
+	<BaseToggleMenu
+		v-if="user"
+		v-model:open="isFloatingActionsOpen"
+		menu-id="user-self-actions-floating-menu"
+		menu-label="Ações da minha conta"
+		toggle-label="Ações"
+		open-label="Abrir ações da conta"
+		close-label="Fechar ações da conta"
+	>
+		<template #icon>
 			<CircleUserRound
-				v-else
 				:size="24"
 				aria-hidden="true"
 			/>
-			<span class="user-self-actions__floating-label">Ações</span>
-		</button>
-	</template>
+		</template>
+		<BaseButton
+			variant="secondary"
+			size="lg"
+			@click="isFloatingActionsOpen = false; isNicknameModalOpen = true"
+		>
+			<Pencil
+				:size="16"
+				aria-hidden="true"
+			/>
+			Alterar apelido
+		</BaseButton>
+		<BaseButton
+			variant="secondary"
+			size="lg"
+			:disabled="classOptions.length === 0"
+			@click="isFloatingActionsOpen = false; isClassModalOpen = true"
+		>
+			<UserRound
+				:size="16"
+				aria-hidden="true"
+			/>
+			Alterar classe
+		</BaseButton>
+		<BaseButton
+			variant="secondary"
+			size="lg"
+			@click="isFloatingActionsOpen = false; isAutomaticGrenadeModalOpen = true"
+		>
+			<NuxtImg
+				src="/images/items/18_Grenade.png"
+				width="20"
+				height="20"
+				alt=""
+			/>
+			{{ user.automaticGrenade ? "Desativar granadas automáticas" : "Ativar granadas automáticas" }}
+		</BaseButton>
+		<BaseButton
+			variant="secondary"
+			size="lg"
+			:disabled="dailyLoading || !canReceiveDaily"
+			@click="isFloatingActionsOpen = false; handleDailyReward()"
+		>
+			<CalendarDays
+				:size="16"
+				aria-hidden="true"
+			/>
+			{{ dailyButtonLabel }}
+		</BaseButton>
+	</BaseToggleMenu>
 
 	<BaseModal
 		v-if="user"
@@ -379,69 +366,8 @@ async function handleAutomaticGrenadeChange() {
 >
 @use "~/assets/scss/variables" as *;
 @use "sass:color";
-@use "~/assets/scss/mixins" as *;
 
 .user-self-actions {
-	&__floating-toggle {
-		@include flex-center;
-		width: 4rem;
-		height: 4rem;
-		border: 1px solid $border-subtle;
-		border-radius: $radius-full;
-		background-color: $bg-sidebar;
-		color: $text-primary;
-		box-shadow: $shadow-lg;
-		cursor: pointer;
-		transition: transform 0.2s ease;
-
-		&:hover {
-			transform: scale(1.05);
-		}
-
-		@media (min-width: 426px) {
-			width: auto;
-			padding: 0 1.25rem;
-			border-radius: $radius-full;
-			gap: $spacing-sm;
-
-			&:hover {
-				transform: scale(1.05);
-			}
-		}
-	}
-
-	&__floating-label {
-		font-weight: $font-weight-semibold;
-
-		@media (max-width: 1024px) {
-			font-size: $font-size-14;
-		}
-
-		@media (max-width: 768px) {
-			display: none;
-		}
-	}
-
-	&__floating-menu {
-		position: fixed;
-		bottom: 4.5rem;
-		z-index: 21;
-		display: flex;
-		flex-direction: column;
-		gap: $spacing-sm;
-		width: min(20rem, calc(100vw - 2rem));
-		box-sizing: border-box;
-		padding: $spacing-sm;
-		border: 1px solid $border-card;
-		border-radius: $radius-md;
-		background-color: $bg-card;
-		box-shadow: $shadow-lg;
-
-		.base-button {
-			width: 100%;
-		}
-	}
-
 	display: flex;
 	flex-wrap: wrap;
 	gap: $spacing-sm;
