@@ -27,10 +27,12 @@ describe("Escape status completion", () => {
 		user.Escape.Time = new Date(Date.now() - 1_000);
 		const escapeTime = user.Escape.Time.toISOString();
 		user.Prison.Time = new Date(Date.now() + 3_600_000);
+		const previousPrisonTime = user.Prison.Time;
+		const resultPrisonTime = new Date(previousPrisonTime.getTime() + 20 * 60_000);
 		vi.mocked(getSseUser).mockResolvedValue(user);
 		vi.spyOn(User.prototype, "GetInfo").mockImplementation(async function(this: User) {
 			this.Escape = { ...user.Escape };
-			this.Prison = { ...user.Prison };
+			this.Prison = { ...user.Prison, Time: resultPrisonTime };
 			return this;
 		});
 		const app = Fastify();
@@ -53,10 +55,16 @@ describe("Escape status completion", () => {
 			const result = await response;
 			const events = result.body.trim().split("\n\n").map(line => JSON.parse(line.slice(6)));
 
-			expect(events).toEqual([
-				{ type: "escaping", escapeTime },
-				{ type: "escape-ended", isInPrison: true, isWanted: false },
-			]);
+			expect(events[0]).toEqual({ type: "escaping", escapeTime });
+			expect(events[1]).toMatchObject({
+				type: "escape-ended",
+				isInPrison: true,
+				isWanted: false,
+				escapeHasTried: true,
+				message: expect.stringContaining("Você ficará preso por mais 20 minutos."),
+				prisonTime: resultPrisonTime.toISOString(),
+				wantedTime: null,
+			});
 		}
 		finally {
 			await app.close();
@@ -68,18 +76,23 @@ describe("Escape status completion", () => {
 		user.Escape.HasTried = true;
 		user.Escape.Time = new Date(0);
 		user.Prison.Time = new Date(Date.now() + (success ? -1_000 : 3_600_000));
+		if (success) user.Wanted.Time = new Date(Date.now() + 40 * 60_000);
 		vi.mocked(getSseUser).mockResolvedValue(user);
 		const app = Fastify();
 		registerEscapeStatusRoute(app);
 
 		try {
 			const result = await app.inject({ method: "GET", url: "/sse/escape-status" });
-			expect(JSON.parse(result.body.slice(6))).toEqual({
+			const event = JSON.parse(result.body.slice(6));
+			expect(event).toMatchObject({
 				type: "escape-ended",
 				isInPrison: !success,
 				isWanted: success,
 				escapeHasTried: true,
+				prisonTime: success ? null : user.Prison.Time.toISOString(),
+				wantedTime: success ? user.Wanted.Time.toISOString() : null,
 			});
+			expect(event.message).toContain(success ? "polícia" : "Você ficará preso por mais 60 minutos.");
 		}
 		finally {
 			await app.close();

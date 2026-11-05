@@ -121,6 +121,7 @@ const showEscapeLoadingModal = ref(false);
 const showEscapeResultModal = ref(false);
 const escapeResultMessage = ref("");
 const escapeResultSuccess = ref(false);
+const escapeWantedTime = ref<Date | null>(null);
 const showBribeModal = ref(false);
 const isEscaping = ref(false);
 
@@ -142,11 +143,12 @@ function nextPage() {
 	if (!loading.value && page.value < totalPages.value) page.value++;
 }
 
-async function onEscapeResult(success: boolean, message: string) {
+async function onEscapeResult(success: boolean, message: string, wantedTime: string | null) {
 	showEscapeLoadingModal.value = false;
 	isEscaping.value = false;
 	escapeResultMessage.value = message;
 	escapeResultSuccess.value = success;
+	escapeWantedTime.value = wantedTime ? new Date(wantedTime) : null;
 	showEscapeResultModal.value = true;
 	await Promise.all([auth.fetchUser(), refetchPrisoners(), refetchPrisonStatus(), refetchBribeCost()]);
 }
@@ -157,8 +159,9 @@ function previewEscapeResult(success: boolean) {
 	isEscaping.value = false;
 	escapeResultSuccess.value = success;
 	escapeResultMessage.value = success
-		? "Você conseguiu escapar da prisão por um túnel."
-		: "A polícia impediu sua fuga e você continuará preso.";
+		? "Você cavou um túnel pequeno e conseguiu fugir. A polícia está te procurando!"
+		: "Você cavou um túnel pequeno, mas a polícia descobriu. Você ficará preso por mais 20 minutos.";
+	escapeWantedTime.value = success ? new Date(Date.now() + 40 * 60_000) : null;
 	showEscapeResultModal.value = true;
 }
 
@@ -187,6 +190,7 @@ async function listenToEscapeSSE() {
 				await onEscapeResult(
 					data.isWanted,
 					data.message || (data.isWanted ? "Fuga bem-sucedida!" : "Fuga fracassada!"),
+					data.wantedTime ?? null,
 				);
 				return;
 			}
@@ -687,6 +691,9 @@ function formatBribeCost() {
 			@update:open="showEscapeResultModal = $event"
 		>
 			<p>{{ escapeResultMessage }}</p>
+			<p v-if="escapeResultSuccess && escapeWantedTime">
+				Poderá roubar novamente em {{ distance(new Date(), escapeWantedTime) }}.
+			</p>
 			<template #footer>
 				<BaseButton
 					variant="secondary"

@@ -1,5 +1,7 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { User } from "#core/models/User";
+import { Language } from "#core/models/Language";
+import { Prison } from "#core/models/Prison";
 import { getSseUser, isSseResponseOpen, openSseResponse, SSE_POLL_INTERVAL_MS } from "#api/sse/shared";
 import { Log } from "#shared/log";
 import { setTimeout as wait } from "node:timers/promises";
@@ -16,12 +18,15 @@ async function handleEscapeStatus(req: FastifyRequest, reply: FastifyReply): Pro
 
 	const sendEvent = openSseResponse(req, reply);
 	if (!userModel.IsEscaping()) {
-		sendEvent({
-			type: userModel.Escape.HasTried ? "escape-ended" : "not-escaping",
-			isInPrison: userModel.IsInPrison(),
-			isWanted: !userModel.IsInPrison(),
-			escapeHasTried: userModel.Escape.HasTried,
-		});
+		sendEvent(userModel.Escape.HasTried
+			? createEscapeEndedEvent(userModel)
+			: {
+				type: "not-escaping",
+				isInPrison: userModel.IsInPrison(),
+				isWanted: !userModel.IsInPrison(),
+				escapeHasTried: false,
+			},
+		);
 		reply.raw.end();
 		return;
 	}
@@ -52,12 +57,7 @@ async function handleEscapeStatus(req: FastifyRequest, reply: FastifyReply): Pro
 			}
 
 			if (!freshUser.IsEscaping()) {
-				const success = !freshUser.IsInPrison();
-				sendEvent({
-					type: "escape-ended",
-					isInPrison: freshUser.IsInPrison(),
-					isWanted: success,
-				});
+				sendEvent(createEscapeEndedEvent(freshUser, userModel.Prison.Time));
 				return;
 			}
 		}
@@ -70,4 +70,23 @@ async function handleEscapeStatus(req: FastifyRequest, reply: FastifyReply): Pro
 		clearTimeout(timeout);
 		if (!reply.raw.writableEnded) reply.raw.end();
 	}
+}
+
+function createEscapeEndedEvent(user: User, previousPrisonTime?: Date) {
+	const isInPrison = user.IsInPrison();
+	const success = !isInPrison;
+	const previousReleaseTime = previousPrisonTime?.getTime() ?? Date.now();
+	const extraPrisonMinutes = isInPrison
+		? Math.max(0, Math.ceil((user.Prison.Time.getTime() - Math.max(Date.now(), previousReleaseTime)) / 60_000))
+		: 0;
+
+	return {
+		type: "escape-ended",
+		isInPrison,
+		isWanted: success,
+		escapeHasTried: user.Escape.HasTried,
+		message: new Prison(user).generateEscapeMessage(success, extraPrisonMinutes, Language.Portuguese),
+		prisonTime: isInPrison ? user.Prison.Time.toISOString() : null,
+		wantedTime: success && user.IsWanted() ? user.Wanted.Time.toISOString() : null,
+	};
 }
