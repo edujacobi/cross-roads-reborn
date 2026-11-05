@@ -109,6 +109,7 @@ const supportedAvatarPreviewClasses = new Set([
 	"rpg",
 	"minigun",
 	"bazooka",
+	"master_of_arms",
 ]);
 
 const vipBenefits = [
