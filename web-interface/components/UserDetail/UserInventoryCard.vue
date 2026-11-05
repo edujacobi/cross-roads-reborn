@@ -14,7 +14,6 @@ import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
 import RefreshButton from "~/components/ui/RefreshButton.vue";
 import { useItemDetailModal } from "~/composables/useItemDetailModal";
 import { useToast } from "~/composables/useToast";
-import { getErrorMessage } from "~/utils/getErrorMessage";
 import { imagePaths } from "~/constants/imagePaths";
 import { localStorageKeys } from "~/constants/localStorageKeys";
 import {
@@ -24,6 +23,7 @@ import {
 	type GetUserInventoryQuery,
 	SetOwnBundleSkinDocument,
 } from "~/graphql/generated";
+import { getErrorMessage } from "~/utils/getErrorMessage";
 import { BundleId, ItemId } from "../../../src/core/types/Ids";
 import { ItemType } from "../../../src/core/types/ItemType";
 
@@ -283,14 +283,17 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 			<p>Não foi possível carregar o inventário.</p>
 		</div>
 		<div
-			v-else-if="loading && items.length === 0"
+			v-else-if="loading"
 			class="user-inventory__empty"
 			role="status"
 			aria-label="Carregando inventário"
 		>
-			<div class="user-inventory__skeleton">
+			<div
+				class="user-inventory__skeleton"
+				:class="{ 'user-inventory__skeleton--compact': isCompactInventory }"
+			>
 				<BaseSkeleton
-					v-for="index in 4"
+					v-for="index in 3"
 					:key="index"
 					height="6rem"
 				/>
@@ -375,7 +378,6 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 		@include flex-center;
 		flex-direction: column;
 		gap: $spacing-sm;
-		padding: $spacing-lg;
 		color: $text-muted;
 		font-size: $font-size-14;
 	}
@@ -385,6 +387,10 @@ function getItemImage(itemId: ItemId, bundleId: BundleId = 0) {
 		grid-template-columns: repeat(4, minmax(0, 1fr));
 		gap: $spacing-sm;
 		width: 100%;
+
+		&--compact {
+			grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+		}
 
 		@media (max-width: 1024px) {
 			grid-template-columns: repeat(2, minmax(0, 1fr));

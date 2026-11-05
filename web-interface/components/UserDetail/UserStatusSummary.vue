@@ -366,8 +366,9 @@ const error = computed(() => props.error);
 	}
 
 	&__rows {
-		display: flex;
-		flex-direction: column;
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: $spacing-sm;
 	}
 
 	&__row {

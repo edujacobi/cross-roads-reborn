@@ -10,23 +10,23 @@ import {
 	DollarSign,
 	Package,
 	Pencil,
+	Shield,
 	Skull,
 	Trash2,
 	Unlock,
 	UserRound,
+	X,
 } from "lucide-vue-next";
 import HospitalIcon from "~/components/icons/HospitalIcon.vue";
 import PrisonIcon from "~/components/icons/PrisonIcon.vue";
 import SpecialShopIcon from "~/components/icons/SpecialShopIcon.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
-import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseInput from "~/components/ui/BaseInput.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
 import BaseSelector, { type SelectorOption } from "~/components/ui/BaseSelector.vue";
 import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
 import RefreshButton from "~/components/ui/RefreshButton.vue";
 import { imagePaths } from "~/constants/imagePaths";
-import { getErrorMessage } from "~/utils/getErrorMessage";
 import {
 	AddBadgeDocument,
 	AddSpecialCoinsDocument,
@@ -47,6 +47,7 @@ import {
 	SetVipDocument,
 	SwapUsersDocument,
 } from "~/graphql/generated";
+import { getErrorMessage } from "~/utils/getErrorMessage";
 import { BadgeId, ClassId, ItemId } from "../../../src/core/types/Ids";
 
 const props = defineProps<{
@@ -64,6 +65,7 @@ const emit = defineEmits<{
 const { result, loading, refetch } = useQuery(GetUserAdminActionsDocument, () => ({ id: props.userId }), {
 	fetchPolicy: "cache-and-network",
 });
+const isFloatingActionsOpen = ref(false);
 const user = computed(() => result.value?.user);
 const isInHospital = computed(() => user.value?.isInHospital ?? false);
 const isInPrison = computed(() => user.value?.isInPrison ?? false);
@@ -443,24 +445,12 @@ async function handleDeleteUser() {
 
 <template>
 	<div class="user-admin-actions">
-		<BaseCard
-			title="Ações administrativas"
-			class="user-admin-actions__card"
+		<section
+			v-show="isFloatingActionsOpen"
+			id="user-admin-actions-floating-menu"
+			class="user-admin-actions__floating-menu"
+			aria-label="Ações administrativas"
 		>
-			<template #actions>
-				<span
-					v-if="!canWrite"
-					class="user-admin-actions__read-only"
-				>
-					Modo Somente Leitura (Apenas moderadores e desenvolvedores podem executar ações)
-				</span>
-				<RefreshButton
-					@refresh="() => refetch()"
-					:loading="loading"
-					aria-label="Atualizar ações administrativas"
-				/>
-			</template>
-
 			<div
 				v-if="loading && !user"
 				class="user-admin-actions__skeleton"
@@ -482,7 +472,7 @@ async function handleDeleteUser() {
 				<BaseButton
 					variant="secondary"
 					:disabled="!canWrite || !isInHospital || cureLoading"
-					@click="handleCure()"
+					@click="isFloatingActionsOpen = false; handleCure()"
 				>
 					<HospitalIcon
 						:size="18"
@@ -493,7 +483,7 @@ async function handleDeleteUser() {
 				<BaseButton
 					variant="secondary"
 					:disabled="!canWrite || !isInPrison || freeLoading"
-					@click="handleFree()"
+					@click="isFloatingActionsOpen = false; handleFree()"
 				>
 					<PrisonIcon
 						:size="18"
@@ -504,7 +494,7 @@ async function handleDeleteUser() {
 				<BaseButton
 					variant="secondary"
 					:disabled="!canWrite || moneyLoading"
-					@click="isMoneyModalOpen = true"
+					@click="isFloatingActionsOpen = false; isMoneyModalOpen = true"
 				>
 					<DollarSign
 						:size="16"
@@ -515,7 +505,7 @@ async function handleDeleteUser() {
 				<BaseButton
 					variant="secondary"
 					:disabled="!canWrite || cdLoading"
-					@click="isCooldownModalOpen = true"
+					@click="isFloatingActionsOpen = false; isCooldownModalOpen = true"
 				>
 					<Clock
 						:size="16"
@@ -526,7 +516,7 @@ async function handleDeleteUser() {
 				<BaseButton
 					variant="secondary"
 					:disabled="!canWrite || actionLoading"
-					@click="isActionModalOpen = true"
+					@click="isFloatingActionsOpen = false; isActionModalOpen = true"
 				>
 					<Unlock
 						:size="16"
@@ -537,7 +527,7 @@ async function handleDeleteUser() {
 				<BaseButton
 					variant="secondary"
 					:disabled="!canWrite || itemLoading"
-					@click="isItemModalOpen = true"
+					@click="isFloatingActionsOpen = false; isItemModalOpen = true"
 				>
 					<Package
 						:size="16"
@@ -548,7 +538,7 @@ async function handleDeleteUser() {
 				<BaseButton
 					variant="secondary"
 					:disabled="!canWrite || specialCoinsLoading"
-					@click="isSpecialCoinsModalOpen = true"
+					@click="isFloatingActionsOpen = false; isSpecialCoinsModalOpen = true"
 				>
 					<SpecialShopIcon
 						:size="16"
@@ -559,7 +549,7 @@ async function handleDeleteUser() {
 				<BaseButton
 					variant="secondary"
 					:disabled="!canWrite || classLoading"
-					@click="isClassModalOpen = true"
+					@click="isFloatingActionsOpen = false; isClassModalOpen = true"
 				>
 					<UserRound
 						:size="16"
@@ -570,7 +560,7 @@ async function handleDeleteUser() {
 				<BaseButton
 					variant="secondary"
 					:disabled="!canWrite || nicknameLoading"
-					@click="isNicknameModalOpen = true"
+					@click="isFloatingActionsOpen = false; isNicknameModalOpen = true"
 				>
 					<Pencil
 						:size="16"
@@ -581,7 +571,7 @@ async function handleDeleteUser() {
 				<BaseButton
 					variant="secondary"
 					:disabled="!canWrite || vipLoading"
-					@click="isVipModalOpen = true"
+					@click="isFloatingActionsOpen = false; isVipModalOpen = true"
 				>
 					<NuxtImg
 						:src="imagePaths.badges.vip"
@@ -591,11 +581,10 @@ async function handleDeleteUser() {
 					/>
 					Adicionar VIP
 				</BaseButton>
-
 				<BaseButton
 					variant="secondary"
 					:disabled="!canWrite || addBadgeLoading || availableBadges.length === 0"
-					@click="openAddBadgeModal"
+					@click="isFloatingActionsOpen = false; openAddBadgeModal()"
 				>
 					<Award
 						:size="16"
@@ -606,7 +595,7 @@ async function handleDeleteUser() {
 				<BaseButton
 					variant="secondary"
 					:disabled="!canWrite || removeBadgeLoading || badges.length === 0"
-					@click="openRemoveBadgeModal"
+					@click="isFloatingActionsOpen = false; openRemoveBadgeModal()"
 				>
 					<Trash2
 						:size="16"
@@ -617,7 +606,7 @@ async function handleDeleteUser() {
 				<BaseButton
 					variant="danger"
 					:disabled="!canWrite || killLoading"
-					@click="isKillModalOpen = true"
+					@click="isFloatingActionsOpen = false; isKillModalOpen = true"
 				>
 					<Skull
 						:size="16"
@@ -629,7 +618,7 @@ async function handleDeleteUser() {
 					v-if="isDeveloper"
 					variant="danger"
 					:disabled="swapUsersLoading"
-					@click="isSwapUsersModalOpen = true"
+					@click="isFloatingActionsOpen = false; isSwapUsersModalOpen = true"
 				>
 					<ArrowLeftRight
 						:size="16"
@@ -641,7 +630,7 @@ async function handleDeleteUser() {
 					v-if="isDeveloper"
 					variant="danger"
 					:disabled="deleteUserLoading"
-					@click="isDeleteUserModalOpen = true"
+					@click="isFloatingActionsOpen = false; isDeleteUserModalOpen = true"
 				>
 					<Trash2
 						:size="16"
@@ -650,7 +639,28 @@ async function handleDeleteUser() {
 					Excluir Jogador
 				</BaseButton>
 			</div>
-		</BaseCard>
+		</section>
+
+		<button
+			type="button"
+			class="user-admin-actions__floating-toggle"
+			:aria-label="isFloatingActionsOpen ? 'Fechar ações administrativas' : 'Abrir ações administrativas'"
+			aria-controls="user-admin-actions-floating-menu"
+			:aria-expanded="isFloatingActionsOpen"
+			@click="isFloatingActionsOpen = !isFloatingActionsOpen"
+		>
+			<X
+				v-if="isFloatingActionsOpen"
+				:size="24"
+				aria-hidden="true"
+			/>
+			<Shield
+				v-else
+				:size="24"
+				aria-hidden="true"
+			/>
+			<span class="user-admin-actions__floating-label">Admin</span>
+		</button>
 
 		<BaseModal
 			:open="isMoneyModalOpen"
@@ -1170,8 +1180,88 @@ async function handleDeleteUser() {
 	scoped
 >
 @use "~/assets/scss/variables" as *;
+@use "~/assets/scss/mixins" as *;
 
 .user-admin-actions {
+	display: contents;
+
+	&__floating-toggle {
+		@include flex-center;
+		width: 4rem;
+		height: 4rem;
+		border: 1px solid $border-subtle;
+		border-radius: $radius-full;
+		background-color: $bg-sidebar;
+		color: $text-primary;
+		box-shadow: $shadow-lg;
+		cursor: pointer;
+		transition: transform 0.2s ease;
+
+		&:hover {
+			transform: scale(1.05);
+		}
+
+		&:focus-visible {
+			outline: 2px solid $border-focus;
+			outline-offset: 2px;
+		}
+
+		@media (min-width: 426px) {
+			width: auto;
+			padding: 0 1.25rem;
+			gap: $spacing-sm;
+		}
+	}
+
+	&__floating-label {
+		@media (max-width: 768px) {
+			display: none;
+			font-weight: $font-weight-semibold;
+		}
+	}
+
+	&__floating-menu {
+		position: fixed;
+		bottom: 4.5rem;
+		z-index: 21;
+		display: flex;
+		flex-direction: column;
+		gap: $spacing-sm;
+		width: min(20rem, calc(100vw - 2rem));
+		max-height: calc(100dvh - 7rem);
+		box-sizing: border-box;
+		padding: $spacing-sm;
+		border: 1px solid $border-card;
+		border-radius: $radius-md;
+		background-color: $bg-card;
+		box-shadow: $shadow-lg;
+
+		.base-button {
+			width: 100%;
+		}
+	}
+
+	&__floating-header {
+		display: flex;
+		flex-direction: column;
+		gap: $spacing-sm;
+		padding-bottom: $spacing-sm;
+		border-bottom: 1px solid $border-subtle;
+	}
+
+	&__floating-heading {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: $spacing-sm;
+
+		h2 {
+			margin: 0;
+			color: $text-primary;
+			font-size: $font-size-16;
+		}
+	}
+
 	&__skeleton {
 		display: flex;
 		flex-wrap: wrap;

@@ -20,11 +20,7 @@ import UserPicture from "~/components/UserPicture.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
 import { useFallbackUserImage } from "~/composables/useFallbackImage";
-import {
-	GetMyDecorationsDocument,
-	SetOwnDecorationDocument,
-	UserDecorationType,
-} from "~/graphql/generated";
+import { GetMyDecorationsDocument, SetOwnDecorationDocument, UserDecorationType } from "~/graphql/generated";
 
 definePageMeta({
 	middleware: "auth",
@@ -40,8 +36,7 @@ const isOwnUser = computed(() => auth.user.value?.userId === userId.value);
 const canViewPrivateDetails = computed(() => isOwnUser.value || auth.hasAdminAccess.value);
 const canViewPrivateInvestmentInfo = computed(() => isOwnUser.value || auth.isDeveloper.value);
 const profileState = ref<"loading" | "ready" | "not-found" | "error">("loading");
-const { user: profile, loading: profileLoading, error: profileError, refetch: refetchProfile } =
-	useUserProfile(userId);
+const { user: profile, loading: profileLoading, error: profileError, refetch: refetchProfile } = useUserProfile(userId);
 const avatarUrl = computed(() => profile.value?.avatarUrl || useFallbackUserImage(userId.value));
 const decorationDialogOpen = ref(false);
 const activeDecorationTab = ref<"avatar" | "background">("avatar");
@@ -264,12 +259,6 @@ async function refreshUserDetails() {
 			v-show="profileState !== 'not-found' && profileState !== 'error'"
 			class="user-detail__content"
 		>
-			<UserSelfActionsCard
-				v-if="auth.user.value?.userId === userId"
-				:user-id="userId"
-				@feedback="showFeedback"
-				@refresh="refreshUserDetails"
-			/>
 			<UserInventoryCard :user-id="userId" />
 			<UserInvestmentCard
 				:user-id="userId"
@@ -280,34 +269,42 @@ async function refreshUserDetails() {
 			<UserActivityStatsCard :user-id="userId" />
 			<UserHistoryCard :user-id="userId" />
 
-			<template v-if="auth.hasAdminAccess.value">
-				<div class="user-detail__columns">
-					<UserStatusSummary
-						:status="profile"
-						:loading="profileLoading"
-						:error="!!profileError"
-						@refresh="refetchProfile()"
-					/>
-					<UserAdminActions
-						:user-id="userId"
-						:is-developer="auth.isDeveloper.value"
-						:can-write="auth.canWrite.value"
-						@feedback="showFeedback"
-						@refresh="refreshUserDetails"
-						@deleted="router.back()"
-					/>
-				</div>
-
-				<UserMetadataCard :user-id="userId" />
-			</template>
+			<UserStatusSummary
+				v-if="auth.hasAdminAccess.value"
+				:status="profile"
+				:loading="profileLoading"
+				:error="!!profileError"
+				@refresh="refetchProfile()"
+			/>
+			<UserMetadataCard
+				v-if="auth.hasAdminAccess.value"
+				:user-id="userId"
+			/>
 		</div>
 
-		<UserProfileFloatingActions
-			v-if="!isOwnUser && profileState === 'ready'"
-			:user-id="userId"
-			@feedback="showFeedback"
-			@refresh="refreshUserDetails"
-		/>
+		<div class="user-detail__floating-actions">
+			<UserSelfActionsCard
+				v-if="auth.user.value?.userId === userId"
+				:user-id="userId"
+				@feedback="showFeedback"
+				@refresh="refreshUserDetails"
+			/>
+			<UserProfileFloatingActions
+				v-if="!isOwnUser && profileState === 'ready'"
+				:user-id="userId"
+				@feedback="showFeedback"
+				@refresh="refreshUserDetails"
+			/>
+			<UserAdminActions
+				v-if="auth.hasAdminAccess.value && auth.canWrite.value"
+				:user-id="userId"
+				:is-developer="auth.isDeveloper.value"
+				:can-write="auth.canWrite.value"
+				@feedback="showFeedback"
+				@refresh="refreshUserDetails"
+				@deleted="router.back()"
+			/>
+		</div>
 	</main>
 </template>
 
@@ -427,6 +424,24 @@ async function refreshUserDetails() {
 
 		&--background {
 			border: none;
+		}
+	}
+
+	&__floating-actions {
+		display: flex;
+		align-items: flex-end;
+		gap: $spacing-sm;
+		position: fixed;
+		left: calc(50%);
+		bottom: $spacing-md;
+		z-index: 20;
+		transform: translateX(-50%);
+
+		@media (max-width: 850px) {
+			flex-direction: row;
+			left: calc(50%);
+			right: auto;
+			bottom: 1rem;
 		}
 	}
 }

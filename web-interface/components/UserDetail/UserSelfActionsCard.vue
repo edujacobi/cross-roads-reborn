@@ -9,7 +9,6 @@ import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseInput from "~/components/ui/BaseInput.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
 import { useMoneyFormat } from "~/composables/useMoneyFormat";
-import { getErrorMessage } from "~/utils/getErrorMessage";
 import {
 	ChangeOwnClassDocument,
 	ChangeOwnNicknameDocument,
@@ -17,6 +16,7 @@ import {
 	GetUserSelfActionsDocument,
 	SetOwnAutomaticGrenadeDocument,
 } from "~/graphql/generated";
+import { getErrorMessage } from "~/utils/getErrorMessage";
 import { ClassId } from "../../../src/core/types/Ids";
 
 const props = defineProps<{ userId: string }>();
@@ -382,17 +382,7 @@ async function handleAutomaticGrenadeChange() {
 @use "~/assets/scss/mixins" as *;
 
 .user-self-actions {
-	&__skeleton {
-		display: flex;
-		flex-wrap: wrap;
-		gap: $spacing-sm;
-	}
-
 	&__floating-toggle {
-		position: fixed;
-		left: calc(50% - 2rem);
-		bottom: 1rem;
-		z-index: 20;
 		@include flex-center;
 		width: 4rem;
 		height: 4rem;
@@ -409,33 +399,33 @@ async function handleAutomaticGrenadeChange() {
 		}
 
 		@media (min-width: 426px) {
-			left: 50%;
 			width: auto;
 			padding: 0 1.25rem;
 			border-radius: $radius-full;
 			gap: $spacing-sm;
-			transform: translateX(-50%);
 
 			&:hover {
-				transform: translateX(-50%) scale(1.05);
+				transform: scale(1.05);
 			}
 		}
 	}
 
 	&__floating-label {
-		display: none;
+		font-weight: $font-weight-semibold;
 
-		@media (min-width: 426px) {
-			display: inline;
-			font-weight: $font-weight-semibold;
+		@media (max-width: 1024px) {
+			font-size: $font-size-14;
+		}
+
+		@media (max-width: 768px) {
+			display: none;
 		}
 	}
 
 	&__floating-menu {
 		position: fixed;
-		left: 50%;
-		bottom: 5.75rem;
-		z-index: 20;
+		bottom: 4.5rem;
+		z-index: 21;
 		display: flex;
 		flex-direction: column;
 		gap: $spacing-sm;
@@ -446,7 +436,6 @@ async function handleAutomaticGrenadeChange() {
 		border-radius: $radius-md;
 		background-color: $bg-card;
 		box-shadow: $shadow-lg;
-		transform: translateX(-50%);
 
 		.base-button {
 			width: 100%;

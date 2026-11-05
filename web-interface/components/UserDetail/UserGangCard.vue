@@ -19,8 +19,12 @@ const gang = computed(() => result.value?.user?.gang);
 </script>
 
 <template>
+	<BaseSkeleton
+		v-if="loading"
+		height="11.5rem"
+	/>
 	<BaseCard
-		v-if="gang || loading || error"
+		v-else-if="gang || error"
 		title="Gangue"
 		:icon="imagePaths.situations.gangAction"
 		class="user-gang"

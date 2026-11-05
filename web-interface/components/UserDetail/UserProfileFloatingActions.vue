@@ -478,10 +478,6 @@ async function handleGiveAlms() {
 	}
 
 	&__toggle {
-		position: fixed;
-		left: calc(50% - 2rem);
-		bottom: 1rem;
-		z-index: 20;
 		@include flex-center;
 		width: 4rem;
 		height: 4rem;
@@ -498,33 +494,28 @@ async function handleGiveAlms() {
 		}
 
 		@media (min-width: 426px) {
-			left: 50%;
 			width: auto;
 			padding: 0 1.25rem;
 			border-radius: $radius-full;
 			gap: $spacing-sm;
-			transform: translateX(-50%);
 
 			&:hover {
-				transform: translateX(-50%) scale(1.05);
+				transform: scale(1.05);
 			}
 		}
 	}
 
 	&__label {
-		display: none;
-
-		@media (min-width: 426px) {
-			display: inline;
+		@media (max-width: 768px) {
+			display: none;
 			font-weight: $font-weight-semibold;
 		}
 	}
 
 	&__menu {
 		position: fixed;
-		left: 50%;
-		bottom: 5.75rem;
-		z-index: 20;
+		bottom: 4.5rem;
+		z-index: 21;
 		display: flex;
 		flex-direction: column;
 		gap: $spacing-sm;
@@ -535,7 +526,6 @@ async function handleGiveAlms() {
 		border-radius: $radius-md;
 		background-color: $bg-card;
 		box-shadow: $shadow-lg;
-		transform: translateX(-50%);
 
 		.base-button {
 			width: 100%;
