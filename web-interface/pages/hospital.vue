@@ -158,7 +158,7 @@ async function handlePayPrivate() {
 			</template>
 			<div class="info-card__content">
 				<div class="info-card__section">
-					<p>Usuários hospitalizados possuem -5 DEF e defendem -5% grana.</p>
+					<p>Usuários hospitalizados possuem -5 ATK, -5 DEF e defendem -5% grana.</p>
 				</div>
 				<div class="info-card__section">
 					<h3>Serviço público</h3>

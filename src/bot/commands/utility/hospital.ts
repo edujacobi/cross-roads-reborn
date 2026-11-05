@@ -10,7 +10,15 @@ import { Language, type Localization } from "#core/models/Language";
 import { Pagination } from "#core/models/Pagination";
 import type { User } from "#core/models/User";
 import { ClassList } from "#core/types/Classes";
-import { ButtonBuilder, ButtonStyle, type ChatInputCommandInteraction, Locale, SlashCommandBuilder, time, TimestampStyles } from "discord.js";
+import {
+	ButtonBuilder,
+	ButtonStyle,
+	type ChatInputCommandInteraction,
+	Locale,
+	SlashCommandBuilder,
+	time,
+	TimestampStyles,
+} from "discord.js";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -246,7 +254,7 @@ const Strings = {
 	[Language.English]: {
 		userFree: "You are not hospitalized! Want a little injection?",
 		userInHospital: (date: Date) => `You are hospitalized! You will be treated ${time(date, TimestampStyles.RelativeTime)}!`,
-		subtitle: `_Public, Free and Quality!_\n\n-# Hospitalized users have ${EmoteString.Defense}-5 DEF and ${EmoteString.Defense}-5% $DEF!.`,
+		subtitle: `_Public, Free and Quality!_\n\n-# Hospitalized users have ${EmoteString.Attack}-5 ATK, ${EmoteString.Defense}-5 DEF and ${EmoteString.Defense}-5% $DEF!.`,
 		descriptionPublic: `### Public service\nUnfortunately we have no more free beds, so you will have to wait in the hallway until you are seen.`,
 		descriptionPrivate: `### ${EmoteBadgeString.Season6.Hypochondriac} Private care\nIf you pay a certain amount, we will be able to treat you faster!`,
 		hospitalized: "Hospitalized",
@@ -264,7 +272,7 @@ const Strings = {
 	[Language.Portuguese]: {
 		userFree: "Você não está hospitalizado! Quer uma injeçãozinha?",
 		userInHospital: (date: Date) => `Você está hospitalizado! Será atendido ${time(date, TimestampStyles.RelativeTime)}!`,
-		subtitle: `_Público, Gratuito e de Qualidade!_\n\n-#	Usuários hospitalizados possuem ${EmoteString.Defense}-5 DEF e ${EmoteString.Defense}-5% $DEF!.`,
+		subtitle: `_Público, Gratuito e de Qualidade!_\n\n-#	Usuários hospitalizados possuem ${EmoteString.Attack}-5 ATK, ${EmoteString.Defense}-5 DEF e ${EmoteString.Defense}-5% $DEF!.`,
 		descriptionPublic: `###	Serviço público\nInfelizmente não temos mais leitos livres, então você precisará esperar no corredor até ser atendido.`,
 		descriptionPrivate: `### ${EmoteBadgeString.Season6.Hypochondriac} Atendimento particular\nCaso você pague uma certa quantia, poderemos tratá-lo mais rapidamente!`,
 		hospitalized: "Hospitalizados",
@@ -282,7 +290,7 @@ const Strings = {
 	[Language.Spanish]: {
 		userFree: "No estás hospitalizado! ¿Quieres una pequeña inyección?",
 		userInHospital: (date: Date) => `¡Estás hospitalizado! ¡Se servirá ${time(date, TimestampStyles.RelativeTime)}!`,
-		subtitle: `_¡Público, gratuito y de calidad!_\n\n-# Los usuarios hospitalizados tienen ${EmoteString.Defense}-5 DEF y ${EmoteString.Defense}-5% $DEF!.`,
+		subtitle: `_¡Público, gratuito y de calidad!_\n\n-# Los usuarios hospitalizados tienen ${EmoteString.Attack}-5 ATK, ${EmoteString.Defense}-5 DEF y ${EmoteString.Defense}-5% $DEF!.`,
 		descriptionPublic: `### Servicio público\nLamentablemente, no tenemos más camas libres, por lo que deberá esperar en el pasillo hasta que le atiendan.`,
 		descriptionPrivate: `### ${EmoteBadgeString.Season6.Hypochondriac} Atención privada\n¡Si pagas una cierta cantidad, podemos atenderte más rápido!`,
 		hospitalized: "Hospitalizados",
