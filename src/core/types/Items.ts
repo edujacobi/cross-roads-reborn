@@ -490,7 +490,7 @@ export const ItemList: ItemListType = {
 				String: "<:katanaflames:1454163271333580895>",
 			},
 		},
-		Price: 330_000,
+		Price: 350_000,
 		Attack: 60,
 		Defense: 45,
 		MoneyAttack: 22,

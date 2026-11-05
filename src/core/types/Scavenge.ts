@@ -91,14 +91,14 @@ export const ScavengeList: ScavengeListType = {
 			Items: [{
 				Id: ItemId.Knife,
 				Duration: {
-					Min: 1,
-					Max: 2,
+					Min: 0.5,
+					Max: 1,
 				},
 			}, {
 				Id: ItemId.Sunglasses,
 				Duration: {
-					Min: 1,
-					Max: 2,
+					Min: 2,
+					Max: 4,
 				},
 			}],
 			Money: {
@@ -159,14 +159,14 @@ export const ScavengeList: ScavengeListType = {
 			}, {
 				Id: ItemId.Sunglasses,
 				Duration: {
-					Min: 3,
+					Min: 4,
 					Max: 6,
 				},
 			}, {
 				Id: ItemId.BrassKnuckles,
 				Duration: {
-					Min: 2,
-					Max: 4,
+					Min: 4,
+					Max: 6,
 				},
 			}],
 			Money: {
@@ -213,28 +213,22 @@ export const ScavengeList: ScavengeListType = {
 		},
 		Reward: {
 			Items: [{
-				Id: ItemId.Knife,
+				Id: ItemId.HuntRifle,
 				Duration: {
-					Min: 4,
-					Max: 8,
-				},
-			}, {
-				Id: ItemId.Pistol,
-				Duration: {
-					Min: 3,
-					Max: 6,
+					Min: 0.5,
+					Max: 1,
 				},
 			}, {
 				Id: ItemId.MachinePistol,
 				Duration: {
-					Min: 1,
-					Max: 2,
+					Min: 2,
+					Max: 3,
 				},
 			}, {
 				Id: ItemId.CompactSMG,
 				Duration: {
-					Min: 1,
-					Max: 2,
+					Min: 4,
+					Max: 6,
 				},
 			}, {
 				Id: ItemId.Sawnoff,
@@ -245,8 +239,8 @@ export const ScavengeList: ScavengeListType = {
 			}, {
 				Id: ItemId.Sunglasses,
 				Duration: {
-					Min: 8,
-					Max: 12,
+					Min: 10,
+					Max: 14,
 				},
 			}, {
 				Id: ItemId.BrassKnuckles,
@@ -257,8 +251,8 @@ export const ScavengeList: ScavengeListType = {
 			}, {
 				Id: ItemId.BaseballBat,
 				Duration: {
-					Min: 3,
-					Max: 6,
+					Min: 4,
+					Max: 8,
 				},
 			}],
 			Money: {
@@ -305,34 +299,28 @@ export const ScavengeList: ScavengeListType = {
 		},
 		Reward: {
 			Items: [{
-				Id: ItemId.MachinePistol,
+				Id: ItemId.SMG,
 				Duration: {
-					Min: 6,
-					Max: 12,
-				},
-			}, {
-				Id: ItemId.HuntRifle,
-				Duration: {
-					Min: 3,
-					Max: 6,
+					Min: 0.5,
+					Max: 1,
 				},
 			}, {
 				Id: ItemId.Shotgun,
 				Duration: {
-					Min: 1,
-					Max: 2,
+					Min: 2,
+					Max: 3,
 				},
 			}, {
 				Id: ItemId.Sawnoff,
 				Duration: {
-					Min: 1,
-					Max: 2,
+					Min: 4,
+					Max: 6,
 				},
 			}, {
 				Id: ItemId.LightVest,
 				Duration: {
 					Min: 2,
-					Max: 3,
+					Max: 4,
 				},
 			}, {
 				Id: ItemId.BaseballBat,
@@ -387,20 +375,20 @@ export const ScavengeList: ScavengeListType = {
 			Items: [{
 				Id: ItemId.AssaultRifle,
 				Duration: {
-					Min: 3,
-					Max: 6,
+					Min: 2,
+					Max: 3,
 				},
 			}, {
 				Id: ItemId.Carbine,
 				Duration: {
-					Min: 1,
-					Max: 2,
+					Min: 0.5,
+					Max: 1,
 				},
 			}, {
 				Id: ItemId.LightVest,
 				Duration: {
 					Min: 3,
-					Max: 4,
+					Max: 6,
 				},
 			}],
 			Money: {
@@ -428,7 +416,7 @@ export const ScavengeList: ScavengeListType = {
 			},
 		},
 	},
-	// Need Katana (ATK 60)
+	// Need Sniper (ATK 55)
 	[ScavengeId.NuclearPlant]: {
 		Id: ScavengeId.NuclearPlant,
 		Description: {
@@ -447,13 +435,19 @@ export const ScavengeList: ScavengeListType = {
 		},
 		Reward: {
 			Items: [{
-				Id: ItemId.Katana,
+				Id: ItemId.Sniper,
 				Duration: {
 					Min: 3,
-					Max: 6,
+					Max: 4,
 				},
 			}, {
-				Id: ItemId.HeavyVest,
+				Id: ItemId.Katana,
+				Duration: {
+					Min: 0.5,
+					Max: 1,
+				},
+			}, {
+				Id: ItemId.LightVest,
 				Duration: {
 					Min: 1,
 					Max: 2,
@@ -472,12 +466,12 @@ export const ScavengeList: ScavengeListType = {
 				},
 			}],
 			Money: {
-				Min: 30_000,
-				Max: 75_000,
+				Min: 25_000,
+				Max: 55_000,
 			},
 		},
 		SuccessChance: 35,
-		NeedAttack: 60,
+		NeedAttack: 55,
 		Special: false,
 		Prison: {
 			Chance: 13,
@@ -592,7 +586,7 @@ export const ScavengeList: ScavengeListType = {
 				Id: ItemId.Minigun,
 				Duration: {
 					Min: 2,
-					Max: 4,
+					Max: 3,
 				},
 			}, {
 				Id: ItemId.Exoskeleton,
@@ -615,8 +609,8 @@ export const ScavengeList: ScavengeListType = {
 			}, {
 				Id: ItemId.AdvancedScope,
 				Duration: {
-					Min: 3,
-					Max: 6,
+					Min: 4,
+					Max: 8,
 				},
 			}],
 			Money: {

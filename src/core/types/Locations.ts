@@ -206,7 +206,7 @@ export const LocationList: LocationListType = {
 		ImageUrl: "https://media.discordapp.net/attachments/1349187098653233184/1349193676106104862/SmallBank.png",
 		Reward: {
 			Min: 18_750,
-			Max: 40_000,
+			Max: 35_000,
 		},
 		SuccessChance: 46,
 		NeedAttack: 45,
@@ -245,17 +245,17 @@ export const LocationList: LocationListType = {
 		},
 		ImageUrl: "https://media.discordapp.net/attachments/1349187098653233184/1349193674570993775/ItalianMafia.png",
 		Reward: {
-			Min: 50_000,
-			Max: 150_000,
+			Min: 40_000,
+			Max: 100_000,
 		},
 		SuccessChance: 40,
-		NeedAttack: 60,
+		NeedAttack: 55,
 		Special: false,
 		Prison: {
 			Text: [{
 				[Language.English]: "The Mafia abandoned the empty place and set a trap for you.",
 				[Language.Portuguese]: "A Mafia abandonou o local vazio e armou uma armadilha pra você.",
-				[Language.Spanish]: "The Mafia abandoned the empty place and set a trap for you.",
+				[Language.Spanish]: "La Mafia abandonó el lugar vacío y te tendió una trampa.",
 			}, {
 				[Language.English]: "The police raided the place and caught you in the crossfire.",
 				[Language.Portuguese]: "A polícia invadiu o local e te pegou no fogo cruzado.",
