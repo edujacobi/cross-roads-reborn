@@ -419,6 +419,7 @@ query GetUserProfile($id: ID!) {
 		jobEndsIn
 		isScavenging
 		scavengingId
+		scavengeTime
 		isWanted
 		wantedTime
 		isRobbing
@@ -429,6 +430,7 @@ query GetUserProfile($id: ID!) {
 		robberyLocationName
 		isBeating
 		isBeingBeated
+		beatUpTime
 		beaterUserId
 		beatenByUserId
 		activityTargetNickname

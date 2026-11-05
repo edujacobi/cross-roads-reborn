@@ -216,6 +216,8 @@ export const userResolvers: {
 
 			return {
 				...detail,
+				scavengeTime: null,
+				beatUpTime: null,
 				specialCoin: null,
 				automaticGrenade: null,
 				language: "",

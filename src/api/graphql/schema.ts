@@ -429,6 +429,7 @@ export const typeDefs = /* GraphQL */ `
         jobEndsIn: String
         isScavenging: Boolean!
         scavengingId: Int
+        scavengeTime: String
         robberUserId: ID
         robbedByUserId: ID
         robberyLocationId: Int
@@ -442,6 +443,7 @@ export const typeDefs = /* GraphQL */ `
         isBeingRobbed: Boolean!
         isBeating: Boolean!
         isBeingBeated: Boolean!
+        beatUpTime: String
         isInCasino: Boolean!
         isDefendingInvestment: Boolean!
         isInGangAction: Boolean!

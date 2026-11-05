@@ -179,6 +179,8 @@ export async function mapUserDetail(user: User) {
 	const isWorking = user.Job.EndsIn > now && user.Job.Id !== null;
 	const isScavenging = user.IsScavenging();
 	const isWanted = user.Wanted.Time > now;
+	const scavengeTime = user.Scavenge.Time > now ? user.Scavenge.Time.toISOString() : null;
+	const beatUpTime = user.BeatUp.Time > now ? user.BeatUp.Time.toISOString() : null;
 	const isDead = user.DeadUntil > now;
 
 	const items = mapUserItems(user);
@@ -277,6 +279,7 @@ export async function mapUserDetail(user: User) {
 		jobEndsIn: isWorking ? user.Job.EndsIn.toISOString() : null,
 		isScavenging,
 		scavengingId: isScavenging ? user.Scavenge.IsScavengingId : null,
+		scavengeTime,
 		robberUserId: user.Robbery.IsRobbingId,
 		robbedByUserId: user.Robbery.IsBeingRobbedById,
 		robberyLocationId: user.Robbery.IsRobbingLocationId,
@@ -286,6 +289,7 @@ export async function mapUserDetail(user: User) {
 				: LocationList[user.Robbery.IsRobbingLocationId]?.Name[Language.Portuguese] ?? null,
 		beaterUserId: user.BeatUp.IsBeatingId,
 		beatenByUserId: user.BeatUp.IsBeingBeatUpById,
+		beatUpTime,
 		activityTargetNickname: activityTarget ? `${activityTarget.nickname}` : null,
 		isWanted,
 		wantedTime: isWanted ? user.Wanted.Time.toISOString() : null,

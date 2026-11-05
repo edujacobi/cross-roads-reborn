@@ -183,6 +183,21 @@ const error = computed(() => props.error);
 						Vasculhando
 					</BaseBadge>
 					<BaseBadge
+						v-else-if="user.scavengeTime"
+						variant="warning"
+					>
+						<NuxtImg
+							:src="imagePaths.situations.scavenging"
+							width="18"
+							height="18"
+							alt=""
+						/>
+						Aguardando cooldown até
+						<time :datetime="user.scavengeTime">
+							{{ new Date(user.scavengeTime).toLocaleTimeString() }}
+						</time>
+					</BaseBadge>
+					<BaseBadge
 						v-else
 						variant="neutral"
 					>
@@ -255,6 +270,21 @@ const error = computed(() => props.error);
 							/>
 							Sendo espancado
 						</template>
+					</BaseBadge>
+					<BaseBadge
+						v-else-if="user.beatUpTime"
+						variant="warning"
+					>
+						<NuxtImg
+							:src="imagePaths.situations.beatup"
+							width="18"
+							height="18"
+							alt=""
+						/>
+						Aguardando cooldown até
+						<time :datetime="user.beatUpTime">
+							{{ new Date(user.beatUpTime).toLocaleTimeString() }}
+						</time>
 					</BaseBadge>
 					<BaseBadge
 						v-else
