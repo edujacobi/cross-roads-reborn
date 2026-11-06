@@ -9,6 +9,7 @@ import GangIcon from "~/components/icons/GangIcon.vue";
 import HospitalIcon from "~/components/icons/HospitalIcon.vue";
 import InvestmentIcon from "~/components/icons/InvestmentIcon.vue";
 import JobsIcon from "~/components/icons/JobsIcon.vue";
+import PoliceIcon from "~/components/icons/PoliceIcon.vue";
 import PrisonIcon from "~/components/icons/PrisonIcon.vue";
 import RobberyIcon from "~/components/icons/RobberyIcon.vue";
 import ScavengeIcon from "~/components/icons/ScavengeIcon.vue";
@@ -302,7 +303,13 @@ const error = computed(() => props.error);
 				</dd>
 			</div>
 			<div class="user-status__row">
-				<dt class="user-status__label">Procurado</dt>
+				<dt class="user-status__label">
+					<PoliceIcon
+						:size="16"
+						variant="solid"
+					/>
+					Procurado
+				</dt>
 				<dd class="user-status__value">
 					<BaseBadge
 						v-if="user.isWanted && user.wantedTime"

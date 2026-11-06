@@ -19,6 +19,7 @@ import {
 import HospitalIcon from "~/components/icons/HospitalIcon.vue";
 import PrisonIcon from "~/components/icons/PrisonIcon.vue";
 import SpecialShopIcon from "~/components/icons/SpecialShopIcon.vue";
+import VipIcon from "~/components/icons/VipIcon.vue";
 import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseInput from "~/components/ui/BaseInput.vue";
@@ -618,11 +619,9 @@ async function handleDeleteUser() {
 					:disabled="!canWrite || vipLoading"
 					@click="isFloatingActionsOpen = false; isVipModalOpen = true"
 				>
-					<NuxtImg
-						:src="imagePaths.badges.vip"
-						width="18"
-						height="18"
-						alt=""
+					<VipIcon
+						:size="18"
+						variant="solid"
 					/>
 					Adicionar VIP
 				</BaseButton>

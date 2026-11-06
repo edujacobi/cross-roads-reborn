@@ -54,6 +54,7 @@ function remainingVipTime(vipTime: string | null): string {
 
 		<BaseCard
 			title="Jogadores VIP"
+			icon="/images/badges/vip.png"
 			no-padding-x
 			no-padding-y
 		>

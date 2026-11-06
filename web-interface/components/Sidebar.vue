@@ -23,12 +23,14 @@ import GangIcon from "~/components/icons/GangIcon.vue";
 import HospitalIcon from "~/components/icons/HospitalIcon.vue";
 import InvestmentIcon from "~/components/icons/InvestmentIcon.vue";
 import JobsIcon from "~/components/icons/JobsIcon.vue";
+import PoliceIcon from "~/components/icons/PoliceIcon.vue";
 import PrisonIcon from "~/components/icons/PrisonIcon.vue";
 import RobberyIcon from "~/components/icons/RobberyIcon.vue";
 import ScavengeIcon from "~/components/icons/ScavengeIcon.vue";
 import ShopIcon from "~/components/icons/ShopIcon.vue";
 import SpecialShopIcon from "~/components/icons/SpecialShopIcon.vue";
 import TrophyIcon from "~/components/icons/TrophyIcon.vue";
+import VipIcon from "~/components/icons/VipIcon.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
 import { useFallbackUserImage } from "~/composables/useFallbackImage";
@@ -199,7 +201,8 @@ const navigationGroups = computed(() => [
 						{
 							label: "VIPs",
 							to: { name: "admin-vips" },
-							icon: Crown,
+							icon: VipIcon,
+							size: 20,
 							activeRouteNames: ["admin-vips"],
 						},
 						...(auth.canWrite.value
@@ -207,7 +210,7 @@ const navigationGroups = computed(() => [
 									{
 										label: "Auditoria",
 										to: { name: "admin-audit-log" },
-										icon: ScrollText,
+										icon: PoliceIcon,
 										activeRouteNames: ["admin-audit-log"],
 									},
 								]
