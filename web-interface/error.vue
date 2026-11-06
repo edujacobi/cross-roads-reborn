@@ -37,6 +37,8 @@ async function copyErrorMessage() {
 			<NuxtImg
 				class="error__image"
 				:src="isNotFound ? '/images/badges/S6Top1Scavenge.png' : '/images/badges/S6Top1BeatUp.png'"
+				alt=""
+				aria-hidden="true"
 			/>
 			<p class="error__description">
 				{{

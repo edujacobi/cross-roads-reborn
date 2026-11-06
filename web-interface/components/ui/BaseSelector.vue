@@ -15,6 +15,7 @@ interface Props {
 	id: string;
 	modelValue?: string;
 	label?: string;
+	ariaLabel?: string;
 	placeholder?: string;
 	options: SelectorOption[];
 	disabled?: boolean;
@@ -38,28 +39,26 @@ const listboxRef = ref<HTMLDivElement | null>(null);
 
 const selectedOption = computed(() => props.options.find((o) => o.value === props.modelValue));
 const selectedLabel = computed(() => selectedOption.value?.label || props.placeholder);
+const activeOptionId = computed(() =>
+	isOpen.value && focusedIndex.value >= 0 && focusedIndex.value < props.options.length
+		? `${props.id}-option-${focusedIndex.value}`
+		: undefined,
+);
 
 function toggle() {
 	if (props.disabled) return;
 	isOpen.value = !isOpen.value;
 }
 
-function close() {
+function close(restoreFocus = true) {
 	isOpen.value = false;
 	focusedIndex.value = -1;
-	triggerRef.value?.focus();
+	if (restoreFocus) triggerRef.value?.focus();
 }
 
 function selectOption(value: string) {
 	emit("update:modelValue", value);
 	close();
-}
-
-function handleOptionKeydown(e: KeyboardEvent, value: string) {
-	if (e.key === "Enter" || e.key === " ") {
-		e.preventDefault();
-		selectOption(value);
-	}
 }
 
 function handleKeyDown(e: KeyboardEvent) {
@@ -76,15 +75,19 @@ function handleKeyDown(e: KeyboardEvent) {
 	switch (e.key) {
 		case "ArrowDown":
 			e.preventDefault();
-			focusedIndex.value = (focusedIndex.value + 1) % props.options.length;
+			if (props.options.length) {
+				focusedIndex.value = (focusedIndex.value + 1) % props.options.length;
+			}
 			break;
 		case "ArrowUp":
 			e.preventDefault();
-			focusedIndex.value = (focusedIndex.value - 1 + props.options.length) % props.options.length;
+			if (props.options.length) {
+				focusedIndex.value = (focusedIndex.value - 1 + props.options.length) % props.options.length;
+			}
 			break;
 		case "Home":
 			e.preventDefault();
-			focusedIndex.value = 0;
+			focusedIndex.value = props.options.length ? 0 : -1;
 			break;
 		case "End":
 			e.preventDefault();
@@ -101,6 +104,9 @@ function handleKeyDown(e: KeyboardEvent) {
 			e.preventDefault();
 			close();
 			break;
+		case "Tab":
+			close(false);
+			break;
 	}
 }
 
@@ -112,7 +118,7 @@ function handleClickOutside(e: MouseEvent) {
 		triggerRef.value &&
 		!triggerRef.value.contains(target)
 	) {
-		close();
+		close(false);
 	}
 }
 
@@ -122,7 +128,7 @@ onUnmounted(() => document.removeEventListener("click", handleClickOutside));
 watch(isOpen, (open) => {
 	if (open) {
 		focusedIndex.value = props.options.findIndex((o) => o.value === props.modelValue);
-		if (focusedIndex.value === -1) focusedIndex.value = 0;
+		if (focusedIndex.value === -1) focusedIndex.value = props.options.length ? 0 : -1;
 	}
 });
 </script>
@@ -140,19 +146,18 @@ watch(isOpen, (open) => {
 			{{ label }}
 		</label>
 
-		<div
-			class="selector-wrapper"
-			role="combobox"
-			:aria-expanded="isOpen"
-			aria-haspopup="true"
-			:aria-controls="`${id}-listbox`"
-			tabindex="-1"
-		>
+		<div class="selector-wrapper">
 			<button
 				:id="id"
 				ref="triggerRef"
 				type="button"
+				role="combobox"
 				:disabled="disabled"
+				:aria-label="ariaLabel"
+				:aria-expanded="isOpen"
+				aria-haspopup="listbox"
+				:aria-controls="isOpen ? `${id}-listbox` : undefined"
+				:aria-activedescendant="activeOptionId"
 				class="selector-trigger"
 				@click="toggle"
 				@keydown="handleKeyDown"
@@ -188,17 +193,20 @@ watch(isOpen, (open) => {
 					ref="listboxRef"
 					class="selector-dropdown"
 					role="listbox"
+					:aria-labelledby="id"
 				>
 					<div
 						v-for="(option, index) in options"
 						:key="option.value"
+						:id="`${id}-option-${index}`"
 						role="option"
 						:aria-selected="option.value === modelValue"
 						tabindex="-1"
 						class="selector-option"
 						:class="{ 'is-selected': option.value === modelValue, 'is-focused': index === focusedIndex }"
 						@click="selectOption(option.value)"
-						@keydown="(e) => handleOptionKeydown(e, option.value)"
+						@keydown.enter.prevent="selectOption(option.value)"
+						@keydown.space.prevent="selectOption(option.value)"
 						@mouseenter="focusedIndex = index"
 					>
 						<NuxtImg
@@ -383,7 +391,6 @@ watch(isOpen, (open) => {
 		gap: $spacing-sm;
 		padding: 0.5rem 0.875rem;
 		cursor: pointer;
-		outline: none;
 		color: $text-secondary;
 		@include transition-bg;
 
@@ -395,10 +402,6 @@ watch(isOpen, (open) => {
 		&.is-selected {
 			color: $text-primary;
 			font-weight: $font-weight-semibold;
-		}
-
-		&:focus-visible {
-			@include focus-outline;
 		}
 
 		.selector-option-image {

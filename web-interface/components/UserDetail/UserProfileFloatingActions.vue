@@ -387,6 +387,8 @@ async function handleGiveAlms() {
 							:src="imagePaths.badges.vip"
 							width="20"
 							height="20"
+							alt=""
+							aria-hidden="true"
 						/>
 						VIP Eterno.
 					</p>

@@ -1168,6 +1168,7 @@ async function handleDeleteUser() {
 	scoped
 >
 @use "~/assets/scss/variables" as *;
+@use "~/assets/scss/mixins" as *;
 
 .user-admin-actions {
 	display: contents;
@@ -1246,6 +1247,10 @@ async function handleDeleteUser() {
 
 		&:focus {
 			border-color: $color-brand;
+		}
+
+		&:focus-visible {
+			@include focus-outline($color-brand, 2px);
 		}
 	}
 

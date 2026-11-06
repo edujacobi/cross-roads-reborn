@@ -88,9 +88,7 @@ function remainingVipTime(vipTime: string | null): string {
 							v-for="vip in users"
 							:key="vip.id"
 							class="clickable-row"
-							tabindex="0"
 							@click="navigateTo(`/users/${vip.id}`)"
-							@keydown.enter.prevent="navigateTo(`/users/${vip.id}`)"
 						>
 							<th
 								scope="row"
@@ -102,7 +100,13 @@ function remainingVipTime(vipTime: string | null): string {
 										:src="vip.avatarUrl || useFallbackUserImage(vip.id)"
 										:alt="vip.nickname ? `Avatar de ${vip.nickname}` : 'Avatar do jogador'"
 									/>
-									<span>{{ vip.nickname || "(Sem Nick)" }}</span>
+									<NuxtLink
+										:to="`/users/${vip.id}`"
+										class="table-row-link"
+										@click.stop
+									>
+										{{ vip.nickname || "(Sem Nick)" }}
+									</NuxtLink>
 								</div>
 							</th>
 							<td class="id-cell">{{ vip.id }}</td>
@@ -148,10 +152,6 @@ function remainingVipTime(vipTime: string | null): string {
 		font-size: inherit;
 		font-weight: $font-weight-normal;
 		text-transform: none;
-	}
-
-	.clickable-row {
-		@include row-hover;
 	}
 
 	.player-cell-content {

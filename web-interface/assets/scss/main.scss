@@ -190,16 +190,67 @@ a {
 }
 
 .visually-hidden {
-  position: absolute;
-  top: 0;
-  width: 0.0625rem;
-  height: 0.0625rem;
+  @include visually-hidden;
+}
+
+.skip-link {
+  @include visually-hidden;
+  position: fixed;
+  top: $spacing-sm;
+  left: $spacing-sm;
+  z-index: 1200;
+  padding: $spacing-sm $spacing-md;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-sm;
+  background-color: $bg-card;
+  color: $text-primary;
+  text-decoration: none;
+
+  &:focus-visible {
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    clip-path: none;
+    white-space: normal;
+    @include focus-outline($color-brand, 2px);
+  }
+}
+
+.table-row-link {
   padding: 0;
-  margin: -0.0625rem;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
   border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  cursor: pointer;
+
+  &:focus-visible {
+    @include focus-outline($color-brand, 2px);
+  }
+}
+
+.table-sort-button {
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+
+  &:focus-visible {
+    @include focus-outline;
+  }
+}
+
+.clickable-row {
+  @include row-hover;
 }
 
 @media (prefers-reduced-motion: no-preference) {

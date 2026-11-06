@@ -128,6 +128,7 @@ const rows = computed<StatRow[]>(() => {
 		<template #actions>
 			<BaseSelector
 				id="activity-stats-selector"
+				aria-label="Categoria de atividade"
 				:options="selectorOptions"
 				:model-value="activeTab"
 				@update:model-value="activeTab = $event as TabId"
@@ -161,10 +162,7 @@ const rows = computed<StatRow[]>(() => {
 		</p>
 		<div
 			v-else
-			id="user-activity-panel"
-			role="tabpanel"
 			aria-live="polite"
-			class="user-activity__panel"
 		>
 			<dl class="user-activity__stats">
 				<div
@@ -201,9 +199,6 @@ const rows = computed<StatRow[]>(() => {
 		@media (max-width: 1024px) {
 			grid-template-columns: 1fr;
 		}
-	}
-	&__panel {
-		outline: none;
 	}
 
 	&__stats {

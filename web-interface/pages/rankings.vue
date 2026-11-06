@@ -278,11 +278,9 @@ function nextPage() {
 							v-for="(gang, index) in gangs"
 							:key="gang.id"
 							class="clickable-row"
-							tabindex="0"
 							:class="{ 'current-user': gang.id === gangResult?.topGangs.currentUserGangId }"
 							:style="{ '--highlight-color': gangResult?.topGangs.currentUserGangColor ?? '#89999A' }"
 							@click="navigateTo(`/gangs/${gang.id}`)"
-							@keydown.enter.prevent="navigateTo(`/gangs/${gang.id}`)"
 						>
 							<th
 								scope="row"
@@ -295,7 +293,13 @@ function nextPage() {
 										:src="gang.imageUrl || useFallbackGangImage(gang.id)"
 										alt=""
 									/>
-									<span class="rankings-page__player-name">{{ gang.name }}</span>
+									<NuxtLink
+										:to="`/gangs/${gang.id}`"
+										class="rankings-page__player-name table-row-link"
+										@click.stop
+									>
+										{{ gang.name }}
+									</NuxtLink>
 									<span
 										v-if="gang.id === gangResult?.topGangs.currentUserGangId"
 										class="rankings-page__current-user-label"
@@ -334,11 +338,9 @@ function nextPage() {
 							v-for="(entry, index) in entries"
 							:key="entry.id"
 							class="clickable-row ranking-background"
-							tabindex="0"
 							:class="[`ranking-background--${entry.backgroundDecoration}`, { 'current-user': entry.id === auth.user.value?.userId }]"
 							:style="{ '--highlight-color': entry.gangColor ?? '#89999A' }"
 							@click="navigateTo(`/users/${entry.id}`)"
-							@keydown.enter.prevent="navigateTo(`/users/${entry.id}`)"
 						>
 							<th
 								scope="row"
@@ -352,7 +354,13 @@ function nextPage() {
 										image-class="rankings-page__player-avatar"
 										lazy
 									/>
-									<span class="rankings-page__player-name">{{ entry.nickname }}</span>
+									<NuxtLink
+										:to="`/users/${entry.id}`"
+										class="rankings-page__player-name table-row-link"
+										@click.stop
+									>
+										{{ entry.nickname }}
+									</NuxtLink>
 									<span
 										v-if="entry.id === auth.user.value?.userId"
 										class="rankings-page__current-user-label"
@@ -491,10 +499,6 @@ function nextPage() {
 
 
 .rankings-table {
-	.clickable-row {
-		@include row-hover;
-	}
-
 	tr.current-user,
 	tr.gang-colored {
 		background-color: color-mix(in srgb, var(--highlight-color) 14%, transparent);

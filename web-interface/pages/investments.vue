@@ -158,7 +158,7 @@ async function toggleYieldNotifications() {
 </script>
 
 <template>
-	<div class="investments-page">
+	<main class="investments-page">
 		<PageTitle
 			title="Investimentos"
 			subtitle="Compre um negócio, receba lucros por hora enquanto estiver vadiando e proteja seu patrimônio. Gangues podem atacar seus investimentos."
@@ -240,7 +240,7 @@ async function toggleYieldNotifications() {
 						<NuxtImg
 							class="investment-card__image"
 							:src="getInvestmentImageUrl(option.id)"
-							:alt="option.name"
+							alt=""
 							width="112"
 							height="112"
 						/>
@@ -260,6 +260,7 @@ async function toggleYieldNotifications() {
 										<NuxtImg
 											:src="imagePaths.attributes.defense"
 											width="20"
+											alt=""
 										/>
 										{{ option.defense }} DEF
 									</dd>
@@ -270,6 +271,7 @@ async function toggleYieldNotifications() {
 										<NuxtImg
 											:src="imagePaths.classes.mafioso"
 											width="20"
+											alt=""
 										/>
 										{{ option.henchmanFee }}%
 									</dd>
@@ -336,7 +338,7 @@ async function toggleYieldNotifications() {
 							<NuxtImg
 								class="investments-page__investment_image"
 								:src="getInvestmentImageUrl(investment.id)"
-								:alt="currentInvestment.name"
+								alt=""
 							/>
 							<div>
 								<h3>{{ currentInvestment.name }}</h3>
@@ -354,6 +356,7 @@ async function toggleYieldNotifications() {
 									<NuxtImg
 										:src="imagePaths.attributes.defense"
 										width="21"
+										alt=""
 									/>
 									{{ investment.defense }} DEF
 								</dd>
@@ -390,6 +393,7 @@ async function toggleYieldNotifications() {
 								<NuxtImg
 									:src="imagePaths.classes.mafioso"
 									width="18"
+									alt=""
 								/>
 								{{ investment.hasHenchman ? "Capanga contratado" : "Contratar capanga" }}
 							</BaseButton>
@@ -522,7 +526,7 @@ async function toggleYieldNotifications() {
 				</BaseButton>
 			</template>
 		</BaseModal>
-	</div>
+	</main>
 </template>
 
 <style

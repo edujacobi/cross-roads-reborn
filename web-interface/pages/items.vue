@@ -168,7 +168,7 @@ const itemChunks = computed(() => {
 						<LazyNuxtImg
 							class="item-card__image"
 							:src="item.defaultImagePath"
-							:alt="item.name"
+							alt=""
 							width="56"
 						/>
 						<div class="item-card__info">
@@ -328,7 +328,10 @@ const itemChunks = computed(() => {
 		background-color: color-mix(in lab, $bg-card 100%, var(--item-hover-color) 10%);
 		border-color: var(--item-hover-color);
 		transform: translateY(-2px);
-		outline: none;
+	}
+
+	&:focus-visible {
+		@include focus-outline($color-brand, 2px);
 	}
 
 	&__image {

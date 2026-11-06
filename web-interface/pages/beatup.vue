@@ -104,6 +104,7 @@ const actionUnavailableMessage = computed(() => {
 				<NuxtImg
 					src="/images/situations/idling.png"
 					width="16"
+					alt=""
 				/>
 				Vadiando.
 			</p>

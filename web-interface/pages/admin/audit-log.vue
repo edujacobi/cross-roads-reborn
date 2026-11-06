@@ -177,11 +177,8 @@ function setModalOpen(isOpen: boolean) {
 						<tr
 							v-for="entry in entries"
 							:key="entry.id"
-							:class="{ 'audit-row--clickable': isDeveloper }"
-							:tabindex="isDeveloper ? 0 : undefined"
+							:class="{ 'clickable-row': isDeveloper }"
 							@click="openEntry(entry)"
-							@keydown.enter="openEntry(entry)"
-							@keydown.space.prevent="openEntry(entry)"
 						>
 							<td>
 								<div class="audit-person">
@@ -199,7 +196,20 @@ function setModalOpen(isOpen: boolean) {
 									</div>
 								</div>
 							</td>
-							<td>{{ actionNames[entry.actionId] || `Ação #${entry.actionId}` }}</td>
+							<td>
+								<button
+									v-if="isDeveloper"
+									type="button"
+									class="table-row-link"
+									:aria-label="`Ver detalhes da ação ${actionNames[entry.actionId] || `#${entry.actionId}`}`"
+									@click.stop="openEntry(entry)"
+								>
+									{{ actionNames[entry.actionId] || `Ação #${entry.actionId}` }}
+								</button>
+								<template v-else>
+									{{ actionNames[entry.actionId] || `Ação #${entry.actionId}` }}
+								</template>
+							</td>
 							<td>
 								<template v-if="entry.targetUserId">
 									<div class="audit-person">
@@ -350,18 +360,7 @@ function setModalOpen(isOpen: boolean) {
 	overflow-wrap: anywhere;
 }
 
-.audit-row--clickable {
-	cursor: pointer;
 
-	&:hover,
-	&:focus-visible {
-		background-color: $bg-hover;
-	}
-
-	&:focus-visible {
-		@include focus-outline($color-brand);
-	}
-}
 
 .audit-access-details {
 	display: grid;

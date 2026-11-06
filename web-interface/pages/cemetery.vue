@@ -128,9 +128,7 @@ function nextPage() {
 							v-for="entry in entries"
 							:key="entry.id"
 							class="clickable-row"
-							tabindex="0"
 							@click="navigateTo(`/users/${entry.id}`)"
-							@keydown.enter.prevent="navigateTo(`/users/${entry.id}`)"
 						>
 							<th
 								scope="row"
@@ -145,7 +143,13 @@ function nextPage() {
 										width="32"
 										height="32"
 									/>
-									<span class="nickname">{{ entry.nickname || "(Sem Nick)" }}</span>
+									<NuxtLink
+										:to="`/users/${entry.id}`"
+										class="nickname table-row-link"
+										@click.stop
+									>
+										{{ entry.nickname || "(Sem Nick)" }}
+									</NuxtLink>
 									<BaseBadge variant="neutral">
 										<NuxtImg
 											:src="getClassImageUrl(entry.class)"
@@ -236,10 +240,6 @@ function nextPage() {
 }
 
 .cemetery-table {
-	.clickable-row {
-		@include row-hover;
-	}
-
 	.player-cell-content {
 		display: flex;
 		align-items: center;

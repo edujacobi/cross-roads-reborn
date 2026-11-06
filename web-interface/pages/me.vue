@@ -53,6 +53,9 @@ const badgeGroups = computed(() =>
 			]
 		: [],
 );
+const badgeNameById = computed(
+	() => new Map(badgeGroups.value.flatMap(({ badges }) => badges.map(({ id, name }) => [id, name] as const))),
+);
 const ownedBadgeIds = computed(() => new Set(player.value?.badges.map(({ id }) => id) ?? []));
 const playerName = computed(() => player.value?.nickname ?? auth.user.value?.username ?? "jogador");
 const { formatMoney } = useMoneyFormat();
@@ -368,7 +371,7 @@ onUnmounted(() => {
 							>
 								<NuxtImg
 									:src="getBadgeImage(badge.id as BadgeId)"
-									:alt="badge.name"
+									alt=""
 									width="64"
 									height="64"
 								/>
@@ -504,6 +507,7 @@ onUnmounted(() => {
 						:src="getBadgeImage(badge as BadgeId)"
 						width="20"
 						height="20"
+						:alt="badgeNameById.get(badge as BadgeId) ?? 'Insígnia do jogo'"
 					/>
 				</div>
 			</template>

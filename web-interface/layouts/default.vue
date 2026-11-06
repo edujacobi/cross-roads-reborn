@@ -8,11 +8,21 @@ import Sidebar from "~/components/Sidebar.vue";
 
 <template>
 	<div class="main-layout">
+		<a
+			class="skip-link"
+			href="#page-content"
+		>
+			Pular para o conteúdo principal
+		</a>
 		<Sidebar />
 
 		<!-- Main Content Area -->
 		<div class="main-content-wrapper">
-			<div class="page-content">
+			<div
+				id="page-content"
+				class="page-content"
+				tabindex="-1"
+			>
 				<slot />
 			</div>
 		</div>

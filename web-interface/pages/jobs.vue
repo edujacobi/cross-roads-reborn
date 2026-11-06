@@ -161,7 +161,7 @@ async function handleCancelJob() {
 </script>
 
 <template>
-	<div class="jobs-page">
+	<main class="jobs-page">
 		<PageTitle
 			title="Trabalhos"
 			subtitle="Você não pode apostar, roubar nem vasculhar enquanto trabalha!"
@@ -301,15 +301,12 @@ async function handleCancelJob() {
 											v-for="item in job.needItems"
 											:key="item.id"
 											class="job-card__detail-item"
-											tabindex="0"
 											@click="openItemModal(item)"
-											@keydown.enter.prevent="openItemModal(item)"
-											@keydown.space.prevent="openItemModal(item)"
 										>
 											<NuxtImg
 												:src="item.defaultImagePath"
 												width="24"
-												:alt="item.name"
+												alt=""
 											/>
 											{{ item.name }}
 										</button>
@@ -447,7 +444,7 @@ async function handleCancelJob() {
 				</BaseButton>
 			</template>
 		</BaseModal>
-	</div>
+	</main>
 </template>
 
 <style

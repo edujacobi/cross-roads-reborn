@@ -359,7 +359,7 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 </script>
 
 <template>
-	<div class="scavenge-page">
+	<main class="scavenge-page">
 		<PageTitle
 			title="Vasculhar"
 			subtitle="Procuro pessoas corajosas e sem nojo de entrar em locais sujos e perigosos."
@@ -479,6 +479,7 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 										<NuxtImg
 											:src="imagePaths.attributes.attack"
 											width="20"
+											alt=""
 										/>
 										{{ location.needAttack }}
 										ATK
@@ -560,15 +561,12 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 											v-for="item in location.rewardItems"
 											:key="item.itemId"
 											class="scavenge-card__detail-item"
-											tabindex="0"
 											@click="openItemModal({ id: item.itemId })"
-											@keydown.enter.prevent="openItemModal({ id: item.itemId })"
-											@keydown.space.prevent="openItemModal({ id: item.itemId })"
 										>
 											<NuxtImg
 												:src="item.defaultImagePath"
 												width="22"
-												:alt="item.name"
+												alt=""
 											/>
 											<span>{{ item.name }}</span>
 											<span class="scavenge-card__item-duration">
@@ -795,7 +793,7 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 				</BaseButton>
 			</template>
 		</BaseModal>
-	</div>
+	</main>
 </template>
 
 <style
@@ -1365,18 +1363,6 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 		transition: none !important;
 		animation: none !important;
 	}
-}
-
-.sr-only {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	padding: 0;
-	margin: -1px;
-	overflow: hidden;
-	clip: rect(0, 0, 0, 0);
-	white-space: nowrap;
-	border-width: 0;
 }
 
 </style>

@@ -100,6 +100,10 @@ defineEmits<(e: "update:modelValue", value: string | number) => void>();
       border-color: $color-brand;
     }
 
+    &:focus-visible {
+      @include focus-outline($color-brand, 2px);
+    }
+
     &:disabled {
       opacity: 0.5;
       cursor: not-allowed;

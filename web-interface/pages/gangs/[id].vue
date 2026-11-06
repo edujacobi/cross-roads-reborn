@@ -1084,6 +1084,19 @@ async function updateGangMoney() {
 				</p>
 				<BaseTable v-else>
 					<table>
+						<caption class="visually-hidden">
+							Solicitações pendentes de entrada na gangue
+						</caption>
+						<thead>
+							<tr>
+								<th
+									scope="col"
+									class="visually-hidden"
+								>
+									Solicitante
+								</th>
+							</tr>
+						</thead>
 						<tbody>
 							<tr
 								v-for="request in joinRequests"
@@ -1099,8 +1112,16 @@ async function updateGangMoney() {
 											image-class="member-avatar"
 											width="32"
 											height="32"
+											alt=""
 										/>
-										<span>{{ request.userName }}</span>
+										<button
+											type="button"
+											class="table-row-link"
+											:aria-label="`Revisar solicitação de ${request.userName}`"
+											@click.stop="reviewingRequest = request"
+										>
+											{{ request.userName }}
+										</button>
 									</div>
 								</td>
 							</tr>
@@ -1220,9 +1241,7 @@ async function updateGangMoney() {
 										v-for="member in sortedMembers"
 										:key="member.userId"
 										class="clickable-row"
-										tabindex="0"
 										@click="navigateTo(`/users/${member.userId}`)"
-										@keydown.enter.prevent="navigateTo(`/users/${member.userId}`)"
 									>
 										<th scope="row">
 											<div class="member-cell">
@@ -1232,8 +1251,15 @@ async function updateGangMoney() {
 													image-class="member-avatar"
 													width="32"
 													height="32"
+													alt=""
 												/>
-												<span>{{ member.nickname }}</span>
+												<NuxtLink
+													:to="`/users/${member.userId}`"
+													class="table-row-link"
+													@click.stop
+												>
+													{{ member.nickname }}
+												</NuxtLink>
 											</div>
 										</th>
 										<td>
@@ -1266,7 +1292,6 @@ async function updateGangMoney() {
 												:data-popover-text="`Gerenciar membro ${member.nickname}`"
 												data-popover-position="top"
 												@click.stop="openMemberRoleModal(member)"
-												@keydown.enter.stop
 											>
 												<UserRoundCog
 													:size="15"
@@ -2338,6 +2363,10 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 		&:focus {
 			border-color: $color-brand;
 		}
+
+		&:focus-visible {
+			@include focus-outline($color-brand, 2px);
+		}
 	}
 }
 
@@ -2724,10 +2753,6 @@ $background-color: color-mix(in lab, $bg-card 100%, $highlight-color 15%);
 .table-container {
 	max-height: 50dvh;
 	overflow-y: auto;
-}
-
-.clickable-row {
-	@include row-hover;
 }
 
 .role-badge {

@@ -398,6 +398,7 @@ function formatBribeCost() {
 					<NuxtImg
 						:src="imagePaths.uiElements.escape"
 						width="16"
+						alt=""
 					/>
 					Fugir
 				</BaseButton>
@@ -410,6 +411,7 @@ function formatBribeCost() {
 					<NuxtImg
 						:src="imagePaths.badges.topBribery"
 						width="16"
+						alt=""
 					/>
 					Subornar
 				</BaseButton>
@@ -470,106 +472,142 @@ function formatBribeCost() {
 							<th
 								scope="col"
 								class="sortable"
-								@click="handleSort('nickname')"
+								:aria-sort="sortColumn === 'nickname' && sortDirection ? (sortDirection === 'asc' ? 'ascending' : 'descending') : undefined"
 							>
-								<span class="sort-header-content">
-									Jogador
-									<span class="sort-icons">
-										<ArrowUpDown
-											v-if="sortColumn !== 'nickname'"
-											:size="14"
-											class="sort-icon unsorted"
-										/>
-										<ArrowUp
-											v-else-if="sortDirection === 'asc'"
-											:size="14"
-											class="sort-icon asc"
-										/>
-										<ArrowDown
-											v-else
-											:size="14"
-											class="sort-icon desc"
-										/>
+								<button
+									type="button"
+									class="table-sort-button"
+									@click="handleSort('nickname')"
+								>
+									<span class="sort-header-content">
+										Jogador
+										<span
+											class="sort-icons"
+											aria-hidden="true"
+										>
+											<ArrowUpDown
+												v-if="sortColumn !== 'nickname'"
+												:size="14"
+												class="sort-icon unsorted"
+											/>
+											<ArrowUp
+												v-else-if="sortDirection === 'asc'"
+												:size="14"
+												class="sort-icon asc"
+											/>
+											<ArrowDown
+												v-else
+												:size="14"
+												class="sort-icon desc"
+											/>
+										</span>
 									</span>
-								</span>
+								</button>
 							</th>
 							<th
 								scope="col"
 								class="sortable"
-								@click="handleSort('prisonTime')"
+								:aria-sort="sortColumn === 'prisonTime' && sortDirection ? (sortDirection === 'asc' ? 'ascending' : 'descending') : undefined"
 							>
-								<span class="sort-header-content">
-									Solta em
-									<span class="sort-icons">
-										<ArrowUpDown
-											v-if="sortColumn !== 'prisonTime'"
-											:size="14"
-											class="sort-icon unsorted"
-										/>
-										<ArrowUp
-											v-else-if="sortDirection === 'asc'"
-											:size="14"
-											class="sort-icon asc"
-										/>
-										<ArrowDown
-											v-else
-											:size="14"
-											class="sort-icon desc"
-										/>
+								<button
+									type="button"
+									class="table-sort-button"
+									@click="handleSort('prisonTime')"
+								>
+									<span class="sort-header-content">
+										Solta em
+										<span
+											class="sort-icons"
+											aria-hidden="true"
+										>
+											<ArrowUpDown
+												v-if="sortColumn !== 'prisonTime'"
+												:size="14"
+												class="sort-icon unsorted"
+											/>
+											<ArrowUp
+												v-else-if="sortDirection === 'asc'"
+												:size="14"
+												class="sort-icon asc"
+											/>
+											<ArrowDown
+												v-else
+												:size="14"
+												class="sort-icon desc"
+											/>
+										</span>
 									</span>
-								</span>
+								</button>
 							</th>
 							<th
 								scope="col"
 								class="sortable"
-								@click="handleSort('robberyFailureCount')"
+								:aria-sort="sortColumn === 'robberyFailureCount' && sortDirection ? (sortDirection === 'asc' ? 'ascending' : 'descending') : undefined"
 							>
-								<span class="sort-header-content">
-									Vezes preso
-									<span class="sort-icons">
-										<ArrowUpDown
-											v-if="sortColumn !== 'robberyFailureCount'"
-											:size="14"
-											class="sort-icon unsorted"
-										/>
-										<ArrowUp
-											v-else-if="sortDirection === 'asc'"
-											:size="14"
-											class="sort-icon asc"
-										/>
-										<ArrowDown
-											v-else
-											:size="14"
-											class="sort-icon desc"
-										/>
+								<button
+									type="button"
+									class="table-sort-button"
+									@click="handleSort('robberyFailureCount')"
+								>
+									<span class="sort-header-content">
+										Vezes preso
+										<span
+											class="sort-icons"
+											aria-hidden="true"
+										>
+											<ArrowUpDown
+												v-if="sortColumn !== 'robberyFailureCount'"
+												:size="14"
+												class="sort-icon unsorted"
+											/>
+											<ArrowUp
+												v-else-if="sortDirection === 'asc'"
+												:size="14"
+												class="sort-icon asc"
+											/>
+											<ArrowDown
+												v-else
+												:size="14"
+												class="sort-icon desc"
+											/>
+										</span>
 									</span>
-								</span>
+								</button>
 							</th>
 							<th
 								scope="col"
 								class="sortable"
-								@click="handleSort('escapeCount')"
+								:aria-sort="sortColumn === 'escapeCount' && sortDirection ? (sortDirection === 'asc' ? 'ascending' : 'descending') : undefined"
 							>
-								<span class="sort-header-content">
-									Fugas
-									<span class="sort-icons">
-										<ArrowUpDown
-											v-if="sortColumn !== 'escapeCount'"
-											:size="14"
-											class="sort-icon unsorted"
-										/>
-										<ArrowUp
-											v-else-if="sortDirection === 'asc'"
-											:size="14"
-											class="sort-icon asc"
-										/>
-										<ArrowDown
-											v-else
-											:size="14"
-											class="sort-icon desc"
-										/>
+								<button
+									type="button"
+									class="table-sort-button"
+									@click="handleSort('escapeCount')"
+								>
+									<span class="sort-header-content">
+										Fugas
+										<span
+											class="sort-icons"
+											aria-hidden="true"
+										>
+											<ArrowUpDown
+												v-if="sortColumn !== 'escapeCount'"
+												:size="14"
+												class="sort-icon unsorted"
+											/>
+											<ArrowUp
+												v-else-if="sortDirection === 'asc'"
+												:size="14"
+												class="sort-icon asc"
+											/>
+											<ArrowDown
+												v-else
+												:size="14"
+												class="sort-icon desc"
+											/>
+										</span>
 									</span>
-								</span>
+								</button>
 							</th>
 						</tr>
 					</thead>
@@ -578,9 +616,7 @@ function formatBribeCost() {
 							v-for="entry in entries"
 							:key="entry.id"
 							class="clickable-row"
-							tabindex="0"
 							@click="navigateTo(`/users/${entry.id}`)"
-							@keydown.enter.prevent="navigateTo(`/users/${entry.id}`)"
 						>
 							<th
 								scope="row"
@@ -595,7 +631,13 @@ function formatBribeCost() {
 										width="32"
 										height="32"
 									/>
-									<span class="nickname">{{ entry.nickname || "(Sem Nick)" }}</span>
+									<NuxtLink
+										:to="`/users/${entry.id}`"
+										class="nickname table-row-link"
+										@click.stop
+									>
+										{{ entry.nickname || "(Sem Nick)" }}
+									</NuxtLink>
 									<BaseBadge variant="neutral">
 										<NuxtImg
 											:src="getClassImageUrl(entry.class)"
@@ -661,6 +703,7 @@ function formatBribeCost() {
 					<NuxtImg
 						:src="imagePaths.uiElements.escape"
 						width="16"
+						alt=""
 					/>
 					Fugir
 				</BaseButton>
@@ -731,6 +774,7 @@ function formatBribeCost() {
 					<NuxtImg
 						:src="imagePaths.badges.topBribery"
 						width="16"
+						alt=""
 					/>
 					Subornar
 				</BaseButton>
@@ -858,16 +902,11 @@ function formatBribeCost() {
 
 .prison-table {
 	th.sortable {
-		cursor: pointer;
 		user-select: none;
 		@include transition-color;
 
 		&:hover {
 			color: $text-primary;
-		}
-
-		&:focus-visible {
-			@include focus-outline;
 		}
 
 		.sort-header-content {
@@ -900,10 +939,6 @@ function formatBribeCost() {
 		&:hover .sort-icon.unsorted {
 			opacity: 0.7;
 		}
-	}
-
-	.clickable-row {
-		@include row-hover;
 	}
 
 	.player-cell-content {
@@ -964,15 +999,4 @@ function formatBribeCost() {
 	}
 }
 
-.sr-only {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	padding: 0;
-	margin: -1px;
-	overflow: hidden;
-	clip: rect(0, 0, 0, 0);
-	white-space: nowrap;
-	border-width: 0;
-}
 </style>

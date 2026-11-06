@@ -102,16 +102,19 @@ function handleUpdateUnits(itemId: number, delta: number) {
 			:data-popover-text="`Mais informações de ${item.name}`"
 			data-popover-direction="bottom"
 		>
-			<LazyNuxtImg
-				class="shop-item-card__image"
-				:src="getItemImage(item.id, getUserItemSkin(item.id))"
-				:alt="`Mais informações de ${item.name}`"
-				width="56"
-				tabindex="0"
+			<button
+				type="button"
+				class="shop-item-card__image-button"
+				:aria-label="`Mais informações de ${item.name}`"
 				@click="openItemModal(item)"
-				@keydown.enter.prevent="openItemModal(item)"
-				@keydown.space.prevent="openItemModal(item)"
-			/>
+			>
+				<LazyNuxtImg
+					class="shop-item-card__image"
+					:src="getItemImage(item.id, getUserItemSkin(item.id))"
+					alt=""
+					width="56"
+				/>
+			</button>
 		</span>
 		<div class="shop-item-card__info">
 			<h3 class="shop-item-card__name">{{ item.name }}</h3>
@@ -274,7 +277,22 @@ function handleUpdateUnits(itemId: number, delta: number) {
 		border: none;
 	}
 
+	&__image-button {
+		display: block;
+		width: 100%;
+		padding: 0;
+		border: 0;
+		border-radius: $radius-sm;
+		background: transparent;
+		cursor: pointer;
+
+		&:focus-visible {
+			@include focus-outline($color-brand, 2px);
+		}
+	}
+
 	&__image {
+		display: block;
 		width: 100%;
 		height: 6rem;
 		flex: 0 0 6rem;
@@ -283,14 +301,12 @@ function handleUpdateUnits(itemId: number, delta: number) {
 		border-radius: $radius-sm;
 		border: 1px solid transparent;
 		transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
-		cursor: pointer;
 
 		&:hover,
-		&:focus-visible {
+		.shop-item-card__image-button:focus-visible & {
 			background-color: $bg-input;
 			border-color: $border-card;
 			transform: translateY(-2px);
-			outline: none;
 		}
 	}
 

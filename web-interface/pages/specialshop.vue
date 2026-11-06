@@ -496,7 +496,7 @@ async function confirmPurchase() {
 								>
 									<NuxtImg
 										:src="skin.imagePath"
-										:alt="skin.name"
+										alt=""
 										width="52"
 										height="52"
 										loading="lazy"
@@ -598,6 +598,7 @@ async function confirmPurchase() {
 								width="88"
 								height="88"
 								loading="lazy"
+								alt=""
 							/>
 							<h3>{{ decoration.name }}</h3>
 							<p class="special-shop__price">

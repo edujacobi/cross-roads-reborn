@@ -132,55 +132,73 @@ function nextPage() {
 							<th
 								scope="col"
 								class="sortable"
-								@click="handleSort('nickname')"
+								:aria-sort="sortColumn === 'nickname' && sortDirection ? (sortDirection === 'asc' ? 'ascending' : 'descending') : undefined"
 							>
-								<span class="sort-header-content">
-									Jogador
-									<span class="sort-icons">
-										<ArrowUpDown
-											v-if="sortColumn !== 'nickname'"
-											:size="14"
-											class="sort-icon unsorted"
-										/>
-										<ArrowUp
-											v-else-if="sortDirection === 'asc'"
-											:size="14"
-											class="sort-icon asc"
-										/>
-										<ArrowDown
-											v-else
-											:size="14"
-											class="sort-icon desc"
-										/>
+								<button
+									type="button"
+									class="table-sort-button"
+									@click="handleSort('nickname')"
+								>
+									<span class="sort-header-content">
+										Jogador
+										<span
+											class="sort-icons"
+											aria-hidden="true"
+										>
+											<ArrowUpDown
+												v-if="sortColumn !== 'nickname'"
+												:size="14"
+												class="sort-icon unsorted"
+											/>
+											<ArrowUp
+												v-else-if="sortDirection === 'asc'"
+												:size="14"
+												class="sort-icon asc"
+											/>
+											<ArrowDown
+												v-else
+												:size="14"
+												class="sort-icon desc"
+											/>
+										</span>
 									</span>
-								</span>
+								</button>
 							</th>
 							<th
 								v-if="auth.hasAdminAccess.value"
 								scope="col"
 								class="sortable"
-								@click="handleSort('id')"
+								:aria-sort="sortColumn === 'id' && sortDirection ? (sortDirection === 'asc' ? 'ascending' : 'descending') : undefined"
 							>
-								<span class="sort-header-content">
-									ID
-									<span class="sort-icons">
-										<ArrowUpDown
-											v-if="sortColumn !== 'id'"
-											:size="14"
-											class="sort-icon unsorted"
-										/>
-										<ArrowUp
-											v-else-if="sortDirection === 'asc'"
-											:size="14"
-											class="sort-icon asc"
-										/>
-										<ArrowDown
-											v-else
-											:size="14"
-											class="sort-icon desc"
-										/>
+								<button
+									type="button"
+									class="table-sort-button"
+									@click="handleSort('id')"
+								>
+									<span class="sort-header-content">
+										ID
+										<span
+											class="sort-icons"
+											aria-hidden="true"
+										>
+											<ArrowUpDown
+												v-if="sortColumn !== 'id'"
+												:size="14"
+												class="sort-icon unsorted"
+											/>
+											<ArrowUp
+												v-else-if="sortDirection === 'asc'"
+												:size="14"
+												class="sort-icon asc"
+											/>
+											<ArrowDown
+												v-else
+												:size="14"
+												class="sort-icon desc"
+											/>
+										</span>
 									</span>
-								</span>
+								</button>
 							</th>
 							<th scope="col">Grupo</th>
 							<th scope="col">Classe</th>
@@ -189,55 +207,73 @@ function nextPage() {
 								v-if="auth.hasAdminAccess.value"
 								scope="col"
 								class="sortable"
-								@click="handleSort('createdAt')"
+								:aria-sort="sortColumn === 'createdAt' && sortDirection ? (sortDirection === 'asc' ? 'ascending' : 'descending') : undefined"
 							>
-								<span class="sort-header-content">
-									Criação
-									<span class="sort-icons">
-										<ArrowUpDown
-											v-if="sortColumn !== 'createdAt'"
-											:size="14"
-											class="sort-icon unsorted"
-										/>
-										<ArrowUp
-											v-else-if="sortDirection === 'asc'"
-											:size="14"
-											class="sort-icon asc"
-										/>
-										<ArrowDown
-											v-else
-											:size="14"
-											class="sort-icon desc"
-										/>
+								<button
+									type="button"
+									class="table-sort-button"
+									@click="handleSort('createdAt')"
+								>
+									<span class="sort-header-content">
+										Criação
+										<span
+											class="sort-icons"
+											aria-hidden="true"
+										>
+											<ArrowUpDown
+												v-if="sortColumn !== 'createdAt'"
+												:size="14"
+												class="sort-icon unsorted"
+											/>
+											<ArrowUp
+												v-else-if="sortDirection === 'asc'"
+												:size="14"
+												class="sort-icon asc"
+											/>
+											<ArrowDown
+												v-else
+												:size="14"
+												class="sort-icon desc"
+											/>
+										</span>
 									</span>
-								</span>
+								</button>
 							</th>
 							<th
 								v-if="auth.hasAdminAccess.value"
 								scope="col"
 								class="sortable"
-								@click="handleSort('updatedAt')"
+								:aria-sort="sortColumn === 'updatedAt' && sortDirection ? (sortDirection === 'asc' ? 'ascending' : 'descending') : undefined"
 							>
-								<span class="sort-header-content">
-									Última atualização
-									<span class="sort-icons">
-										<ArrowUpDown
-											v-if="sortColumn !== 'updatedAt'"
-											:size="14"
-											class="sort-icon unsorted"
-										/>
-										<ArrowUp
-											v-else-if="sortDirection === 'asc'"
-											:size="14"
-											class="sort-icon asc"
-										/>
-										<ArrowDown
-											v-else
-											:size="14"
-											class="sort-icon desc"
-										/>
+								<button
+									type="button"
+									class="table-sort-button"
+									@click="handleSort('updatedAt')"
+								>
+									<span class="sort-header-content">
+										Última atualização
+										<span
+											class="sort-icons"
+											aria-hidden="true"
+										>
+											<ArrowUpDown
+												v-if="sortColumn !== 'updatedAt'"
+												:size="14"
+												class="sort-icon unsorted"
+											/>
+											<ArrowUp
+												v-else-if="sortDirection === 'asc'"
+												:size="14"
+												class="sort-icon asc"
+											/>
+											<ArrowDown
+												v-else
+												:size="14"
+												class="sort-icon desc"
+											/>
+										</span>
 									</span>
-								</span>
+								</button>
 							</th>
 						</tr>
 					</thead>
@@ -246,9 +282,7 @@ function nextPage() {
 							v-for="u in users"
 							:key="u.id"
 							class="clickable-row"
-							tabindex="0"
 							@click="navigateTo(`/users/${u.id}`)"
-							@keydown.enter.prevent="navigateTo(`/users/${u.id}`)"
 						>
 							<th
 								scope="row"
@@ -263,7 +297,13 @@ function nextPage() {
 										width="32"
 										height="32"
 									/>
-									<span class="nickname">{{ u.nickname || "(Sem Nick)" }}</span>
+									<NuxtLink
+										:to="`/users/${u.id}`"
+										class="nickname table-row-link"
+										@click.stop
+									>
+										{{ u.nickname || "(Sem Nick)" }}
+									</NuxtLink>
 									<BaseBadge
 										v-if="u.isVip"
 										variant="vip"
@@ -383,17 +423,12 @@ function nextPage() {
 }
 
 .users-table {
-		th.sortable {
-		cursor: pointer;
-		user-select: none;
+	th.sortable {
+	user-select: none;
 		@include transition-color;
 
 		&:hover {
 			color: $text-primary;
-		}
-
-		&:focus-visible {
-			@include focus-outline;
 		}
 
 		.sort-header-content {
@@ -426,10 +461,6 @@ function nextPage() {
 		&:hover .sort-icon.unsorted {
 			opacity: 0.7;
 		}
-	}
-
-	.clickable-row {
-		@include row-hover;
 	}
 
 	.player-cell-content {

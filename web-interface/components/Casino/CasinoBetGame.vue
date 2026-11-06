@@ -418,12 +418,7 @@ function sideName(value: string) {
 			color: $text-secondary;
 
 			input {
-				position: absolute;
-				width: 1px;
-				height: 1px;
-				overflow: hidden;
-				clip: rect(0, 0, 0, 0);
-				white-space: nowrap;
+				@include visually-hidden;
 			}
 
 			&:has(input:checked) {
@@ -433,8 +428,7 @@ function sideName(value: string) {
 			}
 
 			&:has(input:focus-visible) {
-				outline: 2px solid $color-brand;
-				outline-offset: 2px;
+				@include focus-outline($color-brand, 2px);
 			}
 
 			img {

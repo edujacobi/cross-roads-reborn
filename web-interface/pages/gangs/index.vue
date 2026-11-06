@@ -389,6 +389,7 @@ const bases = [
 					<div class="gangs-board__filter-selector">
 						<BaseSelector
 							id="recruitment-type-filter"
+							aria-label="Filtrar por tipo de recrutamento"
 							:options="recruitmentFilterOptions"
 							:model-value="selectedRecruitmentFilter"
 							@update:model-value="selectedRecruitmentFilter = $event"
@@ -577,6 +578,7 @@ const bases = [
 							<LazyNuxtImg
 								:src="b.imageModifier"
 								width="24"
+								alt=""
 								class="gangs-page__base-image-modifier"
 							/>
 							{{ b.modifier }}
@@ -1090,6 +1092,10 @@ const bases = [
 		&:focus {
 			border-color: $color-brand;
 		}
+
+		&:focus-visible {
+			@include focus-outline($color-brand, 2px);
+		}
 	}
 }
 
@@ -1343,6 +1349,10 @@ const bases = [
 
 	&:focus {
 		border-color: $color-brand;
+	}
+
+	&:focus-visible {
+		@include focus-outline($color-brand, 2px);
 	}
 }
 

@@ -181,6 +181,7 @@ async function handlePayPrivate() {
 					<NuxtImg
 						:src="imagePaths.badges.topHospital"
 						width="16"
+						alt=""
 					/>
 					Pagar particular
 				</BaseButton>
@@ -241,80 +242,107 @@ async function handlePayPrivate() {
 							<th
 								scope="col"
 								class="sortable"
-								@click="handleSort('nickname')"
+								:aria-sort="sortColumn === 'nickname' && sortDirection ? (sortDirection === 'asc' ? 'ascending' : 'descending') : undefined"
 							>
-								<span class="sort-header-content">
-									Jogador
-									<span class="sort-icons">
-										<ArrowUpDown
-											v-if="sortColumn !== 'nickname'"
-											:size="14"
-											class="sort-icon unsorted"
-										/>
-										<ArrowUp
-											v-else-if="sortDirection === 'asc'"
-											:size="14"
-											class="sort-icon asc"
-										/>
-										<ArrowDown
-											v-else
-											:size="14"
-											class="sort-icon desc"
-										/>
+								<button
+									type="button"
+									class="table-sort-button"
+									@click="handleSort('nickname')"
+								>
+									<span class="sort-header-content">
+										Jogador
+										<span
+											class="sort-icons"
+											aria-hidden="true"
+										>
+											<ArrowUpDown
+												v-if="sortColumn !== 'nickname'"
+												:size="14"
+												class="sort-icon unsorted"
+											/>
+											<ArrowUp
+												v-else-if="sortDirection === 'asc'"
+												:size="14"
+												class="sort-icon asc"
+											/>
+											<ArrowDown
+												v-else
+												:size="14"
+												class="sort-icon desc"
+											/>
+										</span>
 									</span>
-								</span>
+								</button>
 							</th>
 							<th
 								scope="col"
 								class="sortable"
-								@click="handleSort('hospitalTime')"
+								:aria-sort="sortColumn === 'hospitalTime' && sortDirection ? (sortDirection === 'asc' ? 'ascending' : 'descending') : undefined"
 							>
-								<span class="sort-header-content">
-									Curado em
-									<span class="sort-icons">
-										<ArrowUpDown
-											v-if="sortColumn !== 'hospitalTime'"
-											:size="14"
-											class="sort-icon unsorted"
-										/>
-										<ArrowUp
-											v-else-if="sortDirection === 'asc'"
-											:size="14"
-											class="sort-icon asc"
-										/>
-										<ArrowDown
-											v-else
-											:size="14"
-											class="sort-icon desc"
-										/>
+								<button
+									type="button"
+									class="table-sort-button"
+									@click="handleSort('hospitalTime')"
+								>
+									<span class="sort-header-content">
+										Curado em
+										<span
+											class="sort-icons"
+											aria-hidden="true"
+										>
+											<ArrowUpDown
+												v-if="sortColumn !== 'hospitalTime'"
+												:size="14"
+												class="sort-icon unsorted"
+											/>
+											<ArrowUp
+												v-else-if="sortDirection === 'asc'"
+												:size="14"
+												class="sort-icon asc"
+											/>
+											<ArrowDown
+												v-else
+												:size="14"
+												class="sort-icon desc"
+											/>
+										</span>
 									</span>
-								</span>
+								</button>
 							</th>
 							<th
 								scope="col"
 								class="sortable"
-								@click="handleSort('hospitalCount')"
+								:aria-sort="sortColumn === 'hospitalCount' && sortDirection ? (sortDirection === 'asc' ? 'ascending' : 'descending') : undefined"
 							>
-								<span class="sort-header-content">
-									Hospitalizações
-									<span class="sort-icons">
-										<ArrowUpDown
-											v-if="sortColumn !== 'hospitalCount'"
-											:size="14"
-											class="sort-icon unsorted"
-										/>
-										<ArrowUp
-											v-else-if="sortDirection === 'asc'"
-											:size="14"
-											class="sort-icon asc"
-										/>
-										<ArrowDown
-											v-else
-											:size="14"
-											class="sort-icon desc"
-										/>
+								<button
+									type="button"
+									class="table-sort-button"
+									@click="handleSort('hospitalCount')"
+								>
+									<span class="sort-header-content">
+										Hospitalizações
+										<span
+											class="sort-icons"
+											aria-hidden="true"
+										>
+											<ArrowUpDown
+												v-if="sortColumn !== 'hospitalCount'"
+												:size="14"
+												class="sort-icon unsorted"
+											/>
+											<ArrowUp
+												v-else-if="sortDirection === 'asc'"
+												:size="14"
+												class="sort-icon asc"
+											/>
+											<ArrowDown
+												v-else
+												:size="14"
+												class="sort-icon desc"
+											/>
+										</span>
 									</span>
-								</span>
+								</button>
 							</th>
 						</tr>
 					</thead>
@@ -323,9 +351,7 @@ async function handlePayPrivate() {
 							v-for="entry in entries"
 							:key="entry.id"
 							class="clickable-row"
-							tabindex="0"
 							@click="navigateTo(`/users/${entry.id}`)"
-							@keydown.enter.prevent="navigateTo(`/users/${entry.id}`)"
 						>
 							<th
 								scope="row"
@@ -340,7 +366,13 @@ async function handlePayPrivate() {
 										width="32"
 										height="32"
 									/>
-									<span class="nickname">{{ entry.nickname || "(Sem Nick)" }}</span>
+									<NuxtLink
+										:to="`/users/${entry.id}`"
+										class="nickname table-row-link"
+										@click.stop
+									>
+										{{ entry.nickname || "(Sem Nick)" }}
+									</NuxtLink>
 									<BaseBadge variant="neutral">
 										<NuxtImg
 											:src="getClassImageUrl(entry.class)"
@@ -489,16 +521,11 @@ async function handlePayPrivate() {
 
 .hospital-table {
 	th.sortable {
-		cursor: pointer;
 		user-select: none;
 		@include transition-color;
 
 		&:hover {
 			color: $text-primary;
-		}
-
-		&:focus-visible {
-			@include focus-outline;
 		}
 
 		.sort-header-content {
@@ -531,10 +558,6 @@ async function handlePayPrivate() {
 		&:hover .sort-icon.unsorted {
 			opacity: 0.7;
 		}
-	}
-
-	.clickable-row {
-		@include row-hover;
 	}
 
 	.player-cell-content {

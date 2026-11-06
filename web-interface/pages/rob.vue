@@ -278,7 +278,7 @@ onBeforeUnmount(() => sseAbortController?.abort());
 </script>
 
 <template>
-	<div class="rob-page">
+	<main class="rob-page">
 		<PageTitle
 			title="Roubar"
 			subtitle="Encontre um alvo e roube tudo!"
@@ -654,7 +654,7 @@ onBeforeUnmount(() => sseAbortController?.abort());
 				</BaseButton>
 			</template>
 		</BaseModal>
-	</div>
+	</main>
 </template>
 
 <style
