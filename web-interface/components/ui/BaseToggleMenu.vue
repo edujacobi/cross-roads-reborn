@@ -67,6 +67,7 @@ const isOpen = defineModel<boolean>("open", { required: true });
 	}
 
 	&__menu {
+		@include scrollbar-custom();
 		position: fixed;
 		bottom: 4.5rem;
 		z-index: 21;
@@ -80,6 +81,8 @@ const isOpen = defineModel<boolean>("open", { required: true });
 		border-radius: $radius-md;
 		background-color: $bg-card;
 		box-shadow: $shadow-lg;
+		left: 50%;
+		transform: translateX(-50%);
 
 		:deep(.base-button) {
 			width: 100%;
@@ -93,8 +96,6 @@ const isOpen = defineModel<boolean>("open", { required: true });
 		@media (min-width: 851px) {
 			position: absolute;
 			bottom: calc(100% + $spacing-sm);
-			left: 50%;
-			transform: translateX(-50%);
 		}
 	}
 
