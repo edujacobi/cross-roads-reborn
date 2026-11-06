@@ -98,6 +98,14 @@ $palettes: (
   }
 }
 
+.ranking-background--silver,
+.profile-background--silver {
+  background-image: linear-gradient(rgba(11, 13, 19, 0.72), rgba(11, 13, 19, 0.72)), url("/images/backgrounds/silver-brushed.svg");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%, cover;
+}
+
 $cloud-decoration: url("/images/backgrounds/cloud.svg");
 
 .ranking-background--cloud,

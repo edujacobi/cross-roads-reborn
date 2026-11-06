@@ -12,7 +12,6 @@ import { useAuth } from "~/composables/useAuth";
 import { useFallbackUserImage } from "~/composables/useFallbackImage";
 import { useMoneyFormat } from "~/composables/useMoneyFormat";
 import { useToast } from "~/composables/useToast";
-import { getErrorMessage } from "~/utils/getErrorMessage";
 import {
 	BuySpecialShopItemDocument,
 	BuySpecialShopVipDocument,
@@ -22,6 +21,7 @@ import {
 	SpecialShopItemType,
 	UserDecorationType,
 } from "~/graphql/generated";
+import { getErrorMessage } from "~/utils/getErrorMessage";
 import { AvatarDecorationId, BackgroundDecorationId } from "../../src/core/types/Ids";
 
 definePageMeta({
@@ -56,8 +56,7 @@ const pendingPurchase = ref<PendingPurchase | null>(null);
 const pendingBundleActivation = ref<{ id: number; name: string } | null>(null);
 const vipDays = ref(7);
 
-const { user: profile, loading: profileLoading, error: profileError, refetch: refetchProfile } =
-	useUserProfile(userId);
+const { user: profile, loading: profileLoading, error: profileError, refetch: refetchProfile } = useUserProfile(userId);
 const specialCoinBalance = computed(() => profile.value?.specialCoin ?? 0);
 const avatarUrl = computed(() => profile.value?.avatarUrl || useFallbackUserImage(userId.value));
 
