@@ -413,11 +413,9 @@ function nextPage() {
 
 	&__search-bar {
 		width: 100%;
-		max-width: 28.125rem;
 
-		// ponytail: expand search on mobile screens
 		@media (max-width: $bp-mobile) {
-			max-width: 100%;
+			width: 100%;
 		}
 	}
 }

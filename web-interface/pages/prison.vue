@@ -426,11 +426,6 @@ function formatBribeCost() {
 		>
 			<template #header>
 				<div class="prison-page__search-bar">
-					<Search
-						:size="18"
-						class="prison-page__search-icon"
-						aria-hidden="true"
-					/>
 					<BaseInput
 						id="search-prison"
 						:model-value="searchQuery"
@@ -438,7 +433,11 @@ function formatBribeCost() {
 						type="search"
 						placeholder="Buscar por Nickname ou ID..."
 						@update:model-value="handleSearch"
-					/>
+					>
+						<template #leading>
+							<Search :size="18" />
+						</template>
+					</BaseInput>
 				</div>
 			</template>
 
@@ -796,27 +795,9 @@ function formatBribeCost() {
 	gap: $spacing-lg;
 
 	&__search-bar {
-		display: flex;
-		align-items: center;
-		gap: 12px;
-		width: 100%;
-		max-width: 28.125rem;
-		position: relative;
-
 		@media (max-width: $bp-mobile) {
-			max-width: 100%;
+			width: 100%;
 		}
-
-		:deep(.base-input) {
-			padding-left: 2.375rem;
-		}
-	}
-
-	&__search-icon {
-		position: absolute;
-		left: 12px;
-		color: $text-muted;
-		pointer-events: none;
 	}
 }
 

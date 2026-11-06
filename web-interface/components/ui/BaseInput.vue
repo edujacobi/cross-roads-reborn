@@ -83,7 +83,8 @@ defineEmits<(e: "update:modelValue", value: string | number) => void>();
   }
 
   .base-input {
-    width: 100%;
+    width: 20rem;
+	  max-width: 100%;
     padding: 0.625rem 0.875rem;
     background-color: $bg-input;
     border: 1px solid $border-subtle;

@@ -405,7 +405,7 @@ const bases = [
 							@update:model-value="searchQuery = String($event)"
 						>
 							<template #leading>
-								<Search :size="16" />
+								<Search :size="18" />
 							</template>
 						</BaseInput>
 					</div>
