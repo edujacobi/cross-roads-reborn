@@ -30,7 +30,7 @@ definePageMeta({
 });
 
 useHead({
-	title: "Trabalhos",
+	title: "Trabalhar",
 });
 
 type Job = GetJobsQuery["jobs"][number];

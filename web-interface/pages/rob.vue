@@ -124,6 +124,8 @@ const actionUnavailableMessage = computed(() => {
 	if (userStatus?.isScavenging) return "Você não pode roubar enquanto vasculha!";
 	if (userStatus?.isWorking) return "Você não pode roubar enquanto trabalha!";
 	if (userStatus?.isRobbing || userStatus?.isBeingRobbed) return "Você não pode roubar enquanto já está em um roubo!";
+	if (userStatus?.isBeating || userStatus?.isBeingBeated)
+		return "Você não pode roubar enquanto está em um espancamento!";
 	return null;
 });
 const isLoading = computed(
@@ -970,7 +972,7 @@ onBeforeUnmount(() => sseAbortController?.abort());
 	&__prison-text {
 		color: $color-prison;
 		font-weight: $font-weight-semibold;
-		
+
 		svg {
 			vertical-align: sub;
 		}

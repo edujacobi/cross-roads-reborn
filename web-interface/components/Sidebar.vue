@@ -17,6 +17,7 @@ import {
 	Users,
 	X,
 } from "lucide-vue-next";
+import BeatUpIcon from "~/components/icons/BeatUpIcon.vue";
 import CasinoIcon from "~/components/icons/CasinoIcon.vue";
 import GangIcon from "~/components/icons/GangIcon.vue";
 import HospitalIcon from "~/components/icons/HospitalIcon.vue";
@@ -49,14 +50,10 @@ const { getSituationName, getSituationImageUrl } = useSituation();
 const { result: blackMarketResult } = useQuery(GetBlackMarketOpenDocument);
 const blackMarketOpen = computed(() => blackMarketResult.value?.blackMarketOpen ?? false);
 const currentUserGangId = computed(() => auth.user.value?.gangId ?? null);
-const { result: currentUserGangResult } = useQuery(
-	GetUserGangDocument,
-	() => ({ id: auth.user.value?.userId ?? "" }),
-	{
-		enabled: computed(() => currentUserGangId.value !== null),
-		fetchPolicy: "cache-and-network",
-	},
-);
+const { result: currentUserGangResult } = useQuery(GetUserGangDocument, () => ({ id: auth.user.value?.userId ?? "" }), {
+	enabled: computed(() => currentUserGangId.value !== null),
+	fetchPolicy: "cache-and-network",
+});
 const currentUserGang = computed(() => {
 	const gang = currentUserGangResult.value?.user?.gang;
 	return gang?.id === currentUserGangId.value ? gang : null;
@@ -138,6 +135,13 @@ const navigationGroups = computed(() => [
 				icon: RobberyIcon,
 				size: 20,
 				activeRouteNames: ["rob"],
+			},
+			{
+				label: "Espancar",
+				to: { name: "beatup" },
+				icon: BeatUpIcon,
+				size: 20,
+				activeRouteNames: ["beatup"],
 			},
 			{
 				label: "Hospital",

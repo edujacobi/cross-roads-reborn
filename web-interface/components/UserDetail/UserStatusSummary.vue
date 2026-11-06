@@ -3,6 +3,7 @@
 	lang="ts"
 >
 import { computed } from "vue";
+import BeatUpIcon from "~/components/icons/BeatUpIcon.vue";
 import CasinoIcon from "~/components/icons/CasinoIcon.vue";
 import GangIcon from "~/components/icons/GangIcon.vue";
 import HospitalIcon from "~/components/icons/HospitalIcon.vue";
@@ -246,7 +247,13 @@ const error = computed(() => props.error);
 				</dd>
 			</div>
 			<div class="user-status__row">
-				<dt class="user-status__label">Espancamento</dt>
+				<dt class="user-status__label">
+					<BeatUpIcon
+						:size="16"
+						variant="solid"
+					/>
+					Espancamento
+				</dt>
 				<dd class="user-status__value">
 					<BaseBadge
 						v-if="user.isBeating || user.isBeingBeated"
