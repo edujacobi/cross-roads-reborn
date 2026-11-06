@@ -81,12 +81,6 @@ const navigationGroups = computed(() => [
 				activeRouteNames: ["rankings"],
 			},
 			{
-				label: "Itens",
-				to: { name: "items" },
-				icon: Package,
-				activeRouteNames: ["items"],
-			},
-			{
 				label: "Loja",
 				to: { name: "shop" },
 				icon: ShopIcon,
@@ -95,32 +89,11 @@ const navigationGroups = computed(() => [
 				blackMarketBadge: true,
 			},
 			{
-				label: "Loja especial",
-				to: { name: "specialshop" },
-				icon: SpecialShopIcon,
-				size: 20,
-				activeRouteNames: ["specialshop"],
-			},
-			{
-				label: "Cassino",
-				to: { name: "casino" },
-				icon: CasinoIcon,
-				size: 20,
-				activeRouteNames: ["casino", "casino-game"],
-			},
-			{
-				label: "Trabalhos",
+				label: "Trabalhar",
 				to: { name: "jobs" },
 				icon: JobsIcon,
 				size: 20,
 				activeRouteNames: ["jobs"],
-			},
-			{
-				label: "Investimentos",
-				to: { name: "investments" },
-				icon: InvestmentIcon,
-				size: 20,
-				activeRouteNames: ["investments"],
 			},
 			{
 				label: "Vasculhar",
@@ -144,6 +117,20 @@ const navigationGroups = computed(() => [
 				activeRouteNames: ["beatup"],
 			},
 			{
+				label: "Investir",
+				to: { name: "investments" },
+				icon: InvestmentIcon,
+				size: 20,
+				activeRouteNames: ["investments"],
+			},
+			{
+				label: "Cassino",
+				to: { name: "casino" },
+				icon: CasinoIcon,
+				size: 20,
+				activeRouteNames: ["casino", "casino-game"],
+			},
+			{
 				label: "Hospital",
 				to: { name: "hospital" },
 				icon: HospitalIcon,
@@ -163,6 +150,19 @@ const navigationGroups = computed(() => [
 				icon: GangIcon,
 				size: 20,
 				activeRouteNames: ["gangs", "gangs-id"],
+			},
+			{
+				label: "Itens",
+				to: { name: "items" },
+				icon: Package,
+				activeRouteNames: ["items"],
+			},
+			{
+				label: "Loja especial",
+				to: { name: "specialshop" },
+				icon: SpecialShopIcon,
+				size: 20,
+				activeRouteNames: ["specialshop"],
 			},
 			{
 				label: "Atualizações",

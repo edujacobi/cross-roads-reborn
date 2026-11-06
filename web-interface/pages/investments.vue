@@ -30,7 +30,7 @@ definePageMeta({
 });
 
 useHead({
-	title: "Investimentos",
+	title: "Investir",
 });
 
 type InvestmentOption = GetMyInvestmentPageQuery["myInvestmentPage"]["investments"][number];
