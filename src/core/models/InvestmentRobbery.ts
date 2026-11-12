@@ -152,6 +152,13 @@ export class InvestmentRobbery {
 		await this.Target.Update({ robberyInvestmentDefending: false });
 	}
 
+	async RemoveParticipant(participant: User) {
+		this.Participants.delete(participant.Id);
+		participant.Robbery.IsRobbingId = null;
+		participant.Robbery.ParticipatingInGangAction = false;
+		await participant.Update({ robbingUserId: null, robberyParticipatingInGangAction: false });
+	}
+
 	async ClearAttackerStates() {
 		for (const participant of this.Participants.values()) {
 			participant.Robbery.IsRobbingId = null;

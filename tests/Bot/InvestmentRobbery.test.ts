@@ -33,7 +33,7 @@ describe("investment robbery collector", () => {
 			participants: [...session.participants, { userId: "guest", nickname: "Guest", attack: 20, classId: 0 }],
 		};
 		const messages: { disabled: boolean; content: string }[] = [];
-		const handlers = new Map<string, () => void>();
+		const handlers = new Map<string, (button: unknown) => void | Promise<void>>();
 		let listener: (view: MultiplayerSessionView) => void = vi.fn();
 		let finish!: (view: MultiplayerSessionView) => void;
 		const completion = new Promise<MultiplayerSessionView>(resolve => {
@@ -49,7 +49,7 @@ describe("investment robbery collector", () => {
 					robInvestment: "Robbery", inProgress: "in progress", finished: "finished",
 					robberyInitiated: () => "Organizing", robberyAttempting: () => "Attempting",
 					participants: (count: number) => `${count} participants`, autoStartRobbery: () => "Starting",
-					participate: "Participate", abortRobbery: "Abort", robberyAborted: () => "Aborted",
+					participate: "Participate", leaveRobbery: "Leave", abortRobbery: "Abort", robberyAborted: () => "Aborted",
 				},
 			},
 			Gang: { GetByUserId: async () => ({ Id: 1, Color: 0, Name: "Gang" }) },
@@ -62,13 +62,16 @@ describe("investment robbery collector", () => {
 					listener = callback;
 					return vi.fn();
 				},
+				Leave: vi.fn().mockResolvedValue({ success: true }),
 				WaitForCompletion: () => completion,
 			},
 			CustomContainerBuilder, CrColors, EmoteString, ButtonStyle: discord.ButtonStyle,
+			deferUpdate: vi.fn(),
+			getLanguageFromLocale: () => Language.English,
 			replyWithContainer: async (_interaction: unknown, container: CustomContainerBuilder) => {
 				record(container, false);
 				return { createMessageComponentCollector: () => ({
-					on: (event: string, handler: () => void) => handlers.set(event, handler),
+					on: (event: string, handler: (button: unknown) => void | Promise<void>) => handlers.set(event, handler),
 				}) };
 			},
 			disableButtons: async (_interaction: unknown, container: CustomContainerBuilder) => record(container, true),
@@ -80,7 +83,13 @@ describe("investment robbery collector", () => {
 		await vi.waitFor(() => expect(handlers.has("end")).toBe(true));
 
 		listener(joined);
-		handlers.get("end")!();
+		await vi.waitFor(() => expect(messages.at(-1)?.content).toContain("leave_investment_robbery"));
+		await handlers.get("collect")!({
+			customId: "leave_investment_robbery",
+			user: { id: "guest", locale: "en-US" },
+		});
+		expect(sandbox.MultiplayerSession.Leave).toHaveBeenCalledWith("robbery", "guest", Language.English);
+		handlers.get("end")!(undefined);
 		await vi.waitFor(() => expect(messages.at(-1)?.disabled).toBe(true));
 		expect(messages.at(-1)?.content).toContain("Guest");
 		expect(messages.at(-1)?.content).toContain("2 participants");

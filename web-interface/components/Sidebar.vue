@@ -7,13 +7,11 @@ import {
 	CalendarDays,
 	CalendarSync,
 	ChevronLeft,
-	Crown,
 	LayoutDashboard,
 	LogOut,
 	Menu,
 	Package,
 	Scroll,
-	ScrollText,
 	Users,
 	X,
 } from "lucide-vue-next";

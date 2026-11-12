@@ -1728,6 +1728,29 @@ mutation JoinMultiplayerSession($sessionId: ID!) {
 	}
 }
 
+mutation LeaveMultiplayerSession($sessionId: ID!) {
+	leaveMultiplayerSession(sessionId: $sessionId) {
+		success
+		message
+		session {
+			id
+			kind
+			phase
+			participants {
+				userId
+				nickname
+			}
+			events {
+				type
+				userId
+				outcome
+			}
+			aliveUserIds
+			expiresAt
+		}
+	}
+}
+
 mutation RespondMultiplayerSession($sessionId: ID!, $response: String!) {
 	respondMultiplayerSession(sessionId: $sessionId, response: $response) {
 		success

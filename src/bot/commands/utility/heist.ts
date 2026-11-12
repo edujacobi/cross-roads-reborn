@@ -422,10 +422,21 @@ module.exports = {
 					.addLargeSeparator();
 
 				if (view.phase === "lobby") {
-					container.addButtonRow(btn => btn
-						.setCustomId("join_lobby")
-						.setLabel(s.participate)
-						.setStyle(ButtonStyle.Primary));
+					if (
+						view.ownerId === user.Id ||
+						!view.participants.some(participant => participant.userId === user.Id)
+					) {
+						container.addButtonRow(btn => btn
+							.setCustomId("join_lobby")
+							.setLabel(s.participate)
+							.setStyle(ButtonStyle.Primary));
+					}
+					if (view.participants.some(participant => participant.userId !== view.ownerId)) {
+						container.addButtonRow(btn => btn
+							.setCustomId("leave_lobby")
+							.setLabel(s.leave)
+							.setStyle(ButtonStyle.Secondary));
+					}
 					if (view.ownerId === user.Id) {
 						container.addButtonRow(btn => btn
 							.setCustomId("abort_lobby")
@@ -503,6 +514,13 @@ module.exports = {
 				await deferUpdate(lobbyBtn);
 				if (lobbyBtn.customId === "abort_lobby") {
 					const result = await MultiplayerSession.Abort(session!.id, lobbyBtn.user.id, getLanguageFromLocale(lobbyBtn.locale));
+					if (!result.success) {
+						await lobbyBtn.followUp({ content: result.message, flags: MessageFlags.Ephemeral });
+					}
+					return;
+				}
+				if (lobbyBtn.customId === "leave_lobby") {
+					const result = await MultiplayerSession.Leave(session!.id, lobbyBtn.user.id, getLanguageFromLocale(lobbyBtn.locale));
 					if (!result.success) {
 						await lobbyBtn.followUp({ content: result.message, flags: MessageFlags.Ephemeral });
 					}
@@ -610,6 +628,7 @@ const Strings = {
 		lobbyTitle: (name: string) => `Heist preparation: ${name}`,
 		lobbyDescription: (chance: string, pCount: number, maxCount: number) => `Current success chance: **${chance}%**\nMembers joined: **[${pCount}/${maxCount}]**\n\n**Participants:**`,
 		participate: "Participate",
+		leave: "Leave",
 		abort: "Abort",
 		alreadyIn: "You are already in this heist lobby.",
 		cannotParticipate: (reason: string) => {
@@ -713,6 +732,7 @@ const Strings = {
 		lobbyTitle: (name: string) => `Preparação do golpe: ${name}`,
 		lobbyDescription: (chance: string, pCount: number, maxCount: number) => `Chance de sucesso atual: **${chance}%**\nMembros participantes: **[${pCount}/${maxCount}]**\n\n**Participantes:**`,
 		participate: "Participar",
+		leave: "Sair",
 		abort: "Abortar",
 		alreadyIn: "Você já está participando deste golpe.",
 		cannotParticipate: (reason: string) => {
@@ -816,6 +836,7 @@ const Strings = {
 		lobbyTitle: (name: string) => `Preparación del golpe: ${name}`,
 		lobbyDescription: (chance: string, pCount: number, maxCount: number) => `Probabilidad de éxito actual: **${chance}%**\nMiembros participantes: **[${pCount}/${maxCount}]**\n\n**Participantes:**`,
 		participate: "Participar",
+		leave: "Salir",
 		abort: "Abortar",
 		alreadyIn: "Ya estás participando en este golpe.",
 		cannotParticipate: (reason: string) => {

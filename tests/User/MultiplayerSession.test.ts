@@ -115,7 +115,16 @@ vi.mock("#core/models/InvestmentRobbery", async importOriginal => {
 			InvestmentBase = { Name: { 0: "Bar", 1: "Bar", 2: "Bar" }, ImageUrl: "" };
 			InvestmentData = { accumulatedYield: 1_000 };
 			Validate = () => mockInvestmentValidation();
-			ApplyAttackerState = vi.fn();
+			ValidateJoin = () => ({ success: true });
+			ApplyAttackerState = vi.fn(async (participant: User) => {
+				this.Participants.set(participant.Id, participant);
+			});
+			RemoveParticipant = vi.fn(async (participant: User) => {
+				this.Participants.delete(participant.Id);
+				participant.Robbery.IsRobbingId = null;
+				participant.Robbery.ParticipatingInGangAction = false;
+				await participant.Update({ robbingUserId: null, robberyParticipatingInGangAction: false });
+			});
 			ApplyDefenderState = vi.fn(actual.InvestmentRobbery.prototype.ApplyDefenderState);
 			ClearTargetState = vi.fn(actual.InvestmentRobbery.prototype.ClearTargetState);
 			ClearAttackerStates = vi.fn(async () => {
@@ -326,6 +335,90 @@ describe("Multiplayer sessions", () => {
 		expect(running?.participants).toHaveLength(5);
 		expect((await MultiplayerSession.JoinRussianRoulette(started.session.id, makeUser("six"))).success).toBe(false);
 		expect(mockRandomInt.mock.calls.slice(0, 4)).toEqual([[5], [4], [3], [2]]);
+	});
+
+	it("allows only the creator to abort a Russian Roulette lobby", async () => {
+		const host = makeUser("host");
+		const started = await MultiplayerSession.StartRussianRoulette(host, 5_000);
+		expect(started.success).toBe(true);
+		if (!started.success) return;
+
+		expect((await MultiplayerSession.Abort(started.session.id, "other")).success).toBe(false);
+		expect(await MultiplayerSession.Abort(started.session.id, host.Id)).toMatchObject({ success: true });
+		expect(MultiplayerSession.GetVisibleSession(started.session.id, host.Id, null)?.phase).toBe("aborted");
+		expect(mockRepository.Finish).toHaveBeenCalledWith(started.session.id, "aborted", { reason: "leader-aborted" });
+	});
+
+	it("allows roulette participants to leave the lobby but not its creator", async () => {
+		const host = makeUser("host");
+		const started = await MultiplayerSession.StartRussianRoulette(host, 5_000);
+		expect(started.success).toBe(true);
+		if (!started.success) return;
+
+		const participant = makeUser("participant");
+		expect((await MultiplayerSession.Join(started.session.id, participant)).success).toBe(true);
+		expect((await MultiplayerSession.Leave(started.session.id, host.Id)).success).toBe(false);
+		expect(await MultiplayerSession.Leave(started.session.id, participant.Id)).toMatchObject({ success: true });
+
+		expect(MultiplayerSession.GetVisibleSession(started.session.id, host.Id, null)?.participants.map(player => player.userId))
+			.toEqual([host.Id]);
+		expect(mockRepository.Update).toHaveBeenLastCalledWith(started.session.id, { participantIds: [host.Id] });
+	});
+
+	it("releases a gang heist participant's lock when they leave the lobby", async () => {
+		const leader = makeUser("leader");
+		const participant = makeUser("participant");
+		leader.GangId = participant.GangId = 1;
+		const gang = {
+			Id: 1,
+			LeaderId: leader.Id,
+			BaseId: GangBaseId.Airport,
+			Money: 0,
+			Name: "Gang",
+			GetMaxMembers: () => 5,
+		};
+		mockGetGangById.mockResolvedValue(gang);
+		vi.spyOn(Heist, "ValidateStart").mockResolvedValue({ success: true });
+		vi.spyOn(Heist, "ValidateJoin").mockReturnValue({ success: true });
+
+		const started = await MultiplayerSession.StartGangHeist(leader, HeistMissionId.Blueprint);
+		expect(started.success).toBe(true);
+		if (!started.success) return;
+		expect((await MultiplayerSession.Join(started.session.id, participant)).success).toBe(true);
+		expect(participant.Robbery.ParticipatingInGangAction).toBe(true);
+
+		expect(await MultiplayerSession.Leave(started.session.id, participant.Id)).toMatchObject({ success: true });
+
+		expect(participant.Robbery.ParticipatingInGangAction).toBe(false);
+		expect(MultiplayerSession.GetVisibleSession(started.session.id, leader.Id, gang.Id)?.participants.map(player => player.userId))
+			.toEqual([leader.Id]);
+		expect(mockRepository.Update).toHaveBeenLastCalledWith(started.session.id, { participantIds: [leader.Id] });
+	});
+
+	it("clears an investment robbery participant's locks when they leave the lobby", async () => {
+		const leader = makeUser("leader");
+		const defender = makeUser("defender");
+		const participant = makeUser("participant");
+		const gang = {
+			Id: 1,
+			Name: "Gang",
+			LastInvestmentRobbery: null,
+			GetMaxMembers: () => 5,
+		};
+		mockGetGangByUserId.mockResolvedValue(gang);
+
+		const started = await MultiplayerSession.StartInvestmentRobbery(leader, defender);
+		expect(started.success).toBe(true);
+		if (!started.success) return;
+		expect((await MultiplayerSession.Join(started.session.id, participant)).success).toBe(true);
+
+		expect(await MultiplayerSession.Leave(started.session.id, participant.Id)).toMatchObject({ success: true });
+
+		expect(participant.Robbery.IsRobbingId).toBeNull();
+		expect(participant.Robbery.ParticipatingInGangAction).toBe(false);
+		expect(participant.Update).toHaveBeenCalledWith({ robbingUserId: null, robberyParticipatingInGangAction: false });
+		expect(MultiplayerSession.GetVisibleSession(started.session.id, leader.Id, gang.Id)?.participants.map(player => player.userId))
+			.toEqual([leader.Id]);
 	});
 
 	it("releases participant reservations when beat-up validation fails", async () => {

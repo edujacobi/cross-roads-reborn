@@ -14,17 +14,27 @@ const { outputText } = ts.transpileModule(
 	{ compilerOptions: { module: ts.ModuleKind.CommonJS } },
 );
 
-async function startLobby(language = Language.English) {
+async function startLobby(
+	language = Language.English,
+	viewerId = "host",
+	ownerId = viewerId,
+	participantIds = [viewerId],
+) {
 	const host = {
-		Id: "host", GangId: null, Nickname: "Host", Money: 50_000,
+		Id: viewerId, GangId: null, Nickname: viewerId === "host" ? "Host" : "Guest", Money: 50_000,
 		GetInfo: vi.fn(), GetNameWithImage: () => "Host",
 	};
 	const session: MultiplayerSessionView = {
 		id: "roulette", kind: "russianRoulette", source: "discord", phase: "lobby",
-		ownerId: host.Id, targetId: null, targetNickname: null, gangId: null,
+		ownerId, targetId: null, targetNickname: null, gangId: null,
 		gangName: null, investmentName: null, investmentImageUrl: null,
 		investmentYield: null, hasHenchman: false,
-		participants: [{ userId: host.Id, nickname: host.Nickname, attack: 10, classId: 0 }],
+		participants: participantIds.map(userId => ({
+			userId,
+			nickname: userId === "host" ? "Host" : "Guest",
+			attack: 10,
+			classId: 0,
+		})),
 		maxParticipants: 5, bet: 5_000, missionId: null, expiresAt: null,
 		response: null, allowedResponses: [], events: [], aliveUserIds: [], result: null,
 		duelDetails: null,
@@ -33,6 +43,8 @@ async function startLobby(language = Language.English) {
 	let listener: (view: MultiplayerSessionView) => void = vi.fn();
 	const replies: ReturnType<CustomContainerBuilder["toJSON"]>[] = [];
 	const join = vi.fn().mockResolvedValue({ success: true });
+	const leave = vi.fn().mockResolvedValue({ success: true });
+	const abort = vi.fn().mockResolvedValue({ success: true });
 	const joiningUser = { Id: "guest", Language: language };
 	const checkUser = vi.fn().mockResolvedValue(joiningUser);
 	const error = vi.fn();
@@ -41,7 +53,7 @@ async function startLobby(language = Language.English) {
 		"#bot/ui/builders/CustomContainerBuilder": { CustomContainerBuilder },
 		"#bot/utils/colors": { CrColors },
 		"#bot/utils/emotes": { EmoteString },
-		"#core/models/Language": { Language },
+		"#core/models/Language": { Language, getLanguageFromLocale: () => Language.English },
 		"#core/types/Classes": { ClassId: { Attorney: 0 }, ClassList: [{ Modifier: { Casino: { Positive: 1 } } }] },
 		"#bot/utils/collectors": { disableButtons: vi.fn() },
 		"#bot/utils/discordInteractions": {
@@ -60,11 +72,14 @@ async function startLobby(language = Language.English) {
 		"#shared/log": { Log: { Error: error } },
 		"#core/models/MultiplayerSession": {
 			MultiplayerSession: {
+				DecodeResult: (value: string) => JSON.parse(value),
 				GetVisibleSessions: () => [],
 				StartRussianRoulette: async () => ({ success: true, session }),
 				GetVisibleSession: () => session,
 				WaitForCompletion: () => new Promise(vi.fn()),
 				JoinRussianRoulette: join,
+				Leave: leave,
+				Abort: abort,
 				Subscribe: (_id: string, _gangId: number | null, callback: typeof listener) => {
 					listener = callback;
 					return vi.fn();
@@ -84,12 +99,12 @@ async function startLobby(language = Language.English) {
 	await sandbox.module.exports.execute({ options: { getNumber: () => 5_000 } }, host, language);
 	await handlers.get("collect")!({ customId: "start", user: { id: host.Id } });
 	await vi.waitFor(() => expect(replies).toHaveLength(2));
-	return { session, replies, listener, handlers, join, joiningUser, error };
+	return { session, replies, listener, handlers, join, leave, abort, joiningUser, error };
 }
 
 describe("Russian Roulette shared Discord lobby", () => {
-	it("keeps a valid Participate button on the host's message and routes other players to the session", async () => {
-		const { replies, handlers, join, joiningUser, error } = await startLobby();
+	it("keeps Participate visible on the creator's lobby alongside Abort", async () => {
+		const { replies, handlers, join, joiningUser, abort, error } = await startLobby();
 		const lobby = replies.at(-1)!;
 		const section = lobby.components.find(component =>
 			component.type === discord.ComponentType.Section &&
@@ -98,8 +113,27 @@ describe("Russian Roulette shared Discord lobby", () => {
 		expect(section).toMatchObject({
 			accessory: { type: discord.ComponentType.Button, custom_id: "participate", label: "Participate" },
 		});
+		expect(JSON.stringify(lobby)).toContain("\"custom_id\":\"abort_session\"");
 		await handlers.get("collect")!({ customId: "participate", user: { id: joiningUser.Id } });
 		expect(join).toHaveBeenCalledWith("roulette", joiningUser, Language.English);
+		await handlers.get("collect")!({ customId: "abort_session", user: { id: "host", locale: "en-US" } });
+		expect(abort).toHaveBeenCalledWith("roulette", "host", Language.English);
+		expect(error).not.toHaveBeenCalled();
+	});
+
+	it("shows a participant a Leave button", async () => {
+		const { replies, handlers, leave, error } = await startLobby(Language.English, "guest", "host", ["host", "guest"]);
+		const lobby = replies.at(-1)!;
+		const section = lobby.components.find(component =>
+			component.type === discord.ComponentType.Section &&
+			component.accessory.type === discord.ComponentType.Button,
+		);
+		expect(section).toMatchObject({
+			accessory: { type: discord.ComponentType.Button, custom_id: "participate", label: "Participate" },
+		});
+		expect(JSON.stringify(lobby)).toContain("\"custom_id\":\"leave_session\"");
+		await handlers.get("collect")!({ customId: "leave_session", user: { id: "guest", locale: "en-US" } });
+		expect(leave).toHaveBeenCalledWith("roulette", "guest", Language.English);
 		expect(error).not.toHaveBeenCalled();
 	});
 

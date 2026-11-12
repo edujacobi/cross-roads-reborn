@@ -19,6 +19,8 @@ const {
 	streamError,
 	startRussianRoulette,
 	joinSession,
+	leaveSession,
+	abortSession,
 	refetch,
 } = useMultiplayerSessions();
 const bet = ref(5000);
@@ -52,6 +54,32 @@ async function joinRoom(sessionId: string) {
 		const result = (await joinSession({ sessionId }))?.data?.joinMultiplayerSession;
 		showToast({
 			text: result?.message ?? "Falha ao entrar na sala.",
+			variant: result?.success ? "success" : "error",
+		});
+		if (result?.success) await refetch();
+	} catch (caughtError: unknown) {
+		showToast({ text: caughtError instanceof Error ? caughtError.message : "Erro inesperado.", variant: "error" });
+	}
+}
+
+async function leaveRoom(sessionId: string) {
+	try {
+		const result = (await leaveSession({ sessionId }))?.data?.leaveMultiplayerSession;
+		showToast({
+			text: result?.message ?? "Falha ao sair da sala.",
+			variant: result?.success ? "success" : "error",
+		});
+		if (result?.success) await refetch();
+	} catch (caughtError: unknown) {
+		showToast({ text: caughtError instanceof Error ? caughtError.message : "Erro inesperado.", variant: "error" });
+	}
+}
+
+async function abortRoom(sessionId: string) {
+	try {
+		const result = (await abortSession({ sessionId }))?.data?.abortMultiplayerSession;
+		showToast({
+			text: result?.message ?? "Falha ao cancelar a sala.",
 			variant: result?.success ? "success" : "error",
 		});
 		if (result?.success) await refetch();
@@ -117,6 +145,8 @@ async function joinRoom(sessionId: string) {
 				:session="session"
 				:current-user-id="auth.user.value?.userId ?? ''"
 				@join="joinRoom"
+				@leave="leaveRoom"
+				@abort="abortRoom"
 			/>
 		</section>
 

@@ -6,7 +6,7 @@ import { EmoteString } from "#bot/utils/emotes";
 import { defaultComponent, formatMoney } from "#bot/utils/ui";
 import { checkUser } from "#bot/utils/userUtils";
 import { MultiplayerSession, type MultiplayerSessionView } from "#core/models/MultiplayerSession";
-import { Language, type Localization } from "#core/models/Language";
+import { getLanguageFromLocale, Language, type Localization } from "#core/models/Language";
 import type { User } from "#core/models/User";
 import { ClassId, ClassList } from "#core/types/Classes";
 import {
@@ -89,26 +89,43 @@ module.exports = {
 
 		function getSessionContainer(session: MultiplayerSessionView) {
 			if (session.phase === "aborting" || session.phase === "aborted") {
+				const reason = session.result
+					? MultiplayerSession.DecodeResult<{ reason?: string }>(session.result).reason
+					: undefined;
 				return getHeader()
-					.addTexts([s.timeout])
+					.addTexts([reason === "leader-aborted" ? s.gameAborted : s.timeout])
 					.addFooter({ text: formatMoney(user.Money, language) });
 			}
 
 			if (session.phase === "lobby") {
-				return getHeader()
+				const isOwner = session.ownerId === user.Id;
+				const isParticipant = session.participants.some(participant => participant.userId === user.Id);
+				const container = getHeader()
 					.addSectionComponents(section => section
 						.addTexts([
 							s.betPrize(formatMoney(session.bet ?? betValue, language), formatMoney(prize, language)),
 							s.participants(session.participants.length, session.maxParticipants),
 							session.participants.map(participant => `- ${participant.nickname}`).join("\n"),
-							s.joinInstruction,
+							...(!isOwner && !isParticipant ? [s.joinInstruction] : []),
 						])
 						.setButtonAccessory(btn => btn
 							.setLabel(s.participateButton)
 							.setCustomId("participate")
 							.setStyle(ButtonStyle.Secondary),
-						))
-					.addFooter({ text: formatMoney(user.Money, language) });
+						));
+				if (session.participants.some(participant => participant.userId !== session.ownerId)) {
+					container.addButtonRow(btn => btn
+						.setLabel(s.leaveButton)
+						.setCustomId("leave_session")
+						.setStyle(ButtonStyle.Secondary));
+				}
+				if (isOwner) {
+					container.addButtonRow(btn => btn
+						.setLabel(s.abortButton)
+						.setCustomId("abort_session")
+						.setStyle(ButtonStyle.Danger));
+				}
+				return container.addFooter({ text: formatMoney(user.Money, language) });
 			}
 
 			const getName = (id: string | null) => session.participants.find(participant => participant.userId === id)?.nickname ?? "";
@@ -205,6 +222,18 @@ module.exports = {
 				return;
 			}
 
+			if (btn.customId === "abort_session" || btn.customId === "leave_session") {
+				if (!activeSessionId) return;
+				await deferUpdate(btn);
+				const result = btn.customId === "abort_session"
+					? await MultiplayerSession.Abort(activeSessionId, btn.user.id, getLanguageFromLocale(btn.locale))
+					: await MultiplayerSession.Leave(activeSessionId, btn.user.id, getLanguageFromLocale(btn.locale));
+				if (!result.success) {
+					await btn.followUp({ content: result.message, flags: MessageFlags.Ephemeral });
+				}
+				return;
+			}
+
 			const sessionId = btn.customId === "participate"
 				? activeSessionId
 				: btn.customId.startsWith("join_")
@@ -235,6 +264,8 @@ const Strings = {
 		openLobbies: "Open lobbies",
 		joinInstruction: "-# Click **Participate** to join. The game will start automatically.",
 		participateButton: "Participate",
+		leaveButton: "Leave",
+		abortButton: "Abort",
 		betDefined: (bet: string) => `You defined the bet as ${bet}`,
 		startButton: "Start",
 		onlyHostCanStart: `Only the host can start the game ${EmoteString.Casino}`,
@@ -268,6 +299,7 @@ const Strings = {
 		],
 		winnerMessage: (name: string) => `**${name}** is the big winner and took the prize of`,
 		timeout: "Time expired",
+		gameAborted: "The game was cancelled by its creator.",
 		thiefModifier: (emote: string, name: string) => `-# Prize reduced because of the ${emote} **${name}** class modifier!`,
 		attorneyModifier: (emote: string, name: string) => `-# Prize increased because of the ${emote} **${name}** class modifier!`,
 	},
@@ -280,6 +312,8 @@ const Strings = {
 		openLobbies: "Salas abertas",
 		joinInstruction: "-# Clique em **Participar** para entrar. O jogo comecará automaticamente.",
 		participateButton: "Participar",
+		leaveButton: "Sair",
+		abortButton: "Abortar",
 		betDefined: (bet: string) => `Você definiu a aposta como ${bet}`,
 		startButton: "Iniciar",
 		onlyHostCanStart: `Apenas o anfitrião pode iniciar o jogo ${EmoteString.Casino}`,
@@ -313,6 +347,7 @@ const Strings = {
 		],
 		winnerMessage: (name: string) => `**${name}** é o grande vencedor e levou o prêmio de`,
 		timeout: "Tempo esgotado",
+		gameAborted: "O jogo foi cancelado por quem o criou.",
 		thiefModifier: (emote: string, name: string) => `-# Prêmio reduzido devido ao modificador da classe ${emote} **${name}**!`,
 		attorneyModifier: (emote: string, name: string) => `-# Prêmio aumentado devido ao modificador da classe ${emote} **${name}**!`,
 	},
@@ -325,6 +360,8 @@ const Strings = {
 		openLobbies: "Salas abiertas",
 		joinInstruction: "-# Haz clic en **Participar** para entrar. El juego comenzará automáticamente.",
 		participateButton: "Participar",
+		leaveButton: "Salir",
+		abortButton: "Cancelar",
 		betDefined: (bet: string) => `Definiste la apuesta como ${bet}`,
 		startButton: "Iniciar",
 		onlyHostCanStart: `Solo el anfitrión puede iniciar el juego ${EmoteString.Casino}`,
@@ -358,6 +395,7 @@ const Strings = {
 		],
 		winnerMessage: (name: string) => `**${name}** es el gran ganador y se llevó el premio de`,
 		timeout: "Tiempo agotado",
+		gameAborted: "El juego fue cancelado por quien lo creó.",
 		thiefModifier: (emote: string, name: string) => `-# ¡Premio reducido debido al modificador de la clase ${emote} **${name}**!`,
 		attorneyModifier: (emote: string, name: string) => `-# ¡Premio aumentado debido al modificador de la clase ${emote} **${name}**!`,
 	},

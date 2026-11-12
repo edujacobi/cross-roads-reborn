@@ -29,6 +29,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
 	join: [sessionId: string];
+	leave: [sessionId: string];
 	respond: [payload: { sessionId: string; response: string }];
 	abort: [sessionId: string];
 }>();
@@ -65,7 +66,14 @@ const canAbort = computed(
 	() =>
 		props.session.phase === "lobby" &&
 		props.session.ownerId === props.currentUserId &&
-		["investmentRobbery", "gangHeist"].includes(props.session.kind),
+		["russianRoulette", "investmentRobbery", "gangHeist"].includes(props.session.kind),
+);
+const canLeave = computed(
+	() =>
+		props.session.phase === "lobby" &&
+		isParticipant.value &&
+		props.session.ownerId !== props.currentUserId &&
+		["russianRoulette", "investmentRobbery", "gangHeist"].includes(props.session.kind),
 );
 const canRespond = computed(
 	() =>
@@ -194,7 +202,7 @@ function formatCountdown(expiresAt: string) {
 		</ul>
 
 		<fieldset
-			v-if="canJoin || canAbort || canRespond"
+			v-if="canJoin || canLeave || canAbort || canRespond"
 			class="multiplayer-card__actions"
 			:aria-label="`Ações para ${titles[session.kind] ?? 'esta sessão'}`"
 		>
@@ -204,6 +212,13 @@ function formatCountdown(expiresAt: string) {
 				@click="emit('join', session.id)"
 			>
 				Entrar na sala
+			</BaseButton>
+			<BaseButton
+				v-if="canLeave"
+				variant="secondary"
+				@click="emit('leave', session.id)"
+			>
+				Sair da sala
 			</BaseButton>
 			<BaseButton
 				v-for="response in canRespond ? session.allowedResponses : []"

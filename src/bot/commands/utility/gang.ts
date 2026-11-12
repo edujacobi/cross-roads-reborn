@@ -2543,6 +2543,7 @@ const Strings = {
 		robberyAttempting: (invName: string, targetName: string) => `Attempting to rob ${EmoteString.InvestmentActive} **${invName}** from **${targetName}** ${EmoteString.Waiting}`,
 		participants: (count: number) => `Participants: ${count}`,
 		participate: "Join",
+		leaveRobbery: "Leave",
 		abortRobbery: "Abort robbery",
 		autoStartRobbery: (seconds: number) => `Starts automatically in ${seconds} seconds.`,
 		alreadyIn: "You are already participating.",
@@ -2726,6 +2727,7 @@ const Strings = {
 		robberyAttempting: (invName: string, targetName: string) => `Tentando roubar ${EmoteString.InvestmentActive} **${invName}** de **${targetName}** ${EmoteString.Waiting}`,
 		participants: (count: number) => `Participantes: ${count}`,
 		participate: "Participar",
+		leaveRobbery: "Sair",
 		abortRobbery: "Abortar roubo",
 		autoStartRobbery: (seconds: number) => `Inicia automaticamente em ${seconds} segundos.`,
 		alreadyIn: "Você já está participando.",
@@ -2908,6 +2910,7 @@ const Strings = {
 		robberyAttempting: (invName: string, targetName: string) => `Intentando robar ${EmoteString.InvestmentActive} **${invName}** de **${targetName}** ${EmoteString.Waiting}`,
 		participants: (count: number) => `Participantes: ${count}`,
 		participate: "Participar",
+		leaveRobbery: "Salir",
 		abortRobbery: "Abortar robo",
 		autoStartRobbery: (seconds: number) => `Inicia automáticamente en ${seconds} segundos.`,
 		alreadyIn: "Ya estás participando.",
@@ -3065,6 +3068,12 @@ async function runInvestmentRobberySession(
 					.setLabel(s.participate)
 					.setStyle(ButtonStyle.Primary)
 					.setCustomId("join_investment_robbery"));
+			}
+			if (view.participants.some(participant => participant.userId !== view.ownerId)) {
+				container.addButtonRow(btn => btn
+					.setLabel(s.leaveRobbery)
+					.setStyle(ButtonStyle.Secondary)
+					.setCustomId("leave_investment_robbery"));
 			}
 			if (view.ownerId === user.Id) {
 				container.addButtonRow(btn => btn
@@ -3274,6 +3283,9 @@ async function runInvestmentRobberySession(
 			const participant = await checkUser(btn.user.id, interaction);
 			if (!participant) return;
 			result = await MultiplayerSession.Join(session.id, participant, participant.Language);
+		}
+		else if (btn.customId === "leave_investment_robbery") {
+			result = await MultiplayerSession.Leave(session.id, btn.user.id, getLanguageFromLocale(btn.locale));
 		}
 		else {
 			return;

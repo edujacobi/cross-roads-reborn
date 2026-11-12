@@ -1079,6 +1079,7 @@ export const typeDefs = /* GraphQL */ `
         startInvestmentRobbery(targetUserId: ID!): MultiplayerActionResult!
         startGangHeist(missionId: Int!): MultiplayerActionResult!
         joinMultiplayerSession(sessionId: ID!): MultiplayerActionResult!
+        leaveMultiplayerSession(sessionId: ID!): MultiplayerActionResult!
         respondMultiplayerSession(sessionId: ID!, response: String!): MultiplayerActionResult!
         abortMultiplayerSession(sessionId: ID!): MultiplayerActionResult!
         playCoinFlip(side: String!, amount: Float!): CasinoPlayResult!

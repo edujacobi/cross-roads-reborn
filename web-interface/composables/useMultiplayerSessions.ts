@@ -6,6 +6,7 @@ import {
 	BuyGangHeistGetawayCarsDocument,
 	GetMultiplayerSessionsDocument,
 	JoinMultiplayerSessionDocument,
+	LeaveMultiplayerSessionDocument,
 	type MultiplayerSession,
 	RespondMultiplayerSessionDocument,
 	StartBeatUpDocument,
@@ -80,6 +81,7 @@ export function useMultiplayerSessions() {
 	const { mutate: startGangHeist } = useMutation(StartGangHeistDocument);
 	const { mutate: buyGangHeistGetawayCars } = useMutation(BuyGangHeistGetawayCarsDocument);
 	const { mutate: joinSession } = useMutation(JoinMultiplayerSessionDocument);
+	const { mutate: leaveSession } = useMutation(LeaveMultiplayerSessionDocument);
 	const { mutate: respondToSession } = useMutation(RespondMultiplayerSessionDocument);
 	const { mutate: abortSession } = useMutation(AbortMultiplayerSessionDocument);
 
@@ -223,6 +225,7 @@ export function useMultiplayerSessions() {
 		startGangHeist,
 		buyGangHeistGetawayCars,
 		joinSession,
+		leaveSession,
 		respondToSession,
 		abortSession,
 	};

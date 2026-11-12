@@ -96,6 +96,7 @@ const {
 	startGangHeist,
 	buyGangHeistGetawayCars,
 	joinSession,
+	leaveSession,
 	respondToSession,
 	abortSession,
 } = useMultiplayerSessions();
@@ -438,6 +439,19 @@ async function joinGangSession(sessionId: string) {
 		const result = (await joinSession({ sessionId }))?.data?.joinMultiplayerSession;
 		showToast({
 			text: result?.message ?? "Falha ao entrar na sala.",
+			variant: result?.success ? "success" : "error",
+		});
+		if (result?.success) await refetchMultiplayerSessions();
+	} catch (caughtError: unknown) {
+		showToast({ text: caughtError instanceof Error ? caughtError.message : "Erro inesperado.", variant: "error" });
+	}
+}
+
+async function leaveGangSession(sessionId: string) {
+	try {
+		const result = (await leaveSession({ sessionId }))?.data?.leaveMultiplayerSession;
+		showToast({
+			text: result?.message ?? "Falha ao sair da sala.",
 			variant: result?.success ? "success" : "error",
 		});
 		if (result?.success) await refetchMultiplayerSessions();
@@ -1184,6 +1198,7 @@ async function updateGangMoney() {
 					:session="session"
 					:current-user-id="currentUserId ?? ''"
 					@join="joinGangSession"
+					@leave="leaveGangSession"
 					@respond="respondToGangSession"
 					@abort="abortGangSession"
 				/>

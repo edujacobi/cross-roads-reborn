@@ -1667,6 +1667,18 @@ export const meResolvers: {
 			};
 		},
 
+		leaveMultiplayerSession: async (
+			_: unknown,
+			args: { sessionId: string },
+			context: GraphQLContext,
+		) => {
+			const authUser = assertAuthenticated(context);
+			return {
+				...await MultiplayerSession.Leave(args.sessionId, authUser.userId),
+				session: MultiplayerSession.GetVisibleSession(args.sessionId, authUser.userId, context.user?.gangId ?? null),
+			};
+		},
+
 		respondMultiplayerSession: async (
 			_: unknown,
 			args: { sessionId: string; response: string },

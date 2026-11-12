@@ -787,7 +787,10 @@ export class MultiplayerSession {
 		if (!this.TryReserve(reservation)) return { success: false, message: s.roomUpdating };
 		try {
 			const session = this.sessions.get(sessionId);
-			if (!session || (session.kind !== "investmentRobbery" && session.kind !== "gangHeist")) {
+			if (
+				!session ||
+				(session.kind !== "investmentRobbery" && session.kind !== "gangHeist" && session.kind !== "russianRoulette")
+			) {
 				return { success: false, message: s.cannotAbort };
 			}
 			if (session.owner.Id !== actorId) return { success: false, message: s.onlyOwnerCanAbort };
@@ -795,6 +798,63 @@ export class MultiplayerSession {
 
 			await this.AbortRuntime(session, "leader-aborted");
 			return { success: true, message: s.roomAborted };
+		}
+		finally {
+			this.ReleaseReservation(reservation);
+		}
+	}
+
+	static async Leave(
+		sessionId: string,
+		participantId: string,
+		language = Language.Portuguese,
+	): Promise<{ success: boolean; message: string }> {
+		const s = Strings[language];
+		const reservation = [`user:${participantId}`, `session:${sessionId}`];
+		if (!this.TryReserve(reservation)) return { success: false, message: s.roomUpdating };
+		try {
+			const session = this.sessions.get(sessionId);
+			if (
+				!session ||
+				(session.kind !== "russianRoulette" && session.kind !== "investmentRobbery" && session.kind !== "gangHeist") ||
+				session.phase !== "lobby" ||
+				session.owner.Id === participantId
+			) {
+				return { success: false, message: s.cannotLeave };
+			}
+
+			const participant = session.participants.get(participantId);
+			if (!participant) return { success: false, message: s.cannotLeave };
+
+			session.participants.delete(participantId);
+			try {
+				if (session.kind === "investmentRobbery") {
+					await session.model.RemoveParticipant(participant);
+				}
+				else if (session.kind === "gangHeist") {
+					await Heist.ReleaseLocks([participant]);
+				}
+				await MultiplayerSessionRepository.Update(session.id, {
+					participantIds: Array.from(session.participants.keys()),
+				});
+			}
+			catch (error) {
+				session.participants.set(participantId, participant);
+				if (session.kind === "investmentRobbery") {
+					session.model.Participants.set(participantId, participant);
+				}
+				try {
+					await this.AbortRuntime(session, "participant-leave-failed");
+				}
+				catch (cleanupError) {
+					throw new AggregateError([error, cleanupError], `Failed to clean up multiplayer session ${session.id} after a participant could not leave.`);
+				}
+				throw error;
+			}
+
+			session.lockedUserIds.delete(participantId);
+			this.Publish(session);
+			return { success: true, message: s.leftRoom };
 		}
 		finally {
 			this.ReleaseReservation(reservation);
@@ -1388,6 +1448,8 @@ export const Strings = {
 		roomFull: "This room is full.",
 		roomStartFailed: "This room could not be started.",
 		joined: "You joined the room.",
+		leftRoom: "You left the room.",
+		cannotLeave: "You cannot leave this room.",
 		notInGang: "You are not in a gang.",
 		gangBusy: "A player or the gang is already starting another action.",
 		gangActionActive: "Your gang already has a group action in progress.",
@@ -1427,6 +1489,8 @@ export const Strings = {
 		roomFull: "Esta sala está cheia.",
 		roomStartFailed: "Não foi possível iniciar esta sala.",
 		joined: "Você entrou na sala.",
+		leftRoom: "Você saiu da sala.",
+		cannotLeave: "Você não pode sair desta sala.",
 		notInGang: "Você não está em uma gangue.",
 		gangBusy: "Um dos jogadores ou a gangue já está iniciando outra ação.",
 		gangActionActive: "Sua gangue já tem uma ação de grupo em andamento.",
@@ -1466,6 +1530,8 @@ export const Strings = {
 		roomFull: "Esta sala está llena.",
 		roomStartFailed: "No fue posible iniciar esta sala.",
 		joined: "Entraste en la sala.",
+		leftRoom: "Saliste de la sala.",
+		cannotLeave: "No puedes salir de esta sala.",
 		notInGang: "No estás en una pandilla.",
 		gangBusy: "Un jugador o la pandilla ya está iniciando otra acción.",
 		gangActionActive: "Tu pandilla ya tiene una acción de grupo en curso.",
