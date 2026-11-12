@@ -228,6 +228,8 @@ export enum BadgeId {
 	S_Top1Bribery,
 	S_Top1Hospital,
 	S_Top1Gang,
+	S_Top1Beaten,
+	S_Top1Stolen,
 }
 
 export enum InvestmentId {

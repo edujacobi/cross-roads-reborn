@@ -171,6 +171,7 @@ export const typeDefs = /* GraphQL */ `
     type BadgeCatalog {
         special: [BadgeCatalogEntry!]!
         seasonal: [BadgeCatalogEntry!]!
+        deprecated: [BadgeCatalogEntry!]!
     }
 
     type CurrentSeasonInfo {

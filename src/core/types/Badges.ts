@@ -1995,6 +1995,41 @@ export const BadgeList: BadgeListType = {
 			String: EmoteBadgeString.Season6.TopGang,
 		},
 	},
+	[BadgeId.S_Top1Beaten]: {
+		Id: BadgeId.S_Top1Beaten,
+		Name: {
+			[Language.English]: "Crazy Dead Body",
+			[Language.Portuguese]: "Morto Muito Louco",
+			[Language.Spanish]: "Muerto Mucho Loco",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Beaten",
+			[Language.Portuguese]: "1º lugar no Top Espancado",
+			[Language.Spanish]: "1er lugar en Top Golpeado",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season3.CrazyDeadBody,
+			String: EmoteBadgeString.Season3.CrazyDeadBody,
+		},
+	},
+	[BadgeId.S_Top1Stolen]: {
+		Id: BadgeId.S_Top1Stolen,
+		Name: {
+			[Language.English]: "Walking Target",
+			[Language.Portuguese]: "Alvo Ambulante",
+			[Language.Spanish]: "Objetivo Ambulante",
+		},
+		Description: {
+			[Language.English]: "1st place in Top Stolen",
+			[Language.Portuguese]: "1º lugar no Top Roubado",
+			[Language.Spanish]: "1er lugar en Top Robado",
+		},
+		Emoji: {
+			Id: EmoteBadgeId.Season3.WalkingTarget,
+			String: EmoteBadgeString.Season3.WalkingTarget,
+		},
+	},
+
 } as const;
 
 export function getBadgeList(): IBadge[] {
@@ -2018,6 +2053,7 @@ export function getCommandBadgeGroups() {
 		BadgeId.KeyishMandrake,
 		BadgeId.HalloweenArt2026,
 	]);
+
 	const seasonalBadgeIds: Set<BadgeId> = new Set([
 		BadgeId.S_Top1Money,
 		BadgeId.S_Top2Money,
@@ -2038,10 +2074,21 @@ export function getCommandBadgeGroups() {
 		BadgeId.S_Top1Hospital,
 		BadgeId.S_Top1Gang,
 	]);
+
+	const deprecatedBadgeIds: Set<BadgeId> = new Set([
+		BadgeId.S_Top1CasinoWR,
+		BadgeId.S_Top1RobberyQuantity,
+		BadgeId.S_Top1Alms,
+		BadgeId.S_Top1Rooster,
+		BadgeId.S_Top1Beaten,
+		BadgeId.S_Top1Stolen,
+	]);
+
 	const badges = getBadgeList();
 
 	return {
 		special: badges.filter(({ Id }) => specialBadgeIds.has(Id)),
 		seasonal: badges.filter(({ Id }) => seasonalBadgeIds.has(Id)),
+		deprecated: badges.filter(({ Id }) => deprecatedBadgeIds.has(Id)),
 	};
 }

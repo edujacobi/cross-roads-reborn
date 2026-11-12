@@ -74,6 +74,7 @@ export type AuthUser = {
 
 export type BadgeCatalog = {
   __typename?: 'BadgeCatalog';
+  deprecated: Array<BadgeCatalogEntry>;
   seasonal: Array<BadgeCatalogEntry>;
   special: Array<BadgeCatalogEntry>;
 };

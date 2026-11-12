@@ -26,6 +26,9 @@ module.exports = {
 		const textSeasonal = badgeGroups.seasonal.map(
 			badge => `### ${badge.Emoji.String} ${badge.Name[language]}\n${badge.Description[language]}`,
 		);
+		const textDeprecated = badgeGroups.deprecated.map(
+			badge => `### ${badge.Emoji.String} ${badge.Name[language]}\n${badge.Description[language]}`,
+		);
 
 		let userBadges = await UserBadge.GetList(user.Id);
 
@@ -52,6 +55,11 @@ module.exports = {
 				`## ${s.seasonal}`,
 				textSeasonal.join("\n"),
 			])
+			.addLargeSeparator()
+			.addTexts([
+				`## ${s.deprecated}`,
+				textDeprecated.join("\n"),
+			])
 			.addFooter({ text: userBadgeText.length ? `${s.your}: ${userBadgeText}` : undefined });
 
 		return replyWithContainer(interaction, container);
@@ -63,18 +71,21 @@ const Strings = {
 		badges: "Badges",
 		special: "Special badges",
 		seasonal: "Seasonal badges",
+		deprecated: "Deprecated badges",
 		your: "Your badges",
 	},
 	[Language.Portuguese]: {
 		badges: "Insígnias",
 		special: "Insígnias especiais",
 		seasonal: "Insígnias da temporada",
+		deprecated: "Insígnias descontinuadas",
 		your: "Suas insígnias",
 	},
 	[Language.Spanish]: {
 		badges: "Insignia",
 		special: "Insignia especiales",
 		seasonal: "Insignia de temporada",
+		deprecated: "Insignia descontinuadas",
 		your: "Tus insignias",
 	},
 } as const satisfies Localization;

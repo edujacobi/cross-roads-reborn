@@ -162,6 +162,7 @@ export const meResolvers: {
 			return {
 				special: mapBadges(groups.special),
 				seasonal: mapBadges(groups.seasonal),
+				deprecated: mapBadges(groups.deprecated),
 			};
 		},
 

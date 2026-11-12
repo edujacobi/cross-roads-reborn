@@ -50,6 +50,7 @@ const badgeGroups = computed(() =>
 		? [
 				{ title: "Insígnias especiais", badges: badgeCatalog.value.special },
 				{ title: "Insígnias da temporada", badges: badgeCatalog.value.seasonal },
+				{ title: "Insígnias descontinuadas", badges: badgeCatalog.value.deprecated },
 			]
 		: [],
 );
