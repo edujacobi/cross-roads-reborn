@@ -5,6 +5,7 @@
 import { useMutation, useQuery } from "@vue/apollo-composable";
 import { CircleUserRound } from "lucide-vue-next";
 import { computed, ref, watch } from "vue";
+import AttackIcon from "~/components/icons/AttackIcon.vue";
 import SpecialShopIcon from "~/components/icons/SpecialShopIcon.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseInput from "~/components/ui/BaseInput.vue";
@@ -308,9 +309,20 @@ async function handleGiveAlms() {
 				>
 					Uso automático de granadas ativado.
 				</p>
+				<p
+					v-if="!selfActionsLoading && !selfActionsError && grenadeCount > 0"
+					class="user-profile-floating-actions__grenade-info"
+				>
+					Ao usar a granada, você recebe
+					<AttackIcon
+						:size="16"
+						variant="solid"
+					/>
+					+5 ATK.
+				</p>
 				<small
 					v-if="!selfActionsLoading && !selfActionsError && selfActionsResult?.user"
-					class="user-profile-floating-actions__grenade-count"
+					class="user-profile-floating-actions__grenade-info"
 				>
 					Você possui {{ grenadeCount }} {{ grenadeCount === 1 ? "granada" : "granadas" }}.
 				</small>
@@ -461,7 +473,7 @@ async function handleGiveAlms() {
 		}
 	}
 
-	&__grenade-count {
+	&__grenade-info {
 		color: $text-secondary;
 		font-size: $font-size-12;
 	}
