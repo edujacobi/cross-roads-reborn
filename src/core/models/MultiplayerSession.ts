@@ -20,6 +20,7 @@ import { HeistMissionId } from "#core/types/Heist";
 import type { RobberyInitData } from "#core/types/Robbery";
 import { UserRobberyStrategy } from "#core/models/strategies/robbery/UserRobberyStrategy";
 import type { User } from "#core/models/User";
+import { WebPush } from "#core/models/WebPush";
 import { getLocaleFromLanguage, Language, type Localization } from "#core/models/Language";
 import { logger } from "#shared/log";
 import {
@@ -478,6 +479,7 @@ export class MultiplayerSession {
 			try {
 				const session = await lockStates(base);
 				await this.Activate(session, "awaitingDefender", timeoutMs, () => this.ResolveDuel(session));
+				this.NotifyDefender(session);
 				return { success: true, session: this.ToView(session), initData: session.initData };
 			}
 			catch (error) {
@@ -963,6 +965,53 @@ export class MultiplayerSession {
 		return { success: true, message: s.responseRecorded };
 	}
 
+	private static NotifyDefender(session: RuntimeSession) {
+		const target = session.target;
+		if (!target) return;
+
+		const strings = PushStrings[target.Language];
+		let title: string;
+		let body: string;
+		switch (session.kind) {
+		case "beatUp":
+			title = strings.beatUpTitle;
+			body = strings.beatUp(session.owner.Nickname);
+			break;
+		case "userRobbery":
+			title = strings.userRobberyTitle;
+			body = strings.userRobbery(session.owner.Nickname);
+			break;
+		case "investmentRobbery":
+			title = strings.investmentRobberyTitle;
+			body = strings.investmentRobbery(
+				session.gangName ?? "",
+				session.model.InvestmentBase?.Name[target.Language] ?? session.investmentName ?? "",
+			);
+			break;
+		default:
+			return;
+		}
+
+		const expiresAt = session.expiresAt?.getTime();
+		const ttlSeconds = expiresAt
+			? Math.max(1, Math.ceil((expiresAt - Date.now()) / 1_000))
+			: 60;
+		void WebPush.Send(target.Id, body, {
+			actions: session.allowedResponses.map(response => ({
+				action: response,
+				title: strings.responses[response] ?? response,
+			})),
+			data: { sessionId: session.id },
+			requireInteraction: true,
+			tag: session.id,
+			title,
+			ttlSeconds,
+			urgency: "high",
+		}).catch(error => {
+			logger.warn(`Failed to send ${session.kind} push notification to user ${target.Id}: ${error}`);
+		});
+	}
+
 	private static async DefendInvestment(
 		session: InvestmentRobberySession,
 		s: (typeof Strings)[Language],
@@ -1220,6 +1269,7 @@ export class MultiplayerSession {
 	private static async BeginInvestmentDefense(session: InvestmentRobberySession): Promise<void> {
 		if (session.phase !== "lobby") return;
 		await this.Activate(session, "awaitingDefender", 60_000, () => this.ResolveInvestmentRobbery(session));
+		this.NotifyDefender(session);
 	}
 
 	private static async ResolveInvestmentRobbery(session: InvestmentRobberySession): Promise<void> {
@@ -1562,3 +1612,62 @@ export const Strings = {
 		playerNotFound: "Jugador no encontrado.",
 	},
 } as const satisfies Localization;
+
+const PushStrings: Record<Language, {
+	beatUpTitle: string;
+	userRobberyTitle: string;
+	investmentRobberyTitle: string;
+	beatUp: (attacker: string) => string;
+	userRobbery: (attacker: string) => string;
+	investmentRobbery: (gang: string, investment: string) => string;
+	responses: Record<string, string>;
+}> = {
+	[Language.English]: {
+		beatUpTitle: "You are being beaten up",
+		userRobberyTitle: "You are being robbed",
+		investmentRobberyTitle: "Your investment is under attack",
+		beatUp: attacker => `${attacker} is trying to beat you up. Choose your response.`,
+		userRobbery: attacker => `${attacker} is trying to rob you. Choose your response.`,
+		investmentRobbery: (gang, investment) => `${gang} is attacking your ${investment} investment. Defend it now.`,
+		responses: {
+			fight: "Fight",
+			run: "Run",
+			nothing: "Do nothing",
+			react: "React",
+			police: "Call police",
+			defend: "Defend investment",
+		},
+	},
+	[Language.Portuguese]: {
+		beatUpTitle: "Você está sendo espancado",
+		userRobberyTitle: "Você está sendo roubado",
+		investmentRobberyTitle: "Seu investimento está sob ataque",
+		beatUp: attacker => `${attacker} está tentando espancar você. Escolha sua reação.`,
+		userRobbery: attacker => `${attacker} está tentando roubar você. Escolha sua reação.`,
+		investmentRobbery: (gang, investment) => `A gangue ${gang} está atacando seu investimento ${investment}. Defenda-o agora.`,
+		responses: {
+			fight: "Lutar",
+			run: "Correr",
+			nothing: "Não fazer nada",
+			react: "Reagir",
+			police: "Chamar a polícia",
+			defend: "Defender investimento",
+		},
+	},
+	[Language.Spanish]: {
+		beatUpTitle: "Te están golpeando",
+		userRobberyTitle: "Te están robando",
+		investmentRobberyTitle: "Atacan tu inversión",
+		beatUp: attacker => `${attacker} está intentando golpearte. Elige cómo responder.`,
+		userRobbery: attacker => `${attacker} está intentando robarte. Elige cómo responder.`,
+		investmentRobbery: (gang, investment) => `${gang} está atacando tu inversión ${investment}. Defiéndela ahora.`,
+		responses: {
+			fight: "Luchar",
+			run: "Correr",
+			nothing: "No hacer nada",
+			react: "Reaccionar",
+			police: "Llamar a la policía",
+			defend: "Defender inversión",
+		},
+	},
+};

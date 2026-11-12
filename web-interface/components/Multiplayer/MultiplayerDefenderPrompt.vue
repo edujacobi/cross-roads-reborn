@@ -3,7 +3,7 @@
 	lang="ts"
 >
 import { useQuery } from "@vue/apollo-composable";
-import { computed, onMounted, onUnmounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import BeatUpAttackerActionModal from "~/components/Multiplayer/BeatUp/BeatUpAttackerActionModal.vue";
 import BeatUpDefenderModal from "~/components/Multiplayer/BeatUp/BeatUpDefenderModal.vue";
 import BeatUpResultModal from "~/components/Multiplayer/BeatUp/BeatUpResultModal.vue";
@@ -17,6 +17,7 @@ import { useMultiplayerSessions } from "~/composables/useMultiplayerSessions";
 import { GetDefenderActionProfilesDocument, type MultiplayerSession } from "~/graphql/generated";
 
 const auth = useAuth();
+const route = useRoute();
 const { showToast } = useToast();
 const { sessions, completedSessions, dismissResult, respondToSession, refetch } = useMultiplayerSessions();
 const isDevelopment = import.meta.dev;
@@ -360,6 +361,29 @@ async function respond(sessionId: string, response: string) {
 		respondingSessionId.value = null;
 	}
 }
+
+watch(
+	() => [route.query.pushSessionId, route.query.pushResponse] as const,
+	async ([sessionId, response]) => {
+		if (
+			typeof sessionId !== "string" ||
+			typeof response !== "string" ||
+			!["fight", "run", "nothing", "react", "police", "defend"].includes(response)
+		) {
+			return;
+		}
+
+		try {
+			await respond(sessionId, response);
+		} finally {
+			const query = { ...route.query };
+			delete query.pushSessionId;
+			delete query.pushResponse;
+			await navigateTo({ path: route.path, query }, { replace: true });
+		}
+	},
+	{ immediate: true },
+);
 </script>
 
 <template>

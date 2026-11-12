@@ -19,6 +19,21 @@ export interface WebPushSubscriptionInput {
 	keys: { p256dh: string; auth: string };
 }
 
+export interface WebPushAction {
+	action: string;
+	title: string;
+}
+
+export interface WebPushOptions {
+	actions?: WebPushAction[];
+	data?: { sessionId: string };
+	requireInteraction?: boolean;
+	tag?: string;
+	title?: string;
+	urgency?: "very-low" | "low" | "normal" | "high";
+	ttlSeconds?: number;
+}
+
 export class WebPush {
 	static get PublicKey() {
 		return configureVapid() ? process.env.VAPID_PUBLIC_KEY! : "";
@@ -53,17 +68,31 @@ export class WebPush {
 			.trim();
 	}
 
-	static async Send(userId: string, body: string) {
+	static async Send(userId: string, body: string, options: WebPushOptions = {}) {
 		if (!configureVapid()) return;
 
 		const subscriptions = await PushSubscriptionRepository.FindByUserId(userId);
-		const payload = JSON.stringify({ title: "Cross Roads", body: WebPush.ToPlainText(body) });
+		const {
+			urgency = "normal",
+			ttlSeconds,
+			title,
+			...notificationOptions
+		} = options;
+		const payload = JSON.stringify({
+			title: title ?? "Cross Roads",
+			body: WebPush.ToPlainText(body),
+			...notificationOptions,
+		});
 
 		await Promise.all(subscriptions.map(async subscription => {
 			try {
 				await webPush.sendNotification(
 					{ endpoint: subscription.endpoint, keys: { p256dh: subscription.p256dh, auth: subscription.auth } },
 					payload,
+					{
+						urgency,
+						...(ttlSeconds === undefined ? {} : { TTL: ttlSeconds }),
+					},
 				);
 			}
 			catch (error) {

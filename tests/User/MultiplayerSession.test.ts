@@ -23,6 +23,7 @@ const {
 	mockRobberyRelease,
 	mockCasinoCanPlay,
 	mockCasinoStart,
+	mockWebPushSend,
 	mockRepository,
 	mockGetGangByUserId,
 	mockInvestmentValidation,
@@ -43,6 +44,7 @@ const {
 	mockRobberyRelease: vi.fn(),
 	mockCasinoCanPlay: vi.fn(),
 	mockCasinoStart: vi.fn(),
+	mockWebPushSend: vi.fn(),
 	mockRepository: {
 		Create: vi.fn(),
 		Update: vi.fn(),
@@ -142,6 +144,10 @@ vi.mock("#core/repositories/MultiplayerSessionRepository", () => ({
 	MultiplayerSessionRepository: mockRepository,
 }));
 
+vi.mock("#core/models/WebPush", () => ({
+	WebPush: { Send: mockWebPushSend },
+}));
+
 function makeUser(id: string): User {
 	const user = new User(id);
 	user.Nickname = `Player ${id}`;
@@ -202,6 +208,7 @@ describe("Multiplayer sessions", () => {
 		mockRobberyRelease.mockResolvedValue(undefined);
 		mockCasinoCanPlay.mockResolvedValue({ canPlay: true, message: "" });
 		mockCasinoStart.mockResolvedValue(true);
+		mockWebPushSend.mockReset().mockResolvedValue(undefined);
 		await MultiplayerSession.Stop();
 	});
 
@@ -240,6 +247,52 @@ describe("Multiplayer sessions", () => {
 		expect(MultiplayerSession.GetVisibleSession(started.session.id, defender.Id, null)?.duelDetails).toEqual(expected);
 		expect(listener).toHaveBeenCalledWith(expect.objectContaining({ duelDetails: expected }));
 		unsubscribe();
+	});
+
+	it.each(["beatUp", "userRobbery"] as const)("sends an urgent, actionable push for %s", async kind => {
+		const attacker = makeUser("attacker");
+		const defender = makeUser("defender");
+		defender.Language = Language.Portuguese;
+		const started = kind === "beatUp"
+			? await MultiplayerSession.StartBeatUp(attacker, defender, false)
+			: await MultiplayerSession.StartUserRobbery(attacker, defender, false);
+
+		expect(started.success).toBe(true);
+		if (!started.success) return;
+
+		const isBeatUp = kind === "beatUp";
+		expect(mockWebPushSend).toHaveBeenCalledWith(
+			defender.Id,
+			expect.stringContaining(`Player ${attacker.Id} está tentando`),
+			expect.objectContaining({
+				actions: isBeatUp
+					? [
+						{ action: "fight", title: "Lutar" },
+						{ action: "run", title: "Correr" },
+						{ action: "nothing", title: "Não fazer nada" },
+					]
+					: [
+						{ action: "react", title: "Reagir" },
+						{ action: "police", title: "Chamar a polícia" },
+						{ action: "nothing", title: "Não fazer nada" },
+					],
+				data: { sessionId: started.session.id },
+				requireInteraction: true,
+				tag: started.session.id,
+				title: isBeatUp ? "Você está sendo espancado" : "Você está sendo roubado",
+				ttlSeconds: isBeatUp ? 45 : 60,
+				urgency: "high",
+			}),
+		);
+	});
+
+	it("keeps a duel active when push delivery fails", async () => {
+		mockWebPushSend.mockRejectedValueOnce(new Error("push service unavailable"));
+
+		const started = await MultiplayerSession.StartBeatUp(makeUser("attacker"), makeUser("defender"), false);
+		await Promise.resolve();
+
+		expect(started.success).toBe(true);
 	});
 
 	it("includes grenade use in defender-visible duel details", async () => {
@@ -419,6 +472,40 @@ describe("Multiplayer sessions", () => {
 		expect(participant.Update).toHaveBeenCalledWith({ robbingUserId: null, robberyParticipatingInGangAction: false });
 		expect(MultiplayerSession.GetVisibleSession(started.session.id, leader.Id, gang.Id)?.participants.map(player => player.userId))
 			.toEqual([leader.Id]);
+	});
+
+	it("sends an urgent defend action when an investment robbery reaches the defense phase", async () => {
+		const leader = makeUser("leader");
+		const defender = makeUser("defender");
+		defender.Language = Language.Portuguese;
+		mockGetGangByUserId.mockResolvedValue({
+			Id: 1,
+			Name: "Gang",
+			LastInvestmentRobbery: null,
+			GetMaxMembers: () => 5,
+		});
+
+		const started = await MultiplayerSession.StartInvestmentRobbery(leader, defender);
+
+		expect(started.success).toBe(true);
+		if (!started.success) return;
+		expect(mockWebPushSend).not.toHaveBeenCalled();
+
+		await vi.advanceTimersByTimeAsync(60_000);
+
+		expect(mockWebPushSend).toHaveBeenCalledWith(
+			defender.Id,
+			expect.stringContaining("A gangue Gang está atacando seu investimento Bar."),
+			expect.objectContaining({
+				actions: [{ action: "defend", title: "Defender investimento" }],
+				data: { sessionId: started.session.id },
+				requireInteraction: true,
+				tag: started.session.id,
+				title: "Seu investimento está sob ataque",
+				ttlSeconds: 60,
+				urgency: "high",
+			}),
+		);
 	});
 
 	it("releases participant reservations when beat-up validation fails", async () => {
