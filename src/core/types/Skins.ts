@@ -138,6 +138,22 @@ export const BundleList: SkinBundleListType = {
 		Shop: true,
 		Price: 2_000,
 	},
+	[BundleId.Halloween]: {
+		Id: BundleId.Halloween,
+		Description: {
+			[Language.English]: "Halloween",
+			[Language.Portuguese]: "Halloween",
+			[Language.Spanish]: "Halloween",
+		},
+		Items: [
+			ItemId.HuntRifle,
+			ItemId.Sniper,
+			ItemId.Katana,
+			ItemId.Grenade,
+		],
+		Shop: true,
+		Price: 2_000,
+	},
 } as const;
 
 export function getSkinBundleList(): SkinBundles[] {

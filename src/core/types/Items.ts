@@ -227,6 +227,10 @@ export const ItemList: ItemListType = {
 				Id: "1495465705347481831",
 				String: "<:OxidatedHuntRifle:1495465705347481831>",
 			},
+			[BundleId.Halloween]: {
+				Id: "1571166737645445282",
+				String: "<:HalloweenHuntRifle:1571166737645445282>",
+			},
 		},
 		Price: 27_000,
 		Attack: 30,
@@ -451,6 +455,10 @@ export const ItemList: ItemListType = {
 				Id: "937170775138508830",
 				String: "<:sniper:937170775138508830>",
 			},
+			[BundleId.Halloween]: {
+				Id: "1571166807178481714",
+				String: "<:HalloweenSniper:1571166807178481714>",
+			},
 		},
 		Price: 210_000,
 		Attack: 55,
@@ -488,6 +496,10 @@ export const ItemList: ItemListType = {
 			[BundleId.Flaming]: {
 				Id: "1454163271333580895",
 				String: "<:katanaflames:1454163271333580895>",
+			},
+			[BundleId.Halloween]: {
+				Id: "1571166771300274216",
+				String: "<:HalloweenKatana:1571166771300274216>",
 			},
 		},
 		Price: 350_000,
@@ -803,6 +815,10 @@ export const ItemList: ItemListType = {
 			[BundleId.Traditional]: {
 				Id: "937170774152859670",
 				String: "<:granada:937170774152859670>",
+			},
+			[BundleId.Halloween]: {
+				Id: "1565529963359240224",
+				String: "<:HalloweenGrenade:1565529963359240224>",
 			},
 		},
 		Price: 350_000,
