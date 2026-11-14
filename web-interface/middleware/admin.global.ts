@@ -6,7 +6,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
 	await auth.initAuth();
 
 	if (!auth.isAuthenticated.value) {
-		return navigateTo("/login", { replace: true });
+		return navigateTo("/", { replace: true });
 	}
 
 	if (!auth.hasAdminAccess.value) {

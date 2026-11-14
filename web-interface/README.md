@@ -7,9 +7,9 @@ built with **Nuxt 3**, **Apollo Client**, and **GraphQL**.
 
 ## Authentication
 
-Login is done via **Discord OAuth2**. After clicking "Login with Discord" on
-the `/login` page you are redirected to Discord, then back to `/auth/callback`
-where a signed JWT is stored in `localStorage`.
+Login is done via **Discord OAuth2**. Click the Discord login button on the home
+page to start authentication. You are redirected to Discord, then back to
+`/auth/callback` where a signed JWT is stored in `localStorage`.
 
 Roles are enforced both on the API server (GraphQL resolvers) and the frontend for Admin actions:
 
@@ -142,7 +142,7 @@ artifact used for the CPanel deployment.
 
 | Routes                                                                                  | Features                                                     |
 |-----------------------------------------------------------------------------------------|--------------------------------------------------------------|
-| `/login`, `/auth/callback`                                                              | Discord login and OAuth callback                             |
+| `/auth/callback`                                                                        | Discord OAuth callback                                       |
 | `/`, `/me`, `/rankings`, `/updates`                                                     | Dashboard, own profile, leaderboards, and updates            |
 | `/users`, `/users/[id]`                                                                 | User search, profiles, history, and role-appropriate actions |
 | `/gangs`, `/gangs/[id]`                                                                 | Gang creation, details, and management                       |

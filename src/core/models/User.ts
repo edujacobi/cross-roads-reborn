@@ -1440,6 +1440,14 @@ export class User {
 			!this.IsParticipatingInGangAction();
 	}
 
+	async HasBeenWithoutItemsForMoreThanAWeek() {
+		const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+		const items = await this.GetAllItems();
+		return items
+			.filter(item => item.Type !== ItemType.Consumable)
+			.every(item => item.RemainingTime < cutoff);
+	}
+
 	/**
 	 * Checks user availability to perform actions based on active states.
 	 * Allows bypassing specific checks via ignoreReasons array.

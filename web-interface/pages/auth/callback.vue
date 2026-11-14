@@ -10,24 +10,34 @@ const route = useRoute();
 const auth = useAuth();
 const error = ref<string | null>(null);
 
+function showAuthError(message: string) {
+	error.value = message;
+	setTimeout(() => {
+		void navigateTo({ path: "/", query: { error: message } });
+	}, 3000);
+}
+
 onMounted(async () => {
-	const token = route.query.token as string;
-	if (!token) {
-		error.value = "Nenhum token fornecido na resposta de autenticação.";
-		setTimeout(() => navigateTo("/login"), 3000);
+	const token = route.query.token;
+	if (typeof token !== "string" || !token) {
+		showAuthError("Nenhum token fornecido na resposta de autenticação.");
 		return;
 	}
 
 	try {
 		await auth.setToken(token);
-		if (!auth.hasAdminAccess.value) {
-			navigateTo("/me");
+		if (!auth.isAuthenticated.value) {
+			showAuthError("Não foi possível validar sua autenticação. Tente novamente.");
 			return;
 		}
-		navigateTo("/admin/dashboard");
-	} catch (err) {
-		error.value = `Falha ao processar token de autenticação: ${err}`;
-		setTimeout(() => navigateTo("/login"), 3000);
+
+		if (!auth.hasAdminAccess.value) {
+			await navigateTo("/me");
+			return;
+		}
+		await navigateTo("/admin/dashboard");
+	} catch {
+		showAuthError("Falha ao processar a autenticação. Tente novamente.");
 	}
 });
 </script>
@@ -55,7 +65,7 @@ onMounted(async () => {
 			>
 				<h1>Erro na Autenticação</h1>
 				<p>{{ error }}</p>
-				<p>Redirecionando para o login em instantes...</p>
+				<p>Redirecionando para o início em instantes...</p>
 			</div>
 		</article>
 	</main>

@@ -41,6 +41,8 @@ describe("BeatUp", () => {
 		beforeEach(async () => {
 			user.Items = [ItemList[ItemId.Knife] as UserItem];
 			defender.Items = [ItemList[ItemId.Knife] as UserItem];
+			defender.Items[0].RemainingTime = new Date(Date.now() + 8 * 24 * 60 * 60 * 1000);
+			vi.spyOn(defender, "GetAllItems").mockImplementation(async () => defender.Items);
 		});
 
 		it("Should fail if attacker is defender", async () => {
@@ -107,6 +109,24 @@ describe("BeatUp", () => {
 			const result = await beatUp.CanBeatUser();
 			expect(result.canBeat).toBe(false);
 			expect(result.message).toContain("class");
+		});
+
+		it("Should fail if the last non-consumable item expired more than a week ago", async () => {
+			defender.Items = [ItemList[ItemId.Grenade] as UserItem];
+			vi.mocked(defender.GetAllItems).mockResolvedValue([
+				{
+					...ItemList[ItemId.Knife],
+					RemainingTime: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000),
+				} as UserItem,
+				{
+					...ItemList[ItemId.Grenade],
+					RemainingTime: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000),
+				} as UserItem,
+			]);
+			const beatUp = new BeatUp(user, defender);
+			const result = await beatUp.CanBeatUser();
+			expect(result.canBeat).toBe(false);
+			expect(result.message).toContain("inactive");
 		});
 
 		it("Should fail if attacker without weapon", async () => {
@@ -352,7 +372,18 @@ describe("BeatUp", () => {
 			expect(result.message).toContain("gang action");
 		});
 
-		it("Should succeed", async () => {
+		it("Should allow a target whose last item expired less than a week ago", async () => {
+			defender.Items = [];
+			vi.mocked(defender.GetAllItems).mockResolvedValue([
+				{
+					...ItemList[ItemId.Knife],
+					RemainingTime: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000),
+				} as UserItem,
+				{
+					...ItemList[ItemId.Pistol],
+					RemainingTime: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
+				} as UserItem,
+			]);
 			const beatUp = new BeatUp(user, defender);
 			const result = await beatUp.CanBeatUser();
 			expect(result.canBeat).toBe(true);

@@ -2,13 +2,19 @@
 	setup
 	lang="ts"
 >
-import { Coins, LogIn, Swords, UsersRound } from "lucide-vue-next";
+import { AlertTriangle } from "lucide-vue-next";
 import { onMounted, onUnmounted, ref, watch } from "vue";
+import BeatUpIcon from "~/components/icons/BeatUpIcon.vue";
+import CasinoIcon from "~/components/icons/CasinoIcon.vue";
 import GangIcon from "~/components/icons/GangIcon.vue";
 import HospitalIcon from "~/components/icons/HospitalIcon.vue";
+import InvestmentIcon from "~/components/icons/InvestmentIcon.vue";
 import JobsIcon from "~/components/icons/JobsIcon.vue";
 import PrisonIcon from "~/components/icons/PrisonIcon.vue";
+import RobberyIcon from "~/components/icons/RobberyIcon.vue";
+import ScavengeIcon from "~/components/icons/ScavengeIcon.vue";
 import ShopIcon from "~/components/icons/ShopIcon.vue";
+import SpecialShopIcon from "~/components/icons/SpecialShopIcon.vue";
 import TrophyIcon from "~/components/icons/TrophyIcon.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import { imagePaths } from "~/constants/imagePaths";
@@ -22,6 +28,20 @@ const glowY = ref(0);
 const glowElement = ref<HTMLDivElement | null>(null);
 const { motionEnabled } = useMotionPreferences();
 let pointerFrame = 0;
+
+const route = useRoute();
+const auth = useAuth();
+
+const errorMessage = computed(() => {
+	return typeof route.query.error === "string" ? route.query.error : null;
+});
+
+onMounted(async () => {
+	await auth.initAuth();
+	if (auth.isAuthenticated.value) {
+		await navigateTo(auth.hasAdminAccess.value ? "/admin/dashboard" : "/me");
+	}
+});
 
 const handleMouseMove = (e: MouseEvent) => {
 	glowX.value = e.clientX;
@@ -88,14 +108,37 @@ useSeoMeta({
 				width="60"
 			/>
 			<BaseButton
-				to="/login"
 				variant="secondary"
 				size="sm"
+				@click="auth.loginWithDiscord()"
 			>
-				<LogIn :size="16" />
-				Entrar
+				<svg
+					class="discord-icon"
+					viewBox="0 0 24 24"
+					fill="currentColor"
+					width="14"
+					height="14"
+					aria-hidden="true"
+				>
+					<path
+						d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.893.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"
+					/>
+				</svg>
+				Entrar com Discord
 			</BaseButton>
 		</header>
+
+		<div
+			v-if="errorMessage"
+			class="error-banner"
+			role="alert"
+		>
+			<AlertTriangle
+				:size="18"
+				aria-hidden="true"
+			/>
+			<span>{{ errorMessage }}</span>
+		</div>
 
 		<section class="game-home__hero motion-reveal">
 			<p class="game-home__eyebrow">RPG multiplayer</p>
@@ -104,38 +147,6 @@ useSeoMeta({
 				Construa sua história em Cross Roads Reborn: trabalhe, acumule riquezas, enfrente rivais e forme alianças em um
 				mundo movido pelas escolhas dos jogadores.
 			</p>
-		</section>
-
-		<section
-			class="game-home__features motion-reveal"
-			aria-label="Sobre o jogo"
-		>
-			<article class="game-feature">
-				<Coins
-					:size="24"
-					aria-hidden="true"
-				/>
-				<h2>Construa sua fortuna</h2>
-				<p>Trabalhe, invista, explore e administre seu dinheiro para avançar na economia do jogo.</p>
-			</article>
-
-			<article class="game-feature">
-				<Swords
-					:size="24"
-					aria-hidden="true"
-				/>
-				<h2>Encare desafios</h2>
-				<p>Escolha sua classe, equipe-se e dispute espaço em combates, apostas e outras atividades.</p>
-			</article>
-
-			<article class="game-feature">
-				<UsersRound
-					:size="24"
-					aria-hidden="true"
-				/>
-				<h2>Jogue em comunidade</h2>
-				<p>Crie ou participe de uma gangue, colabore com outros jogadores e dispute rankings.</p>
-			</article>
 		</section>
 
 		<p class="game-home__features-description">Saiba o que é possível em Cross Roads Reborn:</p>
@@ -190,7 +201,7 @@ useSeoMeta({
 					variant="solid"
 					aria-hidden="true"
 				/>
-				<h2>Gangues</h2>
+				<h2>Jogue em equipe</h2>
 				<p>Forme sua gangue e domine a cidade com seus aliados.</p>
 			</article>
 
@@ -200,8 +211,68 @@ useSeoMeta({
 					variant="solid"
 					aria-hidden="true"
 				/>
-				<h2>Rankings</h2>
-				<p>Dispute o topo das classificações por riqueza, combates e influência.</p>
+				<h2>Conquiste o topo</h2>
+				<p>Dispute o ranking das classificações por riqueza, combates e influência.</p>
+			</article>
+
+			<article class="game-feature">
+				<CasinoIcon
+					:size="26"
+					variant="solid"
+					aria-hidden="true"
+				/>
+				<h2>Arrisque no cassino</h2>
+				<p>Teste sua sorte em jogos de cassino e tente multiplicar seus ganhos.</p>
+			</article>
+
+			<article class="game-feature">
+				<InvestmentIcon
+					:size="26"
+					variant="solid"
+					aria-hidden="true"
+				/>
+				<h2>Invista seu dinheiro</h2>
+				<p>Aplique seus recursos para fazer seu patrimônio crescer.</p>
+			</article>
+
+			<article class="game-feature">
+				<RobberyIcon
+					:size="26"
+					variant="solid"
+					aria-hidden="true"
+				/>
+				<h2>Planeje roubos</h2>
+				<p>Busque recompensas em roubos, mas cuidado com as consequências.</p>
+			</article>
+
+			<article class="game-feature">
+				<BeatUpIcon
+					:size="26"
+					variant="solid"
+					aria-hidden="true"
+				/>
+				<h2>Entre em brigas</h2>
+				<p>Enfrente outros jogadores em combates e prove sua força.</p>
+			</article>
+
+			<article class="game-feature">
+				<ScavengeIcon
+					:size="26"
+					variant="solid"
+					aria-hidden="true"
+				/>
+				<h2>Vasculhe a cidade</h2>
+				<p>Procure itens e recursos úteis para sua jornada.</p>
+			</article>
+
+			<article class="game-feature">
+				<SpecialShopIcon
+					:size="26"
+					variant="solid"
+					aria-hidden="true"
+				/>
+				<h2>Personalize seu estilo</h2>
+				<p>Use skins e customizações para deixar seu personagem com a sua cara.</p>
 			</article>
 		</section>
 	</main>
@@ -213,6 +284,7 @@ useSeoMeta({
 >
 @use "~/assets/scss/variables" as *;
 @use "~/assets/scss/mixins" as *;
+@use "sass:color";
 
 .game-home {
 	position: relative;
@@ -248,6 +320,20 @@ useSeoMeta({
 		//@media (max-width: 425px){
 		//	flex-direction: column;
 		//}
+	}
+
+	.error-banner {
+		width: 100%;
+		display: flex;
+		align-items: center;
+		gap: $spacing-sm;
+		padding: 0.75rem $spacing-md;
+		@include accent-surface($color-danger);
+		border-radius: $radius-sm;
+		color: color.adjust($color-danger, $lightness: 15%);
+		font-size: $font-size-12;
+		text-align: left;
+		margin-top: 1.25rem;
 	}
 
 	&__hero {
@@ -350,7 +436,7 @@ useSeoMeta({
 .game-home__features .game-feature {
 	animation: reveal-up 0.5s $motion-ease-out both;
 
-	@for $index from 1 through 6 {
+	@for $index from 1 through 12 {
 		&:nth-child(#{$index}) {
 			animation-delay: #{$index * 35}ms;
 		}

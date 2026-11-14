@@ -96,15 +96,21 @@ export async function createApiServer(): Promise<FastifyInstance> {
 			const frontendUrl = getFrontendUrl();
 			const { code, error } = req.query;
 
+			const redirectWithError = (message: string) => {
+				const redirectUrl = new URL("/", frontendUrl);
+				redirectUrl.searchParams.set("error", message);
+				return reply.redirect(redirectUrl.toString());
+			};
+
 			if (error || !code) {
 				logger.warn(`Discord OAuth error: ${error || "No code provided"}`);
-				return reply.redirect(`${frontendUrl}/login?error=${encodeURIComponent(error || "No code provided")}`);
+				return redirectWithError(error || "No code provided");
 			}
 
 			const result = await handleDiscordCallback(code);
 
 			if ("error" in result) {
-				return reply.redirect(`${frontendUrl}/login?error=${encodeURIComponent(result.error)}`);
+				return redirectWithError(result.error);
 			}
 
 			return reply.redirect(`${frontendUrl}/auth/callback?token=${result.token}`);

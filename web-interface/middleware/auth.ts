@@ -5,13 +5,18 @@ export default defineNuxtRouteMiddleware(async () => {
 	await auth.initAuth();
 
 	if (!auth.isAuthenticated.value) {
-		return navigateTo("/login", { replace: true });
+		return navigateTo("/", { replace: true });
 	}
 
 	if (!auth.hasWebAccess.value) {
 		auth.clearSession();
 		return navigateTo(
-			`/login?error=${encodeURIComponent("O acesso durante o período de beta fechado está disponível apenas para usuários VIP e membros da equipe.")}`,
+			{
+				path: "/",
+				query: {
+					error: "O acesso durante o período de beta fechado está disponível apenas para usuários VIP e membros da equipe.",
+				},
+			},
 			{ replace: true },
 		);
 	}

@@ -172,6 +172,11 @@ export class BeatUp {
 			}
 		}
 
+		if (canBeat && await this.Defender.HasBeenWithoutItemsForMoreThanAWeek()) {
+			canBeat = false;
+			message = s.inactiveUser;
+		}
+
 		return { canBeat, message };
 	}
 
@@ -338,6 +343,7 @@ export const Strings = {
 		sameGang: `You can't beat up a member of your own gang! ${EmoteString.Beat}`,
 		withoutNick: `This user hasn't set a nickname yet! ${EmoteString.Beat}`,
 		withoutClass: `This user hasn't chosen a class yet! ${EmoteString.Beat}`,
+		inactiveUser: "This user appears inactive and cannot be targeted.",
 		withoutItem: `You can't beat someone up without a weapon! ${EmoteString.Beat}`,
 		lowAtk: (nick: string) => `You can't beat up ${nick} using your current weapons! ${EmoteString.Beat}\n-# Get a better weapon. You need at least 15 difference`,
 		scavengingA: (placeId: ScavengeId) => `You can't beat someone up while scavenging ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.English]}** ${EmoteString.Scavenge}`,
@@ -414,6 +420,7 @@ export const Strings = {
 		sameGang: `Você não pode espancar um membro da sua própria gangue! ${EmoteString.Beat}`,
 		withoutNick: `Este usuário ainda não cadastrou um nickname! ${EmoteString.Beat}`,
 		withoutClass: `Este usuário ainda não escolheu uma classe! ${EmoteString.Beat}`,
+		inactiveUser: "Este usuário parece estar inativo e não pode ser alvo desta ação.",
 		withoutItem: `Você não pode espancar sem uma arma! ${EmoteString.Beat}`,
 		lowAtk: (nick: string) => `Você não pode espancar ${nick} usando suas armas atuais! ${EmoteString.Beat}\n-# Consiga uma arma melhor. Você precisa de pelo menos 15 de diferença`,
 		scavengingA: (placeId: ScavengeId) => `Você não pode espancar enquanto está vasculhando ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Portuguese]}** ${EmoteString.Scavenge}`,
@@ -490,6 +497,7 @@ export const Strings = {
 		sameGang: `¡No puedes golpear a un miembro de tu propia cuadrilla! ${EmoteString.Beat}`,
 		withoutNick: `¡Este usuario no ha configurado un apodo todavía! ${EmoteString.Beat}`,
 		withoutClass: `¡Este usuario no ha elegido una clase todavía! ${EmoteString.Beat}`,
+		inactiveUser: "Este usuario parece estar inactivo y no puede ser objetivo de esta acción.",
 		withoutItem: `¡No puedes golpear a alguien sin un arma! ${EmoteString.Beat}`,
 		lowAtk: (nick: string) => `¡No puedes golpear a ${nick} usando tus armas actuales! ${EmoteString.Beat}\n-# Consigue un arma mejor. ¡Necesitas al menos 15 de diferencia!`,
 		scavengingA: (placeId: ScavengeId) => `¡No puedes golpear a alguien mientras buscas en ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Spanish]}** ${EmoteString.Scavenge}`,

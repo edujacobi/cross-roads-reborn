@@ -134,6 +134,11 @@ export class UserRobberyStrategy implements IRobberyStrategy {
 			}
 		}
 
+		if (canRob && await this.Defender.HasBeenWithoutItemsForMoreThanAWeek()) {
+			canRob = false;
+			message = s.inactiveUser;
+		}
+
 		return { canRob, message };
 	}
 
@@ -319,6 +324,7 @@ export const Strings = {
 		sameGang: "You can't rob a member of your own gang!",
 		withoutNick: "This user hasn't set a nickname yet!",
 		withoutClass: "This user hasn't choose a class yet!",
+		inactiveUser: "This user appears inactive and cannot be targeted.",
 		withoutItem: "You can't rob without a weapon!",
 		lowAtk: (nick: string) => `You can't rob ${nick} with your current weapons! ${EmoteString.Robbery}\n-# Get a better weapon. You need at least 15 difference!`,
 		scavengingA: (placeId: ScavengeId) => `You can't rob while scavenging ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.English]}** ${EmoteString.Scavenge}`,
@@ -391,6 +397,7 @@ export const Strings = {
 		sameGang: "Você não pode roubar um membro da sua própria gangue!",
 		withoutNick: "Este usuário ainda não cadastrou um nickname!",
 		withoutClass: "Este usuário ainda não escolheu uma classe!",
+		inactiveUser: "Este usuário parece estar inativo e não pode ser alvo desta ação.",
 		withoutItem: "Você não pode roubar sem uma arma!",
 		lowAtk: (nick: string) => `Você não pode roubar ${nick} usando suas armas atuais! ${EmoteString.Robbery}\n-# Consiga uma arma melhor. Você precisa de no mínimo 15 de diferença!`,
 		scavengingA: (placeId: ScavengeId) => `Você não pode roubar enquanto está vasculhando ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Portuguese]}** ${EmoteString.Scavenge}`,
@@ -463,6 +470,7 @@ export const Strings = {
 		sameGang: "¡No puedes robar a un miembro de tu propia cuadrilla!",
 		withoutNick: "¡Este usuario aún no ha establecido un apodo!",
 		withoutClass: "¡Este usuario aún no ha elegido una clase!",
+		inactiveUser: "Este usuario parece estar inactivo y no puede ser objetivo de esta acción.",
 		withoutItem: "¡No puedes robar sin un arma!",
 		lowAtk: (nick: string) => `¡No puedes robar a ${nick} con tus armas actuales! ${EmoteString.Robbery}\n-# Consigue un arma mejor. ¡Necesitas al menos 15 de diferencia!`,
 		scavengingA: (placeId: ScavengeId) => `No puedes robar mientras estás buscando en ${ScavengeList[placeId].Emote.String} **${ScavengeList[placeId].Description[Language.Spanish]}** ${EmoteString.Scavenge}`,

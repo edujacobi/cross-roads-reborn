@@ -84,7 +84,7 @@ export function useAuth() {
 		if (token.value) {
 			await fetchUser();
 			if (user.value) {
-				navigateTo(hasAdminAccess.value ? "/admin/dashboard" : "/me");
+				await navigateTo(hasAdminAccess.value ? "/admin/dashboard" : "/me");
 				return;
 			}
 		}

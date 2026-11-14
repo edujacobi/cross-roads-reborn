@@ -34,6 +34,11 @@ describe("Robbery", () => {
 		defender.Nickname = "Defender";
 		defender.Class = ClassId.Entrepreneur;
 		defender.Money = 5_000;
+		defender.Items = [{
+			...ItemList[ItemId.Knife],
+			RemainingTime: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000),
+		} as UserItem];
+		vi.spyOn(defender, "GetAllItems").mockImplementation(async () => defender.Items);
 	});
 
 	describe("When testing if user can rob another user", () => {
@@ -71,6 +76,24 @@ describe("Robbery", () => {
 			const result = await robbery.CanRob();
 			expect(result.canRob).toBe(false);
 			expect(result.message).toContain("class");
+		});
+
+		it("Should fail if the last non-consumable item expired more than a week ago", async () => {
+			defender.Items = [ItemList[ItemId.Grenade] as UserItem];
+			vi.mocked(defender.GetAllItems).mockResolvedValue([
+				{
+					...ItemList[ItemId.Knife],
+					RemainingTime: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000),
+				} as UserItem,
+				{
+					...ItemList[ItemId.Grenade],
+					RemainingTime: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000),
+				} as UserItem,
+			]);
+			const robbery = new UserRobberyStrategy(user, defender);
+			const result = await robbery.CanRob();
+			expect(result.canRob).toBe(false);
+			expect(result.message).toContain("inactive");
 		});
  
 		it("Should fail if attacker has no weapon", async () => {
@@ -269,9 +292,19 @@ describe("Robbery", () => {
 			expect(result.message).toContain("gang action");
 		});
  
-		it("Should succeed if all conditions met", async () => {
+		it("Should allow a target whose last item expired less than a week ago", async () => {
 			user.Items = [ItemList[ItemId.Bazooka] as UserItem];
-			defender.Items = [ItemList[ItemId.Pistol] as UserItem];
+			defender.Items = [];
+			vi.mocked(defender.GetAllItems).mockResolvedValue([
+				{
+					...ItemList[ItemId.Knife],
+					RemainingTime: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000),
+				} as UserItem,
+				{
+					...ItemList[ItemId.Pistol],
+					RemainingTime: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
+				} as UserItem,
+			]);
 			user.GetAttributes();
 			const robbery = new UserRobberyStrategy(user, defender);
 			const result = await robbery.CanRob();

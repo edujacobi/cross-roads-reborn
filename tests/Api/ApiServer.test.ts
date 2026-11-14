@@ -24,6 +24,37 @@ describe("API server proxy handling", () => {
 	});
 });
 
+describe("Discord OAuth redirects", () => {
+	it("redirects OAuth denials to the frontend home page with an error", async () => {
+		const previousFrontendUrl = process.env.FRONTEND_URL;
+		process.env.FRONTEND_URL = "https://frontend.example";
+
+		try {
+			const app = await createApiServer();
+			try {
+				const response = await app.inject({
+					method: "GET",
+					url: "/auth/discord/callback?error=access_denied",
+				});
+
+				expect(response.statusCode).toBe(302);
+				expect(response.headers.location).toBe("https://frontend.example/?error=access_denied");
+			}
+			finally {
+				await app.close();
+			}
+		}
+		finally {
+			if (previousFrontendUrl === undefined) {
+				delete process.env.FRONTEND_URL;
+			}
+			else {
+				process.env.FRONTEND_URL = previousFrontendUrl;
+			}
+		}
+	});
+});
+
 describe("SSE status routes", () => {
 	it("requires bearer authentication", async () => {
 		const app = await createApiServer();
