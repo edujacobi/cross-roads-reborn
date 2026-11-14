@@ -1,0 +1,37 @@
+{
+	"version": "1.0.12",
+	"title": "Skins, Notificações e outros",
+	"date": "14/11/2026",
+	"comment": "Lançamento público chegando.",
+	"sections": [
+		{
+			"title": "Skins de Halloween",
+			"description": "Disponíveis até o final do ano por 2.000 Moedas Especiais!",
+			"imageUrl": "/images/items/18_Grenade_Halloween.png"
+		},
+		{
+			"title": "Notificações push de roubos e espancamentos",
+			"description": "Você receberá notificações de alta prioridade ao ser atacado.",
+			"imageUrl": "/images/situations/robbery.png"
+		},
+		{
+			"title": "Cancelamento de salas multiplayer",
+			"description": "Ações multiplayer (Roleta Russa, preparação de roubo à Investimento e Golpe) agora podem ser abortadas por quem iniciou. Jogadores que entraram na sala podem sair antes do fim.",
+			"imageUrl": "/images/casino/russian-roulette/RussianRoulette.png"
+		},
+		{
+			"title": "Insígnias descontinuadas",
+			"description": "Insígnias antigas que não são mais obtidas em temporadas agora são visíveis na listagem",
+			"imageUrl": "/images/badges/S3Top1Rooster.png"
+		},
+		{
+			"title": "Acessibilidade",
+			"description": "Melhorada em todas as páginas e componentes. Página extra de login removida."
+		},
+		{
+			"title": "Correções",
+			"description": "Corrigidos inputs de busca sem o ícone de lupa.",
+			"imageUrl": "/images/badges/BugCatcher.png"
+		}
+	]
+}
