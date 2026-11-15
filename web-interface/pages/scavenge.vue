@@ -1162,7 +1162,6 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 		overflow: hidden;
 		max-height: 0;
 		opacity: 0;
-		transition: max-height 0.25s ease, opacity 0.2s ease, margin-top 0.25s ease;
 		margin-top: 0;
 
 		&:has(.scavenge-card__details:not(.scavenge-card__details--collapsed)) {
@@ -1272,6 +1271,30 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 	&__item-duration {
 		font-size: $font-size-12;
 		color: $text-muted;
+	}
+}
+
+@supports (interpolate-size: allow-keywords) {
+	.scavenge-card__details-wrapper {
+		interpolate-size: allow-keywords;
+		max-height: none;
+		block-size: 0;
+
+		&:has(.scavenge-card__details:not(.scavenge-card__details--collapsed)) {
+			block-size: auto;
+		}
+	}
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.scavenge-card__details-wrapper {
+		transition: max-height 0.25s ease, opacity 0.2s ease, margin-top 0.25s ease;
+	}
+
+	@supports (interpolate-size: allow-keywords) {
+		.scavenge-card__details-wrapper {
+			transition: block-size 0.25s ease, opacity 0.2s ease, margin-top 0.25s ease;
+		}
 	}
 }
 

@@ -800,12 +800,35 @@ onBeforeUnmount(() => sseAbortController?.abort());
 	max-height: 0;
 	opacity: 0;
 	margin-top: 0;
-	transition: max-height 0.25s ease, opacity 0.2s ease, margin-top 0.25s ease;
 
 	&:has(.rob-card__details:not(.rob-card__details--collapsed)) {
 		max-height: 500px;
 		opacity: 1;
 		margin-top: $spacing-md;
+	}
+}
+
+@supports (interpolate-size: allow-keywords) {
+	.rob-card__details-wrap {
+		interpolate-size: allow-keywords;
+		max-height: none;
+		block-size: 0;
+
+		&:has(.rob-card__details:not(.rob-card__details--collapsed)) {
+			block-size: auto;
+		}
+	}
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.rob-card__details-wrap {
+		transition: max-height 0.25s ease, opacity 0.2s ease, margin-top 0.25s ease;
+	}
+
+	@supports (interpolate-size: allow-keywords) {
+		.rob-card__details-wrap {
+			transition: block-size 0.25s ease, opacity 0.2s ease, margin-top 0.25s ease;
+		}
 	}
 }
 
@@ -1055,7 +1078,6 @@ onBeforeUnmount(() => sseAbortController?.abort());
 @media (prefers-reduced-motion: reduce) {
 	.rob-page__aside,
 	.rob-card__chevron,
-	.rob-card__details-wrap,
 	.rob-modal-loading__spinner {
 		transition: none !important;
 		animation: none !important;
