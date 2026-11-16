@@ -23,6 +23,7 @@ import {
 	type GetEventsQuery,
 	UpdateEventDocument,
 } from "~/graphql/generated";
+import { EventType } from "../../../src/core/types/Ids";
 
 definePageMeta({
 	middleware: "auth",
@@ -60,6 +61,7 @@ const editingEventId = ref<number | null>(null);
 const deletingEventId = ref<number | null>(null);
 const eventPendingDelete = ref<EventRecord | null>(null);
 const draft = ref<EventDraft>(emptyDraft());
+const requiresValue = computed(() => Number(draft.value.type) !== EventType.CLASS_CHANGE_BONUS);
 
 watch(totalPages, (lastPage) => {
 	if (page.value > lastPage) page.value = lastPage;
@@ -112,17 +114,21 @@ function nextPage() {
 }
 
 async function saveEvent() {
-	const value = Number(draft.value.value);
+	const shouldSaveValue = requiresValue.value;
+	const value = shouldSaveValue ? Number(draft.value.value) : 0;
 	const periodStart = new Date(draft.value.periodStart);
 	const periodEnd = new Date(draft.value.periodEnd);
 	if (
-		!draft.value.value.trim() ||
-		!Number.isFinite(value) ||
+		(shouldSaveValue && (!draft.value.value.trim() || !Number.isFinite(value))) ||
 		!Number.isFinite(periodStart.getTime()) ||
 		!Number.isFinite(periodEnd.getTime()) ||
 		periodStart >= periodEnd
 	) {
-		showError("Informe um valor válido e um período com início anterior ao fim.");
+		showError(
+			shouldSaveValue
+				? "Informe um valor válido e um período com início anterior ao fim."
+				: "Informe um período válido com início anterior ao fim.",
+		);
 		return;
 	}
 
@@ -326,7 +332,7 @@ async function removeEvent() {
 		<BaseModal
 			:open="isEditorOpen"
 			:title="editingEventId === null ? 'Criar evento' : `Editar evento #${editingEventId}`"
-			description="Defina o tipo, o valor e o período de atividade."
+			description="Defina o tipo e o período; alguns eventos também exigem um valor."
 			@update:open="isEditorOpen = $event"
 		>
 			<form
@@ -356,6 +362,7 @@ async function removeEvent() {
 				</select>
 
 				<BaseInput
+					v-if="requiresValue"
 					id="event-value"
 					label="Valor"
 					type="number"

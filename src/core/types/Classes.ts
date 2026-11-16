@@ -129,7 +129,7 @@ export const ClassList: ClassListType = {
 		},
 		Modifier: {
 			Job: {
-				Positive: 1.15,
+				Positive: 1.10,
 			},
 			InvestmentYield: {
 				Positive: 1.10,
@@ -166,7 +166,7 @@ export const ClassList: ClassListType = {
 				Positive: 10,
 			},
 			Job: {
-				Negative: 0.8,
+				Negative: 0.85,
 			},
 		},
 	},

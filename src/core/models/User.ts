@@ -565,6 +565,7 @@ export class User {
 	 * @returns True if successful, false if not enough money.
 	 */
 	async SetClass(classId: ClassId, cost?: number) {
+		const classChangeBonusActive = await Event.IsTypeActive(EventType.CLASS_CHANGE_BONUS);
 		const oldClass = this.Class;
 		this.Class = classId;
 		if (cost) {
@@ -574,7 +575,9 @@ export class User {
 			this.Money -= cost;
 		}
 
-		this.ClassChangeCount += 1;
+		if (!classChangeBonusActive) {
+			this.ClassChangeCount += 1;
+		}
 		await this.Update({
 			class: this.Class,
 			money: this.Money,
@@ -605,13 +608,14 @@ export class User {
 	 * Gets the cost to change the class.
 	 * @returns The cost.
 	 */
-	GetClassChangeCost() {
+	async GetClassChangeCost() {
 		if (this.Class === ClassId.None) {
 			return 0;
 		}
 
+		const classChangeBonusActive = await Event.IsTypeActive(EventType.CLASS_CHANGE_BONUS);
 		const base = 100_000;
-		const multiplier = Math.pow(10, Math.max(0, this.ClassChangeCount - 1));
+		const multiplier = classChangeBonusActive ? 1 : Math.pow(10, Math.max(0, this.ClassChangeCount - 1));
 		const discount = this.IsVip() ? 0.75 : 1;
 
 		return Math.floor(base * multiplier * discount);

@@ -1,17 +1,9 @@
 import type { Events } from "#core/database/Events";
 import { EventRepository } from "#core/repositories/EventRepository";
 import { Log } from "#shared/log";
+import { EventType } from "#core/types/Ids";
 
-export enum EventType {
-	JOB_TIME_MULTIPLIER = 1,
-	SCAVENGE_TIME_MULTIPLIER = 2,
-	WANTED_TIME_MULTIPLIER = 3,
-	HOSPITAL_TIME_MULTIPLIER = 4,
-	PRISON_TIME_MULTIPLIER = 5,
-	SCAVENGE_CHANCE_BONUS = 6,
-	ROB_LOCATION_CHANCE_BONUS = 7,
-	PRISON_ESCAPE_CHANCE_BONUS = 8,
-}
+export { EventType } from "#core/types/Ids";
 
 export class Event {
 	static IsActive(event: Pick<Events, "periodStart" | "periodEnd">): boolean {
@@ -123,6 +115,13 @@ export class Event {
 		return event.value;
 	}
 
+	static async IsTypeActive(eventType: EventType) {
+		const currentDate = new Date();
+		const event = await EventRepository.FindActiveEvent(eventType, currentDate);
+
+		return event !== null;
+	}
+
 	/**
 	 * Retrieves the active event bonus value for a given event type (default 0).
 	 *
@@ -170,6 +169,8 @@ export class Event {
 			return "Rob location chance bonus";
 		case EventType.PRISON_ESCAPE_CHANCE_BONUS:
 			return "Prison escape chance bonus";
+		case EventType.CLASS_CHANGE_BONUS:
+			return "Class change bonus";
 		default:
 			return "Unknown";
 		}

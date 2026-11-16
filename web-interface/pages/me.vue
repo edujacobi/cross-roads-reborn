@@ -616,6 +616,7 @@ onUnmounted(() => {
 
 	&__event {
 		padding: $spacing-md 0;
+		list-style: none;
 
 		&:not(:last-child) {
 			border-bottom: 1px solid $border-card;

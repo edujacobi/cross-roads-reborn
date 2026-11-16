@@ -885,7 +885,7 @@ export const meResolvers: {
 				return { success: false, message: "Você já possui essa classe.", user: null };
 			}
 
-			const cost = player.GetClassChangeCost();
+			const cost = await player.GetClassChangeCost();
 			if (player.Money < cost) {
 				return {
 					success: false,

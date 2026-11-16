@@ -157,6 +157,11 @@ query GetBadgeCatalog {
 			name
 			description
 		}
+		deprecated {
+			id
+			name
+			description
+		}
 	}
 }
 

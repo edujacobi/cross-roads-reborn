@@ -52,6 +52,10 @@ module.exports = {
 						name: Event.GetEventTypeText(EventType.PRISON_ESCAPE_CHANCE_BONUS),
 						value: EventType.PRISON_ESCAPE_CHANCE_BONUS,
 					},
+					{
+						name: Event.GetEventTypeText(EventType.CLASS_CHANGE_BONUS),
+						value: EventType.CLASS_CHANGE_BONUS,
+					},
 				]),
 		)
 		.addNumberOption((option: SlashCommandNumberOption) =>

@@ -172,6 +172,7 @@ module.exports = {
 				}
 
 				const hasClass = user.Class !== ClassId.None;
+				const classChangeCost = await user.GetClassChangeCost();
 
 				container = addContainerHeader()
 					.addTexts([
@@ -179,7 +180,7 @@ module.exports = {
 					])
 					.addLargeSeparator()
 					.addTexts([
-						hasClass ? s.costToChange(user.GetClassChangeCost()) : s.firstFree,
+						hasClass ? s.costToChange(classChangeCost) : s.firstFree,
 					])
 					.addButtonRow(
 						btn => btn
@@ -188,8 +189,8 @@ module.exports = {
 							.setStyle(ButtonStyle.Secondary),
 						btn => btn
 							.setCustomId(`confirm${classId}`)
-							.setDisabled(user.Money < user.GetClassChangeCost())
-							.setLabel(hasClass ? formatMoney(user.GetClassChangeCost(), language) : s.confirm)
+							.setDisabled(user.Money < classChangeCost)
+							.setLabel(hasClass ? formatMoney(classChangeCost, language) : s.confirm)
 							.setStyle(ButtonStyle.Success),
 					)
 					.addFooter({
@@ -210,7 +211,7 @@ module.exports = {
 					return disableButtons(interaction, container);
 				}
 
-				const currentCost = user.GetClassChangeCost();
+				const currentCost = await user.GetClassChangeCost();
 
 				const success = await user.SetClass(newClass, currentCost || undefined);
 

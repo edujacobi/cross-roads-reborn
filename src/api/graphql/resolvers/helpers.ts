@@ -258,7 +258,7 @@ export async function mapUserDetail(user: User) {
 		automaticGrenade: user.AutomaticGrenade,
 		dailyNextAvailableAt: user.Daily.LastReceived ? addHours(user.Daily.LastReceived, 24).toISOString() : null,
 		nicknameChangeCost: user.GetNicknameChangeCost(),
-		classChangeCost: user.GetClassChangeCost(),
+		classChangeCost: await user.GetClassChangeCost(),
 		gang: gangInfo,
 		class: user.Class,
 		className,

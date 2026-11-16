@@ -132,7 +132,7 @@ describe("Player self-service actions", () => {
 
 	it("allows only the classes available through the setclass command", async () => {
 		const setClass = vi.spyOn(User.prototype, "SetClass").mockResolvedValue(true);
-		vi.spyOn(User.prototype, "GetClassChangeCost").mockReturnValue(50_000);
+		vi.spyOn(User.prototype, "GetClassChangeCost").mockResolvedValue(50_000);
 		vi.spyOn(User.prototype, "GetInfo").mockImplementation(async function(this: User) {
 			this.Money = 100_000;
 			this.Class = ClassId.None;

@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { User } from "#core/models/User";
+import { Event } from "#core/models/Event";
 import { Language } from "#core/models/Language";
 import { ClassId } from "#core/types/Classes";
 import { JobId } from "#core/types/Jobs";
@@ -18,6 +19,8 @@ vi.mock("#core/database/Users", () => ({
 
 describe("User Model Core Actions (Regression)", () => {
 	let user: User;
+
+	afterEach(() => vi.restoreAllMocks());
 
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -46,5 +49,36 @@ describe("User Model Core Actions (Regression)", () => {
 		await user.AddVip(30, false);
 
 		expect(user.AvatarDecoration.Id).toBe(AvatarDecorationId.Default);
+	});
+
+	it("uses the base class-change cost during the class-change bonus event", async () => {
+		vi.spyOn(Event, "IsTypeActive").mockResolvedValue(true);
+		user.ClassChangeCount = 3;
+
+		await expect(user.GetClassChangeCost()).resolves.toBe(100_000);
+
+		user.VipEternal = true;
+		await expect(user.GetClassChangeCost()).resolves.toBe(75_000);
+	});
+
+	it("does not increment class-change count during the class-change bonus event", async () => {
+		vi.spyOn(Event, "IsTypeActive").mockResolvedValue(true);
+		vi.spyOn(user, "Update").mockResolvedValue(true);
+		user.ClassChangeCount = 3;
+		user.Money = 100_000;
+
+		await user.SetClass(ClassId.Hobo, 100_000);
+
+		expect(user.ClassChangeCount).toBe(3);
+		expect(user.Update).toHaveBeenCalledWith(expect.objectContaining({
+			classChangeCount: 3,
+		}));
+	});
+
+	it("keeps escalating class-change costs outside the event", async () => {
+		vi.spyOn(Event, "IsTypeActive").mockResolvedValue(false);
+		user.ClassChangeCount = 3;
+
+		await expect(user.GetClassChangeCost()).resolves.toBe(10_000_000);
 	});
 });

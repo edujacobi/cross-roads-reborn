@@ -20,14 +20,12 @@ import HospitalIcon from "~/components/icons/HospitalIcon.vue";
 import PrisonIcon from "~/components/icons/PrisonIcon.vue";
 import SpecialShopIcon from "~/components/icons/SpecialShopIcon.vue";
 import VipIcon from "~/components/icons/VipIcon.vue";
-import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseInput from "~/components/ui/BaseInput.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
 import BaseSelector, { type SelectorOption } from "~/components/ui/BaseSelector.vue";
 import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
 import BaseToggleMenu from "~/components/ui/BaseToggleMenu.vue";
-import { imagePaths } from "~/constants/imagePaths";
 import {
 	AddBadgeDocument,
 	AddSpecialCoinsDocument,
