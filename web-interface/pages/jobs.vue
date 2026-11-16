@@ -229,7 +229,7 @@ async function handleCancelJob() {
 					>
 						<div
 							class="job-card__row"
-							:data-popover-text="job.special && !blackMarketOpen ? 'O Mercado Negro é aberto aos domingos, sábados e sextas após as 18h' : undefined"
+							:data-popover-text="job.special && !blackMarketOpen ? 'O Mercado Negro é aberto aos domingos, sábados e sextas após as 18h (GMT-3)' : undefined"
 							data-popover-direction="top"
 						>
 							<div class="job-card__header">

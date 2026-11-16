@@ -8,7 +8,7 @@ import { checkUser } from "#bot/utils/userUtils";
 import { Heist } from "#core/models/Heist";
 import { MultiplayerSession, type MultiplayerSessionView } from "#core/models/MultiplayerSession";
 import { Vault } from "#core/models/Vault";
-import { getWeeklyTarget, HeistMissionId } from "#core/types/Heist";
+import { getWeeklyTarget, HeistMissionId, isMainHeistDay } from "#core/types/Heist";
 import { GangColor } from "#core/types/GangColors";
 import { getLanguageFromLocale, Language, type Localization } from "#core/models/Language";
 import type { User } from "#core/models/User";
@@ -148,8 +148,7 @@ module.exports = {
 			const heistCooldown = !!(heistState.heistCooldownUntil && heistState.heistCooldownUntil > new Date());
 
 			const isMainAllowed = await Vault.IsMainHeistAllowed();
-			const day = new Date().getDay();
-			const isAllowedDay = day === 1 || day === 3 || day === 5;
+			const isAllowedDay = isMainHeistDay();
 			const heistDisabled = heistCooldown || !isMainAllowed || !isAllowedDay;
 
 			container.addButtonRow(

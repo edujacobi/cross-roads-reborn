@@ -17,6 +17,7 @@ import { type LocationId, LocationList } from "#core/types/Locations";
 import { type ScavengeId, ScavengeList } from "#core/types/Scavenge";
 import { BundleList, type SkinBundles } from "#core/types/Skins";
 import { Log } from "#shared/log";
+import { isGameNight } from "#shared/gameTime";
 import { addDays, addMinutes, differenceInHours, formatDistanceToNow } from "date-fns";
 import { addHours } from "date-fns/addHours";
 import { Event, EventType } from "./Event";
@@ -1174,9 +1175,8 @@ export class User {
 		let moreMoneyATK = 0;
 		let moreMoneyDEF = 0;
 
-		const hour = new Date().getHours();
-		const isDay = hour >= 6 && hour < 18;
-		const isNight = !isDay;
+		const isNight = isGameNight();
+		const isDay = !isNight;
 
 		for (const item of this.Items) {
 			if (item.Type === ItemType.BeatUp && !isBeatUp) {

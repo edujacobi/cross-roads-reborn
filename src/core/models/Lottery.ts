@@ -8,20 +8,42 @@ import { Casino } from "./Casino";
 import { Log, logger } from "#shared/log";
 import { getCasinoClassModifier } from "#core/types/Classes";
 import { LotteryRepository } from "#core/repositories/LotteryRepository";
+import { getGameTime } from "#shared/gameTime";
 import type { LotteryDraws } from "#core/database/LotteryDraws";
 import type { LotteryTickets } from "#core/database/LotteryTickets";
 
 export class Lottery {
 	static IsMegaDraw(drawDate: Date): boolean {
-		const temp = new Date(drawDate.getFullYear(), drawDate.getMonth(), drawDate.getDate() + 1);
-		return temp.getDate() === 1;
+		const gameDate = getGameTime(drawDate);
+		return gameDate.add({ days: 1 }).month !== gameDate.month;
 	}
 
 	static GetTicketPrice(drawDate: Date): number {
 		if (this.IsMegaDraw(drawDate)) return 1_000_000;
-		let day = drawDate.getDay();
-		if (day === 0) day = 7;
-		return 5_000 * day;
+		return 5_000 * getGameTime(drawDate).dayOfWeek;
+	}
+
+	static GetNextDrawTime(date = new Date()): Date {
+		const now = getGameTime(date);
+		const getDrawTime = (day: typeof now) => {
+			const drawTime = day.with(
+				{ hour: 18, minute: 0, second: 0, millisecond: 0 },
+				{ disambiguation: "compatible" },
+			);
+			return this.IsMegaDraw(new Date(drawTime.epochMilliseconds))
+				? drawTime.with(
+					{ hour: 23, minute: 59, second: 59, millisecond: 0 },
+					{ disambiguation: "compatible" },
+				)
+				: drawTime;
+		};
+
+		let nextDrawTime = getDrawTime(now);
+		if (now.epochMilliseconds >= nextDrawTime.epochMilliseconds) {
+			nextDrawTime = getDrawTime(now.add({ days: 1 }));
+		}
+
+		return new Date(nextDrawTime.epochMilliseconds);
 	}
 
 	/** Returns what the user actually pays (VIPs get 25% off). */
@@ -175,20 +197,7 @@ export class Lottery {
 	}
 
 	static async ScheduleNextDraw() {
-		const now = new Date();
-		const nextDrawTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 19, 0, 0);
-
-		if (this.IsMegaDraw(nextDrawTime)) {
-			nextDrawTime.setHours(23, 59, 59, 0);
-		}
-
-		if (now.getTime() >= nextDrawTime.getTime()) {
-			nextDrawTime.setDate(nextDrawTime.getDate() + 1);
-			nextDrawTime.setHours(19, 0, 0, 0);
-			if (this.IsMegaDraw(nextDrawTime)) {
-				nextDrawTime.setHours(23, 59, 59, 0);
-			}
-		}
+		const nextDrawTime = this.GetNextDrawTime();
 
 		const existing = await LotteryRepository.FindDrawByTime(nextDrawTime);
 

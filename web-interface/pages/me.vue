@@ -21,6 +21,7 @@ import { eventTypeNames, eventTypes, formatEventValue } from "~/constants/eventT
 import { imagePaths } from "~/constants/imagePaths";
 import { GetBadgeCatalogDocument, GetMePageDocument } from "~/graphql/generated";
 import { BadgeId } from "../../src/core/types/Ids";
+import { GAME_TIME_ZONE } from "../../src/shared/gameTimeZone.js";
 
 definePageMeta({
 	middleware: "auth",
@@ -60,19 +61,18 @@ const badgeNameById = computed(
 const ownedBadgeIds = computed(() => new Set(player.value?.badges.map(({ id }) => id) ?? []));
 const playerName = computed(() => player.value?.nickname ?? auth.user.value?.username ?? "jogador");
 const { formatMoney } = useMoneyFormat();
-const { shortDateShortTime } = useDateFormat();
+const { shortDateShortTime, calendarDay, hourInGameTime } = useDateFormat();
 const now = ref(new Date());
 const currentSeasonDay = computed(() => {
 	if (!currentSeasonInfo.value) return null;
 	const seasonStart = new Date(currentSeasonInfo.value.startDate);
-	const utcDay = (date: Date) => Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
-	return Math.max(1, Math.floor((utcDay(now.value) - utcDay(seasonStart)) / 86_400_000) + 1);
+	return Math.max(1, Math.floor((calendarDay(now.value) - calendarDay(seasonStart)) / 86_400_000) + 1);
 });
 const clockFormatter = new Intl.DateTimeFormat("pt-BR", {
 	hour: "2-digit",
 	minute: "2-digit",
 	second: "2-digit",
-	timeZone: "UTC",
+	timeZone: GAME_TIME_ZONE,
 });
 let clockInterval: ReturnType<typeof setInterval> | undefined;
 
@@ -84,7 +84,7 @@ function getBadgeImage(badgeId: BadgeId) {
 }
 
 const greeting = computed(() => {
-	const hour = now.value.getHours();
+	const hour = hourInGameTime(now.value);
 	if (hour < 6) return "Boa madrugada";
 	if (hour < 12) return "Bom dia";
 	if (hour < 18) return "Boa tarde";
@@ -135,7 +135,7 @@ onUnmounted(() => {
 			</div>
 			<section
 				class="me-page__clock"
-				aria-label="Horário atual (GMT+0)"
+				aria-label="Horário de Brasília (GMT-3)"
 			>
 				<Clock3
 					:size="20"

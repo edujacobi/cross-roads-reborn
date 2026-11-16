@@ -1,5 +1,6 @@
 import { CustomContainerBuilder, CustomSectionBuilder } from "#bot/ui/builders/CustomContainerBuilder";
 import { Language } from "#core/models/Language";
+import { GAME_TIME_ZONE } from "#shared/gameTimeZone";
 import type { User } from "#core/models/User";
 import { formatDistanceToNow } from "date-fns";
 import { enUS, es, ptBR } from "date-fns/locale";
@@ -112,10 +113,16 @@ export function formatMoney(money: number, lang: Language, prefix = "Cr$") {
  * @returns The formatted date string.
  */
 export function formatDate(date: Date, language: Language) {
-	if (language === Language.English) {
-		return `${String(date.getMonth() + 1).padStart(2, "0")}/${String(date.getDate()).padStart(2, "0")}/${date.getFullYear()} ${String(date.getHours() % 12).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")} ${date.getHours() > 12 ? "PM" : "AM"}`;
-	}
-	return `${String(date.getDate()).padStart(2, "0")}/${String(date.getMonth() + 1).padStart(2, "0")}/${date.getFullYear()} ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+	const locale = language === Language.English ? "en-US" : language === Language.Portuguese ? "pt-BR" : "es-ES";
+	return date.toLocaleString(locale, {
+		day: "2-digit",
+		month: "2-digit",
+		year: "numeric",
+		hour: "2-digit",
+		minute: "2-digit",
+		hourCycle: language === Language.English ? "h12" : "h23",
+		timeZone: GAME_TIME_ZONE,
+	});
 }
 
 export const clientActivities: ActivityOptions[] = [{

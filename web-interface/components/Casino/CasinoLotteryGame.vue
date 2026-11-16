@@ -6,12 +6,14 @@ import { useMutation, useQuery } from "@vue/apollo-composable";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
+import { useDateFormat } from "~/composables/useDateFormat";
 import { useMoneyFormat } from "~/composables/useMoneyFormat";
 import { useToast } from "~/composables/useToast";
 import { imagePaths } from "~/constants/imagePaths";
 import { BuyLotteryTicketDocument, GetMyLotteryStatusDocument } from "~/graphql/generated";
 
 const { formatMoney } = useMoneyFormat();
+const { shortDateShortTime } = useDateFormat();
 const { showToast } = useToast();
 const {
 	result: statusResult,
@@ -38,7 +40,7 @@ async function purchaseTicket() {
 }
 
 function formatDate(date: string | null | undefined) {
-	return date ? new Date(date).toLocaleString("pt-BR") : "Indisponível";
+	return date ? shortDateShortTime(date) : "Indisponível";
 }
 </script>
 

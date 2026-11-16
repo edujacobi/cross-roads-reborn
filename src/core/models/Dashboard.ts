@@ -2,6 +2,7 @@ import { DashboardRepository } from "#core/repositories/DashboardRepository";
 import { GangRepository } from "#core/repositories/GangRepository";
 import { UserRepository } from "#core/repositories/UserRepository";
 import { Language } from "#core/models/Language";
+import { getGameTime } from "#shared/gameTime";
 import { Log } from "#shared/log";
 
 export class Dashboard {
@@ -84,21 +85,21 @@ export class Dashboard {
 	 * Schedules a recurring task to take a snapshot every midnight.
 	 */
 	static ScheduleMidnightSnapshot() {
-		const now = new Date();
-		const nextMidnight = new Date(
-			now.getFullYear(),
-			now.getMonth(),
-			now.getDate() + 1,
-			0, 0, 0,
-		);
-		const timeUntilMidnight = nextMidnight.getTime() - now.getTime();
+		const scheduleNextSnapshot = () => {
+			const now = getGameTime();
+			const nextMidnight = now
+				.add({ days: 1 })
+				.with({ hour: 0, minute: 0, second: 0, millisecond: 0 }, { disambiguation: "compatible" });
+			const timeUntilMidnight = nextMidnight.epochMilliseconds - Date.now();
 
-		setTimeout(async () => {
-			await Dashboard.TakeSnapshot();
-			// Then set an interval to run every 24 hours
-			setInterval(Dashboard.TakeSnapshot, 24 * 60 * 60 * 1000);
-		}, timeUntilMidnight);
+			setTimeout(async () => {
+				await Dashboard.TakeSnapshot();
+				scheduleNextSnapshot();
+			}, timeUntilMidnight);
 
-		Log.Info(`Scheduled next dashboard snapshot for ${nextMidnight.toISOString()}`);
+			return nextMidnight;
+		};
+		const nextMidnight = scheduleNextSnapshot();
+		Log.Info(`Scheduled next dashboard snapshot for ${nextMidnight.toString()}`);
 	}
 }

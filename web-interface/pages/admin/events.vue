@@ -15,6 +15,7 @@ import BaseTable from "~/components/ui/BaseTable.vue";
 import BaseTableFooter from "~/components/ui/BaseTableFooter.vue";
 import BaseTableSkeleton from "~/components/ui/BaseTableSkeleton.vue";
 import PageTitle from "~/components/ui/PageTitle.vue";
+import { useDateFormat } from "~/composables/useDateFormat";
 import { eventTypeNames, eventTypes, formatEventValue } from "~/constants/eventTypes";
 import {
 	CreateEventDocument,
@@ -43,7 +44,7 @@ interface EventDraft {
 type EventRecord = GetEventsQuery["events"][number];
 
 const auth = useAuth();
-const { shortDateShortTime } = useDateFormat();
+const { shortDateShortTime, toGameDateTimeInput, fromGameDateTimeInput } = useDateFormat();
 const { showToast } = useToast();
 const { result, loading, error: queryError, refetch } = useQuery(GetEventsDocument);
 const { mutate: createEvent, loading: creating } = useMutation(CreateEventDocument);
@@ -81,18 +82,13 @@ function beginCreate() {
 	isEditorOpen.value = true;
 }
 
-function toLocalDateInput(value: string): string {
-	const date = new Date(value);
-	return new Date(date.getTime() - date.getTimezoneOffset() * 60_000).toISOString().slice(0, 16);
-}
-
 function beginEdit(event: EventRecord) {
 	editingEventId.value = event.id;
 	draft.value = {
 		type: String(event.type),
 		value: String(event.value),
-		periodStart: toLocalDateInput(event.periodStart),
-		periodEnd: toLocalDateInput(event.periodEnd),
+		periodStart: toGameDateTimeInput(event.periodStart),
+		periodEnd: toGameDateTimeInput(event.periodEnd),
 	};
 	isEditorOpen.value = true;
 }
@@ -116,8 +112,8 @@ function nextPage() {
 async function saveEvent() {
 	const shouldSaveValue = requiresValue.value;
 	const value = shouldSaveValue ? Number(draft.value.value) : 0;
-	const periodStart = new Date(draft.value.periodStart);
-	const periodEnd = new Date(draft.value.periodEnd);
+	const periodStart = fromGameDateTimeInput(draft.value.periodStart);
+	const periodEnd = fromGameDateTimeInput(draft.value.periodEnd);
 	if (
 		(shouldSaveValue && (!draft.value.value.trim() || !Number.isFinite(value))) ||
 		!Number.isFinite(periodStart.getTime()) ||
@@ -196,7 +192,7 @@ async function removeEvent() {
 	<main class="events-page">
 		<PageTitle
 			title="Eventos"
-			subtitle="Crie, atualize e remova eventos do jogo"
+			subtitle="Crie, atualize e remova eventos do jogo (horário de Brasília, GMT-3)"
 		>
 			<template #actions>
 				<BaseButton
@@ -373,7 +369,7 @@ async function removeEvent() {
 				/>
 				<BaseInput
 					id="event-start"
-					label="Início"
+					label="Início (GMT-3)"
 					type="datetime-local"
 					required
 					:model-value="draft.periodStart"
@@ -381,7 +377,7 @@ async function removeEvent() {
 				/>
 				<BaseInput
 					id="event-end"
-					label="Fim"
+					label="Fim (GMT-3)"
 					type="datetime-local"
 					required
 					:model-value="draft.periodEnd"

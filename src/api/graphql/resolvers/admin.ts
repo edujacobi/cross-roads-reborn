@@ -15,7 +15,7 @@ import { addHours } from "date-fns";
 import { randomBytes } from "node:crypto";
 import { logger } from "#shared/log";
 import type { GraphQLContext } from "#api/types";
-import { formatMoney } from "#bot/utils/ui";
+import { formatDate, formatMoney } from "#bot/utils/ui";
 import { CrColors } from "#bot/utils/colors";
 import { sendPrivateMessage } from "#bot/utils/discordInteractions";
 import { GangRepository } from "#core/repositories/GangRepository";
@@ -536,7 +536,7 @@ export const adminResolvers: {
 			await recordAdminAction(admin, AdminAuditActionId.KillUser, { userId: target.Id }, previousValue, deadUntil);
 			return {
 				success: true,
-				message: `${target.Nickname} foi morto por ${args.days} dias (Morto até ${deadUntil.toISOString()}).`,
+				message: `${target.Nickname} foi morto por ${args.days} dias (Morto até ${formatDate(deadUntil, Language.Portuguese)}).`,
 				user: mapUserDetail(target),
 			};
 		},

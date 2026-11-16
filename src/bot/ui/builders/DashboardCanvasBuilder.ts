@@ -1,6 +1,7 @@
 import { Language } from "#core/models/Language";
 import { BaseCanvasBuilder } from "./BaseCanvasBuilder";
 import { CrColors } from "#bot/utils/colors";
+import { GAME_TIME_ZONE } from "#shared/gameTimeZone";
 
 export interface IDashboardStats {
 	date: Date;
@@ -228,8 +229,11 @@ export class DashboardCanvasBuilder extends BaseCanvasBuilder {
 
 		for (const element of points) {
 			const point = element;
-			const dateObj = new Date(point.date);
-			const dateStr = `${dateObj.getDate().toString().padStart(2, "0")}/${(dateObj.getMonth() + 1).toString().padStart(2, "0")}`;
+			const dateStr = new Date(point.date).toLocaleDateString("pt-BR", {
+				day: "2-digit",
+				month: "2-digit",
+				timeZone: GAME_TIME_ZONE,
+			});
 			ctx.fillText(dateStr, point.px, y + height + 5);
 		}
 	}

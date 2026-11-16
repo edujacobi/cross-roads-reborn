@@ -1,6 +1,6 @@
 import { EmoteId, EmoteString } from "#bot/utils/emotes";
 import { Language } from "#core/models/Language";
-import { getWeek } from "date-fns";
+import { getGameTime } from "../../shared/gameTime";
 
 export enum HeistMissionId {
 	Blueprint = 1,
@@ -73,11 +73,28 @@ export const HeistTargets: HeistTarget[] = [
 	},
 ];
 
+function getGameWeek(date: Date): number {
+	const gameDate = getGameTime(date).toPlainDate();
+	const firstDayOfYear = Temporal.PlainDate.from({ year: gameDate.year, month: 1, day: 1 });
+	const firstWeekStart = firstDayOfYear.subtract({ days: firstDayOfYear.dayOfWeek % 7 });
+	const nextYearFirstDay = Temporal.PlainDate.from({ year: gameDate.year + 1, month: 1, day: 1 });
+	const nextYearFirstWeekStart = nextYearFirstDay.subtract({ days: nextYearFirstDay.dayOfWeek % 7 });
+	const currentWeekStart = gameDate.subtract({ days: gameDate.dayOfWeek % 7 });
+
+	if (Temporal.PlainDate.compare(currentWeekStart, nextYearFirstWeekStart) >= 0) return 1;
+	return Math.floor(firstWeekStart.until(currentWeekStart, { largestUnit: "day" }).days / 7) + 1;
+}
+
 /**
  * Gets the current weekly heist target deterministically.
  */
-export function getWeeklyTarget(): HeistTarget {
-	const currentWeek = getWeek(new Date());
+export function getWeeklyTarget(date = new Date()): HeistTarget {
+	const currentWeek = getGameWeek(date);
 	const index = currentWeek % HeistTargets.length;
 	return HeistTargets[index];
+}
+
+export function isMainHeistDay(date = new Date()): boolean {
+	const day = getGameTime(date).dayOfWeek;
+	return day === 1 || day === 3 || day === 5;
 }

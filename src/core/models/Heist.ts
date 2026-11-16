@@ -3,7 +3,7 @@ import type { User } from "./User.js";
 import { Vault } from "./Vault.js";
 import { Prison } from "./Prison.js";
 import { GangHeistRepository } from "#core/repositories/GangHeistRepository";
-import { getWeeklyTarget, HeistMissionId } from "#core/types/Heist";
+import { getWeeklyTarget, HeistMissionId, isMainHeistDay } from "#core/types/Heist";
 import { GangBaseId } from "#core/types/GangBases";
 import { ClassId } from "#core/types/Classes";
 import { addHours, addMinutes, isFuture } from "date-fns";
@@ -73,8 +73,7 @@ export class Heist {
 		}
 		else if (missionId === HeistMissionId.MainHeist) {
 			// Schedule restriction: Mon, Wed, Fri
-			const day = now.getDay(); // 0 Sunday, 1 Monday, etc.
-			const isAllowedDay = day === 1 || day === 3 || day === 5;
+			const isAllowedDay = isMainHeistDay(now);
 			const isMainAllowed = await Vault.IsMainHeistAllowed();
 
 			if (!isMainAllowed || !isAllowedDay) {

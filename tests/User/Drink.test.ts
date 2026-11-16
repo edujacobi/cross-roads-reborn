@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { User } from "#core/models/User";
 import { getDrinkCountMessages, isHappyHour } from "#core/types/Drinks";
+import { isGameNight } from "#shared/gameTime";
 
 afterEach(() => {
 	vi.useRealTimers();
@@ -16,6 +17,22 @@ describe("isHappyHour", () => {
 
 	it("is active all weekend", () => {
 		expect(isHappyHour(new Date("2026-10-24T12:00:00.000Z"))).toBe(true);
+	});
+
+	it("starts and ends the weekend in Brasília time", () => {
+		expect(isHappyHour(new Date("2026-10-24T02:59:00.000Z"))).toBe(false);
+		expect(isHappyHour(new Date("2026-10-24T03:00:00.000Z"))).toBe(true);
+		expect(isHappyHour(new Date("2026-10-26T02:59:00.000Z"))).toBe(true);
+		expect(isHappyHour(new Date("2026-10-26T03:00:00.000Z"))).toBe(false);
+	});
+});
+
+describe("isGameNight", () => {
+	it("applies night bonuses from 18:00 to 06:00 in Brasília time", () => {
+		expect(isGameNight(new Date("2026-10-21T20:59:00.000Z"))).toBe(false);
+		expect(isGameNight(new Date("2026-10-21T21:00:00.000Z"))).toBe(true);
+		expect(isGameNight(new Date("2026-10-22T08:59:00.000Z"))).toBe(true);
+		expect(isGameNight(new Date("2026-10-22T09:00:00.000Z"))).toBe(false);
 	});
 });
 

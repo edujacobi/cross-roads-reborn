@@ -6,6 +6,7 @@ import type { Chart as ChartInstance } from "chart.js";
 import { Chart } from "chart.js/auto";
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
+import { useDateFormat } from "~/composables/useDateFormat";
 import type { GetDashboardHistoryQuery, GetDashboardStatsQuery } from "~/graphql/generated";
 import { ClassId } from "../../../src/core/types/Ids";
 
@@ -17,6 +18,7 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+const { shortMonthDay } = useDateFormat();
 const canvas = ref<HTMLCanvasElement | null>(null);
 const { getClassImageUrl, getClassName } = useClasses();
 const classIds = [
@@ -45,9 +47,7 @@ function updateChart() {
 		snapshots.push({ date: props.currentStats.date, classCounts: props.currentStats.classCounts });
 	}
 	const labels = snapshots.map(({ date }, index) =>
-		props.currentStats && index === snapshots.length - 1
-			? "Agora"
-			: new Date(date).toLocaleDateString(undefined, { month: "numeric", day: "numeric" }),
+		props.currentStats && index === snapshots.length - 1 ? "Agora" : shortMonthDay(date),
 	);
 	const datasets = classIds.map((classId, index) => ({
 		label: getClassName(classId),

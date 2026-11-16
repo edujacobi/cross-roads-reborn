@@ -67,7 +67,7 @@ useHead({
 const route = useRoute();
 const router = useRouter();
 const { formatMoney } = useMoneyFormat();
-const { relative } = useDateFormat();
+const { relative, longDateTime } = useDateFormat();
 const { getGangBaseImageUrl, getGangBaseShipmentImageUrl } = useGangBase();
 const heistMissionDescriptions = computed(() =>
 	gang.value?.heistTarget === "BANK"
@@ -1959,15 +1959,7 @@ async function updateGangMoney() {
 				<!-- Metadata -->
 				<div class="gang-detail__meta">
 					Criada em
-					{{
-						new Date(gang.createdAt).toLocaleDateString("pt-BR", {
-							day: "2-digit",
-							month: "long",
-							year: "numeric",
-							hour: "2-digit",
-							minute: "2-digit",
-						})
-					}}
+					{{ longDateTime(gang.createdAt) }}
 					• ID: {{ gang.id }}
 					<BaseButton
 						to="/gangs"

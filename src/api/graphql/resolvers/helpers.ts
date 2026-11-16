@@ -1,5 +1,6 @@
 import { GraphQLError } from "graphql";
 import { AdminAuditLog } from "#core/models/AdminAuditLog";
+import { BlackMarket } from "#core/models/BlackMarket";
 import type { AdminAuditTarget } from "#core/models/AdminAuditLog";
 import { type AdminAuditActionId } from "#core/types/AdminAuditLog";
 import { type User } from "#core/models/User";
@@ -376,12 +377,5 @@ export const topUserRankings = {
 // ─── Market Helpers ───────────────────────────────────────────────────────────
 
 export function isBlackMarketOpen(): boolean {
-	const OPENNING_HOUR = 21;
-	const now = new Date();
-	const day = now.getUTCDay();
-	const hours = now.getUTCHours();
-	const SUNDAY = 0;
-	const FRIDAY = 5;
-	const SATURDAY = 6;
-	return day === SUNDAY || day === SATURDAY || (day === FRIDAY && hours >= OPENNING_HOUR);
+	return BlackMarket.IsOpenAt();
 }

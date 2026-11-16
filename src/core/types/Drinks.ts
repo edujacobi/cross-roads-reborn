@@ -1,3 +1,5 @@
+import { getGameTime } from "../../shared/gameTime";
+
 export const BarBeverages = [
 	"whisky", "vodka", "vinho", "gin", "tônica", "amarula", "caipirinha", "cerveja", "sakê",
 	"cachaça", "água da torneira", "rum", "caipiroska", "sidra", "cerveja", "catuaba", "corote",
@@ -20,10 +22,8 @@ export const DrinkSensations = [
 ];
 
 export function isHappyHour(date = new Date()) {
-	const brasiliaTime = new Date(date.getTime() - 3 * 60 * 60 * 1_000);
-	const hour = brasiliaTime.getUTCHours();
-	const day = brasiliaTime.getUTCDay();
-	return (hour >= 18 && hour <= 20) || day === 0 || day === 6;
+	const gameTime = getGameTime(date);
+	return (gameTime.hour >= 18 && gameTime.hour <= 20) || gameTime.dayOfWeek === 6 || gameTime.dayOfWeek === 7;
 }
 
 export type DrinkCountMessageLanguage = "English" | "Portuguese" | "Spanish";

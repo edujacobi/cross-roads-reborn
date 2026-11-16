@@ -7,6 +7,7 @@ import { type ISeasonData, SeasonRepository } from "#core/repositories/SeasonRep
 import { UserRepository } from "#core/repositories/UserRepository";
 import { BadgeId } from "#core/types/Badges";
 import { Log } from "#shared/log";
+import { GAME_TIME_ZONE } from "#shared/gameTime";
 import { addDays, differenceInDays } from "date-fns";
 
 export interface TopUserEntry {
@@ -71,7 +72,7 @@ export class Season {
 	static async Initialize(): Promise<void> {
 		try {
 			const currentSeason = await Season.GetCurrent();
-			Log.Info(`Season Initialized. Current season: ${currentSeason.Number}, Ends: ${currentSeason.EndDate.toLocaleDateString()}`);
+			Log.Info(`Season Initialized. Current season: ${currentSeason.Number}, Ends: ${currentSeason.EndDate.toLocaleDateString("en-US", { timeZone: GAME_TIME_ZONE })}`);
 
 			await Season.CheckForSeasonTransition();
 
@@ -166,7 +167,7 @@ export class Season {
 		});
 
 		this.Id = season.id;
-		Log.Success(`Season ${this.Number} created. Starts: ${this.StartDate.toLocaleDateString()}, Ends: ${this.EndDate.toLocaleDateString()}`);
+		Log.Success(`Season ${this.Number} created. Starts: ${this.StartDate.toLocaleDateString("en-US", { timeZone: GAME_TIME_ZONE })}, Ends: ${this.EndDate.toLocaleDateString("en-US", { timeZone: GAME_TIME_ZONE })}`);
 	}
 
 	async Update(): Promise<void> {

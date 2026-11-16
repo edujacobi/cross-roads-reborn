@@ -3,11 +3,11 @@
 	lang="ts"
 >
 import { useQuery } from "@vue/apollo-composable";
-import { format } from "date-fns";
 import { computed } from "vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
 import RefreshButton from "~/components/ui/RefreshButton.vue";
+import { useDateFormat } from "~/composables/useDateFormat";
 import { GetUserMetadataDocument } from "~/graphql/generated";
 
 const props = defineProps<{ userId: string }>();
@@ -15,6 +15,7 @@ const props = defineProps<{ userId: string }>();
 const { result, loading, error, refetch } = useQuery(GetUserMetadataDocument, () => ({ id: props.userId }), {
 	fetchPolicy: "cache-and-network",
 });
+const { dateTime } = useDateFormat();
 const user = computed(() => result.value?.user);
 const language = computed(() => {
 	switch (user.value?.language) {
@@ -76,13 +77,13 @@ const language = computed(() => {
 			<div class="user-metadata__item">
 				<dt class="user-metadata__label">Criado em</dt>
 				<dd class="user-metadata__value">
-					<time :datetime="user.createdAt">{{ format(user.createdAt, "dd/MM/yyyy hh:mm") }}</time>
+					<time :datetime="user.createdAt">{{ dateTime(user.createdAt) }}</time>
 				</dd>
 			</div>
 			<div class="user-metadata__item">
 				<dt class="user-metadata__label">Última atualização</dt>
 				<dd class="user-metadata__value">
-					<time :datetime="user.updatedAt">{{ format(user.updatedAt, "dd/MM/yyyy hh:mm") }}</time>
+					<time :datetime="user.updatedAt">{{ dateTime(user.updatedAt) }}</time>
 				</dd>
 			</div>
 		</dl>

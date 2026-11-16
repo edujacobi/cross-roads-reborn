@@ -6,6 +6,7 @@ import { Calendar } from "lucide-vue-next";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseTable from "~/components/ui/BaseTable.vue";
 import BaseTableSkeleton from "~/components/ui/BaseTableSkeleton.vue";
+import { useDateFormat } from "~/composables/useDateFormat";
 import type { GetDashboardHistoryQuery } from "~/graphql/generated";
 
 interface Props {
@@ -13,6 +14,7 @@ interface Props {
 	historyLoading?: boolean;
 }
 defineProps<Props>();
+const { shortDate } = useDateFormat();
 </script>
 
 <template>
@@ -65,7 +67,7 @@ defineProps<Props>();
 						v-for="item in history"
 						:key="item.id || item.date"
 					>
-						<td><time :datetime="item.date">{{ new Date(item.date).toLocaleDateString() }}</time></td>
+						<td><time :datetime="item.date">{{ shortDate(item.date) }}</time></td>
 						<td class="font-bold">{{ item.totalPlayers }}</td>
 						<td>{{ item.allUsers ?? "—" }}</td>
 						<td>{{ item.portugueseCount }}</td>

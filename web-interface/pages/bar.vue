@@ -155,7 +155,7 @@ async function drink() {
 					v-else
 					class="bar-page__normal-hour"
 				>
-					Happy Hour acontece das 18h às 20h e durante os fins de semana (horário de Brasília).
+					Happy Hour acontece das 18h às 20h e durante os fins de semana (horário de Brasília, GMT-3).
 				</p>
 			</template>
 			<NuxtImg

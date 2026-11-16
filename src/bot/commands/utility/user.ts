@@ -11,6 +11,7 @@ import type { User } from "#core/models/User";
 import { UserBadge } from "#core/models/UserBadge";
 import { BadgeId, BadgeList } from "#core/types/Badges";
 import { ClassList } from "#core/types/Classes";
+import { GAME_TIME_ZONE } from "#shared/gameTime";
 import { addDays } from "date-fns";
 import {
 	AttachmentBuilder,
@@ -238,7 +239,7 @@ module.exports = {
 			}
 
 			container.addFooter({
-				text: `Id: ${target.Id} • ${s.playingSince}: ${target.CreatedAt.toLocaleDateString(interaction.locale)}`,
+				text: `Id: ${target.Id} • ${s.playingSince}: ${target.CreatedAt.toLocaleDateString(interaction.locale, { timeZone: GAME_TIME_ZONE })}`,
 			});
 
 			return container;

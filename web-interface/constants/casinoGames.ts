@@ -14,7 +14,7 @@ export const casinoGames = {
 			{
 				title: "Como funciona",
 				description:
-					"Os sorteios acontecem todos os dias às 18h. O prêmio acumulado cresce conforme mais jogadores compram bilhetes.",
+					"Os sorteios acontecem todos os dias às 18h (horário de Brasília, GMT-3). O prêmio acumulado cresce conforme mais jogadores compram bilhetes.",
 			},
 			{
 				title: "Desconto VIP",

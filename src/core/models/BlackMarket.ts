@@ -1,7 +1,7 @@
 import { CrColors } from "#bot/utils/colors";
 import { EmoteString } from "#bot/utils/emotes";
 import { getItemList } from "#core/types/Items";
-import { nextFriday, set } from "date-fns";
+import { getGameTime } from "#shared/gameTime";
 import { Language, type Localization } from "./Language";
 import { Shop } from "./Shop";
 import type { User } from "./User";
@@ -20,40 +20,27 @@ export class BlackMarket extends Shop {
 	}
 
 	IsBlackMarketOpen() {
-		const OPENNING_HOUR = 21;
-		const now = new Date();
-		const day = now.getDay();
-		const hours = now.getHours();
-
-		let isOpen = false;
+		const now = getGameTime();
 
 		const isUserJacobi = this.User.Id === process.env.JACOBI_ID;
-
-		const SUNDAY = 0;
-		const FRIDAY = 5;
-		const SATURDAY = 6;
-
-		if (day === SUNDAY ||
-			day === SATURDAY ||
-			(day === FRIDAY && hours >= OPENNING_HOUR) ||
-			isUserJacobi
-		) {
-			isOpen = true;
-			return { isOpen, message: "" };
+		if (BlackMarket.IsOpenAt(new Date(now.epochMilliseconds)) || isUserJacobi) {
+			return { isOpen: true, message: "" };
 		}
 
-		let nextOpeningDate: Date;
-		if (day === FRIDAY && hours < OPENNING_HOUR) {
-			nextOpeningDate = set(now, { hours: OPENNING_HOUR, minutes: 0, seconds: 0, milliseconds: 0 });
-		}
-		else {
-			nextOpeningDate = nextFriday(now);
-			nextOpeningDate = set(nextOpeningDate, { hours: OPENNING_HOUR, minutes: 0, seconds: 0, milliseconds: 0 });
-		}
+		const daysUntilFriday = (5 - now.dayOfWeek + 7) % 7;
+		const nextOpening = now
+			.add({ days: daysUntilFriday })
+			.with({ hour: 18, minute: 0, second: 0, millisecond: 0 }, { disambiguation: "compatible" });
+		const nextOpeningDate = new Date(nextOpening.epochMilliseconds);
 
 		const message = `${EmoteString.BlackMarket} ${Strings[this.User.Language].hey(nextOpeningDate)}`;
 
-		return { isOpen, message };
+		return { isOpen: false, message };
+	}
+
+	static IsOpenAt(date = new Date()): boolean {
+		const gameTime = getGameTime(date);
+		return gameTime.dayOfWeek === 6 || gameTime.dayOfWeek === 7 || (gameTime.dayOfWeek === 5 && gameTime.hour >= 18);
 	}
 }
 
@@ -61,19 +48,19 @@ export class BlackMarket extends Shop {
 const Strings = {
 	[Language.English]: {
 		title: "Black Market",
-		description: "Look at these beauties!\nThe Black Market is open on Sundays, Saturdays and Fridays after 9pm",
+		description: "Look at these beauties!\nThe Black Market is open on Sundays, Saturdays and Fridays after 6pm (GMT-3)",
 		hey: (date: Date) => `Hey, psst...\nCome back here ${time(date, TimestampStyles.RelativeTime)} and I will have some cool stuff to show you...`,
 	},
 
 	[Language.Portuguese]: {
 		title: "Mercado Negro",
-		description: "Olhe para essas belezinhas!\nO Mercado Negro é aberto aos domingos, sábados e sextas após as 18h",
+		description: "Olhe para essas belezinhas!\nO Mercado Negro é aberto aos domingos, sábados e sextas após as 18h (GMT-3)",
 		hey: (date: Date) => `Ei, psst...\nVolte aqui ${time(date, TimestampStyles.RelativeTime)} que eu terei umas coisinhas bem legais pra te mostrar...`,
 	},
 
 	[Language.Spanish]: {
 		title: "Mercado Negro",
-		description: "¡Mira estas bellezas!\nEl mercado negro es abierto los domingos, sábados y viernes después de las 21h (GMT0)",
+		description: "¡Mira estas bellezas!\nEl mercado negro abre los domingos, sábados y viernes después de las 18h (GMT-3)",
 		hey: (date: Date) => `Oye, psst...\nVuelve aquí ${time(date, TimestampStyles.RelativeTime)} y tendré algunas cosas geniales para mostrarte...`,
 	},
 } as const satisfies Localization;

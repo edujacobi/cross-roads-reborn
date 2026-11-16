@@ -17,6 +17,7 @@ import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
 import RefreshButton from "~/components/ui/RefreshButton.vue";
+import { useDateFormat } from "~/composables/useDateFormat";
 import { imagePaths } from "~/constants/imagePaths";
 import type { GetUserProfileQuery } from "~/graphql/generated";
 
@@ -30,6 +31,7 @@ const emit = defineEmits<{ refresh: [] }>();
 const user = computed(() => props.status);
 const loading = computed(() => props.loading);
 const error = computed(() => props.error);
+const { shortTime } = useDateFormat();
 </script>
 
 <template>
@@ -88,7 +90,7 @@ const error = computed(() => props.error);
 						/>
 						Hospitalizado até
 						<time :datetime="user.hospitalTime">
-							{{ new Date(user.hospitalTime).toLocaleTimeString() }}
+							{{ shortTime(user.hospitalTime) }}
 						</time>
 					</BaseBadge>
 					<BaseBadge
@@ -120,7 +122,7 @@ const error = computed(() => props.error);
 						/>
 						Preso até
 						<time :datetime="user.prisonTime">
-							{{ new Date(user.prisonTime).toLocaleTimeString() }}
+							{{ shortTime(user.prisonTime) }}
 						</time>
 					</BaseBadge>
 					<BaseBadge
@@ -152,7 +154,7 @@ const error = computed(() => props.error);
 						/>
 						Trabalhando até
 						<time :datetime="user.jobEndsIn">
-							{{ new Date(user.jobEndsIn).toLocaleTimeString() }}
+							{{ shortTime(user.jobEndsIn) }}
 						</time>
 					</BaseBadge>
 					<BaseBadge
@@ -196,7 +198,7 @@ const error = computed(() => props.error);
 						/>
 						Aguardando cooldown até
 						<time :datetime="user.scavengeTime">
-							{{ new Date(user.scavengeTime).toLocaleTimeString() }}
+							{{ shortTime(user.scavengeTime) }}
 						</time>
 					</BaseBadge>
 					<BaseBadge
@@ -291,7 +293,7 @@ const error = computed(() => props.error);
 						/>
 						Aguardando cooldown até
 						<time :datetime="user.beatUpTime">
-							{{ new Date(user.beatUpTime).toLocaleTimeString() }}
+							{{ shortTime(user.beatUpTime) }}
 						</time>
 					</BaseBadge>
 					<BaseBadge
@@ -323,7 +325,7 @@ const error = computed(() => props.error);
 						/>
 						Procurado até
 						<time :datetime="user.wantedTime">
-							{{ new Date(user.wantedTime).toLocaleTimeString() }}
+							{{ shortTime(user.wantedTime) }}
 						</time>
 					</BaseBadge>
 					<BaseBadge
@@ -436,7 +438,7 @@ const error = computed(() => props.error);
 						/>
 						Morto até
 						<time :datetime="user.deadUntil">
-							{{ new Date(user.deadUntil).toLocaleTimeString() }}
+							{{ shortTime(user.deadUntil) }}
 						</time>
 					</BaseBadge>
 					<BaseBadge

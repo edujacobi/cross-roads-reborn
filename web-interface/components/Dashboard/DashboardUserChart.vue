@@ -6,6 +6,7 @@ import type { Chart as ChartInstance } from "chart.js";
 import { Chart } from "chart.js/auto";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
+import { useDateFormat } from "~/composables/useDateFormat";
 import type { GetDashboardHistoryQuery, GetDashboardStatsQuery } from "~/graphql/generated";
 
 interface Props {
@@ -15,6 +16,7 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+const { shortMonthDay } = useDateFormat();
 const canvas = ref<HTMLCanvasElement | null>(null);
 const { motionEnabled } = useMotionPreferences();
 let chart: ChartInstance<"line"> | undefined;
@@ -30,11 +32,7 @@ function updateChart() {
 	if (props.currentStats) {
 		history.push({ ...props.currentStats, id: null });
 	}
-	const labels = history.map(({ date }) =>
-		date === props.currentStats?.date
-			? "Agora"
-			: new Date(date).toLocaleDateString(undefined, { month: "numeric", day: "numeric" }),
-	);
+	const labels = history.map(({ date }) => (date === props.currentStats?.date ? "Agora" : shortMonthDay(date)));
 	const datasets = [
 		{
 			label: "Jogadores ativos",

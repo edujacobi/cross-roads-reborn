@@ -1,3 +1,5 @@
+import { GAME_TIME_ZONE } from "../../src/shared/gameTimeZone.js";
+
 export type MultiplayerOutcome = Record<string, unknown>;
 
 export function parseMultiplayerOutcome(result: string | null | undefined): MultiplayerOutcome | null {
@@ -22,5 +24,9 @@ export function getOutcomeDate(outcome: MultiplayerOutcome | null, key: string):
 	if (typeof value !== "string") return null;
 	const date = new Date(value);
 	if (Number.isNaN(date.getTime())) return null;
-	return new Intl.DateTimeFormat("pt-BR", { dateStyle: "long", timeStyle: "short" }).format(date);
+	return new Intl.DateTimeFormat("pt-BR", {
+		dateStyle: "long",
+		timeStyle: "short",
+		timeZone: GAME_TIME_ZONE,
+	}).format(date);
 }

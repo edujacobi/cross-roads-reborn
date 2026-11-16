@@ -9,6 +9,7 @@ import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
 import PageTitle from "~/components/ui/PageTitle.vue";
 import { useAuth } from "~/composables/useAuth";
+import { useDateFormat } from "~/composables/useDateFormat";
 import { useFallbackUserImage } from "~/composables/useFallbackImage";
 import { useMoneyFormat } from "~/composables/useMoneyFormat";
 import { useToast } from "~/composables/useToast";
@@ -46,6 +47,7 @@ const shopTabs: { id: ShopTabId; label: string }[] = [
 ];
 
 const auth = useAuth();
+const { shortDate } = useDateFormat();
 const { formatPlain } = useMoneyFormat();
 const { showToast } = useToast();
 const userId = computed(() => auth.user.value?.userId ?? "");
@@ -137,7 +139,7 @@ const canBuyVip = computed(
 const vipStatus = computed(() => {
 	if (profile.value?.vipEternal) return "Você possui VIP Eterno!";
 	if (profile.value?.isVip && profile.value.vipTime) {
-		return `Seu VIP está ativo até ${new Date(profile.value.vipTime).toLocaleDateString("pt-BR")}.`;
+		return `Seu VIP está ativo até ${shortDate(profile.value.vipTime)}.`;
 	}
 	return "Você ainda não possui VIP";
 });

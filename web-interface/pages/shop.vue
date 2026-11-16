@@ -397,7 +397,7 @@ onUnmounted(() => {
 
 				<PageTitle
 					title="Mercado Negro"
-					subtitle="Olhe para essas belezinhas! O Mercado Negro é aberto aos domingos, sábados e sextas após as 18h"
+					subtitle="Olhe para essas belezinhas! O Mercado Negro é aberto aos domingos, sábados e sextas após as 18h (GMT-3)"
 				/>
 
 				<div class="shop-page__grid">

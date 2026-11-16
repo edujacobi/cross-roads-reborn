@@ -10,6 +10,7 @@ import { AdminAuditActionId } from "#core/types/AdminAuditLog";
 import { BadgeId } from "#core/types/Badges";
 import { ClassId } from "#core/types/Classes";
 import { BundleId, ItemId } from "#core/types/Ids";
+import { formatDate } from "#bot/utils/ui";
 
 const { mockSendPrivateMessage } = vi.hoisted(() => ({
 	mockSendPrivateMessage: vi.fn(),
@@ -245,7 +246,7 @@ describe("Admin action mutations", () => {
 
 		await expect(
 			resolvers.Mutation.killUser(null, { userId: "target123", days: 2 }, { user: moderator }),
-		).resolves.toMatchObject({ success: true, message: expect.stringContaining(deadUntil.toISOString()) });
+		).resolves.toMatchObject({ success: true, message: expect.stringContaining(formatDate(deadUntil, Language.Portuguese)) });
 
 		expect(kill).toHaveBeenCalledWith(2);
 	});

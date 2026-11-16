@@ -1,5 +1,6 @@
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { GAME_TIME_ZONE } from "../../src/shared/gameTimeZone.js";
 
 export function formatToastText(text: string) {
 	return text
@@ -9,6 +10,7 @@ export function formatToastText(text: string) {
 			if (style === "R") return formatDistanceToNow(date, { addSuffix: true, locale: ptBR });
 
 			const options: Intl.DateTimeFormatOptions = {
+				timeZone: GAME_TIME_ZONE,
 				...(style === "t" ? { hour: "2-digit", minute: "2-digit" } : {}),
 				...(style === "T" ? { hour: "2-digit", minute: "2-digit", second: "2-digit" } : {}),
 				...(style === "d" ? { dateStyle: "short" } : {}),

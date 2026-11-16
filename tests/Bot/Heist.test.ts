@@ -4,7 +4,7 @@ import * as discord from "discord.js";
 import ts from "typescript";
 import { describe, expect, it } from "vitest";
 import { CustomContainerBuilder } from "#bot/ui/builders/CustomContainerBuilder";
-import { HeistMissionId } from "#core/types/Heist";
+import { HeistMissionId, isMainHeistDay } from "#core/types/Heist";
 import type { MultiplayerSessionView } from "#core/models/MultiplayerSession";
 
 const source = readFileSync("src\\bot\\commands\\utility\\heist.ts", "utf8");
@@ -61,6 +61,7 @@ async function buildLobby(session: MultiplayerSessionView) {
 			gang: "Gang",
 		},
 		HeistMissionId,
+		isMainHeistDay,
 		CustomContainerBuilder,
 		GangColor: [{ Color: 0 }],
 		ButtonStyle: discord.ButtonStyle,

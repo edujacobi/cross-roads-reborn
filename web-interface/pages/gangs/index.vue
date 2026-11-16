@@ -15,6 +15,7 @@ import BaseTable from "~/components/ui/BaseTable.vue";
 import BaseTableFooter from "~/components/ui/BaseTableFooter.vue";
 import BaseTableSkeleton from "~/components/ui/BaseTableSkeleton.vue";
 import PageTitle from "~/components/ui/PageTitle.vue";
+import { useDateFormat } from "~/composables/useDateFormat";
 import { usePagination } from "~/composables/usePagination";
 import { type SortColumn, useSorting } from "~/composables/useSorting";
 import { imagePaths } from "~/constants/imagePaths";
@@ -40,6 +41,7 @@ useHead({
 });
 
 const auth = useAuth();
+const { shortDate } = useDateFormat();
 const { showToast } = useToast();
 const { formatMoney } = useMoneyFormat();
 const { getGangBaseImageUrl } = useGangBase();
@@ -803,9 +805,7 @@ const bases = [
 							"{{ item.message }}"
 						</p>
 						<div class="history-card__footer">
-							<span class="history-card__date">
-								Enviada em {{ new Date(item.createdAt).toLocaleDateString("pt-BR") }}
-							</span>
+							<span class="history-card__date"> Enviada em {{ shortDate(item.createdAt) }} </span>
 							<BaseButton
 								v-if="item.status === 'PENDING'"
 								variant="secondary"
