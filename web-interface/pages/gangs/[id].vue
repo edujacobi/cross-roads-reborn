@@ -167,6 +167,12 @@ const sortedMembers = computed(() =>
 			case "depositAmount":
 				if (!canViewDepositInfo.value) break;
 				return second.depositAmount - first.depositAmount || nameOrder;
+			case "role": {
+				const firstIsLeader = first.userId === gang.value?.leaderId;
+				const secondIsLeader = second.userId === gang.value?.leaderId;
+				if (firstIsLeader !== secondIsLeader) return firstIsLeader ? -1 : 1;
+				return second.permissionCount - first.permissionCount || nameOrder;
+			}
 			default:
 				return second.permissionCount - first.permissionCount || nameOrder;
 		}
