@@ -13,6 +13,7 @@ import { LotteryTickets } from "#core/database/LotteryTickets";
 import { UserInvestments } from "#core/database/UserInvestments";
 import { HorseRaceBets } from "#core/database/HorseRaceBets";
 import { HorseRaces } from "#core/database/HorseRaces";
+import { UserRepository } from "#core/repositories/UserRepository";
 import { VaultRepository } from "#core/repositories/VaultRepository";
 import { ClassId } from "#core/types/Classes";
 
@@ -78,6 +79,7 @@ export class SeasonRepository {
 	 * Gets the top rankings for end of season.
 	 */
 	static async GetEndSeasonRankingData() {
+		const eligibleUserIds = await UserRepository.FindUsersWithRecentNonConsumableItems();
 		const defaultAttributes = ["nickname", "id", "class"];
 		const getFromRanking = (orderBy: string, limit = 1) => {
 			return Users.findAll({
@@ -85,6 +87,7 @@ export class SeasonRepository {
 				limit: limit,
 				order: [[orderBy, "DESC"]],
 				where: {
+					id: { [Op.in]: eligibleUserIds },
 					class: {
 						[Op.not]: ClassId.None,
 					},

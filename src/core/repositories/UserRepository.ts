@@ -22,6 +22,7 @@ import { actionTransaction } from "./TimedActionRepository";
 import type { Language } from "#core/models/Language";
 import { ClassId } from "#core/types/Classes";
 import { AvatarDecorationId } from "#core/types/Ids";
+import { ItemList, ItemType } from "#core/types/Items";
 
 export type UserUpdateParam = Partial<InferAttributes<Users>>;
 export type TopUserRankingField =
@@ -428,11 +429,13 @@ export class UserRepository {
 	 * Finds top users for a specific column.
 	 */
 	static async FindTopUsers(topType: TopUserRankingField, limit: number, offset: number): Promise<Users[]> {
+		const eligibleUserIds = await this.FindUsersWithRecentNonConsumableItems();
 		return await Users.findAll({
 			limit,
 			offset,
 			order: [[topType, "DESC"]],
 			where: {
+				id: { [Op.in]: eligibleUserIds },
 				class: { [Op.not]: ClassId.None },
 				[topType]: { [Op.gt]: 0 },
 			},
@@ -443,12 +446,30 @@ export class UserRepository {
 	 * Counts top users for a specific column.
 	 */
 	static async CountTopUsers(topType: TopUserRankingField): Promise<number> {
+		const eligibleUserIds = await this.FindUsersWithRecentNonConsumableItems();
 		return await Users.count({
 			where: {
+				id: { [Op.in]: eligibleUserIds },
 				class: { [Op.not]: ClassId.None },
 				[topType]: { [Op.gt]: 0 },
 			},
 		});
+	}
+
+	static async FindUsersWithRecentNonConsumableItems(): Promise<string[]> {
+		const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+		const consumableIds = Object.values(ItemList)
+			.filter(item => item.Type === ItemType.Consumable)
+			.map(item => item.Id);
+		const items = await UserItems.findAll({
+			attributes: ["userId"],
+			where: {
+				itemId: { [Op.notIn]: consumableIds },
+				remainingTime: { [Op.gte]: cutoff },
+			},
+			group: ["userId"],
+		});
+		return items.map(item => item.userId);
 	}
 
 	/**
