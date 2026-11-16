@@ -625,6 +625,7 @@ onUnmounted(() => {
 
 	&__event-title {
 		display: flex;
+		flex-wrap: wrap;
 		align-items: center;
 		gap: $spacing-sm;
 
@@ -638,8 +639,8 @@ onUnmounted(() => {
 	&__event-dates {
 		display: flex;
 		flex-wrap: wrap;
-		gap: $spacing-lg;
-		margin-top: $spacing-sm;
+		gap: $spacing-sm $spacing-lg ;
+		margin-top: $spacing-md;
 		font-size: $font-size-12;
 
 		div {
