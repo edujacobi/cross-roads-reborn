@@ -811,7 +811,7 @@ export const meResolvers: {
 
 		changeOwnNickname: async (
 			_: unknown,
-			args: { nickname: string },
+			args: { nickname: string; initialOnly?: boolean },
 			context: GraphQLContext,
 		) => {
 			const authUser = assertAuthenticated(context);
@@ -824,9 +824,19 @@ export const meResolvers: {
 			}
 
 			const player = new User(authUser.userId);
-			const found = await player.GetInfo();
+			let found = await player.GetInfo();
 			if (!found) {
-				return { success: false, message: "Jogador não encontrado.", user: null };
+				if (!args.initialOnly) {
+					return { success: false, message: "Jogador não encontrado.", user: null };
+				}
+				await player.Create();
+				found = await player.GetInfo();
+				if (!found) {
+					return { success: false, message: "Não foi possível criar o jogador.", user: null };
+				}
+			}
+			if (args.initialOnly && player.Nickname) {
+				return { success: false, message: "Você já definiu seu apelido. Atualize seus dados.", user: null };
 			}
 			if (args.nickname === player.Nickname) {
 				return { success: false, message: "Esse já é o seu apelido.", user: null };
@@ -854,7 +864,7 @@ export const meResolvers: {
 
 		changeOwnClass: async (
 			_: unknown,
-			args: { classId: number },
+			args: { classId: number; initialOnly?: boolean },
 			context: GraphQLContext,
 		) => {
 			const authUser = assertAuthenticated(context);
@@ -867,6 +877,9 @@ export const meResolvers: {
 			const found = await player.GetInfo();
 			if (!found) {
 				return { success: false, message: "Jogador não encontrado.", user: null };
+			}
+			if (args.initialOnly && player.Class !== ClassId.None) {
+				return { success: false, message: "Você já escolheu sua classe. Atualize seus dados.", user: null };
 			}
 			if (player.Class === args.classId) {
 				return { success: false, message: "Você já possui essa classe.", user: null };

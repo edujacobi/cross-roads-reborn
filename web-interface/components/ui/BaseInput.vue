@@ -2,6 +2,8 @@
 	setup
 	lang="ts"
 >
+import ValidationChecklist from "~/components/ui/ValidationChecklist.vue";
+
 interface Props {
 	id: string;
 	modelValue?: string | number;
@@ -17,8 +19,10 @@ interface Props {
 	maxlength?: number;
 	min?: number;
 	max?: number;
+	rules?: Record<string, { label: string; validate: (value: string) => boolean }>;
 }
 
+defineOptions({ inheritAttrs: false });
 defineProps<Props>();
 defineEmits<(e: "update:modelValue", value: string | number) => void>();
 </script>
@@ -42,6 +46,7 @@ defineEmits<(e: "update:modelValue", value: string | number) => void>();
 				<slot name="leading" />
 			</span>
 			<input
+				v-bind="$attrs"
 				:id="id"
 				:type="type || 'text'"
 				:value="modelValue"
@@ -51,6 +56,7 @@ defineEmits<(e: "update:modelValue", value: string | number) => void>();
 				:required="required"
 				:step="step"
 				:aria-label="ariaLabel"
+				:aria-describedby="[ $attrs['aria-describedby'], rules ? `${id}-rules` : null ].filter(Boolean).join(' ') || undefined"
 				:minlength="minlength"
 				:maxlength="maxlength"
 				:min="min"
@@ -60,6 +66,12 @@ defineEmits<(e: "update:modelValue", value: string | number) => void>();
 				@input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
 			>
 		</div>
+		<ValidationChecklist
+			v-if="rules"
+			:id="`${id}-rules`"
+			:value="String(modelValue ?? '')"
+			:rules="rules"
+		/>
 	</div>
 </template>
 

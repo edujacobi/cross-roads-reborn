@@ -3,6 +3,7 @@
 	lang="ts"
 >
 import GlobalItemDetailModal from "~/components/GlobalItemDetailModal.vue";
+import PlayerOnboarding from "~/components/PlayerOnboarding.vue";
 import Sidebar from "~/components/Sidebar.vue";
 </script>
 
@@ -28,6 +29,7 @@ import Sidebar from "~/components/Sidebar.vue";
 		</div>
 
 		<GlobalItemDetailModal />
+		<PlayerOnboarding />
 	</div>
 </template>
 

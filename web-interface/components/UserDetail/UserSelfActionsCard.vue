@@ -5,6 +5,7 @@
 import { useMutation, useQuery } from "@vue/apollo-composable";
 import { CalendarDays, CircleUserRound, Pencil, UserRound } from "lucide-vue-next";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import ClassSelector from "~/components/UserDetail/ClassSelector.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseInput from "~/components/ui/BaseInput.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
@@ -18,6 +19,7 @@ import {
 	SetOwnAutomaticGrenadeDocument,
 } from "~/graphql/generated";
 import { getErrorMessage } from "~/utils/getErrorMessage";
+import { nicknameMaxLength, nicknameMinLength, nicknamePattern, nicknameRules } from "~/utils/inputValidation";
 import { ClassId } from "../../../src/core/types/Ids";
 
 const props = defineProps<{ userId: string }>();
@@ -35,7 +37,6 @@ const { mutate: claimDailyReward, loading: dailyLoading } = useMutation(ClaimDai
 const { mutate: changeOwnNickname, loading: nicknameLoading } = useMutation(ChangeOwnNicknameDocument);
 const { mutate: changeOwnClass, loading: classLoading } = useMutation(ChangeOwnClassDocument);
 const { mutate: setAutomaticGrenade, loading: automaticGrenadeLoading } = useMutation(SetOwnAutomaticGrenadeDocument);
-const { getClassDescription, getClassModifiers, getClassName, getClassImageUrl } = useClasses();
 const { formatMoney } = useMoneyFormat();
 
 const now = ref(Date.now());
@@ -46,14 +47,6 @@ const isClassModalOpen = ref(false);
 const isAutomaticGrenadeModalOpen = ref(false);
 const nickname = ref("");
 const selectedClass = ref<ClassId>(ClassId.Attorney);
-const classOptions = [
-	{ id: ClassId.Attorney, name: getClassName(ClassId.Attorney) },
-	{ id: ClassId.Entrepreneur, name: getClassName(ClassId.Entrepreneur) },
-	{ id: ClassId.Hobo, name: getClassName(ClassId.Hobo) },
-	{ id: ClassId.Thief, name: getClassName(ClassId.Thief) },
-];
-const selectedClassDescription = computed(() => getClassDescription(selectedClass.value));
-const selectedClassModifiers = computed(() => getClassModifiers(selectedClass.value));
 const dailyRemainingMinutes = computed(() => {
 	const availableAt = user.value?.dailyNextAvailableAt ? new Date(user.value.dailyNextAvailableAt).getTime() : 0;
 	return Math.max(0, Math.ceil((availableAt - now.value) / 60_000));
@@ -202,7 +195,6 @@ async function handleAutomaticGrenadeChange() {
 		<BaseButton
 			variant="secondary"
 			size="lg"
-			:disabled="classOptions.length === 0"
 			@click="isFloatingActionsOpen = false; isClassModalOpen = true"
 		>
 			<UserRound
@@ -245,12 +237,23 @@ async function handleAutomaticGrenadeChange() {
 		:description="nicknameChangeDescription"
 		@update:open="isNicknameModalOpen = $event"
 	>
-		<BaseInput
-			id="self-user-nickname"
-			v-model="nickname"
-			label="Novo apelido"
-			placeholder="Digite o apelido"
-		/>
+		<form id="self-nickname-form" @submit.prevent="handleNicknameChange">
+			<BaseInput
+				id="self-user-nickname"
+				v-model="nickname"
+				label="Novo apelido"
+				placeholder="Digite o apelido"
+				name="nickname"
+				required
+				:minlength="nicknameMinLength"
+				:maxlength="nicknameMaxLength"
+				:pattern="nicknamePattern"
+				:rules="nicknameRules"
+				autocomplete="off"
+				autocapitalize="none"
+				spellcheck="false"
+			/>
+		</form>
 		<template #footer>
 			<BaseButton
 				variant="ghost"
@@ -259,8 +262,9 @@ async function handleAutomaticGrenadeChange() {
 				Cancelar
 			</BaseButton>
 			<BaseButton
-				:disabled="nicknameLoading || !nickname"
-				@click="handleNicknameChange"
+				type="submit"
+				form="self-nickname-form"
+				:disabled="nicknameLoading"
 			>
 				{{ nicknameLoading ? "Salvando..." : "Salvar apelido" }}
 			</BaseButton>
@@ -274,46 +278,10 @@ async function handleAutomaticGrenadeChange() {
 		:description="classChangeDescription"
 		@update:open="isClassModalOpen = $event"
 	>
-		<div class="user-self-actions__class-field">
-			<span class="user-self-actions__class-label">Classe</span>
-			<div class="class-options">
-				<button
-					v-for="option in classOptions"
-					:key="option.id"
-					type="button"
-					class="class-option"
-					:class="{ 'class-option--selected': option.id === selectedClass }"
-					:aria-pressed="option.id === selectedClass"
-					@click="selectedClass = option.id"
-				>
-					<NuxtImg
-						class="option-image"
-						:src="getClassImageUrl(option.id)"
-						width="80"
-						alt=""
-					/>
-					<span class="option-name">
-						{{ option.name }}
-					</span>
-					<span
-						v-if="option.id === user.class"
-						class="option-current"
-					>
-						Atual
-					</span>
-				</button>
-			</div>
-			<p class="user-self-actions__class-description">{{ selectedClassDescription }}</p>
-			<ul class="user-self-actions__class-modifiers">
-				<li
-					v-for="modifier in selectedClassModifiers"
-					:key="modifier.label"
-					:class="{ 'user-self-actions__class-modifier--negative': !modifier.isPositive }"
-				>
-					{{ modifier.isPositive ? "+" : "-" }}{{ modifier.percentage }}% {{ modifier.label }}
-				</li>
-			</ul>
-		</div>
+		<ClassSelector
+			v-model="selectedClass"
+			:current-class="user.class"
+		/>
 		<template #footer>
 			<BaseButton
 				variant="ghost"
@@ -322,7 +290,7 @@ async function handleAutomaticGrenadeChange() {
 				Cancelar
 			</BaseButton>
 			<BaseButton
-				:disabled="classLoading || classOptions.length === 0 || selectedClass === user.class"
+				:disabled="classLoading || selectedClass === user.class"
 				@click="handleClassChange"
 			>
 				{{ classLoading ? "Salvando..." : "Confirmar classe" }}
@@ -359,104 +327,3 @@ async function handleAutomaticGrenadeChange() {
 		</template>
 	</BaseModal>
 </template>
-
-<style
-	lang="scss"
-	scoped
->
-@use "~/assets/scss/variables" as *;
-@use "sass:color";
-
-.user-self-actions {
-	display: flex;
-	flex-wrap: wrap;
-	gap: $spacing-sm;
-
-	&__class-field {
-		display: flex;
-		flex-direction: column;
-		gap: $spacing-xs;
-
-		.user-self-actions__class-label {
-			font-size: $font-size-12;
-			font-weight: $font-weight-medium;
-			color: $text-secondary;
-		}
-
-		.class-options {
-			display: grid;
-			gap: $spacing-md;
-			grid-template-columns: repeat(4, minmax(0, 1fr));
-			width: 100%;
-
-			@media (max-width: 540px){
-				grid-template-columns: repeat(2, minmax(0, 1fr));
-			}
-
-			.class-option {
-				display: flex;
-				align-items: center;
-				gap: $spacing-sm;
-				padding: $spacing-md;
-				flex-direction: column;
-				min-width: 0;
-				border-radius: $radius-sm;
-				border: 1px solid $border-card;
-				background: transparent;
-				color: $text-primary;
-				font: inherit;
-				cursor: pointer;
-
-				.option-image {
-					max-width: 100%;
-				}
-
-				&--selected {
-					border-color: $color-success;
-					color:  $color-success;
-					background-color: color-mix(in lab, $bg-card 100%, $color-success 10%);
-				}
-
-				.option-name {
-					font-size: 0.85rem;
-				}
-
-				.option-current {
-					font-size: 0.7rem;
-					color: $text-secondary;
-				}
-			}
-		}
-	}
-
-	&__class-description {
-		margin: $spacing-sm 0 0;
-		color: $text-secondary;
-		font-size: $font-size-14;
-	}
-
-	&__class-modifiers {
-		display: flex;
-		flex-direction: column;
-		gap: $spacing-sm;
-		margin: $spacing-sm 0 0;
-		padding-left: 0.5rem;
-		color: color.adjust($color-success, $lightness: 10%);
-		font-size: $font-size-14;
-		list-style: none;
-
-		li:before {
-			content: '▲';
-			margin-right: 0.5rem;
-		}
-	}
-
-	&__class-modifier--negative {
-		color: color.adjust($color-danger, $lightness: 10%);
-
-		&:before {
-			content: '▼' !important;
-		}
-	}
-}
-</style>

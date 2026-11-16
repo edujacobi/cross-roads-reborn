@@ -1043,8 +1043,8 @@ export const typeDefs = /* GraphQL */ `
         setClass(userId: ID!, classId: Int!): MutationResult!
         setNickname(userId: ID!, nickname: String!): MutationResult!
         claimDailyReward: MutationResult!
-        changeOwnNickname(nickname: String!): MutationResult!
-        changeOwnClass(classId: Int!): MutationResult!
+        changeOwnNickname(nickname: String!, initialOnly: Boolean): MutationResult!
+        changeOwnClass(classId: Int!, initialOnly: Boolean): MutationResult!
         setOwnAutomaticGrenade(enabled: Boolean!): MutationResult!
         giveAlms(receiverId: ID!): MutationResult!
         giftVip(receiverId: ID!, days: Int!): MutationResult!

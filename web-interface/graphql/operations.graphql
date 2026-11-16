@@ -392,6 +392,13 @@ query GetTopGangs($limit: Int!, $offset: Int!) {
 	}
 }
 
+query GetOnboardingPlayer($id: ID!) {
+	user(id: $id) {
+		nickname
+		class
+	}
+}
+
 query GetUserProfile($id: ID!) {
 	user(id: $id) {
 		id
@@ -1005,15 +1012,15 @@ mutation ClaimDailyReward {
 	}
 }
 
-mutation ChangeOwnNickname($nickname: String!) {
-	changeOwnNickname(nickname: $nickname) {
+mutation ChangeOwnNickname($nickname: String!, $initialOnly: Boolean) {
+	changeOwnNickname(nickname: $nickname, initialOnly: $initialOnly) {
 		success
 		message
 	}
 }
 
-mutation ChangeOwnClass($classId: Int!) {
-	changeOwnClass(classId: $classId) {
+mutation ChangeOwnClass($classId: Int!, $initialOnly: Boolean) {
+	changeOwnClass(classId: $classId, initialOnly: $initialOnly) {
 		success
 		message
 	}

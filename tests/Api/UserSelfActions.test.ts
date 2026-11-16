@@ -73,6 +73,63 @@ describe("Player self-service actions", () => {
 		expect(getInfo).not.toHaveBeenCalled();
 	});
 
+	it("creates a missing player before setting their first nickname", async () => {
+		vi.spyOn(User.prototype, "GetInfo")
+			.mockResolvedValueOnce(null)
+			.mockImplementation(async function(this: User) {
+				return this;
+			});
+		const create = vi.spyOn(User.prototype, "Create").mockResolvedValue();
+		vi.spyOn(UserRepository, "SearchByNameOrId").mockResolvedValue(null);
+		const setNickname = vi.spyOn(User.prototype, "SetNickname").mockResolvedValue(true);
+
+		await expect(
+			resolvers.Mutation.changeOwnNickname(null, { nickname: "New Player", initialOnly: true }, { user: player }),
+		).resolves.toMatchObject({ success: true });
+		expect(create).toHaveBeenCalledOnce();
+		expect(setNickname).toHaveBeenCalledWith("New Player", undefined);
+	});
+
+	it("reports account creation failures", async () => {
+		vi.spyOn(User.prototype, "GetInfo").mockResolvedValue(null);
+		vi.spyOn(User.prototype, "Create").mockResolvedValue();
+		const setNickname = vi.spyOn(User.prototype, "SetNickname");
+
+		await expect(
+			resolvers.Mutation.changeOwnNickname(null, { nickname: "New Player", initialOnly: true }, { user: player }),
+		).resolves.toMatchObject({ success: false, message: "Não foi possível criar o jogador." });
+		expect(setNickname).not.toHaveBeenCalled();
+	});
+
+	it("does not create accounts for ordinary nickname changes", async () => {
+		vi.spyOn(User.prototype, "GetInfo").mockResolvedValue(null);
+		const create = vi.spyOn(User.prototype, "Create");
+
+		await expect(
+			resolvers.Mutation.changeOwnNickname(null, { nickname: "New Player" }, { user: player }),
+		).resolves.toMatchObject({ success: false, message: "Jogador não encontrado." });
+		expect(create).not.toHaveBeenCalled();
+	});
+
+	it("does not charge for changes when onboarding has already been completed elsewhere", async () => {
+		vi.spyOn(User.prototype, "GetInfo").mockImplementation(async function(this: User) {
+			this.Nickname = "Existing";
+			this.Class = ClassId.Thief;
+			return this;
+		});
+		const setNickname = vi.spyOn(User.prototype, "SetNickname");
+		const setClass = vi.spyOn(User.prototype, "SetClass");
+
+		await expect(
+			resolvers.Mutation.changeOwnNickname(null, { nickname: "New Player", initialOnly: true }, { user: player }),
+		).resolves.toMatchObject({ success: false });
+		await expect(
+			resolvers.Mutation.changeOwnClass(null, { classId: ClassId.Hobo, initialOnly: true }, { user: player }),
+		).resolves.toMatchObject({ success: false });
+		expect(setNickname).not.toHaveBeenCalled();
+		expect(setClass).not.toHaveBeenCalled();
+	});
+
 	it("allows only the classes available through the setclass command", async () => {
 		const setClass = vi.spyOn(User.prototype, "SetClass").mockResolvedValue(true);
 		vi.spyOn(User.prototype, "GetClassChangeCost").mockReturnValue(50_000);

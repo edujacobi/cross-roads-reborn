@@ -12,6 +12,7 @@ import InvestmentRobberyResultModal from "~/components/Multiplayer/InvestmentRob
 import RobberyAttackerActionModal from "~/components/Multiplayer/Robbery/RobberyAttackerActionModal.vue";
 import RobberyDefenderModal from "~/components/Multiplayer/Robbery/RobberyDefenderModal.vue";
 import RobberyResultModal from "~/components/Multiplayer/Robbery/RobberyResultModal.vue";
+import PlayerOnboarding from "~/components/PlayerOnboarding.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import { useMultiplayerSessions } from "~/composables/useMultiplayerSessions";
 import { GetDefenderActionProfilesDocument, type MultiplayerSession } from "~/graphql/generated";
@@ -47,6 +48,7 @@ const previewKinds = ["userRobbery", "beatUp", "investmentRobbery"] as const;
 const previewKind = ref<(typeof previewKinds)[number] | null>(null);
 const previewAttackerAction = ref(false);
 const previewMenu = ref<HTMLDetailsElement | null>(null);
+const onboardingPreview = ref(false);
 const previewResultPerspective = ref<"defender" | "attacker">("defender");
 const previewResults = {
 	beatUpSuccess: {
@@ -315,6 +317,11 @@ function closePreviewMenu() {
 	if (previewMenu.value) previewMenu.value.open = false;
 }
 
+function showOnboardingPreview() {
+	closePreviewMenu();
+	onboardingPreview.value = true;
+}
+
 function showDefenderPreview(kind: (typeof previewKinds)[number]) {
 	closePreviewMenu();
 	previewResultKind.value = null;
@@ -395,6 +402,10 @@ watch(
 		<summary class="multiplayer-preview-menu__trigger">Pré-visualizações</summary>
 		<div class="multiplayer-preview-menu__content">
 			<section class="multiplayer-preview-menu__group">
+				<h2>Novos jogadores</h2>
+				<BaseButton variant="secondary" @click="showOnboardingPreview">Boas-vindas</BaseButton>
+			</section>
+			<section class="multiplayer-preview-menu__group">
 				<h2>Defensor: ação recebida</h2>
 				<BaseButton
 					v-for="kind in previewKinds"
@@ -440,6 +451,7 @@ watch(
 			</section>
 		</div>
 	</details>
+	<PlayerOnboarding v-if="isDevelopment && onboardingPreview" preview @close="onboardingPreview = false" />
 	<component
 		:is="activeModal"
 		v-if="session && activeModal && !completedResult && !previewAttackerAction"
