@@ -3,8 +3,8 @@
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
 ![License](https://img.shields.io/badge/license-ISC-green.svg)
 
-Cross Roads Reborn is a feature-rich Discord bot that offers an immersive economy and role-playing game experience.
-Players can earn money, fight other users, work jobs, manage inventory, and much more - all within Discord!
+Cross Roads Reborn is a multiplayer economy and role-playing game available through the Discord bot and a web
+interface open to all players. Players can earn money, fight other users, work jobs, manage inventory, and more.
 
 ## Features
 
@@ -117,13 +117,14 @@ access:
 
 ### Product Direction
 
-The admin web application is the first step in a gradual transition from Discord-only gameplay to a web interface. The
-transition is planned in three stages:
+The web interface is open to all players, while Discord gameplay remains supported. Helpers and Moderators can access
+the `/admin` pages; Helpers have read-only access, while Moderators can read and write. The transition has three stages:
 
-1. **Admin interface**: Provide administrators with a web interface to control and monitor the game.
-2. **Web gameplay**: Let general users play through the web interface while continuing to support the existing Discord
-   commands.
-3. **Web-first experience**: Deprecate the Discord commands and direct users to the web interface.
+1. **Admin interface**: Provide administrators with a web interface to control and monitor the game. (Available)
+2. **Web gameplay**: Let all users play through the web interface while continuing to support the existing Discord
+   commands. (Available)
+3. **Web-first experience**: Deprecate the Discord commands and direct users to the web interface once the required
+   workflows are covered. (Future)
 
 The Discord implementation remains an important supported interface during the transition; game rules and state should
 therefore live in shared backend services rather than being tied to either the Nuxt app or Discord commands.
