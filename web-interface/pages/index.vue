@@ -3,7 +3,7 @@
 	lang="ts"
 >
 import { AlertTriangle } from "@lucide/vue";
-import { onMounted, onUnmounted, ref, watch } from "vue";
+import { onMounted } from "vue";
 import BeatUpIcon from "~/components/icons/BeatUpIcon.vue";
 import CasinoIcon from "~/components/icons/CasinoIcon.vue";
 import GangIcon from "~/components/icons/GangIcon.vue";
@@ -23,12 +23,6 @@ definePageMeta({
 	layout: false,
 });
 
-const glowX = ref(0);
-const glowY = ref(0);
-const glowElement = ref<HTMLDivElement | null>(null);
-const { motionEnabled } = useMotionPreferences();
-let pointerFrame = 0;
-
 const route = useRoute();
 const auth = useAuth();
 
@@ -36,42 +30,94 @@ const errorMessage = computed(() => {
 	return typeof route.query.error === "string" ? route.query.error : null;
 });
 
+const featureGroups = [
+	{
+		title: "Economia e equipamentos",
+		features: [
+			{
+				icon: JobsIcon,
+				title: "Escolha seu emprego",
+				description: "De açougueiro a espião, cada profissão oferece ganhos garantidos diferentes.",
+			},
+			{
+				icon: InvestmentIcon,
+				title: "Invista seu dinheiro",
+				description: "Aplique seus recursos para fazer seu patrimônio crescer.",
+			},
+			{
+				icon: ShopIcon,
+				title: "Leve itens",
+				description: "Compre armas e acessórios para se equipar e se liberar novos alvos.",
+			},
+			{
+				icon: SpecialShopIcon,
+				title: "Personalize seu estilo",
+				description: "Use skins e customizações para deixar seu personagem com a sua cara.",
+			},
+		],
+	},
+	{
+		title: "Riscos na cidade",
+		features: [
+			{
+				icon: RobberyIcon,
+				title: "Planeje roubos",
+				description: "Busque recompensas em roubos, mas cuidado com as consequências.",
+			},
+			{
+				icon: BeatUpIcon,
+				title: "Entre em brigas",
+				description: "Enfrente outros jogadores em combates e prove sua força.",
+			},
+			{
+				icon: ScavengeIcon,
+				title: "Vasculhe a cidade",
+				description: "Procure itens e recursos úteis para sua jornada.",
+			},
+		],
+	},
+	{
+		title: "Recuperação e fuga",
+		features: [
+			{
+				icon: HospitalIcon,
+				title: "Sem plano de saúde",
+				description: "Recupere sua saúde no hospital após brigas ou acidentes para continuar jogando.",
+			},
+			{
+				icon: PrisonIcon,
+				title: "Cumpra pena",
+				description: "Erros têm consequência: fique na prisão ou tente fugir, por sua conta e risco.",
+			},
+		],
+	},
+	{
+		title: "Gangues e competição",
+		features: [
+			{
+				icon: GangIcon,
+				title: "Jogue em equipe",
+				description: "Forme sua gangue e domine a cidade com seus aliados.",
+			},
+			{
+				icon: TrophyIcon,
+				title: "Conquiste o topo",
+				description: "Dispute o ranking das classificações por riqueza, combates e influência.",
+			},
+			{
+				icon: CasinoIcon,
+				title: "Arrisque no cassino",
+				description: "Teste sua sorte em jogos de cassino e tente multiplicar seus ganhos.",
+			},
+		],
+	},
+];
+
 onMounted(async () => {
 	await auth.initAuth();
 	if (auth.isAuthenticated.value) {
 		await navigateTo(auth.hasAdminAccess.value ? "/admin/dashboard" : "/me");
 	}
-});
-
-const handleMouseMove = (e: MouseEvent) => {
-	glowX.value = e.clientX;
-	glowY.value = e.clientY;
-	if (!pointerFrame) {
-		pointerFrame = requestAnimationFrame(() => {
-			if (glowElement.value) {
-				glowElement.value.style.transform = `translate3d(${glowX.value}px, ${glowY.value}px, 0)`;
-			}
-			pointerFrame = 0;
-		});
-	}
-};
-
-function syncPointerGlow(enabled: boolean) {
-	const supportsPointerGlow = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-	if (enabled && supportsPointerGlow) {
-		window.addEventListener("mousemove", handleMouseMove, { passive: true });
-		return;
-	}
-	window.removeEventListener("mousemove", handleMouseMove);
-	if (pointerFrame) cancelAnimationFrame(pointerFrame);
-	pointerFrame = 0;
-}
-
-watch(motionEnabled, syncPointerGlow);
-onMounted(() => syncPointerGlow(motionEnabled.value));
-onUnmounted(() => {
-	window.removeEventListener("mousemove", handleMouseMove);
-	if (pointerFrame) cancelAnimationFrame(pointerFrame);
 });
 
 useSeoMeta({
@@ -96,12 +142,7 @@ useSeoMeta({
 			class="game-home__ambience ambient-motion"
 			aria-hidden="true"
 		/>
-		<div
-			ref="glowElement"
-			class="mouse-glow ambient-motion"
-			aria-hidden="true"
-		/>
-		<header class="game-home__header motion-reveal">
+		<header class="game-home__header">
 			<NuxtImg
 				:src="imagePaths.brand.logo"
 				alt="Cross Roads Reborn"
@@ -141,140 +182,52 @@ useSeoMeta({
 		</div>
 
 		<section class="game-home__hero motion-reveal">
-			<p class="game-home__eyebrow">RPG multiplayer</p>
-			<h1>Uma cidade. Mil maneiras de chegar ao topo.</h1>
-			<p class="game-home__intro">
-				Construa sua história em Cross Roads Reborn: trabalhe, acumule riquezas, enfrente rivais e forme alianças em um
-				mundo movido pelas escolhas dos jogadores.
-			</p>
+			<div class="game-home__hero-copy">
+				<h1>Uma cidade. Mil maneiras de chegar ao topo.</h1>
+				<p class="game-home__intro">
+					Construa sua história em Cross Roads Reborn: trabalhe, acumule riquezas, enfrente rivais e forme alianças em
+					um mundo movido pelas escolhas dos jogadores.
+				</p>
+			</div>
+			<NuxtImg
+				class="game-home__hero-image"
+				:src="imagePaths.gangBases.bikeclub2x"
+				alt="Interior da base Bikeclub"
+				width="1024"
+				height="576"
+				sizes="sm:100vw md:45vw lg:36rem"
+				fetchpriority="high"
+				:modifiers="{ fit: 'cover' }"
+			/>
 		</section>
 
-		<p class="game-home__features-description">Saiba o que é possível em Cross Roads Reborn:</p>
-
-		<section
-			class="game-home__features motion-reveal"
-			aria-label="Características do jogo"
-		>
-			<article class="game-feature">
-				<JobsIcon
-					:size="26"
-					variant="solid"
-					aria-hidden="true"
-				/>
-				<h2>Escolha seu emprego</h2>
-				<p>De açougueiro a espião, cada profissão oferece ganhos garantidos diferentes.</p>
-			</article>
-
-			<article class="game-feature">
-				<PrisonIcon
-					:size="26"
-					variant="solid"
-					aria-hidden="true"
-				/>
-				<h2>Cumpra pena</h2>
-				<p>Erros têm consequência: fique na prisão ou tente fugir, por sua conta e risco.</p>
-			</article>
-
-			<article class="game-feature">
-				<HospitalIcon
-					:size="26"
-					variant="solid"
-					aria-hidden="true"
-				/>
-				<h2>Sem plano de saúde</h2>
-				<p>Recupere sua saúde no hospital após brigas ou acidentes para continuar jogando.</p>
-			</article>
-
-			<article class="game-feature">
-				<ShopIcon
-					:size="26"
-					variant="solid"
-					aria-hidden="true"
-				/>
-				<h2>Leve itens</h2>
-				<p>Compre armas e acessórios para se equipar e se liberar novos alvos.</p>
-			</article>
-
-			<article class="game-feature">
-				<GangIcon
-					:size="26"
-					variant="solid"
-					aria-hidden="true"
-				/>
-				<h2>Jogue em equipe</h2>
-				<p>Forme sua gangue e domine a cidade com seus aliados.</p>
-			</article>
-
-			<article class="game-feature">
-				<TrophyIcon
-					:size="26"
-					variant="solid"
-					aria-hidden="true"
-				/>
-				<h2>Conquiste o topo</h2>
-				<p>Dispute o ranking das classificações por riqueza, combates e influência.</p>
-			</article>
-
-			<article class="game-feature">
-				<CasinoIcon
-					:size="26"
-					variant="solid"
-					aria-hidden="true"
-				/>
-				<h2>Arrisque no cassino</h2>
-				<p>Teste sua sorte em jogos de cassino e tente multiplicar seus ganhos.</p>
-			</article>
-
-			<article class="game-feature">
-				<InvestmentIcon
-					:size="26"
-					variant="solid"
-					aria-hidden="true"
-				/>
-				<h2>Invista seu dinheiro</h2>
-				<p>Aplique seus recursos para fazer seu patrimônio crescer.</p>
-			</article>
-
-			<article class="game-feature">
-				<RobberyIcon
-					:size="26"
-					variant="solid"
-					aria-hidden="true"
-				/>
-				<h2>Planeje roubos</h2>
-				<p>Busque recompensas em roubos, mas cuidado com as consequências.</p>
-			</article>
-
-			<article class="game-feature">
-				<BeatUpIcon
-					:size="26"
-					variant="solid"
-					aria-hidden="true"
-				/>
-				<h2>Entre em brigas</h2>
-				<p>Enfrente outros jogadores em combates e prove sua força.</p>
-			</article>
-
-			<article class="game-feature">
-				<ScavengeIcon
-					:size="26"
-					variant="solid"
-					aria-hidden="true"
-				/>
-				<h2>Vasculhe a cidade</h2>
-				<p>Procure itens e recursos úteis para sua jornada.</p>
-			</article>
-
-			<article class="game-feature">
-				<SpecialShopIcon
-					:size="26"
-					variant="solid"
-					aria-hidden="true"
-				/>
-				<h2>Personalize seu estilo</h2>
-				<p>Use skins e customizações para deixar seu personagem com a sua cara.</p>
-			</article>
-		</section>
+		<div class="game-home__features">
+			<section
+				v-for="group in featureGroups"
+				:key="group.title"
+				class="game-home__feature-group"
+			>
+				<h2>{{ group.title }}</h2>
+				<ul>
+					<li
+						v-for="feature in group.features"
+						:key="feature.title"
+						class="game-feature"
+					>
+						<component
+							:is="feature.icon"
+							:size="22"
+							variant="solid"
+							aria-hidden="true"
+						/>
+						<div>
+							<h3>{{ feature.title }}</h3>
+							<p>{{ feature.description }}</p>
+						</div>
+					</li>
+				</ul>
+			</section>
+		</div>
 	</main>
 </template>
 
@@ -297,7 +250,7 @@ useSeoMeta({
 		position: absolute;
 		z-index: -1;
 		top: -10rem;
-		right: -12rem;
+		right: $spacing-xl;
 		width: min(70vw, 48rem);
 		aspect-ratio: 1;
 		border-radius: 50%;
@@ -307,7 +260,7 @@ useSeoMeta({
 		animation: landing-drift 16s ease-in-out infinite alternate;
 	}
 
-	> :not(.game-home__ambience, .mouse-glow) {
+	> :not(.game-home__ambience) {
 		position: relative;
 		z-index: 1;
 	}
@@ -337,17 +290,24 @@ useSeoMeta({
 	}
 
 	&__hero {
-		max-width: 48rem;
+		display: grid;
+		grid-template-columns: minmax(0, 1.15fr) minmax(18rem, 0.85fr);
+		align-items: center;
+		gap: clamp($spacing-lg, 5vw, 4rem);
 		margin: clamp(4rem, 12vh, 8rem) 0 $spacing-xl;
+
+		@media (max-width: $bp-tablet) {
+			grid-template-columns: 1fr;
+		}
 	}
 
-	&__eyebrow {
-		margin-bottom: $spacing-sm;
-		color: $color-brand;
-		font-size: $font-size-12;
-		font-weight: $font-weight-bold;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
+	&__hero-image {
+		display: block;
+		width: 100%;
+		aspect-ratio: 16 / 10;
+		border: 1px solid $border-card;
+		border-radius: $radius-md;
+		object-fit: cover;
 	}
 
 	h1 {
@@ -367,42 +327,44 @@ useSeoMeta({
 
 	&__features {
 		display: grid;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-		gap: $spacing-md;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		column-gap: $spacing-xl;
+		row-gap: $spacing-lg;
 
-		@media (max-width: 700px) {
+		@media (max-width: $bp-tablet) {
 			grid-template-columns: 1fr;
 		}
 	}
 
-	&__features-description {
-		margin: $spacing-xl 0 $spacing-lg;
-		font-size: $font-size-16;
-		font-weight: $font-weight-semibold;
-		color: $text-secondary;
+	&__feature-group {
+		padding-top: $spacing-md;
+		border-top: 1px solid $border-subtle;
+
+		h2 {
+			margin-bottom: $spacing-md;
+			font-size: $font-size-20;
+		}
+
+		ul {
+			display: grid;
+			gap: $spacing-md;
+			list-style: none;
+		}
 	}
 }
 
 .game-feature {
-	padding: $spacing-lg;
-	background: $bg-card;
-	border: 1px solid $border-card;
-	border-radius: $radius-md;
-	transition: transform $transition-normal $motion-ease-out, border-color $transition-normal ease, box-shadow $transition-normal ease;
-
-	@media (hover: hover) and (pointer: fine) {
-		&:hover {
-			border-color: rgba($color-brand, 0.42);
-			box-shadow: 0 0 20px rgba($color-brand, 0.08);
-		}
-	}
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr);
+	align-items: start;
+	gap: $spacing-sm;
 
 	svg {
-		margin-bottom: $spacing-md;
+		margin-top: 0.125rem;
 		color: $color-brand;
 	}
 
-	h2 {
+	h3 {
 		margin-bottom: $spacing-sm;
 		font-size: $font-size-16;
 		font-weight: $font-weight-bold;
@@ -410,37 +372,13 @@ useSeoMeta({
 
 	p {
 		color: $text-secondary;
-		font-size: $font-size-14;
+		font-size: $font-size-16;
 		line-height: 1.6;
 	}
 }
 
-.mouse-glow {
-	position: fixed;
-	top: 0;
-	left: 0;
-	width: 400px;
-	height: 400px;
-	margin-left: -200px;
-	margin-top: -200px;
-	pointer-events: none;
-	background: radial-gradient(circle, rgba(34, 197, 94, 0.1) 0%, transparent 70%);
-	z-index: 0;
-	will-change: transform;
-}
-
 .motion-reveal {
 	animation: reveal-up 0.5s $motion-ease-out both;
-}
-
-.game-home__features .game-feature {
-	animation: reveal-up 0.5s $motion-ease-out both;
-
-	@for $index from 1 through 12 {
-		&:nth-child(#{$index}) {
-			animation-delay: #{$index * 35}ms;
-		}
-	}
 }
 
 @keyframes landing-drift {
