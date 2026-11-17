@@ -6,6 +6,7 @@ import { GAME_TIME_ZONE } from "#shared/gameTimeZone";
 export interface IDashboardStats {
 	date: Date;
 	totalPlayers: number;
+	activeUsers?: number | null;
 	allUsers: number | null;
 	totalGangs: number;
 	prisonCount: number;
@@ -45,16 +46,17 @@ export class DashboardCanvasBuilder extends BaseCanvasBuilder {
 		ctx.font = "20px Inter";
 		ctx.textAlign = "left";
 		ctx.fillStyle = "#bbbbbb";
-		ctx.fillText(`Active Players: ${stats.totalPlayers}`, this.Padding, 80);
-		ctx.fillText(`All Users: ${stats.allUsers ?? "N/A"}`, this.Padding, 110);
-		ctx.fillText(`Total Gangs: ${stats.totalGangs}`, this.Padding, 140);
+		ctx.fillText(`Users in Season: ${stats.totalPlayers}`, this.Padding, 80);
+		ctx.fillText(`Active Users: ${stats.activeUsers ?? "N/A"}`, this.Padding, 110);
+		ctx.fillText(`All Users: ${stats.allUsers ?? "N/A"}`, this.Padding, 140);
+		ctx.fillText(`Total Gangs: ${stats.totalGangs}`, this.Padding, 170);
 
 		// Draw Pie Chart
 		const chartRadius = 100;
-		this.drawPieChart(stats, this.Width - chartRadius - this.Padding, 170, chartRadius);
+		this.drawPieChart(stats, this.Width - chartRadius - this.Padding, 180, chartRadius);
 
 		// Draw Language Stats
-		this.drawLanguageStats(stats, this.Padding, 160);
+		this.drawLanguageStats(stats, this.Padding, 190);
 
 		// Draw Line Chart
 		if (history.length > 0) {
@@ -167,7 +169,7 @@ export class DashboardCanvasBuilder extends BaseCanvasBuilder {
 		ctx.font = "16px InterSemiBold";
 		ctx.fillStyle = "#E3E3E6";
 		ctx.textAlign = "center";
-		ctx.fillText("Active Players (Last 30 Days)", x + width / 2, y - 10);
+		ctx.fillText("Users in Season (Last 30 Days)", x + width / 2, y - 10);
 
 		const maxPlayers = Math.max(...history.map(h => h.totalPlayers), 10);
 		const minPlayers = Math.max(0, Math.min(...history.map(h => h.totalPlayers)) - 5);

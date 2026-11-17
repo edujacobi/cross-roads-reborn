@@ -2,7 +2,7 @@
 	setup
 	lang="ts"
 >
-import { ArrowLeft } from "lucide-vue-next";
+import { ArrowLeft } from "@lucide/vue";
 import CasinoBetGame from "~/components/Casino/CasinoBetGame.vue";
 import CasinoHorseRaceGame from "~/components/Casino/CasinoHorseRaceGame.vue";
 import CasinoLotteryGame from "~/components/Casino/CasinoLotteryGame.vue";

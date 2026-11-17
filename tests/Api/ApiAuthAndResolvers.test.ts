@@ -197,8 +197,10 @@ describe("API Auth and Resolvers", () => {
 		});
 
 		it("should allow dashboard queries when user is HELPER", async () => {
+			vi.spyOn(UserRepository, "CountUsersWithRecentNonConsumableItems").mockResolvedValue(1);
 			vi.spyOn(Dashboard, "GetCurrentStats").mockResolvedValue({
 				date: new Date(),
+				activeUsers: 1,
 				totalPlayers: 0,
 				allUsers: 0,
 				classCounts: [],
@@ -220,6 +222,7 @@ describe("API Auth and Resolvers", () => {
 			await expect(
 				resolvers.Query.dashboardStats(null, {}, { user: helperUser }),
 			).resolves.toMatchObject({
+				activeUsers: 1,
 				totalPlayers: 0,
 				classCounts: [],
 				bankVaultValue: 0,

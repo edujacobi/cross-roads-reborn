@@ -2,8 +2,8 @@
 	setup
 	lang="ts"
 >
+import { Beer, Bell, BellOff, BookOpen, Clock3, ExternalLink, HelpCircle, Info, Medal } from "@lucide/vue";
 import { useQuery } from "@vue/apollo-composable";
-import { Beer, Bell, BellOff, BookOpen, Clock3, ExternalLink, HelpCircle, Info, Medal } from "lucide-vue-next";
 import { onMounted, onUnmounted, ref } from "vue";
 import CasinoIcon from "~/components/icons/CasinoIcon.vue";
 import GangIcon from "~/components/icons/GangIcon.vue";

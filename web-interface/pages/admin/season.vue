@@ -3,7 +3,7 @@
 	lang="ts"
 >
 import { useApolloClient, useMutation, useQuery } from "@vue/apollo-composable";
-import { CalendarRange, Clock3, Shield } from "lucide-vue-next";
+import { CalendarRange, Clock3, Shield } from "@lucide/vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";

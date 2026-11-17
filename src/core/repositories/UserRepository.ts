@@ -472,6 +472,10 @@ export class UserRepository {
 		return items.map(item => item.userId);
 	}
 
+	static async CountUsersWithRecentNonConsumableItems(): Promise<number> {
+		return (await this.FindUsersWithRecentNonConsumableItems()).length;
+	}
+
 	/**
 	 * Counts active players (with a class chosen).
 	 */

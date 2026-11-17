@@ -13,8 +13,10 @@ module.exports = {
 	async execute(interaction: ChatInputCommandInteraction) {
 		await deferReply(interaction);
 
-		const stats = await Dashboard.GetCurrentStats();
-		const history = await Dashboard.GetLast30Days();
+		const [stats, history] = await Promise.all([
+			Dashboard.GetCurrentStats(),
+			Dashboard.GetLast30Days(),
+		]);
 
 		const builder = new DashboardCanvasBuilder();
 		const buffer = await builder.Draw(stats, history);

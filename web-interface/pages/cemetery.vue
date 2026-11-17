@@ -3,7 +3,7 @@
 	lang="ts"
 >
 import { useQuery } from "@vue/apollo-composable";
-import { Search, Skull } from "lucide-vue-next";
+import { Search, Skull } from "@lucide/vue";
 import { computed, ref } from "vue";
 import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";

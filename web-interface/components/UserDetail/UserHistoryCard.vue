@@ -3,7 +3,7 @@
 	lang="ts"
 >
 import { useQuery } from "@vue/apollo-composable";
-import { MapPin, Swords } from "lucide-vue-next";
+import { MapPin, Swords } from "@lucide/vue";
 import { computed, watch } from "vue";
 import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";

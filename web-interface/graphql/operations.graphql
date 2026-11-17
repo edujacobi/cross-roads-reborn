@@ -1,6 +1,7 @@
 query GetDashboardStats {
 	dashboardStats {
 		date
+		activeUsers
 		totalPlayers
 		allUsers
 		classCounts {
@@ -28,6 +29,7 @@ query GetDashboardHistory {
 	dashboardHistory {
 		id
 		date
+		activeUsers
 		totalPlayers
 		allUsers
 		classCounts {

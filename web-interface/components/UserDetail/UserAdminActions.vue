@@ -2,7 +2,6 @@
 	setup
 	lang="ts"
 >
-import { useMutation, useQuery } from "@vue/apollo-composable";
 import {
 	ArrowLeftRight,
 	Award,
@@ -15,7 +14,8 @@ import {
 	Trash2,
 	Unlock,
 	UserRound,
-} from "lucide-vue-next";
+} from "@lucide/vue";
+import { useMutation, useQuery } from "@vue/apollo-composable";
 import HospitalIcon from "~/components/icons/HospitalIcon.vue";
 import PrisonIcon from "~/components/icons/PrisonIcon.vue";
 import SpecialShopIcon from "~/components/icons/SpecialShopIcon.vue";

@@ -2,7 +2,7 @@
 	setup
 	lang="ts"
 >
-import { ArrowLeft, ClipboardCopy } from "lucide-vue-next";
+import { ArrowLeft, ClipboardCopy } from "@lucide/vue";
 import type { NuxtError } from "#app";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";

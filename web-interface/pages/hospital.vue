@@ -3,7 +3,7 @@
 	lang="ts"
 >
 import { useMutation, useQuery } from "@vue/apollo-composable";
-import { ArrowDown, ArrowUp, ArrowUpDown, Search } from "lucide-vue-next";
+import { ArrowDown, ArrowUp, ArrowUpDown, Search } from "@lucide/vue";
 import { computed, ref } from "vue";
 import HospitalIcon from "~/components/icons/HospitalIcon.vue";
 import BaseBadge from "~/components/ui/BaseBadge.vue";

@@ -8,8 +8,8 @@ import DashboardItemPopularity from "~/components/Dashboard/DashboardItemPopular
 import DashboardStatusBox from "~/components/Dashboard/DashboardStatusBox.vue";
 import DashboardUserChart from "~/components/Dashboard/DashboardUserChart.vue";
 import DashboardUserHistory from "~/components/Dashboard/DashboardUserHistory.vue";
-import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
+import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseInput from "~/components/ui/BaseInput.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
 import PageTitle from "~/components/ui/PageTitle.vue";
@@ -164,9 +164,18 @@ async function saveVault() {
 			>
 				<template #actions>
 					{{ formatMoney(stats?.bankVaultValue ?? 0) }}
-					<BaseButton v-if="auth.canWrite.value" variant="secondary" size="sm" :disabled="!stats || savingVault" @click="openVault(VaultType.Bank)">Alterar</BaseButton>
+					<BaseButton
+						v-if="auth.canWrite.value"
+						variant="secondary"
+						size="sm"
+						:disabled="!stats || savingVault"
+						@click="openVault(VaultType.Bank)"
+					>
+						Alterar
+					</BaseButton>
 				</template>
 			</BaseCard>
+
 			<BaseCard
 				title="Cofre do Cassino"
 				:icon="imagePaths.uiElements.vaultCasino"
@@ -174,7 +183,15 @@ async function saveVault() {
 			>
 				<template #actions>
 					{{ formatMoney(stats?.casinoVaultValue ?? 0) }}
-					<BaseButton v-if="auth.canWrite.value" variant="secondary" size="sm" :disabled="!stats || savingVault" @click="openVault(VaultType.Casino)">Alterar</BaseButton>
+					<BaseButton
+						v-if="auth.canWrite.value"
+						variant="secondary"
+						size="sm"
+						:disabled="!stats || savingVault"
+						@click="openVault(VaultType.Casino)"
+					>
+						Alterar
+					</BaseButton>
 				</template>
 			</BaseCard>
 		</section>
@@ -186,10 +203,28 @@ async function saveVault() {
 			:dismissible="!savingVault"
 			@update:open="updateVaultModal"
 		>
-			<BaseInput id="vault-balance" v-model="vaultAmount" label="Saldo (Cr$)" type="number" :min="0" :step="1" />
+			<BaseInput
+				id="vault-balance"
+				v-model="vaultAmount"
+				label="Saldo (Cr$)"
+				type="number"
+				:min="0"
+				:step="1"
+			/>
 			<template #footer>
-				<BaseButton variant="ghost" :disabled="savingVault" @click="selectedVault = null">Cancelar</BaseButton>
-				<BaseButton :disabled="savingVault" @click="saveVault">Confirmar alteração</BaseButton>
+				<BaseButton
+					variant="ghost"
+					:disabled="savingVault"
+					@click="selectedVault = null"
+				>
+					Cancelar
+				</BaseButton>
+				<BaseButton
+					:disabled="savingVault"
+					@click="saveVault"
+				>
+					Confirmar alteração
+				</BaseButton>
 			</template>
 		</BaseModal>
 
@@ -200,6 +235,7 @@ async function saveVault() {
 				:history-loading="historyLoading"
 			/>
 			<DashboardCountData
+				:active-users="stats?.activeUsers"
 				:total-players="stats?.totalPlayers"
 				:all-users="stats?.allUsers"
 				:total-gangs="stats?.totalGangs"
@@ -239,7 +275,7 @@ async function saveVault() {
 .dashboard-page {
 	display: flex;
 	flex-direction: column;
-	gap: $spacing-lg;
+	gap: $spacing-md;
 	container-name: page;
 	container-type: inline-size;
 
@@ -286,7 +322,7 @@ async function saveVault() {
 .details-row {
 	display: grid;
 	grid-template-columns: 1fr 320px ;
-	gap: 20px;
+	gap: $spacing-md;
 
 	@container page (max-width: 900px) {
 		grid-template-columns: 1fr;
@@ -296,7 +332,7 @@ async function saveVault() {
 .two-collumns {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
-	gap: 20px;
+	gap: $spacing-md;
 
 	@container page (max-width: 900px) {
 		grid-template-columns: 1fr;

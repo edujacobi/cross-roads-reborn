@@ -2,7 +2,7 @@
 	setup
 	lang="ts"
 >
-import { FileText } from "lucide-vue-next";
+import { FileText } from "@lucide/vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseEmptyState from "~/components/ui/BaseEmptyState.vue";
 import BaseErrorState from "~/components/ui/BaseErrorState.vue";

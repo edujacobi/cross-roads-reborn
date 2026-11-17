@@ -2,7 +2,7 @@
 	setup
 	lang="ts"
 >
-import { AlertTriangle } from "lucide-vue-next";
+import { AlertTriangle } from "@lucide/vue";
 import { onMounted, onUnmounted, ref, watch } from "vue";
 import BeatUpIcon from "~/components/icons/BeatUpIcon.vue";
 import CasinoIcon from "~/components/icons/CasinoIcon.vue";

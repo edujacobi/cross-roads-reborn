@@ -2,8 +2,8 @@
 	setup
 	lang="ts"
 >
+import { CalendarDays, Pencil, Plus, Trash2 } from "@lucide/vue";
 import { useMutation, useQuery } from "@vue/apollo-composable";
-import { CalendarDays, Pencil, Plus, Trash2 } from "lucide-vue-next";
 import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";

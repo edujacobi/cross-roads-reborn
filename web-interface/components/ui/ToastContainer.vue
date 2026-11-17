@@ -2,7 +2,7 @@
 	setup
 	lang="ts"
 >
-import { AlertTriangle, CheckCircle2, Info, OctagonAlert, X } from "lucide-vue-next";
+import { AlertTriangle, CheckCircle2, Info, OctagonAlert, X } from "@lucide/vue";
 import { onBeforeUnmount, watch } from "vue";
 
 const { toasts, dismissToast } = useToast();

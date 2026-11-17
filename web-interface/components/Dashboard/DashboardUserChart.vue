@@ -35,17 +35,25 @@ function updateChart() {
 	const labels = history.map(({ date }) => (date === props.currentStats?.date ? "Agora" : shortMonthDay(date)));
 	const datasets = [
 		{
-			label: "Jogadores ativos",
+			label: "Todos os usuários",
+			data: history.map(({ allUsers }) => allUsers),
+			borderColor: "#f9fafb",
+			backgroundColor: "#f9fafb",
+			spanGaps: false,
+			tension: 0.4,
+		},
+		{
+			label: "Usuários nesta temporada",
 			data: history.map(({ totalPlayers }) => totalPlayers),
 			borderColor: "#57f287",
 			backgroundColor: "#57f287",
 			tension: 0.4,
 		},
 		{
-			label: "Todos os usuários",
-			data: history.map(({ allUsers }) => allUsers),
-			borderColor: "#f9fafb",
-			backgroundColor: "#f9fafb",
+			label: "Usuários ativos",
+			data: history.map(({ activeUsers }) => activeUsers),
+			borderColor: "#fbbf24",
+			backgroundColor: "#fbbf24",
 			spanGaps: false,
 			tension: 0.4,
 		},

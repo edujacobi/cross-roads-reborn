@@ -2,7 +2,7 @@
 	setup
 	lang="ts"
 >
-import { Calendar } from "lucide-vue-next";
+import { Calendar } from "@lucide/vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseTable from "~/components/ui/BaseTable.vue";
 import BaseTableSkeleton from "~/components/ui/BaseTableSkeleton.vue";
@@ -28,7 +28,7 @@ const { shortDate } = useDateFormat();
 		<BaseTableSkeleton
 			v-if="historyLoading"
 			:rows="10"
-			:columns="7"
+			:columns="8"
 			label="Carregando histórico"
 		/>
 
@@ -54,7 +54,8 @@ const { shortDate } = useDateFormat();
 				<thead>
 					<tr>
 						<th scope="col">Data</th>
-						<th scope="col">Jogadores ativos</th>
+						<th scope="col">Usuários ativos</th>
+						<th scope="col">Usuários nesta temporada</th>
 						<th scope="col">Todos os usuários</th>
 						<th scope="col">Português</th>
 						<th scope="col">Inglês</th>
@@ -68,6 +69,7 @@ const { shortDate } = useDateFormat();
 						:key="item.id || item.date"
 					>
 						<td><time :datetime="item.date">{{ shortDate(item.date) }}</time></td>
+						<td>{{ item.activeUsers ?? "—" }}</td>
 						<td class="font-bold">{{ item.totalPlayers }}</td>
 						<td>{{ item.allUsers ?? "—" }}</td>
 						<td>{{ item.portugueseCount }}</td>

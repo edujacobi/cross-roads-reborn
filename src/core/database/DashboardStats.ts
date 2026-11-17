@@ -8,6 +8,7 @@ export class DashboardStats extends Model<
 > {
 	declare id: CreationOptional<number>;
 	declare date: Date;
+	declare activeUsers: number | null;
 	declare totalPlayers: number;
 	declare allUsers: number | null;
 	declare classCounts: string | null;
@@ -32,6 +33,10 @@ DashboardStats.init(
 		date: {
 			type: DataTypes.DATE,
 			allowNull: false,
+		},
+		activeUsers: {
+			type: DataTypes.INTEGER,
+			allowNull: true,
 		},
 		totalPlayers: {
 			type: DataTypes.INTEGER,

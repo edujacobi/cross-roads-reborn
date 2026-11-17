@@ -42,6 +42,7 @@ export const typeDefs = /* GraphQL */ `
 
     type DashboardStats {
         date: String!
+        activeUsers: Int!
         totalPlayers: Int!
         allUsers: Int!
         classCounts: [ClassCount!]!
@@ -64,6 +65,7 @@ export const typeDefs = /* GraphQL */ `
     type DashboardSnapshot {
         id: ID
         date: String!
+        activeUsers: Int
         totalPlayers: Int!
         allUsers: Int
         classCounts: [ClassCount!]

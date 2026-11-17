@@ -2,11 +2,12 @@
 	setup
 	lang="ts"
 >
-import { Globe, Users } from "lucide-vue-next";
+import { Globe, UserCheck, UserGroup, Users } from "@lucide/vue";
 import GangIcon from "~/components/icons/GangIcon.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 
 interface Props {
+	activeUsers: number | undefined;
 	totalPlayers: number | undefined;
 	allUsers: number | undefined;
 	totalGangs: number | undefined;
@@ -15,6 +16,7 @@ interface Props {
 	spanishCount: number | undefined;
 }
 withDefaults(defineProps<Props>(), {
+	activeUsers: 0,
 	totalPlayers: 0,
 	allUsers: 0,
 	totalGangs: 0,
@@ -33,18 +35,29 @@ withDefaults(defineProps<Props>(), {
 		<dl class="count-list">
 			<div class="count-item">
 				<dt class="count-label">
+					<UserCheck
+						:size="16"
+						aria-hidden="true"
+					/>
+					Usuários ativos
+				</dt>
+				<dd class="count-value">{{ activeUsers ?? 0 }}</dd>
+			</div>
+
+			<div class="count-item">
+				<dt class="count-label">
 					<Users
 						:size="16"
 						aria-hidden="true"
 					/>
-					Jogadores ativos
+					Usuários nesta temporada
 				</dt>
 				<dd class="count-value">{{ totalPlayers ?? 0 }}</dd>
 			</div>
 
 			<div class="count-item">
 				<dt class="count-label">
-					<Users
+					<UserGroup
 						:size="16"
 						aria-hidden="true"
 					/>
@@ -112,7 +125,7 @@ withDefaults(defineProps<Props>(), {
 	.count-list {
 		display: flex;
 		flex-direction: column;
-		gap: $spacing-md;
+		gap: $spacing-sm;
 
 		.count-item {
 			@include flex-between;

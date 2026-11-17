@@ -10,6 +10,7 @@ export class Dashboard {
 		const now = new Date();
 
 		const totalPlayers = await UserRepository.CountActivePlayers();
+		const activeUsers = await UserRepository.CountUsersWithRecentNonConsumableItems();
 		const allUsers = await UserRepository.CountAllUsers();
 		const totalGangs = await GangRepository.CountAllGangs();
 
@@ -34,6 +35,7 @@ export class Dashboard {
 
 		return {
 			date: now,
+			activeUsers,
 			totalPlayers,
 			allUsers,
 			classCounts,

@@ -2,7 +2,7 @@
 	setup
 	lang="ts"
 >
-import { Minus, Plus } from "lucide-vue-next";
+import { Minus, Plus } from "@lucide/vue";
 import ShopIcon from "~/components/icons/ShopIcon.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import SegmentedProgressBar from "~/components/ui/SegmentedProgressBar.vue";

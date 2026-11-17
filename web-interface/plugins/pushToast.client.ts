@@ -1,4 +1,4 @@
-import { Bell } from "lucide-vue-next";
+import { Bell } from "@lucide/vue";
 
 export default defineNuxtPlugin(() => {
 	if (!("serviceWorker" in navigator)) return;

@@ -2,7 +2,7 @@
 	setup
 	lang="ts"
 >
-import { Activity } from "lucide-vue-next";
+import { Activity } from "@lucide/vue";
 
 const auth = useAuth();
 </script>

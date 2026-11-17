@@ -3,7 +3,7 @@
 	lang="ts"
 >
 import { useMutation, useQuery } from "@vue/apollo-composable";
-import { Check, History, Search, Send } from "lucide-vue-next";
+import { Check, History, Search, Send } from "@lucide/vue";
 import { computed, ref, watch } from "vue";
 import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";

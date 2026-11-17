@@ -3,7 +3,7 @@
 	lang="ts"
 >
 import { useMutation, useQuery } from "@vue/apollo-composable";
-import { CircleUserRound } from "lucide-vue-next";
+import { CircleUserRound } from "@lucide/vue";
 import { computed, ref, watch } from "vue";
 import AttackIcon from "~/components/icons/AttackIcon.vue";
 import SpecialShopIcon from "~/components/icons/SpecialShopIcon.vue";

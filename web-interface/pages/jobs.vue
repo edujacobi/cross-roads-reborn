@@ -3,7 +3,7 @@
 	lang="ts"
 >
 import { useMutation, useQuery } from "@vue/apollo-composable";
-import { ChevronDown, Clock, Coins, X } from "lucide-vue-next";
+import { ChevronDown, Clock, Coins, X } from "@lucide/vue";
 import { computed, ref } from "vue";
 import JobsIcon from "~/components/icons/JobsIcon.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";

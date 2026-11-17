@@ -14,7 +14,7 @@ import {
 	Scroll,
 	Users,
 	X,
-} from "lucide-vue-next";
+} from "@lucide/vue";
 import BeatUpIcon from "~/components/icons/BeatUpIcon.vue";
 import CasinoIcon from "~/components/icons/CasinoIcon.vue";
 import GangIcon from "~/components/icons/GangIcon.vue";

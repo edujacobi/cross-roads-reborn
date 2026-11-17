@@ -2,7 +2,7 @@
 	setup
 	lang="ts"
 >
-import { ChevronDown } from "lucide-vue-next";
+import { ChevronDown } from "@lucide/vue";
 
 export interface SelectorOption {
 	label: string;

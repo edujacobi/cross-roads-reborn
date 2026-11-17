@@ -3,7 +3,7 @@
 	lang="ts"
 >
 import { useMutation, useQuery } from "@vue/apollo-composable";
-import { ChevronDown, CreditCard, Minus, Plus, X } from "lucide-vue-next";
+import { ChevronDown, CreditCard, Minus, Plus, X } from "@lucide/vue";
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import ShopIcon from "~/components/icons/ShopIcon.vue";
 import ShopItemCard from "~/components/ShopItemCard.vue";

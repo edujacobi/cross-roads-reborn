@@ -3,7 +3,7 @@
 	lang="ts"
 >
 import { useMutation, useQuery } from "@vue/apollo-composable";
-import { ArrowLeft, Beer, Clock3 } from "lucide-vue-next";
+import { ArrowLeft, Beer, Clock3 } from "@lucide/vue";
 import { computed, nextTick, ref } from "vue";
 import HospitalIcon from "~/components/icons/HospitalIcon.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";

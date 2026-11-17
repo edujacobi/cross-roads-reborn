@@ -31,6 +31,7 @@ export const dashboardResolvers: {
 			return history.map((snapshot) => ({
 				id: (snapshot as { id?: number }).id || null,
 				date: snapshot.date instanceof Date ? snapshot.date.toISOString() : String(snapshot.date),
+				activeUsers: snapshot.activeUsers,
 				totalPlayers: snapshot.totalPlayers,
 				allUsers: snapshot.allUsers,
 				classCounts: snapshot.classCounts === null ? null : JSON.parse(snapshot.classCounts),

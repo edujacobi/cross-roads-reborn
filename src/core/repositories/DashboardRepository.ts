@@ -18,6 +18,12 @@ export class DashboardRepository {
 				allowNull: true,
 			});
 		}
+		if (!("activeUsers" in columns)) {
+			await sequelize.getQueryInterface().addColumn("dashboard_stats", "activeUsers", {
+				type: DataTypes.INTEGER,
+				allowNull: true,
+			});
+		}
 	}
 
 	static async Create(

@@ -3,7 +3,7 @@
 	lang="ts"
 >
 import { useQuery } from "@vue/apollo-composable";
-import { UserCheck } from "lucide-vue-next";
+import { UserCheck } from "@lucide/vue";
 import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseEmptyState from "~/components/ui/BaseEmptyState.vue";
 import BaseErrorState from "~/components/ui/BaseErrorState.vue";

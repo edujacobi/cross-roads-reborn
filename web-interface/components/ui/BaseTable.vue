@@ -2,7 +2,7 @@
 	setup
 	lang="ts"
 >
-import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-vue-next";
+import { ArrowDown, ArrowUp, ArrowUpDown } from "@lucide/vue";
 import type { SortColumn } from "~/composables/useSorting";
 
 const props = withDefaults(

@@ -5,7 +5,7 @@
 import { useApolloClient, useMutation, useQuery } from "@vue/apollo-composable";
 import { differenceInHours, formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Maximize, Minimize, Package, Paintbrush } from "lucide-vue-next";
+import { Maximize, Minimize, Package, Paintbrush } from "@lucide/vue";
 import { computed, onMounted, ref, watch } from "vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseCard from "~/components/ui/BaseCard.vue";

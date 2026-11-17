@@ -3,7 +3,7 @@
 	lang="ts"
 >
 import { useMutation, useQuery } from "@vue/apollo-composable";
-import { CalendarDays, CircleUserRound, Pencil, UserRound } from "lucide-vue-next";
+import { CalendarDays, CircleUserRound, Pencil, UserRound } from "@lucide/vue";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import ClassSelector from "~/components/UserDetail/ClassSelector.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";

@@ -2,7 +2,7 @@
 	setup
 	lang="ts"
 >
-import { RefreshCw } from "lucide-vue-next";
+import { RefreshCw } from "@lucide/vue";
 import BaseButton, { type ButtonVariant } from "~/components/ui/BaseButton.vue";
 
 interface Props {

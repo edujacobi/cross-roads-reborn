@@ -2,7 +2,7 @@
 	setup
 	lang="ts"
 >
-import { Pencil } from "lucide-vue-next";
+import { Pencil } from "@lucide/vue";
 import { computed, watch } from "vue";
 import SpecialShopIcon from "~/components/icons/SpecialShopIcon.vue";
 import UserSituationText from "~/components/UserDetail/UserSituationText.vue";

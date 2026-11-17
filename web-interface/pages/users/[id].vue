@@ -3,7 +3,7 @@
 	lang="ts"
 >
 import { useApolloClient, useMutation, useQuery } from "@vue/apollo-composable";
-import { ArrowLeft } from "lucide-vue-next";
+import { ArrowLeft } from "@lucide/vue";
 import { computed, ref, watch } from "vue";
 import UserActivityStatsCard from "~/components/UserDetail/UserActivityStatsCard.vue";
 import UserAdminActions from "~/components/UserDetail/UserAdminActions.vue";

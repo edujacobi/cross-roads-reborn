@@ -17,7 +17,7 @@ import {
 	UserPlus,
 	UserRoundCog,
 	Wallet,
-} from "lucide-vue-next";
+} from "@lucide/vue";
 import InvestmentIcon from "~/components/icons/InvestmentIcon.vue";
 import MultiplayerSessionCard from "~/components/Multiplayer/MultiplayerSessionCard.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";

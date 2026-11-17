@@ -3,7 +3,7 @@
 	lang="ts"
 >
 import { useQuery } from "@vue/apollo-composable";
-import { Trophy } from "lucide-vue-next";
+import { Trophy } from "@lucide/vue";
 import { onMounted } from "vue";
 import { type LocationQueryValue, useRouter } from "vue-router";
 import BaseCard from "~/components/ui/BaseCard.vue";

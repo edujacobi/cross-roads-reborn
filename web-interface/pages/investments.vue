@@ -3,7 +3,7 @@
 	lang="ts"
 >
 import { useMutation, useQuery } from "@vue/apollo-composable";
-import { Bell, BellOff, ChevronDown, X } from "lucide-vue-next";
+import { Bell, BellOff, ChevronDown, X } from "@lucide/vue";
 import { computed, ref } from "vue";
 import InvestmentIcon from "~/components/icons/InvestmentIcon.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";

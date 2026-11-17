@@ -2,7 +2,7 @@
 	setup
 	lang="ts"
 >
-import { ChevronLeft, ChevronRight } from "lucide-vue-next";
+import { ChevronLeft, ChevronRight } from "@lucide/vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 
 interface Props {

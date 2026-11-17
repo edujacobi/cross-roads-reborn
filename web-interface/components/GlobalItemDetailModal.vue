@@ -3,7 +3,7 @@
 	lang="ts"
 >
 import { useApolloClient, useMutation, useQuery } from "@vue/apollo-composable";
-import { Moon, Sun } from "lucide-vue-next";
+import { Moon, Sun } from "@lucide/vue";
 import { computed, ref, watch } from "vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
