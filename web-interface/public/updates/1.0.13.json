@@ -1,0 +1,37 @@
+{
+	"version": "1.0.13",
+	"title": "Inatividade, fuso horário, classes e interface web",
+	"date": "17/11/2026",
+	"comment": "Mudanças na atividade dos jogadores, nos horários, nas classes e novidades na interface web.",
+	"sections": [
+		{
+			"title": "Usuários inativos",
+			"description": "Jogadores que ficarem mais de 7 dias sem itens no inventário serão considerados inativos. Consumíveis, como granadas, não contam para esse critério.\nUsuários inativos não podem ser alvo de roubos ou espancamentos e não são considerados nos rankings."
+		},
+		{
+			"title": "Fuso horário",
+			"description": "Os horários do servidor agora seguem o fuso de Brasília (GMT-3), substituindo o horário de Greenwich (GMT)."
+		},
+		{
+			"title": "Balanceamento de classes",
+			"description": "Empresário: bônus de trabalhos reduzido de +15% para +10%; bônus de investimentos permanece em +10%.\nMendigo: penalidade de trabalhos reduzida de -20% para -15%."
+		},
+		{
+			"title": "Troca de classe",
+			"description": "Até domingo, 22/11, as trocas de classe custam o valor base (Cr$ 100.000 ou Cr$ 75.000 para VIPs). Durante esse período, trocar de classe não será contabilizado no limite de trocas realizadas."
+		},
+		{
+			"title": "Barras de progresso",
+			"description": "Os modais de roubos, vasculhos e fugas da prisão agora mostram o progresso da ação."
+		},
+		{
+			"title": "Onboarding de jogadores",
+			"description": "Na interface web, novos jogadores recebem uma apresentação em três etapas e definem o apelido e a classe inicial."
+		},
+		{
+			"title": "Correções",
+			"description": "Nas gangues, o líder agora aparece no topo da lista de membros.",
+			"imageUrl": "/images/badges/BugCatcher.png"
+		}
+	]
+}
