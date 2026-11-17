@@ -45,10 +45,12 @@ describe.each(["scavenge", "robbery"] as const)("%s SSE results", kind => {
 			});
 			await vi.advanceTimersByTimeAsync(500);
 			const result = await response;
-			expect(JSON.parse(result.body.slice(6)).type).toBe(resultType);
+			const events = result.body.trim().split("\n\n").map(event => JSON.parse(event.slice(6)));
+			expect(events[0]).toEqual({ type: "in-progress", dueAt: status.dueAt.toISOString() });
+			expect(events[1].type).toBe(resultType);
 
 			const replay = await app.inject({ method: "GET", url });
-			expect(replay.body).toBe(result.body);
+			expect(JSON.parse(replay.body.slice(6))).toEqual(events[1]);
 		}
 		finally {
 			await app.close();
@@ -63,7 +65,8 @@ describe.each(["scavenge", "robbery"] as const)("%s SSE results", kind => {
 		registerRobStatusRoute(app);
 		try {
 			const result = await app.inject({ method: "GET", url });
-			expect(JSON.parse(result.body.slice(6))).toEqual({ type: "closed" });
+			const events = result.body.trim().split("\n\n").map(event => JSON.parse(event.slice(6)));
+			expect(events.at(-1)).toEqual({ type: "closed" });
 		}
 		finally {
 			await app.close();
@@ -88,7 +91,8 @@ describe.each(["scavenge", "robbery"] as const)("%s SSE results", kind => {
 			await vi.advanceTimersByTimeAsync(500);
 
 			const result = await response;
-			expect(JSON.parse(result.body.slice(6))).toEqual({ type: "closed" });
+			const events = result.body.trim().split("\n\n").map(event => JSON.parse(event.slice(6)));
+			expect(events.at(-1)).toEqual({ type: "closed" });
 		}
 		finally {
 			await app.close();

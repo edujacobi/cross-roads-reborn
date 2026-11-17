@@ -91,6 +91,7 @@ function updateOpen(open: boolean) {
 				>
 					<slot name="footer" />
 				</div>
+				<slot name="progress" />
 			</DialogContent>
 		</DialogPortal>
 	</DialogRoot>

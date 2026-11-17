@@ -10,6 +10,7 @@ import PrisonIcon from "~/components/icons/PrisonIcon.vue";
 import ScavengeIcon from "~/components/icons/ScavengeIcon.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
+import ModalProgress from "~/components/ui/ModalProgress.vue";
 import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
 import PageTitle from "~/components/ui/PageTitle.vue";
 import { useAuth } from "~/composables/useAuth";
@@ -96,6 +97,7 @@ const { asideOpen, closeAside, toggleAside } = useResponsiveAside();
 // Modals
 const showConfirmModal = ref(false);
 const showLoadingModal = ref(false);
+const scavengeDueAt = ref<string | null>(null);
 const showResultModal = ref(false);
 const selectedLocationId = ref<number | null>(null);
 const resultSuccess = ref(false);
@@ -180,6 +182,7 @@ async function handleStartScavenge() {
 	if (selectedLocationId.value === null) return;
 
 	showConfirmModal.value = false;
+	scavengeDueAt.value = null;
 	showLoadingModal.value = true;
 
 	const res = await startScavenge({ placeId: selectedLocationId.value });
@@ -266,6 +269,7 @@ function previewScavengeInProgress() {
 	showConfirmModal.value = false;
 	showResultModal.value = false;
 	selectedLocationId.value = locations.value[0]?.id ?? null;
+	scavengeDueAt.value = null;
 	showLoadingModal.value = true;
 }
 
@@ -297,6 +301,9 @@ async function listenToScavengeSSE() {
 			if (data.type === "scavenge-ended") {
 				onScavengeResult(data);
 				return;
+			}
+			if (data.type === "in-progress") {
+				scavengeDueAt.value = data.dueAt;
 			}
 			if (data.type === "closed") {
 				showToast({ text: "O acompanhamento do vasculho foi interrompido.", variant: "error" });
@@ -710,15 +717,13 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 			@update:open="showLoadingModal = $event"
 		>
 			<div class="scavenge-modal-loading__content">
-				<div
-					class="scavenge-modal-loading__spinner"
-					role="status"
-					aria-label="Carregando"
-				/>
 				<p class="scavenge-modal-loading__text">
 					{{ scavengingLocationName ? `Vasculhando ${scavengingLocationName}...` : "Vasculhando..." }}
 				</p>
 			</div>
+			<template #progress>
+				<ModalProgress :end-time="scavengeDueAt" color="scavenge" />
+			</template>
 		</BaseModal>
 
 		<!-- Result Modal -->
@@ -1317,15 +1322,6 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 		padding: $spacing-lg 0;
 	}
 
-	&__spinner {
-		width: 3rem;
-		height: 3rem;
-		border: 3px solid $border-card;
-		border-top-color: $color-scavenge;
-		border-radius: 50%;
-		animation: spin 0.8s linear infinite;
-	}
-
 	&__text {
 		text-align: center;
 		color: $text-secondary;
@@ -1381,8 +1377,7 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 
 @media (prefers-reduced-motion: reduce) {
 	.scavenge-page__aside,
-	.scavenge-page__aside-toggle,
-	.scavenge-modal-loading__spinner {
+	.scavenge-page__aside-toggle {
 		transition: none !important;
 		animation: none !important;
 	}

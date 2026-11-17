@@ -23,6 +23,9 @@ export async function waitForActionResult(
 		sendEvent({ type: kind === "scavenge" ? "not-scavenging" : "not-robbing" });
 		return null;
 	}
+	if (initialAttempt.result === null) {
+		sendEvent({ type: "in-progress", dueAt: initialAttempt.dueAt.toISOString() });
+	}
 	const deadline = Date.now() + ACTION_RESULT_TIMEOUT_MS;
 	let currentAttempt: typeof initialAttempt | null = initialAttempt;
 

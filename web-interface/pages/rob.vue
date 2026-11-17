@@ -11,6 +11,7 @@ import PrisonIcon from "~/components/icons/PrisonIcon.vue";
 import RobberyIcon from "~/components/icons/RobberyIcon.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
+import ModalProgress from "~/components/ui/ModalProgress.vue";
 import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
 import PageTitle from "~/components/ui/PageTitle.vue";
 import { useAuth } from "~/composables/useAuth";
@@ -69,6 +70,7 @@ const { asideOpen, closeAside, toggleAside } = useResponsiveAside();
 const showRulesModal = ref(false);
 const showConfirmModal = ref(false);
 const showLoadingModal = ref(false);
+const robberyDueAt = ref<string | null>(null);
 const showResultModal = ref(false);
 const selectedLocationId = ref<number | null>(null);
 const resultSuccess = ref(false);
@@ -172,6 +174,7 @@ function previewRobberyInProgress() {
 	showConfirmModal.value = false;
 	showResultModal.value = false;
 	selectedLocationId.value = locations.value[0]?.id ?? null;
+	robberyDueAt.value = null;
 	showLoadingModal.value = true;
 }
 
@@ -180,6 +183,7 @@ async function handleStartRobbery() {
 	showConfirmModal.value = false;
 	resultWantedTime.value = null;
 	resultPrisonTime.value = null;
+	robberyDueAt.value = null;
 	const response = await startRobbery({ locationId: selectedLocationId.value });
 	const result = response?.data?.startRobLocation;
 	if (response?.errors || !result?.success) {
@@ -234,6 +238,9 @@ async function listenToRobberySSE() {
 			if (data.type === "rob-ended") {
 				onRobberyResult(data);
 				return;
+			}
+			if (data.type === "in-progress") {
+				robberyDueAt.value = data.dueAt;
 			}
 			if (data.type === "closed" || data.type === "not-robbing") {
 				if (data.type === "closed") {
@@ -603,13 +610,11 @@ onBeforeUnmount(() => sseAbortController?.abort());
 			@update:open="showLoadingModal = $event"
 		>
 			<div class="rob-modal-loading__content">
-				<div
-					class="rob-modal-loading__spinner"
-					role="status"
-					aria-label="Carregando"
-				/>
 				<p>{{ currentLocationName ? `Tentando roubar ${currentLocationName}...` : "Tentando roubar..." }}</p>
 			</div>
+			<template #progress>
+				<ModalProgress :end-time="robberyDueAt" color="robbery" />
+			</template>
 		</BaseModal>
 
 		<BaseModal
@@ -974,15 +979,6 @@ onBeforeUnmount(() => sseAbortController?.abort());
 	}
 }
 
-.rob-modal-loading__spinner {
-	width: 3rem;
-	height: 3rem;
-	border: 3px solid $border-card;
-	border-top-color: $color-robbery;
-	border-radius: 50%;
-	animation: spin 0.8s linear infinite;
-}
-
 .rob-result {
 	display: flex;
 	flex-direction: column;
@@ -1077,8 +1073,7 @@ onBeforeUnmount(() => sseAbortController?.abort());
 
 @media (prefers-reduced-motion: reduce) {
 	.rob-page__aside,
-	.rob-card__chevron,
-	.rob-modal-loading__spinner {
+	.rob-card__chevron {
 		transition: none !important;
 		animation: none !important;
 	}

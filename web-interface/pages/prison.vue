@@ -14,6 +14,7 @@ import BaseCard from "~/components/ui/BaseCard.vue";
 import BaseEmptyState from "~/components/ui/BaseEmptyState.vue";
 import BaseInput from "~/components/ui/BaseInput.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";
+import ModalProgress from "~/components/ui/ModalProgress.vue";
 import BaseTable from "~/components/ui/BaseTable.vue";
 import BaseTableFooter from "~/components/ui/BaseTableFooter.vue";
 import BaseTableSkeleton from "~/components/ui/BaseTableSkeleton.vue";
@@ -118,6 +119,7 @@ const isUserImprisoned = computed(() => {
 
 const showEscapeModal = ref(false);
 const showEscapeLoadingModal = ref(false);
+const escapeDueAt = ref<string | null>(null);
 const showEscapeResultModal = ref(false);
 const escapeResultMessage = ref("");
 const escapeResultSuccess = ref(false);
@@ -169,6 +171,7 @@ function previewEscapeInProgress() {
 	showEscapeModal.value = false;
 	showEscapeResultModal.value = false;
 	isEscaping.value = false;
+	escapeDueAt.value = null;
 	showEscapeLoadingModal.value = true;
 }
 
@@ -186,6 +189,9 @@ async function listenToEscapeSSE() {
 
 		for await (const message of readSseData(response)) {
 			const data = JSON.parse(message);
+			if (data.type === "escaping") {
+				escapeDueAt.value = data.escapeTime;
+			}
 			if (data.type === "escape-ended") {
 				await onEscapeResult(
 					data.isWanted,
@@ -216,6 +222,7 @@ async function listenToEscapeSSE() {
 
 async function handleEscape() {
 	showEscapeModal.value = false;
+	escapeDueAt.value = null;
 	showEscapeLoadingModal.value = true;
 	isEscaping.value = true;
 
@@ -240,6 +247,7 @@ async function handleEscape() {
 async function recoverInterruptedEscape() {
 	if (!escapeHasTried.value || !escapeTime.value || escapeTime.value.getTime() <= 0) return;
 
+	escapeDueAt.value = escapeTime.value.toISOString();
 	showEscapeLoadingModal.value = true;
 	isEscaping.value = true;
 
@@ -717,13 +725,11 @@ function formatBribeCost() {
 			@update:open="showEscapeLoadingModal = $event"
 		>
 			<div class="escape-loading">
-				<div
-					class="escape-loading__spinner"
-					role="status"
-					aria-label="Carregando"
-				/>
 				<p>Tentando fugir...</p>
 			</div>
+			<template #progress>
+				<ModalProgress :end-time="escapeDueAt" color="prison" />
+			</template>
 		</BaseModal>
 
 		<BaseModal
@@ -957,15 +963,6 @@ function formatBribeCost() {
 	align-items: center;
 	gap: $spacing-md;
 	padding: $spacing-lg 0;
-
-	&__spinner {
-		width: 3rem;
-		height: 3rem;
-		border: 4px solid $border-subtle;
-		border-top-color: $color-prison;
-		border-radius: 50%;
-		animation: spin 0.8s linear infinite;
-	}
 
 	p {
 		margin: 0;

@@ -3,6 +3,7 @@
 	lang="ts"
 >
 import BaseModal from "~/components/ui/BaseModal.vue";
+import ModalProgress from "~/components/ui/ModalProgress.vue";
 import { imagePaths } from "~/constants/imagePaths";
 import type { MultiplayerSession } from "~/graphql/generated";
 
@@ -37,14 +38,6 @@ const emit = defineEmits<{
 		@update:open="emit('update:open', $event)"
 	>
 		<section class="beat-up-attacker">
-			<div
-				class="beat-up-attacker__spinner"
-				role="status"
-				aria-label="Carregando"
-			>
-				<span class="visually-hidden">Espancando...</span>
-			</div>
-
 			<p>Tentando espancar <strong>{{ session.targetNickname ?? "o alvo" }}</strong>...</p>
 
 			<p
@@ -65,6 +58,9 @@ const emit = defineEmits<{
 				<template v-else>Aguardando resposta do alvo...</template>
 			</p>
 		</section>
+		<template #progress>
+			<ModalProgress :end-time="session.expiresAt" color="beatup" />
+		</template>
 	</BaseModal>
 </template>
 
@@ -103,21 +99,6 @@ const emit = defineEmits<{
 		}
 	}
 
-	&__spinner {
-		width: 3rem;
-		height: 3rem;
-		border: 3px solid $border-card;
-		border-top-color: $color-beatup;
-		border-radius: 50%;
-		animation: spin 0.8s linear infinite;
-	}
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.beat-up-attacker__spinner {
-		transition: none !important;
-		animation: none !important;
-	}
 }
 
 </style>
