@@ -223,7 +223,16 @@ async function handlePayPrivate() {
 				:icon="HospitalIcon"
 				:icon-size="36"
 			>
-				<p>Nenhum jogador hospitalizado no momento.</p>
+				<p v-if="searchQuery.trim()">Nenhum jogador hospitalizado encontrado para "{{ searchQuery.trim() }}".</p>
+				<p v-else>Nenhum jogador hospitalizado no momento.</p>
+				<BaseButton
+					v-if="searchQuery.trim()"
+					size="sm"
+					variant="secondary"
+					@click="handleSearch('')"
+				>
+					Limpar busca
+				</BaseButton>
 			</BaseEmptyState>
 
 			<BaseTable
