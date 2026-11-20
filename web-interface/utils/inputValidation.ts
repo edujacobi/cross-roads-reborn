@@ -12,6 +12,7 @@ export type InputValidationRules = Partial<Record<InputValidationRule, {
 export const nicknameMinLength = 3;
 export const nicknameMaxLength = 18;
 export const nicknamePattern = "[A-Za-z]+( [A-Za-z]+)*";
+export const gangNamePattern = "[a-zA-Z0-9\\s]+";
 
 export const nicknameRules: InputValidationRules = {
 	[InputValidationRule.MinLength]: {

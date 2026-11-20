@@ -30,7 +30,7 @@ const validationSource = readFileSync(new URL("../utils/inputValidation.ts", imp
 const validationCode = ts.transpileModule(validationSource, { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText;
 const validation = { exports: {} };
 new Function("exports", validationCode)(validation.exports);
-const { nicknameRules } = validation.exports;
+const { gangNamePattern, nicknameRules } = validation.exports;
 
 test("forwards native attributes to the input alongside declared props", async () => {
 	const html = await renderToString(createSSRApp(BaseInput, {
@@ -89,6 +89,12 @@ test("nickname rules match the accepted nickname format", () => {
 	for (const value of ["", "Ab", "abcdefghijklmnopqrs", " Ana", "Ana ", "Ana  Maria", "Ana1", "Ana-Maria"]) {
 		assert.ok(!valid(value), value);
 	}
+});
+
+test("gang name pattern matches the Discord command's accepted characters", () => {
+	const pattern = new RegExp(`^(?:${gangNamePattern})$`);
+	for (const value of ["Cross Roads", "Gang 7", "Gang\t7"]) assert.ok(pattern.test(value), value);
+	for (const value of ["Cross-Roads", "Gang!", "Gangüe"]) assert.ok(!pattern.test(value), value);
 });
 
 test("the nickname modal's submit button can target its form", async () => {

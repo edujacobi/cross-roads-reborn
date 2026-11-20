@@ -27,6 +27,7 @@ const gangRecruitmentTypes = {
 	OPEN: GangRecruitmentType.Open,
 } as const;
 type GangRecruitmentTypeName = keyof typeof gangRecruitmentTypes;
+const gangNameRegex = /^[a-zA-Z0-9\s]+$/;
 
 function getGangRolePermissions(args: {
 	canInvite: boolean;
@@ -383,6 +384,9 @@ export const gangResolvers: {
 			if (!args.name || args.name.length < 4 || args.name.length > 50) {
 				return { success: false, message: "O nome deve ter entre 4 e 50 caracteres." };
 			}
+			if (!gangNameRegex.test(args.name)) {
+				return { success: false, message: "O nome deve conter apenas letras, números e espaços." };
+			}
 			if (!args.acronym || args.acronym.length < 2 || args.acronym.length > 3) {
 				return { success: false, message: "O acrônimo deve ter entre 2 e 3 caracteres." };
 			}
@@ -474,6 +478,9 @@ export const gangResolvers: {
 			// Validate name if provided
 			if (args.name && (args.name.length < 4 || args.name.length > 50)) {
 				return { success: false, message: "O nome deve ter entre 4 e 50 caracteres." };
+			}
+			if (args.name && !gangNameRegex.test(args.name)) {
+				return { success: false, message: "O nome deve conter apenas letras, números e espaços." };
 			}
 
 			// Validate acronym if provided

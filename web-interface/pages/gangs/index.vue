@@ -19,6 +19,7 @@ import { useDateFormat } from "~/composables/useDateFormat";
 import { usePagination } from "~/composables/usePagination";
 import { type SortColumn, useSorting } from "~/composables/useSorting";
 import { imagePaths } from "~/constants/imagePaths";
+import { gangNamePattern } from "~/utils/inputValidation";
 import {
 	ApplyToGangDocument,
 	CancelGangJoinRequestDocument,
@@ -845,6 +846,8 @@ const bases = [
 					placeholder="Nome da gangue"
 					:minlength="4"
 					:maxlength="50"
+					:pattern="gangNamePattern"
+					title="Apenas letras, números e espaços"
 					required
 					:model-value="draft.name"
 					@update:model-value="draft.name = String($event)"

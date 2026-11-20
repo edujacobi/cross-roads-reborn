@@ -31,6 +31,7 @@ import BaseTable from "~/components/ui/BaseTable.vue";
 import BaseTableSkeleton from "~/components/ui/BaseTableSkeleton.vue";
 import { useMultiplayerSessions } from "~/composables/useMultiplayerSessions";
 import { imagePaths } from "~/constants/imagePaths";
+import { gangNamePattern } from "~/utils/inputValidation";
 import {
 	CancelGangImportDocument,
 	CommunicateGangDocument,
@@ -2013,6 +2014,8 @@ async function updateGangMoney() {
 						placeholder="Nome da gangue"
 						:minlength="4"
 						:maxlength="50"
+						:pattern="gangNamePattern"
+						title="Apenas letras, números e espaços"
 						required
 						:model-value="editDraft.name"
 						@update:model-value="editDraft.name = String($event)"
