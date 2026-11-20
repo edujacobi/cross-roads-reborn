@@ -27,7 +27,7 @@ const responseLabels: Record<string, { text: string; image: string }> = {
 	},
 };
 const responseStatuses: Record<string, string> = {
-	defend: "Defendendo Investimento...",
+	defend: "Você está ajudando na defesa!",
 };
 </script>
 
@@ -47,8 +47,8 @@ const responseStatuses: Record<string, string> = {
 				:id="`defender-attackers-${session.id}`"
 				class="defender-prompt__label"
 			>
-				<span>Membros da gangue <strong>{{ session.gangName ?? "" }}</strong></span>
-				estão atacando o seu investimento
+				<span>A gangue <strong>{{ session.gangName ?? "" }}</strong></span>
+				está atacando o seu investimento
 				<strong>{{ session.investmentName ?? "Investimento" }}</strong>.
 			</h3>
 			<ul

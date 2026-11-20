@@ -4,9 +4,15 @@
 >
 import { useQuery } from "@vue/apollo-composable";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import AttackIcon from "~/components/icons/AttackIcon.vue";
+import BeatUpIcon from "~/components/icons/BeatUpIcon.vue";
+import DefenseIcon from "~/components/icons/DefenseIcon.vue";
+import InvestmentIcon from "~/components/icons/InvestmentIcon.vue";
+import RobberyIcon from "~/components/icons/RobberyIcon.vue";
 import BeatUpAttackerActionModal from "~/components/Multiplayer/BeatUp/BeatUpAttackerActionModal.vue";
 import BeatUpDefenderModal from "~/components/Multiplayer/BeatUp/BeatUpDefenderModal.vue";
 import BeatUpResultModal from "~/components/Multiplayer/BeatUp/BeatUpResultModal.vue";
+import InvestmentRobberyAttackerActionModal from "~/components/Multiplayer/InvestmentRobbery/InvestmentRobberyAttackerActionModal.vue";
 import InvestmentRobberyDefenderModal from "~/components/Multiplayer/InvestmentRobbery/InvestmentRobberyDefenderModal.vue";
 import InvestmentRobberyResultModal from "~/components/Multiplayer/InvestmentRobbery/InvestmentRobberyResultModal.vue";
 import RobberyAttackerActionModal from "~/components/Multiplayer/Robbery/RobberyAttackerActionModal.vue";
@@ -90,13 +96,13 @@ const previewResults = {
 		}),
 	},
 	investmentRobberySuccess: {
-		label: "Investimento (sucesso)",
+		label: "Roubo de investimento (sucesso)",
 		kind: "investmentRobbery",
 		response: "defend",
-		result: () => ({ win: true, robbedAmount: 75_000, remainingYield: 12_500 }),
+		result: () => ({ win: true, robbedAmount: 75_000, expGain: 150, remainingYield: 12_500 }),
 	},
 	investmentRobberyFailure: {
-		label: "Investimento (falha)",
+		label: "Roubo de investimento (falha)",
 		kind: "investmentRobbery",
 		response: "defend",
 		result: () => ({ win: false, prisonHours: 48 }),
@@ -110,7 +116,14 @@ const previewResultKinds = [
 	"investmentRobberySuccess",
 	"investmentRobberyFailure",
 ] as const;
-const attackerResultPreviewKinds = ["beatUpSuccess", "beatUpFailure", "robberySuccess", "robberyFailure"] as const;
+const attackerResultPreviewKinds = [
+	"beatUpSuccess",
+	"beatUpFailure",
+	"robberySuccess",
+	"robberyFailure",
+	"investmentRobberySuccess",
+	"investmentRobberyFailure",
+] as const;
 type PreviewResultKind = (typeof previewResultKinds)[number];
 const previewResultKind = ref<PreviewResultKind | null>(null);
 const previewSession = computed<MultiplayerSession | null>(() => {
@@ -160,22 +173,33 @@ const session = computed(() =>
 const completedResult = computed(() => completedSessions.value[0] ?? null);
 const attackerPreviewSession = computed(() => {
 	const preview = previewSession.value;
-	if (!previewAttackerAction.value || !preview || !["userRobbery", "beatUp"].includes(preview.kind)) return null;
+	if (
+		!previewAttackerAction.value ||
+		!preview ||
+		!["userRobbery", "beatUp", "investmentRobbery"].includes(preview.kind)
+	)
+		return null;
 	return { ...preview, targetId: "preview-target", targetNickname: "Defensor de exemplo" };
 });
 const liveAttackerSession = computed(
 	() =>
-		sessions.value.find(
-			(candidate) =>
-				candidate.ownerId === userId.value &&
-				["userRobbery", "beatUp"].includes(candidate.kind) &&
-				["awaitingDefender", "resolving"].includes(candidate.phase),
-		) ?? null,
+		sessions.value.find((candidate) => {
+			const isOwnerAttackingUser =
+				candidate.ownerId === userId.value && ["userRobbery", "beatUp"].includes(candidate.kind);
+			const isInvestmentAttacker =
+				candidate.kind === "investmentRobbery" &&
+				(candidate.ownerId === userId.value ||
+					candidate.participants.some((participant) => participant.userId === userId.value));
+			return (
+				(isOwnerAttackingUser || isInvestmentAttacker) && ["awaitingDefender", "resolving"].includes(candidate.phase)
+			);
+		}) ?? null,
 );
 const attackerActionSession = computed(() => attackerPreviewSession.value ?? liveAttackerSession.value);
 const attackerActionModals = {
 	beatUp: BeatUpAttackerActionModal,
 	userRobbery: RobberyAttackerActionModal,
+	investmentRobbery: InvestmentRobberyAttackerActionModal,
 };
 const attackerActionModal = computed(() => {
 	const kind = attackerActionSession.value?.kind;
@@ -183,7 +207,7 @@ const attackerActionModal = computed(() => {
 		? attackerActionModals[kind as keyof typeof attackerActionModals]
 		: null;
 });
-const attackerPreviewKinds = ["userRobbery", "beatUp"] as const;
+const attackerPreviewKinds = ["userRobbery", "beatUp", "investmentRobbery"] as const;
 const dismissedAttackerSessionId = ref<string | null>(null);
 const previewResultSession = computed<MultiplayerSession | null>(() => {
 	if (!import.meta.dev || !previewResultKind.value) return null;
@@ -276,6 +300,17 @@ const defenderModals = {
 	beatUp: BeatUpDefenderModal,
 	userRobbery: RobberyDefenderModal,
 	investmentRobbery: InvestmentRobberyDefenderModal,
+};
+const actionIcons = {
+	beatUp: BeatUpIcon,
+	userRobbery: RobberyIcon,
+	investmentRobbery: InvestmentIcon,
+	beatUpSuccess: BeatUpIcon,
+	beatUpFailure: BeatUpIcon,
+	robberySuccess: RobberyIcon,
+	robberyFailure: RobberyIcon,
+	investmentRobberySuccess: InvestmentIcon,
+	investmentRobberyFailure: InvestmentIcon,
 };
 const activeModal = computed(() => {
 	const kind = session.value?.kind;
@@ -403,55 +438,118 @@ watch(
 		<div class="multiplayer-preview-menu__content">
 			<section class="multiplayer-preview-menu__group">
 				<h2>Novos jogadores</h2>
-				<BaseButton variant="secondary" @click="showOnboardingPreview">Boas-vindas</BaseButton>
+				<BaseButton
+					variant="secondary"
+					@click="showOnboardingPreview"
+				>
+					Boas-vindas
+				</BaseButton>
 			</section>
 			<section class="multiplayer-preview-menu__group">
-				<h2>Defensor: ação recebida</h2>
+				<h2>
+					<DefenseIcon
+						:size="14"
+						variant="solid"
+					/>
+					Defensor: ação recebida
+				</h2>
 				<BaseButton
 					v-for="kind in previewKinds"
 					:key="kind"
 					variant="secondary"
 					@click="showDefenderPreview(kind)"
 				>
+					<component
+						v-if=actionIcons[kind]
+						:is="actionIcons[kind]"
+						:size="16"
+						variant="normal"
+					/>
 					{{ actionTitles[kind] }}
 				</BaseButton>
 			</section>
+
 			<section class="multiplayer-preview-menu__group">
-				<h2>Atacante: durante a ação</h2>
+				<h2>
+					<AttackIcon
+						:size="14"
+						variant="solid"
+					/>
+					Atacante: durante a ação
+				</h2>
 				<BaseButton
 					v-for="kind in attackerPreviewKinds"
 					:key="kind"
 					variant="secondary"
 					@click="showAttackerActionPreview(kind)"
 				>
+					<component
+						v-if=actionIcons[kind]
+						:is="actionIcons[kind]"
+						:size="16"
+						variant="normal"
+					/>
 					{{ actionTitles[kind] }}
 				</BaseButton>
 			</section>
+
 			<section class="multiplayer-preview-menu__group">
-				<h2>Defensor: resultado</h2>
+				<h2>
+					<DefenseIcon
+						:size="14"
+						variant="solid"
+					/>
+					Defensor: resultado
+				</h2>
 				<BaseButton
 					v-for="kind in previewResultKinds"
 					:key="kind"
 					variant="secondary"
 					@click="showResultPreview(kind, 'defender')"
+					:class="previewResults[kind].label.includes('sucesso') ? 'success' : 'failure'"
 				>
+					<component
+						v-if=actionIcons[kind]
+						:is="actionIcons[kind]"
+						:size="16"
+						variant="normal"
+					/>
 					{{ previewResults[kind].label }}
 				</BaseButton>
 			</section>
+
 			<section class="multiplayer-preview-menu__group">
-				<h2>Atacante: resultado</h2>
+				<h2>
+					<AttackIcon
+						:size="14"
+						variant="solid"
+					/>
+					Atacante: resultado
+				</h2>
 				<BaseButton
 					v-for="kind in attackerResultPreviewKinds"
 					:key="kind"
 					variant="secondary"
 					@click="showResultPreview(kind, 'attacker')"
+					:class="previewResults[kind].label.includes('sucesso') ? 'success' : 'failure'"
 				>
+					<component
+						v-if=actionIcons[kind]
+						:is="actionIcons[kind]"
+						:size="16"
+						variant="normal"
+					/>
 					{{ previewResults[kind].label }}
 				</BaseButton>
 			</section>
 		</div>
 	</details>
-	<PlayerOnboarding v-if="isDevelopment && onboardingPreview" preview @close="onboardingPreview = false" />
+
+	<PlayerOnboarding
+		v-if="isDevelopment && onboardingPreview"
+		preview
+		@close="onboardingPreview = false"
+	/>
 	<component
 		:is="activeModal"
 		v-if="session && activeModal && !completedResult && !previewAttackerAction"
@@ -554,6 +652,14 @@ watch(
 			font-size: 0.75rem;
 			text-transform: uppercase;
 		}
+	}
+
+	.success {
+		color: color-mix(in lab, $text-primary, $color-success);
+	}
+
+	.failure {
+		color:  color-mix(in lab, $text-primary, $color-danger);
 	}
 }
 </style>
