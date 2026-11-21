@@ -722,7 +722,10 @@ function formatItemDuration(item: { itemType: string; durationMin: number; durat
 				</p>
 			</div>
 			<template #progress>
-				<ModalProgress :end-time="scavengeDueAt" color="scavenge" />
+				<ModalProgress
+					:end-time="scavengeDueAt"
+					color="scavenge"
+				/>
 			</template>
 		</BaseModal>
 

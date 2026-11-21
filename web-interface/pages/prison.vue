@@ -737,7 +737,10 @@ function formatBribeCost() {
 				<p>Tentando fugir...</p>
 			</div>
 			<template #progress>
-				<ModalProgress :end-time="escapeDueAt" color="prison" />
+				<ModalProgress
+					:end-time="escapeDueAt"
+					color="prison"
+				/>
 			</template>
 		</BaseModal>
 

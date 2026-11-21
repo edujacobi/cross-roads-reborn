@@ -59,7 +59,10 @@ const emit = defineEmits<{
 			</p>
 		</section>
 		<template #progress>
-			<ModalProgress :end-time="session.expiresAt" color="robbery" />
+			<ModalProgress
+				:end-time="session.expiresAt"
+				color="robbery"
+			/>
 		</template>
 	</BaseModal>
 </template>

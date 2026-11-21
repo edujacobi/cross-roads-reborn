@@ -4,10 +4,15 @@ export enum InputValidationRule {
 	Pattern = "pattern",
 }
 
-export type InputValidationRules = Partial<Record<InputValidationRule, {
-	label: string;
-	validate: (value: string) => boolean;
-}>>;
+export type InputValidationRules = Partial<
+	Record<
+		InputValidationRule,
+		{
+			label: string;
+			validate: (value: string) => boolean;
+		}
+	>
+>;
 
 export const nicknameMinLength = 3;
 export const nicknameMaxLength = 18;
@@ -28,4 +33,3 @@ export const nicknameRules: InputValidationRules = {
 		validate: (value) => /^[A-Za-z]+(?: [A-Za-z]+)*$/.test(value),
 	},
 };
-

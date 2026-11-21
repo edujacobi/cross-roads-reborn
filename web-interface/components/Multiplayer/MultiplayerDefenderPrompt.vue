@@ -563,21 +563,21 @@ watch(
 	/>
 	<component
 		:is="attackerActionModal"
-		v-if="
-
-
-			attackerActionSession &&
-
-
-				attackerActionModal &&
-
-
-				!completedResult &&
-
-
-				dismissedAttackerSessionId !== attackerActionSession.id
-
-
+		v-if="
+
+
+			attackerActionSession &&
+
+
+				attackerActionModal &&
+
+
+				!completedResult &&
+
+
+				dismissedAttackerSessionId !== attackerActionSession.id
+
+
 		"
 		:session="attackerActionSession"
 		:countdown="attackerActionSession.expiresAt ? formatCountdown(attackerActionSession.expiresAt) : ''"

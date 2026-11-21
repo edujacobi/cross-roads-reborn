@@ -358,9 +358,9 @@ const user = computed(() => {
 					v-for="item in group.links"
 					:key="item.label"
 					:to="item.to"
-					:class="[
-						'sidebar__nav-item',
-						{ 'sidebar__nav-item--active': item.activeRouteNames.some((name) => name === route.name) },
+					:class="[
+						'sidebar__nav-item',
+						{ 'sidebar__nav-item--active': item.activeRouteNames.some((name) => name === route.name) },
 					]"
 					:aria-label="item.label"
 					:data-popover-text="isCollapsed ? item.label : undefined"

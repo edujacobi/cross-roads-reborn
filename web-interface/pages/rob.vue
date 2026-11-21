@@ -613,7 +613,10 @@ onBeforeUnmount(() => sseAbortController?.abort());
 				<p>{{ currentLocationName ? `Tentando roubar ${currentLocationName}...` : "Tentando roubar..." }}</p>
 			</div>
 			<template #progress>
-				<ModalProgress :end-time="robberyDueAt" color="robbery" />
+				<ModalProgress
+					:end-time="robberyDueAt"
+					color="robbery"
+				/>
 			</template>
 		</BaseModal>
 

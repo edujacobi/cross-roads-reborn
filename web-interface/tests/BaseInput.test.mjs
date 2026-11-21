@@ -15,9 +15,10 @@ function loadComponent(path) {
 	const component = { exports: {} };
 	const require = createRequire(import.meta.url);
 	new Function("require", "module", "exports", code)(
-		(id) => id === "~/components/ui/ValidationChecklist.vue"
-			? loadComponent("../components/ui/ValidationChecklist.vue")
-			: require(id),
+		(id) =>
+			id === "~/components/ui/ValidationChecklist.vue"
+				? loadComponent("../components/ui/ValidationChecklist.vue")
+				: require(id),
 		component,
 		component.exports,
 	);
@@ -27,23 +28,27 @@ function loadComponent(path) {
 const BaseInput = loadComponent("../components/ui/BaseInput.vue").default;
 const BaseButton = loadComponent("../components/ui/BaseButton.vue").default;
 const validationSource = readFileSync(new URL("../utils/inputValidation.ts", import.meta.url), "utf8");
-const validationCode = ts.transpileModule(validationSource, { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText;
+const validationCode = ts.transpileModule(validationSource, {
+	compilerOptions: { module: ts.ModuleKind.CommonJS },
+}).outputText;
 const validation = { exports: {} };
 new Function("exports", validationCode)(validation.exports);
 const { gangNamePattern, nicknameRules } = validation.exports;
 
 test("forwards native attributes to the input alongside declared props", async () => {
-	const html = await renderToString(createSSRApp(BaseInput, {
-		id: "nickname",
-		modelValue: "Alice",
-		required: true,
-		minlength: 3,
-		name: "nickname",
-		pattern: "[A-Za-z]+",
-		"aria-describedby": "nickname-help",
-		autocomplete: "off",
-		spellcheck: "false",
-	}));
+	const html = await renderToString(
+		createSSRApp(BaseInput, {
+			id: "nickname",
+			modelValue: "Alice",
+			required: true,
+			minlength: 3,
+			name: "nickname",
+			pattern: "[A-Za-z]+",
+			"aria-describedby": "nickname-help",
+			autocomplete: "off",
+			spellcheck: "false",
+		}),
+	);
 	const input = html.match(/<input\b[^>]*>/)?.[0];
 	assert.ok(input);
 	for (const attribute of [
@@ -56,7 +61,8 @@ test("forwards native attributes to the input alongside declared props", async (
 		'aria-describedby="nickname-help"',
 		'autocomplete="off"',
 		'spellcheck="false"',
-	]) assert.ok(input.includes(attribute), `Missing ${attribute}`);
+	])
+		assert.ok(input.includes(attribute), `Missing ${attribute}`);
 });
 
 test("links the rules and updates their status for different values", async () => {
@@ -64,12 +70,15 @@ test("links the rules and updates their status for different values", async () =
 		length: { label: "Pelo menos 3 caracteres", validate: (value) => value.length >= 3 },
 		letters: { label: "Apenas letras", validate: (value) => /^[A-Za-z]+$/.test(value) },
 	};
-	const render = (value) => renderToString(createSSRApp(BaseInput, {
-		id: "nickname",
-		modelValue: value,
-		rules,
-		"aria-describedby": "help",
-	}));
+	const render = (value) =>
+		renderToString(
+			createSSRApp(BaseInput, {
+				id: "nickname",
+				modelValue: value,
+				rules,
+				"aria-describedby": "help",
+			}),
+		);
 	const empty = await render("");
 	assert.match(empty, /aria-describedby="help nickname-rules"/);
 	assert.doesNotMatch(empty, /validation-checklist__rule--(valid|invalid)/);

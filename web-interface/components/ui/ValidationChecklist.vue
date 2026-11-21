@@ -1,4 +1,7 @@
-<script setup lang="ts">
+<script
+	setup
+	lang="ts"
+>
 defineProps<{
 	id: string;
 	value: string;
@@ -7,7 +10,10 @@ defineProps<{
 </script>
 
 <template>
-	<ul :id="id" class="validation-checklist">
+	<ul
+		:id="id"
+		class="validation-checklist"
+	>
 		<li
 			v-for="(rule, key) in rules"
 			:key="key"
@@ -15,7 +21,10 @@ defineProps<{
 			:class="value ? (rule.validate(value) ? 'validation-checklist__rule--valid' : 'validation-checklist__rule--invalid') : ''"
 		>
 			<span aria-hidden="true">{{ value ? (rule.validate(value) ? "✓" : "✕") : "•" }}</span>
-			<span v-if="value" class="validation-checklist__status">
+			<span
+				v-if="value"
+				class="validation-checklist__status"
+			>
 				{{ rule.validate(value) ? "Atendido:" : "Não atendido:" }}
 			</span>
 			{{ rule.label }}
@@ -23,7 +32,10 @@ defineProps<{
 	</ul>
 </template>
 
-<style lang="scss" scoped>
+<style
+	lang="scss"
+	scoped
+>
 @use "~/assets/scss/variables" as *;
 @use "sass:color";
 

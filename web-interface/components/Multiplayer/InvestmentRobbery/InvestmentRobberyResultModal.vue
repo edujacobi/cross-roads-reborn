@@ -3,12 +3,12 @@
 	lang="ts"
 >
 import { computed } from "vue";
-import DefenseIcon from "~/components/icons/DefenseIcon.vue";
-import GangIcon from "~/components/icons/GangIcon.vue";
+import type DefenseIcon from "~/components/icons/DefenseIcon.vue";
+import type GangIcon from "~/components/icons/GangIcon.vue";
 import HospitalIcon from "~/components/icons/HospitalIcon.vue";
-import InvestmentIcon from "~/components/icons/InvestmentIcon.vue";
+import type InvestmentIcon from "~/components/icons/InvestmentIcon.vue";
 import PrisonIcon from "~/components/icons/PrisonIcon.vue";
-import RobberyIcon from "~/components/icons/RobberyIcon.vue";
+import type RobberyIcon from "~/components/icons/RobberyIcon.vue";
 import BaseBadge from "~/components/ui/BaseBadge.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseModal from "~/components/ui/BaseModal.vue";

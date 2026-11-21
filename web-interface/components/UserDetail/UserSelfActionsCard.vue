@@ -237,7 +237,10 @@ async function handleAutomaticGrenadeChange() {
 		:description="nicknameChangeDescription"
 		@update:open="isNicknameModalOpen = $event"
 	>
-		<form id="self-nickname-form" @submit.prevent="handleNicknameChange">
+		<form
+			id="self-nickname-form"
+			@submit.prevent="handleNicknameChange"
+		>
 			<BaseInput
 				id="self-user-nickname"
 				v-model="nickname"
