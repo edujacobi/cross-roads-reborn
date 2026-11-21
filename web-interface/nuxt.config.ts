@@ -2,8 +2,12 @@
 export default defineNuxtConfig({
 	compatibilityDate: "2024-11-01",
 
-	// SPA Mode as requested for internal admin dashboard
-	ssr: false,
+	ssr: true,
+	routeRules: {
+		// Prerender the public landing page and keep the interactive app client-rendered.
+		"/**": { ssr: false },
+		"/": { ssr: true, prerender: true },
+	},
 
 	devtools: { enabled: false },
 

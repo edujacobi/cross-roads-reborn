@@ -25,6 +25,8 @@ definePageMeta({
 
 const route = useRoute();
 const auth = useAuth();
+const canonicalUrl = "https://crossroads.ejacobi.com.br/";
+const socialImageUrl = `https://crossroads.ejacobi.com.br${imagePaths.gangBases.bikeclub2x}`;
 
 const errorMessage = computed(() => {
 	return typeof route.query.error === "string" ? route.query.error : null;
@@ -47,7 +49,7 @@ const featureGroups = [
 			{
 				icon: ShopIcon,
 				title: "Leve itens",
-				description: "Compre armas e acessórios para se equipar e se liberar novos alvos.",
+				description: "Compre armas e acessórios para se equipar e liberar novos alvos.",
 			},
 			{
 				icon: SpecialShopIcon,
@@ -128,11 +130,20 @@ useSeoMeta({
 	ogTitle: "Cross Roads Reborn | RPG multiplayer",
 	ogDescription:
 		"Trabalhe, invista, enfrente rivais e forme alianças em Cross Roads Reborn, um RPG multiplayer movido pelas escolhas dos jogadores.",
+	ogUrl: canonicalUrl,
+	ogImage: socialImageUrl,
+	ogImageAlt: "Interior da base Bikeclub em Cross Roads Reborn",
 	ogType: "website",
 	ogLocale: "pt_BR",
 	ogSiteName: "Cross Roads Reborn",
-	twitterCard: "summary",
+	twitterCard: "summary_large_image",
+	twitterImage: socialImageUrl,
+	twitterImageAlt: "Interior da base Bikeclub em Cross Roads Reborn",
 	robots: "index, follow",
+});
+
+useHead({
+	link: [{ rel: "canonical", href: canonicalUrl }],
 });
 </script>
 
