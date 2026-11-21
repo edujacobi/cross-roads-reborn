@@ -24,7 +24,6 @@ export function useAuth() {
 	const hasAdminAccess = computed(
 		() => user.value?.role === "DEVELOPER" || user.value?.role === "MODERATOR" || user.value?.role === "HELPER",
 	);
-	const hasWebAccess = computed(() => hasAdminAccess.value || user.value?.isVip === true);
 	const canWrite = computed(() => user.value?.role === "DEVELOPER" || user.value?.role === "MODERATOR");
 
 	async function initAuth() {
@@ -110,7 +109,6 @@ export function useAuth() {
 		isAuthenticated,
 		isDeveloper,
 		hasAdminAccess,
-		hasWebAccess,
 		canWrite,
 		initAuth,
 		fetchUser,

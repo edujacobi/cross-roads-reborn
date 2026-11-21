@@ -24,7 +24,7 @@ const {
 	error: queryError,
 	refetch,
 } = useQuery(GetOnboardingPlayerDocument, () => ({ id: userId.value }), {
-	enabled: computed(() => !props.preview && import.meta.client === true && !!userId.value && auth.hasWebAccess.value),
+	enabled: computed(() => !props.preview && import.meta.client === true && !!userId.value),
 	fetchPolicy: "network-only",
 });
 const { mutate: changeNickname } = useMutation(ChangeOwnNicknameDocument);
