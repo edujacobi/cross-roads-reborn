@@ -2,8 +2,8 @@
 	setup
 	lang="ts"
 >
-import { useMutation, useQuery } from "@vue/apollo-composable";
 import { ChevronDown, Clock, Coins, X } from "@lucide/vue";
+import { useMutation, useQuery } from "@vue/apollo-composable";
 import { computed, ref } from "vue";
 import JobsIcon from "~/components/icons/JobsIcon.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
@@ -827,7 +827,7 @@ async function handleCancelJob() {
 		margin-top: 0;
 
 		&:has(.job-card__details:not(.job-card__details--collapsed)) {
-			max-height: 300px;
+			max-height: 500px;
 			opacity: 1;
 			margin-top: $spacing-md;
 		}
